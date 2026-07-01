@@ -21,6 +21,7 @@
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/WatermarkChartView.hpp"
 #include <QActionGroup>
 #include <QApplication>
 #include <QBrush>
@@ -130,28 +131,9 @@ QFont ui_font(double pointSize, bool bold = false) {
     return f;
 }
 
-/// QChartView that paints a faint centred symbol watermark over the plot.
-class WatermarkChartView final : public QChartView {
-public:
-    WatermarkChartView(QChart* chart, QWidget* parent, QString text)
-        : QChartView(chart, parent)
-        , text_(std::move(text)) {}
-
-protected:
-    void paintEvent(QPaintEvent* e) override {
-        QChartView::paintEvent(e);
-        QPainter p(viewport());
-        p.setRenderHint(QPainter::Antialiasing);
-        p.setFont(ui_font(34, true));
-        p.setPen(QColor(255, 255, 255, 24));
-        p.drawText(viewport()->rect(), Qt::AlignCenter, text_);
-    }
-
-private:
-    QString text_;
-};
-
 } // namespace
+
+using ores::qt::WatermarkChartView;
 
 FxSpotChartWindow::FxSpotChartWindow(ClientManager* clientManager,
                                      const marketdata::domain::market_series& series,
@@ -337,6 +319,16 @@ void FxSpotChartWindow::setupChart() {
 
     chartView_ = new WatermarkChartView(chart, this, pretty_pair(oreKey_));
     chartView_->setRenderHint(QPainter::Antialiasing);
+
+    // Overlay shown while loading or when no data/error is available.
+    statusOverlay_ = new QLabel(tr("Loading…"), chartView_);
+    statusOverlay_->setAlignment(Qt::AlignCenter);
+    statusOverlay_->setAttribute(Qt::WA_TransparentForMouseEvents);
+    statusOverlay_->setStyleSheet(
+        "background: transparent; color: rgba(203,213,225,180); font-size: 16px;");
+    statusOverlay_->setGeometry(chartView_->rect());
+    statusOverlay_->raise();
+    statusOverlay_->show();
 }
 
 void FxSpotChartWindow::reload() {
@@ -364,7 +356,8 @@ void FxSpotChartWindow::startBackfill() {
                 if (!self || !cm)
                     return {};
                 marketdata::messaging::get_market_observations_request req;
-                req.limit = 10000;
+                req.series_id = boost::uuids::to_string(series_id);
+                req.limit = 500;
                 auto result = cm->process_authenticated_request(std::move(req));
                 BackfillResult r;
                 if (!result) {
@@ -401,6 +394,10 @@ void FxSpotChartWindow::startBackfill() {
 void FxSpotChartWindow::onBackfillLoaded() {
     const auto result = backfillWatcher_->result();
     if (!result.success) {
+        if (statusOverlay_) {
+            statusOverlay_->setText(tr("⚠  Could not load data\n%1").arg(result.error_message));
+            statusOverlay_->show();
+        }
         emit errorOccurred(result.error_message);
         return;
     }
@@ -413,6 +410,12 @@ void FxSpotChartWindow::onBackfillLoaded() {
         samples_.pop_front();
     rebuildFromPoints();
 
+    if (statusOverlay_) {
+        if (samples_.empty())
+            statusOverlay_->setText(tr("No data available"));
+        else
+            statusOverlay_->hide();
+    }
     emit statusChanged(tr("Backfilled %1 observation(s) for %2").arg(samples_.size()).arg(oreKey_));
 
     startLiveSubscription();
@@ -429,6 +432,7 @@ void FxSpotChartWindow::startLiveSubscription() {
         subscription_ = std::make_unique<marketdata::client::fx_spot_subscription>(
             clientManager_->nats_client(),
             oreKey_.toStdString(),
+            clientManager_->currentTenantId(),
             [self](const marketdata::domain::fx_spot_tick& tick) {
                 const qint64 ms = to_ms(tick.datetime);
                 const double mid = tick.mid;
@@ -487,7 +491,7 @@ void FxSpotChartWindow::rebuildFromPoints() {
 
 void FxSpotChartWindow::applyYRange(double minV, double maxV) {
     const double rawRange = maxV - minV;
-    const double pad = (rawRange > 0.0) ? rawRange * 0.08 : std::max(maxV * 0.0005, 1e-6);
+    const double pad = std::max(rawRange * 0.25, maxV * 0.001);
     const double pMin = minV - pad;
     const double pMax = maxV + pad;
     const double step = nice_step(pMax - pMin, 6);

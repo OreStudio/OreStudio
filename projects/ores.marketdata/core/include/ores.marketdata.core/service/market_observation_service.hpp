@@ -67,7 +67,8 @@ public:
      * @return Vector of market observations for the requested page.
      */
     std::vector<domain::market_observation> list_market_observations(std::uint32_t offset,
-                                                                     std::uint32_t limit);
+                                                                     std::uint32_t limit,
+                                                                     const std::string& series_id = {});
 
     /**
      * @brief Gets the total count of active market observations.

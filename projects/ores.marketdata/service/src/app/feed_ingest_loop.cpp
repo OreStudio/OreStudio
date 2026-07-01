@@ -217,7 +217,7 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
                 obs.party_id = party_uuid;
                 obs.series_id = existing.front().id;
                 obs.observation_datetime = tick->datetime;
-                obs.value = tick->mid;
+                obs.value = std::to_string(tick->mid);
 
                 repository::market_observations_repository obs_repo;
                 obs_repo.write(tenant_ctx, obs);

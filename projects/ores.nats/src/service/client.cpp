@@ -19,6 +19,7 @@
  */
 #include "ores.nats/service/client.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/buffered_subscription.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.nats/service/nats_connect_error.hpp"
 #include "ores.nats/service/subscription.hpp"
@@ -27,12 +28,14 @@
 #include <boost/asio/experimental/channel.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <boost/circular_buffer.hpp>
 #include <boost/system/error_code.hpp>
 #include <atomic>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <nats/nats.h>
 #include <stdexcept>
 #include <string>
@@ -66,6 +69,44 @@ struct sub_closure {
 struct subscription::impl {
     natsSubscription* sub = nullptr;
     std::unique_ptr<sub_closure> closure; // must outlive sub
+};
+
+// ---------------------------------------------------------------------------
+// message_buffer — thread-safe circular buffer used by buffered_subscription
+// ---------------------------------------------------------------------------
+
+struct message_buffer {
+    explicit message_buffer(std::size_t capacity) : buf_(capacity) {}
+
+    void push(message msg) {
+        std::lock_guard lock(mu_);
+        buf_.push_back(std::move(msg));
+    }
+
+    std::vector<message> snapshot() const {
+        std::lock_guard lock(mu_);
+        return {buf_.begin(), buf_.end()};
+    }
+
+    std::size_t size() const {
+        std::lock_guard lock(mu_);
+        return buf_.size();
+    }
+
+private:
+    mutable std::mutex mu_;
+    boost::circular_buffer<message> buf_;
+};
+
+// ---------------------------------------------------------------------------
+// buffered_subscription::impl
+// ---------------------------------------------------------------------------
+
+struct buffered_subscription::impl {
+    explicit impl(subscription s, std::shared_ptr<message_buffer> b)
+        : sub(std::move(s)), buffer(std::move(b)) {}
+    subscription sub;
+    std::shared_ptr<message_buffer> buffer;
 };
 
 // ---------------------------------------------------------------------------
@@ -186,17 +227,56 @@ natsMsg* make_msg(std::string_view subject,
 subscription::subscription(std::unique_ptr<impl> i)
     : impl_(std::move(i)) {}
 
-subscription::~subscription() {
-    if (!impl_ || !impl_->sub)
-        return;
-    natsSubscription_Unsubscribe(impl_->sub);
-    natsSubscription_Destroy(impl_->sub);
-    impl_->sub = nullptr;
-    // impl_->closure destroyed with impl_
+// ---------------------------------------------------------------------------
+// Async drain helpers — shared by ~subscription and operator=(subscription&&)
+// ---------------------------------------------------------------------------
+
+// Heap-allocated context that keeps sub_closure alive until the NATS dispatch
+// thread has finished all in-flight on_msg calls for this subscription.
+struct sub_drain_ctx {
+    natsSubscription* sub;
+    std::unique_ptr<sub_closure> closure;
+};
+
+// C-linkage callback registered with natsSubscription_SetOnCompleteCB.
+// Fires from the dispatch thread after drain: all on_msg calls have returned,
+// so it is now safe to free the closure and destroy the NATS subscription.
+extern "C" void drain_cb(void* ud) noexcept {
+    auto* c = static_cast<sub_drain_ctx*>(ud);
+    c->closure.reset();
+    natsSubscription_Destroy(c->sub);
+    delete c;
 }
 
+// Initiates an async drain of impl_->sub and transfers ownership of both the
+// sub and closure to a heap context freed by drain_cb.  After this call,
+// impl_->sub is nullptr and impl_->closure is empty.
+static void drain_impl(subscription::impl* impl) noexcept {
+    if (!impl || !impl->sub)
+        return;
+    auto* ctx = new(std::nothrow) sub_drain_ctx{impl->sub, std::move(impl->closure)};
+    if (ctx) {
+        natsSubscription_SetOnCompleteCB(impl->sub, drain_cb, ctx);
+        natsSubscription_Drain(impl->sub);
+    }
+    // On alloc failure: closure leaks (no crash), sub leaks (no crash).
+    impl->sub = nullptr;
+}
+
+subscription::~subscription() {
+    drain_impl(impl_.get());
+}
+
+
 subscription::subscription(subscription&&) noexcept = default;
-subscription& subscription::operator=(subscription&&) noexcept = default;
+
+subscription& subscription::operator=(subscription&& other) noexcept {
+    if (this == &other)
+        return *this;
+    drain_impl(impl_.get()); // drain old before taking ownership of new
+    impl_ = std::move(other.impl_);
+    return *this;
+}
 
 std::string subscription::subject() const {
     if (!impl_ || !impl_->sub)
@@ -208,6 +288,27 @@ std::string subscription::subject() const {
 void subscription::drain() {
     if (impl_ && impl_->sub)
         natsSubscription_Drain(impl_->sub);
+}
+
+// ---------------------------------------------------------------------------
+// buffered_subscription — methods defined here because impl lives here
+// ---------------------------------------------------------------------------
+
+buffered_subscription::buffered_subscription(std::unique_ptr<impl> i)
+    : impl_(std::move(i)) {}
+
+buffered_subscription::~buffered_subscription() = default;
+buffered_subscription::buffered_subscription(buffered_subscription&&) noexcept = default;
+buffered_subscription& buffered_subscription::operator=(buffered_subscription&&) noexcept = default;
+
+std::vector<message> buffered_subscription::snapshot() const {
+    if (!impl_) return {};
+    return impl_->buffer->snapshot();
+}
+
+std::size_t buffered_subscription::size() const {
+    if (!impl_) return 0;
+    return impl_->buffer->size();
 }
 
 // ---------------------------------------------------------------------------
@@ -419,6 +520,22 @@ subscription client::subscribe(std::string_view subject, message_handler handler
     si->sub = sub;
     si->closure = std::move(cl);
     return subscription(std::move(si));
+}
+
+buffered_subscription client::subscribe_buffered(std::string_view subject,
+                                                  std::size_t capacity,
+                                                  message_handler handler) {
+    auto buf = std::make_shared<message_buffer>(capacity);
+
+    // Wrap the caller's handler: push a copy to the buffer, then forward.
+    auto sub = subscribe(subject, [buf, h = std::move(handler)](message msg) mutable {
+        buf->push(msg); // copy before the potential move into h
+        if (h)
+            h(std::move(msg));
+    });
+
+    auto bi = std::make_unique<buffered_subscription::impl>(std::move(sub), std::move(buf));
+    return buffered_subscription(std::move(bi));
 }
 
 subscription client::queue_subscribe(std::string_view subject,

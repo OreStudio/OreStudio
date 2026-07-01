@@ -26,6 +26,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include <QComboBox>
 #include <QFutureWatcher>
+#include <QLabel>
 #include <QPointF>
 #include <QTimer>
 #include <QToolBar>
@@ -157,6 +158,8 @@ private:
 
     QFutureWatcher<BackfillResult>* backfillWatcher_;
     std::unique_ptr<marketdata::client::fx_spot_subscription> subscription_;
+
+    QLabel* statusOverlay_{nullptr}; // shown when chart has no data or an error
 };
 
 }

@@ -168,6 +168,16 @@ public:
         return feeds_.size();
     }
 
+    /** @brief Snapshot of source_names for all currently running feeds. */
+    std::vector<std::string> list() const {
+        std::lock_guard lock(mu_);
+        std::vector<std::string> names;
+        names.reserve(feeds_.size());
+        for (const auto& [key, _] : feeds_)
+            names.push_back(key);
+        return names;
+    }
+
 private:
     static constexpr std::chrono::minutes status_interval_{1};
 

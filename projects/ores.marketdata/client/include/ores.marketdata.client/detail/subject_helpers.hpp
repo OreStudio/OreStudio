@@ -28,16 +28,17 @@ namespace ores::marketdata::client::detail {
 /**
  * @brief Convert an ORE canonical key to a NATS fan-out subject.
  *
- * Algorithm: lowercase the key, replace '/' with '.', prepend
- * "marketdata.v1.tick.".
- *
- * Example: "FX/RATE/EUR/USD" → "marketdata.v1.tick.fx.rate.eur.usd"
+ * With tenant_id: "marketdata.v1.tick.<tenant_id>.fx.rate.eur.usd"
+ * Without:        "marketdata.v1.tick.fx.rate.eur.usd"  (legacy / testing)
  */
-inline std::string ore_key_to_subject(std::string ore_key) {
+inline std::string ore_key_to_subject(std::string ore_key,
+                                      const std::string& tenant_id = {}) {
     std::transform(ore_key.begin(), ore_key.end(), ore_key.begin(), [](unsigned char c) {
         return static_cast<char>(std::tolower(c));
     });
     std::replace(ore_key.begin(), ore_key.end(), '/', '.');
+    if (!tenant_id.empty())
+        return "marketdata.v1.tick." + tenant_id + "." + ore_key;
     return "marketdata.v1.tick." + ore_key;
 }
 

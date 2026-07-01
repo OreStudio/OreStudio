@@ -18,7 +18,10 @@
  *
  */
 #include "ores.qt/MarketSimulatorWindow.hpp"
+#include "ores.qt/WatermarkChartView.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
+#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
+#include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FeedDialog.hpp"
 #include "ores.qt/FxSpotRateEditor.hpp"
@@ -28,8 +31,13 @@
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
+#include "ores.marketdata.api/domain/fx_spot_tick.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.utility/rfl/reflectors.hpp"
 #include <QColor>
 #include <QFont>
+#include <QFontDatabase>
 #include <QFutureWatcher>
 #include <QHBoxLayout>
 #include <QIcon>
@@ -42,13 +50,22 @@
 #include <QPixmap>
 #include <QPointF>
 #include <QPointer>
+#include <QStackedLayout>
 #include <QVBoxLayout>
+#include <QtCharts/QChart>
+#include <QtCharts/QChartView>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QScatterSeries>
+#include <QtCharts/QValueAxis>
 #include <QtConcurrent>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <atomic>
 #include <cmath>
+#include <memory>
+#include <rfl/json.hpp>
 
 namespace ores::qt {
 
@@ -210,11 +227,11 @@ void MarketSimulatorWindow::setupToolbar() {
     toolbar_->addSeparator();
 
     startFeedAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Play, IconUtils::DefaultIconColor), tr("Start"));
+        IconUtils::createRecoloredIcon(Icon::PlayFilled, IconUtils::DefaultIconColor), tr("Start"));
     startFeedAction_->setToolTip(tr("Start generating live ticks for the selected FX rate(s)."));
 
     stopFeedAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Stop, IconUtils::DefaultIconColor), tr("Stop"));
+        IconUtils::createRecoloredIcon(Icon::StopFilled, IconUtils::DefaultIconColor), tr("Stop"));
     stopFeedAction_->setToolTip(tr("Stop generating ticks for the selected FX rate(s)."));
 
     toolbar_->addSeparator();
@@ -335,38 +352,95 @@ void MarketSimulatorWindow::setupRightPanel() {
     feedStartButton_->setProperty("feedBtnRow", QVariant::fromValue(static_cast<QObject*>(feedBtnRow)));
 
     connect(feedStartButton_, &QPushButton::clicked, this, [this]() {
-        // Select all FxPairs under the current feed then delegate.
-        const auto feedId = currentNodeId();
-        feedsTree_->selectionModel()->clearSelection();
-        for (int fi = 0; fi < treeModel_->rowCount(); ++fi) {
-            const auto feedIdx = treeModel_->index(fi, 0);
-            if (feedIdx.data(NodeIdRole).toString().toStdString() != feedId)
-                continue;
-            for (int xi = 0; xi < treeModel_->rowCount(feedIdx); ++xi) {
-                const auto fxIdx = treeModel_->index(xi, 0, feedIdx);
-                if (static_cast<NodeType>(fxIdx.data(NodeTypeRole).toInt()) == NodeType::FxPair)
-                    feedsTree_->selectionModel()->select(fxIdx, QItemSelectionModel::Select);
-            }
-        }
-        onStartFeedClicked();
+        startPairsAsync(fxPairsForFeed(currentNodeId()));
     });
     connect(feedStopButton_, &QPushButton::clicked, this, [this]() {
-        const auto feedId = currentNodeId();
-        feedsTree_->selectionModel()->clearSelection();
-        for (int fi = 0; fi < treeModel_->rowCount(); ++fi) {
-            const auto feedIdx = treeModel_->index(fi, 0);
-            if (feedIdx.data(NodeIdRole).toString().toStdString() != feedId)
-                continue;
-            for (int xi = 0; xi < treeModel_->rowCount(feedIdx); ++xi) {
-                const auto fxIdx = treeModel_->index(xi, 0, feedIdx);
-                if (static_cast<NodeType>(fxIdx.data(NodeTypeRole).toInt()) == NodeType::FxPair)
-                    feedsTree_->selectionModel()->select(fxIdx, QItemSelectionModel::Select);
-            }
-        }
-        onStopFeedClicked();
+        stopPairsAsync(fxPairsForFeed(currentNodeId()));
     });
 
-    summaryLayout->addStretch(1);
+    // Tick chart — shows live synthetic ticks when an FX pair is selected and running.
+    {
+        const QColor upGreen(0x22, 0xC5, 0x5E);
+        const QColor grid(255, 255, 255, 18);
+        const QColor plotBg(0x12, 0x17, 0x1F);
+        const QColor labelColor(0xCB, 0xD5, 0xE1);
+        QFont labelFont = QFontDatabase::hasFamily("Inter") ? QFont("Inter") : font();
+        labelFont.setPointSizeF(8.0);
+
+        tickSeries_ = new QLineSeries();
+        tickSeries_->setPointsVisible(false);
+        {
+            QPen pen(upGreen);
+            pen.setWidthF(2.0);
+            pen.setCosmetic(true);
+            tickSeries_->setPen(pen);
+        }
+
+        tickPosMarker_ = new QScatterSeries();
+        tickPosMarker_->setMarkerShape(QScatterSeries::MarkerShapeCircle);
+        tickPosMarker_->setColor(upGreen);
+        tickPosMarker_->setBorderColor(QColor(0xE2, 0xF5, 0xEA));
+        tickPosMarker_->setMarkerSize(9.0);
+
+        tickAxisX_ = new QValueAxis();
+        tickAxisX_->setRange(0, 1); // resized by refreshTickChart() as data arrives
+        tickAxisX_->setLabelFormat("%d");
+        tickAxisX_->setGridLineColor(grid);
+        tickAxisX_->setMinorGridLineVisible(false);
+        tickAxisX_->setLabelsColor(labelColor);
+        tickAxisX_->setLabelsFont(labelFont);
+        tickAxisX_->setLinePenColor(grid);
+        tickAxisX_->setTickCount(7);
+
+        tickAxisY_ = new QValueAxis();
+        tickAxisY_->setLabelFormat("%.5f");
+        tickAxisY_->setGridLineColor(grid);
+        tickAxisY_->setMinorGridLineVisible(false);
+        tickAxisY_->setLabelsColor(labelColor);
+        tickAxisY_->setLabelsFont(labelFont);
+        tickAxisY_->setLinePenColor(grid);
+
+        auto* chart = new QChart();
+        chart->setTheme(QChart::ChartThemeDark);
+        chart->setBackgroundRoundness(0);
+        chart->legend()->setVisible(false);
+        chart->setMargins(QMargins(8, 8, 8, 8));
+        chart->setPlotAreaBackgroundBrush(plotBg);
+        chart->setPlotAreaBackgroundVisible(true);
+        chart->addSeries(tickSeries_);
+        chart->addSeries(tickPosMarker_);
+        chart->addAxis(tickAxisX_, Qt::AlignBottom);
+        chart->addAxis(tickAxisY_, Qt::AlignRight);
+        tickSeries_->attachAxis(tickAxisX_);
+        tickSeries_->attachAxis(tickAxisY_);
+        tickPosMarker_->attachAxis(tickAxisX_);
+        tickPosMarker_->attachAxis(tickAxisY_);
+
+        tickChartContainer_ = new QWidget(summaryPage_);
+        auto* tickLayout = new QVBoxLayout(tickChartContainer_);
+        tickLayout->setContentsMargins(0, 0, 0, 0);
+
+        tickChartView_ = new WatermarkChartView(chart, tickChartContainer_, {});
+        tickChartView_->setRenderHint(QPainter::Antialiasing);
+        tickChartView_->setMinimumHeight(200);
+        tickLayout->addWidget(tickChartView_);
+
+        // "Feed not running" overlay: child of tickChartView_ so it appears on top.
+        tickChartPlaceholder_ = new QLabel(tr("Feed not running"), tickChartView_);
+        tickChartPlaceholder_->setAlignment(Qt::AlignCenter);
+        tickChartPlaceholder_->setStyleSheet(
+            "color: rgba(203,213,225,180); font-size: 14px; background: transparent;");
+        tickChartPlaceholder_->setAttribute(Qt::WA_TransparentForMouseEvents);
+        tickChartPlaceholder_->setGeometry(tickChartView_->rect());
+        tickChartPlaceholder_->raise();
+
+        summaryLayout->addWidget(tickChartContainer_, 1);
+        tickChartContainer_->setVisible(false);
+
+        tickFlashTimer_ = new QTimer(this);
+        tickFlashTimer_->setInterval(550);
+        connect(tickFlashTimer_, &QTimer::timeout, this, &MarketSimulatorWindow::onTickChartFlash);
+    }
 
     summaryStack_->addWidget(emptyPage);    // index 0
     summaryStack_->addWidget(summaryPage_); // index 1
@@ -432,6 +506,7 @@ void MarketSimulatorWindow::reload() {
         std::vector<synthetic::domain::fx_spot_generation_config> fxPairs;
         std::vector<synthetic::domain::gmm_component> components;
         std::unordered_map<std::string, std::string> currencyNames;
+        std::vector<std::string> runningSourceNames;
         QString error;
     };
 
@@ -470,6 +545,13 @@ void MarketSimulatorWindow::reload() {
         // ISO codes in the hero title).
         r.currencyNames = fetch_currency_names(cm);
 
+        // Query which feeds the synthetic service currently has running so the
+        // UI shows correct Running/Stopped status even after a restart.
+        auto listResp = cm->process_authenticated_request(
+            ores::marketdata::messaging::list_market_feed_configs_request{});
+        if (listResp && listResp->success)
+            r.runningSourceNames = std::move(listResp->running_source_names);
+
         r.success = true;
         return r;
     };
@@ -494,6 +576,8 @@ void MarketSimulatorWindow::reload() {
         self->fxPairs_.clear();
         self->components_.clear();
         self->currencyNames_ = std::move(result.currencyNames);
+        self->runningSourceNames_ = {result.runningSourceNames.begin(),
+                                     result.runningSourceNames.end()};
 
         for (auto& f : result.feeds)
             self->feeds_[boost::uuids::to_string(f.id)] = std::move(f);
@@ -637,12 +721,17 @@ std::string MarketSimulatorWindow::currentNodeId() const {
 
 std::vector<synthetic::domain::fx_spot_generation_config>
 MarketSimulatorWindow::selectedFxPairs() const {
+    // The tree has 2 columns; both column items carry the same NodeId, so we
+    // deduplicate by id to avoid sending 2 start/stop requests per pair.
     std::vector<synthetic::domain::fx_spot_generation_config> result;
+    std::set<std::string> seen;
     const auto indexes = feedsTree_->selectionModel()->selectedIndexes();
     for (const auto& idx : indexes) {
         if (static_cast<NodeType>(idx.data(NodeTypeRole).toInt()) != NodeType::FxPair)
             continue;
         const auto id = idx.data(NodeIdRole).toString().toStdString();
+        if (!seen.insert(id).second)
+            continue;
         auto it = fxPairs_.find(id);
         if (it != fxPairs_.end())
             result.push_back(it->second);
@@ -715,6 +804,10 @@ void MarketSimulatorWindow::showSummaryForCurrent() {
 
 void MarketSimulatorWindow::showFeedSummary(
     const synthetic::domain::market_data_generation_config& feed) {
+    unsubscribeTickChart();
+    fxSummaryId_.clear();
+    if (tickChartContainer_)
+        tickChartContainer_->setVisible(false);
     clear_form(summaryForm_);
     summaryHero_->setVisible(false);
     summaryTitle_->setVisible(true);
@@ -761,16 +854,20 @@ void MarketSimulatorWindow::showFeedSummary(
 }
 
 void MarketSimulatorWindow::markRunning(const std::vector<std::string>& sourceNames) {
-    for (const auto& s : sourceNames)
+    for (const auto& s : sourceNames) {
         runningSourceNames_.insert(s);
+        startCacheSubscription(s); // begin caching ticks immediately
+    }
     refreshFeedTreeItems();
     refreshFeedSummaryIfCurrent(feedSummaryId_);
     refreshFxSummaryIfCurrent();
 }
 
 void MarketSimulatorWindow::markStopped(const std::vector<std::string>& sourceNames) {
-    for (const auto& s : sourceNames)
+    for (const auto& s : sourceNames) {
         runningSourceNames_.erase(s);
+        stopCacheSubscription(s); // stop caching and clear cache
+    }
     refreshFeedTreeItems();
     refreshFeedSummaryIfCurrent(feedSummaryId_);
     refreshFxSummaryIfCurrent();
@@ -827,6 +924,18 @@ void MarketSimulatorWindow::refreshFxSummaryIfCurrent() {
     heroStatus_->setText(running ? tr("●  Running") : tr("○  Stopped"));
     heroStatus_->setStyleSheet(running ? "color: rgb(60,180,80); font-weight: bold;"
                                        : "color: gray;");
+    if (tickChartContainer_) {
+        if (running && !tickSubscription_) {
+            tickSamples_.clear();
+            if (tickSeries_) tickSeries_->clear();
+            if (tickPosMarker_) tickPosMarker_->clear();
+            tickChartPlaceholder_->setVisible(false);
+            subscribeTickChart(it->second.source_name);
+        } else if (!running && tickSubscription_) {
+            unsubscribeTickChart();
+            tickChartPlaceholder_->setVisible(true);
+        }
+    }
 }
 
 void MarketSimulatorWindow::refreshFeedSummaryIfCurrent(const std::string& feedId) {
@@ -839,6 +948,11 @@ void MarketSimulatorWindow::refreshFeedSummaryIfCurrent(const std::string& feedI
 
 void MarketSimulatorWindow::showFxPairSummary(
     const synthetic::domain::fx_spot_generation_config& fx) {
+    // Tear down any existing tick subscription before switching pairs. Without
+    // this, the old subscription's alive flag is never set false, so it can
+    // still deliver messages into the new pair's chart during the drain window.
+    unsubscribeTickChart();
+
     // Hide feed-level controls when switching to an FX pair view.
     if (auto* feedBtnRow = qobject_cast<QWidget*>(
             feedStartButton_->property("feedBtnRow").value<QObject*>()))
@@ -886,10 +1000,6 @@ void MarketSimulatorWindow::showFxPairSummary(
                                          : "color: gray;");
     summaryHero_->setVisible(true);
 
-    summaryForm_->addRow(tr("ORE key"),
-                         new QLabel(QString::fromStdString(fx.ore_key), summaryPage_));
-    summaryForm_->addRow(tr("Source name"),
-                         new QLabel(QString::fromStdString(fx.source_name), summaryPage_));
     summaryForm_->addRow(tr("Initial price"),
                          new QLabel(QString::number(fx.gmm_initial_price), summaryPage_));
     {
@@ -900,10 +1010,35 @@ void MarketSimulatorWindow::showFxPairSummary(
         summaryForm_->addRow(tr("Update frequency"),
                              new QLabel(tr("every %1 s").arg(seconds), summaryPage_));
     }
-    summaryForm_->addRow(tr("Enabled"),
-                         new QLabel(fx.enabled ? tr("Yes") : tr("No"), summaryPage_));
     summaryForm_->addRow(tr("Components"),
                          new QLabel(QString::number(componentCount), summaryPage_));
+
+    // Show the tick chart; subscribe if the feed is currently running.
+    if (tickChartContainer_) {
+        tickSamples_.clear();
+        if (tickSeries_) tickSeries_->clear();
+        if (tickPosMarker_) tickPosMarker_->clear();
+        tickChartContainer_->setVisible(true);
+
+        // Update chart title and watermark for the selected pair.
+        const QString pairCode = baseCode + "/" + quoteCode;
+        if (auto* ch = tickChartView_->chart()) {
+            ch->setTitle(QString::fromStdString(fx.ore_key) + " (Mid)");
+            QFont tf = ch->titleFont();
+            tf.setPointSizeF(8.5);
+            ch->setTitleFont(tf);
+            ch->setTitleBrush(QBrush(QColor(0xCB, 0xD5, 0xE1)));
+        }
+        if (tickChartView_)
+            tickChartView_->setText(pairCode);
+        if (isRunning) {
+            tickChartPlaceholder_->setVisible(false);
+            subscribeTickChart(fx.source_name);
+        } else {
+            tickChartPlaceholder_->setVisible(true);
+        }
+    }
+
     summaryStack_->setCurrentWidget(summaryPage_);
 }
 
@@ -1136,12 +1271,19 @@ MarketSimulatorWindow::fxPairsForFeed(const std::string& feedId) const {
 }
 
 void MarketSimulatorWindow::onStartFeedClicked() {
-    // When a Feed node is selected, start all its children; otherwise use tree selection.
-    std::vector<synthetic::domain::fx_spot_generation_config> pairs;
-    if (feedsTree_->currentIndex().isValid() && currentNodeType() == NodeType::Feed)
+    // Prefer the explicit tree selection (what the user highlighted) over the
+    // current/focused item. Only fall back to "all in feed" when the selection
+    // contains no FX pairs and the focused item is a Feed node — this handles
+    // the toolbar button click after clicking the folder row itself.
+    auto pairs = selectedFxPairs();
+    if (pairs.empty() && feedsTree_->currentIndex().isValid() &&
+        currentNodeType() == NodeType::Feed)
         pairs = fxPairsForFeed(currentNodeId());
-    else
-        pairs = selectedFxPairs();
+    startPairsAsync(std::move(pairs));
+}
+
+void MarketSimulatorWindow::startPairsAsync(
+    std::vector<synthetic::domain::fx_spot_generation_config> pairs) {
     if (pairs.empty())
         return;
 
@@ -1186,18 +1328,45 @@ void MarketSimulatorWindow::onStartFeedClicked() {
     BOOST_LOG_SEV(lg(), info) << "Starting " << reqs.size() << " feed(s).";
     QPointer<MarketSimulatorWindow> self = this;
     auto* cm = clientManager_;
-
+    const std::string username = username_.toStdString();
+    // Capture party_id on the main thread; stamp() uses it when JWT has no party claim.
+    const boost::uuids::uuid partyId = clientManager_->currentPartyId();
     using Results = std::vector<std::pair<std::string, QString>>; // source_name -> error (empty=ok)
-    auto task = [cm, reqs]() -> Results {
+    auto task = [cm, reqs, username, partyId]() -> Results {
         Results results;
+        boost::uuids::random_generator uuid_gen;
         for (const auto& req : reqs) {
             auto resp = cm->process_authenticated_request(req);
-            if (!resp)
+            if (!resp) {
                 results.push_back({req.source_name, QString::fromStdString(resp.error())});
-            else if (!resp->success)
+                continue;
+            }
+            if (!resp->success) {
                 results.push_back({req.source_name, QString::fromStdString(resp->message)});
-            else
-                results.push_back({req.source_name, {}});
+                continue;
+            }
+            results.push_back({req.source_name, {}});
+
+            // Ensure a feed binding exists so the marketdata ingest loop subscribes
+            // to this producer channel and persists observations to the DB.
+            // tenant_id and party_id are stamped server-side from the JWT context.
+            ores::marketdata::domain::feed_binding b;
+            b.id = uuid_gen();
+            b.ore_key = req.ore_key;
+            b.source_name = req.source_name;
+            b.party_id = partyId;
+            b.enabled = true;
+            b.performed_by = username;
+            b.change_reason_code = "system.new_record";
+            b.change_commentary = "Auto-created by Market Simulator on feed start";
+            auto bind_req = ores::marketdata::messaging::save_feed_binding_request::from(
+                std::move(b));
+            auto bind_resp = cm->process_authenticated_request(bind_req);
+            if (!bind_resp || !bind_resp->success) {
+                const std::string err = bind_resp ? bind_resp->message : bind_resp.error();
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Feed binding save failed for " << req.source_name << ": " << err;
+            }
         }
         return results;
     };
@@ -1235,11 +1404,15 @@ void MarketSimulatorWindow::onStartFeedClicked() {
 }
 
 void MarketSimulatorWindow::onStopFeedClicked() {
-    std::vector<synthetic::domain::fx_spot_generation_config> pairs;
-    if (feedsTree_->currentIndex().isValid() && currentNodeType() == NodeType::Feed)
+    auto pairs = selectedFxPairs();
+    if (pairs.empty() && feedsTree_->currentIndex().isValid() &&
+        currentNodeType() == NodeType::Feed)
         pairs = fxPairsForFeed(currentNodeId());
-    else
-        pairs = selectedFxPairs();
+    stopPairsAsync(std::move(pairs));
+}
+
+void MarketSimulatorWindow::stopPairsAsync(
+    std::vector<synthetic::domain::fx_spot_generation_config> pairs) {
     if (pairs.empty())
         return;
 
@@ -1302,30 +1475,167 @@ void MarketSimulatorWindow::onStopFeedClicked() {
 }
 
 void MarketSimulatorWindow::onStartAllClicked() {
-    // Temporarily select all FxPair nodes, delegate to onStartFeedClicked, restore selection.
-    feedsTree_->selectionModel()->clearSelection();
-    for (int feed = 0; feed < treeModel_->rowCount(); ++feed) {
-        const auto feedIdx = treeModel_->index(feed, 0);
-        for (int fx = 0; fx < treeModel_->rowCount(feedIdx); ++fx) {
-            const auto fxIdx = treeModel_->index(fx, 0, feedIdx);
-            if (static_cast<NodeType>(fxIdx.data(NodeTypeRole).toInt()) == NodeType::FxPair)
-                feedsTree_->selectionModel()->select(fxIdx, QItemSelectionModel::Select);
-        }
-    }
-    onStartFeedClicked();
+    // Collect all FX pairs directly — do NOT mutate tree selection.
+    // The old pattern (clearSelection + select all + delegate) left the selection
+    // containing every FX pair, so subsequent single-pair Start/Stop actions
+    // operated on all of them instead of just the current node.
+    std::vector<synthetic::domain::fx_spot_generation_config> all;
+    for (const auto& [id, fx] : fxPairs_)
+        all.push_back(fx);
+    startPairsAsync(std::move(all));
 }
 
 void MarketSimulatorWindow::onStopAllClicked() {
-    feedsTree_->selectionModel()->clearSelection();
-    for (int feed = 0; feed < treeModel_->rowCount(); ++feed) {
-        const auto feedIdx = treeModel_->index(feed, 0);
-        for (int fx = 0; fx < treeModel_->rowCount(feedIdx); ++fx) {
-            const auto fxIdx = treeModel_->index(fx, 0, feedIdx);
-            if (static_cast<NodeType>(fxIdx.data(NodeTypeRole).toInt()) == NodeType::FxPair)
-                feedsTree_->selectionModel()->select(fxIdx, QItemSelectionModel::Select);
+    std::vector<synthetic::domain::fx_spot_generation_config> all;
+    for (const auto& [id, fx] : fxPairs_)
+        all.push_back(fx);
+    stopPairsAsync(std::move(all));
+}
+
+// ---- Tick chart ---------------------------------------------------------
+
+std::string MarketSimulatorWindow::synthetic_subject(const std::string& source_name) {
+    std::string token;
+    for (unsigned char c : source_name) {
+        const bool safe = std::isalnum(c) || c == '.' || c == '_' || c == '-';
+        token += safe ? static_cast<char>(c) : '_';
+    }
+    return "synthetic.v1.tick." + token;
+}
+
+void MarketSimulatorWindow::subscribeTickChart(const std::string& source_name) {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    // Pre-populate the chart from the buffered subscription snapshot.
+    tickSamples_.clear();
+    auto cit = cacheSubscriptions_.find(source_name);
+    if (cit != cacheSubscriptions_.end()) {
+        for (const auto& msg : cit->second.snapshot()) {
+            const auto result = rfl::json::read<marketdata::domain::fx_spot_tick>(
+                ores::nats::as_string_view(msg.data));
+            if (result)
+                tickSamples_.push_back(result->mid);
         }
     }
-    onStopFeedClicked();
+    refreshTickChart();
+
+    const std::string subject = synthetic_subject(source_name);
+    BOOST_LOG_SEV(lg(), debug) << "Tick chart subscribing to: " << subject;
+
+    // Create a new alive flag for this subscription. The lambda holds a copy
+    // of the shared_ptr; setting it to false makes the callback exit before
+    // touching any member of this window, preventing use-after-free when the
+    // subscription is destroyed concurrently with an in-flight on_msg call.
+    tickAlive_ = std::make_shared<std::atomic<bool>>(true);
+    auto alive = tickAlive_;
+    QPointer<MarketSimulatorWindow> self = this;
+
+    try {
+        tickSubscription_ = clientManager_->nats_client().subscribe(
+            subject,
+            [self, alive](ores::nats::message msg) {
+                if (!alive->load(std::memory_order_acquire))
+                    return;
+                const std::string_view payload = ores::nats::as_string_view(msg.data);
+                auto result = rfl::json::read<marketdata::domain::fx_spot_tick>(payload);
+                if (!result)
+                    return;
+                const double mid = result->mid;
+                QMetaObject::invokeMethod(self, [self, mid]() {
+                    if (self)
+                        self->appendTickSample(mid);
+                }, Qt::QueuedConnection);
+            });
+        if (tickFlashTimer_)
+            tickFlashTimer_->start();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Tick chart subscribe failed: " << e.what();
+    }
+}
+
+void MarketSimulatorWindow::unsubscribeTickChart() {
+    if (tickFlashTimer_)
+        tickFlashTimer_->stop();
+    if (tickPosMarker_)
+        tickPosMarker_->clear();
+    // Gate the lambda first so no queued invokeMethod posts arrive after we
+    // return, then drain the subscription. The drain is async; the closure is
+    // freed only after the last on_msg returns, so there is no UAF.
+    if (tickAlive_)
+        tickAlive_->store(false, std::memory_order_release);
+    tickSubscription_.reset();
+    tickAlive_.reset();
+}
+
+void MarketSimulatorWindow::refreshTickChart() {
+    if (!tickSeries_ || !tickAxisX_ || !tickAxisY_)
+        return;
+    const int n = static_cast<int>(tickSamples_.size());
+    if (n == 0) {
+        tickSeries_->clear();
+        if (tickPosMarker_) tickPosMarker_->clear();
+        return;
+    }
+    QList<QPointF> pts;
+    pts.reserve(n);
+    double minY = tickSamples_.front(), maxY = minY;
+    for (int i = 0; i < n; ++i) {
+        const double v = tickSamples_[i];
+        pts.append(QPointF(static_cast<double>(i), v));
+        minY = std::min(minY, v);
+        maxY = std::max(maxY, v);
+    }
+    tickSeries_->replace(pts);
+    if (tickPosMarker_) {
+        tickPosMarker_->clear();
+        tickPosMarker_->append(pts.back());
+    }
+    const double range = maxY - minY;
+    const double pad = (range > 0.0) ? range * 0.01 : std::max(maxY * 0.0005, 1e-6);
+    tickAxisY_->setRange(minY - pad, maxY + pad);
+    tickAxisX_->setRange(0, n == 1 ? 1.0 : static_cast<double>(n - 1));
+}
+
+void MarketSimulatorWindow::appendTickSample(double mid) {
+    constexpr int kMax = 120;
+    tickSamples_.push_back(mid);
+    while (static_cast<int>(tickSamples_.size()) > kMax)
+        tickSamples_.pop_front();
+    refreshTickChart();
+}
+
+void MarketSimulatorWindow::startCacheSubscription(const std::string& source_name) {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+    if (cacheSubscriptions_.contains(source_name))
+        return;
+    const std::string subject = synthetic_subject(source_name);
+    BOOST_LOG_SEV(lg(), debug) << "Cache subscription starting for: " << source_name;
+    try {
+        cacheSubscriptions_.emplace(
+            source_name,
+            clientManager_->nats_client().subscribe_buffered(subject, 1000));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Cache subscribe failed for " << source_name
+                                   << ": " << e.what();
+    }
+}
+
+void MarketSimulatorWindow::stopCacheSubscription(const std::string& source_name) {
+    auto it = cacheSubscriptions_.find(source_name);
+    if (it == cacheSubscriptions_.end())
+        return;
+    // ~buffered_subscription → ~subscription locks sub_closure::mu, so this
+    // safely waits for any in-flight on_msg to finish before returning.
+    cacheSubscriptions_.erase(it);
+}
+
+void MarketSimulatorWindow::onTickChartFlash() {
+    if (!tickPosMarker_ || tickPosMarker_->count() == 0)
+        return;
+    tickFlashBig_ = !tickFlashBig_;
+    tickPosMarker_->setMarkerSize(tickFlashBig_ ? 15.0 : 9.0);
 }
 
 }

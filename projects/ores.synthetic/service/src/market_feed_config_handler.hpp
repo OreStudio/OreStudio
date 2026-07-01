@@ -130,6 +130,17 @@ public:
         reply(nats_, msg, resp);
     }
 
+    void list(ores::nats::message msg) {
+        using namespace ores::marketdata::messaging;
+        [[maybe_unused]] const auto cid = log_handler_entry(market_feed_config_handler_lg(), msg);
+        list_market_feed_configs_response resp;
+        resp.running_source_names = ctrl_->list();
+        resp.success = true;
+        BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
+            << msg.subject << " — " << resp.running_source_names.size() << " feed(s) running";
+        reply(nats_, msg, resp);
+    }
+
 private:
     ores::nats::service::client& nats_;
     std::shared_ptr<feed_controller> ctrl_;

@@ -49,6 +49,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             h.stop(std::move(msg));
                                         }));
 
+    subs.push_back(nats.queue_subscribe(std::string(list_market_feed_configs_request::nats_subject),
+                                        queue,
+                                        [&nats, ctrl](ores::nats::message msg) {
+                                            market_feed_config_handler h(nats, ctrl);
+                                            h.list(std::move(msg));
+                                        }));
+
     subs.push_back(nats.queue_subscribe(
         std::string(ores::synthetic::messaging::simulate_fx_spot_paths_request::nats_subject),
         queue,

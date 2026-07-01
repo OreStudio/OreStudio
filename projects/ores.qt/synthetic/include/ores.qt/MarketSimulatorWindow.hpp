@@ -21,7 +21,10 @@
 #define ORES_QT_MARKET_SIMULATOR_WINDOW_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/buffered_subscription.hpp"
+#include "ores.nats/service/subscription.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/WatermarkChartView.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
@@ -34,8 +37,17 @@
 #include <QToolBar>
 #include <QTreeView>
 #include <QWidget>
+#include <deque>
 #include <map>
+#include <optional>
 #include <set>
+
+// Forward declarations for chart members (full headers only needed in .cpp).
+class QChartView; // used for non-watermark chart views if needed
+class QLineSeries;
+class QScatterSeries;
+class QTimer;
+class QValueAxis;
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -97,10 +109,19 @@ private slots:
     void onStopFeedClicked();
     void onStartAllClicked();
     void onStopAllClicked();
+    void appendTickSample(double mid);
+    void onTickChartFlash();
 
 private:
     // Node levels stored in the tree items via Qt::UserRole markers.
     enum class NodeType { Feed, FxPair };
+
+    static std::string synthetic_subject(const std::string& source_name);
+    void subscribeTickChart(const std::string& source_name);
+    void unsubscribeTickChart();
+    void refreshTickChart();
+    void startCacheSubscription(const std::string& source_name);
+    void stopCacheSubscription(const std::string& source_name);
 
     void setupUi();
     void setupToolbar();
@@ -132,6 +153,9 @@ private:
     [[nodiscard]] std::vector<synthetic::domain::fx_spot_generation_config> selectedFxPairs() const;
     [[nodiscard]] std::vector<synthetic::domain::fx_spot_generation_config>
         fxPairsForFeed(const std::string& feedId) const;
+
+    void startPairsAsync(std::vector<synthetic::domain::fx_spot_generation_config> pairs);
+    void stopPairsAsync(std::vector<synthetic::domain::fx_spot_generation_config> pairs);
 
     void markRunning(const std::vector<std::string>& sourceNames);
     void markStopped(const std::vector<std::string>& sourceNames);
@@ -198,6 +222,30 @@ private:
 
     // Currency ISO code -> display name, sourced from refdata for hero titles.
     std::unordered_map<std::string, std::string> currencyNames_;
+
+    // Synthetic tick chart embedded in the FX pair detail panel.
+    QWidget* tickChartContainer_{nullptr};
+    WatermarkChartView* tickChartView_{nullptr};
+    QLineSeries* tickSeries_{nullptr};
+    QScatterSeries* tickPosMarker_{nullptr};
+    QValueAxis* tickAxisX_{nullptr};
+    QValueAxis* tickAxisY_{nullptr};
+    QLabel* tickChartPlaceholder_{nullptr};
+    QTimer* tickFlashTimer_{nullptr};
+    std::deque<double> tickSamples_;
+    std::optional<nats::service::subscription> tickSubscription_;
+    // Alive flag shared with the NATS callback lambda. Set to false before
+    // destroying the subscription so any in-flight callback exits early,
+    // preventing use-after-free of the subscription closure.
+    std::shared_ptr<std::atomic<bool>> tickAlive_;
+    bool tickFlashBig_{false};
+
+    // Per-source tick cache: populated while a feed is running so switching
+    // back to a pair restores the chart immediately (no warm-up wait).
+    // Key = source_name, value = rolling deque of up to 1000 mid prices.
+    // Per-source buffered subscriptions: active while a feed is running,
+    // keeping the last 1000 raw messages so the chart warms up instantly.
+    std::map<std::string, nats::service::buffered_subscription> cacheSubscriptions_;
 
     bool loading_{false};
 };

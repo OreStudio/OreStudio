@@ -226,8 +226,11 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
                                            << ore_key_copy << ": " << e.what();
             }
 
-            // Republish on the official tenant-scoped stream
-            nats_.js_publish(publish_subject, msg.data);
+            // Only republish live ticks — skip replayed historical messages
+            // so downstream subscribers (grid, chart) don't get flooded on restart.
+            const auto age = std::chrono::system_clock::now() - tick->datetime;
+            if (age < std::chrono::seconds(30))
+                nats_.js_publish(publish_subject, msg.data);
         });
 
     subs_.emplace(source_name, std::move(sub));

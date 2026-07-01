@@ -33,9 +33,9 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-static constexpr auto k_live_threshold  = std::chrono::seconds(5);
-static constexpr auto k_stale_threshold = std::chrono::seconds(30);
-static constexpr int  k_stale_poll_ms  = 1000;
+static constexpr auto k_live_threshold  = std::chrono::seconds(10);
+static constexpr auto k_stale_threshold = std::chrono::seconds(60);
+static constexpr int  k_stale_poll_ms  = 2000;
 
 // ── badge colours ──────────────────────────────────────────────────────────
 static const QColor k_pending_bg      {100, 100, 100};
@@ -68,6 +68,15 @@ static QLabel* make_badge(QWidget* parent) {
     lbl->setAlignment(Qt::AlignCenter);
     lbl->setMinimumWidth(110);
     return lbl;
+}
+
+static QColor pair_color_for_status(FxSpotGridWindow::FeedStatus s) {
+    switch (s) {
+    case FxSpotGridWindow::FeedStatus::Live:         return k_up_color;
+    case FxSpotGridWindow::FeedStatus::Stale:        return QColor(200, 140, 0);
+    case FxSpotGridWindow::FeedStatus::Disconnected: return k_down_color;
+    default:                                         return k_flat_color;
+    }
 }
 
 static void apply_badge(QLabel* lbl, FxSpotGridWindow::FeedStatus s,
@@ -293,7 +302,12 @@ void FxSpotGridWindow::applyTick(const std::string& ore_key, double mid,
         midItem->setForeground(first ? k_flat_color : (up ? k_up_color : k_down_color));
     }
 
-    apply_badge(rs.badge, FeedStatus::Live, when);
+    if (rs.last_status != FeedStatus::Live) {
+        rs.last_status = FeedStatus::Live;
+        apply_badge(rs.badge, FeedStatus::Live, when);
+        if (auto* p = table_->item(rs.row, ColPair))
+            p->setForeground(pair_color_for_status(FeedStatus::Live));
+    }
 }
 
 void FxSpotGridWindow::onStaleCheck() {
@@ -301,8 +315,14 @@ void FxSpotGridWindow::onStaleCheck() {
         if (!rs.ever_ticked)
             continue;
         const auto status = deriveStatus(rs);
-        if (status != FeedStatus::Live)
+        // Always repaint STALE so the elapsed seconds counter updates.
+        // For other statuses, only repaint on transition.
+        if (status == FeedStatus::Stale || status != rs.last_status) {
+            rs.last_status = status;
             apply_badge(rs.badge, status, rs.last_tick);
+            if (auto* p = table_->item(rs.row, ColPair))
+                p->setForeground(pair_color_for_status(status));
+        }
     }
 }
 

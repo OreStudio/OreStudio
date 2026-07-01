@@ -471,6 +471,7 @@ void FxSpotChartWindow::addSample(qint64 ms, double mid) {
 }
 
 void FxSpotChartWindow::rebuildFromPoints() {
+    axisY_->setRange(0.0, 0.0); // reset so applyYRange sets unconditionally
     candles_.clear();
     for (const auto& p : samples_) {
         const qint64 ms = static_cast<qint64>(p.x());
@@ -491,15 +492,28 @@ void FxSpotChartWindow::rebuildFromPoints() {
 
 void FxSpotChartWindow::applyYRange(double minV, double maxV) {
     const double rawRange = maxV - minV;
-    const double pad = std::max(rawRange * 0.25, maxV * 0.001);
+    const double pad = std::max({rawRange * 0.5, maxV * 0.002, 0.002});
     const double pMin = minV - pad;
     const double pMax = maxV + pad;
     const double step = nice_step(pMax - pMin, 6);
     const double rMin = std::floor(pMin / step) * step;
     const double rMax = std::ceil(pMax / step) * step;
-    axisY_->setRange(rMin, rMax);
+
+    // Only expand — never shrink. Axis contracts only on explicit reload so
+    // the chart doesn't jump on every tick.
+    const double curMin = axisY_->min();
+    const double curMax = axisY_->max();
+    if (curMin == 0.0 && curMax == 0.0) {
+        // First call — set unconditionally.
+        axisY_->setRange(rMin, rMax);
+    } else {
+        const double newMin = std::min(rMin, curMin);
+        const double newMax = std::max(rMax, curMax);
+        if (newMin != curMin || newMax != curMax)
+            axisY_->setRange(newMin, newMax);
+    }
     axisY_->setTickType(QValueAxis::TicksDynamic);
-    axisY_->setTickAnchor(rMin);
+    axisY_->setTickAnchor(axisY_->min());
     axisY_->setTickInterval(step);
 }
 

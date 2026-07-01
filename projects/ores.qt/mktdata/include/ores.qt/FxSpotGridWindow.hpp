@@ -72,6 +72,7 @@ private:
         bool ever_ticked = false;
         std::chrono::system_clock::time_point last_tick{};
         QLabel* badge = nullptr;
+        FeedStatus last_status = FeedStatus::Pending;
         std::unique_ptr<marketdata::client::fx_spot_subscription> subscription;
     };
 

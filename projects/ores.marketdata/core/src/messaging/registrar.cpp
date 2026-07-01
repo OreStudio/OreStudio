@@ -25,6 +25,7 @@
 #include "ores.marketdata.core/messaging/market_fixing_handler.hpp"
 #include "ores.marketdata.core/messaging/market_observation_handler.hpp"
 #include "ores.marketdata.core/messaging/market_series_handler.hpp"
+#include "ores.marketdata.api/messaging/market_series_export_protocol.hpp"
 
 namespace ores::marketdata::messaging {
 
@@ -59,6 +60,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             h.remove(std::move(msg));
                                         }));
 
+    subs.push_back(nats.queue_subscribe(
+        std::string(export_market_data_to_storage_request::nats_subject),
+        queue,
+        [&nats, ctx, verifier, http_base_url](ores::nats::message msg) mutable {
+            market_series_handler h(nats, ctx, verifier);
+            h.export_to_storage(std::move(msg), http_base_url);
+        }));
+
     // Market observations
     subs.push_back(nats.queue_subscribe(std::string(get_market_observations_request::nats_subject),
                                         queue,
@@ -67,7 +76,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             h.list(std::move(msg));
                                         }));
 
-    subs.push_back(nats.queue_subscribe(std::string(save_market_observations_request::nats_subject),
+    subs.push_back(nats.queue_subscribe(std::string(save_market_observation_request::nats_subject),
                                         queue,
                                         [&nats, ctx, verifier](ores::nats::message msg) mutable {
                                             market_observation_handler h(nats, ctx, verifier);
@@ -75,7 +84,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         }));
 
     subs.push_back(
-        nats.queue_subscribe(std::string(delete_market_observations_request::nats_subject),
+        nats.queue_subscribe(std::string(delete_market_observation_request::nats_subject),
                              queue,
                              [&nats, ctx, verifier](ores::nats::message msg) mutable {
                                  market_observation_handler h(nats, ctx, verifier);
@@ -90,14 +99,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             h.list(std::move(msg));
                                         }));
 
-    subs.push_back(nats.queue_subscribe(std::string(save_market_fixings_request::nats_subject),
+    subs.push_back(nats.queue_subscribe(std::string(save_market_fixing_request::nats_subject),
                                         queue,
                                         [&nats, ctx, verifier](ores::nats::message msg) mutable {
                                             market_fixing_handler h(nats, ctx, verifier);
                                             h.save(std::move(msg));
                                         }));
 
-    subs.push_back(nats.queue_subscribe(std::string(delete_market_fixings_request::nats_subject),
+    subs.push_back(nats.queue_subscribe(std::string(delete_market_fixing_request::nats_subject),
                                         queue,
                                         [&nats, ctx, verifier](ores::nats::message msg) mutable {
                                             market_fixing_handler h(nats, ctx, verifier);
@@ -149,15 +158,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             import_handler h(nats, ctx, verifier);
                                             h.import(std::move(msg));
                                         }));
-
-    // Export to storage (report execution workflow)
-    subs.push_back(nats.queue_subscribe(
-        std::string(export_market_data_to_storage_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier, http_base_url](ores::nats::message msg) mutable {
-            market_series_handler h(nats, ctx, verifier, http_base_url);
-            h.export_to_storage(std::move(msg));
-        }));
 
     return subs;
 }

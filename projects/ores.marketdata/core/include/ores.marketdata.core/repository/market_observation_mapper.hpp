@@ -24,12 +24,11 @@
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/market_observation_entity.hpp"
-#include <vector>
 
 namespace ores::marketdata::repository {
 
 /**
- * @brief Maps market_observation domain entities to database entities and vice-versa.
+ * @brief Maps market_observation domain entities to data storage layer and vice-versa.
  */
 class ORES_MARKETDATA_CORE_EXPORT market_observation_mapper {
 private:

@@ -17,6 +17,7 @@
 {{#system_tenant_validation}}
 #include "ores.utility/uuid/tenant_id.hpp"
 {{/system_tenant_validation}}
+<<paste:F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F>>
 
 namespace ores::{{component}}::messaging {
 
@@ -255,10 +256,12 @@ public:
     }
 
 {{/extra_list_requests}}
+<<paste:B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F>>
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+<<paste:A1C3E5F7-8B2D-4A6E-9F1C-3D7B5E2A8C4D>>
 };
 
 } // namespace ores::{{component}}::messaging

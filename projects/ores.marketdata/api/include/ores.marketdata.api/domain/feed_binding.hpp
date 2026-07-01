@@ -57,6 +57,13 @@ struct feed_binding final {
     boost::uuids::uuid id;
 
     /**
+     * @brief Party that owns this feed binding.
+     *
+     * Set server-side from the authenticated session. Enforced by RLS.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
      * @brief Official ORE market data key for the series being bound (e.g. FX/RATE/EUR/USD).
      */
     std::string ore_key;

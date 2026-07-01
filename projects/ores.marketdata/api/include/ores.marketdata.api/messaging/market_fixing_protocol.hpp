@@ -21,44 +21,60 @@
 #define ORES_MARKETDATA_API_MESSAGING_MARKET_FIXING_PROTOCOL_HPP
 
 #include "ores.marketdata.api/domain/market_fixing.hpp"
+#include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::marketdata::messaging {
 
 struct get_market_fixings_request {
     using response_type = struct get_market_fixings_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.fixings.list";
-    std::string series_id;
-    std::string from_date; // ISO "YYYY-MM-DD", empty = no lower bound
-    std::string to_date;   // ISO "YYYY-MM-DD", empty = no upper bound
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_fixings.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_market_fixings_response {
-    std::vector<domain::market_fixing> fixings;
+    std::vector<ores::marketdata::domain::market_fixing> market_fixings;
     int total_available_count = 0;
-};
-
-struct save_market_fixings_request {
-    using response_type = struct save_market_fixings_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.fixings.save";
-    std::vector<domain::market_fixing> fixings;
-};
-
-struct save_market_fixings_response {
     bool success = false;
     std::string message;
-    int saved_count = 0;
 };
 
-struct delete_market_fixings_request {
-    using response_type = struct delete_market_fixings_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.fixings.delete";
-    std::string series_id;
+struct save_market_fixing_request {
+    using response_type = struct save_market_fixing_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_fixings.save";
+    ores::marketdata::domain::market_fixing data;
+
+    static save_market_fixing_request from(ores::marketdata::domain::market_fixing v) {
+        return {.data = std::move(v)};
+    }
 };
 
-struct delete_market_fixings_response {
+struct save_market_fixing_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_market_fixing_request {
+    using response_type = struct delete_market_fixing_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_fixings.delete";
+    std::vector<std::string> ids;
+};
+
+struct delete_market_fixing_response {
+    bool success = false;
+    std::string message;
+};
+
+struct get_market_fixing_history_request {
+    using response_type = struct get_market_fixing_history_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_fixings.history";
+    std::string id;
+};
+
+struct get_market_fixing_history_response {
+    std::vector<ores::marketdata::domain::market_fixing> history;
     bool success = false;
     std::string message;
 };

@@ -40,6 +40,20 @@ Surrogate UUID uniquely identifying this market series.
 
 * Natural keys
 
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Party that owns this market series.
+
+Set server-side from the authenticated session. Enforced by RLS.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
 ** series_type
 :PROPERTIES:
 :type:     text
@@ -70,7 +84,8 @@ Free-text qualifier disambiguating the series within type+metric (e.g. =EUR=,
 ** asset_class
 :PROPERTIES:
 :type:     text
-:cpp_type: std::string
+:cpp_type: domain::asset_class
+:is_enum:  true
 :nullable: false
 :END:
 
@@ -80,7 +95,8 @@ Coarse asset class taxonomy: =FX=, =RATES=, =CREDIT=, =EQUITY=, =COMMODITY=,
 ** series_subclass
 :PROPERTIES:
 :type:     text
-:cpp_type: std::string
+:cpp_type: domain::series_subclass
+:is_enum:  true
 :nullable: false
 :END:
 
@@ -135,9 +151,65 @@ fixing), false when it is curve/surface/matrix data.
 :entity_plural_words:   market series
 :END:
 
+*** read_latest_by_type
+:PROPERTIES:
+:ID: C4F82E58-B3D7-4A29-8F6E-1D9C0B2E7A41
+:END:
+
+Reads the latest market series matching =series_type=, =metric=, and
+=qualifier=. When =party_id= is non-empty, scopes the result to that
+party. Used by the ingest loop to find or create the series for each
+incoming tick.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::market_series> read_latest_by_type(context ctx,
+    const std::string& series_type, const std::string& metric,
+    const std::string& qualifier, const std::string& party_id = {});
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <string>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::market_series>
+market_series_repository::read_latest_by_type(context ctx, const std::string& series_type,
+                                              const std::string& metric,
+                                              const std::string& qualifier,
+                                              const std::string& party_id) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+
+    if (!party_id.empty()) {
+        const auto query = sqlgen::read<std::vector<market_series_entity>> |
+                           where("tenant_id"_c == tid && "party_id"_c == party_id &&
+                                 "valid_to"_c == max.value() &&
+                                 "series_type"_c == series_type && "metric"_c == metric &&
+                                 "qualifier"_c == qualifier) |
+                           order_by("id"_c);
+        return execute_read_query<market_series_entity, domain::market_series>(
+            ctx, query,
+            [](const auto& entities) { return market_series_mapper::map(entities); },
+            lg(), "Reading latest market series by type and party");
+    }
+
+    const auto query = sqlgen::read<std::vector<market_series_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value() &&
+                             "series_type"_c == series_type && "metric"_c == metric &&
+                             "qualifier"_c == qualifier) |
+                       order_by("id"_c);
+    return execute_read_query<market_series_entity, domain::market_series>(
+        ctx, query,
+        [](const auto& entities) { return market_series_mapper::map(entities); },
+        lg(), "Reading latest market series by type");
+}
+#+end_src
+
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include "ores.marketdata.api/domain/asset_class.hpp"
+#include "ores.marketdata.api/domain/series_subclass.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
@@ -147,6 +219,67 @@ fixing), false when it is curve/surface/matrix data.
 
 #+begin_src cpp :name includes
 #include <string>
+#+end_src
+
+** Handler: export_to_storage
+:PROPERTIES:
+:ID: D7A3F1E4-9B2C-4E8D-A5F0-3C6B1D8E2A7F
+:END:
+
+Handles =export_market_data_to_storage_request=: serialises all active
+market series for the tenant to msgpack, uploads to object storage, and
+returns the storage key. Used by the reporting workflow to gather market
+data for report generation. Not part of the CRUD surface — lives in a
+separate =market_series_export_protocol.hpp=.
+
+#+begin_src cpp :name handler_includes :implements F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
+#include "ores.marketdata.api/messaging/market_series_export_protocol.hpp"
+#include "ores.storage/net/storage_transfer.hpp"
+#include <rfl/msgpack.hpp>
+#+end_src
+
+#+begin_src cpp :name export_to_storage :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+    void export_to_storage(ores::nats::message msg, const std::string& http_base_url) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(market_series_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        export_market_data_to_storage_response resp;
+        try {
+            auto req = decode<export_market_data_to_storage_request>(msg);
+            if (!req) {
+                resp.message = "Failed to decode request.";
+                reply(nats_, msg, resp);
+                return;
+            }
+
+            service::market_series_service svc(ctx);
+            const auto total = svc.count_market_series();
+            const auto series = svc.list_market_series(0, total ? total : 1);
+
+            const auto blob = rfl::msgpack::write(series);
+            ores::storage::net::storage_transfer transfer(http_base_url);
+            transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
+
+            resp.success = true;
+            resp.series_count = static_cast<int>(series.size());
+            resp.storage_key = req->storage_key;
+            resp.message = "Exported " + std::to_string(series.size()) + " series to storage.";
+
+            BOOST_LOG_SEV(market_series_handler_lg(), info)
+                << "export_to_storage: exported " << series.size() << " series, " << blob.size()
+                << " bytes to " << req->storage_bucket << "/" << req->storage_key;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(market_series_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+    }
 #+end_src
 
 ** Conventions

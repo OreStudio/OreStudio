@@ -84,37 +84,42 @@ market_data_client::market_data_client(ores::nats::service::nats_client& nats)
     : nats_(nats) {}
 
 std::expected<std::vector<domain::market_series>, std::string>
-market_data_client::list_series(const std::string& series_type) {
+market_data_client::list_series(const std::string& /*series_type*/) {
     messaging::get_market_series_request req;
-    req.series_type = series_type;
     auto resp = send(nats_, req);
     if (!resp)
         return std::unexpected(resp.error());
-    return std::move(resp->series);
+    return std::move(resp->market_series);
 }
 
 std::expected<int, std::string>
 market_data_client::save_series(const std::vector<domain::market_series>& series) {
-    messaging::save_market_series_request req;
-    req.series = series;
-    auto resp = send(nats_, req);
-    if (!resp)
-        return std::unexpected(resp.error());
-    if (!resp->success)
-        return std::unexpected(resp->message.empty() ? "save_series failed" : resp->message);
-    return resp->saved_count;
+    int count = 0;
+    for (const auto& s : series) {
+        auto req = messaging::save_market_series_request::from(s);
+        auto resp = send(nats_, req);
+        if (!resp)
+            return std::unexpected(resp.error());
+        if (!resp->success)
+            return std::unexpected(resp->message.empty() ? "save_series failed" : resp->message);
+        ++count;
+    }
+    return count;
 }
 
 std::expected<int, std::string>
 market_data_client::save_observations(const std::vector<domain::market_observation>& observations) {
-    messaging::save_market_observations_request req;
-    req.observations = observations;
-    auto resp = send(nats_, req);
-    if (!resp)
-        return std::unexpected(resp.error());
-    if (!resp->success)
-        return std::unexpected(resp->message.empty() ? "save_observations failed" : resp->message);
-    return resp->saved_count;
+    int count = 0;
+    for (const auto& obs : observations) {
+        auto req = messaging::save_market_observation_request::from(obs);
+        auto resp = send(nats_, req);
+        if (!resp)
+            return std::unexpected(resp.error());
+        if (!resp->success)
+            return std::unexpected(resp->message.empty() ? "save_observations failed" : resp->message);
+        ++count;
+    }
+    return count;
 }
 
 }

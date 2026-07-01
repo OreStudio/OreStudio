@@ -58,8 +58,8 @@ TEST_CASE("create_fixing_with_valid_fields", tags) {
     CHECK(sut.fixing_date ==
           (std::chrono::year{2024} / std::chrono::month{3} / std::chrono::day{20}));
     CHECK(sut.value == "0.038940");
-    CHECK(sut.source.has_value());
-    CHECK(sut.source.value() == "ECB");
+    CHECK(!sut.source.empty());
+    CHECK(sut.source == "ECB");
 }
 
 TEST_CASE("create_fixing_without_source", tags) {
@@ -74,7 +74,7 @@ TEST_CASE("create_fixing_without_source", tags) {
     sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Fixing without source: " << sut;
 
-    CHECK(!sut.source.has_value());
+    CHECK(sut.source.empty());
     CHECK(sut.value == "0.052300");
 }
 

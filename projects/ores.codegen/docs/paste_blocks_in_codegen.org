@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 5BC3D6BB-1FBF-4FE2-91F5-D97021F07911
+:END:
+#+title: Paste blocks: injecting custom code into generated files
+#+description: How to use #+begin_src cpp :implements <UUID> paste blocks to add custom methods to generated repository files without losing them on regen.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:repository:paste:extensibility:
+#+created: 2026-07-01
+#+updated: 2026-07-01
+
+* Summary
+
+Codegen overwrites every generated file on each run.  Paste blocks are
+the mechanism for injecting hand-written C++ into those files in a way
+that survives regeneration.  Each injection point in a template is
+identified by a UUID marker (=<<paste:UUID>>=); any Babel block in the
+entity org model that carries a matching =:implements UUID= header
+argument contributes its body to that marker.  The pattern covers
+declarations (=.hpp=), implementations (=.cpp=), and extra =.cpp=
+includes.
+
+* Detail
+
+** How it works
+
+During code generation =core.py= collects all Babel blocks in the entity
+org model that carry an =:implements <UUID>= header argument.  After
+rendering the Mustache template it replaces each =<<paste:UUID>>= marker
+with the concatenated bodies of all matching blocks.
+
+The Babel block =:name= tag is for human navigation only.  The =:implements=
+tag is what codegen acts on.
+
+** Repository injection points
+
+The following paste UUIDs are defined for the repository profile.  Their
+canonical IDs live in [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta model]].
+
+| UUID                                    | Where injected                                      | Template                                                         |
+|-----------------------------------------+-----------------------------------------------------+------------------------------------------------------------------|
+| =DCA78C69-E508-48D9-9972-A9B8094D91FB= | Inside the repository class, before the closing =}= | [[id:6499F37D-73C3-4E3C-A5D8-6DE23D160D33][ores.cpp.repository.repository_header]]  |
+| =F2EB1914-5E94-42CA-9C77-46BDB364BF9E= | Near the end of =_repository.cpp=, before =}= of namespace | [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][ores.cpp.repository.repository_impl]]    |
+| =6141050C-0ED4-4680-B387-7DDDA3A69806= | Top of =_repository.cpp=, after the generated includes | [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][ores.cpp.repository.repository_impl]]    |
+
+** Recipe: adding a custom repository method
+
+Given an entity org model, add a heading under =** Repository= with a
+unique =:ID:=, then attach three Babel blocks:
+
+#+begin_src org
+*** read_latest_all_tenants
+:PROPERTIES:
+:ID: B3E91D47-A2C6-4F18-9E5D-7C8B0A1F6D32
+:END:
+
+Reads the latest records across all tenants (no tenant_id filter).
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::feed_binding> read_latest_all_tenants(context ctx);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <string>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::feed_binding>
+feed_binding_repository::read_latest_all_tenants(context ctx) {
+    ...
+}
+#+end_src
+#+end_src
+
+After editing the org model run:
+
+#+begin_src sh
+./compass.sh codegen entity generate <entity>
+#+end_src
+
+The generated =.hpp= will contain the declaration and the generated
+=.cpp= will contain the implementation — both survive all future regen
+runs.
+
+** Considerations
+
+- The =impl_includes= block can be omitted when no extra includes are
+  needed; codegen silently skips absent markers.
+- Multiple paste blocks with the same =:implements= UUID are
+  concatenated in document order.
+- =read_latest_all_tenants= is a good candidate for promotion to a
+  generated optional controlled by a flag in the entity org model
+  (e.g. =#+has_cross_tenant_read: true=), since the pattern is
+  identical across entities.  Tracked as a future codegen improvement.
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta model]] — defines the paste UUIDs and their semantics.
+- [[id:6499F37D-73C3-4E3C-A5D8-6DE23D160D33][ores.cpp.repository.repository_header]] — template that hosts the declaration paste point.
+- [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][ores.cpp.repository.repository_impl]] — template that hosts the impl and includes paste points.

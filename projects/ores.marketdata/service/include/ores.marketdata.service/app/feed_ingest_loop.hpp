@@ -67,7 +67,7 @@ public:
 
 private:
     void subscribe_binding(const std::string& ore_key, const std::string& source_name,
-                           const std::string& tenant_id_str);
+                           const std::string& tenant_id_str, const std::string& party_id_str);
     void unsubscribe_binding(const std::string& source_name);
     void status_loop();
     void log_status() const;

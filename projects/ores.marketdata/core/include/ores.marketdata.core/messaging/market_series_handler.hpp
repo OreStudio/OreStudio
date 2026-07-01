@@ -22,8 +22,8 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/messaging/market_series_export_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
-#include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/service/market_series_service.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -31,10 +31,6 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.storage/net/storage_transfer.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <algorithm>
 #include <optional>
 #include <rfl/msgpack.hpp>
 
@@ -52,125 +48,142 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
-using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
-class ORES_MARKETDATA_CORE_EXPORT market_series_handler {
+/**
+ * @brief NATS message handler for market series operations.
+ */
+class market_series_handler {
 public:
     market_series_handler(ores::nats::service::client& nats,
                           ores::database::context ctx,
-                          std::optional<ores::security::jwt::jwt_authenticator> verifier,
-                          std::string http_base_url = {})
+                          std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
-        , http_base_url_(std::move(http_base_url)) {}
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(market_series_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        auto req = decode<get_market_series_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
-        service::market_series_service svc(ctx);
+        const auto& req_ctx = *req_ctx_expected;
+        service::market_series_service svc(req_ctx);
         get_market_series_response resp;
-        try {
-            auto all = svc.list();
-            // Apply series_type filter if specified.
-            if (!req->series_type.empty()) {
-                all.erase(std::remove_if(
-                              all.begin(),
-                              all.end(),
-                              [&](const auto& s) { return s.series_type != req->series_type; }),
-                          all.end());
+        if (auto req = decode<get_market_series_request>(msg)) {
+            try {
+                resp.market_series = svc.list_market_series(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_market_series());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(market_series_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
             }
-            resp.total_available_count = static_cast<int>(all.size());
-            // Apply pagination.
-            const int offset = std::max(0, req->offset);
-            const int limit = req->limit > 0 ? req->limit : 1000;
-            const auto begin = std::min(offset, static_cast<int>(all.size()));
-            const auto end = std::min(begin + limit, static_cast<int>(all.size()));
-            resp.series.assign(all.begin() + begin, all.begin() + end);
-            BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Completed " << msg.subject;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(market_series_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+        } else {
+            BOOST_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
+        BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(market_series_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "marketdata::series:write")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_series:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        auto req = decode<save_market_series_request>(msg);
-        if (!req) {
+        service::market_series_service svc(req_ctx);
+        if (auto req = decode<save_market_series_request>(msg)) {
+            try {
+                svc.save_market_series(req->data);
+                BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, save_market_series_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(market_series_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(
+                    nats_, msg, save_market_series_response{.success = false, .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        service::market_series_service svc(ctx);
-        try {
-            svc.save(req->series);
-            BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_,
-                  msg,
-                  save_market_series_response{.success = true,
-                                              .saved_count = static_cast<int>(req->series.size())});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(market_series_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_market_series_response{.success = false, .message = e.what()});
+        const auto& req_ctx = *req_ctx_expected;
+        service::market_series_service svc(req_ctx);
+        if (auto req = decode<get_market_series_history_request>(msg)) {
+            try {
+                auto hist = svc.get_market_series_history(req->id);
+                BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_market_series_history_response{.history = std::move(hist),
+                                                         .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(market_series_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      get_market_series_history_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
     void remove(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(market_series_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "marketdata::series:delete")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_series:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        auto req = decode<delete_market_series_request>(msg);
-        if (!req) {
+        service::market_series_service svc(req_ctx);
+        if (auto req = decode<delete_market_series_request>(msg)) {
+            try {
+                svc.delete_market_series(req->ids);
+                BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_market_series_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(market_series_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      delete_market_series_response{.success = false, .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
-        service::market_series_service svc(ctx);
-        try {
-            svc.remove(boost::lexical_cast<boost::uuids::uuid>(req->id));
-            BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, delete_market_series_response{.success = true});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(market_series_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_market_series_response{.success = false, .message = e.what()});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
-    void export_to_storage(ores::nats::message msg) {
+    void export_to_storage(ores::nats::message msg, const std::string& http_base_url) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(market_series_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -189,10 +202,11 @@ public:
             }
 
             service::market_series_service svc(ctx);
-            const auto series = svc.list();
+            const auto total = svc.count_market_series();
+            const auto series = svc.list_market_series(0, total ? total : 1);
 
             const auto blob = rfl::msgpack::write(series);
-            ores::storage::net::storage_transfer transfer(http_base_url_);
+            ores::storage::net::storage_transfer transfer(http_base_url);
             transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
 
             resp.success = true;
@@ -202,7 +216,7 @@ public:
 
             BOOST_LOG_SEV(market_series_handler_lg(), info)
                 << "export_to_storage: exported " << series.size() << " series, " << blob.size()
-                << " bytes (pre-compression) to " << req->storage_bucket << "/" << req->storage_key;
+                << " bytes to " << req->storage_bucket << "/" << req->storage_key;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(market_series_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
@@ -215,8 +229,8 @@ private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
-    std::string http_base_url_;
 };
 
 } // namespace ores::marketdata::messaging
+
 #endif

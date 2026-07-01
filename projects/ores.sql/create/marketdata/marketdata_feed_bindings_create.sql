@@ -39,6 +39,7 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid not null,
     "ore_key" text not null,
     "source_name" text not null,
     "enabled" boolean not null,
@@ -61,8 +62,8 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists feed_bindings_ore_key_source_name_uniq_idx
-on "ores_marketdata_feed_bindings_tbl" (tenant_id, ore_key, source_name)
+create unique index if not exists feed_bindings_party_id_ore_key_source_name_uniq_idx
+on "ores_marketdata_feed_bindings_tbl" (tenant_id, party_id, ore_key, source_name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

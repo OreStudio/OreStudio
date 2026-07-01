@@ -21,17 +21,14 @@
 #define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/market_series_entity.hpp"
-#include <string>
-#include <vector>
 
 namespace ores::marketdata::repository {
 
 /**
- * @brief Maps market_series domain entities to database entities and vice-versa.
+ * @brief Maps market_series domain entities to data storage layer and vice-versa.
  */
 class ORES_MARKETDATA_CORE_EXPORT market_series_mapper {
 private:
@@ -44,8 +41,6 @@ private:
     }
 
 public:
-    static domain::asset_class asset_class_from_string(const std::string& s);
-
     static domain::market_series map(const market_series_entity& v);
     static market_series_entity map(const domain::market_series& v);
 

@@ -2,6 +2,7 @@
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.{{component_core}}/repository/{{entity_singular}}_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
 #include <ostream>
 #include <rfl.hpp>
@@ -18,6 +19,7 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v) {
 {{/domain_entity}}
 {{#junction}}
 #include "ores.{{component_core}}/repository/{{name_singular}}_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
 #include <ostream>
 #include <rfl.hpp>

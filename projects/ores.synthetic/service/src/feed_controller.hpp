@@ -276,7 +276,7 @@ private:
         s.metric = metric;
         s.qualifier = qualifier;
         s.asset_class = asset_class::fx;
-        s.subclass = series_subclass::spot;
+        s.series_subclass = series_subclass::spot;
         s.is_scalar = true;
         s.modified_by = "ores.synthetic.service";
         s.performed_by = "ores.synthetic.service";

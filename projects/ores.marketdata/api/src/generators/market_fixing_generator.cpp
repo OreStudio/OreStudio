@@ -18,43 +18,45 @@
  *
  */
 #include "ores.marketdata.api/generators/market_fixing_generator.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
-#include <format>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
 
-namespace ores::marketdata::generator {
+namespace ores::marketdata::generators {
+
+using ores::utility::generation::generation_keys;
 
 domain::market_fixing
-generate_synthetic_market_fixing(const boost::uuids::uuid& series_id,
-                                 utility::generation::generation_context& ctx) {
-    static std::atomic<int> counter{0};
-    const int n = ++counter;
-
-    // Use a fixed base date offset by n days so that successive calls always
-    // produce distinct fixing_date values.  This prevents spurious duplicate-key
-    // failures when multiple fixings for the same series are generated in one
-    // test, since the unique constraint covers (tenant_id, series_id, fixing_date).
-    using namespace std::chrono;
-    const auto base = sys_days{year{2025} / January / 1};
-    const auto dp = base - days{n};
+generate_synthetic_market_fixing(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::market_fixing r;
+    r.version = 1;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.series_id = series_id;
-    r.fixing_date = year_month_day{dp};
-    r.value = std::format("{:.6f}", 0.03 + 0.001 * n);
-    r.source = std::nullopt;
+    r.party_id = ctx.generate_uuid();
+    r.series_id = ctx.generate_uuid();
+    r.fixing_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
+    r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::market_fixing>
-generate_synthetic_market_fixings(std::size_t n,
-                                  const boost::uuids::uuid& series_id,
-                                  utility::generation::generation_context& ctx) {
+generate_synthetic_market_fixings(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::market_fixing> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_market_fixing(series_id, ctx));
+        r.push_back(generate_synthetic_market_fixing(ctx));
     return r;
 }
 

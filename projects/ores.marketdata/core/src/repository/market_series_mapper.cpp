@@ -22,121 +22,12 @@
 #include "ores.marketdata.api/domain/market_series_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <stdexcept>
+#include <rfl/enums.hpp>
 
 namespace ores::marketdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
-
-namespace {
-
-std::string to_string(domain::asset_class ac) {
-    switch (ac) {
-        case domain::asset_class::fx:
-            return "fx";
-        case domain::asset_class::rates:
-            return "rates";
-        case domain::asset_class::credit:
-            return "credit";
-        case domain::asset_class::equity:
-            return "equity";
-        case domain::asset_class::commodity:
-            return "commodity";
-        case domain::asset_class::inflation:
-            return "inflation";
-        case domain::asset_class::bond:
-            return "bond";
-        case domain::asset_class::cross_asset:
-            return "cross_asset";
-    }
-    throw std::logic_error("Unknown asset_class value");
-}
-
-
-std::string to_string(domain::series_subclass sc) {
-    switch (sc) {
-        case domain::series_subclass::spot:
-            return "spot";
-        case domain::series_subclass::forward:
-            return "forward";
-        case domain::series_subclass::volatility:
-            return "volatility";
-        case domain::series_subclass::yield:
-            return "yield";
-        case domain::series_subclass::basis:
-            return "basis";
-        case domain::series_subclass::fra:
-            return "fra";
-        case domain::series_subclass::xccy:
-            return "xccy";
-        case domain::series_subclass::spread:
-            return "spread";
-        case domain::series_subclass::index_credit:
-            return "index_credit";
-        case domain::series_subclass::recovery:
-            return "recovery";
-        case domain::series_subclass::swap:
-            return "swap";
-        case domain::series_subclass::capfloor:
-            return "capfloor";
-        case domain::series_subclass::seasonality:
-            return "seasonality";
-        case domain::series_subclass::price:
-            return "price";
-        case domain::series_subclass::correlation:
-            return "correlation";
-    }
-    throw std::logic_error("Unknown series_subclass value");
-}
-
-domain::series_subclass series_subclass_from_string(const std::string& s) {
-    if (s == "spot")
-        return domain::series_subclass::spot;
-    if (s == "forward")
-        return domain::series_subclass::forward;
-    if (s == "volatility")
-        return domain::series_subclass::volatility;
-    if (s == "yield")
-        return domain::series_subclass::yield;
-    if (s == "basis")
-        return domain::series_subclass::basis;
-    if (s == "fra")
-        return domain::series_subclass::fra;
-    if (s == "xccy")
-        return domain::series_subclass::xccy;
-    if (s == "spread")
-        return domain::series_subclass::spread;
-    if (s == "index_credit")
-        return domain::series_subclass::index_credit;
-    if (s == "recovery")
-        return domain::series_subclass::recovery;
-    if (s == "swap")
-        return domain::series_subclass::swap;
-    if (s == "capfloor")
-        return domain::series_subclass::capfloor;
-    if (s == "seasonality")
-        return domain::series_subclass::seasonality;
-    if (s == "price")
-        return domain::series_subclass::price;
-    if (s == "correlation")
-        return domain::series_subclass::correlation;
-    throw std::invalid_argument("Unknown series_subclass: " + s);
-}
-
-} // namespace
-
-domain::asset_class market_series_mapper::asset_class_from_string(const std::string& s) {
-    if (s == "fx")          return domain::asset_class::fx;
-    if (s == "rates")       return domain::asset_class::rates;
-    if (s == "credit")      return domain::asset_class::credit;
-    if (s == "equity")      return domain::asset_class::equity;
-    if (s == "commodity")   return domain::asset_class::commodity;
-    if (s == "inflation")   return domain::asset_class::inflation;
-    if (s == "bond")        return domain::asset_class::bond;
-    if (s == "cross_asset") return domain::asset_class::cross_asset;
-    throw std::invalid_argument("Unknown asset_class: " + s);
-}
 
 domain::market_series market_series_mapper::map(const market_series_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
@@ -145,11 +36,19 @@ domain::market_series market_series_mapper::map(const market_series_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+
+
     r.series_type = v.series_type;
+
+
     r.metric = v.metric;
+
+
     r.qualifier = v.qualifier;
-    r.asset_class = market_series_mapper::asset_class_from_string(v.asset_class);
-    r.subclass = series_subclass_from_string(v.series_subclass);
+
+    r.asset_class = rfl::string_to_enum<domain::asset_class>(v.asset_class).value();
+    r.series_subclass = rfl::string_to_enum<domain::series_subclass>(v.series_subclass).value();
     r.is_scalar = v.is_scalar;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -168,11 +67,19 @@ market_series_entity market_series_mapper::map(const domain::market_series& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
+
+
     r.series_type = v.series_type;
+
+
     r.metric = v.metric;
+
+
     r.qualifier = v.qualifier;
-    r.asset_class = to_string(v.asset_class);
-    r.series_subclass = to_string(v.subclass);
+
+    r.asset_class = rfl::enum_to_string(v.asset_class);
+    r.series_subclass = rfl::enum_to_string(v.series_subclass);
     r.is_scalar = v.is_scalar;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

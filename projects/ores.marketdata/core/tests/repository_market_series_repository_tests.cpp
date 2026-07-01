@@ -25,6 +25,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -35,7 +36,7 @@ const std::string tags("[repository]");
 }
 
 using namespace ores::logging;
-using namespace ores::marketdata::generator;
+using namespace ores::marketdata::generators;
 
 using ores::testing::database_helper;
 using ores::marketdata::repository::market_series_repository;
@@ -95,7 +96,7 @@ TEST_CASE("read_latest_market_series_by_id", tags) {
     const auto target = series.front();
     repo.write(h.context(), series);
 
-    auto read = repo.read_latest(h.context(), target.id);
+    auto read = repo.read_latest(h.context(), boost::uuids::to_string(target.id));
     BOOST_LOG_SEV(lg, debug) << "Read market series: " << read;
 
     REQUIRE(read.size() == 1);
@@ -133,7 +134,7 @@ TEST_CASE("read_all_versions_of_market_series", tags) {
     s.change_commentary = "second version";
     repo.write(h.context(), s);
 
-    auto all = repo.read_all(h.context(), s.id);
+    auto all = repo.read_all(h.context(), boost::uuids::to_string(s.id));
     BOOST_LOG_SEV(lg, debug) << "All versions: " << all;
 
     CHECK(all.size() >= 2);
@@ -149,12 +150,12 @@ TEST_CASE("remove_market_series", tags) {
     auto s = generate_synthetic_market_series(ctx);
     repo.write(h.context(), s);
 
-    auto before = repo.read_latest(h.context(), s.id);
+    auto before = repo.read_latest(h.context(), boost::uuids::to_string(s.id));
     REQUIRE(!before.empty());
 
-    CHECK_NOTHROW(repo.remove(h.context(), s.id));
+    CHECK_NOTHROW(repo.remove(h.context(), boost::uuids::to_string(s.id)));
 
-    auto after = repo.read_latest(h.context(), s.id);
+    auto after = repo.read_latest(h.context(), boost::uuids::to_string(s.id));
     BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.empty());
 }

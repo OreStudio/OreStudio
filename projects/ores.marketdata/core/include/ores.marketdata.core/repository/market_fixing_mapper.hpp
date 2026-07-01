@@ -24,12 +24,11 @@
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/market_fixing_entity.hpp"
-#include <vector>
 
 namespace ores::marketdata::repository {
 
 /**
- * @brief Maps market_fixing domain entities to database entities and vice-versa.
+ * @brief Maps market_fixing domain entities to data storage layer and vice-versa.
  */
 class ORES_MARKETDATA_CORE_EXPORT market_fixing_mapper {
 private:

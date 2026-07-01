@@ -23,25 +23,21 @@
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <vector>
 
-namespace ores::marketdata::generator {
+namespace ores::marketdata::generators {
 
 /**
- * @brief Generates a synthetic market_fixing for the given series.
+ * @brief Generates a synthetic market_fixing.
  */
 ORES_MARKETDATA_API_EXPORT domain::market_fixing
-generate_synthetic_market_fixing(const boost::uuids::uuid& series_id,
-                                 utility::generation::generation_context& ctx);
+generate_synthetic_market_fixing(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic market_fixings for the given series.
+ * @brief Generates N synthetic market_fixings.
  */
 ORES_MARKETDATA_API_EXPORT std::vector<domain::market_fixing>
-generate_synthetic_market_fixings(std::size_t n,
-                                  const boost::uuids::uuid& series_id,
-                                  utility::generation::generation_context& ctx);
+generate_synthetic_market_fixings(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

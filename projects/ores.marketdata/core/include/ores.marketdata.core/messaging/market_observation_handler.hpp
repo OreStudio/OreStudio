@@ -23,17 +23,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
-#include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/service/market_observation_service.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <optional>
 
 namespace ores::marketdata::messaging {
@@ -50,10 +45,12 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
-using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
-class ORES_MARKETDATA_CORE_EXPORT market_observation_handler {
+/**
+ * @brief NATS message handler for market observation operations.
+ */
+class market_observation_handler {
 public:
     market_observation_handler(ores::nats::service::client& nats,
                                ores::database::context ctx,
@@ -63,109 +60,132 @@ public:
         , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(market_observation_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(market_observation_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        auto req = decode<get_market_observations_request>(msg);
-        if (!req) {
+        const auto& req_ctx = *req_ctx_expected;
+        service::market_observation_service svc(req_ctx);
+        get_market_observations_response resp;
+        if (auto req = decode<get_market_observations_request>(msg)) {
+            try {
+                resp.market_observations = svc.list_market_observations(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_market_observations());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(market_observation_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
             BOOST_LOG_SEV(market_observation_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::market_observation_service svc(ctx);
-        try {
-            get_market_observations_response resp;
-            const auto sid = boost::lexical_cast<boost::uuids::uuid>(req->series_id);
-            if (!req->from_datetime.empty() && !req->to_datetime.empty()) {
-                const auto from =
-                    ores::platform::time::datetime::from_iso8601_utc(req->from_datetime);
-                const auto to = ores::platform::time::datetime::from_iso8601_utc(req->to_datetime);
-                resp.observations = svc.list(sid, from, to);
-            } else {
-                resp.observations = svc.list(sid);
+        BOOST_LOG_SEV(market_observation_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void save(ores::nats::message msg) {
+        BOOST_LOG_SEV(market_observation_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_observations:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::market_observation_service svc(req_ctx);
+        if (auto req = decode<save_market_observation_request>(msg)) {
+            try {
+                svc.save_market_observation(req->data);
+                BOOST_LOG_SEV(market_observation_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, save_market_observation_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(market_observation_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      save_market_observation_response{.success = false, .message = e.what()});
             }
-            resp.total_available_count = static_cast<int>(resp.observations.size());
-            BOOST_LOG_SEV(market_observation_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(market_observation_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+        } else {
+            BOOST_LOG_SEV(market_observation_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
-    void save(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(market_observation_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(market_observation_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "marketdata::observations:write")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        auto req = decode<save_market_observations_request>(msg);
-        if (!req) {
+        const auto& req_ctx = *req_ctx_expected;
+        service::market_observation_service svc(req_ctx);
+        if (auto req = decode<get_market_observation_history_request>(msg)) {
+            try {
+                auto hist = svc.get_market_observation_history(req->id);
+                BOOST_LOG_SEV(market_observation_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_market_observation_history_response{.history = std::move(hist),
+                                                              .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(market_observation_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(
+                    nats_,
+                    msg,
+                    get_market_observation_history_response{.success = false, .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(market_observation_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
-            return;
-        }
-        service::market_observation_service svc(ctx);
-        try {
-            svc.save(req->observations);
-            BOOST_LOG_SEV(market_observation_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_,
-                  msg,
-                  save_market_observations_response{
-                      .success = true, .saved_count = static_cast<int>(req->observations.size())});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(market_observation_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_,
-                  msg,
-                  save_market_observations_response{.success = false, .message = e.what()});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
     void remove(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(market_observation_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(market_observation_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "marketdata::observations:delete")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_observations:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        auto req = decode<delete_market_observations_request>(msg);
-        if (!req) {
+        service::market_observation_service svc(req_ctx);
+        if (auto req = decode<delete_market_observation_request>(msg)) {
+            try {
+                svc.delete_market_observations(req->ids);
+                BOOST_LOG_SEV(market_observation_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, delete_market_observation_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(market_observation_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      delete_market_observation_response{.success = false, .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(market_observation_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
-            return;
-        }
-        service::market_observation_service svc(ctx);
-        try {
-            const auto sid = boost::lexical_cast<boost::uuids::uuid>(req->series_id);
-            svc.remove(sid);
-            BOOST_LOG_SEV(market_observation_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, delete_market_observations_response{.success = true});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(market_observation_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_,
-                  msg,
-                  delete_market_observations_response{.success = false, .message = e.what()});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
@@ -176,4 +196,5 @@ private:
 };
 
 } // namespace ores::marketdata::messaging
+
 #endif

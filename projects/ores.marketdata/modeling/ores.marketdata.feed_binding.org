@@ -42,6 +42,20 @@ Surrogate UUID uniquely identifying this feed binding.
 
 * Natural keys
 
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Party that owns this feed binding.
+
+Set server-side from the authenticated session. Enforced by RLS.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
 ** ore_key
 :PROPERTIES:
 :type:     text
@@ -101,6 +115,36 @@ binding. Setting to false suspends ingestion without removing the binding record
 :entity_singular_words: feed binding
 :entity_plural_words:   feed bindings
 :END:
+
+*** read_latest_all_tenants
+:PROPERTIES:
+:ID: B3E91D47-A2C6-4F18-9E5D-7C8B0A1F6D32
+:END:
+
+Reads the latest feed bindings across all tenants. Used by the ingest
+loop which must subscribe to all active bindings regardless of tenant.
+Skips the tenant_id filter and queries only on =valid_to == max=.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::feed_binding> read_latest_all_tenants(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::feed_binding>
+feed_binding_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<feed_binding_entity>> |
+                       where("valid_to"_c == max.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<feed_binding_entity, domain::feed_binding>(
+        ctx,
+        query,
+        [](const auto& entities) { return feed_binding_mapper::map(entities); },
+        lg(),
+        "Reading latest feed bindings across all tenants");
+}
+#+end_src
 
 ** Domain includes
 

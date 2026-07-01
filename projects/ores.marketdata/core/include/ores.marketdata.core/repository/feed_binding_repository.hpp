@@ -66,7 +66,6 @@ public:
      */
     /**@{*/
     std::vector<domain::feed_binding> read_latest(context ctx);
-    std::vector<domain::feed_binding> read_latest_all_tenants(context ctx);
     std::vector<domain::feed_binding> read_latest(context ctx, const std::string& id);
     /**@}*/
 
@@ -100,6 +99,8 @@ public:
      * @brief Deletes feed bindings by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& ids);
+
+    std::vector<domain::feed_binding> read_latest_all_tenants(context ctx);
 };
 
 }

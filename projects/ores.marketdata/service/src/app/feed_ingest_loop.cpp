@@ -24,15 +24,17 @@
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
-#include "ores.marketdata.core/repository/market_series_mapper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.nats/domain/message.hpp"
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <rfl/json.hpp>
 #include <algorithm>
 #include <chrono>
 #include <format>
+#include <rfl/enums.hpp>
 #include <set>
 #include <stdexcept>
 
@@ -118,7 +120,8 @@ void feed_ingest_loop::refresh() {
     // Subscribe anything new
     for (const auto& b : bindings) {
         if (b.enabled && !subs_.contains(b.source_name))
-            subscribe_binding(b.ore_key, b.source_name, b.tenant_id.to_string());
+            subscribe_binding(b.ore_key, b.source_name, b.tenant_id.to_string(),
+                              boost::uuids::to_string(b.party_id));
     }
 
     BOOST_LOG_SEV(lg(), info) << "Feed ingest loop: " << subs_.size() << " active subscription(s)";
@@ -126,7 +129,8 @@ void feed_ingest_loop::refresh() {
 
 void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
                                          const std::string& source_name,
-                                         const std::string& tenant_id_str) {
+                                         const std::string& tenant_id_str,
+                                         const std::string& party_id_str) {
     const std::string producer_subject = "synthetic.v1.tick." + source_name;
     const std::string publish_subject = ore_key_to_publish_subject(tenant_id_str, ore_key);
     const std::string ore_key_copy = ore_key;
@@ -145,6 +149,7 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
     }
 
     boost::uuids::random_generator uuid_gen;
+    const auto party_uuid = boost::lexical_cast<boost::uuids::uuid>(party_id_str);
 
     const std::string durable = make_durable_name(source_name);
     auto tenant_ctx = ctx_.with_tenant(
@@ -153,7 +158,7 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
     auto sub = nats_.js_subscribe(
         producer_subject,
         durable,
-        [this, ore_key_copy, publish_subject, uuid_gen, st,
+        [this, ore_key_copy, publish_subject, uuid_gen, st, party_uuid,
          tenant_ctx = std::move(tenant_ctx)](ores::nats::message msg) mutable {
             auto tick = rfl::json::read<domain::fx_spot_tick>(
                 ores::nats::as_string_view(msg.data));
@@ -179,7 +184,8 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
                 const auto kp = parse_ore_key(ore_key_copy);
                 repository::market_series_repository series_repo;
                 auto existing = series_repo.read_latest_by_type(
-                    tenant_ctx, kp.series_type, kp.metric, kp.qualifier);
+                    tenant_ctx, kp.series_type, kp.metric, kp.qualifier,
+                    boost::uuids::to_string(party_uuid));
                 if (existing.empty()) {
                     BOOST_LOG_SEV(lg(), info) << "Auto-creating market series for "
                                               << ore_key_copy;
@@ -189,10 +195,12 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
                     domain::market_series series;
                     series.id = uuid_gen();
                     series.tenant_id = tenant_ctx.tenant_id();
+                    series.party_id = party_uuid;
                     series.series_type = kp.series_type;
                     series.metric = kp.metric;
                     series.qualifier = kp.qualifier;
-                    series.asset_class = repository::market_series_mapper::asset_class_from_string(ac_str);
+                    series.asset_class = rfl::string_to_enum<domain::asset_class>(ac_str).value_or(domain::asset_class::fx);
+                    series.series_subclass = rfl::string_to_enum<domain::series_subclass>(ac_str).value_or(domain::series_subclass::spot);
                     series.is_scalar = true;
                     series_repo.write(tenant_ctx, series);
                     existing.push_back(std::move(series));
@@ -201,6 +209,7 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
                 domain::market_observation obs;
                 obs.id = uuid_gen();
                 obs.tenant_id = tenant_ctx.tenant_id();
+                obs.party_id = party_uuid;
                 obs.series_id = existing.front().id;
                 obs.observation_datetime = tick->datetime;
                 obs.value = tick->mid;

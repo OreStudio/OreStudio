@@ -21,41 +21,45 @@
 #define ORES_MARKETDATA_API_MESSAGING_MARKET_SERIES_PROTOCOL_HPP
 
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::marketdata::messaging {
 
 struct get_market_series_request {
     using response_type = struct get_market_series_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.series.list";
-    int offset = 0;
-    int limit = 1000;
-    std::string series_type; // empty = all types
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_series.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_market_series_response {
-    std::vector<domain::market_series> series;
+    std::vector<ores::marketdata::domain::market_series> market_series;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_market_series_request {
     using response_type = struct save_market_series_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.series.save";
-    std::vector<domain::market_series> series;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_series.save";
+    ores::marketdata::domain::market_series data;
+
+    static save_market_series_request from(ores::marketdata::domain::market_series v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_market_series_response {
     bool success = false;
     std::string message;
-    int saved_count = 0;
 };
 
 struct delete_market_series_request {
     using response_type = struct delete_market_series_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.series.delete";
-    std::string id;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_series.delete";
+    std::vector<std::string> ids;
 };
 
 struct delete_market_series_response {
@@ -63,26 +67,16 @@ struct delete_market_series_response {
     std::string message;
 };
 
-/**
- * @brief Exports all market data series to object storage.
- *
- * The handler fetches all series for the tenant, serialises to MsgPack,
- * compresses with gzip, and uploads to storage. Returns the storage key
- * and series count. Used by the report execution workflow.
- */
-struct export_market_data_to_storage_request {
-    using response_type = struct export_market_data_to_storage_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.series.export-to-storage";
-
-    std::string storage_bucket;
-    std::string storage_key;
+struct get_market_series_history_request {
+    using response_type = struct get_market_series_history_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_series.history";
+    std::string id;
 };
 
-struct export_market_data_to_storage_response {
+struct get_market_series_history_response {
+    std::vector<ores::marketdata::domain::market_series> history;
     bool success = false;
     std::string message;
-    int series_count = 0;
-    std::string storage_key;
 };
 
 }

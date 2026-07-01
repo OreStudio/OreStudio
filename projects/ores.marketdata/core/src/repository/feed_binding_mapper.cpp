@@ -35,8 +35,14 @@ domain::feed_binding feed_binding_mapper::map(const feed_binding_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+
+
     r.ore_key = v.ore_key;
+
+
     r.source_name = v.source_name;
+
     r.enabled = v.enabled;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -55,8 +61,14 @@ feed_binding_entity feed_binding_mapper::map(const domain::feed_binding& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
+
+
     r.ore_key = v.ore_key;
+
+
     r.source_name = v.source_name;
+
     r.enabled = v.enabled;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

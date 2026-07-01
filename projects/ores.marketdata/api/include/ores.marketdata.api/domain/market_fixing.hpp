@@ -29,21 +29,23 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief Historical realisation of an index on a specific fixing date.
+ * @brief Historical index realisation (fixing) for a given series and date; TimescaleDB hypertable
+ * partitioned by fixing_date.
  *
- * Fixings are the published historical values of floating rate indices
- * (e.g. EURIBOR 3M on 2024-03-20 = 3.894%). They are modelled separately
- * from forward-looking observations but share the same series catalog.
+ * A historical index fixing: the official value of a fixing index (identified via
+ * series_id) on a given fixing_date. Separate from observations: fixings are
+ * historical facts (e.g. EUR-EURIBOR-3M fixed at X on date Y) rather than
+ * forward-looking curve points.
  *
- * Stored in a TimescaleDB hypertable partitioned by fixing_date.
- * Corrections are handled via the same soft-update insert trigger pattern as
- * market_observation.
+ * TimescaleDB hypertable partitioned by fixing_date with 30-day chunks.
+ * Corrections use the soft-update/soft-delete pattern (no GIST, no DELETE RULEs).
+ * No audit trail columns — volume makes them impractical.
  */
 struct market_fixing final {
     /**
-     * @brief Unique identifier for this fixing row.
+     * @brief Version number for optimistic locking and change tracking.
      */
-    boost::uuids::uuid id{};
+    int version = 0;
 
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
@@ -51,29 +53,61 @@ struct market_fixing final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Foreign key to the parent market_series (the index).
+     * @brief Surrogate UUID uniquely identifying this fixing row.
      */
-    boost::uuids::uuid series_id{};
+    boost::uuids::uuid id;
 
     /**
-     * @brief The date on which the index fixing was published.
+     * @brief Party that owns this fixing.
+     *
+     * Set server-side from the authenticated session. Enforced by RLS.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
+     * @brief Reference to ores_marketdata_market_series_tbl(id) — identifies the fixing index.
+     */
+    boost::uuids::uuid series_id;
+
+    /**
+     * @brief Calendar date on which the index was fixed. Also the hypertable partition column.
      */
     std::chrono::year_month_day fixing_date;
 
     /**
-     * @brief The published fixing value as a string (e.g. "0.038940").
+     * @brief Serialised fixing value (numeric string).
      */
     std::string value;
 
     /**
-     * @brief Optional data source identifier (e.g. "BLOOMBERG", "ECB").
+     * @brief Source tag identifying the feed or authority that published this fixing.
      */
-    std::optional<std::string> source;
+    std::string source;
 
     /**
-     * @brief Transaction time: when this row was inserted into the system.
+     * @brief Username of the person who last modified this market fixing.
+     */
+    std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
      *
-     * Maps to valid_from in the database; valid_to is managed internally.
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
 };

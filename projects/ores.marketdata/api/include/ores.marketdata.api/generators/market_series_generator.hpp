@@ -25,7 +25,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include <vector>
 
-namespace ores::marketdata::generator {
+namespace ores::marketdata::generators {
 
 /**
  * @brief Generates a synthetic market_series.
@@ -34,7 +34,7 @@ ORES_MARKETDATA_API_EXPORT domain::market_series
 generate_synthetic_market_series(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic market_series instances.
+ * @brief Generates N synthetic market_series.
  */
 ORES_MARKETDATA_API_EXPORT std::vector<domain::market_series>
 generate_synthetic_market_series(std::size_t n, utility::generation::generation_context& ctx);

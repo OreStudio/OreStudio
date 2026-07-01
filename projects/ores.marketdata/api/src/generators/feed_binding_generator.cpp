@@ -40,6 +40,7 @@ domain::feed_binding generate_synthetic_feed_binding(utility::generation::genera
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.party_id = ctx.generate_uuid();
     r.ore_key = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.source_name = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.modified_by = modified_by;

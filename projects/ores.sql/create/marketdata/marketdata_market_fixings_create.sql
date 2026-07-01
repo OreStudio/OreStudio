@@ -37,6 +37,7 @@
 create table if not exists "ores_marketdata_market_fixings_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
+    "party_id" uuid not null,
     "series_id" uuid not null,
     "fixing_date" date not null,
     "value" text not null,
@@ -52,17 +53,17 @@ create table if not exists "ores_marketdata_market_fixings_tbl" (
 
 
 create unique index if not exists market_fixings_fixings_current_uniq_idx
-on "ores_marketdata_market_fixings_tbl" (tenant_id, series_id, fixing_date)
+on "ores_marketdata_market_fixings_tbl" (tenant_id, party_id, series_id, fixing_date)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists market_fixings_fixings_series_date_idx
-on "ores_marketdata_market_fixings_tbl" (tenant_id, series_id, fixing_date desc);
+on "ores_marketdata_market_fixings_tbl" (tenant_id, party_id, series_id, fixing_date desc);
 
 create index if not exists market_fixings_fixings_tenant_date_idx
-on "ores_marketdata_market_fixings_tbl" (tenant_id, fixing_date desc);
+on "ores_marketdata_market_fixings_tbl" (tenant_id, party_id, fixing_date desc);
 
 create index if not exists market_fixings_fixings_source_idx
-on "ores_marketdata_market_fixings_tbl" (tenant_id, source, fixing_date desc)
+on "ores_marketdata_market_fixings_tbl" (tenant_id, party_id, source, fixing_date desc)
 where source is not null;
 
 create or replace function ores_marketdata_market_fixings_insert_fn()
@@ -73,6 +74,7 @@ begin
     update "ores_marketdata_market_fixings_tbl"
     set valid_to = current_timestamp
     where tenant_id = new.tenant_id
+      and party_id = new.party_id
       and series_id = new.series_id
       and fixing_date = new.fixing_date
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -94,6 +96,7 @@ begin
     update "ores_marketdata_market_fixings_tbl"
     set valid_to = current_timestamp
     where tenant_id = old.tenant_id
+      and party_id = old.party_id
       and series_id = old.series_id
       and fixing_date = old.fixing_date
       and valid_to = ores_utility_infinity_timestamp_fn();

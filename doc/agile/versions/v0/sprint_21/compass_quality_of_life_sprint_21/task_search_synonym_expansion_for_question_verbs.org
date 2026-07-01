@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
 #+owner: marco
 #+branch: feature/search-synonym-expansion-for-question-verbs
-#+pr:
+#+pr: 1392
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-30
@@ -67,7 +67,7 @@ Updated =_title_fts_ranks()= in =compass.py= to accept an optional
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1392][#1392]] | [compass] search: expand question-verb synonyms in full-pass title ranking |
 
 * Review
 

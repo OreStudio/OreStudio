@@ -723,11 +723,15 @@ def cmd_search(args):
             _w_overrides['dropout_ratio'] = args.dropout
         _scorer_weights = search_scorer.Weights(**_w_overrides)
 
-        def _title_fts_ranks(word_list: list[str]) -> dict[str, int]:
-            if not word_list:
+        def _title_fts_ranks(word_list: list[str],
+                             fts_expr: str = "") -> dict[str, int]:
+            if fts_expr:
+                q = fts_expr
+            elif word_list:
+                q = " AND ".join(
+                    f"{{title description}} : {w}*" for w in word_list)
+            else:
                 return {}
-            q = " AND ".join(
-                f"{{title description}} : {w}*" for w in word_list)
             ranks: dict[str, int] = {}
             try:
                 rows = compass_conn.execute(
@@ -744,7 +748,7 @@ def cmd_search(args):
             return ranks
 
         _core_rank = _title_fts_ranks(_qplan.core_words)
-        _full_rank = _title_fts_ranks(_qplan.full_words)
+        _full_rank = _title_fts_ranks([], fts_expr=_qplan.full_fts_expr)
 
         # Derive affinity sets from ui.BUCKET_AFFINITY so new doctypes
         # registered there are automatically included here.

@@ -63,6 +63,28 @@ _QUESTION_STARTERS: frozenset[str] = frozenset({
 # original.  The original is always kept — values are extras only.
 # E.g. "rebuild": ["build", "deploy"] means a query for "rebuild" searches
 # "rebuild* OR build* OR deploy*".  Add both directions explicitly when needed.
+#
+# QUESTION_VERB_SYNONYMS: clusters of interchangeable question verbs.
+# Used in QueryPlan to expand stripped verbs in the full-pass title query.
+# "how do I create a sprint?" → full pass also matches "open/start/make a sprint".
+# Each cluster is a frozenset; membership is bidirectional by construction.
+QUESTION_VERB_SYNONYMS: dict[str, frozenset[str]] = {}
+_VERB_CLUSTERS: list[frozenset[str]] = [
+    frozenset({"create", "make", "add", "open", "start", "scaffold", "init",
+               "initialise", "initialize", "bootstrap", "build", "generate",
+               "write", "define", "implement"}),
+    frozenset({"remove", "delete", "close", "stop", "disable"}),
+    frozenset({"update", "edit", "change", "set", "configure", "reset",
+               "restore", "fix"}),
+    frozenset({"show", "view", "see", "list", "find", "get", "read",
+               "display", "check"}),
+    frozenset({"run", "execute", "apply", "load", "go"}),
+    frozenset({"move", "switch", "go"}),
+]
+for _cluster in _VERB_CLUSTERS:
+    for _verb in _cluster:
+        QUESTION_VERB_SYNONYMS[_verb] = _cluster - {_verb}
+
 SYNONYMS: dict[str, list[str]] = {
     "rebuild":    ["build", "deploy"],
     "build":      ["rebuild", "deploy"],
@@ -114,6 +136,7 @@ class QueryPlan:
     tokens_expanded: list[str]  # synonym-expanded; use for OR body FTS queries
     core_words: list[str]       # tokens minus question verbs — for title AND queries
     full_words: list[str]       # all tokens — hook for future divergence from core_words
+    full_fts_expr: str          # FTS expr: non-verb words ANDed, verb synonyms OR-grouped
     is_question: bool
     is_how_do: bool
     is_folder_slug: bool        # single underscore-joined slug token
@@ -129,6 +152,23 @@ class QueryPlan:
         # Full expansion for body OR queries ("rebuild" → rebuild+build+deploy).
         tokens_expanded = expand_synonyms(raw_tokens)
         core_words = [w for w in tokens if w not in QUESTION_VERBS]
+        full_words = tokens
+        # Build the full-pass FTS expression: non-verb content words are ANDed
+        # as usual; each question verb becomes an OR group with its cluster
+        # synonyms so "create" also title-matches docs that say "open" or "start".
+        # E.g. "how do I create a sprint" →
+        #   ({title description}: sprint*) AND
+        #   ({title description}: create* OR {title description}: open* OR ...)
+        _fts_parts: list[str] = []
+        for w in tokens:
+            if w in QUESTION_VERB_SYNONYMS:
+                cluster = [w] + sorted(QUESTION_VERB_SYNONYMS[w])
+                or_group = " OR ".join(
+                    f"{{title description}}: {sv}*" for sv in cluster)
+                _fts_parts.append(f"({or_group})")
+            else:
+                _fts_parts.append(f"{{title description}}: {w}*")
+        full_fts_expr = " AND ".join(_fts_parts)
         q = query.strip().lower()
         q_words = q.split()
         is_question = q.endswith("?") or (
@@ -145,7 +185,8 @@ class QueryPlan:
             tokens=tokens,
             tokens_expanded=tokens_expanded,
             core_words=core_words,
-            full_words=tokens,
+            full_words=full_words,
+            full_fts_expr=full_fts_expr,
             is_question=is_question,
             is_how_do=is_how_do,
             is_folder_slug=is_folder_slug,

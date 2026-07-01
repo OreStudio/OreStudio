@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :ores.qt:marketdata:ui:source_agnostic_control_panel:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/qt-fx-spot-grid
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Add an FX spot grid (named per trading-system conventions) listing all system fe
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DE2F85D0-9238-41EA-9C2F-A42D37AEEB3D][Source-agnostic market data control panel]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -21,11 +21,11 @@ Improve compass quality of life with a mix of UX enhancements and bug fixes surf
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-06-30                               |
 
 * Acceptance
@@ -51,6 +51,29 @@ Improve compass quality of life with a mix of UX enhancements and bug fixes surf
 | [[id:8C8A7CBE-8986-4FF3-BB47-318F9D683C71][Compass search: explicit weighted scoring model]] | DONE | | 2026-06-30 | Replace the ad-hoc core/full/body label system with a formal scoring pipeline: each signal (title-core match, title-full match, body FTS, exact phrase, type boost) is normalised to [0,1] and combined with explicit weights to produce a percentage score. Threshold filtering removes low-confidence noise. The scorer is extracted into a standalone testable function so the algorithm can be evaluated against a corpus and tuned. |
 | [[id:7110094D-20FC-473C-B0C9-DF2270D93F82][compass heading: skip stories owned by another environment]] | DONE | 2026-06-30 | 2026-06-30 | compass heading recommends tasks regardless of which environment started them. Tasks and stories are stamped with #+environment: at task start. heading should read this field and deprioritise (or skip) items whose environment differs from the current ORES_CHECKOUT_LABEL, so two environments working the same sprint do not compete for the same stories. |
 | [[id:DDAFAC96-8BA1-4CC3-91A9-3B8A905781A6][Add compass db status command]] | DONE | 2026-06-30 | 2026-06-30 | Extract the database info block from compass bearings into a standalone compass db status command that gives a full database health overview: restore date, schema version/drift, bootstrap mode, non-system tenants, party count, and anything else useful for diagnosing the DB state. |
+
+* Result
+
+14 tasks delivered across PR #1375 through #1392.
+
+UX and discoverability:
+- Bucketed search results (recipes / now / historic) with per-bucket caps
+- =compass where= shows blocked dependency tree with root causes and =#+environment:= per item
+- =compass bearings= gains =--limit= and surfaces =compass heading= next-action
+- =compass heading= respects task table order, detects stale STARTED state, and skips cross-environment stories
+- =compass db status= standalone DB health command (schema drift, bootstrap mode, tenants, data counts)
+- =compass search --related= link-graph neighbour panel (opt-in, =--related-limit= configurable)
+- Question-verb synonym expansion in full-pass title ranking (=create= ↔ =open= ↔ =start= ↔ =make=)
+
+Scoring:
+- Formal weighted scoring model extracted to =search_scorer.py= with corpus evaluation harness
+- =QueryPlan= with =full_fts_expr= field replacing ad-hoc AND-join of =full_words=
+
+Bug fixes:
+- =compass review reply= 404 on conversation comments (now routes by comment kind)
+- =compass task start= crash on stale branch (re-resolve doc after branch switch)
+- =compass task new= leaves worktree on wrong branch mid-scaffold (creates without switching)
+- =compass pr merge= blocks when task =* Result= is empty
 
 * Decisions
 

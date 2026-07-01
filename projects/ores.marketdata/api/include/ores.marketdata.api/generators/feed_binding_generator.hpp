@@ -17,30 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MARKETDATA_MESSAGING_REGISTRAR_HPP
-#define ORES_MARKETDATA_MESSAGING_REGISTRAR_HPP
+#ifndef ORES_MARKETDATA_API_GENERATORS_FEED_BINDING_GENERATOR_HPP
+#define ORES_MARKETDATA_API_GENERATORS_FEED_BINDING_GENERATOR_HPP
 
-#include "ores.database/domain/context.hpp"
-#include "ores.marketdata.core/export.hpp"
-#include "ores.nats/service/client.hpp"
-#include "ores.nats/service/subscription.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include <functional>
-#include <optional>
-#include <string>
+#include "ores.marketdata.api/domain/feed_binding.hpp"
+#include "ores.marketdata.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 #include <vector>
 
-namespace ores::marketdata::messaging {
+namespace ores::marketdata::generators {
 
-class ORES_MARKETDATA_CORE_EXPORT registrar {
-public:
-    static std::vector<ores::nats::service::subscription>
-    register_handlers(ores::nats::service::client& nats,
-                      ores::database::context ctx,
-                      std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt,
-                      std::string http_base_url = {},
-                      std::function<void()> on_feed_bindings_changed = {});
-};
+/**
+ * @brief Generates a synthetic feed_binding.
+ */
+ORES_MARKETDATA_API_EXPORT domain::feed_binding
+generate_synthetic_feed_binding(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic feed_bindings.
+ */
+ORES_MARKETDATA_API_EXPORT std::vector<domain::feed_binding>
+generate_synthetic_feed_bindings(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

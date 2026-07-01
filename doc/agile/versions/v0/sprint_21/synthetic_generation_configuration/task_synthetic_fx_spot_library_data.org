@@ -47,24 +47,11 @@ full set.
 
 ** Open question: how to seed reference spots
 
-We have no live online data source in the Librarian today. Options:
-
-1. *Hard-code at a known date*: embed the 2024-01-02 closing spots directly in
-   the library data (one-off research, no automation needed). Simple and
-   reproducible, but the data ages.
-
-2. *Fetch-on-apply*: the Librarian calls an external REST endpoint
-   (e.g. exchangerate.host, Frankfurter, or ECB) at apply-time to seed current
-   spots. Requires HTTP client support in the Librarian (not yet built). Flexible
-   but adds an external dependency and network failure path.
-
-3. *User-supplied anchor*: the Apply dialog prompts for one anchor rate
-   (e.g. EUR/USD) and derives the rest from stored cross ratios. Avoids the
-   network problem but requires the ratio table.
-
-Preferred approach: start with option 1 (hard-coded 2024-01-02 spots) so the
-task can ship without Librarian HTTP support, and file a capture to revisit with
-option 2 once the HTTP client exists.
+Analyse the ORE sample data (shipped with the ORE distribution) to identify a
+reference date =t= at which spot rates are already defined for the benchmark
+pairs. Use those rates to anchor the starting spots for each config, keeping the
+full set internally consistent. This avoids any dependency on external data
+sources or HTTP client support in the Librarian.
 
 * Status
 
@@ -74,7 +61,7 @@ option 2 once the HTTP client exists.
 | Parent story | [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Librarian library-data infrastructure  |
-| Next         | Agree on reference date and spot source; scaffold library bundle format. |
+| Next         | Analyse ORE sample data to identify reference date; scaffold library bundle format. |
 | Last touched | 2026-07-01                             |
 
 * Acceptance
@@ -91,12 +78,10 @@ option 2 once the HTTP client exists.
 
 * Notes
 
-Reference date chosen: 2024-01-02 London open (first business day of the year —
-widely quoted in historical data sets).
-
-Spot source for option 1: ECB reference rates + Refinitiv EOD (to be confirmed).
+Reference date to be determined by analysis of ORE sample data — use whichever
+date in the ORE samples has the broadest coverage of the 30 benchmark pairs.
 EM pegged pairs (USD/SAR ≈ 3.75, USD/AED ≈ 3.67, USD/HKD ≈ 7.82) are
-effectively constant.
+effectively constant and can be hard-coded directly.
 
 * PRs
 

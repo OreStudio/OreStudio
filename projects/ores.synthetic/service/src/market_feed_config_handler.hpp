@@ -99,12 +99,6 @@ public:
             BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
                 << msg.subject << " — feed already running: " << id;
             break;
-        case sr::series_unresolved:
-            resp.success = false;
-            resp.message = "Series unresolved for: " + id;
-            BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
-                << msg.subject << " — series unresolved, feed not started: " << id;
-            break;
         }
         reply(nats_, msg, resp);
     }

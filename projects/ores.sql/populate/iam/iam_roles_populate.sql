@@ -203,9 +203,6 @@ BEGIN
     -- Synthetic service: read access across all domain components for data generation
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'Synthetic data generation service');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'synthetic::*');
-    -- Needs to create/resolve market series when starting a feed.
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::series:write');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::series:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'iam::tenants:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'iam::accounts:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'iam::roles:read');

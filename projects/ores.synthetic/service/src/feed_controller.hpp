@@ -83,13 +83,15 @@ public:
         shutdown();
     }
 
-    enum class start_result { started, already_running, series_unresolved };
+    enum class start_result { started, already_running };
 
     /**
      * @brief Start one producer feed. Keyed by source_name (unique per producer).
      *
-     * Resolves/creates the market series for ore_key, derives the producer
-     * subject from source_name, builds the process and spawns its tick thread.
+     * Derives the producer subject from source_name, builds the process and
+     * spawns its tick thread. Series resolution is handled lazily by the
+     * marketdata ingest loop on first tick arrival — the synthetic service has
+     * no marketdata writes to perform.
      */
     start_result start(const std::string& ore_key,
                const std::string& source_name,
@@ -99,14 +101,6 @@ public:
                double initial_price,
                double ticks_per_hour,
                const std::string& process_type = "geometric") {
-        // Resolve the series BEFORE locking — it makes blocking NATS RPCs, and we
-        // must not hold mu_ (which stop()/shutdown() also take) across network I/O.
-        // resolve_series is find-or-create, so a concurrent duplicate start costs
-        // at worst one extra lookup, not a corrupt state.
-        boost::uuids::uuid series_id{};
-        if (!resolve_series(ore_key, series_id))
-            return start_result::series_unresolved;
-
         std::lock_guard lock(mu_);
         const std::string key = source_name.empty() ? ore_key : source_name;
         if (feeds_.contains(key))
@@ -120,7 +114,7 @@ public:
                                                    producer_subject(key),
                                                    std::move(process),
                                                    ticks_per_hour,
-                                                   series_id,
+                                                   boost::uuids::uuid{}, // ingest loop resolves series
                                                    tenant_id_);
         running_feed rf;
         rf.feed = feed;

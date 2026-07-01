@@ -93,6 +93,8 @@ private slots:
     void onDeleteClicked();
     void onStartFeedClicked();
     void onStopFeedClicked();
+    void onStartAllClicked();
+    void onStopAllClicked();
 
 private:
     // Node levels stored in the tree items via Qt::UserRole markers.
@@ -125,6 +127,7 @@ private:
 
     [[nodiscard]] NodeType currentNodeType() const;
     [[nodiscard]] std::string currentNodeId() const;
+    [[nodiscard]] std::vector<synthetic::domain::fx_spot_generation_config> selectedFxPairs() const;
 
     ClientManager* clientManager_;
     QString username_;
@@ -143,6 +146,8 @@ private:
     QAction* deleteAction_;
     QAction* startFeedAction_;
     QAction* stopFeedAction_;
+    QAction* startAllAction_;
+    QAction* stopAllAction_;
 
     // Left panel
     QTreeView* feedsTree_;

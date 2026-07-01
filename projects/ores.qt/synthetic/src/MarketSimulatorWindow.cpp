@@ -209,13 +209,24 @@ void MarketSimulatorWindow::setupToolbar() {
     toolbar_->addSeparator();
 
     startFeedAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor), tr("Start feed"));
-    startFeedAction_->setToolTip(tr("Start generating live ticks for the selected FX rate."));
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor), tr("Start"));
+    startFeedAction_->setToolTip(tr("Start generating live ticks for the selected FX rate(s)."));
 
     stopFeedAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::DeleteDismiss, IconUtils::DefaultIconColor),
-        tr("Stop feed"));
-    stopFeedAction_->setToolTip(tr("Stop generating ticks for the selected FX rate."));
+        tr("Stop"));
+    stopFeedAction_->setToolTip(tr("Stop generating ticks for the selected FX rate(s)."));
+
+    toolbar_->addSeparator();
+
+    startAllAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor), tr("Start all"));
+    startAllAction_->setToolTip(tr("Start generating live ticks for all FX rates."));
+
+    stopAllAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::DeleteDismiss, IconUtils::DefaultIconColor),
+        tr("Stop all"));
+    stopAllAction_->setToolTip(tr("Stop generating ticks for all FX rates."));
 }
 
 void MarketSimulatorWindow::setupLeftPanel() {
@@ -231,6 +242,7 @@ void MarketSimulatorWindow::setupLeftPanel() {
     feedsTree_->setHeaderHidden(true);
     feedsTree_->setIconSize(QSize(44, 22)); // room for the two-flag pair icon
     feedsTree_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    feedsTree_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     feedsTree_->setFrameShape(QFrame::StyledPanel);
     feedsTree_->setFrameShadow(QFrame::Sunken);
     leftLayout->addWidget(feedsTree_, 1);
@@ -316,6 +328,10 @@ void MarketSimulatorWindow::setupConnections() {
             &QItemSelectionModel::currentChanged,
             this,
             &MarketSimulatorWindow::onTreeSelectionChanged);
+    connect(feedsTree_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            [this](const QItemSelection&, const QItemSelection&) { updateToolbarState(); });
     connect(
         feedsTree_, &QTreeView::doubleClicked, this, &MarketSimulatorWindow::onTreeDoubleClicked);
 
@@ -328,6 +344,8 @@ void MarketSimulatorWindow::setupConnections() {
     connect(
         startFeedAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStartFeedClicked);
     connect(stopFeedAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStopFeedClicked);
+    connect(startAllAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStartAllClicked);
+    connect(stopAllAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStopAllClicked);
 }
 
 void MarketSimulatorWindow::onReloadClicked() {
@@ -511,6 +529,21 @@ std::string MarketSimulatorWindow::currentNodeId() const {
     if (!idx.isValid())
         return {};
     return idx.data(NodeIdRole).toString().toStdString();
+}
+
+std::vector<synthetic::domain::fx_spot_generation_config>
+MarketSimulatorWindow::selectedFxPairs() const {
+    std::vector<synthetic::domain::fx_spot_generation_config> result;
+    const auto indexes = feedsTree_->selectionModel()->selectedIndexes();
+    for (const auto& idx : indexes) {
+        if (static_cast<NodeType>(idx.data(NodeTypeRole).toInt()) != NodeType::FxPair)
+            continue;
+        const auto id = idx.data(NodeIdRole).toString().toStdString();
+        auto it = fxPairs_.find(id);
+        if (it != fxPairs_.end())
+            result.push_back(it->second);
+    }
+    return result;
 }
 
 std::string MarketSimulatorWindow::resolveFeedId() const {
@@ -843,147 +876,193 @@ void MarketSimulatorWindow::updateToolbarState() {
     const bool hasFeedContext = !resolveFeedId().empty();
 
     const bool isFxNode = hasSelection && currentNodeType() == NodeType::FxPair;
+    const bool anyFxSelected = !selectedFxPairs().empty();
+
+    const bool hasFxPairs = !fxPairs_.empty();
 
     newFxRateAction_->setEnabled(hasFeedContext);
     editAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
-    startFeedAction_->setEnabled(isFxNode);
-    stopFeedAction_->setEnabled(isFxNode);
+    startFeedAction_->setEnabled(anyFxSelected);
+    stopFeedAction_->setEnabled(anyFxSelected);
+    startAllAction_->setEnabled(hasFxPairs);
+    stopAllAction_->setEnabled(hasFxPairs);
+    (void)isFxNode;
 }
 
 void MarketSimulatorWindow::onStartFeedClicked() {
-    if (currentNodeType() != NodeType::FxPair)
+    const auto pairs = selectedFxPairs();
+    if (pairs.empty())
         return;
-    auto it = fxPairs_.find(currentNodeId());
-    if (it == fxPairs_.end())
+
+    // Build a start request for each selected FX pair (skip any without components).
+    using Req = ores::marketdata::messaging::start_market_feed_config_request;
+    std::vector<Req> reqs;
+    for (const auto& fx : pairs) {
+        const auto fxId = boost::uuids::to_string(fx.id);
+        std::vector<const synthetic::domain::gmm_component*> comps;
+        for (const auto& [compId, comp] : components_) {
+            if (boost::uuids::to_string(comp.fx_spot_config_id) == fxId)
+                comps.push_back(&comp);
+        }
+        if (comps.empty()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Skipping " << fx.ore_key << " — no price model components.";
+            continue;
+        }
+        std::sort(comps.begin(), comps.end(), [](const auto* a, const auto* b) {
+            return a->component_index < b->component_index;
+        });
+        Req req;
+        req.ore_key = fx.ore_key;
+        req.source_name = fx.source_name;
+        for (const auto* c : comps) {
+            req.gmm_means.push_back(c->mean);
+            req.gmm_stdevs.push_back(c->stdev);
+            req.gmm_weights.push_back(c->weight);
+        }
+        req.gmm_initial_price = fx.gmm_initial_price;
+        req.ticks_per_hour = static_cast<double>(fx.ticks_per_hour);
+        req.process_type = fx.process_type;
+        reqs.push_back(std::move(req));
+    }
+
+    if (reqs.empty()) {
+        QMessageBox::warning(this, tr("No price model"),
+                             tr("Add at least one price-behaviour component before starting."));
         return;
-    const auto fx = it->second;
-    const auto fxId = boost::uuids::to_string(fx.id);
-
-    // Collect this fx's components, ordered by component_index.
-    std::vector<const synthetic::domain::gmm_component*> comps;
-    for (const auto& [compId, comp] : components_) {
-        if (boost::uuids::to_string(comp.fx_spot_config_id) == fxId)
-            comps.push_back(&comp);
-    }
-    std::sort(comps.begin(), comps.end(), [](const auto* a, const auto* b) {
-        return a->component_index < b->component_index;
-    });
-
-    if (comps.empty()) {
-        QMessageBox::warning(
-            this,
-            tr("No price model"),
-            tr("Add at least one price-behaviour component before starting the feed."));
-        return;
     }
 
-    ores::marketdata::messaging::start_market_feed_config_request req;
-    req.ore_key = fx.ore_key;
-    req.source_name = fx.source_name;
-    req.gmm_means.clear();
-    req.gmm_stdevs.clear();
-    req.gmm_weights.clear();
-    for (const auto* c : comps) {
-        req.gmm_means.push_back(c->mean);
-        req.gmm_stdevs.push_back(c->stdev);
-        req.gmm_weights.push_back(c->weight);
-    }
-    req.gmm_initial_price = fx.gmm_initial_price;
-    req.ticks_per_hour = static_cast<double>(fx.ticks_per_hour);
-    req.process_type = fx.process_type;
-
-    const QString pair = QString::fromStdString(fx.base_currency_code) + "/" +
-                         QString::fromStdString(fx.quote_currency_code);
-    const std::string oreKey = fx.ore_key;
-    BOOST_LOG_SEV(lg(), info) << "Starting feed " << oreKey << ".";
-
+    BOOST_LOG_SEV(lg(), info) << "Starting " << reqs.size() << " feed(s).";
     QPointer<MarketSimulatorWindow> self = this;
     auto* cm = clientManager_;
 
-    auto task = [cm, req]() -> std::pair<bool, QString> {
-        auto resp = cm->process_authenticated_request(req);
-        if (!resp)
-            return {false, QString::fromStdString(resp.error())};
-        if (!resp->success)
-            return {false, QString::fromStdString(resp->message)};
-        return {true, {}};
+    using Results = std::vector<std::pair<std::string, QString>>; // ore_key -> error (empty=ok)
+    auto task = [cm, reqs]() -> Results {
+        Results results;
+        for (const auto& req : reqs) {
+            auto resp = cm->process_authenticated_request(req);
+            if (!resp)
+                results.push_back({req.ore_key, QString::fromStdString(resp.error())});
+            else if (!resp->success)
+                results.push_back({req.ore_key, QString::fromStdString(resp->message)});
+            else
+                results.push_back({req.ore_key, {}});
+        }
+        return results;
     };
 
-    auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(self);
-    connect(watcher,
-            &QFutureWatcher<std::pair<bool, QString>>::finished,
-            self,
-            [self, watcher, oreKey, pair]() {
-                auto [ok, err] = watcher->result();
-                watcher->deleteLater();
-                if (!self)
-                    return;
-                if (!ok) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Start failed for feed " << oreKey << ": " << err.toStdString();
-                    emit self->errorOccurred(err);
-                    QMessageBox::critical(self, self->tr("Start failed"), err);
-                    return;
-                }
-                BOOST_LOG_SEV(lg(), info) << "Started feed " << oreKey << ".";
-                const QString msg = self->tr("Feed started for %1. Watch it live in Market Data ▸ "
-                                             "Market Series.")
-                                        .arg(pair);
-                self->statusLabel_->setText(msg);
-                emit self->statusChanged(msg);
-                QMessageBox::information(self, self->tr("Feed started"), msg);
-            });
+    auto* watcher = new QFutureWatcher<Results>(self);
+    connect(watcher, &QFutureWatcher<Results>::finished, self, [self, watcher]() {
+        auto results = watcher->result();
+        watcher->deleteLater();
+        if (!self)
+            return;
+        int ok = 0;
+        QStringList failed;
+        for (const auto& [key, err] : results) {
+            if (err.isEmpty()) {
+                BOOST_LOG_SEV(lg(), info) << "Started feed " << key << ".";
+                ++ok;
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Start failed for " << key << ": " << err.toStdString();
+                failed << QString::fromStdString(key) + ": " + err;
+            }
+        }
+        const QString msg = self->tr("Started %1 feed(s).").arg(ok);
+        self->statusLabel_->setText(msg);
+        emit self->statusChanged(msg);
+        if (!failed.isEmpty())
+            QMessageBox::critical(self, self->tr("Start failed"),
+                                  self->tr("Failed to start:\n") + failed.join("\n"));
+    });
     watcher->setFuture(QtConcurrent::run(task));
 }
 
 void MarketSimulatorWindow::onStopFeedClicked() {
-    if (currentNodeType() != NodeType::FxPair)
+    const auto pairs = selectedFxPairs();
+    if (pairs.empty())
         return;
-    auto it = fxPairs_.find(currentNodeId());
-    if (it == fxPairs_.end())
-        return;
-    const auto fx = it->second;
 
-    ores::marketdata::messaging::stop_market_feed_config_request req;
-    req.source_name = fx.source_name;
+    using Req = ores::marketdata::messaging::stop_market_feed_config_request;
+    std::vector<Req> reqs;
+    for (const auto& fx : pairs) {
+        Req req;
+        req.source_name = fx.source_name;
+        reqs.push_back(std::move(req));
+    }
 
-    const std::string oreKey = fx.ore_key;
-    BOOST_LOG_SEV(lg(), info) << "Stopping feed " << oreKey << ".";
-
+    BOOST_LOG_SEV(lg(), info) << "Stopping " << reqs.size() << " feed(s).";
     QPointer<MarketSimulatorWindow> self = this;
     auto* cm = clientManager_;
 
-    auto task = [cm, req]() -> std::pair<bool, QString> {
-        auto resp = cm->process_authenticated_request(req);
-        if (!resp)
-            return {false, QString::fromStdString(resp.error())};
-        if (!resp->success)
-            return {false, QString::fromStdString(resp->message)};
-        return {true, {}};
+    using Results = std::vector<std::pair<std::string, QString>>;
+    auto task = [cm, reqs]() -> Results {
+        Results results;
+        for (const auto& req : reqs) {
+            auto resp = cm->process_authenticated_request(req);
+            if (!resp)
+                results.push_back({req.source_name, QString::fromStdString(resp.error())});
+            else if (!resp->success)
+                results.push_back({req.source_name, QString::fromStdString(resp->message)});
+            else
+                results.push_back({req.source_name, {}});
+        }
+        return results;
     };
 
-    auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(self);
-    connect(watcher,
-            &QFutureWatcher<std::pair<bool, QString>>::finished,
-            self,
-            [self, watcher, oreKey]() {
-                auto [ok, err] = watcher->result();
-                watcher->deleteLater();
-                if (!self)
-                    return;
-                if (!ok) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Stop failed for feed " << oreKey << ": " << err.toStdString();
-                    emit self->errorOccurred(err);
-                    QMessageBox::critical(self, self->tr("Stop failed"), err);
-                    return;
-                }
-                BOOST_LOG_SEV(lg(), info) << "Stopped feed " << oreKey << ".";
-                self->statusLabel_->setText(self->tr("Feed stopped."));
-                emit self->statusChanged(self->tr("Feed stopped."));
-            });
+    auto* watcher = new QFutureWatcher<Results>(self);
+    connect(watcher, &QFutureWatcher<Results>::finished, self, [self, watcher]() {
+        auto results = watcher->result();
+        watcher->deleteLater();
+        if (!self)
+            return;
+        int ok = 0;
+        QStringList failed;
+        for (const auto& [key, err] : results) {
+            if (err.isEmpty()) {
+                BOOST_LOG_SEV(lg(), info) << "Stopped feed " << key << ".";
+                ++ok;
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Stop failed for " << key << ": " << err.toStdString();
+                failed << QString::fromStdString(key) + ": " + err;
+            }
+        }
+        const QString msg = self->tr("Stopped %1 feed(s).").arg(ok);
+        self->statusLabel_->setText(msg);
+        emit self->statusChanged(msg);
+        if (!failed.isEmpty())
+            QMessageBox::critical(self, self->tr("Stop failed"),
+                                  self->tr("Failed to stop:\n") + failed.join("\n"));
+    });
     watcher->setFuture(QtConcurrent::run(task));
+}
+
+void MarketSimulatorWindow::onStartAllClicked() {
+    // Temporarily select all FxPair nodes, delegate to onStartFeedClicked, restore selection.
+    feedsTree_->selectionModel()->clearSelection();
+    for (int feed = 0; feed < treeModel_->rowCount(); ++feed) {
+        const auto feedIdx = treeModel_->index(feed, 0);
+        for (int fx = 0; fx < treeModel_->rowCount(feedIdx); ++fx) {
+            const auto fxIdx = treeModel_->index(fx, 0, feedIdx);
+            if (static_cast<NodeType>(fxIdx.data(NodeTypeRole).toInt()) == NodeType::FxPair)
+                feedsTree_->selectionModel()->select(fxIdx, QItemSelectionModel::Select);
+        }
+    }
+    onStartFeedClicked();
+}
+
+void MarketSimulatorWindow::onStopAllClicked() {
+    feedsTree_->selectionModel()->clearSelection();
+    for (int feed = 0; feed < treeModel_->rowCount(); ++feed) {
+        const auto feedIdx = treeModel_->index(feed, 0);
+        for (int fx = 0; fx < treeModel_->rowCount(feedIdx); ++fx) {
+            const auto fxIdx = treeModel_->index(fx, 0, feedIdx);
+            if (static_cast<NodeType>(fxIdx.data(NodeTypeRole).toInt()) == NodeType::FxPair)
+                feedsTree_->selectionModel()->select(fxIdx, QItemSelectionModel::Select);
+        }
+    }
+    onStopFeedClicked();
 }
 
 }

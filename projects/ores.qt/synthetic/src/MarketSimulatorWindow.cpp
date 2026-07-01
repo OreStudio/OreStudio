@@ -63,6 +63,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <atomic>
+#include <set>
 #include <cmath>
 #include <memory>
 #include <rfl/json.hpp>
@@ -1335,6 +1336,19 @@ void MarketSimulatorWindow::startPairsAsync(
     auto task = [cm, reqs, username, partyId]() -> Results {
         Results results;
         boost::uuids::random_generator uuid_gen;
+
+        // Load existing bindings once so we can skip creating duplicates.
+        std::set<std::pair<std::string,std::string>> existing_bindings; // (ore_key, source_name)
+        {
+            namespace m = ores::marketdata::messaging;
+            auto br = cm->process_authenticated_request(
+                m::get_feed_bindings_request{.offset = 0, .limit = 10000});
+            if (br && br->success) {
+                for (const auto& b : br->feed_bindings)
+                    existing_bindings.emplace(b.ore_key, b.source_name);
+            }
+        }
+
         for (const auto& req : reqs) {
             auto resp = cm->process_authenticated_request(req);
             if (!resp) {
@@ -1347,9 +1361,15 @@ void MarketSimulatorWindow::startPairsAsync(
             }
             results.push_back({req.source_name, {}});
 
-            // Ensure a feed binding exists so the marketdata ingest loop subscribes
-            // to this producer channel and persists observations to the DB.
-            // tenant_id and party_id are stamped server-side from the JWT context.
+            // Only create a feed binding if one doesn't already exist for this
+            // (ore_key, source_name) pair — prevents duplicate ingest loops and
+            // duplicate market_series records.
+            if (existing_bindings.count({req.ore_key, req.source_name})) {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Feed binding already exists for " << req.source_name << " — skipping";
+                continue;
+            }
+
             ores::marketdata::domain::feed_binding b;
             b.id = uuid_gen();
             b.ore_key = req.ore_key;
@@ -1366,6 +1386,8 @@ void MarketSimulatorWindow::startPairsAsync(
                 const std::string err = bind_resp ? bind_resp->message : bind_resp.error();
                 BOOST_LOG_SEV(lg(), warn)
                     << "Feed binding save failed for " << req.source_name << ": " << err;
+            } else {
+                existing_bindings.emplace(req.ore_key, req.source_name);
             }
         }
         return results;

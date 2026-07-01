@@ -73,14 +73,6 @@ ore_key_parts parse_ore_key(const std::string& ore_key) {
     return p;
 }
 
-std::string make_durable_name(const std::string& source_name) {
-    std::string s = "ingest-" + source_name;
-    for (auto& c : s)
-        if (!std::isalnum(static_cast<unsigned char>(c)) && c != '-' && c != '_')
-            c = '-';
-    return s;
-}
-
 } // namespace
 
 feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
@@ -152,13 +144,14 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
     boost::uuids::random_generator uuid_gen;
     const auto party_uuid = boost::lexical_cast<boost::uuids::uuid>(party_id_str);
 
-    const std::string durable = make_durable_name(source_name);
+    // Use core NATS subscribe (not JetStream durable) so we only receive
+    // live ticks — no replay of historical backlog on restart. This keeps
+    // the grid responsive immediately and avoids chart spike artifacts.
     auto tenant_ctx = ctx_.with_tenant(
         ores::utility::uuid::tenant_id::from_string(tenant_id_str).value(),
         "ores.marketdata.service");
-    auto sub = nats_.js_subscribe(
+    auto sub = nats_.subscribe(
         producer_subject,
-        durable,
         [this, ore_key_copy, publish_subject, uuid_gen, st, party_uuid,
          tenant_ctx = std::move(tenant_ctx)](ores::nats::message msg) mutable {
             auto tick = rfl::json::read<domain::fx_spot_tick>(
@@ -226,11 +219,7 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
                                            << ore_key_copy << ": " << e.what();
             }
 
-            // Only republish live ticks — skip replayed historical messages
-            // so downstream subscribers (grid, chart) don't get flooded on restart.
-            const auto age = std::chrono::system_clock::now() - tick->datetime;
-            if (age < std::chrono::seconds(30))
-                nats_.js_publish(publish_subject, msg.data);
+            nats_.js_publish(publish_subject, msg.data);
         });
 
     subs_.emplace(source_name, std::move(sub));

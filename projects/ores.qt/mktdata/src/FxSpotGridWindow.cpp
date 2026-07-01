@@ -294,19 +294,22 @@ void FxSpotGridWindow::applyTick(const std::string& ore_key, double mid,
     rs.last_tick   = when;
     rs.ever_ticked = true;
 
-    // Mid: arrow + value, coloured by direction; no background flash.
+    const QColor dirColor = first ? k_flat_color : (up ? k_up_color : k_down_color);
+
+    // Pair name and mid both follow tick direction.
+    if (auto* p = table_->item(rs.row, ColPair))
+        p->setForeground(dirColor);
+
     auto* midItem = table_->item(rs.row, ColMid);
     if (midItem) {
         const QString arrow = first ? QString{} : (up ? QStringLiteral("↑ ") : QStringLiteral("↓ "));
         midItem->setText(arrow + QString::number(mid, 'f', 5));
-        midItem->setForeground(first ? k_flat_color : (up ? k_up_color : k_down_color));
+        midItem->setForeground(dirColor);
     }
 
     if (rs.last_status != FeedStatus::Live) {
         rs.last_status = FeedStatus::Live;
         apply_badge(rs.badge, FeedStatus::Live, when);
-        if (auto* p = table_->item(rs.row, ColPair))
-            p->setForeground(pair_color_for_status(FeedStatus::Live));
     }
 }
 

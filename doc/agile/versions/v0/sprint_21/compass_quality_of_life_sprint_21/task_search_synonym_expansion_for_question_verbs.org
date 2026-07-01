@@ -71,8 +71,11 @@ Updated =_title_fts_ranks()= in =compass.py= to accept an optional
 
 * Review
 
+Round 1 — 2026-07-01 — addressed in commit =68ce59618=.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | "go" in two clusters — last-write-wins breaks bidirectionality for go/run | search_scorer.py | Accept | Removed "go" from run/execute/apply/load cluster; it lives only in move/switch/go |
+| 2 | "build" SYNONYMS-normalised to "rebuild" before cluster lookup — silently loses OR-group | search_scorer.py | Accept | Full_fts_expr now checks raw_token first, then normalised token |
 
 * Result

@@ -18,34 +18,75 @@
  *
  */
 #include "ores.marketdata.core/service/market_fixing_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
+#include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::marketdata::service {
+
+using namespace ores::logging;
 
 market_fixing_service::market_fixing_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::market_fixing>
-market_fixing_service::list(const boost::uuids::uuid& series_id) {
-    return repo_.read_latest(ctx_, series_id);
+std::vector<domain::market_fixing> market_fixing_service::list_market_fixings(std::uint32_t offset,
+                                                                              std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all market fixings";
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t market_fixing_service::count_market_fixings() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total market fixings count";
+    return repo_.get_total_market_fixing_count(ctx_);
+}
+
+std::optional<domain::market_fixing>
+market_fixing_service::get_market_fixing(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting market fixing: " << id;
+    auto results = repo_.read_latest(ctx_, id);
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
+void market_fixing_service::save_market_fixing(const domain::market_fixing& v) {
+    if (v.id.is_nil())
+        throw std::invalid_argument("Market Fixing id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving market fixing: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved market fixing: " << v.id;
+}
+
+void market_fixing_service::save_market_fixings(
+    const std::vector<domain::market_fixing>& market_fixings) {
+    for (const auto& e : market_fixings)
+        if (e.id.is_nil())
+            throw std::invalid_argument("Market Fixing id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << market_fixings.size() << " market fixings";
+    auto ts = market_fixings;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void market_fixing_service::delete_market_fixing(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing market fixing: " << id;
+    repo_.remove(ctx_, id);
+    BOOST_LOG_SEV(lg(), info) << "Removed market fixing: " << id;
+}
+
+void market_fixing_service::delete_market_fixings(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
 }
 
 std::vector<domain::market_fixing>
-market_fixing_service::list(const boost::uuids::uuid& series_id,
-                            const std::chrono::year_month_day& from_date,
-                            const std::chrono::year_month_day& to_date) {
-    return repo_.read_latest(ctx_, series_id, from_date, to_date);
-}
-
-void market_fixing_service::save(const domain::market_fixing& v) {
-    repo_.write(ctx_, v);
-}
-
-void market_fixing_service::save(const std::vector<domain::market_fixing>& v) {
-    repo_.write(ctx_, v);
-}
-
-void market_fixing_service::remove(const boost::uuids::uuid& series_id) {
-    repo_.remove(ctx_, series_id);
+market_fixing_service::get_market_fixing_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for market fixing: " << id;
+    return repo_.read_all(ctx_, id);
 }
 
 }

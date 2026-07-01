@@ -18,34 +18,76 @@
  *
  */
 #include "ores.marketdata.core/service/market_observation_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
+#include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::marketdata::service {
+
+using namespace ores::logging;
 
 market_observation_service::market_observation_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
 std::vector<domain::market_observation>
-market_observation_service::list(const boost::uuids::uuid& series_id) {
-    return repo_.read_latest(ctx_, series_id);
+market_observation_service::list_market_observations(std::uint32_t offset, std::uint32_t limit,
+                                                     const std::string& series_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing market observations";
+    return repo_.read_latest(ctx_, offset, limit, series_id);
+}
+
+std::uint32_t market_observation_service::count_market_observations() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total market observations count";
+    return repo_.get_total_market_observation_count(ctx_);
+}
+
+std::optional<domain::market_observation>
+market_observation_service::get_market_observation(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting market observation: " << id;
+    auto results = repo_.read_latest(ctx_, id);
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
+void market_observation_service::save_market_observation(const domain::market_observation& v) {
+    if (v.id.is_nil())
+        throw std::invalid_argument("Market Observation id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving market observation: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved market observation: " << v.id;
+}
+
+void market_observation_service::save_market_observations(
+    const std::vector<domain::market_observation>& market_observations) {
+    for (const auto& e : market_observations)
+        if (e.id.is_nil())
+            throw std::invalid_argument("Market Observation id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << market_observations.size() << " market observations";
+    auto ts = market_observations;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void market_observation_service::delete_market_observation(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing market observation: " << id;
+    repo_.remove(ctx_, id);
+    BOOST_LOG_SEV(lg(), info) << "Removed market observation: " << id;
+}
+
+void market_observation_service::delete_market_observations(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
 }
 
 std::vector<domain::market_observation>
-market_observation_service::list(const boost::uuids::uuid& series_id,
-                                 const std::chrono::system_clock::time_point& from_datetime,
-                                 const std::chrono::system_clock::time_point& to_datetime) {
-    return repo_.read_latest(ctx_, series_id, from_datetime, to_datetime);
-}
-
-void market_observation_service::save(const domain::market_observation& v) {
-    repo_.write(ctx_, v);
-}
-
-void market_observation_service::save(const std::vector<domain::market_observation>& v) {
-    repo_.write(ctx_, v);
-}
-
-void market_observation_service::remove(const boost::uuids::uuid& series_id) {
-    repo_.remove(ctx_, series_id);
+market_observation_service::get_market_observation_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for market observation: " << id;
+    return repo_.read_all(ctx_, id);
 }
 
 }

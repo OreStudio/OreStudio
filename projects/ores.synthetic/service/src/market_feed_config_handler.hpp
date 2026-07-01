@@ -75,26 +75,30 @@ public:
         }
 
         start_market_feed_config_response resp;
-        const bool started = ctrl_->start(req->ore_key,
-                                          req->source_name,
-                                          req->gmm_means,
-                                          req->gmm_stdevs,
-                                          req->gmm_weights,
-                                          req->gmm_initial_price,
-                                          req->ticks_per_hour,
-                                          req->process_type);
+        const auto result = ctrl_->start(req->ore_key,
+                                         req->source_name,
+                                         req->gmm_means,
+                                         req->gmm_stdevs,
+                                         req->gmm_weights,
+                                         req->gmm_initial_price,
+                                         req->ticks_per_hour,
+                                         req->process_type);
 
         const std::string id = req->source_name.empty() ? req->ore_key : req->source_name;
-        if (started) {
+        using sr = feed_controller::start_result;
+        switch (result) {
+        case sr::started:
             resp.success = true;
             resp.message = "Feed started: " + id;
             BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
                 << msg.subject << " — feed started: " << id << "  ticks/h=" << req->ticks_per_hour;
-        } else {
-            resp.success = false;
-            resp.message = "Feed already running or series unresolved: " + id;
-            BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
-                << msg.subject << " — feed not started: " << id;
+            break;
+        case sr::already_running:
+            resp.success = true;
+            resp.message = "Feed already running: " + id;
+            BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
+                << msg.subject << " — feed already running: " << id;
+            break;
         }
         reply(nats_, msg, resp);
     }
@@ -119,10 +123,21 @@ public:
         stop_market_feed_config_response resp;
         const auto stopped = ctrl_->stop(key);
 
-        resp.success = stopped > 0;
+        resp.success = true; // idempotent — 0 stopped means it was already stopped
         resp.message = std::to_string(stopped) + " feed(s) stopped";
         BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
             << msg.subject << " — " << resp.message << (key.empty() ? " (all)" : " (" + key + ")");
+        reply(nats_, msg, resp);
+    }
+
+    void list(ores::nats::message msg) {
+        using namespace ores::marketdata::messaging;
+        [[maybe_unused]] const auto cid = log_handler_entry(market_feed_config_handler_lg(), msg);
+        list_market_feed_configs_response resp;
+        resp.running_source_names = ctrl_->list();
+        resp.success = true;
+        BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
+            << msg.subject << " — " << resp.running_source_names.size() << " feed(s) running";
         reply(nats_, msg, resp);
     }
 

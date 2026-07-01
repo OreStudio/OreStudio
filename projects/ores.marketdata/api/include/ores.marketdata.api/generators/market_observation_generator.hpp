@@ -23,25 +23,21 @@
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <vector>
 
-namespace ores::marketdata::generator {
+namespace ores::marketdata::generators {
 
 /**
- * @brief Generates a synthetic market_observation for the given series.
+ * @brief Generates a synthetic market_observation.
  */
 ORES_MARKETDATA_API_EXPORT domain::market_observation
-generate_synthetic_market_observation(const boost::uuids::uuid& series_id,
-                                      utility::generation::generation_context& ctx);
+generate_synthetic_market_observation(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic market_observations for the given series.
+ * @brief Generates N synthetic market_observations.
  */
 ORES_MARKETDATA_API_EXPORT std::vector<domain::market_observation>
-generate_synthetic_market_observations(std::size_t n,
-                                       const boost::uuids::uuid& series_id,
-                                       utility::generation::generation_context& ctx);
+generate_synthetic_market_observations(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

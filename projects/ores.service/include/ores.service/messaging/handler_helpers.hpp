@@ -96,8 +96,8 @@ template <typename T>
 void stamp(T& obj,
            const ores::database::context& ctx,
            std::string_view change_reason = change_reasons::new_record) {
-    // tenant_id is a security boundary — always derived from the validated JWT,
-    // never from client-supplied data.
+    // tenant_id and party_id are security boundaries — always derived from the
+    // validated JWT context, never from client-supplied data.
     if constexpr (requires { obj.tenant_id; }) {
         if constexpr (std::is_assignable_v<decltype(obj.tenant_id)&, std::string>)
             obj.tenant_id = ctx.tenant_id().to_string();
@@ -105,6 +105,14 @@ void stamp(T& obj,
             obj.tenant_id = ctx.tenant_id().to_uuid();
         else
             obj.tenant_id = ctx.tenant_id();
+    }
+    if constexpr (requires { obj.party_id; }) {
+        if (const auto pid = ctx.party_id(); pid.has_value()) {
+            if constexpr (std::is_assignable_v<decltype(obj.party_id)&, boost::uuids::uuid>)
+                obj.party_id = *pid;
+            else if constexpr (std::is_assignable_v<decltype(obj.party_id)&, std::string>)
+                obj.party_id = boost::uuids::to_string(*pid);
+        }
     }
     const auto& actor = ctx.actor();
     const auto& svc = ctx.service_account();

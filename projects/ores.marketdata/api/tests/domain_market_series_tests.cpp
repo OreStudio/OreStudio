@@ -41,7 +41,7 @@ market_series make_eur_discount_series() {
     s.metric = "RATE";
     s.qualifier = "EUR";
     s.asset_class = asset_class::rates;
-    s.subclass = series_subclass::yield;
+    s.series_subclass = series_subclass::yield;
     s.is_scalar = false;
     s.modified_by = "system";
     s.performed_by = "system";
@@ -66,7 +66,7 @@ TEST_CASE("create_market_series_with_valid_fields", tags) {
     CHECK(sut.metric == "RATE");
     CHECK(sut.qualifier == "EUR");
     CHECK(sut.asset_class == asset_class::rates);
-    CHECK(sut.subclass == series_subclass::yield);
+    CHECK(sut.series_subclass == series_subclass::yield);
     CHECK(sut.is_scalar == false);
 }
 
@@ -79,7 +79,7 @@ TEST_CASE("create_scalar_fx_spot_series", tags) {
     sut.metric = "RATE";
     sut.qualifier = "EUR/USD";
     sut.asset_class = asset_class::fx;
-    sut.subclass = series_subclass::spot;
+    sut.series_subclass = series_subclass::spot;
     sut.is_scalar = true;
     sut.modified_by = "system";
     sut.performed_by = "system";
@@ -91,7 +91,7 @@ TEST_CASE("create_scalar_fx_spot_series", tags) {
     CHECK(sut.series_type == "FX");
     CHECK(sut.qualifier == "EUR/USD");
     CHECK(sut.asset_class == asset_class::fx);
-    CHECK(sut.subclass == series_subclass::spot);
+    CHECK(sut.series_subclass == series_subclass::spot);
     CHECK(sut.is_scalar == true);
 }
 
@@ -119,7 +119,7 @@ TEST_CASE("create_swaption_vol_series", tags) {
     sut.metric = "RATE_LNVOL";
     sut.qualifier = "EUR";
     sut.asset_class = asset_class::rates;
-    sut.subclass = series_subclass::volatility;
+    sut.series_subclass = series_subclass::volatility;
     sut.is_scalar = false;
     sut.modified_by = "system";
     sut.performed_by = "system";
@@ -130,7 +130,7 @@ TEST_CASE("create_swaption_vol_series", tags) {
 
     CHECK(sut.series_type == "SWAPTION");
     CHECK(sut.asset_class == asset_class::rates);
-    CHECK(sut.subclass == series_subclass::volatility);
+    CHECK(sut.series_subclass == series_subclass::volatility);
     CHECK(sut.is_scalar == false);
 }
 
@@ -143,7 +143,7 @@ TEST_CASE("create_market_series_with_faker", tags) {
     sut.metric = "RATE";
     sut.qualifier = std::string(faker::finance::currencyCode());
     sut.asset_class = asset_class::rates;
-    sut.subclass = series_subclass::yield;
+    sut.series_subclass = series_subclass::yield;
     sut.is_scalar = false;
     sut.modified_by = std::string(faker::internet::username());
     sut.performed_by = std::string(faker::internet::username());

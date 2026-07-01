@@ -73,7 +73,7 @@ QVariant ClientMarketFixingModel::data(const QModelIndex& index, int role) const
             case Value:
                 return QString::fromStdString(f.value);
             case Source:
-                return f.source ? QString::fromStdString(*f.source) : QString{};
+                return QString::fromStdString(f.source);
             case RecordedAt:
                 return relative_time_helper::format(f.recorded_at);
             default:
@@ -123,7 +123,7 @@ void ClientMarketFixingModel::fetch_data() {
                             .error_details = {}};
                 }
                 marketdata::messaging::get_market_fixings_request req;
-                req.series_id = boost::uuids::to_string(self->series_id_);
+                req.limit = 10000;
 
                 auto result = self->clientManager_->process_authenticated_request(std::move(req));
                 if (!result) {
@@ -135,8 +135,13 @@ void ClientMarketFixingModel::fetch_data() {
                             .error_details = {}};
                 }
                 const auto count = static_cast<std::uint32_t>(result->total_available_count);
+                auto all = std::move(result->market_fixings);
+                const auto sid = boost::uuids::to_string(self->series_id_);
+                all.erase(std::remove_if(all.begin(), all.end(),
+                    [&](const auto& f) { return boost::uuids::to_string(f.series_id) != sid; }),
+                    all.end());
                 return {.success = true,
-                        .entries = std::move(result->fixings),
+                        .entries = std::move(all),
                         .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};

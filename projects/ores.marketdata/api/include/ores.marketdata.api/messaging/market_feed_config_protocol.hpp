@@ -74,6 +74,23 @@ struct stop_market_feed_config_response {
     std::string message;
 };
 
+/**
+ * @brief Request the set of currently running feed source_names.
+ *
+ * No parameters — returns whatever the service has in memory. The response
+ * is a snapshot; callers should re-query after start/stop operations.
+ */
+struct list_market_feed_configs_request {
+    using response_type = struct list_market_feed_configs_response;
+    static constexpr std::string_view nats_subject =
+        "marketdata.v1.market_feed_configs.list";
+};
+
+struct list_market_feed_configs_response {
+    bool success = false;
+    std::vector<std::string> running_source_names; // source_names currently running
+};
+
 }
 
 #endif

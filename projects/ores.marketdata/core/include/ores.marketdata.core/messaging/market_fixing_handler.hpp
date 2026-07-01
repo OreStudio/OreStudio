@@ -23,17 +23,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/market_fixing_protocol.hpp"
-#include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/service/market_fixing_service.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.platform/time/time_utils.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <optional>
 
 namespace ores::marketdata::messaging {
@@ -50,10 +45,12 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
-using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
-class ORES_MARKETDATA_CORE_EXPORT market_fixing_handler {
+/**
+ * @brief NATS message handler for market fixing operations.
+ */
+class market_fixing_handler {
 public:
     market_fixing_handler(ores::nats::service::client& nats,
                           ores::database::context ctx,
@@ -63,101 +60,123 @@ public:
         , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(market_fixing_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        auto req = decode<get_market_fixings_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
-        service::market_fixing_service svc(ctx);
+        const auto& req_ctx = *req_ctx_expected;
+        service::market_fixing_service svc(req_ctx);
         get_market_fixings_response resp;
-        try {
-            const auto sid = boost::lexical_cast<boost::uuids::uuid>(req->series_id);
-            if (!req->from_date.empty() && !req->to_date.empty()) {
-                const auto from = ores::platform::time::time_utils::parse_date(req->from_date);
-                const auto to = ores::platform::time::time_utils::parse_date(req->to_date);
-                resp.fixings = svc.list(sid, from, to);
-            } else {
-                resp.fixings = svc.list(sid);
+        if (auto req = decode<get_market_fixings_request>(msg)) {
+            try {
+                resp.market_fixings = svc.list_market_fixings(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_market_fixings());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(market_fixing_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
             }
-            resp.total_available_count = static_cast<int>(resp.fixings.size());
-            BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(market_fixing_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+        } else {
+            BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
+        BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(market_fixing_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "marketdata::fixings:write")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_fixings:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        auto req = decode<save_market_fixings_request>(msg);
-        if (!req) {
+        service::market_fixing_service svc(req_ctx);
+        if (auto req = decode<save_market_fixing_request>(msg)) {
+            try {
+                svc.save_market_fixing(req->data);
+                BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, save_market_fixing_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(market_fixing_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(
+                    nats_, msg, save_market_fixing_response{.success = false, .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        service::market_fixing_service svc(ctx);
-        try {
-            svc.save(req->fixings);
-            BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_,
-                  msg,
-                  save_market_fixings_response{
-                      .success = true, .saved_count = static_cast<int>(req->fixings.size())});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(market_fixing_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_market_fixings_response{.success = false, .message = e.what()});
+        const auto& req_ctx = *req_ctx_expected;
+        service::market_fixing_service svc(req_ctx);
+        if (auto req = decode<get_market_fixing_history_request>(msg)) {
+            try {
+                auto hist = svc.get_market_fixing_history(req->id);
+                BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_market_fixing_history_response{.history = std::move(hist),
+                                                         .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(market_fixing_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      get_market_fixing_history_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
     void remove(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(market_fixing_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "marketdata::fixings:delete")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_fixings:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        auto req = decode<delete_market_fixings_request>(msg);
-        if (!req) {
+        service::market_fixing_service svc(req_ctx);
+        if (auto req = decode<delete_market_fixing_request>(msg)) {
+            try {
+                svc.delete_market_fixings(req->ids);
+                BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_market_fixing_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(market_fixing_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      delete_market_fixing_response{.success = false, .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
-        service::market_fixing_service svc(ctx);
-        try {
-            const auto sid = boost::lexical_cast<boost::uuids::uuid>(req->series_id);
-            svc.remove(sid);
-            BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, delete_market_fixings_response{.success = true});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(market_fixing_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(
-                nats_, msg, delete_market_fixings_response{.success = false, .message = e.what()});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
@@ -168,4 +187,5 @@ private:
 };
 
 } // namespace ores::marketdata::messaging
+
 #endif

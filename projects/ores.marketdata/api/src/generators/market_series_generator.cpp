@@ -19,27 +19,32 @@
  */
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
 
-namespace ores::marketdata::generator {
+namespace ores::marketdata::generators {
 
 using ores::utility::generation::generation_keys;
 
 domain::market_series
 generate_synthetic_market_series(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::market_series r;
+    r.version = 1;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.version = 0;
-    r.series_type = "DISCOUNT";
-    r.metric = "RATE";
-    r.qualifier = "TST_" + ctx.alphanumeric(3) + "_" + std::to_string(++counter);
-    r.asset_class = domain::asset_class::rates;
-    r.subclass = domain::series_subclass::yield;
-    r.is_scalar = false;
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.party_id = ctx.generate_uuid();
+    r.series_type = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.metric = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.qualifier = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

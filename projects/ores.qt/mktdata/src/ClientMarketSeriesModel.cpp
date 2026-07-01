@@ -132,7 +132,7 @@ QVariant ClientMarketSeriesModel::data(const QModelIndex& index, int role) const
             case AssetClass:
                 return asset_class_label(s.asset_class);
             case Subclass:
-                return subclass_label(s.subclass);
+                return subclass_label(s.series_subclass);
             case IsScalar:
                 return s.is_scalar ? "Yes" : "No";
             case Version:
@@ -220,7 +220,6 @@ void ClientMarketSeriesModel::fetch_data(std::uint32_t offset, std::uint32_t lim
                 marketdata::messaging::get_market_series_request req;
                 req.offset = static_cast<int>(offset);
                 req.limit = static_cast<int>(limit);
-                req.series_type = self->series_type_filter_;
 
                 auto result = self->clientManager_->process_authenticated_request(std::move(req));
                 if (!result) {
@@ -231,8 +230,14 @@ void ClientMarketSeriesModel::fetch_data(std::uint32_t offset, std::uint32_t lim
                                 "Failed to fetch market series: " + result.error()),
                             .error_details = {}};
                 }
+                auto all = std::move(result->market_series);
+                if (!self->series_type_filter_.empty()) {
+                    all.erase(std::remove_if(all.begin(), all.end(),
+                        [&](const auto& s) { return s.series_type != self->series_type_filter_; }),
+                        all.end());
+                }
                 return {.success = true,
-                        .entries = std::move(result->series),
+                        .entries = std::move(all),
                         .total_available_count =
                             static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},

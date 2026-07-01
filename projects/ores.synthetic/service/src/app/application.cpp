@@ -100,14 +100,15 @@ void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::conte
             stdevs.push_back(c.stdev);
             weights.push_back(c.weight);
         }
-        if (ctrl.start(fx.ore_key,
-                       fx.source_name,
-                       std::move(means),
-                       std::move(stdevs),
-                       std::move(weights),
-                       fx.gmm_initial_price,
-                       static_cast<double>(fx.ticks_per_hour),
-                       fx.process_type))
+        const auto r = ctrl.start(fx.ore_key,
+                                   fx.source_name,
+                                   std::move(means),
+                                   std::move(stdevs),
+                                   std::move(weights),
+                                   fx.gmm_initial_price,
+                                   static_cast<double>(fx.ticks_per_hour),
+                                   fx.process_type);
+        if (r == feed_controller::start_result::started)
             ++started;
     }
     BOOST_LOG_SEV(auto_start_lg(), info) << "Auto-started " << started << " enabled feed(s).";
@@ -152,6 +153,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             nats, cfg.database.user, cfg.database.password()));
 
     auto db_ctx = make_context(cfg.database);
+
+    try {
+        auto admin = nats.make_admin();
+        admin.ensure_stream(nats.make_stream_name("synthetic_ticks"),
+                            {nats.make_subject("synthetic.v1.tick.>")});
+        BOOST_LOG_SEV(lg(), info) << "JetStream stream ready: synthetic_ticks";
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream stream: " << e.what();
+        throw;
+    }
 
     auto ctrl = std::make_shared<feed_controller>(nats, svc_nats, db_ctx.tenant_id());
 

@@ -18,31 +18,75 @@
  *
  */
 #include "ores.marketdata.core/service/market_series_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
+#include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::marketdata::service {
+
+using namespace ores::logging;
 
 market_series_service::market_series_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::market_series> market_series_service::list() {
-    return repo_.read_latest(ctx_);
+std::vector<domain::market_series> market_series_service::list_market_series(std::uint32_t offset,
+                                                                             std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all market series";
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::vector<domain::market_series> market_series_service::find_by_type(
-    const std::string& series_type, const std::string& metric, const std::string& qualifier) {
-    return repo_.read_latest_by_type(ctx_, series_type, metric, qualifier);
+std::uint32_t market_series_service::count_market_series() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total market series count";
+    return repo_.get_total_market_series_count(ctx_);
 }
 
-void market_series_service::save(const domain::market_series& v) {
-    repo_.write(ctx_, v);
+std::optional<domain::market_series>
+market_series_service::get_market_series(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting market series: " << id;
+    auto results = repo_.read_latest(ctx_, id);
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
 }
 
-void market_series_service::save(const std::vector<domain::market_series>& v) {
-    repo_.write(ctx_, v);
+void market_series_service::save_market_series(const domain::market_series& v) {
+    if (v.id.is_nil())
+        throw std::invalid_argument("Market Series id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving market series: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved market series: " << v.id;
 }
 
-void market_series_service::remove(const boost::uuids::uuid& id) {
+void market_series_service::save_market_series(
+    const std::vector<domain::market_series>& market_series) {
+    for (const auto& e : market_series)
+        if (e.id.is_nil())
+            throw std::invalid_argument("Market Series id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << market_series.size() << " market series";
+    auto ts = market_series;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void market_series_service::delete_market_series(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing market series: " << id;
     repo_.remove(ctx_, id);
+    BOOST_LOG_SEV(lg(), info) << "Removed market series: " << id;
+}
+
+void market_series_service::delete_market_series(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
+}
+
+std::vector<domain::market_series>
+market_series_service::get_market_series_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for market series: " << id;
+    return repo_.read_all(ctx_, id);
 }
 
 }

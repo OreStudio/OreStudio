@@ -23,6 +23,7 @@
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/export.hpp"
+#include "ores.nats/service/buffered_subscription.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include <boost/asio/awaitable.hpp>
@@ -146,6 +147,18 @@ public:
      * for competing-consumer load balancing.
      */
     [[nodiscard]] subscription subscribe(std::string_view subject, message_handler handler);
+
+    /**
+     * @brief Subscribe and retain the last @p capacity messages in a buffer.
+     *
+     * Each arriving message is stored in a fixed-size circular buffer before
+     * @p handler is called. @p handler is optional — pass @c {} to buffer
+     * only. Call @c buffered_subscription::snapshot() to read history.
+     */
+    [[nodiscard]] buffered_subscription
+    subscribe_buffered(std::string_view subject,
+                       std::size_t capacity,
+                       message_handler handler = {});
 
     /**
      * @brief Queue-group subscribe (competing consumers).

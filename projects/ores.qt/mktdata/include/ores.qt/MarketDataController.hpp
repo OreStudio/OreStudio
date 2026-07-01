@@ -31,6 +31,7 @@ namespace ores::qt {
 
 class MarketSeriesMdiWindow;
 class MarketFixingsMdiWindow;
+class FxSpotGridWindow;
 class DetachableMdiSubWindow;
 
 /**
@@ -63,6 +64,7 @@ public:
 
     void showListWindow() override;
     void showFixingsWindow();
+    void showFxSpotGridWindow();
     void closeAllWindows() override;
     void reloadListWindow() override;
 
@@ -84,6 +86,9 @@ private:
 
     QPointer<MarketFixingsMdiWindow> fixingsListWindow_;
     QPointer<DetachableMdiSubWindow> fixingsListMdiSubWindow_;
+
+    QPointer<FxSpotGridWindow> fxSpotGridWindow_;
+    QPointer<DetachableMdiSubWindow> fxSpotGridMdiSubWindow_;
 };
 
 }

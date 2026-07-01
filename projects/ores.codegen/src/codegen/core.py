@@ -1690,6 +1690,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
                 is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')
                 is_timestamp_type = col.get('type') in ('timestamp', 'timestamptz')
+                is_enum_type = col.get('is_enum', False)
                 is_already_optional = (
                     col.get('cpp_type', '').startswith('std::optional<')
                     and not is_uuid_type
@@ -1698,15 +1699,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
                 col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
                 col['is_optional_timestamp'] = is_timestamp_type and col.get('nullable', False)
+                col['is_enum'] = is_enum_type and not col.get('nullable', False)
                 col['is_nullable_string'] = (
                     col.get('nullable', False)
                     and not is_uuid_type
                     and not is_timestamp_type
+                    and not is_enum_type
                     and not is_already_optional
                 )
                 col['is_simple'] = (
                     not col.get('nullable', False)
                     and not is_uuid_type
+                    and not is_enum_type
                     and not is_already_optional
                 )
                 # Supply a safe default for non-nullable scalar types that
@@ -1776,11 +1780,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 key['iter_var'] = iter_var
                 key['is_uuid'] = key.get('type') == 'uuid' or 'boost::uuids::uuid' in key.get('cpp_type', '')
                 key['is_int'] = key.get('cpp_type', '') in ('int', 'long', 'std::size_t') or key.get('type', '') == 'integer'
+                key['is_timestamp'] = ('time_point' in key.get('cpp_type', '') or
+                                       key.get('type', '') in ('timestamp', 'timestamptz', 'timestamp with time zone'))
+                key['is_date'] = (key.get('cpp_type', '') == 'std::chrono::year_month_day' or
+                                  key.get('type', '') == 'date')
             nks = domain_entity['natural_keys']
             domain_entity['has_multiple_natural_keys'] = len(nks) > 1
             # Flag: UUID-PK entities with text natural keys need an idx counter in the generator
             domain_entity['has_text_natural_keys'] = any(
-                not k.get('is_uuid') and not k.get('is_int') for k in nks
+                not k.get('is_uuid') and not k.get('is_int')
+                and not k.get('is_timestamp') and not k.get('is_date')
+                for k in nks
+            )
+            domain_entity['has_enum_columns'] = any(c.get('is_enum') for c in domain_entity.get('columns', []))
+            domain_entity['has_date_natural_keys'] = any(k.get('is_date') for k in nks)
+            domain_entity['has_date_or_timestamp_natural_keys'] = any(
+                k.get('is_date') or k.get('is_timestamp') for k in nks
             )
             domain_entity['needs_counter'] = (
                 domain_entity.get('primary_key', {}).get('is_text', False)
@@ -1939,9 +1954,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # so models don't need to spell them out. Models may still override
             # by setting these fields explicitly.
             entity_singular = domain_entity.get('entity_singular', '')
-            component_include = domain_entity.get('component_include',
-                domain_entity.get('component', ''))
             component = domain_entity.get('component', '')
+            _subcomponent = domain_entity.get('subcomponent', '')
+            _derived_component_include = (
+                f'{component}.{_subcomponent}' if _subcomponent else component)
+            component_include = domain_entity.get(
+                'component_include', _derived_component_include)
             if 'domain_include' not in qt and entity_singular and component_include:
                 qt['domain_include'] = (
                     f'ores.{component_include}/domain/{entity_singular}.hpp')
@@ -2337,8 +2355,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 output_filename = f"{sub_dir}/{name_singular}{suffix}"
             else:
                 output_filename = f"{name_singular}.hpp"
-        elif generate_qt and is_domain_entity and 'domain_entity' in data:
-            # Qt generation for domain entity
+        elif generate_qt and is_domain_entity and 'domain_entity' in data and 'qt' in data['domain_entity']:
+            # Qt generation for domain entity — only when the model has a ** Qt section.
             domain_entity = data['domain_entity']
             entity_pascal = domain_entity.get('entity_pascal', 'Unknown')
             # Find the mapping for this template

@@ -7,6 +7,15 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 {{/has_uuid_columns}}
+{{#has_date_or_timestamp_natural_keys}}
+#include "ores.platform/time/datetime.hpp"
+#include <chrono>
+#include <format>
+#include <sstream>
+{{/has_date_or_timestamp_natural_keys}}
+{{#has_enum_columns}}
+#include <rfl/enums.hpp>
+{{/has_enum_columns}}
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
 
@@ -57,9 +66,21 @@ domain::{{entity_singular}}
 {{#is_uuid}}
     r.{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}});
 {{/is_uuid}}
-{{^is_uuid}}
+{{#is_date}}
+    {
+        int yy{}, mm{}, dd{}; char s1{}, s2{};
+        std::istringstream ss(v.{{column}});
+        ss >> yy >> s1 >> mm >> s2 >> dd;
+        r.{{column}} = std::chrono::year{yy} / std::chrono::month{static_cast<unsigned>(mm)} /
+                       std::chrono::day{static_cast<unsigned>(dd)};
+    }
+{{/is_date}}
+{{#is_timestamp}}
+    r.{{column}} = timestamp_to_timepoint(std::string_view{v.{{column}}});
+{{/is_timestamp}}
+{{^is_uuid}}{{^is_date}}{{^is_timestamp}}
     r.{{column}} = v.{{column}};
-{{/is_uuid}}
+{{/is_timestamp}}{{/is_date}}{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
 {{#is_identity_group_column}}
@@ -78,6 +99,9 @@ domain::{{entity_singular}}
 {{#is_already_optional}}
     r.identity.{{name}} = v.{{name}};
 {{/is_already_optional}}
+{{#is_enum}}
+    r.identity.{{name}} = rfl::string_to_enum<{{{cpp_type}}}>(v.{{name}}).value();
+{{/is_enum}}
 {{#is_simple}}
     r.identity.{{name}} = v.{{name}};
 {{/is_simple}}
@@ -98,6 +122,9 @@ domain::{{entity_singular}}
 {{#is_already_optional}}
     r.{{name}} = v.{{name}};
 {{/is_already_optional}}
+{{#is_enum}}
+    r.{{name}} = rfl::string_to_enum<{{{cpp_type}}}>(v.{{name}}).value();
+{{/is_enum}}
 {{#is_simple}}
     r.{{name}} = v.{{name}};
 {{/is_simple}}
@@ -164,9 +191,15 @@ domain::{{entity_singular}}
 {{#is_uuid}}
     r.{{column}} = boost::uuids::to_string(v.{{column}});
 {{/is_uuid}}
-{{^is_uuid}}
+{{#is_date}}
+    r.{{column}} = std::format("{:%Y-%m-%d}", v.{{column}});
+{{/is_date}}
+{{#is_timestamp}}
+    r.{{column}} = ores::platform::time::datetime::to_iso8601_utc(v.{{column}});
+{{/is_timestamp}}
+{{^is_uuid}}{{^is_date}}{{^is_timestamp}}
     r.{{column}} = v.{{column}};
-{{/is_uuid}}
+{{/is_timestamp}}{{/is_date}}{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
 {{#is_identity_group_column}}
@@ -185,6 +218,9 @@ domain::{{entity_singular}}
 {{#is_already_optional}}
     r.{{name}} = v.identity.{{name}};
 {{/is_already_optional}}
+{{#is_enum}}
+    r.{{name}} = rfl::enum_to_string(v.identity.{{name}});
+{{/is_enum}}
 {{#is_simple}}
     r.{{name}} = v.identity.{{name}};
 {{/is_simple}}
@@ -205,6 +241,9 @@ domain::{{entity_singular}}
 {{#is_already_optional}}
     r.{{name}} = v.{{name}};
 {{/is_already_optional}}
+{{#is_enum}}
+    r.{{name}} = rfl::enum_to_string(v.{{name}});
+{{/is_enum}}
 {{#is_simple}}
     r.{{name}} = v.{{name}};
 {{/is_simple}}

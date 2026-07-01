@@ -29,22 +29,27 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief A single value on a market series at a specific date and tenor point.
+ * @brief One observed value for a (series, observation_datetime, point_id) triple; TimescaleDB
+ * hypertable partitioned by observation_datetime.
  *
- * Observations are the time-series data points for a market_series. Each row
- * records the value of the series at a given observation_datetime and (for term
- * structures) a specific point_id (tenor, surface coordinate).
+ * A single market data observation: the value of a series at a given
+ * observation_datetime and optional point_id (tenor/surface coordinate).
+ * observation_datetime is the financial valid-time (UTC); valid_from/valid_to
+ * is the transaction time. Corrections replace the previous value via the
+ * soft-update trigger.
  *
- * Stored in a TimescaleDB hypertable partitioned by observation_datetime.
- * Corrections are handled by the insert trigger: inserting a new value for the
- * same (series, datetime, point) closes the previous row and creates a fresh one,
- * preserving full transaction-time history.
+ * TimescaleDB hypertable partitioned by observation_datetime with 30-day chunks;
+ * GIST exclusion and DELETE RULEs are incompatible with hypertables — uniqueness
+ * is enforced via partial unique index and the soft-update/soft-delete trigger pair.
+ *
+ * No audit trail columns (version, modified_by, performed_by, change_reason_code,
+ * change_commentary) — tick-level data volumes make these impractical.
  */
 struct market_observation final {
     /**
-     * @brief Unique identifier for this observation row.
+     * @brief Version number for optimistic locking and change tracking.
      */
-    boost::uuids::uuid id{};
+    int version = 0;
 
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
@@ -52,38 +57,69 @@ struct market_observation final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Foreign key to the parent market_series.
+     * @brief Surrogate UUID uniquely identifying this observation row.
      */
-    boost::uuids::uuid series_id{};
+    boost::uuids::uuid id;
 
     /**
-     * @brief Financial valid-time: the date and time the market was observed (UTC).
+     * @brief Party that owns this observation.
+     *
+     * Set server-side from the authenticated session. Enforced by RLS.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
+     * @brief Reference to ores_marketdata_market_series_tbl(id) — identifies what was observed.
+     */
+    boost::uuids::uuid series_id;
+
+    /**
+     * @brief Financial valid-time: when the market value was observed (UTC). Also the hypertable
+     * partition column.
      */
     std::chrono::system_clock::time_point observation_datetime;
 
     /**
-     * @brief Tenor or surface coordinate for term structure series.
-     *
-     * Null for scalar series (e.g. FX spot, equity spot price).
-     * For curves: "1Y", "5Y", "6M".
-     * For 2-D surfaces: "1Y/ATM", "5Y/2Y/ATM", "6M/25RR".
+     * @brief Tenor or compound surface identifier (e.g. 1Y, 5Y/2Y/ATM, 0.03/10Y/2Y). Null for
+     * scalar series such as FX spot rates.
      */
-    std::optional<std::string> point_id;
+    std::string point_id;
 
     /**
-     * @brief The observed market value as a string (e.g. "0.034567").
+     * @brief Serialised market value (numeric string; format is series-type-specific).
      */
     std::string value;
 
     /**
-     * @brief Optional data source identifier (e.g. "BLOOMBERG", "REUTERS").
+     * @brief Source tag identifying the producer channel that published this observation (e.g.
+     * synthetic.v1.tick.EUR-USD).
      */
-    std::optional<std::string> source;
+    std::string source;
 
     /**
-     * @brief Transaction time: when this row was inserted into the system.
+     * @brief Username of the person who last modified this market observation.
+     */
+    std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
      *
-     * Maps to valid_from in the database; valid_to is managed internally.
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
 };

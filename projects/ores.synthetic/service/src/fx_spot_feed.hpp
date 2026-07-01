@@ -22,12 +22,7 @@
 
 #include "ores.marketdata.api/domain/i_fx_spot_feed.hpp"
 #include "ores.marketdata.api/domain/i_stochastic_process.hpp"
-#include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.nats/service/nats_client.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid.hpp>
 #include <atomic>
 #include <memory>
 #include <string>
@@ -35,56 +30,44 @@
 namespace ores::synthetic::service {
 
 /**
- * @brief Concrete FX spot feed: fixed-mode tick clock + GmmProcess.
+ * @brief Concrete FX spot feed: fixed-mode tick clock + stochastic process.
  *
- * Implements IFxSpotFeed. On start(), runs a tick loop on the calling
- * thread (caller must run it on a dedicated std::thread). Each tick:
+ * Implements IFxSpotFeed. On start(), runs a tick loop on the calling thread
+ * (caller must run it on a dedicated std::thread). Each tick:
  *   1. Advances the stochastic process to get a new price.
  *   2. Builds an fx_spot_tick (ore_key, utc now, price).
  *   3. Calls the on_tick handler.
- *   4. Publishes the tick JSON to the NATS fan-out subject.
- *   5. Saves a market_observation to the DB via NATS request_sync (step 3).
+ *   4. Publishes the tick JSON to the NATS JetStream subject.
  *
- * The NATS publish subject is supplied by the caller (the synthetic producer
- * channel, derived per-producer from its source name) so that multiple
- * producers for the same ORE key publish on distinct subjects.
+ * Persistence is handled by the marketdata ingest loop, which subscribes to
+ * the JetStream subject, lazily creates the market series on first tick, and
+ * writes market observations. The synthetic service has no marketdata writes.
  *
- * Threading: see IFxSpotFeed class-level doc.
- *
- * PoC limitation: the clock period includes the NATS publish latency,
- * so the actual tick rate falls below the configured rate under load.
- *
- * PoC limitation: request_sync in the tick loop has no timeout; if the
- * marketdata service is unavailable the tick thread blocks indefinitely,
- * which also prevents stop() + join() from returning.
+ * The NATS publish subject is supplied by the caller (derived per-producer
+ * from its source name) so that multiple producers for the same ORE key
+ * publish on distinct subjects.
  */
 class fx_spot_feed final : public ores::marketdata::domain::IFxSpotFeed {
 public:
     fx_spot_feed(ores::nats::service::client& nats,
-                 ores::nats::service::nats_client& auth_nats,
                  std::string ore_key,
                  std::string nats_subject,
                  std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process,
-                 double ticks_per_hour,
-                 boost::uuids::uuid series_id,
-                 ores::utility::uuid::tenant_id tenant_id);
+                 double ticks_per_hour);
 
     std::string ore_key() const override;
     void start(handler on_tick) override;
     void stop() override;
+    std::uint64_t publish_count() const { return publish_count_.load(std::memory_order_relaxed); }
 
 private:
     ores::nats::service::client& nats_;
-    ores::nats::service::nats_client& auth_nats_;
-    ores::marketdata::client::market_data_client md_client_; // constructed once, not per tick
     std::string ore_key_;
     std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process_;
     double ticks_per_hour_;
     std::string nats_subject_;
-    boost::uuids::uuid series_id_;
-    ores::utility::uuid::tenant_id tenant_id_;
-    boost::uuids::random_generator uuid_gen_; // thread-confined — only used inside start()
     std::atomic<bool> stop_flag_{false};
+    std::atomic<std::uint64_t> publish_count_{0};
 };
 
 }

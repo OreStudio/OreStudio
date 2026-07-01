@@ -24,16 +24,19 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.core/export.hpp"
-#include "ores.marketdata.core/repository/market_observations_repository.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <chrono>
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
+#include <cstdint>
 #include <optional>
+#include <string>
 #include <vector>
 
 namespace ores::marketdata::service {
 
 /**
- * @brief Service for managing market data observations.
+ * @brief Service for managing market observations.
+ *
+ * Provides a higher-level interface for market observation operations,
+ * wrapping the underlying repository.
  */
 class ORES_MARKETDATA_CORE_EXPORT market_observation_service {
 private:
@@ -49,23 +52,77 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a market_observation_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit market_observation_service(context ctx);
 
-    std::vector<domain::market_observation> list(const boost::uuids::uuid& series_id);
+    /**
+     * @brief Lists market observations with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of market observations for the requested page.
+     */
+    std::vector<domain::market_observation> list_market_observations(std::uint32_t offset,
+                                                                     std::uint32_t limit,
+                                                                     const std::string& series_id = {});
 
-    std::vector<domain::market_observation>
-    list(const boost::uuids::uuid& series_id,
-         const std::chrono::system_clock::time_point& from_datetime,
-         const std::chrono::system_clock::time_point& to_datetime);
+    /**
+     * @brief Gets the total count of active market observations.
+     *
+     * @return Total number of active market observations.
+     */
+    std::uint32_t count_market_observations();
 
-    void save(const domain::market_observation& v);
-    void save(const std::vector<domain::market_observation>& v);
+    /**
+     * @brief Retrieves a single market observation by its id.
+     *
+     * @param id The id of the market observation.
+     * @return The market observation if found, std::nullopt otherwise.
+     */
+    std::optional<domain::market_observation> get_market_observation(const std::string& id);
 
-    void remove(const boost::uuids::uuid& series_id);
+    /**
+     * @brief Saves a market observation (creates or updates).
+     *
+     * @param market_observation The market observation to save.
+     * @throws std::exception on failure.
+     */
+    void save_market_observation(const domain::market_observation& market_observation);
+
+    /**
+     * @brief Saves a batch of market observations.
+     *
+     * @param market_observations The market observations to save.
+     * @throws std::exception on failure.
+     */
+    void
+    save_market_observations(const std::vector<domain::market_observation>& market_observations);
+
+    /**
+     * @brief Deletes a market observation by its id.
+     *
+     * @param id The id of the market observation to delete.
+     * @throws std::exception on failure.
+     */
+    void delete_market_observation(const std::string& id);
+
+    /**
+     * @brief Deletes market observations by their ids.
+     */
+    void delete_market_observations(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a market observation.
+     */
+    std::vector<domain::market_observation> get_market_observation_history(const std::string& id);
 
 private:
     context ctx_;
-    repository::market_observations_repository repo_;
+    repository::market_observation_repository repo_;
 };
 
 }

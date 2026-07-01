@@ -30,16 +30,16 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief Catalog entry for a market data series.
+ * @brief Catalog entry identifying what is being observed (series type, metric, qualifier, asset
+ * class).
  *
- * A market series identifies what is being observed — a yield curve, a vol
- * surface, a spot price — independently of when observations were recorded.
- * The ORE key is decomposed into (series_type, metric, qualifier); the
- * full key is always reconstructable as series_type/metric/qualifier.
+ * A catalog entry for a market data series — it records what is being observed:
+ * a yield curve, vol surface, spot rate, fixing index, or similar. Standard
+ * temporal reference data; changes infrequently so a regular table with GIST
+ * exclusion is appropriate.
  *
- * This is a standard temporal entity with full audit trail and GIST exclusion
- * enforcing at most one current record per (tenant, series_type, metric,
- * qualifier).
+ * Every ORE market data key follows the skeleton TYPE / METRIC / QUALIFIER;
+ * asset_class and series_subclass carry the coarse taxonomy for filtering.
  */
 struct market_series final {
     /**
@@ -53,52 +53,52 @@ struct market_series final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique identifier for this market series.
+     * @brief Surrogate UUID uniquely identifying this market series.
      */
-    boost::uuids::uuid id{};
+    boost::uuids::uuid id;
 
     /**
-     * @brief ORE key type component (e.g. DISCOUNT, MM, FX, SWAPTION).
+     * @brief Party that owns this market series.
      *
-     * Corresponds to the first segment of the ORE market data key.
+     * Set server-side from the authenticated session. Enforced by RLS.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
+     * @brief ORE market data type token (e.g. FXSpot, YieldCurve, FXVolatility).
      */
     std::string series_type;
 
     /**
-     * @brief ORE key metric component (e.g. RATE, PRICE, RATE_LNVOL).
-     *
-     * Corresponds to the second segment of the ORE market data key.
+     * @brief Metric within the series type (e.g. SPOT, DISCOUNT, FLAT_FWD_VOLATILITY).
      */
     std::string metric;
 
     /**
-     * @brief Type-specific qualifier (e.g. EUR, EUR/USD, CPTY_A/SR/USD).
-     *
-     * Groups all tenors/points of a series. The split between qualifier and
-     * point_id is type-specific and defined in the C++ series key registry
-     * (Phase 3). Stored as free text; always reconstructable.
+     * @brief Free-text qualifier disambiguating the series within type+metric (e.g. EUR,
+     * EUR-EURIBOR-3M, or an empty string for scalars).
      */
     std::string qualifier;
 
     /**
-     * @brief Top-level asset class for efficient slice queries.
+     * @brief Coarse asset class taxonomy: FX, RATES, CREDIT, EQUITY, COMMODITY, INFLATION, BOND,
+     * CROSS_ASSET.
      */
-    domain::asset_class asset_class = domain::asset_class::rates;
+    domain::asset_class asset_class;
 
     /**
-     * @brief Fine-grained subclass within the asset class.
+     * @brief Subclass within the asset class (e.g. SPOT, VOLATILITY, YIELD, SPREAD).
      */
-    domain::series_subclass subclass = domain::series_subclass::yield;
+    domain::series_subclass series_subclass;
 
     /**
-     * @brief True for series with no tenor dimension (e.g. FX spot, equity spot).
-     *
-     * Scalar series have no point_id on their observations.
+     * @brief True when the series has no point dimension (e.g. an FX spot rate or a single fixing),
+     * false when it is curve/surface/matrix data.
      */
     bool is_scalar = false;
 
     /**
-     * @brief Username of the person who last modified this record.
+     * @brief Username of the person who last modified this market series.
      */
     std::string modified_by;
 
@@ -109,6 +109,8 @@ struct market_series final {
 
     /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 

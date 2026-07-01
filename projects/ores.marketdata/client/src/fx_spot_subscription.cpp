@@ -40,8 +40,9 @@ inline static std::string_view logger_name = "ores.marketdata.client.fx_spot_sub
 
 fx_spot_subscription::fx_spot_subscription(ores::nats::service::client& nats,
                                            std::string ore_key,
+                                           std::string tenant_id,
                                            handler on_tick)
-    : sub_(nats.subscribe(detail::ore_key_to_subject(ore_key),
+    : sub_(nats.subscribe(detail::ore_key_to_subject(ore_key, tenant_id),
                           [on_tick = std::move(on_tick)](ores::nats::message msg) {
                               auto tick = rfl::json::read<ores::marketdata::domain::fx_spot_tick>(
                                   ores::nats::as_string_view(msg.data));

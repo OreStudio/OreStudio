@@ -21,45 +21,61 @@
 #define ORES_MARKETDATA_API_MESSAGING_MARKET_OBSERVATION_PROTOCOL_HPP
 
 #include "ores.marketdata.api/domain/market_observation.hpp"
+#include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::marketdata::messaging {
 
 struct get_market_observations_request {
     using response_type = struct get_market_observations_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.observations.list";
-    std::string series_id;
-    std::string from_datetime; // ISO 8601 UTC (e.g. "2026-01-01T00:00:00Z"), empty = no lower bound
-    std::string to_datetime; // ISO 8601 UTC (e.g. "2026-12-31T23:59:59Z"), empty = no upper bound;
-                             // inclusive
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.list";
+    std::string series_id;  // optional: if set, return only observations for this series
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_market_observations_response {
-    std::vector<domain::market_observation> observations;
+    std::vector<ores::marketdata::domain::market_observation> market_observations;
     int total_available_count = 0;
-};
-
-struct save_market_observations_request {
-    using response_type = struct save_market_observations_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.observations.save";
-    std::vector<domain::market_observation> observations;
-};
-
-struct save_market_observations_response {
     bool success = false;
     std::string message;
-    int saved_count = 0;
 };
 
-struct delete_market_observations_request {
-    using response_type = struct delete_market_observations_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.observations.delete";
-    std::string series_id;
+struct save_market_observation_request {
+    using response_type = struct save_market_observation_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.save";
+    ores::marketdata::domain::market_observation data;
+
+    static save_market_observation_request from(ores::marketdata::domain::market_observation v) {
+        return {.data = std::move(v)};
+    }
 };
 
-struct delete_market_observations_response {
+struct save_market_observation_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_market_observation_request {
+    using response_type = struct delete_market_observation_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.delete";
+    std::vector<std::string> ids;
+};
+
+struct delete_market_observation_response {
+    bool success = false;
+    std::string message;
+};
+
+struct get_market_observation_history_request {
+    using response_type = struct get_market_observation_history_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.history";
+    std::string id;
+};
+
+struct get_market_observation_history_response {
+    std::vector<ores::marketdata::domain::market_observation> history;
     bool success = false;
     std::string message;
 };

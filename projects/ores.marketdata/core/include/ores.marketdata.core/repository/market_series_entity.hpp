@@ -31,22 +31,26 @@ namespace ores::marketdata::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Database entity for a market data series catalog entry.
- *
- * Maps to ores_marketdata_series_tbl. The id is a UUID stored as a string.
- * asset_class and series_subclass are stored as lowercase text matching the
- * C++ enum names.
+ * @brief Represents a market series in the database.
  */
 struct market_series_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_marketdata_series_tbl";
+    constexpr static const char* tablename = "ores_marketdata_market_series_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
+
+
     std::string series_type;
+
+
     std::string metric;
+
+
     std::string qualifier;
+
     std::string asset_class;
     std::string series_subclass;
     bool is_scalar = false;

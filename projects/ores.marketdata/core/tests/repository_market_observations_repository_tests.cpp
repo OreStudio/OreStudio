@@ -38,7 +38,7 @@ const std::string tags("[repository]");
 }
 
 using namespace ores::logging;
-using namespace ores::marketdata::generator;
+using namespace ores::marketdata::generators;
 
 using ores::testing::database_helper;
 using ores::marketdata::repository::market_series_repository;
@@ -55,7 +55,8 @@ TEST_CASE("write_single_market_observation", tags) {
     series_repo.write(h.context(), s);
 
     market_observations_repository obs_repo;
-    auto obs = generate_synthetic_market_observation(s.id, ctx);
+    auto obs = generate_synthetic_market_observation(ctx);
+    obs.series_id = s.id;
     BOOST_LOG_SEV(lg, debug) << "Observation: " << obs;
     CHECK_NOTHROW(obs_repo.write(h.context(), obs));
 }
@@ -71,7 +72,8 @@ TEST_CASE("write_multiple_market_observations", tags) {
     series_repo.write(h.context(), s);
 
     market_observations_repository obs_repo;
-    auto observations = generate_synthetic_market_observations(5, s.id, ctx);
+    auto observations = generate_synthetic_market_observations(5, ctx);
+    for (auto& o : observations) o.series_id = s.id;
     BOOST_LOG_SEV(lg, debug) << "Observations: " << observations;
     CHECK_NOTHROW(obs_repo.write(h.context(), observations));
 }
@@ -87,7 +89,8 @@ TEST_CASE("read_latest_market_observations_by_series", tags) {
     series_repo.write(h.context(), s);
 
     market_observations_repository obs_repo;
-    auto written = generate_synthetic_market_observations(3, s.id, ctx);
+    auto written = generate_synthetic_market_observations(3, ctx);
+    for (auto& o : written) o.series_id = s.id;
     obs_repo.write(h.context(), written);
 
     auto read = obs_repo.read_latest(h.context(), s.id);
@@ -109,7 +112,8 @@ TEST_CASE("remove_market_observations", tags) {
     series_repo.write(h.context(), s);
 
     market_observations_repository obs_repo;
-    auto observations = generate_synthetic_market_observations(3, s.id, ctx);
+    auto observations = generate_synthetic_market_observations(3, ctx);
+    for (auto& o : observations) o.series_id = s.id;
     obs_repo.write(h.context(), observations);
 
     auto before = obs_repo.read_latest(h.context(), s.id);

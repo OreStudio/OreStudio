@@ -486,6 +486,45 @@ Templates reference: =<<paste:C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A>>=.
 Entity attachment: any babel block with
 =:implements C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A= contributes its body.
 
+** NATS handler: extra includes
+:PROPERTIES:
+:ID: F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
+:END:
+
+Additional =#include= directives injected into the generated
+=<entity>_handler.hpp= after the standard generated includes.
+
+Use this for headers needed by custom handler methods (e.g.
+=rfl/msgpack.hpp=, =storage_transfer.hpp=, additional protocol headers).
+
+Templates reference: =<<paste:F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F>>=.
+
+** NATS handler: custom public methods
+:PROPERTIES:
+:ID: B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+:END:
+
+Additional public method definitions injected into the generated
+=<entity>_handler.hpp= just before the =private:= label.
+
+Use this for entity-specific NATS handler methods that are beyond the
+standard CRUD surface (e.g. export-to-storage, bulk operations).
+
+Templates reference: =<<paste:B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F>>=.
+
+** NATS handler: extra private members
+:PROPERTIES:
+:ID: A1C3E5F7-8B2D-4A6E-9F1C-3D7B5E2A8C4D
+:END:
+
+Additional private member declarations injected into the generated
+=<entity>_handler.hpp= inside the private section.
+
+Use this when the handler needs extra members (e.g. =http_base_url_=)
+that the generic template does not generate.
+
+Templates reference: =<<paste:A1C3E5F7-8B2D-4A6E-9F1C-3D7B5E2A8C4D>>=.
+
 * Notes
 
 ** Why two levels of UUID

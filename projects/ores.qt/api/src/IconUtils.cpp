@@ -89,7 +89,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::CheckmarkCircle:
             return {"ic_fluent_checkmark_circle_20", "check-circle.svg"};
         case Icon::CheckmarkCircleFilled:
-            return {"ic_fluent_checkmark_circle_20", "check-circle.svg", true};
+            return {"ic_fluent_checkmark_circle_20", "check-circle.svg", true};  // solar Bold = check-circle.svg
         case Icon::Classification:
             return {"ic_fluent_classification_20", "layers.svg"};
         case Icon::Clock:
@@ -115,7 +115,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::DismissCircle:
             return {"ic_fluent_dismiss_circle_20", "close-circle.svg"};
         case Icon::DismissCircleFilled:
-            return {"ic_fluent_dismiss_circle_20", "close-circle.svg", true};
+            return {"ic_fluent_dismiss_circle_20", "close-circle.svg", true};  // solar Bold = close-circle.svg
         case Icon::DocumentCode:
             return {"ic_fluent_document_code_16", "code-file.svg"};
         case Icon::DocumentTable:
@@ -181,11 +181,11 @@ static IconDef getIconDef(Icon icon) {
         case Icon::PersonAdd:
             return {"ic_fluent_person_add_20", "user-plus-rounded.svg"};
         case Icon::PauseCircleFilled:
-            return {"ic_fluent_pause_circle_20", "record-circle.svg", true};
+            return {"ic_fluent_pause_circle_20", "pause-circle.svg", true};
         case Icon::Play:
-            return {"ic_fluent_play_20", "record-circle.svg"};
+            return {"ic_fluent_play_20", "play.svg"};
         case Icon::PlayFilled:
-            return {"ic_fluent_play_20", "record-circle.svg", true};
+            return {"ic_fluent_play_20", "play-circle.svg", true};
         case Icon::PlugConnected:
             return {"ic_fluent_plug_connected_20", "plug-circle.svg"};
         case Icon::PlugConnectedFilled:
@@ -201,9 +201,9 @@ static IconDef getIconDef(Icon icon) {
         case Icon::RecordFilled:
             return {"ic_fluent_record_20", "record-circle.svg", true};
         case Icon::Stop:
-            return {"ic_fluent_stop_20", "record-circle.svg"};
+            return {"ic_fluent_stop_20", "stop.svg"};
         case Icon::StopFilled:
-            return {"ic_fluent_stop_20", "record-circle.svg", true};
+            return {"ic_fluent_stop_20", "stop-circle.svg", true};
         case Icon::Save:
             return {"ic_fluent_save_20", "diskette.svg"};
         case Icon::Server:

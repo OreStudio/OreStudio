@@ -230,11 +230,16 @@
     <file>icons/solarized/Bold/magic-stick-3.svg</file>
     <file>icons/solarized/Bold/notes-minimalistic.svg</file>
     <file>icons/solarized/Bold/solar_notepad.svg</file>
+    <file>icons/solarized/Bold/pause-circle.svg</file>
     <file>icons/solarized/Bold/pen-new-square.svg</file>
+    <file>icons/solarized/Bold/play.svg</file>
+    <file>icons/solarized/Bold/play-circle.svg</file>
     <file>icons/solarized/Bold/plug-circle.svg</file>
     <file>icons/solarized/Bold/presentation-graph.svg</file>
     <file>icons/solarized/Bold/question-circle.svg</file>
     <file>icons/solarized/Bold/record-circle.svg</file>
+    <file>icons/solarized/Bold/stop.svg</file>
+    <file>icons/solarized/Bold/stop-circle.svg</file>
     <file>icons/solarized/Bold/refresh-circle.svg</file>
     <file>icons/solarized/Bold/restart-circle.svg</file>
     <file>icons/solarized/Bold/server-square.svg</file>
@@ -304,10 +309,14 @@
     <file>icons/solarized/Linear/notes-minimalistic.svg</file>
     <file>icons/solarized/Linear/solar_notepad.svg</file>
     <file>icons/solarized/Linear/pen-new-square.svg</file>
+    <file>icons/solarized/Linear/play.svg</file>
+    <file>icons/solarized/Linear/play-circle.svg</file>
     <file>icons/solarized/Linear/plug-circle.svg</file>
     <file>icons/solarized/Linear/presentation-graph.svg</file>
     <file>icons/solarized/Linear/question-circle.svg</file>
     <file>icons/solarized/Linear/record-circle.svg</file>
+    <file>icons/solarized/Linear/stop.svg</file>
+    <file>icons/solarized/Linear/stop-circle.svg</file>
     <file>icons/solarized/Linear/refresh-circle.svg</file>
     <file>icons/solarized/Linear/restart-circle.svg</file>
     <file>icons/solarized/Linear/server-square.svg</file>

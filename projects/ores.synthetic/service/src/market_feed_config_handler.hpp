@@ -75,26 +75,36 @@ public:
         }
 
         start_market_feed_config_response resp;
-        const bool started = ctrl_->start(req->ore_key,
-                                          req->source_name,
-                                          req->gmm_means,
-                                          req->gmm_stdevs,
-                                          req->gmm_weights,
-                                          req->gmm_initial_price,
-                                          req->ticks_per_hour,
-                                          req->process_type);
+        const auto result = ctrl_->start(req->ore_key,
+                                         req->source_name,
+                                         req->gmm_means,
+                                         req->gmm_stdevs,
+                                         req->gmm_weights,
+                                         req->gmm_initial_price,
+                                         req->ticks_per_hour,
+                                         req->process_type);
 
         const std::string id = req->source_name.empty() ? req->ore_key : req->source_name;
-        if (started) {
+        using sr = feed_controller::start_result;
+        switch (result) {
+        case sr::started:
             resp.success = true;
             resp.message = "Feed started: " + id;
             BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
                 << msg.subject << " — feed started: " << id << "  ticks/h=" << req->ticks_per_hour;
-        } else {
+            break;
+        case sr::already_running:
+            resp.success = true;
+            resp.message = "Feed already running: " + id;
+            BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
+                << msg.subject << " — feed already running: " << id;
+            break;
+        case sr::series_unresolved:
             resp.success = false;
-            resp.message = "Feed already running or series unresolved: " + id;
+            resp.message = "Series unresolved for: " + id;
             BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
-                << msg.subject << " — feed not started: " << id;
+                << msg.subject << " — series unresolved, feed not started: " << id;
+            break;
         }
         reply(nats_, msg, resp);
     }

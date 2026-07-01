@@ -83,15 +83,15 @@ public:
         shutdown();
     }
 
+    enum class start_result { started, already_running, series_unresolved };
+
     /**
      * @brief Start one producer feed. Keyed by source_name (unique per producer).
      *
      * Resolves/creates the market series for ore_key, derives the producer
      * subject from source_name, builds the process and spawns its tick thread.
-     * Returns false if a feed with this source_name is already running or the
-     * series could not be resolved.
      */
-    bool start(const std::string& ore_key,
+    start_result start(const std::string& ore_key,
                const std::string& source_name,
                std::vector<double> means,
                std::vector<double> stdevs,
@@ -105,12 +105,12 @@ public:
         // at worst one extra lookup, not a corrupt state.
         boost::uuids::uuid series_id{};
         if (!resolve_series(ore_key, series_id))
-            return false;
+            return start_result::series_unresolved;
 
         std::lock_guard lock(mu_);
         const std::string key = source_name.empty() ? ore_key : source_name;
         if (feeds_.contains(key))
-            return false;
+            return start_result::already_running;
 
         auto process = process_factory::make_process(
             process_type, std::move(means), std::move(stdevs), std::move(weights), initial_price);
@@ -135,7 +135,7 @@ public:
         if (!status_thread_.joinable()) {
             status_thread_ = std::thread(&feed_controller::status_loop, this);
         }
-        return true;
+        return start_result::started;
     }
 
     /**

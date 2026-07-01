@@ -1106,6 +1106,7 @@ void MarketSimulatorWindow::onStartFeedClicked() {
                 failed << QString::fromStdString(key) + ": " + err;
             }
         }
+        // Also mark feeds that were already running (service returns success=true for those).
         if (!started.empty())
             self->markRunning(started);
         const QString msg = self->tr("Started %1 feed(s).").arg(ok);

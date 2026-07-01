@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 84EF8C0D-B0F5-4CC5-A50D-CA6C03F2C131
+:END:
+#+title: Define and regenerate the standard codegen repository method set
+#+description: Settle the canonical standard repository/table methods the codegen emits per entity, then regenerate all entities uniformly.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:refdata:repository:tech-debt:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Define and document the canonical "standard" method set the C++ codegen
+emits for every domain entity — the repository read/write/remove family
+and the table =convert_to_table= adapters — then audit the templates
+against that definition and regenerate *all* entities so the set is
+applied uniformly. Concretely: (1) write down the standard repository
+method set (e.g. =read_latest= variants, =read_all(context)= and
+=read_all(context, key)=, =read_at_timepoint(context, as_of)= and the
+keyed variant, paginated =read_latest(offset, limit)=,
+=get_total_*_count=, scalar and batch =remove=) and the standard table
+overloads (=convert_to_table(const T&)= and
+=convert_to_table(const std::vector<T>&)=); (2) reconcile
+=cpp_domain_type_repository_{hpp,cpp}.org= and
+=cpp_domain_type_table_{hpp,cpp}.org= against it; (3) regenerate every
+entity across all components; (4) tie this to the existing
+[[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]]
+story so future drift is machine-caught rather than discovered at build
+time.
+
+* Why
+
+During the currency C++ core codegen sync, a full build surfaced that
+the codegen had silently *dropped* several previously-standard methods —
+=read_all(context)= (all versions across keys),
+=read_at_timepoint(context, as_of)= (all entities at a timepoint), and
+the single-object =convert_to_table(const T&)= overload. Hand-written
+consumers broke one at a time: =ores.cli= (=application.cpp=), the
+=ores.refdata.api= domain tests, and an =ores.http= route. Currency and
+=currency_market_tier= were fixed by promoting these back to standard
+template output, but every other entity (country, party, book_status,
+party_status, party_type, …) still lacks them until regenerated, leaving
+the codebase inconsistent. There is no agreed, written definition of the
+standard method set, so this kind of silent drop can recur. A single
+deliberate pass — define, reconcile, regenerate, guard — closes the gap.
+
+* References
+
+- Surfaced during the currency codegen work: =read_all(context)=,
+  =read_at_timepoint(context, as_of)= and the single-object
+  =convert_to_table= were inconsistently present across entities. The
+  interim fix that promoted them lived on an earlier iteration of
+  =feature/sync-cpp-core-codegen-currency= that was reset when main's own
+  unified-model migration superseded it, so it is no longer a reachable
+  commit; the underlying inconsistency this capture tracks stands.
+- Repository/table generator templates (post-refactor org sources under
+  =projects/ores.codegen/library/templates/ores.cpp.*=).
+
+* See also
+
+- [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] — machine-enforce the regenerated-output invariant.
+- [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] — story where this surfaced (task =8A84D304=).

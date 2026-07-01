@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 2DC36AEA-FBF4-4EC6-BEF2-A7C16F81D1E7
+:END:
+#+title: Add CONFIGURE_DEPENDS to file(GLOB) for .ui/source forms
+#+description: Qt UI forms and sources registered via bare file(GLOB) are not picked up until CMake is manually reconfigured, causing ui_*.h-not-found build breaks on newly added files.
+#+type: capture
+#+level: cross
+#+filetags: :cmake:qt:build:dx:
+#+created: 2026-06-30
+#+updated: 2026-06-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Qt UI forms (and any sources) registered with a bare =file(GLOB ...)= are
+only re-evaluated when CMake reconfigures, not at build time. So a newly
+added =.ui= (or =.cpp=) does not enter the build until someone manually
+re-runs the configure step, and until then the build fails with a
+confusing =ui_<X>.h: file not found= (AUTOUIC never saw the form).
+
+Seen on =projects/ores.qt/synthetic/src/CMakeLists.txt= line 34:
+
+#+begin_src cmake
+file(GLOB FORMS "${ORES_QT_SYNTHETIC_DIR}/ui/*.ui")
+#+end_src
+
+=FxSpotGenerationConfigHistoryDialog.ui= landed on main but a build dir
+configured earlier never globbed it, breaking the build for anyone who
+pulled without reconfiguring.
+
+Fix: add =CONFIGURE_DEPENDS= to the form/source globs so CMake re-checks
+the directory at build time:
+
+#+begin_src cmake
+file(GLOB FORMS CONFIGURE_DEPENDS "${ORES_QT_SYNTHETIC_DIR}/ui/*.ui")
+#+end_src
+
+Sweep every =file(GLOB ...)= used to collect build inputs (FORMS, sources,
+headers) across the ores.qt.* CMakeLists and add CONFIGURE_DEPENDS, or —
+better long-term — list inputs explicitly. CONFIGURE_DEPENDS has a small
+per-build cost but removes a whole class of "works on CI, breaks locally
+after a pull" failures.
+
+* Why
+
+The bare-GLOB gotcha produces build breaks that look like missing
+generated headers, are unrelated to the puller's own changes, and are
+only fixed by knowing to reconfigure. CONFIGURE_DEPENDS makes new forms
+and sources just build, removing a recurring developer-experience trap.
+
+* References
+
+- projects/ores.qt/synthetic/src/CMakeLists.txt:34 (file(GLOB FORMS ...)).
+- Trigger: FxSpotGenerationConfigHistoryDialog.ui added on main; stale
+  build dir did not glob it -> ui_FxSpotGenerationConfigHistoryDialog.h
+  not found.
+
+* See also
+
+-

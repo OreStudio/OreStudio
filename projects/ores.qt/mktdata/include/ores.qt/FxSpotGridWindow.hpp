@@ -26,6 +26,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include <QColor>
 #include <QFutureWatcher>
+#include <QLabel>
 #include <QTableWidget>
 #include <QTimer>
 #include <QWidget>
@@ -60,14 +61,17 @@ private:
 
     enum Column { ColPair = 0, ColMid, ColChange, ColStatus, ColumnCount };
 
+public:
     enum class FeedStatus { Pending, Live, Stale, Disconnected };
 
+private:
     struct RowState {
         int row = -1;
         std::string ore_key;
         double last_mid = 0.0;
         bool ever_ticked = false;
         std::chrono::system_clock::time_point last_tick{};
+        QLabel* badge = nullptr;
         std::unique_ptr<marketdata::client::fx_spot_subscription> subscription;
     };
 
@@ -101,10 +105,7 @@ private:
     void subscribe(RowState& rs);
     void applyTick(const std::string& ore_key, double mid,
                    std::chrono::system_clock::time_point when);
-    void updateStatusCell(RowState& rs, FeedStatus status);
     static FeedStatus deriveStatus(const RowState& rs);
-    static QString statusText(FeedStatus s);
-    static QColor statusColor(FeedStatus s);
 
     ClientManager* clientManager_;
     QTableWidget* table_;

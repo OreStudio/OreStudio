@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"

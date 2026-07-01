@@ -26,11 +26,11 @@ Give LLM agents the neighbourhood of each search hit — the docs that link to i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-30                               |
 
 * Acceptance
@@ -68,3 +68,27 @@ Round 1 — 2026-07-01 — addressed in commit =8ca07e6f2=.
 | 5 | Acceptance criteria says SQLite links table; actual impl uses doc_index | task doc | Accept | Updated acceptance to reflect real approach |
 
 * Result
+
+Delivered on =feature/search-related-docs-via-link-graph=.
+
+Added =--related= and =--related-limit N= flags to =compass search=.
+
+When =--related= is active, each search hit gets a =🔗  Related= block
+showing up to N outgoing and N incoming neighbours from the link graph:
+
+- *Outgoing (↳)*: links from the hit doc, ranked by the neighbour's own
+  FTS score against the query (falls back to inbound-link count when the
+  neighbour is not in the result pool).
+- *Incoming (←)*: docs that link to the hit, ranked by their inbound-link
+  count as a cheap PageRank proxy; de-duped against outgoing (with
+  backfill from lower-ranked candidates so the cap is always met).
+
+=--related-limit N= (default 3) controls the cap per direction and implies
+=--related=, so =compass search "foo" --related-limit 5= works without
+spelling out both flags.
+
+When =--related= is off (the default), the configuration block shows a
+one-line hint so the flag is discoverable.
+
+The link graph is built at query time from the existing =doc_index.load_all()=
+and =doc_index.build_inbound()= infrastructure — no schema changes.

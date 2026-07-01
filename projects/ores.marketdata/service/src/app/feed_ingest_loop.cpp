@@ -203,8 +203,8 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
                     series.asset_class = rfl::string_to_enum<domain::asset_class>(ac_str).value_or(domain::asset_class::fx);
                     series.series_subclass = rfl::string_to_enum<domain::series_subclass>(ac_str).value_or(domain::series_subclass::spot);
                     series.is_scalar = true;
-                    series.modified_by = "ores.marketdata.service";
-                    series.performed_by = "ores.marketdata.service";
+                    series.modified_by = ctx_.service_account();
+                    series.performed_by = ctx_.service_account();
                     series.change_reason_code = "system.initial_load";
                     series.change_commentary = ore_key_copy + " synthetic feed auto-created";
                     series_repo.write(tenant_ctx, series);

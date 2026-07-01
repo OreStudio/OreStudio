@@ -123,7 +123,7 @@ public:
         stop_market_feed_config_response resp;
         const auto stopped = ctrl_->stop(key);
 
-        resp.success = stopped > 0;
+        resp.success = true; // idempotent — 0 stopped means it was already stopped
         resp.message = std::to_string(stopped) + " feed(s) stopped";
         BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
             << msg.subject << " — " << resp.message << (key.empty() ? " (all)" : " (" + key + ")");

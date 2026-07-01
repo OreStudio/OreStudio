@@ -292,6 +292,37 @@ def test_full_fts_expr_verb_synonyms_are_bidirectional():
     assert "{title description}: create*" in q_open.full_fts_expr
 
 
+def test_no_cluster_overlap_go_is_bidirectional():
+    """
+    Regression: 'go' was listed in two clusters (run/execute/apply/load/go
+    and move/switch/go), causing last-cluster-wins to silently break
+    bidirectionality for 'go'.  After fix, 'go' lives only in move/switch.
+    """
+    from search_scorer import QUESTION_VERB_SYNONYMS
+    # go should only be in the move/switch cluster after the fix
+    assert "move"   in QUESTION_VERB_SYNONYMS.get("go", set())
+    assert "switch" in QUESTION_VERB_SYNONYMS.get("go", set())
+    assert "run"    not in QUESTION_VERB_SYNONYMS.get("go", set())
+    # bidirectionality: go appears in move's and switch's sets
+    assert "go" in QUESTION_VERB_SYNONYMS.get("move", set())
+    assert "go" in QUESTION_VERB_SYNONYMS.get("switch", set())
+    # run cluster is self-contained (go removed)
+    assert "go" not in QUESTION_VERB_SYNONYMS.get("run", set())
+
+
+def test_build_verb_not_shadowed_by_synonyms_normalisation():
+    """
+    Regression: 'build' in SYNONYMS normalises to 'rebuild' in tokens,
+    which is not a QUESTION_VERB_SYNONYMS key — so it silently lost cluster
+    expansion.  After fix, raw_token lookup recovers the cluster.
+    """
+    q = QueryPlan.from_query("how do i build a sprint")
+    # "build" is in the create/open/start/… cluster
+    assert "{title description}: build*"  in q.full_fts_expr
+    assert "{title description}: create*" in q.full_fts_expr
+    assert "{title description}: open*"   in q.full_fts_expr
+
+
 # ── Corpus evaluation: fixture-driven ordering assertions ────────────────────
 # Loads tests/data/corpus/*.json (documents) and tests/data/queries/queries.json
 # (pre-computed signals + pairwise assertions).  Each query entry's assertions

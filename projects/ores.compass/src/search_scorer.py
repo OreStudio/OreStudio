@@ -78,7 +78,7 @@ _VERB_CLUSTERS: list[frozenset[str]] = [
                "restore", "fix"}),
     frozenset({"show", "view", "see", "list", "find", "get", "read",
                "display", "check"}),
-    frozenset({"run", "execute", "apply", "load", "go"}),
+    frozenset({"run", "execute", "apply", "load"}),
     frozenset({"move", "switch", "go"}),
 ]
 for _cluster in _VERB_CLUSTERS:
@@ -156,18 +156,22 @@ class QueryPlan:
         # Build the full-pass FTS expression: non-verb content words are ANDed
         # as usual; each question verb becomes an OR group with its cluster
         # synonyms so "create" also title-matches docs that say "open" or "start".
+        # The cluster lookup uses raw_tokens (pre-SYNONYMS-normalisation) so that
+        # a verb like "build" — which SYNONYMS rewrites to "rebuild" before it
+        # reaches tokens — still resolves its cluster correctly.
         # E.g. "how do I create a sprint" →
         #   ({title description}: sprint*) AND
         #   ({title description}: create* OR {title description}: open* OR ...)
         _fts_parts: list[str] = []
-        for w in tokens:
-            if w in QUESTION_VERB_SYNONYMS:
-                cluster = [w] + sorted(QUESTION_VERB_SYNONYMS[w])
+        for raw_w, norm_w in zip(raw_tokens, tokens):
+            raw_cluster_key = raw_w if raw_w in QUESTION_VERB_SYNONYMS else norm_w
+            if raw_cluster_key in QUESTION_VERB_SYNONYMS:
+                cluster = [raw_cluster_key] + sorted(QUESTION_VERB_SYNONYMS[raw_cluster_key])
                 or_group = " OR ".join(
                     f"{{title description}}: {sv}*" for sv in cluster)
                 _fts_parts.append(f"({or_group})")
             else:
-                _fts_parts.append(f"{{title description}}: {w}*")
+                _fts_parts.append(f"{{title description}}: {norm_w}*")
         full_fts_expr = " AND ".join(_fts_parts)
         q = query.strip().lower()
         q_words = q.split()

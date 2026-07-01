@@ -172,6 +172,10 @@ static IconDef getIconDef(Icon icon) {
             return {"ic_fluent_person_accounts_20", "users-group-rounded.svg"};
         case Icon::PersonAdd:
             return {"ic_fluent_person_add_20", "user-plus-rounded.svg"};
+        case Icon::Play:
+            return {"ic_fluent_play_20", "record-circle.svg"};
+        case Icon::PlayFilled:
+            return {"ic_fluent_play_20", "record-circle.svg", true};
         case Icon::PlugConnected:
             return {"ic_fluent_plug_connected_20", "plug-circle.svg"};
         case Icon::PlugConnectedFilled:
@@ -186,6 +190,10 @@ static IconDef getIconDef(Icon icon) {
             return {"ic_fluent_record_20", "record-circle.svg"};
         case Icon::RecordFilled:
             return {"ic_fluent_record_20", "record-circle.svg", true};
+        case Icon::Stop:
+            return {"ic_fluent_stop_20", "record-circle.svg"};
+        case Icon::StopFilled:
+            return {"ic_fluent_stop_20", "record-circle.svg", true};
         case Icon::Save:
             return {"ic_fluent_save_20", "diskette.svg"};
         case Icon::Server:

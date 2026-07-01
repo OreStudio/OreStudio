@@ -136,6 +136,7 @@ private:
     void markRunning(const std::vector<std::string>& sourceNames);
     void markStopped(const std::vector<std::string>& sourceNames);
     void refreshFeedSummaryIfCurrent(const std::string& feedId);
+    void refreshFeedTreeItems();
 
     ClientManager* clientManager_;
     QString username_;

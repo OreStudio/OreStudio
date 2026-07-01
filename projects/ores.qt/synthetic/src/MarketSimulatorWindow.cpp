@@ -209,22 +209,22 @@ void MarketSimulatorWindow::setupToolbar() {
     toolbar_->addSeparator();
 
     startFeedAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor), tr("Start"));
+        IconUtils::createRecoloredIcon(Icon::Play, IconUtils::DefaultIconColor), tr("Start"));
     startFeedAction_->setToolTip(tr("Start generating live ticks for the selected FX rate(s)."));
 
     stopFeedAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::DeleteDismiss, IconUtils::DefaultIconColor),
-        tr("Stop"));
+        IconUtils::createRecoloredIcon(Icon::Stop, IconUtils::DefaultIconColor), tr("Stop"));
     stopFeedAction_->setToolTip(tr("Stop generating ticks for the selected FX rate(s)."));
 
     toolbar_->addSeparator();
 
     startAllAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor), tr("Start all"));
+        IconUtils::createRecoloredIcon(Icon::PlayFilled, IconUtils::DefaultIconColor),
+        tr("Start all"));
     startAllAction_->setToolTip(tr("Start generating live ticks for all FX rates."));
 
     stopAllAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::DeleteDismiss, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::StopFilled, IconUtils::DefaultIconColor),
         tr("Stop all"));
     stopAllAction_->setToolTip(tr("Stop generating ticks for all FX rates."));
 }
@@ -316,8 +316,12 @@ void MarketSimulatorWindow::setupRightPanel() {
     auto* feedBtnRow = new QWidget(summaryPage_);
     auto* feedBtnLayout = new QHBoxLayout(feedBtnRow);
     feedBtnLayout->setContentsMargins(0, 4, 0, 0);
-    feedStartButton_ = new QPushButton(tr("Start all rates"), feedBtnRow);
-    feedStopButton_ = new QPushButton(tr("Stop all rates"), feedBtnRow);
+    feedStartButton_ = new QPushButton(
+        IconUtils::createRecoloredIcon(Icon::Play, IconUtils::DefaultIconColor),
+        tr("Start all rates"), feedBtnRow);
+    feedStopButton_ = new QPushButton(
+        IconUtils::createRecoloredIcon(Icon::Stop, IconUtils::DefaultIconColor),
+        tr("Stop all rates"), feedBtnRow);
     feedBtnLayout->addWidget(feedStartButton_);
     feedBtnLayout->addWidget(feedStopButton_);
     feedBtnLayout->addStretch();
@@ -509,32 +513,56 @@ void MarketSimulatorWindow::reload() {
     watcher->setFuture(QtConcurrent::run(task));
 }
 
+static QString feedItemText(const synthetic::domain::market_data_generation_config& feed,
+                            int running, int total) {
+    QString text = QString::fromStdString(feed.name);
+    if (!feed.enabled)
+        text += QStringLiteral(" (disabled)");
+    if (total > 0)
+        text += QStringLiteral("  %1/%2").arg(running).arg(total);
+    return text;
+}
+
 void MarketSimulatorWindow::buildTree() {
     treeModel_->clear();
     auto* root = treeModel_->invisibleRootItem();
 
     for (const auto& [feedId, feed] : feeds_) {
-        QString feedText = QString::fromStdString(feed.name);
-        if (!feed.enabled)
-            feedText += tr(" (disabled)");
+        int total = 0, running = 0;
+        for (const auto& [fxId, fx] : fxPairs_) {
+            if (boost::uuids::to_string(fx.config_id) != feedId)
+                continue;
+            ++total;
+            if (runningSourceNames_.count(fx.source_name))
+                ++running;
+        }
 
-        auto* feedItem = new QStandardItem(feedText);
+        auto* feedItem = new QStandardItem(feedItemText(feed, running, total));
         feedItem->setData(static_cast<int>(NodeType::Feed), NodeTypeRole);
         feedItem->setData(QString::fromStdString(feedId), NodeIdRole);
-        feedItem->setIcon(
-            IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+
+        const Icon feedIcon = (total == 0 || running == 0) ? Icon::Play
+                              : running == total            ? Icon::PlayFilled
+                                                           : Icon::Play;
+        const QColor feedColor = (running > 0) ? QColor(80, 180, 80) : IconUtils::DefaultIconColor;
+        feedItem->setIcon(IconUtils::createRecoloredIcon(feedIcon, feedColor));
+        if (running > 0)
+            feedItem->setForeground(QColor(80, 180, 80));
 
         for (const auto& [fxId, fx] : fxPairs_) {
             if (boost::uuids::to_string(fx.config_id) != feedId)
                 continue;
 
+            const bool fxRunning = runningSourceNames_.count(fx.source_name) > 0;
             QString fxText = QString::fromStdString("FX/RATE/" + fx.base_currency_code + "/" +
                                                     fx.quote_currency_code);
             auto* fxItem = new QStandardItem(fxText);
             fxItem->setData(static_cast<int>(NodeType::FxPair), NodeTypeRole);
             fxItem->setData(QString::fromStdString(fxId), NodeIdRole);
+            if (fxRunning)
+                fxItem->setForeground(QColor(80, 180, 80));
             if (imageCache_) {
-                // Compose both currency flags (base then quote) into one icon.
+                // Compose both currency flags into one icon; paint a green dot when running.
                 const QPixmap basePm =
                     imageCache_->getCurrencyFlagIcon(fx.base_currency_code).pixmap(22, 22);
                 const QPixmap quotePm =
@@ -544,6 +572,12 @@ void MarketSimulatorWindow::buildTree() {
                 QPainter painter(&combined);
                 painter.drawPixmap(0, 0, basePm);
                 painter.drawPixmap(26, 0, quotePm);
+                if (fxRunning) {
+                    painter.setRenderHint(QPainter::Antialiasing);
+                    painter.setBrush(QColor(80, 180, 80));
+                    painter.setPen(Qt::NoPen);
+                    painter.drawEllipse(QRectF(40, 14, 8, 8));
+                }
                 painter.end();
                 fxItem->setIcon(QIcon(combined));
             } else {
@@ -710,13 +744,78 @@ void MarketSimulatorWindow::showFeedSummary(
 void MarketSimulatorWindow::markRunning(const std::vector<std::string>& sourceNames) {
     for (const auto& s : sourceNames)
         runningSourceNames_.insert(s);
+    refreshFeedTreeItems();
     refreshFeedSummaryIfCurrent(feedSummaryId_);
 }
 
 void MarketSimulatorWindow::markStopped(const std::vector<std::string>& sourceNames) {
     for (const auto& s : sourceNames)
         runningSourceNames_.erase(s);
+    refreshFeedTreeItems();
     refreshFeedSummaryIfCurrent(feedSummaryId_);
+}
+
+void MarketSimulatorWindow::refreshFeedTreeItems() {
+    auto* root = treeModel_->invisibleRootItem();
+    for (int fi = 0; fi < root->rowCount(); ++fi) {
+        auto* feedItem = root->child(fi);
+        if (!feedItem)
+            continue;
+        const auto feedId = feedItem->data(NodeIdRole).toString().toStdString();
+        auto it = feeds_.find(feedId);
+        if (it == feeds_.end())
+            continue;
+
+        int total = 0, running = 0;
+        for (const auto& [fxId, fx] : fxPairs_) {
+            if (boost::uuids::to_string(fx.config_id) != feedId)
+                continue;
+            ++total;
+            if (runningSourceNames_.count(fx.source_name))
+                ++running;
+        }
+
+        feedItem->setText(feedItemText(it->second, running, total));
+        const Icon feedIcon = (running == total && total > 0) ? Icon::PlayFilled : Icon::Play;
+        const QColor feedColor = running > 0 ? QColor(80, 180, 80) : IconUtils::DefaultIconColor;
+        feedItem->setIcon(IconUtils::createRecoloredIcon(feedIcon, feedColor));
+        feedItem->setForeground(running > 0 ? QColor(80, 180, 80)
+                                            : feedsTree_->palette().color(QPalette::Text));
+
+        // Update child FX pair items.
+        for (int xi = 0; xi < feedItem->rowCount(); ++xi) {
+            auto* fxItem = feedItem->child(xi);
+            if (!fxItem)
+                continue;
+            const auto fxId = fxItem->data(NodeIdRole).toString().toStdString();
+            auto fxit = fxPairs_.find(fxId);
+            if (fxit == fxPairs_.end())
+                continue;
+            const auto& fx = fxit->second;
+            const bool fxRunning = runningSourceNames_.count(fx.source_name) > 0;
+            fxItem->setForeground(fxRunning ? QColor(80, 180, 80)
+                                            : feedsTree_->palette().color(QPalette::Text));
+            if (imageCache_) {
+                const QPixmap basePm =
+                    imageCache_->getCurrencyFlagIcon(fx.base_currency_code).pixmap(22, 22);
+                const QPixmap quotePm =
+                    imageCache_->getCurrencyFlagIcon(fx.quote_currency_code).pixmap(22, 22);
+                QPixmap combined(48, 22);
+                combined.fill(Qt::transparent);
+                QPainter painter(&combined);
+                painter.drawPixmap(0, 0, basePm);
+                painter.drawPixmap(26, 0, quotePm);
+                if (fxRunning) {
+                    painter.setRenderHint(QPainter::Antialiasing);
+                    painter.setBrush(QColor(80, 180, 80));
+                    painter.setPen(Qt::NoPen);
+                    painter.drawEllipse(QRectF(40, 14, 8, 8));
+                }
+                painter.end();
+                fxItem->setIcon(QIcon(combined));
+            }
+        }
+    }
 }
 
 void MarketSimulatorWindow::refreshFeedSummaryIfCurrent(const std::string& feedId) {

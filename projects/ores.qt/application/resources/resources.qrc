@@ -71,11 +71,13 @@
     <file>icons/fluentui/filled/ic_fluent_person_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_person_accounts_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_person_add_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_play_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_plug_connected_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_plug_connected_checkmark_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_plug_disconnected_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_question_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_record_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_stop_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_save_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_server_link_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_settings_20_filled.svg</file>
@@ -154,11 +156,13 @@
     <file>icons/fluentui/regular/ic_fluent_person_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_person_accounts_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_person_add_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_play_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_plug_connected_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_plug_connected_checkmark_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_plug_disconnected_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_question_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_record_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_stop_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_save_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_server_link_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_settings_20_regular.svg</file>

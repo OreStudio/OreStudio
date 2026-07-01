@@ -18,13 +18,14 @@
  *
  */
 #include "ores.qt/FxSpotGridWindow.hpp"
-#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
+#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include <QHeaderView>
 #include <QMetaObject>
 #include <QPointer>
 #include <QVBoxLayout>
 #include <QtConcurrent>
 #include <chrono>
+#include <sstream>
 
 namespace ores::qt {
 
@@ -86,15 +87,15 @@ void FxSpotGridWindow::reload() {
         namespace m = marketdata::messaging;
         LoadResult r;
         auto resp = cm->process_authenticated_request(
-            m::get_market_series_request{.offset = 0, .limit = 1000, .series_type = "FX"});
-        if (!resp) {
-            r.error = QString::fromStdString(resp.error());
+            m::get_feed_bindings_request{.offset = 0, .limit = 1000});
+        if (!resp || !resp->success) {
+            r.error = resp ? QString::fromStdString(resp->message)
+                           : QString::fromStdString(resp.error());
             return r;
         }
-        // Keep only scalar spot series (FX spot rates, not surfaces or curves).
-        for (auto& s : resp->series) {
-            if (s.is_scalar)
-                r.series.push_back(std::move(s));
+        for (auto& b : resp->feed_bindings) {
+            if (b.enabled)
+                r.bindings.push_back(std::move(b));
         }
         r.success = true;
         return r;
@@ -106,25 +107,42 @@ void FxSpotGridWindow::reload() {
 void FxSpotGridWindow::onLoadFinished() {
     auto result = loadWatcher_->result();
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load FX series: " << result.error.toStdString();
+        BOOST_LOG_SEV(lg(), error) << "Failed to load feed bindings: "
+                                   << result.error.toStdString();
         emit errorOccurred(result.error);
         return;
     }
-    buildRows(result.series);
-    emit statusChanged(tr("Loaded %1 FX spot series").arg(result.series.size()));
+    buildRows(result.bindings);
+    emit statusChanged(tr("Loaded %1 feed binding(s)").arg(result.bindings.size()));
 }
 
-void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::market_series>& series) {
+// Extract the pair display from an ore_key of the form "FX/RATE/EUR/USD" → "EUR/USD".
+static QString pair_from_ore_key(const std::string& ore_key) {
+    // Skip the first two segments (type and metric) and rejoin the rest.
+    std::istringstream ss(ore_key);
+    std::string seg;
+    int skip = 0;
+    std::string qualifier;
+    while (std::getline(ss, seg, '/')) {
+        if (skip < 2) { ++skip; continue; }
+        if (!qualifier.empty()) qualifier += '/';
+        qualifier += seg;
+    }
+    return qualifier.empty() ? QString::fromStdString(ore_key)
+                             : QString::fromStdString(qualifier);
+}
+
+void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_binding>& bindings) {
     rows_.clear();
     table_->setRowCount(0);
 
     int row = 0;
-    for (const auto& s : series) {
-        const std::string ore_key = s.series_type + "/" + s.metric + "/" + s.qualifier;
+    for (const auto& b : bindings) {
+        const std::string& ore_key = b.ore_key;
 
         table_->insertRow(row);
 
-        auto* pairItem = new QTableWidgetItem(QString::fromStdString(s.qualifier));
+        auto* pairItem = new QTableWidgetItem(pair_from_ore_key(ore_key));
         pairItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         table_->setItem(row, ColPair, pairItem);
 
@@ -148,7 +166,6 @@ void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::market_se
         ++row;
     }
 
-    // Subscribe after all rows are in the map so the callback can find them.
     for (auto& [key, rs] : rows_)
         subscribe(rs);
 }

@@ -136,6 +136,7 @@ private:
     void markRunning(const std::vector<std::string>& sourceNames);
     void markStopped(const std::vector<std::string>& sourceNames);
     void refreshFeedSummaryIfCurrent(const std::string& feedId);
+    void refreshFxSummaryIfCurrent();
     void refreshFeedTreeItems();
 
     ClientManager* clientManager_;
@@ -178,12 +179,14 @@ private:
     QLabel* heroFlags_;
     QLabel* heroTitle_;
     QLabel* heroSubtitle_;
+    QLabel* heroStatus_; // running/stopped indicator beneath the subtitle
 
     // Feed detail panel start/stop buttons (only visible when a Feed node is selected).
     QPushButton* feedStartButton_;
     QPushButton* feedStopButton_;
     QLabel* feedStatsLabel_;
     std::string feedSummaryId_; // id of the feed currently shown in the right panel
+    std::string fxSummaryId_;  // id of the fx pair currently shown in the right panel
 
     // In-memory copies keyed by id (uuid string).
     std::map<std::string, synthetic::domain::market_data_generation_config> feeds_;

@@ -31,6 +31,7 @@
     <file>icons/fluentui/filled/ic_fluent_calendar_cancel_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_calendar_clock_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_checkmark_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_checkmark_circle_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_classification_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_clipboard_number_123_16_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_clock_16_filled.svg</file>
@@ -46,6 +47,7 @@
     <file>icons/fluentui/filled/ic_fluent_delete_dismiss_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_archive_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_dismiss_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_dismiss_circle_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_document_code_16_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_document_table_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_edit_20_filled.svg</file>
@@ -71,6 +73,7 @@
     <file>icons/fluentui/filled/ic_fluent_person_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_person_accounts_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_person_add_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_pause_circle_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_play_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_plug_connected_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_plug_connected_checkmark_20_filled.svg</file>
@@ -116,6 +119,7 @@
     <file>icons/fluentui/regular/ic_fluent_calendar_cancel_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_calendar_clock_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_checkmark_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_checkmark_circle_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_classification_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_clipboard_number_123_16_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_clock_16_regular.svg</file>
@@ -131,6 +135,7 @@
     <file>icons/fluentui/regular/ic_fluent_delete_dismiss_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_archive_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_dismiss_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_dismiss_circle_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_document_code_16_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_document_table_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_edit_20_regular.svg</file>

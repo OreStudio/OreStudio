@@ -117,7 +117,9 @@ create policy feed_bindings_tbl_tenant_isolation_policy
 on ores_marketdata_feed_bindings_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );

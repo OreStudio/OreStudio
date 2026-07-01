@@ -240,6 +240,58 @@ def test_non_synonym_token_unchanged():
     assert q.tokens == q.tokens_expanded
 
 
+# ── Question-verb synonym expansion in full_fts_expr ─────────────────────────
+
+def test_full_fts_expr_verb_becomes_or_group():
+    """A question verb in the query becomes an OR group in full_fts_expr."""
+    q = QueryPlan.from_query("how do i create a sprint")
+    # "create" should be OR-grouped with its cluster synonyms
+    assert "{title description}: create*" in q.full_fts_expr
+    assert "{title description}: open*"   in q.full_fts_expr
+    assert "{title description}: start*"  in q.full_fts_expr
+    assert "{title description}: make*"   in q.full_fts_expr
+    # non-verb content word is plain AND term (not inside an OR group)
+    assert "{title description}: sprint*" in q.full_fts_expr
+    # verb group is wrapped in parens
+    assert "({title description}: create*" in q.full_fts_expr \
+        or "(({title description}: create*" in q.full_fts_expr \
+        or "create* OR" in q.full_fts_expr
+
+
+def test_full_fts_expr_keyword_query_is_plain_and():
+    """Non-question keyword queries produce a plain AND expression — no OR groups."""
+    q = QueryPlan.from_query("sprint backlog grooming")
+    # no question verbs → expression is a simple AND chain, no OR
+    assert " OR " not in q.full_fts_expr
+    assert "{title description}: sprint*"   in q.full_fts_expr
+    assert "{title description}: backlog*"  in q.full_fts_expr
+    assert "{title description}: grooming*" in q.full_fts_expr
+
+
+def test_full_fts_expr_multiple_verbs_each_or_grouped():
+    """Multiple question verbs each get their own OR group."""
+    q = QueryPlan.from_query("how do i find and delete a sprint")
+    # both verbs should appear OR-grouped
+    assert "{title description}: find*"   in q.full_fts_expr
+    assert "{title description}: delete*" in q.full_fts_expr
+    # synonyms of find (show, get, list, …) and delete (remove, close, …)
+    assert "{title description}: show*"   in q.full_fts_expr
+    assert "{title description}: remove*" in q.full_fts_expr
+    # content word stays AND term
+    assert "{title description}: sprint*" in q.full_fts_expr
+
+
+def test_full_fts_expr_verb_synonyms_are_bidirectional():
+    """
+    'open' and 'create' are in the same cluster, so querying either expands
+    to include the other in the full_fts_expr.
+    """
+    q_create = QueryPlan.from_query("how do i create a sprint")
+    q_open   = QueryPlan.from_query("how do i open a sprint")
+    assert "{title description}: open*"   in q_create.full_fts_expr
+    assert "{title description}: create*" in q_open.full_fts_expr
+
+
 # ── Corpus evaluation: fixture-driven ordering assertions ────────────────────
 # Loads tests/data/corpus/*.json (documents) and tests/data/queries/queries.json
 # (pre-computed signals + pairwise assertions).  Each query entry's assertions

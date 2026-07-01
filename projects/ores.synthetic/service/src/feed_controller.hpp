@@ -31,6 +31,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <atomic>
+#include <random>
 #include <cctype>
 #include <chrono>
 #include <map>
@@ -106,8 +107,10 @@ public:
         if (feeds_.contains(key))
             return start_result::already_running;
 
+        const std::uint32_t seed = std::random_device{}();
         auto process = process_factory::make_process(
-            process_type, std::move(means), std::move(stdevs), std::move(weights), initial_price);
+            process_type, std::move(means), std::move(stdevs), std::move(weights), initial_price,
+            seed);
         auto feed = std::make_shared<fx_spot_feed>(nats_,
                                                    ore_key,
                                                    producer_subject(key),

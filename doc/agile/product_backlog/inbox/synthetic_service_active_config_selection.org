@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: C1F02A47-1EFE-4251-9C0A-F1D8A0C56849
+:END:
+#+title: Synthetic service active configuration selection
+#+description: Add a mechanism for the synthetic service to know which named market-data generation config is currently active, so subscribers always receive data from the right config set.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:service:configuration:market-simulator:
+#+created: 2026-07-01
+#+updated: 2026-07-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a concept of an "active" =market_data_generation_config= to the synthetic service so that
+consumers (and the feed ingest loop) know which named configuration set is currently in use.
+Concretely this means:
+
+1. *Service-side active config pointer.* The synthetic service holds (or persists) the UUID of the
+   currently active =market_data_generation_config=. On startup it defaults to none. When a client
+   sends a =set_active_market_data_config_request= the service switches to that config: it stops all
+   feeds belonging to the old config and starts all feeds belonging to the new one. This makes
+   switching scenarios (Flat → Realistic) a single idempotent call.
+
+2. *Protocol messages.* Two new messages in =ores.marketdata.api= (or =ores.synthetic.api=):
+   - =set_active_market_data_config_request= — fields: =config_id= (UUID). Response: success/message.
+   - =get_active_market_data_config_request= — no fields. Response: =config_id= (UUID or empty),
+     =config_name= (string).
+
+3. *Persistence.* The active config pointer should survive service restarts. Options:
+   - NATS KV bucket (=synthetic.active_config=) — lightweight, already in use for other service state.
+   - A dedicated row in a =ores_synthetic_service_state_tbl= — heavier but queryable by SQL tooling.
+   NATS KV is the recommended default; revisit if audit requirements demand SQL.
+
+4. *UI.* The Market Simulator window should show which config is currently active (e.g. a label in
+   the status bar or a highlight on the active config node) and expose a "Set as active" toolbar
+   action / context-menu item on named config nodes. The "Start all" action on a named config could
+   optionally also set it as active.
+
+5. *Feed ingest loop integration.* The marketdata service's feed ingest loop currently subscribes
+   to whatever bindings exist. Once active-config is tracked, the loop could filter or prioritise
+   subscriptions by active config — though this may be out of scope for the initial story; deferred
+   to a follow-on.
+
+* Why
+
+Without an active-config concept each client independently decides what to start, and there is no
+shared truth about which scenario is running. This causes two problems: (a) two clients can
+accidentally start conflicting configs simultaneously; (b) new subscribers (e.g. analytics, the
+ingest loop) have no way to know which config's feeds to listen to. A single active-config pointer
+makes the synthetic environment behave like a controllable mode switch rather than a bag of
+individual feed toggles.
+
+* References
+
+- =projects/ores.marketdata/api/include/ores.marketdata.api/messaging/market_feed_config_protocol.hpp=
+  — existing start/stop protocol; new set/get active messages would live here or in
+  =ores.synthetic.api=.
+- =projects/ores.qt/synthetic/src/MarketSimulatorWindow.cpp= — UI entry point.
+- NATS KV is already used by the controller service for service state; same pattern applies here.
+
+* See also
+
+- [[id:0F7A442F-8742-48DA-A5D6-C8AF16ACFDDB][Three-level hierarchy in Market Simulator config tree]]

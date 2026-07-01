@@ -50,6 +50,7 @@ contract, with no knowledge of what produces each feed.
 |------+-------+-------+-----+-------------|
 | [[id:8432FFB1-A084-4B39-8EBF-998521BBAF66][Qt UI to map system feeds to raw producers]] | BACKLOG | | | A Qt screen to view system market-data feeds and choose which raw synthetic producer each is bound to. |
 | [[id:C98C8C6C-5CF8-4A36-9D5B-A394A62CB942][Qt FX spot grid for live system feeds]] | STARTED | 2026-07-01 | | A one-row-per-system-feed grid showing live mid, change and status, flashing green/red on each tick. |
+| [[id:461E2BE4-59D2-48B0-9127-C7C5995EC2C0][Compute 24h change for FX spot grid]] | BACKLOG | | | Task for: Source-agnostic market data control panel |
 
 * Decisions
 

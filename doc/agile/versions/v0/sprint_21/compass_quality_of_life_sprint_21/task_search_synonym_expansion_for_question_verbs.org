@@ -7,41 +7,59 @@
 #+level: s1
 #+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/search-synonym-expansion-for-question-verbs
+#+pr: 1392
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-30
 #+updated: 2026-06-30
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Improve =compass search= recall for natural-language questions by making
+the full-pass title ranker verb-synonym-aware.  When the user queries
+"how do I create a sprint?", docs titled "How do I open a new sprint?"
+now score a full-pass title hit even though "create" ≠ "open" — because
+the full-pass FTS expression OR-groups =create= with its cluster synonyms
+(=open=, =start=, =make=, =build=, …).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-30                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-01                               |
 
 * Acceptance
 
--
+- =QueryPlan.full_fts_expr= is a pre-built SQLite FTS5 expression where
+  each question verb is expanded into an OR group containing all members
+  of its synonym cluster; non-verb content words remain plain AND terms.
+- The full-pass title rank in =cmd_search= uses =full_fts_expr= directly
+  rather than AND-joining =full_words=.
+- A keyword-only query (no question verbs) produces a plain AND expression
+  identical to the old behaviour — no regression.
+- =QUESTION_VERB_SYNONYMS= (in =search_scorer.py=) is the single source of
+  truth for verb clusters; bidirectional membership is enforced by construction.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added =QUESTION_VERB_SYNONYMS: dict[str, frozenset[str]]= to
+=search_scorer.py=, built from six verb clusters.  Added =full_fts_expr:
+str= field to =QueryPlan=; =from_query= builds it by iterating =tokens=
+and replacing each question verb with an OR group of its cluster synonyms.
+
+Updated =_title_fts_ranks()= in =compass.py= to accept an optional
+=fts_expr= string; when supplied it is used verbatim instead of joining
+=word_list=.  The full-pass call passes =fts_expr=_qplan.full_fts_expr=.
 
 * Notes
 
@@ -49,12 +67,40 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1392][#1392]] | [compass] search: expand question-verb synonyms in full-pass title ranking |
 
 * Review
 
+Round 1 — 2026-07-01 — addressed in commit =68ce59618=.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | "go" in two clusters — last-write-wins breaks bidirectionality for go/run | search_scorer.py | Accept | Removed "go" from run/execute/apply/load cluster; it lives only in move/switch/go |
+| 2 | "build" SYNONYMS-normalised to "rebuild" before cluster lookup — silently loses OR-group | search_scorer.py | Accept | Full_fts_expr now checks raw_token first, then normalised token |
 
 * Result
+
+Delivered on =feature/search-synonym-expansion-for-question-verbs= (PR #1392).
+
+Added =QUESTION_VERB_SYNONYMS= to =search_scorer.py=: a dict mapping each
+question verb to its intent-cluster siblings, built bidirectionally from six
+=_VERB_CLUSTERS= frozensets.  Added =full_fts_expr: str= to =QueryPlan=: a
+pre-built FTS5 expression where non-verb content words remain plain AND terms
+and each question verb becomes an OR group of its full cluster.
+
+Updated =_title_fts_ranks()= in =compass.py= to accept an optional =fts_expr=
+string; the full-pass call now passes =qplan.full_fts_expr= directly instead
+of AND-joining =full_words=.
+
+Two bugs caught in review and fixed before merge:
+
+1. =go= appeared in two clusters (=run/execute/apply/load/go= and
+   =move/switch/go=).  Last-write-wins dict assignment silently broke
+   bidirectionality for =go= vs =run=.  Fixed by removing =go= from the run
+   cluster — it belongs semantically with move/switch.
+
+2. =build= is normalised to =rebuild= by =SYNONYMS= before the cluster
+   lookup, causing it to fall through to a plain AND term.  Fixed by checking
+   the raw token first in =QUESTION_VERB_SYNONYMS=, then the normalised form.
+
+32 unit tests, all green (6 new assertions added this task).

@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 4342B077-85EA-4C6A-9BDF-D38560C80B37
+:END:
+#+title: How do I recreate the database?
+#+description: Use compass db recreate to drop and rebuild the database, roles and schema from scratch — the standard path for schema upgrades and fresh environment setup.
+#+type: recipe
+#+level: cross
+#+filetags: :sql:compass:database:recipe:
+#+created: 2026-07-01
+#+updated: 2026-07-01
+
+=compass db recreate= is the single command that handles every phase
+of database recreation: drops the existing database and its roles,
+recreates roles and grants, runs all DDL, applies RLS, and seeds
+metadata. It reads all connection details from =.env= — no manual
+psql arguments needed. See [[id:7A3D8E2F-B1C4-4F9A-8D5E-6C2A1B9F0E3D][Database Lifecycle and Script Reference]]
+for the full list of lifecycle commands.
+
+* Question
+
+How do I recreate the database from scratch — dropping and rebuilding
+the schema, roles and seed data?
+
+* Answer
+
+1. *Stop services first.* Active connections block the drop:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh services stop
+   #+end_src
+
+2. *Recreate the database.* The standard invocation kills any
+   remaining connections and skips the interactive confirmation
+   prompt:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh db recreate --kill --yes
+   #+end_src
+
+   Without =--yes= compass prompts you to type =yes= interactively.
+   Without =--kill= it refuses if active connections are found — use
+   that as the default in manual sessions so you don't accidentally
+   drop a database another worktree is using.
+
+3. *Restart services and bootstrap* once the database is ready:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh services start
+   #+end_src
+
+** Flags
+
+| Flag       | Meaning                                                       |
+|------------+---------------------------------------------------------------|
+| =--kill=   | Terminate active connections before dropping (pg_terminate_backend) |
+| =--yes=    | Skip the interactive "type yes to proceed" confirmation       |
+
+** When schema changes require recreation
+
+After any codegen run that alters =projects/ores.sql/= DDL files
+(e.g. adding a new column or table), the schema version advances and
+the database must be recreated. =compass db recreate= is the only
+supported upgrade path — there are no incremental migration scripts.
+
+** What it does internally
+
+=compass db recreate= executes these phases in order:
+
+1. Terminates active connections (if =--kill=).
+2. Drops the environment database (e.g. =ores_dev_bright_faraday=).
+3. Drops and recreates all environment roles via =drop_roles.sql= /
+   =create_roles.sql=.
+4. Creates the database from scratch (not from a template) for
+   environment isolation.
+5. Applies DDL: schema, tables, indexes, constraints, RLS policies.
+6. Populates database metadata (schema version, build environment,
+   git commit).
+
+* Script
+
+=compass db recreate= is implemented in
+[[proj:projects/ores.compass/src/compass_db.py][=projects/ores.compass/src/compass_db.py=]] (=cmd_recreate=).  The
+underlying SQL lives in [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] under:
+
+- =projects/ores.sql/drop_roles.sql=
+- =projects/ores.sql/create_roles.sql=
+- =projects/ores.sql/recreate_database.sql=
+- =projects/ores.sql/create/= — per-component DDL fragments
+
+* Tested by
+
+Manual. Run after every schema-changing codegen pass as the standard
+verification step that DDL is clean. Also exercised in CI environment
+provisioning.
+
+* See also
+
+- [[id:7A3D8E2F-B1C4-4F9A-8D5E-6C2A1B9F0E3D][Database Lifecycle and Script Reference]] — full command reference,
+  decision table for which lifecycle command to use, and notes on
+  the =recreate_env.sh= per-environment variant.
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — component overview: roles, schema layout, DDL
+  conventions and the =compass db= command table.
+- [[id:ABFC1EB5-5314-43C6-80B8-E2967254F867][How do I run SQL in the environment?]] — for ad-hoc queries and
+  SQL file execution after the database is up.
+- [[id:5BDDD435-9F2A-4ABC-BA71-5BB3B980C785][compass db commands run outside the sandbox]] — LLM sessions must
+  disable the sandbox to run database commands.

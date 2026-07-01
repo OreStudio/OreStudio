@@ -21,7 +21,7 @@
 #define ORES_QT_FX_SPOT_GRID_WINDOW_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.marketdata.client/fx_spot_subscription.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include <QColor>
@@ -74,7 +74,7 @@ private:
     struct LoadResult {
         bool success = false;
         QString error;
-        std::vector<marketdata::domain::market_series> series;
+        std::vector<marketdata::domain::feed_binding> bindings;
     };
 
 public:
@@ -97,7 +97,7 @@ private slots:
 
 private:
     void setupUi();
-    void buildRows(const std::vector<marketdata::domain::market_series>& series);
+    void buildRows(const std::vector<marketdata::domain::feed_binding>& bindings);
     void subscribe(RowState& rs);
     void applyTick(const std::string& ore_key, double mid,
                    std::chrono::system_clock::time_point when);

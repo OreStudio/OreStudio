@@ -49,11 +49,15 @@ deliberate pass — define, reconcile, regenerate, guard — closes the gap.
 
 * References
 
-- Fix that restored the three methods: commit =f0a20a4c1=
-  ("[codegen] Promote read_all/read_at_timepoint/convert_to_table-single
-  to standard") on =feature/sync-cpp-core-codegen-currency=.
-- Templates: =projects/ores.codegen/library/templates/cpp_domain_type_repository_{hpp,cpp}.org=,
-  =cpp_domain_type_table_{hpp,cpp}.org=.
+- Surfaced during the currency codegen work: =read_all(context)=,
+  =read_at_timepoint(context, as_of)= and the single-object
+  =convert_to_table= were inconsistently present across entities. The
+  interim fix that promoted them lived on an earlier iteration of
+  =feature/sync-cpp-core-codegen-currency= that was reset when main's own
+  unified-model migration superseded it, so it is no longer a reachable
+  commit; the underlying inconsistency this capture tracks stands.
+- Repository/table generator templates (post-refactor org sources under
+  =projects/ores.codegen/library/templates/ores.cpp.*=).
 
 * See also
 

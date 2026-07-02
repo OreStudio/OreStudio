@@ -124,6 +124,9 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'report_definitions', 0, 'Report Definitions', 'ORE analytics report definition templates',
      'dq_report_definitions_artefact_tbl', 'reporting_report_definitions_tbl', 'reporting.v1.report-definitions.publish-from-dq', 33,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'synthetic_fx_spot_configs', 0, 'Synthetic FX Spot Configs', 'Synthetic FX spot generation configs (writes both market_data_generation_configs and fx_spot_generation_configs)',
+     'dq_synthetic_fx_spot_configs_artefact_tbl', 'synthetic_market_data_generation_configs_tbl', 'synthetic.v1.fx-spot-configs.publish-from-dq', 34,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

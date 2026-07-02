@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 3F7C4A1E-2B6D-4E9A-8C5F-1D6E9A2B7C4F
+:END:
+#+title: ores.dq.synthetic_fx_spot_config
+#+description: Codegen lookup-entity model for synthetic_fx_spot_configs.
+#+type: ores.codegen.lookup_entity
+#+filetags: :codegen:lookup_entity:literate:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+product: ores
+#+schema: public
+#+component: dq
+#+entity_singular: synthetic_fx_spot_config
+#+entity_plural: synthetic_fx_spot_configs
+#+has_tenant_id: true
+#+has_coding_scheme: false
+#+has_image_id: false
+#+has_artefact_insert_fn: false
+#+description: Synthetic FX Spot Config artefacts - denormalized parent+child FX generation config rows for the synthetic market data bundle
+
+Synthetic FX Spot Config artefacts - denormalized parent+child FX generation
+config rows for the synthetic market data bundle. Each row is a complete FX
+config combining the parent market_data_generation_config fields (name,
+description, enabled) with the FX spot sub-config fields (currency pair,
+initial price, tick cadence, process type).
+
+* Primary key
+:PROPERTIES:
+:column:  id
+:type:    uuid
+:is_text: false
+:END:
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** description
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** enabled
+:PROPERTIES:
+:type:     boolean
+:nullable: false
+:END:
+
+** base_currency_code
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** quote_currency_code
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** gmm_initial_price
+:PROPERTIES:
+:type:     double precision
+:nullable: false
+:END:
+
+** ticks_per_hour
+:PROPERTIES:
+:type:     integer
+:nullable: false
+:END:
+
+** process_type
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+* Artefact indexes
+
+** base_currency_code
+:PROPERTIES:
+:columns: base_currency_code
+:END:
+
+** quote_currency_code
+:PROPERTIES:
+:columns: quote_currency_code
+:END:
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

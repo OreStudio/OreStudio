@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 60DC5E3A-ADB4-4A9F-8841-56B080330A10
+:END:
+#+title: Task: Implement the publish_from_dq codegen facet
+#+description: Implement the facet designed in the previous task in ores.codegen, and prove it by regenerating one existing hand-written publish-from-dq instance (e.g. report_definitions) with zero behavioural diff, before applying it to a new type.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_librarian_support:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement the =publish_from_dq= facet designed in the previous task
+inside =ores.codegen=, then prove it by regenerating one existing
+hand-written instance — =report_definitions= is the natural choice
+since it is fully documented in
+[[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]] — and confirm zero behavioural diff
+against the current hand-written function/handler/registrar before
+applying the facet to any new entity.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- Facet is implemented and runnable via the normal =ores.codegen=
+  entrypoint.
+- Regenerating =report_definitions='s publish-from-dq artefacts
+  produces a semantic zero-diff against
+  =projects/ores.sql/create/reporting/reporting_publish_from_dq_create.sql=,
+  =publish_from_dq_handler.{hpp,cpp}=, and the registrar subscription.
+- The hand-authored
+  =projects/ores.dq/modeling/ores.dq.report_definition_lookup_entity.org=
+  is retired in favour of the facet deriving the shadow-table shape
+  from =projects/ores.reporting/modeling/ores.reporting.report_definition.org=.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

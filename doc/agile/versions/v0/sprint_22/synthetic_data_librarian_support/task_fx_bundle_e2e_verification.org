@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 6D767C51-AD61-4687-AD6F-1F3D273DCCE9
+:END:
+#+title: Task: End-to-end verification: party to published FX ticks
+#+description: Create a party, apply the synthetic FX bundle per the decided mechanism, and confirm a usable synthetic FX spot config is created and ores.synthetic.service picks it up and publishes ticks over the existing ores.marketdata NATS eventing path.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_librarian_support:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Prove the whole story end-to-end: following the mechanism decided in
+the defaulting-decision task, create a party, get a usable synthetic
+FX spot config applied to it, and confirm =ores.synthetic.service=
+picks up the enabled config and publishes ticks through the existing
+=ores.marketdata= NATS eventing path — closing the loop from "party
+created" to "synthetic FX ticks flowing."
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- A new party ends up with an enabled synthetic FX spot config after
+  following the decided mechanism, with no other manual DB/CLI steps.
+- =ores.shell='s =events listen= (or equivalent) shows ticks arriving
+  on the =synthetic.v1.tick.<key>= subject for that config after
+  Apply.
+- All of the story's =* Acceptance= criteria are re-checked and ticked
+  off before the story closes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

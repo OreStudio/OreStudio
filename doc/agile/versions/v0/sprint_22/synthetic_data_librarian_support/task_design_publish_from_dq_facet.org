@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 1AA74B93-B0F4-4B30-8AEA-5EB7C1A8940B
+:END:
+#+title: Task: Design the publish_from_dq codegen facet
+#+description: Design a new ores.codegen facet that hangs off an entity's existing codegen model and generates the artefact-type registration row, the derived shadow-table lookup_entity model, the SECURITY DEFINER publish-from-dq SQL function, the NATS handler, and registrar wiring. Use the report_definitions worked example in the publication pipeline doc as the reference shape to generalise from.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_librarian_support:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a concrete design for a new =ores.codegen= facet
+(provisionally =publish_from_dq=) that, from a single declaration on an
+entity's existing codegen model, generates the mechanical parts of the
+publish-from-dq pattern documented in
+[[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]]'s codegen-value-assessment table:
+the artefact-type registration row, a shadow-table model *derived*
+from the entity model (removing today's hand-duplicated
+=lookup_entity= file), the =SECURITY DEFINER=
+=ores_<service>_publish_<entity>_from_dq_fn= SQL function, the NATS
+=publish_from_dq_handler=, and its registrar wiring. Use the
+=report_definitions=/=ore_analytics= worked example in that doc as the
+concrete shape to generalise from (mode semantics, natural-key upsert,
+naming conventions).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- Design covers all five generated artefacts (artefact-type row,
+  derived shadow-table model, publish function, handler, registrar
+  wiring) with a clear input declaration on the entity model.
+- Design explicitly states how =mode= (upsert/insert_only/replace_all)
+  and natural-key matching are parameterised, since these vary slightly
+  across the 25 existing hand-written functions.
+- Design is validated against at least two existing hand-written
+  instances (e.g. =report_definitions= and one =refdata= entity) to
+  confirm it can reproduce their behaviour.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

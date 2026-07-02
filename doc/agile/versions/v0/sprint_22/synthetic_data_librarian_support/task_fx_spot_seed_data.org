@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 15400ED3-A433-45E5-A0A2-4BF8B3A9459C
+:END:
+#+title: Task: Seed FX spot synthetic config data and register the bundle
+#+description: Hand-write the populate script seeding the synthetic FX artefact table (reuse the sprint 21 deferred 30-pair library task's reference-date/spot-consistency analysis where useful), and register a new bundle (+ membership row) so it is selectable in the Librarian.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_librarian_support:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write the populate script that seeds the synthetic FX spot config
+artefact table with a usable set of configs, and register a bundle
+(+ membership row) so the set is selectable and applyable from the
+Librarian. This is neither the FPML-coding-scheme case (no
+=fpml_parser.py= support applies — starting spots aren't an external
+enumeration) nor a real external-source import: reuse the
+=sql_dataset_refdata=/=sql_populate_refdata= populate-script skeleton
+(idempotent dataset registration + artefact insert) for the SQL
+scaffolding, but the GMM starting-spot values themselves must be
+computed/hand-authored. Reuse the reference-date/internally-consistent-
+spot analysis from the deferred sprint 21 task =Synthetic FX spot
+library: 30 pairs with historically-consistent starting spots=
+(=7B130100-59F1-477D-910A-AF6D2C8D732C=) where useful, rather than
+re-deriving it — that task was blocked on exactly the Librarian/bundle
+infrastructure this story now builds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- At least one FX spot config (single pair is enough to satisfy this
+  story's scope) is seeded and visible as a publishable dataset in the
+  new bundle.
+- A new bundle exists in =ores_dq_dataset_bundles_tbl= containing the
+  synthetic FX dataset, selectable from the Qt Librarian.
+- Populating logic is idempotent (safe to re-run/re-apply).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

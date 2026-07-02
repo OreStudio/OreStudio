@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: CF7A91A8-5921-4211-90B0-0203D9B4A517
+:END:
+#+title: Task: Decide the party-creation defaulting mechanism
+#+description: The Librarian's bundle Apply is a manual, user-driven action; there is no existing hook to auto-provision anything on party creation. Decide and document whether the story's 'party gets a usable config automatically' goal is satisfied by prompting Apply during party setup (e.g. from the Party Setup wizard) versus building a genuine auto-trigger (e.g. a party_changed_event listener), and record the decision and rationale in the story's Decisions section.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_librarian_support:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story's goal says a party should get a usable synthetic data
+config "when it is created." Investigation found no existing mechanism
+for that: =party_service::save_party= is a plain upsert with no
+lifecycle hooks, and the Librarian's bundle Apply
+(=dq.v1.bundles.publish=) is a manual, user-triggered action, not an
+automatic one. This task decides — and records in the story's
+=* Decisions= — whether "usable config on party creation" is satisfied
+by prompting/defaulting the bundle Apply step inside the existing
+Party Setup wizard flow (cheap, reuses this story's infrastructure
+as-is), or whether a genuine automatic trigger (e.g. a
+=party_changed_event= listener that calls the bundle-publish workflow)
+is required, with the tradeoffs of each spelled out.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- A decision is recorded in the story's =* Decisions= section with
+  rationale (wizard-prompted Apply vs. automatic event-driven trigger).
+- If the decision requires new implementation work beyond what the
+  other tasks already cover, follow-on tasks are added to the story
+  before this task closes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

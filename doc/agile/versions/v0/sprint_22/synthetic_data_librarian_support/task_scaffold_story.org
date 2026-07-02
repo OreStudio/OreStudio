@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-02
 #+updated: 2026-07-02
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,11 +35,11 @@ to reuse what already exists rather than re-deriving it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -51,9 +51,22 @@ to reuse what already exists rather than re-deriving it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Investigated the existing DQ Librarian/bundle publication pipeline
+before enumerating tasks, since the story's "librarian support" phrase
+turned out to refer to that existing bundle-apply mechanism rather
+than a new concept. Wrote up the pipeline as a durable knowledge doc
+([[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]]) with a worked example
+(=report_definitions= in the =ore_analytics= bundle) tracing every
+file involved, then rated each stage by codegen value. Finding: the
+bundle/junction/artefact-type rows and the per-entity shadow artefact
+table are already codegen-generated (via =ores.codegen.lookup_entity=
+models); the real gap is the =publish_..._from_dq_fn= SQL
+function plus its NATS handler and registrar wiring, which are 100%
+hand-written across all 25 existing instances. Also found that
+=party_service::save_party= has no lifecycle hook and the Librarian's
+bundle Apply is a manual user action — there is no existing mechanism
+to auto-provision anything on party creation, which the story's
+follow-on tasks now need to explicitly resolve rather than assume.
 
 * Notes
 
@@ -70,3 +83,12 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Broke the story into five follow-on tasks: design the
+=publish_from_dq= codegen facet, implement it (proven against
+=report_definitions=), model the synthetic FX config as a DQ artefact
+type using the new facet, seed FX data and register the bundle, decide
+the party-creation defaulting mechanism (no automatic trigger exists
+today — Apply is manual), and end-to-end verification. No code
+written; docs only (this task, the five new tasks, and the
+publication-pipeline knowledge doc).

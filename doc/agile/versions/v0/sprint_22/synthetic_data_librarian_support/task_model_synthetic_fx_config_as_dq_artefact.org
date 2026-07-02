@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 44030333-A650-4EBF-9674-5819B8496114
+:END:
+#+title: Task: Model synthetic FX spot config as a DQ artefact type
+#+description: Apply the publish_from_dq facet to ores.synthetic.market_data_generation_config / its FX spot sub-config: generate the artefact-type row, shadow table, publish function, handler, and registrar wiring so a synthetic FX config can be published from a DQ bundle into a party.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_librarian_support:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Apply the =publish_from_dq= facet to
+=ores.synthetic.market_data_generation_config= and its FX spot
+sub-config so that a synthetic FX config becomes publishable from a DQ
+bundle: the artefact-type row, shadow table, publish function
+(=ores_synthetic_publish_fx_spot_config_from_dq_fn= or equivalent),
+NATS handler, and registrar wiring should all be facet-generated —
+this is the story's proof that the generic infrastructure holds for a
+type outside =ores.refdata=/=ores.reporting=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- Enabling the facet on the synthetic FX config entity model generates
+  a working artefact-type row, shadow table, publish function,
+  handler, and registrar entry — no hand-written SQL/C++ beyond the
+  facet declaration.
+- The generated publish function writes only into
+  =ores.synthetic='s own tables, per the strict service-table
+  isolation exception documented in
+  [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern]].
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

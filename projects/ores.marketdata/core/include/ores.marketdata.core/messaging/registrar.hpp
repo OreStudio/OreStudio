@@ -25,7 +25,6 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include <functional>
 #include <optional>
 #include <string>
 #include <vector>
@@ -38,8 +37,7 @@ public:
     register_handlers(ores::nats::service::client& nats,
                       ores::database::context ctx,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt,
-                      std::string http_base_url = {},
-                      std::function<void()> on_feed_bindings_changed = {});
+                      std::string http_base_url = {});
 };
 
 }

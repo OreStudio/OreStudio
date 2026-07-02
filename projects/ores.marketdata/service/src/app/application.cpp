@@ -105,8 +105,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         "ores.marketdata.service",
         [&cfg, ingest](auto& n, auto c, auto v) {
             return ores::marketdata::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v), cfg.http_base_url,
-                [ingest]() { ingest->refresh(); });
+                n, std::move(c), std::move(v), cfg.http_base_url);
         },
         [&nats, ingest](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

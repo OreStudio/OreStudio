@@ -93,8 +93,11 @@ void feed_ingest_loop::start() {
 }
 
 void feed_ingest_loop::refresh() {
+    // DB read outside the lock — no shared state touched.
     repository::feed_binding_repository repo;
     const auto bindings = repo.read_latest_all_tenants(ctx_);
+
+    std::lock_guard lock(mu_);
 
     // Build the set of source_names that should be active
     std::set<std::string> wanted;
@@ -108,22 +111,23 @@ void feed_ingest_loop::refresh() {
         if (!wanted.contains(source_name))
             to_remove.push_back(source_name);
     for (const auto& s : to_remove)
-        unsubscribe_binding(s);
+        unsubscribe_binding_locked(s);
 
     // Subscribe anything new
     for (const auto& b : bindings) {
         if (b.enabled && !subs_.contains(b.source_name))
-            subscribe_binding(b.ore_key, b.source_name, b.tenant_id.to_string(),
-                              boost::uuids::to_string(b.party_id));
+            subscribe_binding_locked(b.ore_key, b.source_name, b.tenant_id.to_string(),
+                                     boost::uuids::to_string(b.party_id));
     }
 
     BOOST_LOG_SEV(lg(), info) << "Feed ingest loop: " << subs_.size() << " active subscription(s)";
 }
 
-void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
-                                         const std::string& source_name,
-                                         const std::string& tenant_id_str,
-                                         const std::string& party_id_str) {
+// Called only from refresh(), which holds mu_.
+void feed_ingest_loop::subscribe_binding_locked(const std::string& ore_key,
+                                                const std::string& source_name,
+                                                const std::string& tenant_id_str,
+                                                const std::string& party_id_str) {
     const std::string producer_subject = "synthetic.v1.tick." + source_name;
     const std::string publish_subject = ore_key_to_publish_subject(tenant_id_str, ore_key);
     const std::string ore_key_copy = ore_key;
@@ -136,17 +140,15 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
     auto st = std::make_shared<feed_stats>();
     st->ore_key = ore_key;
     st->nats_subject = producer_subject;
-    {
-        std::lock_guard lock(mu_);
-        stats_.emplace(source_name, st);
-    }
+    stats_.emplace(source_name, st); // mu_ already held by caller (refresh)
 
     boost::uuids::random_generator uuid_gen;
     const auto party_uuid = boost::lexical_cast<boost::uuids::uuid>(party_id_str);
 
-    // Use core NATS subscribe (not JetStream durable) so we only receive
-    // live ticks — no replay of historical backlog on restart. This keeps
-    // the grid responsive immediately and avoids chart spike artifacts.
+    // Plain subscribe (fan-out) rather than queue_subscribe: this service
+    // runs as a single instance. If horizontal scaling is ever needed,
+    // switch to queue_subscribe("ores.marketdata.service") to avoid
+    // duplicate observations and duplicate republish.
     auto tenant_ctx = ctx_.with_tenant(
         ores::utility::uuid::tenant_id::from_string(tenant_id_str).value(),
         "ores.marketdata.service");
@@ -225,11 +227,11 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
     subs_.emplace(source_name, std::move(sub));
 }
 
-void feed_ingest_loop::unsubscribe_binding(const std::string& source_name) {
+// Called only from refresh(), which holds mu_.
+void feed_ingest_loop::unsubscribe_binding_locked(const std::string& source_name) {
     BOOST_LOG_SEV(lg(), info) << "INGEST UNSUBSCRIBE: source='" << source_name << "'";
     subs_.erase(source_name);
-    std::lock_guard lock(mu_);
-    stats_.erase(source_name);
+    stats_.erase(source_name); // mu_ already held by caller (refresh)
 }
 
 void feed_ingest_loop::status_loop() {

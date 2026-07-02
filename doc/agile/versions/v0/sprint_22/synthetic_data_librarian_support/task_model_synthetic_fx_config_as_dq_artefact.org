@@ -39,11 +39,11 @@ copy-and-adapt template, rather than waiting on the codegen facet.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -60,11 +60,37 @@ copy-and-adapt template, rather than waiting on the codegen facet.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Modeled the artefact as one denormalized DQ artefact type
+(=synthetic_fx_spot_configs=) combining the parent
+=market_data_generation_config= fields (name, description, enabled)
+with the =fx_spot_generation_config= fields (currency pair, initial
+price, tick cadence, process type) in a single shadow row, since the
+publish path needs to create both a shared container and one or more
+FX sub-configs per party. Added an =ores.codegen.lookup_entity= model
+and a hand-written shadow table (codegen's lookup_entity path turned
+out to be broken — see Notes), a =SECURITY DEFINER= publish function
+that resolves/creates the shared container per (tenant, party) then
+upserts FX rows keyed by currency pair, a NATS handler mirroring
+=report_definitions='s file-for-file, registrar wiring, and the IAM
+execute grant. Verified end-to-end against the live dev DB (container
+reuse, version bump on upsert, insert_only skip behaviour) and built
+=ores.synthetic.core.lib= successfully. Ran
+=projects/ores.sql/utility/validate_schemas.sh= and fixed a missing
+drop script it flagged for the new artefact table.
 
 * Notes
+
+Found a pre-existing =ores.codegen= bug while trying to generate the
+shadow table: the enrichment step that populates the mustache
+=entity= context is gated on =model_type == 'schema'=, but
+=ores.codegen.lookup_entity= models map to internal model_type
+=enum=, so =sql_schema_artefact_create.mustache= cannot render from
+*any* lookup_entity model today — confirmed the same failure against
+the pre-existing =ores.dq.report_definition_lookup_entity.org=. Hand-
+wrote the shadow table to match the template's expected output
+column-for-column instead. Recorded on
+[[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]] as a
+prerequisite fix.
 
 * PRs
 
@@ -79,3 +105,14 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Shipped: =synthetic_fx_spot_configs= is now a working DQ artefact
+type. New/changed files: the lookup_entity model
+(=projects/ores.dq/modeling/ores.dq.synthetic_fx_spot_config_lookup_entity.org=),
+the shadow artefact table and its drop script, the publish function
+(=projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql=),
+the NATS handler
+(=projects/ores.synthetic/core/{include,src}/.../publish_from_dq_handler.*=),
+registrar wiring, the IAM execute grant, and the artefact-type
+registration row. Zero-diff-able against a future codegen facet by
+design (Acceptance bullet 3). =validate_schemas.sh= passes clean.

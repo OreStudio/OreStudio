@@ -90,19 +90,40 @@ facet is deferred to
   librarian gives it a usable config" in the Goal will be satisfied
   via the Librarian's existing manual bundle-Apply action unless the
   defaulting-decision task concludes an automatic trigger is required.
-- Defaulting mechanism decided, corrected: the synthetic FX dataset
-  (=synthetic.fx_spot_configs=) is a *member of the existing
+- Defaulting mechanism decided, corrected twice: the synthetic FX
+  dataset (=synthetic.fx_spot_configs=) is a *member of the existing
   =ore_analytics= bundle*, at =display_order 20= right after
-  =ore.report_definitions= (10) — not a separate bundle. Every
-  existing "publish reports" call site (the =ores.shell= party
-  provisioning script, and the Qt =PartyProvisioningWizard=) already
-  publishes =ore_analytics=, so riding that bundle means the FX config
-  is provisioned automatically with zero new code. An earlier attempt
-  built a separate =synthetic_market_data= bundle plus a new automatic
-  Phase 3.5 in =PartyProvisioningWizard=; both were reverted once it
-  became clear the CLI provisioning script (a second call site the
-  wizard-only fix didn't cover) proved the simpler, bundle-membership
-  approach was both sufficient and correct.
+  =ore.report_definitions= (10) — not a separate bundle. An earlier
+  attempt built a separate =synthetic_market_data= bundle plus a new
+  automatic Phase 3.5 in =PartyProvisioningWizard=; both were reverted
+  once it became clear a real test-provisioning run (via =ores.shell=)
+  never touched either.
+- That test run surfaced a deeper problem: *neither* party-provisioning
+  call site (Qt =PartyExecutePage::startReportInstall= or =ores.shell='s
+  =provision_commands::process_party= "reports" phase) actually
+  publishes the =ore_analytics= bundle at all — both bypass
+  =dq.v1.bundles.publish= entirely with a bespoke
+  list-templates-then-create-per-record RPC path, predating (and never
+  migrated onto) the publish-from-dq infrastructure that
+  =report_definitions= is otherwise fully wired into. Riding bundle
+  membership alone therefore has *no effect* on either provisioning
+  path as things stand. Filed as a separate story,
+  [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Unify report definitions provisioning onto the standard publish-from-dq path]],
+  since fixing it properly (in both places, without regressing the
+  CLI's per-report-name =--reports= selection) is bigger than this
+  story's scope.
+- Pragmatic interim fix for *this* story: added a one-off, hand-written
+  step to =ores.shell='s =provision_commands.cpp= (=[4/5] Publishing
+  synthetic FX spot configs=) that calls =dq.v1.bundles.publish= with
+  =bundle_code = "ore_analytics"= and
+  =opted_in_datasets = ["synthetic.fx_spot_configs"]= only — this is
+  explicitly acknowledged as *not* data-driven (it's dataset-specific
+  C++, the same class of problem as the bundle above), kept narrow and
+  temporary until the unification story above replaces it with a
+  single generic bundle-publish call covering all =ore_analytics=
+  members. The Qt wizard path is not yet fixed at all (see Out of
+  scope) — only =ores.shell= provisioning was exercised in this
+  story's testing.
 
 * Out of scope
 
@@ -110,3 +131,7 @@ facet is deferred to
   only FX is wired end-to-end.
 - New generation methodologies beyond what the sprint 21 approach
   analysis and FX spot PoC already established.
+- Fixing the Qt =PartyProvisioningWizard= path to also publish the FX
+  config — only =ores.shell='s CLI provisioning was wired and tested
+  in this story. Both call sites get fixed properly together in
+  [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Unify report definitions provisioning onto the standard publish-from-dq path]].

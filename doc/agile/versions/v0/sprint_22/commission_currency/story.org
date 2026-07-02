@@ -27,7 +27,7 @@ same checklist applies.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                                |
+| State         | STARTED                                |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
 | Now           | Auxiliary codegen synced. Currency-entity codegen sync (C++ core, messaging, Qt) and Wt/HTTP captures remain. |
 | Waiting on    | Nothing.                               |
@@ -86,7 +86,7 @@ auxiliary type (=rounding_type=, =monetary_nature=, =currency_market_tier=).
 | [[id:00B62E70-D961-4DFA-BAB4-BB3488B31C86][Sync C++ messaging codegen for currency auxiliaries]] | DONE | 2026-06-25 | 2026-06-26 | Re-run protocol, nats-eventing, and nats-handler profiles for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
 | [[id:10B1976B-A785-44B0-8DFA-F315ADFD4B8B][Sync Qt codegen for currency auxiliaries]] | DONE | 2026-06-25 | 2026-06-26 | Re-run Qt profile for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
 | [[id:84522F09-7044-4343-92E5-80588C2D325F][Define and implement entity view document type]] | DONE | | 2026-06-12 | Create entity view docs listing all artefacts per entity across every projection and component, with proj: links to artefacts and codegen archetypes; implement currency as the first example. |
-| [[id:8A84D304-431A-45CF-9E3C-6AC649F6A62F][Sync C++ core codegen for currency]] | BACKLOG | | | Re-run domain, repository, service, and generator profiles for currency; diff against repo; fix templates or code per drift classification. |
+| [[id:8A84D304-431A-45CF-9E3C-6AC649F6A62F][Sync C++ core codegen for currency]] | STARTED | 2026-07-02 | | Re-run domain, repository, service, and generator profiles for currency; diff against repo; fix templates or code per drift classification. |
 | [[id:8B15EE84-1727-43B5-85E4-96E58F1BE03B][Sync C++ messaging codegen for currency]] | BACKLOG | | | Re-run protocol, nats-eventing, and nats-handler profiles for currency; diff against repo; fix templates or code per drift classification. |
 | [[id:EA647CBC-18C7-4555-9A49-FBF55BC192FD][Sync Qt codegen for currency]] | BACKLOG | | | Re-run the qt profile for currency; diff the 12 output files against the repo; fix templates or code per drift classification. |
 | [[id:3CE7779C-7D20-4203-A4E9-1FBDBFAEF537][File Wt and HTTP gap captures for currency]] | BACKLOG | | | Identify Wt UI and HTTP handler gaps for currency discovered during commissioning and file them as backlog captures for future work. |

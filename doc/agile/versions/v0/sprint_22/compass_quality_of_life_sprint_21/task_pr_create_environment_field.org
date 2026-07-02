@@ -69,3 +69,8 @@ Answer and Conventions sections to match.
 |   |                 |      |          |       |
 
 * Result
+
+Verified live: PR #1405 itself (raised with the modified
+=compass pr create=) shows =**Environment:** prime_origin= right
+after the Traceability table, sourced automatically from this task's
+=#+environment:= field.

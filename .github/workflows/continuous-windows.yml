@@ -218,7 +218,7 @@ jobs:
           ctest -VV --preset $preset --script "CTest.cmake,$cmake_args"
 
       - name: Delete sccache entry
-        if: always()
+        if: ${{ !cancelled() }}
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -228,7 +228,7 @@ jobs:
             || true
 
       - name: Save sccache
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}

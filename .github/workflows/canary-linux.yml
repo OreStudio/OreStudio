@@ -202,7 +202,7 @@ jobs:
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
       - name: Delete cmake cache entry
-        if: always()
+        if: ${{ !cancelled() }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -211,14 +211,14 @@ jobs:
             || true
 
       - name: Save cmake build cache
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/cache/save@v6
         with:
           path: build/output/linux-gcc-debug-ninja/projects
           key: cmake-build-linux-gcc-debug-ninja
 
       - name: Delete sccache entry
-        if: always()
+        if: ${{ !cancelled() }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -227,7 +227,7 @@ jobs:
             || true
 
       - name: Save sccache
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}

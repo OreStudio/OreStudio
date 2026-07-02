@@ -40,7 +40,7 @@ agile index, and carry postponed sprint 21 stories forward.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:2CC79A8B-86FC-4DF2-A36B-DB53034785AF][Task: Open sprint 22]] | STARTED | 2026-07-02 | | Scaffold sprint 22, wire manifest, move postponed stories. |
-| [[id:5076E124-409F-4D79-B207-3CD59968D4AA][Generate release notes for Sprint 21]] | STARTED | 2026-07-02 | | Generate ORE Studio release notes from merged PRs and the closing sprint 21 backlog, tag main, and open a draft GitHub release. |
+| [[id:5076E124-409F-4D79-B207-3CD59968D4AA][Generate release notes for Sprint 21]] | DONE | 2026-07-02 | 2026-07-02 | Generate ORE Studio release notes from merged PRs and the closing sprint 21 backlog, tag main, and open a draft GitHub release. |
 
 * Decisions
 

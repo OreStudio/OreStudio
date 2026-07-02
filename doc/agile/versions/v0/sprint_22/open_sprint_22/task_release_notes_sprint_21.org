@@ -29,11 +29,11 @@ notes, tag =main=, and open a draft GitHub release. Use the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -45,9 +45,40 @@ notes, tag =main=, and open a draft GitHub release. Use the
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Started by trying to do this the old, manual way (Emacs export,
+hand-run =gh release create=), which surfaced enough friction and
+bugs that the work pivoted to building it properly: a new =compass
+release-notes= command family
+(=projects/ores.compass/src/compass_release_notes.py=) with five
+verbs — =create=, =charts=, =export=, =commit=, =draft= — replacing
+the ad-hoc pipeline described in the old skill/recipe.
+
+Bugs found and fixed along the way, each verified live against
+Sprint 21's real release:
+- C++ codegen templates never honoured =has_audit_columns=
+  (unrelated hotfix, PR #1401, surfaced while investigating CI).
+- =generate_release_notes.py= never passed =parent_dir=/=slug= to
+  the mustache context, so every chart image link rendered broken
+  (=[[proj://x.png]]= instead of the real path).
+- Org export defaulted to subscript/superscript on, mangling prose
+  identifiers with underscores into =<sub>= tags in the generated
+  Markdown.
+- =TAG_TO_SECTION= was missing =marketdata=/=market_data=/
+  =synthetic=, so five Sprint 21 stories fell through to "Other"
+  instead of "Financial Features".
+- =draft='s branch/up-to-date guard was unconditional, blocking
+  legitimate reuse of a tag/release that already existed — narrowed
+  to only fire when a brand new tag needs creating.
+- Release title didn't follow house convention (=<tag>,
+  "<Codename>"=) — =--codename= is now required.
+- The screenshot's =proj:= link had regressed to a plain relative
+  path in the template, which can't resolve through the GFM export
+  → GitHub release flow.
+
+Moved the pipeline's design rationale out of the skill (a procedure)
+into a proper knowledge doc,
+[[id:BD3F410B-401B-4EA3-8C86-E4B1F45CA9BF][The compass release-notes pipeline]], linked via org-roam from the
+skill, the recipe, and =ores.compass='s component overview.
 
 * Notes
 
@@ -64,3 +95,12 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Replaced the ad-hoc manual release-notes process with a proper
+=compass release-notes= pipeline (create/charts/export/commit/draft),
+fixed six real bugs it surfaced, and cut Sprint 21's actual release:
+=v0.0.21, "Otjinhungwa"= — draft, correctly tagged at the sprint 21
+close commit, with charts, screenshot, and Financial Features section
+(including the synthetic market data work) all correct. Design
+rationale captured in a dedicated knowledge doc rather than left
+inline in the skill.

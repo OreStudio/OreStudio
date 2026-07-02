@@ -16,6 +16,13 @@ Sprint 21 set out to commission the `ores.refdata` entity library — closing ou
 ## Financial Features
 
 -   **Commission: country**: Commission `country` across all access layers: verify the Qt UI end-to-end post-NATS migration, verify existing shell and CLI commands, fix any regressions found, and add the entity chapter to the user manual.
+-   **Consistent synthetic market data generation: approach analysis**: Establish a documented, developer-ready approach for generating a single consistent synthetic market data environment that covers all ORE-supported asset classes, can price all products in the ORE Examples suite, and can be evolved through time in a way that maintains cross-asset consistency.
+-   **PoC: synthetic market data generation — FX spot vertical slice**: Validate the approach developed in the sprint-21 analysis story by building a working vertical PoC limited to FX spot.
+-   **Synthetic generation configuration and config-driven feeds**: Replace the PoC's transient, boot-time, system-tenant generation with a proper producer: a persisted **synthetic generation config** in `ores.synthetic` that a user authors, and a service that generates from it autonomously and publishes on its own namespaced channel — stamping the config's tenant and source name so the data is correctly owned and traceable.
+-   **Config-driven synthetic feed generation (per-config series, lifecycle)**: A user can configure any FX spot rate in the Market Simulator and start a feed for it that generates correct, isolated synthetic market data — not just the single hard-wired EUR/USD PoC feed.
+-   **Market data feed binding, ingestion and official stream**: Make `ores.marketdata` the authority: a source-agnostic **feed-config binding** records which producer channel feeds each official series; an ingest loop subscribes to the bound producer channels, **persists** observations (tenant + source) and **remaps** them to the official tenant-scoped stream consumers use.
+-   **Source-agnostic market data control panel**: A generic Qt control panel to manage market data feeds — list, start/stop, monitor — driven by the feed-config registry and a source-agnostic control contract, with no knowledge of what produces each feed.
+-   **Hotfix: market\_fixing entity carries audit columns absent from lean SQL schema**: Restore the marketdata repository test suite by trimming `market_fixing`'s domain type, entity, mapper, generator, json\_io, handler and service down to the columns that actually exist on `ores_marketdata_market_fixings_tbl` — the table intentionally has no audit trail (`version`, `modified_by`, `performed_by`, `change_reason_code`, `change_commentary`) because fixing volume makes per-row audit impractical.
 
 
 ## Service Architecture
@@ -23,14 +30,9 @@ Sprint 21 set out to commission the `ores.refdata` entity library — closing ou
 -   **Refactor ores.codegen: merge generator.py into codegen/ package**: Eliminate the structural coupling between `codegen/generate.py` and the top-level `generator.py` monolith.
 
 
-## Qt UI
-
--   **Source-agnostic market data control panel**: A generic Qt control panel to manage market data feeds — list, start/stop, monitor — driven by the feed-config registry and a source-agnostic control contract, with no knowledge of what produces each feed.
-
-
 ## Documentation & Tooling
 
--   **Open sprint 21**: Scaffold sprint 21, move all 24 postponed stories from sprint<sub>20</sub>/ to sprint<sub>21</sub>/ (updating filetags and parent sprint references), wire the sprint into the version manifest and agile index, and update the vcpkg submodule to latest master.
+-   **Open sprint 21**: Scaffold sprint 21, move all 24 postponed stories from sprint\_20/ to sprint\_21/ (updating filetags and parent sprint references), wire the sprint into the version manifest and agile index, and update the vcpkg submodule to latest master.
 -   **Knowledge graph housekeeping**: Keep the org-roam knowledge graph navigable and internally consistent.
 -   **Fix readme badges**: readme.org badges are correct: Sprint badge shows the current sprint, PRs badge does not show a shields.io error.
 
@@ -38,19 +40,13 @@ Sprint 21 set out to commission the `ores.refdata` entity library — closing ou
 ## Other
 
 -   **Accumulate face dataset**: Build the external/facestudio/ seed catalog; fix accumulation script; wire into seeder.
--   **Consistent synthetic market data generation: approach analysis**: Establish a documented, developer-ready approach for generating a single consistent synthetic market data environment that covers all ORE-supported asset classes, can price all products in the ORE Examples suite, and can be evolved through time in a way that maintains cross-asset consistency.
--   **PoC: synthetic market data generation — FX spot vertical slice**: Validate the approach developed in the sprint-21 analysis story by building a working vertical PoC limited to FX spot.
--   **Synthetic generation configuration and config-driven feeds**: Replace the PoC's transient, boot-time, system-tenant generation with a proper producer: a persisted **synthetic generation config** in `ores.synthetic` that a user authors, and a service that generates from it autonomously and publishes on its own namespaced channel — stamping the config's tenant and source name so the data is correctly owned and traceable.
--   **Config-driven synthetic feed generation (per-config series, lifecycle)**: A user can configure any FX spot rate in the Market Simulator and start a feed for it that generates correct, isolated synthetic market data — not just the single hard-wired EUR/USD PoC feed.
--   **Market data feed binding, ingestion and official stream**: Make `ores.marketdata` the authority: a source-agnostic **feed-config binding** records which producer channel feeds each official series; an ingest loop subscribes to the bound producer channels, **persists** observations (tenant + source) and **remaps** them to the official tenant-scoped stream consumers use.
 -   **Fix compass review workflow for Claude-based code reviews**: Restore the compass PR review round workflow after the switch from Gemini to Claude as the automated code reviewer.
--   **Compass environment improvements: port auto-assignment and fleet env-type display**: Improve compass env provision so it never collides with existing environments by scanning all ores<sub>dev</sub><sub>\*</sub> directories and picking the next available base port.
+-   **Compass environment improvements: port auto-assignment and fleet env-type display**: Improve compass env provision so it never collides with existing environments by scanning all ores\_dev\_\* directories and picking the next available base port.
 -   **Environment provisioning overhaul**: GCP-style naming, genesis env, light env type, direct-emacs compass commands, env type through the stack, bootstrap docs.
--   **Hotfix: sccache wrapper breaks Windows builds**: Restore green Windows CI by ensuring sccache<sub>wrapper.sh</sub> is only used as a compiler launcher on platforms that can execute POSIX shell scripts.
+-   **Hotfix: sccache wrapper breaks Windows builds**: Restore green Windows CI by ensuring sccache\_wrapper.sh is only used as a compiler launcher on platforms that can execute POSIX shell scripts.
 -   **Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++**: macOS CI compiles ores.utility without error.
 -   **Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression**: Restore the macOS debug CI build after it started failing during CPack Bundle packaging when Xcode 16 was selected (PR #1325).
--   **Fix Qt party<sub>type</sub> build: request.type renamed to code/codes**: Restore the `ores.qt.party.lib` build after the party<sub>type</sub> messaging codegen sync renamed request fields, by updating the Qt party<sub>type</sub> consumers to the new field names.
--   **Hotfix: market<sub>fixing</sub> entity carries audit columns absent from lean SQL schema**: Restore the marketdata repository test suite by trimming `market_fixing`'s domain type, entity, mapper, generator, json<sub>io</sub>, handler and service down to the columns that actually exist on `ores_marketdata_market_fixings_tbl` — the table intentionally has no audit trail (`version`, `modified_by`, `performed_by`, `change_reason_code`, `change_commentary`) because fixing volume makes per-row audit impractical.
+-   **Fix Qt party\_type build: request.type renamed to code/codes**: Restore the `ores.qt.party.lib` build after the party\_type messaging codegen sync renamed request fields, by updating the Qt party\_type consumers to the new field names.
 
 
 # ⚠️ Known Issues & Postponed

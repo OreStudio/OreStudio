@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: D5149453-F174-4C73-AD7D-A5F907BE6296
+:ID: 163EDB9D-6A21-4DE5-929E-F599490C1A72
 :END:
 #+title: ORE Studio Sprint 21 – Release Notes
 #+description: Sprint 21 release notes (July 2026).
@@ -39,14 +39,17 @@ with 126 merged PRs across all planned stories.
 ** Financial Features
 
 - *Commission: country*: Commission =country= across all access layers: verify the Qt UI end-to-end post-NATS migration, verify existing shell and CLI commands, fix any regressions found, and add the entity chapter to the user manual.
+- *Consistent synthetic market data generation: approach analysis*: Establish a documented, developer-ready approach for generating a single consistent synthetic market data environment that covers all ORE-supported asset classes, can price all products in the ORE Examples suite, and can be evolved through time in a way that maintains cross-asset consistency.
+- *PoC: synthetic market data generation — FX spot vertical slice*: Validate the approach developed in the sprint-21 analysis story by building a working vertical PoC limited to FX spot.
+- *Synthetic generation configuration and config-driven feeds*: Replace the PoC's transient, boot-time, system-tenant generation with a proper producer: a persisted *synthetic generation config* in =ores.synthetic= that a user authors, and a service that generates from it autonomously and publishes on its own namespaced channel — stamping the config's tenant and source name so the data is correctly owned and traceable.
+- *Config-driven synthetic feed generation (per-config series, lifecycle)*: A user can configure any FX spot rate in the Market Simulator and start a feed for it that generates correct, isolated synthetic market data — not just the single hard-wired EUR/USD PoC feed.
+- *Market data feed binding, ingestion and official stream*: Make =ores.marketdata= the authority: a source-agnostic *feed-config binding* records which producer channel feeds each official series; an ingest loop subscribes to the bound producer channels, *persists* observations (tenant + source) and *remaps* them to the official tenant-scoped stream consumers use.
+- *Source-agnostic market data control panel*: A generic Qt control panel to manage market data feeds — list, start/stop, monitor — driven by the feed-config registry and a source-agnostic control contract, with no knowledge of what produces each feed.
+- *Hotfix: market_fixing entity carries audit columns absent from lean SQL schema*: Restore the marketdata repository test suite by trimming =market_fixing='s domain type, entity, mapper, generator, json_io, handler and service down to the columns that actually exist on =ores_marketdata_market_fixings_tbl= — the table intentionally has no audit trail (=version=, =modified_by=, =performed_by=, =change_reason_code=, =change_commentary=) because fixing volume makes per-row audit impractical.
 
 ** Service Architecture
 
 - *Refactor ores.codegen: merge generator.py into codegen/ package*: Eliminate the structural coupling between =codegen/generate.py= and the top-level =generator.py= monolith.
-
-** Qt UI
-
-- *Source-agnostic market data control panel*: A generic Qt control panel to manage market data feeds — list, start/stop, monitor — driven by the feed-config registry and a source-agnostic control contract, with no knowledge of what produces each feed.
 
 ** Documentation & Tooling
 
@@ -57,11 +60,6 @@ with 126 merged PRs across all planned stories.
 ** Other
 
 - *Accumulate face dataset*: Build the external/facestudio/ seed catalog; fix accumulation script; wire into seeder.
-- *Consistent synthetic market data generation: approach analysis*: Establish a documented, developer-ready approach for generating a single consistent synthetic market data environment that covers all ORE-supported asset classes, can price all products in the ORE Examples suite, and can be evolved through time in a way that maintains cross-asset consistency.
-- *PoC: synthetic market data generation — FX spot vertical slice*: Validate the approach developed in the sprint-21 analysis story by building a working vertical PoC limited to FX spot.
-- *Synthetic generation configuration and config-driven feeds*: Replace the PoC's transient, boot-time, system-tenant generation with a proper producer: a persisted *synthetic generation config* in =ores.synthetic= that a user authors, and a service that generates from it autonomously and publishes on its own namespaced channel — stamping the config's tenant and source name so the data is correctly owned and traceable.
-- *Config-driven synthetic feed generation (per-config series, lifecycle)*: A user can configure any FX spot rate in the Market Simulator and start a feed for it that generates correct, isolated synthetic market data — not just the single hard-wired EUR/USD PoC feed.
-- *Market data feed binding, ingestion and official stream*: Make =ores.marketdata= the authority: a source-agnostic *feed-config binding* records which producer channel feeds each official series; an ingest loop subscribes to the bound producer channels, *persists* observations (tenant + source) and *remaps* them to the official tenant-scoped stream consumers use.
 - *Fix compass review workflow for Claude-based code reviews*: Restore the compass PR review round workflow after the switch from Gemini to Claude as the automated code reviewer.
 - *Compass environment improvements: port auto-assignment and fleet env-type display*: Improve compass env provision so it never collides with existing environments by scanning all ores_dev_* directories and picking the next available base port.
 - *Environment provisioning overhaul*: GCP-style naming, genesis env, light env type, direct-emacs compass commands, env type through the stack, bootstrap docs.
@@ -69,7 +67,6 @@ with 126 merged PRs across all planned stories.
 - *Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++*: macOS CI compiles ores.utility without error.
 - *Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression*: Restore the macOS debug CI build after it started failing during CPack Bundle packaging when Xcode 16 was selected (PR #1325).
 - *Fix Qt party_type build: request.type renamed to code/codes*: Restore the =ores.qt.party.lib= build after the party_type messaging codegen sync renamed request fields, by updating the Qt party_type consumers to the new field names.
-- *Hotfix: market_fixing entity carries audit columns absent from lean SQL schema*: Restore the marketdata repository test suite by trimming =market_fixing='s domain type, entity, mapper, generator, json_io, handler and service down to the columns that actually exist on =ores_marketdata_market_fixings_tbl= — the table intentionally has no audit trail (=version=, =modified_by=, =performed_by=, =change_reason_code=, =change_commentary=) because fixing volume makes per-row audit impractical.
 
 * ⚠️ Known Issues & Postponed
 

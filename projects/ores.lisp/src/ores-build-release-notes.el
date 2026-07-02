@@ -111,6 +111,7 @@
           (let ((org-export-with-toc nil)
                 (org-export-with-section-numbers nil)
                 (org-export-with-author nil)
+                (org-export-with-sub-superscripts nil)
                 (org-export-with-broken-links 'mark))
             (org-gfm-export-to-markdown))
           (message "Wrote %s"

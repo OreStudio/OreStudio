@@ -31,7 +31,8 @@ from textwrap import dedent
 
 TAG_TO_SECTION = [
     ({"windows", "msvc", "visibility", "cmake", "vcpkg"}, "Build & Portability"),
-    ({"ore", "trading", "refdata", "fx", "equity", "conventions", "roundtrip"}, "Financial Features"),
+    ({"ore", "trading", "refdata", "fx", "equity", "conventions", "roundtrip",
+      "marketdata", "market_data", "synthetic"}, "Financial Features"),
     ({"isolation", "sql", "codegen", "workflow", "nats", "iam"}, "Service Architecture"),
     ({"workspace", "dq", "publish", "compute", "gleif"}, "New Features"),
     ({"qt", "ui"}, "Qt UI"),

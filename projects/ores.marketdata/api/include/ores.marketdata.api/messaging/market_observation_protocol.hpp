@@ -30,7 +30,7 @@ namespace ores::marketdata::messaging {
 struct get_market_observations_request {
     using response_type = struct get_market_observations_response;
     static constexpr std::string_view nats_subject = "marketdata.v1.market_observations.list";
-    std::string series_id;  // optional: if set, return only observations for this series
+    std::string series_id; // optional: if set, return only observations for this series
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
 };

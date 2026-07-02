@@ -48,9 +48,11 @@ void MarketdataPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
-    feedBindingController_ = std::make_unique<FeedBindingController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username);
+    feedBindingController_ = std::make_unique<FeedBindingController>(ctx_.main_window,
+                                                                     ctx_.mdi_area,
+                                                                     ctx_.client_manager,
+                                                                     ctx_.change_reason_cache,
+                                                                     ctx_.username);
 
     connect(feedBindingController_.get(),
             &FeedBindingController::statusMessage,
@@ -82,8 +84,7 @@ void MarketdataPlugin::setup_menus(const shared_menus_context& smc) {
     };
 
     marketDataMenu_->addSeparator();
-    auto* actFeedBindings =
-        marketDataMenu_->addAction(ico(Icon::ServerLink), tr("Feed &Bindings"));
+    auto* actFeedBindings = marketDataMenu_->addAction(ico(Icon::ServerLink), tr("Feed &Bindings"));
     connect(actFeedBindings, &QAction::triggered, this, [this]() {
         if (feedBindingController_)
             feedBindingController_->showListWindow();

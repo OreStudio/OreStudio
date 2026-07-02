@@ -58,7 +58,9 @@ public:
     std::string ore_key() const override;
     void start(handler on_tick) override;
     void stop() override;
-    std::uint64_t publish_count() const { return publish_count_.load(std::memory_order_relaxed); }
+    std::uint64_t publish_count() const {
+        return publish_count_.load(std::memory_order_relaxed);
+    }
 
 private:
     ores::nats::service::client& nats_;

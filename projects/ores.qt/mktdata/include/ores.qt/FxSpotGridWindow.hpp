@@ -104,8 +104,8 @@ private:
     void setupUi();
     void buildRows(const std::vector<marketdata::domain::feed_binding>& bindings);
     void subscribe(RowState& rs);
-    void applyTick(const std::string& ore_key, double mid,
-                   std::chrono::system_clock::time_point when);
+    void
+    applyTick(const std::string& ore_key, double mid, std::chrono::system_clock::time_point when);
     static FeedStatus deriveStatus(const RowState& rs);
 
     ClientManager* clientManager_;

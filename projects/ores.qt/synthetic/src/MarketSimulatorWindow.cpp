@@ -18,32 +18,32 @@
  *
  */
 #include "ores.qt/MarketSimulatorWindow.hpp"
-#include "ores.qt/WatermarkChartView.hpp"
-#include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
-#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.marketdata.api/domain/feed_binding.hpp"
+#include "ores.marketdata.api/domain/fx_spot_tick.hpp"
+#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FeedDialog.hpp"
 #include "ores.qt/FxSpotRateEditor.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/WatermarkChartView.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
-#include "ores.marketdata.api/domain/fx_spot_tick.hpp"
-#include "ores.nats/domain/message.hpp"
-#include "ores.nats/service/client.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QColor>
 #include <QFont>
 #include <QFontDatabase>
 #include <QFutureWatcher>
 #include <QHBoxLayout>
+#include <QHeaderView>
 #include <QIcon>
 #include <QMdiArea>
 #include <QMessageBox>
-#include <QHeaderView>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPalette>
@@ -63,10 +63,10 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <atomic>
-#include <set>
 #include <cmath>
 #include <memory>
 #include <rfl/json.hpp>
+#include <set>
 
 namespace ores::qt {
 
@@ -337,12 +337,14 @@ void MarketSimulatorWindow::setupRightPanel() {
     auto* feedBtnRow = new QWidget(summaryPage_);
     auto* feedBtnLayout = new QHBoxLayout(feedBtnRow);
     feedBtnLayout->setContentsMargins(0, 4, 0, 0);
-    feedStartButton_ = new QPushButton(
-        IconUtils::createRecoloredIcon(Icon::Play, IconUtils::DefaultIconColor),
-        tr("Start all rates"), feedBtnRow);
-    feedStopButton_ = new QPushButton(
-        IconUtils::createRecoloredIcon(Icon::Stop, IconUtils::DefaultIconColor),
-        tr("Stop all rates"), feedBtnRow);
+    feedStartButton_ =
+        new QPushButton(IconUtils::createRecoloredIcon(Icon::Play, IconUtils::DefaultIconColor),
+                        tr("Start all rates"),
+                        feedBtnRow);
+    feedStopButton_ =
+        new QPushButton(IconUtils::createRecoloredIcon(Icon::Stop, IconUtils::DefaultIconColor),
+                        tr("Stop all rates"),
+                        feedBtnRow);
     feedBtnLayout->addWidget(feedStartButton_);
     feedBtnLayout->addWidget(feedStopButton_);
     feedBtnLayout->addStretch();
@@ -350,7 +352,8 @@ void MarketSimulatorWindow::setupRightPanel() {
     feedBtnRow->setVisible(false); // shown only for Feed nodes
     feedStatsLabel_->setVisible(false);
     // Store the row widget pointer so we can toggle it; reuse feedStopButton_ parent.
-    feedStartButton_->setProperty("feedBtnRow", QVariant::fromValue(static_cast<QObject*>(feedBtnRow)));
+    feedStartButton_->setProperty("feedBtnRow",
+                                  QVariant::fromValue(static_cast<QObject*>(feedBtnRow)));
 
     connect(feedStartButton_, &QPushButton::clicked, this, [this]() {
         startPairsAsync(fxPairsForFeed(currentNodeId()));
@@ -656,8 +659,8 @@ void MarketSimulatorWindow::buildTree() {
                 continue;
 
             const bool fxRunning = runningSourceNames_.count(fx.source_name) > 0;
-            QString fxText = QString::fromStdString(fx.base_currency_code + "/" +
-                                                    fx.quote_currency_code);
+            QString fxText =
+                QString::fromStdString(fx.base_currency_code + "/" + fx.quote_currency_code);
             auto* fxItem = new QStandardItem(fxText);
             fxItem->setData(static_cast<int>(NodeType::FxPair), NodeTypeRole);
             fxItem->setData(QString::fromStdString(fxId), NodeIdRole);
@@ -832,17 +835,16 @@ void MarketSimulatorWindow::showFeedSummary(
     }
     summaryForm_->addRow(tr("FX rates"), new QLabel(QString::number(total), summaryPage_));
 
-    const QString statusText = running == 0   ? tr("Stopped")
-                               : running == total ? tr("Running")
-                                                  : tr("%1 of %2 running").arg(running).arg(total);
+    const QString statusText = running == 0     ? tr("Stopped") :
+                               running == total ? tr("Running") :
+                                                  tr("%1 of %2 running").arg(running).arg(total);
     auto* statusLbl = new QLabel(statusText, summaryPage_);
-    statusLbl->setStyleSheet(running > 0 ? "color: green; font-weight: bold;"
-                                         : "color: gray;");
+    statusLbl->setStyleSheet(running > 0 ? "color: green; font-weight: bold;" : "color: gray;");
     summaryForm_->addRow(tr("Status"), statusLbl);
 
     feedStatsLabel_->setVisible(false); // stats folded into the form
-    auto* feedBtnRow = qobject_cast<QWidget*>(
-        feedStartButton_->property("feedBtnRow").value<QObject*>());
+    auto* feedBtnRow =
+        qobject_cast<QWidget*>(feedStartButton_->property("feedBtnRow").value<QObject*>());
     if (feedBtnRow) {
         feedBtnRow->setVisible(total > 0);
         feedStartButton_->setEnabled(running < total);
@@ -923,13 +925,15 @@ void MarketSimulatorWindow::refreshFxSummaryIfCurrent() {
         return;
     const bool running = runningSourceNames_.count(it->second.source_name) > 0;
     heroStatus_->setText(running ? tr("●  Running") : tr("○  Stopped"));
-    heroStatus_->setStyleSheet(running ? "color: rgb(60,180,80); font-weight: bold;"
-                                       : "color: gray;");
+    heroStatus_->setStyleSheet(running ? "color: rgb(60,180,80); font-weight: bold;" :
+                                         "color: gray;");
     if (tickChartContainer_) {
         if (running && !tickSubscription_) {
             tickSamples_.clear();
-            if (tickSeries_) tickSeries_->clear();
-            if (tickPosMarker_) tickPosMarker_->clear();
+            if (tickSeries_)
+                tickSeries_->clear();
+            if (tickPosMarker_)
+                tickPosMarker_->clear();
             tickChartPlaceholder_->setVisible(false);
             subscribeTickChart(it->second.source_name);
         } else if (!running && tickSubscription_) {
@@ -955,8 +959,8 @@ void MarketSimulatorWindow::showFxPairSummary(
     unsubscribeTickChart();
 
     // Hide feed-level controls when switching to an FX pair view.
-    if (auto* feedBtnRow = qobject_cast<QWidget*>(
-            feedStartButton_->property("feedBtnRow").value<QObject*>()))
+    if (auto* feedBtnRow =
+            qobject_cast<QWidget*>(feedStartButton_->property("feedBtnRow").value<QObject*>()))
         feedBtnRow->setVisible(false);
     feedStatsLabel_->setVisible(false);
     feedSummaryId_.clear();
@@ -997,8 +1001,8 @@ void MarketSimulatorWindow::showFxPairSummary(
                                 QString::fromUtf8(" • ") + QString::fromStdString(fx.source_name)));
     const bool isRunning = runningSourceNames_.count(fx.source_name) > 0;
     heroStatus_->setText(isRunning ? tr("●  Running") : tr("○  Stopped"));
-    heroStatus_->setStyleSheet(isRunning ? "color: rgb(60,180,80); font-weight: bold;"
-                                         : "color: gray;");
+    heroStatus_->setStyleSheet(isRunning ? "color: rgb(60,180,80); font-weight: bold;" :
+                                           "color: gray;");
     summaryHero_->setVisible(true);
 
     summaryForm_->addRow(tr("Initial price"),
@@ -1017,8 +1021,10 @@ void MarketSimulatorWindow::showFxPairSummary(
     // Show the tick chart; subscribe if the feed is currently running.
     if (tickChartContainer_) {
         tickSamples_.clear();
-        if (tickSeries_) tickSeries_->clear();
-        if (tickPosMarker_) tickPosMarker_->clear();
+        if (tickSeries_)
+            tickSeries_->clear();
+        if (tickPosMarker_)
+            tickPosMarker_->clear();
         tickChartContainer_->setVisible(true);
 
         // Update chart title and watermark for the selected pair.
@@ -1321,7 +1327,8 @@ void MarketSimulatorWindow::startPairsAsync(
     }
 
     if (reqs.empty()) {
-        QMessageBox::warning(this, tr("No price model"),
+        QMessageBox::warning(this,
+                             tr("No price model"),
                              tr("Add at least one price-behaviour component before starting."));
         return;
     }
@@ -1338,7 +1345,7 @@ void MarketSimulatorWindow::startPairsAsync(
         boost::uuids::random_generator uuid_gen;
 
         // Load existing bindings once so we can skip creating duplicates.
-        std::set<std::pair<std::string,std::string>> existing_bindings; // (ore_key, source_name)
+        std::set<std::pair<std::string, std::string>> existing_bindings; // (ore_key, source_name)
         {
             namespace m = ores::marketdata::messaging;
             auto br = cm->process_authenticated_request(
@@ -1379,8 +1386,8 @@ void MarketSimulatorWindow::startPairsAsync(
             b.performed_by = username;
             b.change_reason_code = "system.new_record";
             b.change_commentary = "Auto-created by Market Simulator on feed start";
-            auto bind_req = ores::marketdata::messaging::save_feed_binding_request::from(
-                std::move(b));
+            auto bind_req =
+                ores::marketdata::messaging::save_feed_binding_request::from(std::move(b));
             auto bind_resp = cm->process_authenticated_request(bind_req);
             if (!bind_resp || !bind_resp->success) {
                 const std::string err = bind_resp ? bind_resp->message : bind_resp.error();
@@ -1408,7 +1415,8 @@ void MarketSimulatorWindow::startPairsAsync(
                 started.push_back(key);
                 ++ok;
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Start failed for " << key << ": " << err.toStdString();
+                BOOST_LOG_SEV(lg(), error)
+                    << "Start failed for " << key << ": " << err.toStdString();
                 failed << QString::fromStdString(key) + ": " + err;
             }
         }
@@ -1419,8 +1427,8 @@ void MarketSimulatorWindow::startPairsAsync(
         self->statusLabel_->setText(msg);
         emit self->statusChanged(msg);
         if (!failed.isEmpty())
-            QMessageBox::critical(self, self->tr("Start failed"),
-                                  self->tr("Failed to start:\n") + failed.join("\n"));
+            QMessageBox::critical(
+                self, self->tr("Start failed"), self->tr("Failed to start:\n") + failed.join("\n"));
     });
     watcher->setFuture(QtConcurrent::run(task));
 }
@@ -1480,7 +1488,8 @@ void MarketSimulatorWindow::stopPairsAsync(
                 stopped.push_back(key);
                 ++ok;
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Stop failed for " << key << ": " << err.toStdString();
+                BOOST_LOG_SEV(lg(), error)
+                    << "Stop failed for " << key << ": " << err.toStdString();
                 failed << QString::fromStdString(key) + ": " + err;
             }
         }
@@ -1490,8 +1499,8 @@ void MarketSimulatorWindow::stopPairsAsync(
         self->statusLabel_->setText(msg);
         emit self->statusChanged(msg);
         if (!failed.isEmpty())
-            QMessageBox::critical(self, self->tr("Stop failed"),
-                                  self->tr("Failed to stop:\n") + failed.join("\n"));
+            QMessageBox::critical(
+                self, self->tr("Stop failed"), self->tr("Failed to stop:\n") + failed.join("\n"));
     });
     watcher->setFuture(QtConcurrent::run(task));
 }
@@ -1555,8 +1564,7 @@ void MarketSimulatorWindow::subscribeTickChart(const std::string& source_name) {
 
     try {
         tickSubscription_ = clientManager_->nats_client().subscribe(
-            subject,
-            [self, alive](ores::nats::message msg) {
+            subject, [self, alive](ores::nats::message msg) {
                 if (!alive->load(std::memory_order_acquire))
                     return;
                 const std::string_view payload = ores::nats::as_string_view(msg.data);
@@ -1564,10 +1572,13 @@ void MarketSimulatorWindow::subscribeTickChart(const std::string& source_name) {
                 if (!result)
                     return;
                 const double mid = result->mid;
-                QMetaObject::invokeMethod(self, [self, mid]() {
-                    if (self)
-                        self->appendTickSample(mid);
-                }, Qt::QueuedConnection);
+                QMetaObject::invokeMethod(
+                    self,
+                    [self, mid]() {
+                        if (self)
+                            self->appendTickSample(mid);
+                    },
+                    Qt::QueuedConnection);
             });
         if (tickFlashTimer_)
             tickFlashTimer_->start();
@@ -1596,7 +1607,8 @@ void MarketSimulatorWindow::refreshTickChart() {
     const int n = static_cast<int>(tickSamples_.size());
     if (n == 0) {
         tickSeries_->clear();
-        if (tickPosMarker_) tickPosMarker_->clear();
+        if (tickPosMarker_)
+            tickPosMarker_->clear();
         return;
     }
     QList<QPointF> pts;
@@ -1636,11 +1648,10 @@ void MarketSimulatorWindow::startCacheSubscription(const std::string& source_nam
     BOOST_LOG_SEV(lg(), debug) << "Cache subscription starting for: " << source_name;
     try {
         cacheSubscriptions_.emplace(
-            source_name,
-            clientManager_->nats_client().subscribe_buffered(subject, 1000));
+            source_name, clientManager_->nats_client().subscribe_buffered(subject, 1000));
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Cache subscribe failed for " << source_name
-                                   << ": " << e.what();
+        BOOST_LOG_SEV(lg(), error)
+            << "Cache subscribe failed for " << source_name << ": " << e.what();
     }
 }
 

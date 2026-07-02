@@ -89,7 +89,9 @@ static IconDef getIconDef(Icon icon) {
         case Icon::CheckmarkCircle:
             return {"ic_fluent_checkmark_circle_20", "check-circle.svg"};
         case Icon::CheckmarkCircleFilled:
-            return {"ic_fluent_checkmark_circle_20", "check-circle.svg", true};  // solar Bold = check-circle.svg
+            return {"ic_fluent_checkmark_circle_20",
+                    "check-circle.svg",
+                    true}; // solar Bold = check-circle.svg
         case Icon::Classification:
             return {"ic_fluent_classification_20", "layers.svg"};
         case Icon::Clock:
@@ -115,7 +117,9 @@ static IconDef getIconDef(Icon icon) {
         case Icon::DismissCircle:
             return {"ic_fluent_dismiss_circle_20", "close-circle.svg"};
         case Icon::DismissCircleFilled:
-            return {"ic_fluent_dismiss_circle_20", "close-circle.svg", true};  // solar Bold = close-circle.svg
+            return {"ic_fluent_dismiss_circle_20",
+                    "close-circle.svg",
+                    true}; // solar Bold = close-circle.svg
         case Icon::DocumentCode:
             return {"ic_fluent_document_code_16", "code-file.svg"};
         case Icon::DocumentTable:

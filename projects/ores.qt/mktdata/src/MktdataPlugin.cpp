@@ -84,8 +84,7 @@ void MktdataPlugin::setup_menus(const shared_menus_context& smc) {
         return IC::createRecoloredIcon(i, IC::DefaultIconColor);
     };
 
-    auto* actFxSpotGrid =
-        marketDataMenu_->addAction(ico(Icon::ChartMultiple), tr("&FX Spot"));
+    auto* actFxSpotGrid = marketDataMenu_->addAction(ico(Icon::ChartMultiple), tr("&FX Spot"));
     connect(actFxSpotGrid, &QAction::triggered, this, [this]() {
         if (marketDataController_)
             marketDataController_->showFxSpotGridWindow();

@@ -76,7 +76,8 @@ struct subscription::impl {
 // ---------------------------------------------------------------------------
 
 struct message_buffer {
-    explicit message_buffer(std::size_t capacity) : buf_(capacity) {}
+    explicit message_buffer(std::size_t capacity)
+        : buf_(capacity) {}
 
     void push(message msg) {
         std::lock_guard lock(mu_);
@@ -104,7 +105,8 @@ private:
 
 struct buffered_subscription::impl {
     explicit impl(subscription s, std::shared_ptr<message_buffer> b)
-        : sub(std::move(s)), buffer(std::move(b)) {}
+        : sub(std::move(s))
+        , buffer(std::move(b)) {}
     subscription sub;
     std::shared_ptr<message_buffer> buffer;
 };
@@ -254,7 +256,7 @@ extern "C" void drain_cb(void* ud) noexcept {
 static void drain_impl(subscription::impl* impl) noexcept {
     if (!impl || !impl->sub)
         return;
-    auto* ctx = new(std::nothrow) sub_drain_ctx{impl->sub, std::move(impl->closure)};
+    auto* ctx = new (std::nothrow) sub_drain_ctx{impl->sub, std::move(impl->closure)};
     if (ctx) {
         natsSubscription_SetOnCompleteCB(impl->sub, drain_cb, ctx);
         natsSubscription_Drain(impl->sub);
@@ -302,12 +304,14 @@ buffered_subscription::buffered_subscription(buffered_subscription&&) noexcept =
 buffered_subscription& buffered_subscription::operator=(buffered_subscription&&) noexcept = default;
 
 std::vector<message> buffered_subscription::snapshot() const {
-    if (!impl_) return {};
+    if (!impl_)
+        return {};
     return impl_->buffer->snapshot();
 }
 
 std::size_t buffered_subscription::size() const {
-    if (!impl_) return 0;
+    if (!impl_)
+        return 0;
     return impl_->buffer->size();
 }
 
@@ -523,8 +527,8 @@ subscription client::subscribe(std::string_view subject, message_handler handler
 }
 
 buffered_subscription client::subscribe_buffered(std::string_view subject,
-                                                  std::size_t capacity,
-                                                  message_handler handler) {
+                                                 std::size_t capacity,
+                                                 message_handler handler) {
     auto buf = std::make_shared<message_buffer>(capacity);
 
     // Wrap the caller's handler: push a copy to the buffer, then forward.

@@ -82,8 +82,7 @@ struct stop_market_feed_config_response {
  */
 struct list_market_feed_configs_request {
     using response_type = struct list_market_feed_configs_response;
-    static constexpr std::string_view nats_subject =
-        "marketdata.v1.market_feed_configs.list";
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_feed_configs.list";
 };
 
 struct list_market_feed_configs_response {

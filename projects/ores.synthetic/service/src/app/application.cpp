@@ -101,13 +101,13 @@ void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::conte
             weights.push_back(c.weight);
         }
         const auto r = ctrl.start(fx.ore_key,
-                                   fx.source_name,
-                                   std::move(means),
-                                   std::move(stdevs),
-                                   std::move(weights),
-                                   fx.gmm_initial_price,
-                                   static_cast<double>(fx.ticks_per_hour),
-                                   fx.process_type);
+                                  fx.source_name,
+                                  std::move(means),
+                                  std::move(stdevs),
+                                  std::move(weights),
+                                  fx.gmm_initial_price,
+                                  static_cast<double>(fx.ticks_per_hour),
+                                  fx.process_type);
         if (r == feed_controller::start_result::started)
             ++started;
     }

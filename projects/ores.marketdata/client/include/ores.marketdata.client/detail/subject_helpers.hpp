@@ -31,8 +31,7 @@ namespace ores::marketdata::client::detail {
  * With tenant_id: "marketdata.v1.tick.<tenant_id>.fx.rate.eur.usd"
  * Without:        "marketdata.v1.tick.fx.rate.eur.usd"  (legacy / testing)
  */
-inline std::string ore_key_to_subject(std::string ore_key,
-                                      const std::string& tenant_id = {}) {
+inline std::string ore_key_to_subject(std::string ore_key, const std::string& tenant_id = {}) {
     std::transform(ore_key.begin(), ore_key.end(), ore_key.begin(), [](unsigned char c) {
         return static_cast<char>(std::tolower(c));
     });

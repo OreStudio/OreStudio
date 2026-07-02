@@ -87,18 +87,19 @@ public:
         const std::string id = req->source_name.empty() ? req->ore_key : req->source_name;
         using sr = feed_controller::start_result;
         switch (result) {
-        case sr::started:
-            resp.success = true;
-            resp.message = "Feed started: " + id;
-            BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
-                << msg.subject << " — feed started: " << id << "  ticks/h=" << req->ticks_per_hour;
-            break;
-        case sr::already_running:
-            resp.success = true;
-            resp.message = "Feed already running: " + id;
-            BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
-                << msg.subject << " — feed already running: " << id;
-            break;
+            case sr::started:
+                resp.success = true;
+                resp.message = "Feed started: " + id;
+                BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
+                    << msg.subject << " — feed started: " << id
+                    << "  ticks/h=" << req->ticks_per_hour;
+                break;
+            case sr::already_running:
+                resp.success = true;
+                resp.message = "Feed already running: " + id;
+                BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
+                    << msg.subject << " — feed already running: " << id;
+                break;
         }
         reply(nats_, msg, resp);
     }

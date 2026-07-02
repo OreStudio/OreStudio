@@ -62,4 +62,6 @@ plan itself stays — it is the historical record of what we did.)
 * Result
 
 Scaffolded the story and its first task via =compass story new=, on a fresh
-branch off latest main, and wired both into the Sprint 21 stories table.
+branch off latest main. Wired initially into the Sprint 21 stories table by
+mistake (Sprint 21 was already closed); moved to the Sprint 22 stories
+table under Tooling > Epic: Compass during review.

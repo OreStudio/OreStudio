@@ -194,3 +194,7 @@ Steady upward slope is healthy; plateauing signals a stall.
 * Retrospective
 
 (Filled at sprint close.)
+
+* Release Notes
+
+See [[file:release_notes.org][release_notes.org]] for the full narrative.

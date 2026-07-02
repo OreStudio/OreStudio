@@ -210,12 +210,17 @@ def _wrap_para(text: str, width: int = 100) -> str:
 
 
 def build_context(sprint: dict, stories: list[dict], pr_summary: dict,
-                  sprint_dir: Path, screenshot_filename: str = "",
+                  sprint_dir: Path, repo_root: Path, screenshot_filename: str = "",
                   demo_video_id: str = "") -> dict:
     sprint_title = sprint["title"]
 
     # Sprint slug for filetags (e.g. sprint_17)
     sprint_slug = sprint_dir.name
+
+    # repo-root-relative parent dir for proj: chart links (e.g.
+    # doc/agile/versions/v0), so [[proj:{{parent_dir}}/{{slug}}/x.png]]
+    # resolves to the sprint folder rather than the repo root.
+    parent_dir = sprint_dir.relative_to(repo_root).parent.as_posix()
 
     # Date range
     all_dates = [
@@ -320,6 +325,8 @@ def build_context(sprint: dict, stories: list[dict], pr_summary: dict,
         "filetags": filetags,
         "date": date.today().isoformat(),
         "month_year": month_year,
+        "parent_dir": parent_dir,
+        "slug": sprint_slug,
         "mission": _wrap_para(sprint["mission"]),
         "highlights_block": highlights_block,
         "sections_block": sections_block,
@@ -459,7 +466,7 @@ def main() -> None:
         print("[info] No PR data found — continuing without it.")
 
     context = build_context(
-        sprint, stories, pr_summary, sprint_dir,
+        sprint, stories, pr_summary, sprint_dir, repo_root,
         screenshot_filename=args.screenshot_filename,
         demo_video_id=args.demo_video_id,
     )

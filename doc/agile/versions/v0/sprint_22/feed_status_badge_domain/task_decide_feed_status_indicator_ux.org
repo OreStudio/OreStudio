@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 084ADDBB-7AFB-4259-8D10-CF0A83C5509B
+:END:
+#+title: Task: Decide UX for feed status indicator in FX spot grid
+#+description: Badge (colored pill) vs. compact status dot/icon vs. other, for a live per-row connection-health indicator scanned across many grid rows. Record the decision and rationale in the story's Decisions section before any implementation.
+#+type: task
+#+level: s1
+#+filetags: :feed_status_badge_domain:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6C515A93-C7D9-4B6C-B7B2-7AD433BACE44][Configurable feed status indicator in the FX spot grid]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Settle whether =FxSpotGridWindow='s per-row feed connection status
+(PENDING/LIVE/STALE/DISCONNECTED) should be a reused badge
+(=BadgeCache=/=BadgeLabelUtils=, as originally captured) or a
+purpose-built compact status dot/icon, before any DB/wiring work
+starts. Options to weigh:
+
+- *Badge (as captured)*: reuses existing =BadgeCache=/
+  =BadgeLabelUtils= infra, tenant-configurable colours/labels,
+  consistent with the rest of the app's categorical-state UI —
+  but wide colored pills may be visually noisy across many grid
+  rows scanned at a glance.
+- *Compact status dot/icon*: smaller footprint, closer to the
+  conventional "connection health" pattern in monitoring/dashboard
+  UIs — but needs new componentry rather than reusing badge infra
+  as-is, and loses tenant-configurability unless built in.
+
+Look at how many rows =FxSpotGridWindow= typically shows at once and
+whether other parts of the app already have a precedent for
+live/transient (as opposed to categorical/persistent) per-row state
+indicators, before deciding.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6C515A93-C7D9-4B6C-B7B2-7AD433BACE44][Configurable feed status indicator in the FX spot grid]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- Direction chosen (badge / status dot / other) with rationale.
+- Recorded in this story's =* Decisions= section.
+- The implementation task updated to match the chosen direction if
+  it turns out to differ from either option as currently worded.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

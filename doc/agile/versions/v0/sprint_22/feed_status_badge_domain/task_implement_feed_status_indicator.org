@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: A7D16AD1-35AE-4485-B5ED-A614EC8C42C0
+:END:
+#+title: Task: Implement chosen feed status indicator in FX spot grid
+#+description: Wire the decided indicator (badge domain via BadgeCache/BadgeLabelUtils, or a new compact status-dot component) through MarketDataController into FxSpotGridWindow, replacing the current hardcoded CSS pill styling. Depends on the UX decision task.
+#+type: task
+#+level: s1
+#+filetags: :feed_status_badge_domain:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 084ADDBB-7AFB-4259-8D10-CF0A83C5509B
+#+blocked_since: 2026-07-02
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6C515A93-C7D9-4B6C-B7B2-7AD433BACE44][Configurable feed status indicator in the FX spot grid]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Blocked on [[id:084ADDBB-7AFB-4259-8D10-CF0A83C5509B][Decide UX for feed status indicator in FX spot grid]].
+Once the direction is settled, wire it through
+=MarketDataController= into =FxSpotGridWindow=
+(=projects/ores.qt/mktdata/src/FxSpotGridWindow.cpp=), replacing the
+current hardcoded CSS pill styling for
+PENDING/LIVE/STALE/DISCONNECTED. If the badge direction is chosen:
+add a =feed_status= badge domain and switch to
+=BadgeLabelUtils::apply= (see =BadgeCache=/=plugin_context.hpp=). If
+the status-dot direction is chosen: scope and build the new
+component instead.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6C515A93-C7D9-4B6C-B7B2-7AD433BACE44][Configurable feed status indicator in the FX spot grid]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- =FxSpotGridWindow= no longer applies hardcoded per-status CSS.
+- All four states (PENDING/LIVE/STALE/DISCONNECTED) render
+  correctly per the decided direction.
+- If badges: colours/labels come from the new =feed_status= badge
+  domain, not hardcoded values.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

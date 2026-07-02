@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_22:sprint_22:v0:
 #+owner: marco
 #+branch: feature/bump-project-version-sprint-22
-#+pr:
+#+pr: 1404
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
@@ -62,7 +62,7 @@ one that actually exists — v0.0.22 doesn't exist yet).
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1404][#1404]] | [build] Bump version to 0.0.22 |
 
 * Review
 

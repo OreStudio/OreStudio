@@ -192,6 +192,94 @@ existing functions are structurally identical enough (read artefact
 table, honor =mode=, upsert into one target table) to make a generic
 profile plausible.
 
+** Worked example: =report_definitions= in the =ore_analytics= bundle
+
+Every file the pipeline touches for one concrete artefact type, in
+pipeline order:
+
+1. Bundle row — [[proj:projects/ores.sql/populate/dq/dq_dataset_bundle_populate.sql][~projects/ores.sql/populate/dq/dq_dataset_bundle_populate.sql~]]
+   registers the =ore_analytics= bundle itself
+   (=ores_dq_dataset_bundles_upsert_fn('ore_analytics', 'ORE
+   Analytics', ...)=) — the thing a user picks in the Librarian.
+
+2. Bundle membership — [[proj:projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql][~projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql~]]
+   maps the =ore.report_definitions= dataset into the =ore_analytics=
+   bundle at =display_order 10= — this row is what stage 3's workflow
+   builder iterates to build one step.
+
+3. Artefact-type registration — [[proj:projects/ores.sql/populate/dq/dq_artefact_types_populate.sql][~projects/ores.sql/populate/dq/dq_artefact_types_populate.sql~]]
+   registers the =report_definitions= artefact type, pointing
+   =artefact_table → dq_report_definitions_artefact_tbl=,
+   =target_table → reporting_report_definitions_tbl=, and
+   =target_subject → reporting.v1.report-definitions.publish-from-dq=
+   — this row is the glue the workflow step uses to know which NATS
+   subject to call (stage 1).
+
+4. Shadow-table codegen model — [[proj:projects/ores.dq/modeling/ores.dq.report_definition_lookup_entity.org][~projects/ores.dq/modeling/ores.dq.report_definition_lookup_entity.org~]]
+   (=ores.codegen.lookup_entity=) declares the staging-table shape
+   (name, report_type, schedule_expression, ..., =display_order=,
+   artefact indexes) that generates the next file.
+
+5. Generated shadow table — [[proj:projects/ores.sql/create/dq/dq_report_definitions_artefact_create.sql][~projects/ores.sql/create/dq/dq_report_definitions_artefact_create.sql~]]
+   (auto-generated from #4) creates
+   =ores_dq_report_definitions_artefact_tbl= — no PK/FK constraints,
+   just =dataset_id=/=tenant_id= bookkeeping plus the entity's columns
+   (stage 1).
+
+6. Dataset registration + seed data — [[proj:projects/ores.sql/populate/reporting/reporting_report_definitions_populate.sql][~projects/ores.sql/populate/reporting/reporting_report_definitions_populate.sql~]]
+   registers the =ore.report_definitions= dataset
+   (=ores_dq_datasets_upsert_fn=) and inserts the 28 standard ORE
+   analytics report rows straight into
+   =ores_dq_report_definitions_artefact_tbl= (stage 2). This is a
+   "seed-time inversion" per
+   [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern]]: reporting's own populate script writes into a
+   DQ-owned table, but only at DDL-owner setup time, not at runtime —
+   distinct from the publish-time cross-service write in #9 below.
+
+7. Target entity codegen model — [[proj:projects/ores.reporting/modeling/ores.reporting.report_definition.org][~projects/ores.reporting/modeling/ores.reporting.report_definition.org~]]
+   (=ores.codegen.entity=) is the "real" =report_definition= domain
+   type — unrelated to publishing, but it's what #8's target table is
+   generated from, and what #9 ultimately writes rows shaped like.
+
+8. Target table — [[proj:projects/ores.sql/create/reporting/reporting_report_definitions_create.sql][~projects/ores.sql/create/reporting/reporting_report_definitions_create.sql~]]
+   creates =ores_reporting_report_definitions_tbl=, the real,
+   constrained, party-scoped table that end users query.
+
+9. Publish function — [[proj:projects/ores.sql/create/reporting/reporting_publish_from_dq_create.sql][~projects/ores.sql/create/reporting/reporting_publish_from_dq_create.sql~]]
+   defines =ores_reporting_publish_report_definitions_from_dq_fn=
+   (=SECURITY DEFINER=): reads
+   =ores_dq_report_definitions_artefact_tbl=, honors =mode=
+   (upsert/insert_only/replace_all), writes only into
+   =ores_reporting_report_definitions_tbl= (stage 4). Hand-written —
+   the gap identified above.
+
+10. NATS handler — [[proj:projects/ores.reporting/core/src/messaging/publish_from_dq_handler.cpp][~projects/ores.reporting/core/src/messaging/publish_from_dq_handler.cpp~]]
+    (declared in the matching =.hpp=) receives a
+    =publish_from_dq_command= and calls #9's SQL function (stage 4).
+    Hand-written per service, not per entity, but still not generated.
+
+11. Registrar wiring — [[proj:projects/ores.reporting/core/src/messaging/registrar.cpp][~projects/ores.reporting/core/src/messaging/registrar.cpp~]]
+    subscribes #10 on the subject
+    =reporting.v1.report-definitions.publish-from-dq= named in #3
+    (stage 4).
+
+12. Bundle-publish orchestration (generic, not report_definitions-specific)
+    — [[proj:projects/ores.dq/core/include/ores.dq.core/messaging/publication_handler.hpp][~projects/ores.dq/core/include/ores.dq.core/messaging/publication_handler.hpp~]]
+    turns the bundle's member list into a
+    =bundle_publish_workflow_request= and starts the workflow
+    (stage 3); [[proj:projects/ores.dq/api/include/ores.dq.api/workflow/bundle_publish_workflow.hpp][~projects/ores.dq/api/include/ores.dq.api/workflow/bundle_publish_workflow.hpp~]]
+    is the workflow definition that turns that request into one step
+    per dataset, dispatching to #3's =target_subject= (i.e. #11's
+    subscription).
+
+13. Librarian UI (generic — no bespoke wizard page needed here, unlike
+    LEI's =root_lei= parameters) — [[proj:projects/ores.qt/refdata/include/ores.qt/DataLibrarianWindow.hpp][~projects/ores.qt/refdata/include/ores.qt/DataLibrarianWindow.hpp~]]
+    lists the =ore_analytics= bundle for the user to select, and
+    [[proj:projects/ores.qt/refdata/src/PublishBundleWizard.cpp][~projects/ores.qt/refdata/src/PublishBundleWizard.cpp~]] sends
+    =dq.v1.bundles.publish= with =bundle_code = "ore_analytics"= when
+    the user clicks Apply — no per-entity code here at all, since
+    =report_definitions= needs no publish-time parameters (stage 5).
+
 * See also
 
 - [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern — Architecture and Decision]] — the design

@@ -34,6 +34,7 @@ Five verbs, run in order at sprint close:
                place without losing the tag/PR/notes work already done.
 """
 import argparse
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -78,6 +79,10 @@ def _cmd_charts(args, project_root):
 
 
 def _cmd_export(args, project_root):
+    if not shutil.which("emacs"):
+        print("❌ emacs not found on PATH — required for the Markdown export.",
+              file=sys.stderr)
+        return 1
     sprint_dir = _sprint_dir(project_root, args.sprint)
     org_file = sprint_dir / "release_notes.org"
     if not org_file.exists():

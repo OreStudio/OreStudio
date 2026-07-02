@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: BD3F410B-401B-4EA3-8C86-E4B1F45CA9BF
+:END:
+#+title: The compass release-notes pipeline
+#+description: Design of compass release-notes: the five verbs (create, charts, export, commit, draft), why each exists, the raw.githubusercontent.com image-resolution mechanism, tag/release idempotency, and the release-title convention.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:compass:release:agile:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+
+* Summary
+
+=compass release-notes= (=projects/ores.compass/src/compass_release_notes.py=)
+closes a sprint through five independent, idempotent verbs —
+=create=, =charts=, =export=, =commit=, =draft= — run in that order
+from a task branch off =main=. Splitting the pipeline this way lets
+each step be re-run in isolation to fix a mistake (wrong
+categorisation, a formatting bug, the wrong codename) without
+redoing the others or losing already-published work. The design's
+one real subtlety is that the generated Markdown embeds chart images
+via =raw.githubusercontent.com/.../main/...= URLs rather than
+uploading them anywhere — so those images only render once
+=release_notes.org=/=.md= and the four chart PNGs are actually
+merged to =main=, which is why =commit= and =draft= are separate
+verbs with a PR in between.
+
+* Detail
+
+** Why five verbs, not one
+
+An single "generate and publish release notes" command sounds
+appealing but fails the moment anything about the sprint needs a
+second look — and something always does: a story miscategorised
+into "Other", a codegen bug like org's subscript export mangling
+prose identifiers, a wrong release codename. Five narrow verbs mean
+any one of those can be fixed by re-running just that verb, without
+re-doing PR collection or losing a tag/release that already exists:
+
+- =create --sprint N [--since-tag vX.Y.Z]= — wraps
+  [[proj:build/scripts/collect_release_pr_data.py][=collect_release_pr_data.py=]] (enumerates merged PRs via =gh= since
+  the previous =v*= tag) and
+  [[proj:build/scripts/generate_release_notes.py][=generate_release_notes.py=]] (parses =sprint.org= and every
+  =story.org=, groups stories into sections via =TAG_TO_SECTION=,
+  derives Highlights from the retrospective, renders
+  [[proj:projects/ores.codegen/library/templates/doc_release_notes.org.mustache][=doc_release_notes.org.mustache=]] via pystache). Leaves two
+  =(( ... ))= summary-blurb placeholders for a human/LLM to fill —
+  synthesising sprint narrative from mission/retrospective/PR list
+  is deliberately not automated.
+
+- =charts --sprint N= — delegates to =compass sprint charts=
+  (=cmd_sprint_charts= in =compass.py=) so the org file's
+  =[[proj:...]]= chart image links resolve to real PNGs.
+
+- =export --sprint N= — batch-runs
+  [[proj:projects/ores.lisp/src/ores-build-release-notes.el][=ores-build-release-notes.el=]] under Emacs to turn
+  =release_notes.org= into GitHub-flavoured Markdown. House export
+  settings: no table of contents, no section numbers, and —
+  critically — =org-export-with-sub-superscripts= disabled (org's
+  default treats any =word_word= outside verbatim markup as a
+  subscript; without this, prose identifiers like =market_fixing=
+  export as =market<sub>fixing</sub>=). Same convention as
+  [[proj:projects/ores.lisp/src/ores-build-site.el][=ores-build-site.el=]] and
+  [[proj:projects/ores.lisp/src/ores-build-help.el][=ores-build-help.el=]].
+
+- =commit --sprint N= — stages, commits, and pushes
+  =release_notes.org=/=.md= and the four chart PNGs on the current
+  branch. No-ops cleanly if nothing changed.
+
+- =draft --sprint N --codename <Name>= — tags =main= (signed,
+  =git tag -s=) and opens a *draft* GitHub release via
+  =gh release create/edit --notes-file=. Always draft: a human
+  reviews, attaches extras, and publishes it live.
+
+** Image resolution: raw.githubusercontent.com, not an upload API
+
+There is no GitHub API call that "uploads an image into a release
+body." Instead, the =proj:= link exporter in
+=ores-build-release-notes.el= rewrites every =[[proj:path]]= link:
+images become
+=https://raw.githubusercontent.com/OreStudio/OreStudio/main/<path>=,
+everything else becomes a
+=https://github.com/OreStudio/OreStudio/blob/main/<path>= URL. Both
+only resolve once =<path>= exists on =main= — which is exactly why
+=commit= (push the files on a branch) and =draft= (tag and open the
+release) are separate verbs with a PR-merge step in between, not one
+atomic action. Running =draft= before the =commit='s PR has merged
+still works — the release is created/updated correctly — but its
+images 404 (or worse, silently show whatever stale version of those
+files happens to already be on =main=) until the merge lands. No
+special re-run is needed afterwards: the URLs are stable, so once
+the files land on =main= the same release body starts rendering
+correctly.
+
+** Tag/release idempotency
+
+The tag-creation and up-to-date-=main= checks in =draft= only fire
+when a *new* tag actually needs to be created — the operation that
+can tag the wrong commit if run from a stale branch. Reusing a tag
+that already exists (locally, on origin, or both) skips that check
+entirely, because the only remaining work (=gh release create/edit=)
+doesn't care what is checked out locally. A tag that exists on
+origin but not locally is *fetched*, never recreated, so a same-name
+tag can never silently diverge onto a different commit. This makes
+the whole verb safe to re-run repeatedly — including editing a
+release's title after the fact (verified live: redrafting
+=v0.0.21= with the correct =--codename= updated the title in place
+without creating a new release or losing the tag/PR/notes work
+already done).
+
+** Release title convention
+
+House convention (see =gh release list=): =<tag>, "<Codename>"= —
+e.g. =v0.0.20, "Capopolo"=. The codename is invented per release (no
+derivable default), so =--codename= is a required argument to
+=draft=, not optional.
+
+* See also
+
+- [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][Agile Add Release Notes]] — the skill that drives this pipeline.
+- [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]] — the step-by-step recipe.
+- [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]] — the lifecycle phase this pipeline serves.
+- [[id:FABB50E5-518C-42D6-901E-848644E56CA2][Release]] (glossary).

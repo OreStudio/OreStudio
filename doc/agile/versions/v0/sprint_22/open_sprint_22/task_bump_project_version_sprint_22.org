@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :open_sprint_22:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/bump-project-version-sprint-22
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
 #+updated: 2026-07-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +29,11 @@ This is normally part of opening a sprint (see
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] |
-| Now          | Not yet started.                       |
+| Now          | Fix verified locally.                  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | PR.                                    |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -48,9 +48,13 @@ This is normally part of opening a sprint (see
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Followed [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] exactly: CMakeLists.txt,
+vcpkg.json, the three GitHub workflow package filenames, and
+readme.org's four badges (sprint, PRs-since, commits-since,
+screenshot). New sprint (22) started 2026-07-02, so PRs-since moved
+to that date with label v0.0.22; commits-since moved to v0.0.21 (the
+just-bumped-from version); screenshot pointed at v0.0.21 (the latest
+one that actually exists — v0.0.22 doesn't exist yet).
 
 * Notes
 

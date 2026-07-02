@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :gmm-improvements:sprint_22:v0:
 #+owner: marco
-#+branch: feature/gmm-chart-axes
+#+branch: story/gmm-improvements
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -30,11 +30,11 @@ charts.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]] |
-| Now          | Not yet started.                       |
+| Now          | Locating and instrumenting the GMM preview chart widgets.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Add axis labels/ticks to both charts.  |
 | Last touched | 2026-07-02                               |
 
 * Acceptance

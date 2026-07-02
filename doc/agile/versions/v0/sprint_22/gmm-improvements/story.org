@@ -26,11 +26,11 @@ Ornstein-Uhlenbeck in particular.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Working task: Add X/Y axis labels to GMM preview charts. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Work remaining tasks in order.         |
 | Last touched  | 2026-07-02                               |
 
 * Acceptance
@@ -54,7 +54,7 @@ Ornstein-Uhlenbeck in particular.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:7CB8B816-BE19-4E02-B0C0-7A800EAD6344][Add X/Y axis labels to GMM preview charts]] | BACKLOG | | | Add labelled X and Y axes to the Live Return Distribution Preview and Live Sample Price Paths Preview charts on the FX Rate Price behaviour tab. |
+| [[id:7CB8B816-BE19-4E02-B0C0-7A800EAD6344][Add X/Y axis labels to GMM preview charts]] | STARTED | 2026-07-02 | | Add labelled X and Y axes to the Live Return Distribution Preview and Live Sample Price Paths Preview charts on the FX Rate Price behaviour tab. |
 | [[id:553D514F-EB3E-4FF0-9CD8-A847C3B88A11][Display per-component and combined GMM PDFs]] | BACKLOG | | | Render each GMM component's own PDF curve on the Live Return Distribution Preview, plus the combined mixture PDF in a distinct colour. |
 | [[id:402BDE9B-A604-4D5F-A6F3-B8F8D3165994][Review stochastic process component tools; implement Ornstein-Uhlenbeck]] | BACKLOG | | | Review catalogued vs implemented stochastic process types and close the gap, prioritising the designed-but-unimplemented Ornstein-Uhlenbeck (mean-reverting) process. |
 

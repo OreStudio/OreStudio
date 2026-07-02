@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 27A5031E-0DA1-49D6-8A13-7C0812C8E40B
+:END:
+#+title: Task: Sync SQL codegen for currency and auxiliaries
+#+description: Re-run SQL codegen for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:codegen:sql:
+#+owner: marco
+#+branch: feature/sync-sql-codegen-currency-auxiliaries
+#+pr: 1328
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-12
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ensure the SQL codegen templates produce byte-identical output for =rounding_type=,
+=monetary_nature=, and =currency_market_tier= compared to what is currently in the
+repository. The previous verify-codegen task (2026-05-30) showed zero SQL drift;
+subsequent template migrations have introduced new drift. Fix templates to match code —
+not the reverse — unless the code itself has a demonstrable bug.
+
+The known drift (as of 2026-06-07, from running =codegen regenerate --component refdata
+--profile sql=):
+
+1. =sql_schema_notify_trigger.mustache= now emits =ores_refdata_<entity>= as the
+   PostgreSQL LISTEN channel name, whereas the repo and the =ores.refdata= service
+   application both use =ores_<entity>=.  Template must be reverted to the old
+   convention.
+2. New file generated: =refdata_rounding_types_notify_trigger_create.sql= (=rounding_type=
+   did not previously have a notify trigger in the repo).  Decide: add it (and wire the
+   C++ application to subscribe) or suppress it from the profile.
+3. Drop scripts: codegen removes =drop function if exists ores_refdata_validate_*_fn=
+   lines.  Confirm whether those functions still exist; if not, update the repo drop
+   scripts to match.
+4. Copyright year: codegen emits 2026 where some repo files say 2025.  Update repo
+   files to match.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+- =codegen regenerate --component refdata --profile sql= produces zero git diff for
+  the four currency-related files (=currencies_create=, =currency_market_tiers_*=,
+  =monetary_natures_*=, =rounding_types_*=).
+- Every template change is justified: either the repo was wrong, or the template was
+  wrong; no silent drift remains.
+- If =rounding_type= notify trigger is added, the C++ application subscriber is wired
+  in the same PR and eventing is confirmed working.
+- Findings recorded in =* Result=.
+
+* Plan
+
+1. Run =codegen regenerate --component refdata --profile sql=.
+2. Scope the diff to the four currency entities only.
+3. For each changed file, decide: fix template (preferred) or fix repo code.
+4. Fix the =sql_schema_notify_trigger.mustache= channel name back to =ores_<entity>=.
+5. Decide on the =rounding_type= notify trigger: add or suppress.
+6. Update drop scripts if validate functions no longer exist.
+7. Re-run codegen; verify zero diff; commit.
+
+* Notes
+
+** Pg_notify channel rename (2026-06-07)
+
+The session began by establishing the =ores_{component}_{entity_plural}= naming
+convention for PostgreSQL LISTEN/NOTIFY channels (documented in
+[[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][postgresql_architecture.org]]). All 72 trigger files and the C++ =application.cpp=
+registrations were updated accordingly (commit =4d082ca9a=).
+
+** Template bug: validate function missing from drop script (2026-06-07)
+
+=sql_schema_domain_entity_drop.mustache= did not drop the
+=ores_{component}_validate_{entity_singular}_fn= functions created by the companion
+=sql_schema_create.mustache= (table model). Fixed by introducing the
+=<<paste:5E47F108-1350-4540-B3C2-E83DD5379B2D>>= block kind ("SQL: extra drop
+statements") and wiring seven entity models (rounding_type, monetary_nature,
+currency_market_tier, contact_type, party_id_scheme, party_status, party_type)
+to declare their validate function drops. =_substitute_paste_markers= in
+=generator.py= was fixed to collapse the marker line when no entity implements
+the kind (commit =56855dff9=).
+
+** Rounding_type notify trigger (2026-06-07)
+
+=rounding_type= did not previously have a PostgreSQL notify trigger. Since it is
+now a full domain entity model, codegen generates
+=refdata_rounding_types_notify_trigger_create.sql= (channel:
+=ores_refdata_rounding_types=). Accepted as correct. C++ subscription not wired
+yet — tracked in the parent story.
+
+** Zero-drift result
+
+After the fixes, =codegen regenerate --component refdata --profile sql= produces
+zero diff for: =refdata_currencies_create.sql=, =refdata_currencies_drop.sql=,
+=refdata_currencies_notify_trigger_create.sql=,
+=refdata_currency_market_tiers_create.sql=,
+=refdata_currency_market_tiers_drop.sql=,
+=refdata_monetary_natures_create.sql=, =refdata_monetary_natures_drop.sql=,
+=refdata_rounding_types_create.sql=.
+
+Non-currency files with remaining codegen drift (books FK validation removal,
+parties sequence drop, etc.) are out of scope for this task and deferred.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1328][#1328]] | [agile] Align sprint 21 commission stories; close Commission: currency |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Landed. SQL codegen for the four currency entities (currency, rounding_type,
+monetary_nature, currency_market_tier) produces zero drift. Template bug in the
+drop script fixed via the new =extra_drops= block kind. Channel naming convention
+documented and applied globally.

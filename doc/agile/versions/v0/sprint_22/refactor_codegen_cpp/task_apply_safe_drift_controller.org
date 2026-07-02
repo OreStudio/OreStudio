@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: C5E5940F-D8EA-4E1A-ADA8-288C021F573A
+:END:
+#+title: Task: Apply safe drift to controller-cpp
+#+description: Apply safe drift to the controller-cpp component using the pattern established by the refdata-cpp pilot. No model changes; only stateful-to-stateless repository migration. Restore service_definition_protocol.hpp and service_instance_protocol.hpp from HEAD because template-driven list_X -> get_X rename breaks hand-written handler callers. Build and test green, raise PR.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_22:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr:
+#+blocked_on: C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story.
+
+* Goal
+
+Apply safe drift to =controller-cpp= following the [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][refdata-cpp pilot]] pattern.
+The template renames =list_X_request= → =get_X_request= in protocol headers,
+which breaks hand-written handlers and Qt callers — these protocol files must
+be restored from HEAD.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]] |
+| Next         | Start once refdata pattern is merged.  |
+| Last touched | 2026-05-31                             |
+
+* Acceptance
+
+- =service_definition_protocol.hpp= and =service_instance_protocol.hpp=
+  restored from HEAD (rename =list_X_request= → =get_X_request= rejected).
+- =cmake --build --preset linux-clang-debug-make= passes.
+- =ctest -R "ores\.controller"= passes.
+- Final zero-diff invariant holds after regenerate + restore exclusions.
+- PR raised, reviewed, merged.
+
+* Plan
+
+1. =git rebase origin/main=.
+2. =projects/ores.codegen/codegen.sh regenerate --component controller-cpp --profile all-cpp=.
+3. Restore protocol exclusions from HEAD:
+   - =projects/ores.controller.api/include/ores.controller.api/messaging/service_definition_protocol.hpp=
+   - =projects/ores.controller.api/include/ores.controller.api/messaging/service_instance_protocol.hpp=
+4. =cmake --build --preset linux-clang-debug-make=. If handler callers still
+   break (e.g., =service_definition_handler.hpp= calls =repo.save= when the
+   regenerated repo has =write=), restore additional handlers / repos and
+   document.
+5. =ctest --test-dir build/output/linux-clang-debug-make -R "ores\.controller" --output-on-failure=.
+6. Re-run regeneration; restore exclusions; =git diff --exit-code= clean.
+7. Commit + push + raise PR.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,207 @@
+:PROPERTIES:
+:ID: 3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E
+:END:
+#+title: Story: Refactor ores.codegen C++ generation
+#+description: Audit and resolve all drift between C++ templates and production files; fix template bugs; fix model consistency; register all C++ components in the CLI; achieve zero-diff regeneration across all domain entities.
+#+type: story
+#+level: s2
+#+filetags: :tooling:codegen:sprint_22:v0:
+#+branch: feature/refactor-codegen-cpp
+#+created: 2026-05-30
+#+updated: 2026-06-12
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The SQL refactoring ([[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]]) established a clean invariant: running
+=codegen.sh regenerate --component refdata --profile sql= produces zero diff against the
+repository. The C++ side of ores.codegen has the same problems at larger scale — and no
+equivalent invariant.
+
+The C++ generation system today:
+
+- *60 C++ templates* organised into 8 facets (domain, repository, service, protocol,
+  generator, Qt, CMake, utilities).
+- *75 domain_entity.json models* across at least 8 component pairs (refdata, trading, iam,
+  dq, analytics, reporting, compute, workspace/scheduler/...).
+- *~1,746 production C++ files* in 8 API+Core projects.
+- *No "regenerate all"* command: =manifest.py= has no C++ component entries; there is no
+  single command that regenerates all C++ for a component.
+- *Known template bug*: the include guard template emits =ORES_REFDATA_DOMAIN_*= instead
+  of =ORES_REFDATA_API_DOMAIN_*= for models that use =component_include= — corrupting
+  every include guard in the component.
+- *Model inconsistency*: approximately 70% of the 75 models lack explicit
+  =component_include= / =component_core= fields. Three auxiliary refdata models were fixed
+  in [[id:E8890097-FAE9-40F8-B823-FCE23BAFD6C5][Verify and fix codegen for currency and auxiliaries]]; the rest are unverified.
+- *Template drift*: templates have evolved since the production files were last regenerated.
+  A sample of three auxiliary refdata entities revealed 42 files differing, including a
+  method rename (=find_type= → =get_type=) with callers across four other components, and
+  removal of =save_types()= / =remove_types()= batch methods that are actively used.
+
+This story applies the same discipline the SQL refactoring applied: audit the full
+variation, fix the tooling, and achieve zero diff between template output and the
+repository for every registered component.
+
+** What we want
+
+*1. A comprehensive drift catalog*
+
+Every one of the 75 =_domain_entity.json= models run through =codegen.py generate --model
+X --profile all-cpp=. All diffs collected and categorised as:
+
+- *clean* — zero diff; template and production agree.
+- *cosmetic* — whitespace, comment rewrap, or copyright year only.
+- *additive* — new method or member added by template; no production API removed.
+- *breaking* — existing production API renamed, removed, or signature-changed.
+- *path-error* — output written to wrong directory (=component_include= / =component_core=
+  missing or wrong).
+
+The catalog is the primary deliverable of Task 1 and unblocks all subsequent tasks.
+
+*2. Bug-free templates*
+
+The include guard regression is fixed. All other systematic template bugs found during
+the audit are also fixed. After fixes, dry-run across all 75 models produces no path
+errors and no malformed include guards.
+
+*3. Consistent models*
+
+All 75 =_domain_entity.json= models have correct =component_include= and =component_core=
+fields. No model relies on a default that resolves to a wrong directory.
+
+*4. A complete C++ component registry*
+
+=manifest.py= has entries for every component that has =_domain_entity.json= models.
+Running =codegen.sh regenerate --component X --profile all-cpp= is a valid command for
+every registered component.
+
+*5. Explicit decisions on breaking drift*
+
+For every breaking change found in the audit, one of two outcomes is recorded:
+
+- *Template frozen*: the template is updated to preserve the existing production API
+  (e.g., keep =find_type=, keep =save_types= / =remove_types=).
+- *Production updated*: the production files are regenerated and all callers across
+  other components are updated in the same PR.
+
+No breaking change is silently discarded.
+
+*6. Zero-diff invariant*
+
+After all decisions are applied, running =codegen.sh regenerate --component X --profile
+all-cpp= for every registered component produces zero diff. CI passes.
+
+** What is NOT in scope
+
+- Qt UI templates (=cpp_qt_*.mustache=) — the Qt layer has its own variability and is a
+  separate story.
+- CMake file regeneration — =CMakeLists.txt= files are not pure template output and are
+  managed separately.
+- Creating new =_domain_entity.json= models for entities that currently have none (e.g.,
+  =currency=, complex trading entities).
+- Changing C++ API design or introducing new template features — templates are corrected
+  for bugs only.
+- The =_domain_entity.json= → SQL path for domain entities (party, book, counterparty,
+  etc.) — this path uses =sql_schema_domain_entity_create.mustache= and is unchanged.
+
+** Pilot component
+
+Refdata is the pilot. Once refdata achieves zero diff, the same process is applied to
+trading, iam, dq, and all remaining components.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                                |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]                              |
+| Now           | Postponed from sprint 20; org-mode migration blocker cleared. 6 audit/analysis tasks done; 13 drift-application tasks remain. |
+| Waiting on    | Nothing.                               |
+| Next          | Pull into sprint 21.                   |
+| Last touched  | 2026-06-12                             |
+
+* Acceptance
+
+- Drift catalog produced: every one of the 75 =_domain_entity.json= models classified
+  as clean / cosmetic / additive / breaking / path-error.
+- Include guard regression fixed in template; all other template bugs found in audit fixed.
+- All 75 models have verified =component_include= / =component_core= fields.
+- =manifest.py= has C++ component entries for every component with domain entity models.
+- Every breaking change has an explicit decision (template frozen or production updated).
+- =codegen.sh regenerate --component X --profile all-cpp= produces zero diff for all
+  registered components.
+- CI passes.
+- Site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D4469217-12E2-41AC-AB35-AC70E849D88C][Codegen architecture analysis and unified model roadmap]] | DONE | 2026-05-30 | 2026-05-30 | System 2 analysis of structural concerns; produces analysis doc and roadmap stories. |
+| [[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift and build drift catalog]] | DONE | 2026-05-30 | 2026-05-30 | Run codegen for all 75 domain_entity models; collect diffs; classify as clean / cosmetic / additive / breaking / path-error. |
+| [[id:F7B3E1D9-6A4C-4F2B-7E8D-1C5A9B3F7D2E][Fix C++ template bugs]] | DONE | 2026-05-30 | 2026-05-30 | Fix include guard regression and any other systematic template bugs found in the audit. |
+| [[id:D2E8F4A1-9B3C-4D7F-6A5B-8E1C7D3F9A2B][Fix model consistency and register C++ components in manifest.py]] | DONE | 2026-05-30 | 2026-05-30 | Verify and fix component_include/component_core in all 75 models; add all components to manifest.py. |
+| [[id:B5F1C8D3-4A7E-4B2F-9D6C-3E8A1B5D7C4F][Resolve breaking API drift]] | DONE | 2026-05-30 | 2026-05-30 | Record explicit template-frozen-vs-production-updated decision per breaking change before writing any production file changes; then execute each decision and update callers. |
+| [[id:615B7214-F87B-49D3-866E-CDC198FF2A06][Org-mode codegen POC — party as unified literate model]] | BACKLOG | | | Prove single org file can drive both C++ and SQL codegen, with custom methods inline. Blocks the per-component drift tasks because custom methods need a first-class mechanism instead of "restore from HEAD". |
+| [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]] | BLOCKED | | | Pilot. Add template flags refdata needs; update refdata models; pull party_repository custom methods from the org-mode mechanism; build + test + zero-diff invariant. |
+| [[id:A7FA27E1-0D47-4BEB-BECA-ED06AA6AB4A7][Apply safe drift to trading-cpp]] | BACKLOG | | | Add service_pagination + service_batch_get template flags; update 21 instrument/lookup models; restore trade_service + fra_instrument_service. |
+| [[id:CE4E14AD-81B5-4D86-9739-26BDDA7172FF][Apply safe drift to iam-cpp]] | BACKLOG | | | Set service_find_prefix on tenant_type and tenant_status. No exclusions. |
+| [[id:2C3EADB7-9AB7-4053-B148-8F167FCB7EFE][Apply safe drift to dq-cpp]] | BACKLOG | | | Set service_find_by_uuid + service_find_by_code on dataset_bundle; fix HexPrefix typo in badge_definition. |
+| [[id:1ABAAF88-B7A4-4774-8843-CF9CBC727E4B][Apply safe drift to analytics-cpp]] | BACKLOG | | | Set find_by_uuid/find_by_code/find_prefix flags on the four pricing models. |
+| [[id:193FF620-BB98-4EB4-9124-2D06CA8FFCE0][Apply safe drift to reporting-cpp]] | BACKLOG | | | No model changes expected; clean regeneration. |
+| [[id:085EECB0-B357-4977-9E5D-681CC34B9E44][Apply safe drift to scheduler-cpp]] | BACKLOG | | | Set service_find_prefix on job_definition; delete leftover plural-generators/ directory. |
+| [[id:AA183987-2F31-4C54-B17A-85C88EC8E459][Apply safe drift to workflow-cpp]] | BACKLOG | | | No model changes; stateful → stateless repository migration only. |
+| [[id:C5E5940F-D8EA-4E1A-ADA8-288C021F573A][Apply safe drift to controller-cpp]] | BACKLOG | | | Restore service_definition_protocol and service_instance_protocol from HEAD (rename rejected). |
+| [[id:D8B377B4-2B6E-4DDA-9C41-D6DA5E572E2B][Apply safe drift to database-cpp]] | BACKLOG | | | Smallest component, 7 files, all additive. No model changes. |
+| [[id:950FB9D4-48E0-45A4-BC71-F9668D42BE9A][Apply safe drift to workspace-cpp]] | BACKLOG | | | Add has_party_id template flag; restore workspace_service, workspace_repository, workspace_protocol. |
+| [[id:51E65D05-7F22-4DE1-9509-D50A9D98A503][Apply safe drift to compute-cpp]] | BACKLOG | | | Heaviest exclusion catalogue: restore all 6 services + 6 other files. |
+
+* Notes
+
+** Known breaking changes from the three-entity sample
+
+A dry run on =rounding_type=, =monetary_nature=, and =currency_market_tier= (the three
+auxiliary refdata entities) produced 42 files differing. The following breaking changes
+were observed:
+
+| Change | Details | Callers affected |
+|--------+---------+------------------|
+| Method rename: =find_type= → =get_type= | Service layer method to locate a type by code | =ores.analytics.core=, =ores.iam.core=, =ores.trading.core=, =ores.reporting.core=, =ores.refdata.core= |
+| Include guard regression | =ORES_REFDATA_DOMAIN_*= instead of =ORES_REFDATA_API_DOMAIN_*= | All 75 models using =component_include= |
+| =save_types()= removal | Batch write removed from repository/service | =ores.trading.core= (8 services), =ores.refdata.core= (6 services), =ores.iam.core= (1 service) |
+| =remove_types()= removal | Batch delete removed from repository/service | Same callers as above |
+| =stamp()= removal | Service implementations no longer stamp records | Unknown |
+| =display_order = 0= default | Initializer added to domain type | Cosmetic/additive |
+
+The include guard regression is a template bug (always wrong); the others are template
+evolution that diverged from the production API. All will be classified and decided in
+Tasks 1 and 4.
+
+** Component-to-project mapping
+
+Based on the audit, the known component-to-project mappings are:
+
+| Component in model | =component_include= | =component_core= |
+|--------------------+---------------------+------------------|
+| =refdata= | =refdata.api= | =refdata.core= |
+| =trading= | =trading.api= | =trading.core= |
+| =iam= | =iam.api= | =iam.core= |
+| =dq= | =dq.api= | =dq.core= |
+| =analytics= | =analytics.api= (TBC) | =analytics.core= (TBC) |
+| =reporting= | =reporting.api= (TBC) | =reporting.core= (TBC) |
+
+The =component= field alone resolves to =projects/ores.<component>/= which does not match
+the production project layout for any of the above. Every model must have explicit
+=component_include= / =component_core= fields.
+
+** Scale relative to SQL refactoring
+
+| Dimension | SQL refactoring | C++ refactoring |
+|-----------+-----------------+-----------------|
+| Templates | 2 → 1 (unified) | 60 (fix bugs, no merging) |
+| Models | 10 | 75 |
+| Output files | ~30 SQL files | ~1,746 C++ files |
+| Components | 1 (refdata pilot) | 8+ component pairs |
+| Breaking changes | None | 4+ known |

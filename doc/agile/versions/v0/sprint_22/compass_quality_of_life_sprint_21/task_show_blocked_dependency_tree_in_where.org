@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 894C338B-01F1-4FBE-A956-34B24AFC9842
+:END:
+#+title: Task: Show blocked story dependency tree in compass where
+#+description: compass where shows STARTED items but not blocked chains (story C blocked by B blocked by A); surface the dependency tree with root causes in the Orient output.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life_sprint_21:sprint_22:v0:
+#+owner: marco
+#+branch: feature/show-blocked-dependency-tree-in-where
+#+pr: 1388
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-30
+#+updated: 2026-06-30
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Surface a "Blocked" section in =compass where= showing each BLOCKED task
+in the current sprint together with its full =#+blocked_on:= dependency
+chain, so the root-cause blocker is immediately visible without having to
+=compass show= each task individually.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-30                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1388][#1388]] | [compass] where: show blocked dependency tree |
+
+* Review
+
+Round 1 — 2026-06-30 — addressed in commit =5dbd93236=.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | _read_blocked_fields catches OSError but not UnicodeDecodeError | compass.py | Accept | Changed to (OSError, UnicodeDecodeError) |
+| 2 | Icon ternary reinvents and narrows ui.icon_for_doc | compass.py | Accept | Replaced with ui.icon_for_doc(blocker.doctype, blocker.path) |
+| 3 | Redundant Path() wrapping on d.path / blocker.path | compass.py | Accept | Removed |
+| 4 | _BLOCKED_ON_RE / _BLOCKED_SINCE_RE compiled inside function | compass.py | Accept | Moved to module level |
+
+* Result
+
+Delivered on =feature/show-blocked-dependency-tree-in-where=.
+
+Added a "🔴  Blocked (N)" section to =cmd_where= in =compass.py=, printed
+after "In flight" and before the PRs section.
+
+For each BLOCKED task in the current sprint:
+- Prints the task title with a 🔴 icon and optional "since <date>" note
+  (from =#+blocked_since:=).
+- Walks the =#+blocked_on:= UUID chain up to 8 hops, rendering an
+  indented =↳= tree.  Each hop shows the blocker's current state icon
+  (🔴 BLOCKED, ✅ DONE, ▶️ otherwise), state label, title, and
+  =compass show= command.
+- Guards against cycles (seen-UUID set) and missing UUIDs
+  (prints ❓ with the short UUID).
+- Section is omitted entirely when no BLOCKED tasks exist.

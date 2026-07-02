@@ -59,23 +59,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | BACKLOG | | | 7/8 tasks done; Qt verification carried from sprint 20. |
-| [[id:8D0431A9-8894-4686-9BB6-3EAC7331084C][Commission: rounding_type]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
-| [[id:26E93F97-D7CB-4963-9DA7-5798AEE4F9BE][Commission: monetary_nature]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
-| [[id:FE0ADB0A-F8F9-4AAF-95F8-020A60191187][Commission: currency_market_tier]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
 | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] | DONE | | | Verify Qt + shell + CLI (existing); manual; Wt/HTTP captures. |
-| [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Commission: party_id_scheme]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 
 *** FaceStudio
 
@@ -93,7 +77,6 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] | DONE | 2026-06-25 | 2026-06-28 | Vertical PoC implementing FX spot synthetic data generation end-to-end: GMM generation service, NATS tick publishing, DB write, and live trading-style chart. Success; productionising work re-homed to the stories below. |
 | [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] | DONE | 2026-06-28 | 2026-07-02 | Producer side: persisted party/tenant-scoped synthetic config in ores.synthetic (container + FX spot sub-config) + CRUD UI; config-driven autonomous generation stamping tenant + source; producer-namespaced tick publishing. |
 | [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] | DONE | | 2026-07-02 | Lift the PoC single-EUR/USD-series feed to config-driven: resolve/create a series per config ORE key, start feeds by config id, run multiple feeds, publish to the synthetic producer namespace. (Scope 2 of the Market Simulator work.) |
-| [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] | BACKLOG | | | SQL template variability (hypertable, soft-update/soft-delete triggers, GIST exclusion) + .org models for market_series, market_observation, market_fixing; prerequisite for full-stack codegen of ores.marketdata. |
 | [[id:F6CD8E90-6EE2-4B4F-A4EC-C173C906222A][Market data feed binding, ingestion and official stream]] | DONE | | 2026-07-02 | Authority side: source-agnostic feed-config binding (series ← source channel); ingest loop subscribes, persists (tenant + source) and remaps to the official tenant-scoped stream; CRM derivation seam. |
 | [[id:DE2F85D0-9238-41EA-9C2F-A42D37AEEB3D][Source-agnostic market data control panel]] | DONE | | 2026-07-02 | Generic Qt control panel to list/start/stop/monitor feeds via the feed-config registry and a source-agnostic control contract, independent of the producer. |
 
@@ -108,23 +91,12 @@ and CI checks so generated code stays trustworthy. Carried from sprint 20.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] | DONE | 2026-06-26 | 2026-06-26 | Move generator.py into codegen/core.py; remove _import_generator hack; add compass codegen pillar and entity sub-commands. |
-| [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] | BACKLOG | | | Migrate all remaining _table.org models to ores.codegen.entity; remove the table type from the facet catalogue. |
-| [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | BACKLOG | | | Audit/resolve template-production drift; 13 open tasks; carried from sprint 20. |
-| [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy codegen bash scripts]] | BACKLOG | | | Replace direct bash invocations with compass or Python codegen; remove the scripts. |
-| [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] | BACKLOG | | | CI job regenerating all registered components, failing on any diff vs HEAD. |
-| [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] | BACKLOG | | | Runtime guards for missing component_include/component_core; block dual-template SQL generation. |
-| [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model — Phase 1: Qt derivation]] | BACKLOG | | | Derive Qt fields from conventions; drop explicit NATS protocol class names from models. |
-| [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal templates]] | BACKLOG | | | Merge temporal and non-temporal C++ template families into single model-controlled templates. |
-| [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] | BACKLOG | | | Fix spurious ERRORs in --component mode; add --entity filter; add entity group / tag system for domain-scoped generation. |
-| [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] | BACKLOG | | | Replace monolithic registrar.cpp with generated per-entity sub-registrars; isolate handler compilation; unblock incremental service API migration. |
 
 *** Epic: Compass
 
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:3A9DF70D-07F7-46A7-8219-57A024707B64][compass generate catalogue]] | BACKLOG | | | Auto-regenerate catalogue/index org files by scanning tagged org files. |
-| [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and tag taxonomy]] | BACKLOG | | | Fix orphaned docs in org-roam graph; create tag inventory; add compass tag validation. |
 | [[id:56F838D0-C23D-4343-B3DB-50ED9E99988A][Fix compass review workflow for Claude-based code reviews]] | DONE | 2026-06-26 | 2026-06-26 | compass review reply and review resolve break with Claude bot reviews (issue comments, not review threads). |
 | [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] | DONE | 2026-06-24 | 2026-06-25 | Auto-compute base port during env provision; show full/light type in compass fleet. |
 
@@ -134,8 +106,6 @@ and CI checks so generated code stays trustworthy. Carried from sprint 20.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul]] | DONE | 2026-06-14 | 2026-06-25 | GCP-style naming, genesis env, light env type, direct-emacs compass commands, env type through the stack, bootstrap docs. |
-| [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Verify Windows and macOS CI builds]] | BACKLOG | | | Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups. |
-| [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] | BACKLOG | | | Qt 6.8.x references -framework AGL (removed in macOS 15); the latest supported Qt drops that dependency. CI pinned to macos-14 as stopgap. |
 
 ** Documentation
 
@@ -143,7 +113,6 @@ and CI checks so generated code stays trustworthy. Carried from sprint 20.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:91EF5D59-3313-4D63-99E8-AED6B3FADF90][Knowledge graph housekeeping]] | DONE | 2026-06-12 | 2026-06-15 | Ongoing bucket for small doc and knowledge-graph fixes spotted during normal work. |
-| [[id:7F306A93-6C30-47AC-BD37-7D762A49B475][Improve site documentation discoverability]] | BACKLOG | | | Expose catalogue pages in the site menu; cross-link glossary entries (skills, recipes, memories, knowledge) to their catalogues. |
 
 ** Hotfixes
 
@@ -154,9 +123,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 20.
 | [[id:7FE21B3F-9976-4948-AEF7-A3B3962E0C9E][Hotfix: sccache wrapper breaks Windows builds]] | DONE | 2026-06-25 | 2026-06-25 | sccache_wrapper.sh is set as CMAKE_CXX_COMPILER_LAUNCHER on all platforms but .sh scripts are not valid Win32 executables; all Windows CI jobs fail with 'CreateProcess: %1 is not a valid Win32 application'. |
 | [[id:31E34129-1687-4672-A7F1-E63ADFE7E04C][Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++]] | DONE | 2026-06-25 | 2026-06-26 | std::array<char,33> was initialised with a string literal via parentheses, which GCC/libstdc++ accepted as an extension but Apple libc++ (Xcode 15.4) rejects. The bug was dormant because sccache had the TU cached; the SCCACHE_BASEDIR change in PR #1294 invalidated the cache, forcing a full recompile that exposed the error. |
 | [[id:07C5D4A6-E26B-412C-8884-522FF8571D95][Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] | DONE | 2026-06-26 | 2026-06-27 | CPack Bundle packaging on macOS debug CI fails because CPACK_STRIP_FILES is set unconditionally in build/cpack/CMakeLists.txt and Xcode 16.2 strip crashes when the LC_DYLD_EXPORTS_TRIE export trie grows larger than the original after pruning in ores.refdata.service. |
-| [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] | BACKLOG | 2026-06-27 | | The codegen model unification analysis (D2256981) identifies six concrete blockers that prevent merging the dual entity+table org files into a single entity file. This story resolves all six so that the content migration (Step 5) can proceed. |
 | [[id:F949A54F-AD44-47A2-B0DF-1E9780E93372][Fix Qt party_type build: request.type renamed to code/codes]] | DONE | 2026-06-28 | 2026-06-28 | Qt party_type lib failed to build after the party_type messaging codegen rename: PartyTypeMdiWindow, PartyTypeDetailDialog and PartyTypeHistoryDialog still assigned request.type, but delete_party_type_request now uses codes (vector) and get_party_type_history_request uses code. Fixed in PR #1357. |
-| [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] | BACKLOG | | | Third round of compass improvements: bucketed search results, bearings --limit and heading integration, heading task-order fix, story done verb, blocked dependency tree in where, pr merge result guard, review reply conversation comment fix, task start stale-branch crash fix, and task new mid-scaffold branch switch fix. |
 
 * Achievements
 

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 8A84D304-431A-45CF-9E3C-6AC649F6A62F
+:END:
+#+title: Task: Sync C++ core codegen for currency
+#+description: Re-run domain, repository, service, and generator profiles for currency; diff against repo; fix templates or code per drift classification.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ensure the C++ core codegen profiles (domain, repository, service, generator) produce output that matches the repository for currency. Fix templates to match code unless code is wrong. Record every delta with category and decision.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+- All four profiles produce zero diff or every delta is classified (template gap / bug / code bug / cosmetic) and the decision is recorded; fix commits present where required; build passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

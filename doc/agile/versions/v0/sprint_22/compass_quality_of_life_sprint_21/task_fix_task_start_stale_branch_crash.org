@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 47630CD3-68FD-4CA2-B595-9ECB4276140B
+:END:
+#+title: Task: Fix task start crash after switching to a stale branch
+#+description: compass task start resolves the task doc path, switches to the task's branch, then re-reads the doc — but on a branch that diverged before a sprint transition the file lives elsewhere, producing FileNotFoundError tracebacks. Re-resolve the doc after the switch, or read everything needed before switching.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life_sprint_21:sprint_22:v0:
+#+owner: marco
+#+branch: feature/fix-task-start-stale-branch-crash
+#+pr: 1380
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-30
+#+updated: 2026-06-30
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+After =compass task start= switches to a task's branch, re-resolve the
+task document path by UUID so that stale branches (created before a
+sprint transition) can still find their task files and complete the
+clock-on without crashing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-30                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1380][#1380]] | [compass] Fix task start crash after switching to a stale branch |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered in commit =f6371eed1= on =feature/fix-task-start-stale-branch-crash=.
+
+Root cause: =_cmd_task_start= resolved =task_path= from the caller's branch
+index, switched to the task branch with =git switch=, then called
+=task_path.read_text()= — crashing with =FileNotFoundError= when the task
+file had moved (e.g., the branch predated a sprint transition that
+relocated the sprint directory).
+
+Fix: after =git switch= succeeds, reload the doc index and match by task
+UUID to re-resolve =task_path= (and =story_path=) on the new branch.  If
+the UUID is not found in the post-switch index the original path is kept as
+a fallback, preserving the existing behaviour for branches where the file
+has not moved.

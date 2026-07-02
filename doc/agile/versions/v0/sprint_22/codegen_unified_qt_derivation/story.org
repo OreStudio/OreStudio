@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E
+:END:
+#+title: Story: Codegen unified model — Phase 1: derive Qt fields from conventions
+#+description: Eliminate explicit NATS protocol class names from domain_entity.json models; auto-derive Qt section from naming conventions in generator.py.
+#+type: story
+#+level: s2
+#+filetags: :tooling:codegen:sprint_22:v0:
+#+created: 2026-05-30
+#+updated: 2026-06-12
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every =_domain_entity.json= model today contains a =qt= section that
+explicitly transcribes NATS protocol class names, C++ include paths, and
+Qt UI strings rather than deriving them from the entity and component name:
+
+#+begin_src json
+"get_request_class": "refdata::messaging::get_currency_market_tiers_request",
+"domain_include": "ores.refdata/domain/currency_market_tier.hpp",
+"domain_class": "refdata::domain::currency_market_tier",
+"settings_group": "CurrencyMarketTierListWindow",
+#+end_src
+
+This couples the model to implementation details that follow strict naming
+conventions. Any protocol refactor — a namespace rename, a message type
+convention change — requires editing all 75 models manually. For new
+entities in non-refdata components, each model must be manually populated
+with the correct class names, creating opportunity for typos and drift.
+
+The SQL refactoring established the pattern: replace transcription with
+flag-based variability derived at generation time. This story applies that
+pattern to the Qt section.
+
+** Derivation contract
+
+Given =component_include=, =entity_singular=, and =entity_plural=, all
+Qt protocol fields can be derived deterministically:
+
+| Qt model field | Derived value |
+|----------------+---------------|
+| =domain_include= | =ores.{component_include}/domain/{entity}.hpp= |
+| =domain_class= | ={component}::domain::{entity}= |
+| =protocol_include= | =ores.{component_include}/messaging/protocol.hpp= |
+| =get_request_class= | ={component}::messaging::get_{entity_plural}_request= |
+| =get_response_class= | ={component}::messaging::get_{entity_plural}_response= |
+| =get_message_type= | =get_{entity_plural}_request= |
+| =save_request_class= | ={component}::messaging::save_{entity}_request= |
+| =save_response_class= | ={component}::messaging::save_{entity}_response= |
+| =save_message_type= | =save_{entity}_request= |
+| =delete_request_class= | ={component}::messaging::delete_{entity}_request= |
+| =delete_response_class= | ={component}::messaging::delete_{entity}_response= |
+| =delete_message_type= | =delete_{entity}_request= |
+| =history_request_class= | ={component}::messaging::get_{entity}_history_request= |
+| =history_response_class= | ={component}::messaging::get_{entity}_history_response= |
+| =history_message_type= | =get_{entity}_history_request= |
+| =settings_group= | ={EntityPascal}ListWindow= |
+| =window_title= | title-cased ={entity_plural}= |
+
+Fields that require genuine user input (=icon=, =item_var=, =key_field=,
+=has_uuid_primary_key=, =collection_name=, =columns= with widths) remain
+in the model.
+
+See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and unified model roadmap]] for context.
+
+* Status
+
+| Field         | Value                                                                                    |
+|---------------+------------------------------------------------------------------------------------------|
+| State         | BACKLOG                                                                                  |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]                                                                                |
+| Now           | Not yet started.                                                                         |
+| Waiting on    | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] (C++ audit must complete first). |
+| Next          | Audit Qt section fields; define derivation table.                                        |
+| Last touched  | 2026-05-30                                                                               |
+
+* Acceptance
+
+- All Qt protocol class name fields (=get_request_class=, =get_response_class=,
+  =get_message_type=, =save_*=, =delete_*=, =history_*=, =domain_include=,
+  =domain_class=, =protocol_include=, =settings_group=, =window_title=) are
+  removed from all models where they match the derived value.
+- =generator.py= derives these fields from =component_include=, =entity_singular=,
+  and =entity_plural= when they are absent from the model.
+- Models may override derived values by explicitly including the field (the
+  explicit value wins over the derived default).
+- Running =--profile qt= on any model that previously had explicit Qt fields
+  produces identical output to running with those fields present.
+- Genuinely variable fields (=icon=, =item_var=, =key_field=, =has_uuid_primary_key=,
+  =collection_name=, =columns=) are documented as required and remain in the model.
+- Zero production C++ file changes. All changes are in models and =generator.py=.
+- Site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| Task: Audit Qt section fields and define derivation conventions | BACKLOG | | | Review all 75 domain_entity models; tabulate every Qt field; classify as derivable vs. genuinely variable; write the derivation rules as a spec. |
+| Task: Implement Qt field derivation in generator.py | BACKLOG | | | Add derive_qt_fields() function to generator.py; derive values when explicit values are absent from the model. |
+| Task: Remove derivable Qt fields from all 75 models | BACKLOG | | | Strip all derivable fields from every domain_entity.json model; run --profile qt on every model; verify output is byte-for-byte identical to the previous output. |
+
+* Decisions
+
+- /Override semantics, not enforcement./ Models may still include explicit
+  Qt fields; the derived value is used only when the field is absent. This
+  allows exceptions without a special override mechanism.
+- /=collection_name= stays in the model for now./ Auxiliary types use =types=
+  as the collection name; domain entities use the plural entity name. The
+  convention is not yet clear enough to derive automatically.
+
+* Out of scope
+
+- Deriving =columns= (Qt column definitions with widths and enum names) —
+  these are genuinely variable and require design input.
+- The =qt.has_uuid_primary_key= flag — this is a semantic property, not
+  derivable from the entity name.
+- Any C++ production file changes.
+- Qt template fixes — this story only changes models and =generator.py=.

@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: E8890097-FAE9-40F8-B823-FCE23BAFD6C5
+:END:
+#+title: Task: Verify and fix codegen for currency and auxiliaries
+#+description: Run ores.codegen for currency, rounding_type, monetary_nature, and currency_market_tier; diff the output against the repo; fix the missing currency_domain_entity.json and address any unexpected diffs.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:
+#+owner: marco
+#+branch: feature/commission-currency
+#+pr: 1027
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run the code generator for all four entities (=currency=, =rounding_type=, =monetary_nature=,
+=currency_market_tier=) and validate that the generated output matches what is currently in
+the repository. Address any diffs: fix the model if the generated code is wrong, or update
+the repo files if the model is the authoritative source.
+
+The SQL verification task found that =currency= is missing =currency_domain_entity.json= in
+=projects/ores.codegen/models/refdata/=. The three auxiliary types have both model files and
+should regenerate cleanly. The primary goal is to close the currency codegen gap and confirm
+no drift has accumulated across the other three entities.
+
+* Status
+
+| Field        | Value                                              |
+|--------------+----------------------------------------------------|
+| State        | DONE                                               |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]]                            |
+| Now          | Nothing.                                                                      |
+| Waiting on   | Nothing.
+| Next         | Nothing.                                           |
+| Last touched | 2026-05-30                                         |
+
+* Acceptance
+
+- =currency_domain_entity.json= created or confirmed unnecessary (with justification).
+- Codegen run for all four entities produces no unexpected diffs against the repo.
+- Any diffs found are either fixed (model updated, repo files regenerated) or filed as captures with justification for deliberate divergence.
+- Findings recorded in =* Result= section.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1027][#1027]] | [ores.qt,ores.refdata] Commission currency Qt: fix plugin placement, icons, timestamps |
+| #939 | [codegen] Fix component_include/component_core in auxiliary domain entity models |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | No issues found | — | N/A | Gemini: no feedback, review clean. PR #930 round 1. |
+| 2 | =Now= field should be =Nothing.= not a summary when state is DONE | task_verify_codegen.org | Fixed | PR #939 round 1. Matches project convention. |
+
+* Result
+
+** Summary
+
+Done. Blockers cleared after [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] merged.
+
+*** SQL parity — PASS
+
+=codegen.sh regenerate --component refdata --profile sql= regenerated all 10 refdata
+SQL files including =currency=, =rounding_type=, =monetary_nature=, and
+=currency_market_tier=. Zero git diff. The unified template and =_table.json= models
+produce byte-identical SQL.
+
+*** currency_domain_entity.json — Confirmed unnecessary
+
+Currency is significantly more complex than the three auxiliary types. Its C++ layer
+includes versioned entities (=currency_version=, =currency_version_history=), a
+=party_currency= junction, event types, protocol headers, generators, and tests.
+None of this can be generated from the current domain entity templates, which target
+simple CRUD patterns. The currency C++ code is hand-crafted and maintained manually.
+Creating =currency_domain_entity.json= would produce partial files that diverge from
+the existing implementation and would mislead future maintainers.
+
+*Decision:* =currency_domain_entity.json= is not created. The SQL schema is covered
+by =currency_table.json=.
+
+*** Component path fix — three auxiliary models
+
+=component_include= / =component_core= were missing from the three auxiliary
+=_domain_entity.json= models, causing =--profile all-cpp= to write to an untracked
+[[proj:projects/ores.refdata][=projects/ores.refdata/=]] directory rather than the correct production locations.
+Fields added to all three:
+
+| Model                             | Fix                                                           |
+|-----------------------------------+---------------------------------------------------------------|
+| =rounding_type_domain_entity.json=    | Added =component_include: "refdata.api"=, =component_core: "refdata.core"= |
+| =monetary_nature_domain_entity.json=  | Same                                                          |
+| =currency_market_tier_domain_entity.json= | Same                                                      |
+
+Output paths after fix:
+- =projects/ores.refdata.api/include/ores.refdata.api/...=
+- =projects/ores.refdata.core/include/ores.refdata.core/...=
+
+*** C++ template drift — deliberate divergence filed
+
+After path correction, running =--profile all-cpp= for the three auxiliaries produces
+a 42-file diff against the repo. The diff includes:
+
+| Change | Details |
+|--------+---------|
+| Include guard regression | Template emits =ORES_REFDATA_DOMAIN_*= instead of =ORES_REFDATA_API_DOMAIN_*= (template bug) |
+| Method rename | =find_type= → =get_type= across all three auxiliaries |
+| =stamp()= removal | Service implementations no longer call =stamp()= |
+| Batch method removal | =save_types()= and =remove_types()= removed from repositories |
+| =display_order = 0= | Default initializer added to domain type |
+
+The =find_type= → =get_type= rename has callers in =ores.analytics.core=,
+=ores.iam.core=, =ores.trading.core=, =ores.reporting.core=, and =ores.refdata.core=.
+Applying the diff blindly would break the C++ build. The C++ files are reverted to
+HEAD. A separate story will address C++ template drift safely across all domain entities.
+
+*Decision:* Deliberate divergence. C++ files left at current repo state. Template
+drift filed as a capture for the C++ codegen tidy-up story.
+

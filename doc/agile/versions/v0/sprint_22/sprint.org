@@ -1,0 +1,198 @@
+:PROPERTIES:
+:ID: 0924A6E7-FAF0-4A51-8CC1-74B103725E96
+:END:
+#+title: Sprint 22
+#+description: Sprint 22 — continue commissioning ores.refdata entities and codegen C++ drift correction.
+#+type: sprint
+#+level: s3
+#+filetags: :v0:
+#+created: 2026-07-02
+#+start_date: 2026-07-02
+#+end_date: 2026-07-09
+#+updated: 2026-07-02
+#+todo: STARTED | DONE
+
+This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 22*) of ORE Studio. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
+
+* Mission
+
+Continue commissioning the ores.refdata entity library and correcting
+codegen C++ generation drift, carrying postponed sprint 21 stories.
+
+* Status
+
+| Field          | Value                                  |
+|----------------+----------------------------------------|
+| State          | STARTED                              |
+| Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
+| Previous       | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Start          | 2026-07-02                               |
+| End (expected) | 2026-07-09                           |
+| Now            | Sprint in flight.                      |
+| Waiting on     | Nothing.                               |
+| Next           | Pick the first story.                  |
+| Release Notes  | Added at end of sprint.                |
+| Last touched   | 2026-07-02                               |
+
+* Stories
+
+For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].
+
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] | STARTED | 2026-07-02 | | Scaffold sprint 22, wire manifest, move postponed stories. |
+
+** Product
+
+*** Epic: ores.refdata Commissioning
+
+Commission all =ores.refdata= entities across every access layer: verify Qt UI end-to-end
+post-NATS migration (list window, detail window, history, delete, eventing), implement or
+verify shell and CLI commands (list, add, remove), document each entity in the user manual,
+and file backlog captures for Wt and HTTP gaps. One story per entity. Carried from sprint 21.
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | BACKLOG | | | 7/8 tasks done; Qt verification carried from sprint 20. |
+| [[id:8D0431A9-8894-4686-9BB6-3EAC7331084C][Commission: rounding_type]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
+| [[id:26E93F97-D7CB-4963-9DA7-5798AEE4F9BE][Commission: monetary_nature]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
+| [[id:FE0ADB0A-F8F9-4AAF-95F8-020A60191187][Commission: currency_market_tier]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
+| [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Commission: party_id_scheme]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+
+*** Market data generation
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] | BACKLOG | | | SQL template variability (hypertable, soft-update/soft-delete triggers, GIST exclusion) + .org models for market_series, market_observation, market_fixing; prerequisite for full-stack codegen of ores.marketdata. |
+
+** Tooling
+
+*** Epic: Codegen
+
+Codegen drift correction and guardrails: resolve template-production divergence, land safety
+and CI checks so generated code stays trustworthy. Carried from sprint 21.
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] | BACKLOG | | | Migrate all remaining _table.org models to ores.codegen.entity; remove the table type from the facet catalogue. |
+| [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | BACKLOG | | | Audit/resolve template-production drift; carried from sprint 21. |
+| [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy codegen bash scripts]] | BACKLOG | | | Replace direct bash invocations with compass or Python codegen; remove the scripts. |
+| [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] | BACKLOG | | | CI job regenerating all registered components, failing on any diff vs HEAD. |
+| [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] | BACKLOG | | | Runtime guards for missing component_include/component_core; block dual-template SQL generation. |
+| [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model — Phase 1: Qt derivation]] | BACKLOG | | | Derive Qt fields from conventions; drop explicit NATS protocol class names from models. |
+| [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal templates]] | BACKLOG | | | Merge temporal and non-temporal C++ template families into single model-controlled templates. |
+| [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] | BACKLOG | | | Fix spurious ERRORs in --component mode; add --entity filter; add entity group / tag system for domain-scoped generation. |
+| [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] | BACKLOG | | | Replace monolithic registrar.cpp with generated per-entity sub-registrars; isolate handler compilation; unblock incremental service API migration. |
+| [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] | BACKLOG | | | Carried from sprint 21. |
+
+*** Epic: Compass
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:3A9DF70D-07F7-46A7-8219-57A024707B64][compass generate catalogue]] | BACKLOG | | | Auto-regenerate catalogue/index org files by scanning tagged org files. |
+| [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and tag taxonomy]] | BACKLOG | | | Fix orphaned docs in org-roam graph; create tag inventory; add compass tag validation. |
+| [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] | BACKLOG | | | Carried from sprint 21. |
+
+** Infrastructure
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Verify Windows and macOS CI builds]] | BACKLOG | | | Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups. |
+| [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] | BACKLOG | | | Qt 6.8.x references -framework AGL (removed in macOS 15); the latest supported Qt drops that dependency. CI pinned to macos-14 as stopgap. |
+
+** Documentation
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:7F306A93-6C30-47AC-BD37-7D762A49B475][Improve site documentation discoverability]] | BACKLOG | | | Carried from sprint 21. |
+
+** Hotfixes
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+|       |       |       |     |             |
+
+* Achievements
+
+Milestones worth capturing as they happen, so the release notes at
+sprint close have the evidence to hand. Add a dated =** subheading=
+per milestone, with any screenshot via =[[proj:assets/images/<file>.png]]=.
+
+* Captures
+
+Real captures filed during this sprint that have *not* been pulled into a
+story as tasks — listed here purely for visibility into what the sprint
+surfaced. Each is an inbox capture (=compass capture=); triage them at the
+health review (promote to a story, move to =next=, or discard).
+
+#+ATTR_HTML: :class hug-leading
+| Capture | Tags | Description |
+|---------+------+-------------|
+|         |      |             |
+
+* Health Review
+
+(Run =sprint-reviewer= to generate this section.)
+
+* Charts
+
+Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][compass sprint charts]]. See [[id:A64F482F-8A57-406D-98B2-53476F095E8C][Sprint health charts]]
+for what each chart measures, its purpose, and how to read it.
+
+** PRs & Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_22/prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix. Days with no churn may
+indicate blockers.
+
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_22/line_churn.png]]
+
+** PR Cycle Time
+
+Hours from PR open to merge, one bar per PR. Long bars indicate
+review bottlenecks. Generated only when PR data is available.
+
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_22/pr_cycle.png]]
+
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_22/stories_done.png]]
+
+* Retrospective
+
+(Filled at sprint close.)

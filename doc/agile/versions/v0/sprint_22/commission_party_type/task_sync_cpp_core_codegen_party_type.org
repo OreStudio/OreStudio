@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 5B3E77C9-6279-40B9-ABB5-07C85B60051A
+:END:
+#+title: Task: Sync C++ core codegen for party_type
+#+description: Ensure C++ core codegen templates (domain, repository, service, generator profiles) produce zero-diff output for party_type; fix template drift.
+#+type: task
+#+level: s1
+#+filetags: :commission_party_type:sprint_22:v0:codegen:cpp:
+#+owner: marco
+#+branch: feature/sync-cpp-core-codegen-party-type
+#+pr: 1327
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run codegen for party_type using the domain, repository, service, and generator profiles and validate that the generated output matches what is currently in the repository. Fix templates to match code — not the reverse — unless the code is genuinely wrong. Record per-category decisions in the Result.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- =codegen regenerate --component refdata-cpp --profile domain= produces zero diff for =party_type= files (or all drift is classified and accepted).
+- Same for =repository=, =service=, and =generator= profiles.
+- Per-change-category decision recorded for every drift item using the taxonomy from =entity_commissioning_reference.org= (Template gap, Template bug, Code bug, Cosmetic drift, Model-driven improvement, Out-of-scope).
+- No C++ build regressions after any template fixes.
+- Findings recorded in =* Result= with a diff table.
+- Known open path issue (secondary templates =json_io=, =table=, =table_io= writing to =projects/ores.refdata.api/= instead of =projects/ores.refdata/api/=) is documented as deferred — out of scope here; owned by the Codegen C++ refactoring story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+- *SQL profile signed off*: Confirmed zero-diff in the =verify_codegen= gate task ([[id:97B9B4AD-1C1F-4257-A91C-F8668AC1FD24][task 97B9B4AD]], PR #1321). No separate sql-profile sync task is needed.
+- *Known open path issue*: Secondary templates (=json_io=, =table=, =table_io=) generated to =projects/ores.refdata.api/include/...= (untracked) instead of =projects/ores.refdata/api/include/...= (tracked). Git shows no diff because the files are untracked — this is a false-clean result. Documented in =entity_commissioning_reference.org= as a known open bug; do not fix here. Only =party_type.hpp= content drift (field changes, includes) is in scope for this task. *Update (2026-06-26)*: this path issue was fixed by one of the 92 commits that landed on main; secondary templates now write to the correct location. False-clean drift was not present.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1327][#1327]] | [refdata,compass] Sync C++ core codegen for party_type; add task close alias |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All four C++ core profiles regenerated on 2026-06-26. All drift classified
+and accepted. 18 files changed (17 generated + 1 org model). Commit
+=ab9fe6593=.
+
+** Path issue resolved (note)
+
+The secondary-template path issue (=json_io=/=table=/=table_io= writing to
+=ores.refdata.api/= instead of =ores.refdata/api/=) was resolved in a prior
+commit on =main= before this task ran. No false-clean drift was present;
+all template output went to the correct tracked locations.
+
+** Per-profile drift table
+
+| Profile | Artefact | Category | Decision |
+|---------+----------+----------+----------|
+| domain | =party_type.hpp= | Template gap | Accept — =tenant_id= field removed (system-scoped entity); =display_order = 0= default added |
+| domain | =party_type_json_io.hpp= | Cosmetic drift | Accept — std includes before project headers |
+| domain | =party_type_table.hpp= | Cosmetic drift | Accept — include ordering |
+| domain | =party_type_table_io.hpp= | Cosmetic drift | Accept — include ordering |
+| domain | =party_type_json_io.cpp= | Cosmetic drift | Accept — include ordering + blank line |
+| domain | =party_type_table.cpp= | Cosmetic drift | Accept — include ordering + line-wrap style |
+| domain | =party_type_table_io.cpp= | Cosmetic drift | Accept — include ordering + blank line |
+| repository | =party_type_entity.hpp= | Template gap + Cosmetic | Accept — =tenant_id= removed; =<ostream>= added; include ordering |
+| repository | =party_type_mapper.hpp= | Cosmetic drift | Accept — include ordering + line-wrap |
+| repository | =party_type_mapper.cpp= | Template gap + Cosmetic | Accept — =tenant_id= mapping removed; line-wrap |
+| repository | =party_type_repository.hpp= | Template gap + Cosmetic | Accept — batch =remove(codes)= overload removed; include ordering; param rename =type=→=v= |
+| repository | =party_type_repository.cpp= | Template gap + Cosmetic | Accept — =tenant_id= filtering removed; =static const= max; query formatting; batch remove removed |
+| service | =party_type_service.hpp= | Template gap | Accept — =ORES_REFDATA_CORE_EXPORT= added; canonical paginated API (=list_types(offset, limit)=, =count_types()=, =get_type()=, =delete_type()=, =delete_types()=); include ordering |
+| service | =party_type_service.cpp= | Template gap + Cosmetic | Accept — method renames; pagination calls; code style |
+| generator | =party_type_generator.hpp= | Template bug fix + Cosmetic | Accept — include guard corrected (=CORE=→=API=); include ordering |
+| generator | =party_type_generator.cpp= | Template gap + Model fix | Accept — =faker::number::integer= for display_order; "=system.test=" change reason; added =generator_expr= to =party_type.org= primary key (=faker::word::noun() + "_type"=) to fix empty code prefix |
+
+** Known open issues after this task
+
+All compile gaps present at task close were resolved within this PR:
+
+- =party_type_handler.hpp= — fixed in commit =30c3ae55= (calls =list_types(0, max)= and =delete_type=).
+- Repository template missing =read_latest(ctx, offset, limit)=, =get_total_type_count(ctx)=,
+  and =remove(ctx, vector<string>)= — fixed in commits =1c34eca8= (generated code) and =49c162de= (template).
+  Note: original task doc incorrectly called these "linker errors"; they were compile errors (missing header declarations).
+
+Remaining open gap (not in scope for this task):
+
+- =rounding_type=, =contact_type=, and other entities not yet regenerated still have the old
+  service interface; their repository/service mismatch will be resolved in each entity's own
+  =sync_cpp_messaging= commissioning task.

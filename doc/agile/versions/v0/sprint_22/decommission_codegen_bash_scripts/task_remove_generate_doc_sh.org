@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: DE550344-F5DF-435D-8166-C1A4C94A678E
+:END:
+#+title: Task: Remove generate_doc.sh and update all references
+#+description: Delete projects/ores.codegen/generate_doc.sh; update all doc references to use compass add; update settings; add runbook type to compass.
+#+type: task
+#+level: s1
+#+filetags: :tooling:codegen:sprint_22:v0:decommission_codegen_bash_scripts:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-30
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy ores.codegen bash scripts]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove [[proj:projects/ores.codegen/generate_doc.sh][=projects/ores.codegen/generate_doc.sh=]] from the repository.
+=compass add= is already the correct replacement for all document types it
+supported. Two prerequisites must be satisfied first:
+
+1. *Add =runbook= type to compass* — the only document type currently lacking a
+   =compass add= equivalent is =runbook=. Implement it so no type is left
+   without a compass pathway before the script is deleted.
+
+2. *Update Group D technical docs* — [[proj:doc/recipes/codegen/how_do_i_create_a_new_doc.org][=doc/recipes/codegen/how_do_i_create_a_new_doc.org=]]
+   and related recipe/reference docs still explain the =generate_doc.sh= CLI in
+   detail. Reframe them as compass-first with a note that compass delegates to
+   the Mustache engine internally.
+
+3. *Update settings permissions* — regenerate [[proj:.claude/settings.json][=.claude/settings.json=]] from
+   =claude_code_settings.org= so =compass.sh= is in the allow list and
+   =generate_doc.sh= is removed.
+
+4. *Delete the script* — once all references are updated and no caller remains,
+   =git rm projects/ores.codegen/generate_doc.sh=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy ores.codegen bash scripts]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Add runbook type to compass; update Group D docs; redeploy settings. |
+| Last touched | 2026-05-30                             |
+
+* Acceptance
+
+- =runbook= type added to compass (=compass add runbook= works).
+- [[proj:doc/recipes/codegen/how_do_i_create_a_new_doc.org][=doc/recipes/codegen/how_do_i_create_a_new_doc.org=]] and all Group D recipe
+  docs updated to be compass-first.
+- [[proj:.claude/settings.json][=.claude/settings.json=]] regenerated: compass.sh in allow list;
+  =generate_doc.sh= removed.
+- No =.org= file in [[proj:doc][=doc/=]] references =generate_doc.sh= as a command to run
+  (grep confirms zero live call-site references outside historical DONE tasks).
+- [[proj:projects/ores.codegen/generate_doc.sh][=projects/ores.codegen/generate_doc.sh=]] deleted from the repository.
+- Site builds cleanly.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: C6870B89-A806-4657-B75B-7B333946281D
+:END:
+#+title: Task: Fix duplicate refdata rows: add tenant filters to auxiliary repositories
+#+description: Rounding types, monetary natures, currency market tiers and asset classes show system-tenant and tenant rows duplicated in the UI. The provisioner copies these tables per-tenant but their repositories read unfiltered. Apply the change_reason tenant-filter pattern from bcb0c2bd2.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:
+#+owner: marco
+#+branch: feature/fix-auxiliary-tenant-filters
+#+pr: https://github.com/OreStudio/OreStudio/pull/1042
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-04
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Tenant users must see exactly one copy of each currency auxiliary record
+(rounding types, monetary natures, currency market tiers) — their own
+tenant's — instead of the current duplicated view that also exposes the
+system-tenant seed rows.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
+
+* Acceptance
+
+- Rounding Types, Monetary Natures and Currency Market Tiers MDI windows
+  show each record exactly once for a tenant user.
+- Reads, history reads and removes in the three repositories filter by
+  =ctx.tenant_id()= (change_reason pattern from =bcb0c2bd2=).
+- Writes stamp the entity's =tenant_id= from context; the insert trigger's
+  =ores_iam_validate_tenant_fn= continues to validate it.
+- Build green; refdata tests pass.
+
+* Investigation
+
+Symptom (screenshot 2026-06-04): every rounding type appears twice in the
+Qt MDI window — once =modified_by ores_local1_ddl_user= (system-tenant
+seed) and once =ores_local1_iam_service= (tenant copy).
+
+Root cause chain:
+
+1. Commit =d7f6454a6= (2026-02-24) added =rounding_types=,
+   =currency_asset_classes= and =currency_market_tiers= to the refdata
+   copy step of =ores_iam_provision_tenant_fn= — tables legitimately hold
+   system rows *and* per-tenant rows. Monetary natures joined later; the
+   provisioner now copies 15 datasets.
+2. The repositories for the three auxiliaries never filter reads by
+   tenant: =rounding_type_repository.cpp=, =monetary_nature_repository.cpp=
+   and =currency_market_tier_repository.cpp= contain zero =tenant_id=
+   references, so queries return both tenants' rows.
+3. Commit =bcb0c2bd2= (2026-06-03) fixed the identical bug for DQ change
+   reason categories/reasons by adding =where("tenant_id"_c == tid && ...)=
+   to every read/remove — the refdata auxiliaries were not covered.
+
+Not affected: =asset_class_repository= already filters via raw SQL
+(=WHERE tenant_id = $1=); the other provisioner-copied refdata tables
+(book statuses, purpose types, party types/statuses, contact types, party
+ID schemes) all carry sqlgen tenant filters.
+
+A structural wrinkle: unlike =change_reason_entity=, the three auxiliary
+entities do not declare a =tenant_id= field — writes relied on the insert
+trigger's =ores_iam_validate_tenant_fn(null)= falling back to the session
+tenant. The fix adds the field, stamps it in the repository write path
+from context, and filters all reads/removes.
+
+Promoted from inbox capture =2CA98337-C2F0-482F-87AC-C343B02DA5B2=
+("currency rounding types are duplicated", 2026-05-27).
+
+* Plan
+
+Per repository (rounding_type, monetary_nature, currency_market_tier):
+
+1. Entity header: add =std::string tenant_id;= (repository-layer only —
+   domain, protocol and Qt remain untouched).
+2. =write()= (single + vector): stamp =tenant_id= from
+   =ctx.tenant_id().to_string()= after mapping.
+3. =read_latest(ctx)=, =read_latest(ctx, code)=, =read_all(ctx, code)=,
+   =remove(ctx, code)=, =remove(ctx, codes)=: prepend
+   ="tenant_id"_c == tid= to the where clause.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1042][#1042]] | [refdata,compass] Tenant-filter currency auxiliaries; fix stale goto references |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Write log says 'currency asset class' not 'monetary nature' | projects/ores.refdata/core/src/repository/monetary_nature_repository.cpp | Accepted | Fixed in bc07b4ec1; all 11 occurrences in the file corrected, not just the 3 flagged. |
+| 2 | Bulk-write log: same copy-paste | projects/ores.refdata/core/src/repository/monetary_nature_repository.cpp | Accepted | Fixed in bc07b4ec1. |
+| 3 | Delete log: same copy-paste | projects/ores.refdata/core/src/repository/monetary_nature_repository.cpp | Accepted | Fixed in bc07b4ec1. |
+
+* Result
+
+Tenant filters added to auxiliary repositories; stale goto references fixed. PR #1042 merged.

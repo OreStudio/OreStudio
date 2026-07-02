@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 3BCA4E26-A6B6-4EF4-9A8F-35D4BB25680E
+:END:
+#+title: Task: Verify book_status SQL against the evaluation checklist
+#+description: Verify SQL is in sync with codegen; regenerate from corrected template to fix three security definer and bootstrap deficiencies introduced before the template fix in 1cb85c9a2.
+#+type: task
+#+level: s1
+#+filetags: :commission_book_status:sprint_22:v0:
+#+owner: marco
+#+branch: feature/commission-book-status
+#+pr: 1307
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run codegen for book_status and verify zero-diff against =refdata_book_statuses_create.sql=.
+The template was corrected in =1cb85c9a2= (SECURITY DEFINER on trigger and validate functions;
+bootstrap guard scoped to active rows and system tenant). The book_status SQL predates that fix
+and diverges in three places; regenerating from the corrected template resolves all three without
+hand-editing the generated file.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- Codegen runs cleanly against the book_status org model and produces zero diff against =refdata_book_statuses_create.sql=.
+- Insert trigger carries =SECURITY DEFINER + SET search_path = public, pg_temp= (via template, not hand-edit).
+- Validate function carries the same attributes independently.
+- Bootstrap guard scoped to =tenant_id = ores_utility_system_tenant_id_fn()= and =valid_to = ores_utility_infinity_timestamp_fn()=.
+
+* Plan
+
+Ran =python3 projects/ores.codegen/codegen.py generate --model projects/ores.refdata/modeling/ores.refdata.book_status_table.org --profile sql=. The model existed (migrated from JSON in =e39a9e41d=) but had never been run against the corrected template. Codegen output differed from the repo file in three places matching the checklist deficiencies. Accepted the generated output as the canonical file — no manual edits to the SQL.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1307][#1307]] | [ores.sql,agile] Commission book_status: fix security definer and bootstrap guard |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Story task table shows BACKLOG instead of STARTED | story.org | Fixed in 66036bca1 | |
+
+* Result
+
+Ran codegen against the existing =ores.refdata.book_status_table.org= model. The generated SQL differed from the repo file in three places, all matching the deficiencies identified via the checklist: missing =SECURITY DEFINER= on the insert trigger and validate function, and a bootstrap guard that lacked both the =tenant_id= and =valid_to= filters. Accepted the generated output as the canonical file. No hand-edits to the SQL. All acceptance criteria met. Shipped in PR #1307.

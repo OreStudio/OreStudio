@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 1BDF8A2E-EC7D-4B54-8949-DF76D4B5A050
+:END:
+#+title: Task: B9: Rename .mustache template files to MASD address form
+#+description: Rename the 50 entity-facet .mustache templates to address form (ores_cpp_domain_class_header.mustache) atomically with their :tangle targets, core.py get_schema_template_mappings, and doc-string references; verify byte-identical generation across the graph path and the legacy schema path.
+#+type: task
+#+level: s1
+#+filetags: :codegen:physical-space:cleanup:codegen-unification-blockers:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every entity-facet .mustache file is named for its MASD address (dots->underscores), matching its archetype node and doc, with all references (tangle targets, get_schema_template_mappings, generator lookup, doc-strings) updated atomically and generation proven byte-identical.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-28                               |
+
+* Acceptance
+
+- All 50 entity-facet .mustache renamed; tangle produces the new names with no orphans; get_schema_template_mappings and doc-strings updated; both the domain_entity graph path and the is_entity_schema_model path generate byte-identical output; codegen tests pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

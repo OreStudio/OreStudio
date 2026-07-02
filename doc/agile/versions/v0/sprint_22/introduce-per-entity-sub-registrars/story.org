@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: FA0846D8-5498-4036-8897-812EB053C4B4
+:END:
+#+title: Story: Introduce per-entity NATS sub-registrars
+#+description: Replace the monolithic registrar.cpp with a generated per-entity sub-registrar pattern so each entity's NATS wiring is isolated, code-generated, and independently compilable.
+#+type: story
+#+level: s2
+#+filetags: :codegen:refdata:nats:messaging:sprint_22:v0:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Replace the single monolithic =registrar.cpp= in =ores.refdata.core= with a
+generated per-entity sub-registrar pattern. Each entity gets its own
+code-generated =<entity>_registrar.hpp/cpp= that wires that entity's NATS
+subjects to its handler. The top-level =registrar.cpp= becomes a thin
+generated file that calls each sub-registrar. Isolation is complete: a
+broken handler for one entity cannot block compilation of the rest of the
+service.
+
+This story was motivated by PR #1342, which regenerated all handlers with
+an updated template and broke the entire =ores.refdata.core= build in one
+commit. With per-entity sub-registrars each entity compiles independently,
+so a template mismatch in one entity's handler only fails that entity.
+
+The redesign also unblocks future work: service API updates (pagination,
+count, delete method names) can land entity-by-entity rather than requiring
+all 20+ entities to be correct simultaneously.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-27                               |
+
+* Acceptance
+
+- A =<entity>_registrar.hpp/cpp= pair is generated for each refdata entity
+  by the =nats-handler= profile.
+- The top-level =registrar.cpp= is generated and contains only calls to the
+  per-entity sub-registrars; it includes no handler headers directly.
+- Each entity's =_registrar.cpp= includes only its own handler header.
+- Removing one entity's handler header causes only that entity's registrar
+  to fail to compile; the rest of the service builds cleanly.
+- Hand-written custom protocol structs (e.g. =read_parties_for_cache_request=)
+  are preserved in a =<entity>_protocol_extensions.hpp= file that is not
+  overwritten by codegen.
+- All existing NATS subjects and handler behaviour are preserved.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B1A68C26-970D-41ED-BCF9-B7187C703218][Introduce nats-sub-registrar codegen templates]] | DONE | 2026-06-27 | 2026-07-02 | nats-sub-registrar facet + archetypes in the physical-space graph. |
+| [[id:818E9AC0-DF64-4480-BB7C-6132D8CA8B0F][Generate sub-registrars for all refdata entities]] | DONE | 2026-06-27 | 2026-07-02 | 26 per-entity registrar pairs regenerated; no_history flags; 2 handler-less entities excluded. |
+| [[id:E704B5A9-9BD4-451F-8DDD-E12A4FA4E9C2][Wire sub-registrars into top-level registrar]] | BACKLOG |  |  | Top-level registrar delegates to each register_<entity>_handlers(). |
+
+* Decisions
+
+- *Motivated by PR #1342 build failure* — monolithic registrar means one
+  bad handler breaks the whole build. Per-entity sub-registrars isolate the
+  damage to a single translation unit.
+- *Custom protocol structs* (e.g. =read_parties_for_cache_request=) must not
+  be in the generated protocol header; they belong in a separate
+  =*_protocol_extensions.hpp= not touched by codegen.
+
+* Out of scope
+
+- Service API changes (adding pagination, count, delete methods). Those are
+  separate tasks per entity, unblocked once sub-registrars exist.
+- Migrating =ores.iam= or =ores.synthetic= registrars; only =ores.refdata=
+  in scope for this story.

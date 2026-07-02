@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: C0075180-2306-42F9-B4F7-F34D801709B4
+:END:
+#+title: Story: Codegen model safety guardrails
+#+description: Add runtime guards for missing component_include/component_core; block dual-template SQL generation; document profile limitations. Prerequisite for the C++ audit.
+#+type: story
+#+level: s2
+#+filetags: :tooling:codegen:sprint_22:v0:
+#+created: 2026-05-30
+#+updated: 2026-06-12
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Before the C++ template audit ([[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]]) begins,
+close the known silent failure modes in =ores.codegen= that would cause
+the audit to produce misleading results:
+
+1. Missing =component_include= / =component_core= fields cause generated
+   files to land in a non-existent =projects/ores.<component>/= directory.
+   Git diff reports "clean" because the output is untracked — a false pass.
+
+2. Running =--profile sql= on a =_domain_entity.json= model silently uses
+   =sql_schema_domain_entity_create.mustache= (the old template) rather than
+   the new unified template, even when a =_table.json= exists for the same entity.
+
+3. The =all-cpp= profile excludes Qt, =nats-eventing=, and all non-temporal
+   variants. Claiming "zero diff" after running =all-cpp= leaves Qt and
+   non-temporal drift undetected.
+
+4. Non-temporal entities run through the temporal =all-cpp= profile silently
+   produce C++ with audit columns (=version=, =modified_by=, =recorded_at=)
+   that do not exist in the database table.
+
+These guardrails convert silent wrong-path output and false "clean" signals
+into loud, actionable errors. They make the subsequent C++ audit trustworthy.
+
+See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and unified model roadmap]] for full context.
+
+* Status
+
+| Field         | Value                                             |
+|---------------+---------------------------------------------------|
+| State         | BACKLOG                                           |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]                                         |
+| Now           | Not yet started.                                  |
+| Waiting on    | Nothing. Should start before C++ audit Task 1.   |
+| Next          | Implement guard for missing component_include.    |
+| Last touched  | 2026-05-30                                        |
+
+* Acceptance
+
+- =generate.py= raises a =ValueError= when a =_domain_entity.json= model is
+  missing =component_include= or =component_core=; =codegen.py= catches it,
+  logs a clean human-readable error message naming the missing field and the
+  model file, and exits non-zero. No raw Python traceback is shown to the user.
+- Running =--profile sql= on a =_domain_entity.json= model that has a
+  corresponding =_table.json= in the same directory raises an error or warning
+  directing the user to use the =_table.json= model instead.
+- Running =--profile all= on a =_domain_entity.json= model raises an error
+  (extending the existing guard that already blocks =table= and =schema= models).
+- A comment or =--help= note documents which facets =all-cpp= covers and that
+  Qt requires a separate =--profile qt= invocation.
+- CI passes. No production C++ files are changed by this story.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| Task: Guard missing component_include/component_core in generator.py | BACKLOG | | | Raise an error at generation time when component_include or component_core is absent from a domain_entity model. |
+| Task: Block dual-template SQL generation for domain_entity models | BACKLOG | | | Extend the --profile all guard and add a warning when --profile sql is run against a domain_entity with a co-located _table.json. |
+| Task: Document all-cpp profile limitations | BACKLOG | | | Add --help annotation and CLI output note explaining Qt is excluded from all-cpp; add guard that warns when a model lacks is_temporal and a temporal profile is used. |
+
+* Decisions
+
+- /Errors not warnings for missing fields./ The =component_include= fallback
+  silently writes to the wrong path; a warning is easily ignored. An error
+  forces the model to be fixed before generation proceeds.
+- /Warn, not error, for dual-template SQL./ The =_domain_entity.json= SQL
+  output may legitimately be used for non-refdata components that have no
+  =_table.json= yet. A warning with clear guidance is safer than a hard
+  error until all components have migrated to =_table.json= models.
+
+* Out of scope
+
+- Migrating any =_domain_entity.json= models to add the missing fields —
+  that is Task 3 of [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]].
+- Adding an =is_temporal= field to all 75 models — that belongs to
+  [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal/non-temporal templates]].
+- Any template or production file changes.

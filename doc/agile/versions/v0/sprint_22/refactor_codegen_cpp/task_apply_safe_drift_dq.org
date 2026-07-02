@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 2C3EADB7-9AB7-4053-B148-8F167FCB7EFE
+:END:
+#+title: Task: Apply safe drift to dq-cpp
+#+description: Apply safe drift to the dq-cpp component using the pattern established by the refdata-cpp pilot. Set service_find_by_uuid and service_find_by_code on dataset_bundle, fix HexPrefix model typo, regenerate, build and test green, raise PR.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_22:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr:
+#+blocked_on: C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story.
+
+* Goal
+
+Apply safe drift to =dq-cpp= following the [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][refdata-cpp pilot]] pattern. Single
+model needs flags (=dataset_bundle=); one upstream model typo (HexPrefix
+generator expression) needs fixing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]] |
+| Next         | Start once refdata pattern is merged.  |
+| Last touched | 2026-05-31                             |
+
+* Acceptance
+
+- =dataset_bundle_domain_entity.json= has =service_find_by_uuid: true= and
+  =service_find_by_code: {"column": "code"}=.
+- =badge_definition_domain_entity.json= HexPrefix typo fixed
+  (=HexPrefix::NoPrefix= → =HexPrefix::None=).
+- =cmake --build --preset linux-clang-debug-make= passes.
+- =ctest -R "ores\.dq"= passes.
+- Final zero-diff invariant holds.
+- PR raised, reviewed, merged.
+
+* Plan
+
+1. =git rebase origin/main=.
+2. Update =dataset_bundle_domain_entity.json= with =service_find_by_uuid= and
+   =service_find_by_code= (column: =code=).
+3. Fix =badge_definition_domain_entity.json= generator typo:
+   =HexPrefix::NoPrefix= → =HexPrefix::None= (real enum value in faker-cxx).
+4. =projects/ores.codegen/codegen.sh regenerate --component dq-cpp --profile all-cpp=.
+5. =cmake --build --preset linux-clang-debug-make=.
+6. =ctest --test-dir build/output/linux-clang-debug-make -R "ores\.dq" --output-on-failure=.
+7. Re-run regeneration; =git diff --exit-code= clean.
+8. Commit + push + raise PR.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

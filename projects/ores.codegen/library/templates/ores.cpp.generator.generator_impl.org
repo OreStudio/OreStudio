@@ -45,15 +45,19 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{#needs_counter}}
     static std::atomic<int> counter{0};
 {{/needs_counter}}
+{{#has_audit_columns}}
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
+{{/has_audit_columns}}
 {{#has_tenant_id}}
     const auto tid_str = ctx.env().get_or(
         std::string(generation_keys::tenant_id), std::string("system"));
 {{/has_tenant_id}}
 
     domain::{{entity_singular}} r;
+{{#has_audit_columns}}
     r.version = 1;
+{{/has_audit_columns}}
 {{#has_tenant_id}}
     r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
         .value_or(utility::uuid::tenant_id::system());
@@ -126,12 +130,17 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{#is_uuid}}
     r.{{name}} = ctx.generate_uuid();
 {{/is_uuid}}
+{{#is_plain_string}}
+    r.{{name}} = std::string(faker::word::noun());
+{{/is_plain_string}}
 {{/generator_expr}}
 {{/columns}}
+{{#has_audit_columns}}
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
+{{/has_audit_columns}}
     r.recorded_at = ctx.past_timepoint();
     return r;
 }

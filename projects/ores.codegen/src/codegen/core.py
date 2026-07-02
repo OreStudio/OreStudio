@@ -1713,6 +1713,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not is_enum_type
                     and not is_already_optional
                 )
+                # Non-nullable plain std::string columns without an explicit
+                # generator_expr have no safe struct-level default (unlike
+                # bool/int below) — an empty string often fails a `<> ''`
+                # check constraint. Flag them so the generator template can
+                # fall back to a synthetic value.
+                col['is_plain_string'] = (
+                    col['is_simple'] and col.get('cpp_type') == 'std::string'
+                    and not col.get('generator_expr')
+                )
                 # Supply a safe default for non-nullable scalar types that
                 # would otherwise leave the domain struct with an
                 # indeterminate value. Nullable fields wrap in optional so

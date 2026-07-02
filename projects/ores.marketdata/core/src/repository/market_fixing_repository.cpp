@@ -84,7 +84,8 @@ std::vector<domain::market_fixing> market_fixing_repository::read_all(context ct
     BOOST_LOG_SEV(lg(), debug) << "Reading all market fixing versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<market_fixing_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("valid_from"_c.desc());
 
     return execute_read_query<market_fixing_entity, domain::market_fixing>(
         ctx,

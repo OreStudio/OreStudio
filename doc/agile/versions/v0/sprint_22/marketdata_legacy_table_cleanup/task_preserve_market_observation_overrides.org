@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 2E1183B1-31B2-400D-B291-55F9DB87839C
+:END:
+#+title: Task: Model or document market_observation's hand-written repository/service overrides
+#+description: market_observation_repository.{hpp,cpp}, market_observation_service.{hpp,cpp} and market_observation_protocol.hpp carry hand-written customizations (a series_id filter param on the paginated list query, plus custom pagination logic) layered on top of codegen output. These are silently reverted every time 'compass codegen regenerate --component marketdata --profile all-cpp' runs. Either model the series_id filter properly in ores.marketdata.market_observation.org so codegen produces it, or clearly mark these files/blocks as hand-maintained so future regenerations don't clobber them.
+#+type: task
+#+level: s1
+#+filetags: :marketdata_legacy_table_cleanup:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Stop =compass codegen regenerate --component marketdata --profile
+all-cpp= from silently reverting =market_observation='s hand-written
+behaviour: a =series_id= filter parameter on the paginated list
+query (repository + service + NATS protocol) and custom pagination
+logic in =market_observation_repository::read_latest=. Discovered
+while regenerating for [[id:82CB5F03-AFD9-4AE6-95EF-57EB683FB1B5][Hotfix: market_fixing entity carries audit
+columns absent from lean SQL schema]] — every regen pass had to be
+followed by a manual =git checkout HEAD --= on these files. Either
+model the =series_id= filter properly in
+=ores.marketdata.market_observation.org= so codegen produces it
+natively, or clearly mark the hand-maintained blocks (e.g. a
+=// CODEGEN: preserve= comment convention, if one exists, or a new
+one) so future regenerations don't clobber them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- Running =compass codegen regenerate --component marketdata
+  --profile all-cpp= no longer produces a diff on
+  market_observation_repository.{hpp,cpp},
+  market_observation_service.{hpp,cpp}, or
+  market_observation_protocol.hpp that drops the series_id filter or
+  pagination behaviour.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

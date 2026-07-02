@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: FEA991DD-7C6B-4951-A84E-55B7F97A04C7
+:END:
+#+title: Task: Scaffold story: Hotfix: market_fixing entity carries audit columns absent from lean SQL schema
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :market-fixing-audit-column-mismatch:sprint_21:v0:
+#+owner: marco
+#+branch: hotfix/market-fixing-audit-column-mismatch
+#+pr: 1401
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:82CB5F03-AFD9-4AE6-95EF-57EB683FB1B5][Hotfix: market_fixing entity carries audit columns absent from lean SQL schema]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:82CB5F03-AFD9-4AE6-95EF-57EB683FB1B5][Hotfix: market_fixing entity carries audit columns absent from lean SQL schema]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1401][#1401]] | [marketdata] Fix market_fixing entity carrying audit columns absent from lean SQL schema |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Story and tasks scaffolded, filled, wired into the sprint 21 Hotfixes
+section, and closed in a single combined PR alongside the fix.

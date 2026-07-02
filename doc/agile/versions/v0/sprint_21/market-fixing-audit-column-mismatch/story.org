@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 82CB5F03-AFD9-4AE6-95EF-57EB683FB1B5
+:END:
+#+title: Story: Hotfix: market_fixing entity carries audit columns absent from lean SQL schema
+#+description: market_fixing domain type, entity, mapper, generator, json_io, handler and service carry version/modified_by/performed_by/change_reason_code/change_commentary fields that ores_marketdata_market_fixings_tbl intentionally omits, causing INSERT failures (column "version" does not exist).
+#+type: story
+#+level: s2
+#+filetags: :hotfix:marketdata:sprint_21:v0:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the marketdata repository test suite by trimming
+=market_fixing='s domain type, entity, mapper, generator, json_io,
+handler and service down to the columns that actually exist on
+=ores_marketdata_market_fixings_tbl= — the table intentionally has no
+audit trail (=version=, =modified_by=, =performed_by=,
+=change_reason_code=, =change_commentary=) because fixing volume makes
+per-row audit impractical. =party_id= stays; it is a real column.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-07-02                               |
+
+* Acceptance
+
+- market_fixing_entity matches ores_marketdata_market_fixings_tbl columns exactly.
+- ores.marketdata.core repository tests pass (write/read market_fixings).
+- Build is green.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FEA991DD-7C6B-4951-A84E-55B7F97A04C7][Scaffold story: Hotfix: market_fixing entity carries audit columns absent from lean SQL schema]] | DONE | 2026-07-02 | 2026-07-02 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1C3FC37B-5BF8-4DDF-AFC8-034B6DD232E1][Implement Hotfix: market_fixing entity carries audit columns absent from lean SQL schema]] | DONE | | 2026-07-02 | Initial task for: Hotfix: market_fixing entity carries audit columns absent from lean SQL schema |
+
+* Decisions
+
+Fixed the root cause in the codegen C++ templates (not just
+market_fixing's generated output) so no_audit_columns entities stay
+correct across future regenerations. Follow-up cleanup (dead legacy
+marketdata tables, market_observation's hand-written overrides)
+filed separately as [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and
+preserve hand-written overrides]] (Sprint 22) rather than folded
+into this hotfix.
+
+* Out of scope
+
+-

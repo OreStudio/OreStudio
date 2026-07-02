@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 1C3FC37B-5BF8-4DDF-AFC8-034B6DD232E1
+:END:
+#+title: Task: Implement Hotfix: market_fixing entity carries audit columns absent from lean SQL schema
+#+description: Initial task for: Hotfix: market_fixing entity carries audit columns absent from lean SQL schema
+#+type: task
+#+level: s1
+#+filetags: :market-fixing-audit-column-mismatch:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:82CB5F03-AFD9-4AE6-95EF-57EB683FB1B5][Hotfix: market_fixing entity carries audit columns absent from lean SQL schema]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove version/modified_by/performed_by/change_reason_code/change_commentary
+from the market_fixing domain type and every layer that maps to/from
+it, so INSERTs stop referencing columns that don't exist on
+ores_marketdata_market_fixings_tbl.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:82CB5F03-AFD9-4AE6-95EF-57EB683FB1B5][Hotfix: market_fixing entity carries audit columns absent from lean SQL schema]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- market_fixing_entity columns match the SQL table exactly.
+- All callers compile without referencing the removed audit fields.
+- ores.marketdata.core repository tests for market_fixings pass.
+
+* Plan
+
+CI (macOS runner) surfaced: "column \"version\" of relation
+ores_marketdata_market_fixings_tbl does not exist" on INSERT.
+market_fixing_entity.hpp carries version/party_id/modified_by/
+performed_by/change_reason_code/change_commentary, but the table
+(marketdata_market_fixings_create.sql) only has id, tenant_id,
+party_id, series_id, fixing_date, value, source, valid_from, valid_to
+— by design, per the table's own doc comment ("No audit trail
+columns — volume makes them impractical"). Trim the domain type,
+entity, mapper, generator, json_io, handler, and service to match.
+
+* Notes
+
+Root cause was broader than market_fixing: the C++ codegen templates
+(domain class, repository entity, mapper, generator, repository
+query) never checked the =has_audit_columns= flag that the SQL
+template already respected, so any =no_audit_columns: true= entity
+got audit fields injected back on every regen. Fixed the five
+=.org= template sources (re-tangled to =.mustache=), then
+regenerated =market_fixing= and =market_observation=.
+
+Also found and fixed a second, independent bug while regenerating:
+the generator template has no fallback for non-UUID,
+non-natural-key columns without an explicit =generator_expr= —
+=value= was silently generated as an empty string, tripping the
+=..._value_check= constraint. Added =generator_expr= blocks for
+=value= on both =market_fixing= and =market_observation= models.
+
+=market_observation='s hand-written repository/service
+customisations (series_id filter, custom pagination) were
+preserved by hand after each regen pass rather than folded into the
+generated output — filed as a follow-up:
+[[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve
+hand-written overrides]] (Sprint 22), which also covers three
+legacy duplicate marketdata tables spotted along the way.
+
+Verified: =ores.marketdata.core.tests= (31/31) and
+=ores.marketdata.api.tests= (77/77) pass; =ores.qt.mktdata.lib=
+builds clean; local DB recreated and services restarted.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Generator "fallback" fix was per-column (generator_expr on two models), not template-level; wider gap left open across other entities | ores.cpp.generator.generator_impl.org / cpp_domain_type_generator.cpp.mustache | Accepted | Fixed in 8ef056b05: added core.py is_plain_string flag + faker::word::noun() fallback, mirroring natural_keys pattern. |
+| 2 | market_observation_entity.hpp/mapper.cpp picked up stray blank lines and lost a hand-written comment on regen | market_observation_entity.hpp, market_observation_mapper.cpp | Declined (tracked elsewhere) | Cosmetic; already covered by Sprint 22 story "preserve market_observation overrides". |
+| 3 | sprint_21.org hotfix row missing Start date | sprint_21/sprint.org | Accepted | Fixed in 8ef056b05. |
+
+* Result
+
+Trimmed the audit-trail fields from market_fixing's domain type,
+repository entity, mapper, and generator, and fixed the underlying
+codegen template gap (has_audit_columns wasn't honoured by the C++
+templates) so the fix holds across future regenerations. Also fixed
+a related empty-value generator bug. Local test suites green;
+follow-up cleanup filed as a Sprint 22 story.

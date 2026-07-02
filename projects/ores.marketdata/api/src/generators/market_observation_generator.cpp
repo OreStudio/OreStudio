@@ -31,12 +31,10 @@ using ores::utility::generation::generation_keys;
 domain::market_observation
 generate_synthetic_market_observation(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::market_observation r;
-    r.version = 1;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
@@ -45,10 +43,7 @@ generate_synthetic_market_observation(utility::generation::generation_context& c
     r.series_id = ctx.generate_uuid();
     r.observation_datetime = ctx.past_timepoint();
     r.point_id = std::string(faker::word::noun()) + "-" + std::to_string(idx);
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
+    r.value = std::to_string(faker::number::decimal<double>(0.0, 100.0));
     r.recorded_at = ctx.past_timepoint();
     return r;
 }

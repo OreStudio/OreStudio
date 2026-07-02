@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 553D514F-EB3E-4FF0-9CD8-A847C3B88A11
+:END:
+#+title: Task: Display per-component and combined GMM PDFs
+#+description: Render each GMM component's own PDF curve on the Live Return Distribution Preview, plus the combined mixture PDF in a distinct colour.
+#+type: task
+#+level: s1
+#+filetags: :gmm-improvements:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Live Return Distribution Preview currently does not distinguish
+individual GMM components from the overall mixture. Render each
+configured component's own PDF curve, plus the combined/mixture GMM
+PDF in a distinct colour, so users can see how components contribute
+to the mixture while tuning parameters.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- Each configured GMM component renders its own PDF curve on the
+  Live Return Distribution Preview.
+- The combined mixture PDF renders in a colour visually distinct
+  from the per-component curves.
+- Legend or labelling makes clear which curve is which.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

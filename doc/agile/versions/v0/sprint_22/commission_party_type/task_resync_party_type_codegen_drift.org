@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 17699BFE-C676-4323-A8CD-A2F99A8D361B
+:END:
+#+title: Task: Resync party_type codegen formatting and SQL default drift
+#+description: Regen shows non-zero diff across nearly all party_type profiles (Qt, C++ domain/repository/messaging, generator) due to formatting/style drift since last sync (2026-06-30); also SQL display_order column loses 'default 0'. Regenerate and reconcile, or fix templates if drift is a template regression, so entity is zero-diff again. party_status shows the same drift; purpose_type is clean.
+#+type: task
+#+level: s1
+#+filetags: :commission_party_type:sprint_22:v0:codegen:
+#+owner: marco
+#+branch: feature/resync-party-type-codegen-drift
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Regenerate party_type across all profiles so on-disk files match current
+codegen templates byte-for-byte, closing the zero-diff gate for the
+Commission: party_type story.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- =compass codegen entity generate party_type= run for all profiles.
+- =compass codegen entity show party_type= reports ✅ for every file.
+- =ores.refdata.core.lib=, =ores.refdata.api.lib=, =ores.qt.refdata.lib= build clean.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+Ran =compass codegen entity generate party_type --diff= for a byte-level
+compare; ran the real generate; then re-checked with =entity show= (the
+authoritative per-file check) and a direct build.
+
+* Notes
+
+The initial =--diff= report (used to file this task) over-stated the
+drift: most of the reported hunks were 4-space vs 2-space indentation and
+brace-placement differences that turned out to be an artefact of the
+=--diff= comparison path applying a different clang-format style than the
+project's =.clang-format= (verified: =clang-format --style=file:.clang-format
+--dry-run= against the on-disk files produced no output, i.e. they were
+already conformant). =compass codegen entity show party_type= — which
+compares against the project's actual style — is the more reliable
+zero-diff check going forward.
+
+The real drift was small: a missing =default 0= on the SQL
+=display_order= column, a missing IWYU include in =party_type_entity.cpp=,
+and two blank-line spacing fixes in the entity/mapper files matching the
+current template.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Regenerated party_type for all profiles (=compass codegen entity generate
+party_type=). =compass codegen entity show party_type= now reports ✅ for
+all 36 generated files. Content diff committed:
+
+- SQL: =display_order= column restored to =integer not null default 0=.
+- =party_type_entity.cpp=: added missing =ores.utility/rfl/reflectors.hpp=
+  IWYU include.
+- =party_type_entity.hpp=, =party_type_mapper.cpp=: blank-line spacing
+  around fields/assignments to match current template output.
+
+=ores.refdata.core.lib=, =ores.refdata.api.lib=, =ores.qt.refdata.lib=
+build clean with the regenerated sources.

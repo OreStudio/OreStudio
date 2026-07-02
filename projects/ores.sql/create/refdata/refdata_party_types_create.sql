@@ -37,7 +37,7 @@ create table if not exists "ores_refdata_party_types_tbl" (
     "version" integer not null,
     "name" text not null,
     "description" text not null,
-    "display_order" integer not null,
+    "display_order" integer not null default 0,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

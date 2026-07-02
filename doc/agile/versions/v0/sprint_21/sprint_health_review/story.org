@@ -37,6 +37,7 @@ Produce a structured System 2 health review of sprint 21 covering goal alignment
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D0B986F1-1E46-42CD-9453-64275C089E38][Health review 1 — sprint 21 close analysis]] | DONE | 2026-06-29 | 2026-06-29 | System 2 health review 1 of sprint 21: close analysis. |
+| [[id:4665FF0D-5A50-4F62-BE16-E3B7490CB1A9][Health review 2 — sprint 21 close analysis]] | BACKLOG | | | System 2 health review 2 of sprint 21 — day 20, 13 days past planned close. |
 
 * Decisions
 

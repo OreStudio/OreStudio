@@ -182,6 +182,7 @@ health review (promote to a story, move to =next=, or discard).
 | # | Date       | Day    | Overall | Task                                                            |
 |---+------------+--------+---------+-----------------------------------------------------------------|
 | 1 | 2026-06-29 | day 17 | RED     | [[id:D0B986F1-1E46-42CD-9453-64275C089E38][Health review 1 — sprint 21 close analysis]] |
+| 2 | 2026-07-02 | day 20 | RED     | [[id:4665FF0D-5A50-4F62-BE16-E3B7490CB1A9][Health review 2 — sprint 21 close analysis]] |
 
 * Charts
 

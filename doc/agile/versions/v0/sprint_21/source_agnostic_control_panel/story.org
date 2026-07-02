@@ -25,11 +25,11 @@ contract, with no knowledge of what produces each feed.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-06-28                               |
 
 * Acceptance
@@ -48,11 +48,15 @@ contract, with no knowledge of what produces each feed.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8432FFB1-A084-4B39-8EBF-998521BBAF66][Qt UI to map system feeds to raw producers]] | BACKLOG | | | A Qt screen to view system market-data feeds and choose which raw synthetic producer each is bound to. |
-| [[id:C98C8C6C-5CF8-4A36-9D5B-A394A62CB942][Qt FX spot grid for live system feeds]] | BACKLOG | | | A one-row-per-system-feed grid showing live mid, change and status, flashing green/red on each tick. |
+| [[id:8432FFB1-A084-4B39-8EBF-998521BBAF66][Qt UI to map system feeds to raw producers]] | DONE | | 2026-07-02 | A Qt screen to view system market-data feeds and choose which raw synthetic producer each is bound to. |
+| [[id:C98C8C6C-5CF8-4A36-9D5B-A394A62CB942][Qt FX spot grid for live system feeds]] | DONE | | 2026-07-02 | A one-row-per-system-feed grid showing live mid, change and status, flashing green/red on each tick. |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+MarketSimulatorWindow provides start/stop control over synthetic feeds bound to system feed slots. FxSpotGridWindow provides a live one-row-per-feed grid with mid price, direction colouring, and staleness badge. Both delivered in PR #1386.

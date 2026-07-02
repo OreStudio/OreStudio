@@ -29,12 +29,12 @@ data is correctly owned and traceable.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Not yet started.                       |
+| Now           | Complete. Library data task deferred to sprint 22. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-06-28                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-02                               |
 
 * Acceptance
 
@@ -73,3 +73,7 @@ data is correctly owned and traceable.
 - Marketdata feed binding, ingestion and the official stream (separate story).
 - The source-agnostic control panel (separate story).
 - CRM derivation and correlations (backlog).
+
+* Result
+
+Config entities (synthetic_config container + synthetic_fx_spot_config sub-config + synthetic_gmm_component) delivered across all layers. Qt CRUD UI delivered. Config-driven autonomous generation running per-config. Library data task (30 benchmark pairs) deferred to sprint 22.

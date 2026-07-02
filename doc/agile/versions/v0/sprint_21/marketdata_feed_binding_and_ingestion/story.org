@@ -26,11 +26,11 @@ source) and *remaps* them to the official tenant-scoped stream consumers use.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-06-28                               |
 
 * Acceptance
@@ -51,10 +51,14 @@ source) and *remaps* them to the official tenant-scoped stream consumers use.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D8008A82-67BA-4FE4-A835-D8A58C0BE539][Marketdata system-feed to producer mapping and republish]] | STARTED | 2026-06-30 | | A persisted marketdata feed-config that binds a system feed to one chosen raw synthetic producer; the marketdata service subscribes it and republishes on the official tenant-scoped stream. |
+| [[id:D8008A82-67BA-4FE4-A835-D8A58C0BE539][Marketdata system-feed to producer mapping and republish]] | DONE | 2026-06-30 | 2026-07-02 | A persisted marketdata feed-config that binds a system feed to one chosen raw synthetic producer; the marketdata service subscribes it and republishes on the official tenant-scoped stream. |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+Feed binding entity and ingest loop delivered in PR #1386. The marketdata service now binds system feeds to producer channels, persists observations, and republishes on the official tenant-scoped stream.

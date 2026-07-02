@@ -81,7 +81,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate face dataset]] | STARTED | 2026-06-11 | | Build the external/facestudio/ seed catalog; fix accumulation script; wire into seeder. |
+| [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate face dataset]] | DONE | 2026-06-11 | 2026-07-02 | Build the external/facestudio/ seed catalog; fix accumulation script; wire into seeder. |
 
 *** Market data generation
 
@@ -90,11 +90,11 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 |-------+-------+-------+-----+-------------|
 | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] | DONE | 2026-06-25 | 2026-06-25 | Survey three academic papers; catalogue ORE asset-class data requirements; produce a developer-ready approach document for consistent, evolvable synthetic market data. |
 | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] | DONE | 2026-06-25 | 2026-06-28 | Vertical PoC implementing FX spot synthetic data generation end-to-end: GMM generation service, NATS tick publishing, DB write, and live trading-style chart. Success; productionising work re-homed to the stories below. |
-| [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] | BACKLOG | | | Producer side: persisted party/tenant-scoped synthetic config in ores.synthetic (container + FX spot sub-config) + CRUD UI; config-driven autonomous generation stamping tenant + source; producer-namespaced tick publishing. |
+| [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] | DONE | 2026-06-28 | 2026-07-02 | Producer side: persisted party/tenant-scoped synthetic config in ores.synthetic (container + FX spot sub-config) + CRUD UI; config-driven autonomous generation stamping tenant + source; producer-namespaced tick publishing. |
 | [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] | BACKLOG | | | Lift the PoC single-EUR/USD-series feed to config-driven: resolve/create a series per config ORE key, start feeds by config id, run multiple feeds, publish to the synthetic producer namespace. (Scope 2 of the Market Simulator work.) |
 | [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] | BACKLOG | | | SQL template variability (hypertable, soft-update/soft-delete triggers, GIST exclusion) + .org models for market_series, market_observation, market_fixing; prerequisite for full-stack codegen of ores.marketdata. |
-| [[id:F6CD8E90-6EE2-4B4F-A4EC-C173C906222A][Market data feed binding, ingestion and official stream]] | BACKLOG | | | Authority side: source-agnostic feed-config binding (series ← source channel); ingest loop subscribes, persists (tenant + source) and remaps to the official tenant-scoped stream; CRM derivation seam. |
-| [[id:DE2F85D0-9238-41EA-9C2F-A42D37AEEB3D][Source-agnostic market data control panel]] | BACKLOG | | | Generic Qt control panel to list/start/stop/monitor feeds via the feed-config registry and a source-agnostic control contract, independent of the producer. |
+| [[id:F6CD8E90-6EE2-4B4F-A4EC-C173C906222A][Market data feed binding, ingestion and official stream]] | DONE | | 2026-07-02 | Authority side: source-agnostic feed-config binding (series ← source channel); ingest loop subscribes, persists (tenant + source) and remaps to the official tenant-scoped stream; CRM derivation seam. |
+| [[id:DE2F85D0-9238-41EA-9C2F-A42D37AEEB3D][Source-agnostic market data control panel]] | DONE | | 2026-07-02 | Generic Qt control panel to list/start/stop/monitor feeds via the feed-config registry and a source-agnostic control contract, independent of the producer. |
 
 ** Tooling
 

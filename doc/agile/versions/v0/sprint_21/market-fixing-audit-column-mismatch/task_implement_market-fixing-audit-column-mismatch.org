@@ -93,7 +93,9 @@ builds clean; local DB recreated and services restarted.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Generator "fallback" fix was per-column (generator_expr on two models), not template-level; wider gap left open across other entities | ores.cpp.generator.generator_impl.org / cpp_domain_type_generator.cpp.mustache | Accepted | Fixed in 8ef056b05: added core.py is_plain_string flag + faker::word::noun() fallback, mirroring natural_keys pattern. |
+| 2 | market_observation_entity.hpp/mapper.cpp picked up stray blank lines and lost a hand-written comment on regen | market_observation_entity.hpp, market_observation_mapper.cpp | Declined (tracked elsewhere) | Cosmetic; already covered by Sprint 22 story "preserve market_observation overrides". |
+| 3 | sprint_21.org hotfix row missing Start date | sprint_21/sprint.org | Accepted | Fixed in 8ef056b05. |
 
 * Result
 

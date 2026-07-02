@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: B1A68C26-970D-41ED-BCF9-B7187C703218
+:END:
+#+title: Task: Introduce nats-sub-registrar codegen templates
+#+description: Write the mustache templates and org literate source for the per-entity sub-registrar pair (hpp/cpp), add a nats-sub-registrar facet entry to facet_catalogue.org, and tangle to regenerate the .mustache files.
+#+type: task
+#+level: s1
+#+filetags: :introduce-per-entity-sub-registrars:sprint_21:v0:
+#+owner: marco
+#+branch: feature/introduce-nats-sub-registrar-templates
+#+pr: 1397
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a =nats-sub-registrar= codegen profile that produces a
+=<entity>_registrar.hpp/cpp= pair for each refdata entity. The hpp
+declares =register_<entity>_handlers()=; the cpp includes only that
+entity's handler header and wires its NATS subjects to the handler
+instance. The top-level =registrar.cpp= will delegate to these in the
+next task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- =nats-sub-registrar= entry exists in =facet_catalogue.org= with two
+  template/output rows (hpp and cpp).
+- =cpp_nats_registrar.hpp.mustache= and =cpp_nats_registrar.cpp.mustache=
+  exist in =library/templates/= and match the org literate sources.
+- =cpp_nats_registrar_hpp.org= and =cpp_nats_registrar_cpp.org= exist
+  with tangle blocks referencing the mustache files.
+- =cpp_messaging.org= archetypes table updated to include the two new
+  archetypes.
+- Template flags =no_history= (skip history subject) and =list_only=
+  (skip save/remove/history) documented in the org sources.
+
+* Plan
+
+1. Add =nats-sub-registrar= to =library/facet_catalogue.org=: two rows
+   (hpp under include/, cpp under src/messaging/).
+2. Write =cpp_nats_registrar.hpp.mustache= — include guard + free function
+   declaration; both =domain_entity= and =entity= sections.
+3. Write =cpp_nats_registrar.cpp.mustache= — includes + implementation;
+   =list_only= flag controls save/remove/history; =no_history= flag skips
+   history subscription; both model-type sections.
+4. Write =cpp_nats_registrar_hpp.org= and =cpp_nats_registrar_cpp.org=
+   as org literate sources with tangle blocks.
+5. Update =cpp_messaging.org= summary and archetypes table.
+
+* Notes
+
+- *Approach changed at re-apply time.* The original plan targeted the
+  monolithic =facet_catalogue.org= + standalone =cpp_nats_registrar_*.org=
+  literate sources. Between first attempt and re-apply, codegen migrated to
+  the *physical-space graph*: facets/archetypes are now =ores.*.org= docs
+  under =library/templates/= (=#+type: facet|archetype=, =#+facet:=,
+  =#+output:=), discovered by =physical_space.py=. The templates were
+  re-modelled accordingly (see Result).
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1397][#1397]] | [codegen,refdata] Introduce per-entity NATS sub-registrars |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Added the =nats-sub-registrar= codegen facet producing a per-entity
+=<entity>_registrar.hpp/cpp= pair. The hpp declares
+=register_<entity>_handlers()=; the cpp includes only that entity's
+handler header and wires its NATS subjects to the handler instance, so a
+compile failure in one entity's handler cannot block the rest of the
+service.
+
+Re-modelled onto the *physical-space graph* (current codegen):
+
+- =ores.cpp.nats-sub-registrar.org= — facet doc (=#+type: facet=,
+  =#+model_types: domain_entity schema=, =#+facet_group: ores.cpp=).
+- =ores.cpp.nats-sub-registrar.nats_registrar_header.org= and
+  =…nats_registrar_implementation.org= — archetype docs with =#+output:=
+  paths, =#+facet:= back-reference, and the mustache tangle blocks.
+- =generate.py=: =nats-sub-registrar → {ores.cpp.nats-sub-registrar}= added
+  to the =_PROFILE_TO_FACETS= shim.
+- Tangled to =cpp_nats_registrar.{hpp,cpp}.mustache= via
+  =compass build --direct tangle_codegen_templates=.
+- Inventories regenerated (=regenerate_physical_space_inventories.py=):
+  facet now listed in =ores.cpp.org=.
+- =list_only= wires only the list subject; =no_history= skips the history
+  subscription — both documented in the archetype docs.
+
+The meta-pattern is documented under
+[[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]], whose NATS instance section links to
+these archetypes.

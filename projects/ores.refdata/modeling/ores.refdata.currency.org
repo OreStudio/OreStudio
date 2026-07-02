@@ -223,6 +223,7 @@ drop function if exists ores_refdata_validate_currency_fn;
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
+:no_history:      true
 :END:
 
 ** Repository

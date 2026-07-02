@@ -110,6 +110,7 @@ std::string("Test identifier")
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
+:no_history:      true
 :END:
 
 ** Repository

@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 287FF186-24CC-40D3-95B2-CEA12E3B6F3F
+:END:
+#+title: ores.cpp.nats-sub-registrar
+#+description: Per-entity NATS sub-registrar pair wiring an entity's subjects to its handler.
+#+type: facet
+#+model_types: domain_entity schema
+#+level: cross
+#+facet_group: ores.cpp
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-06-30
+#+updated: 2026-06-30
+
+This page is the literate source for the =ores.cpp.nats-sub-registrar=
+facet of the codegen template library. Each section documents one
+template and holds its source in a =mustache= block tangled to the
+sibling =.mustache= file consumed by =generator.py=. The =.mustache=
+files are generated artefacts — edit this document, then run the tangle
+(=compass build --direct tangle_codegen_templates=).
+
+* Summary
+
+Two templates forming the per-entity NATS sub-registrar pair. The header
+declares =register_<entity>_handlers()=; the implementation includes only
+that entity's handler header and wires the entity's NATS subjects to the
+handler instance. The top-level service registrar delegates to each
+sub-registrar, so a compile failure in one entity's handler cannot block
+registration of the rest. Consumed by the =nats-sub-registrar= profile.
+
+* The ores.cpp.nats-sub-registrar facet
+
+Projects the entity model onto its messaging registration surface. It
+consumes the same =domain_entity= / =entity= model the =nats-handler=
+facet does, and is the wiring counterpart to that handler: the handler
+defines the operations, this facet subscribes them to subjects.
+
+* Mustache incantations
+
+The implementation template branches on two model flags lifted from the
+entity's C++ =** Flags= drawer:
+
+- =no_history= — skip the history subject subscription. Set on entities
+  whose protocol/handler has no history operation.
+- =list_only= — wire only the list subject. Set on read-only lookup
+  entities.
+
+* Templates
+
+One subheading per template, in the archetype docs below.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:5C3821E7-8D62-4DF7-B192-02B79B742DC4][ores.cpp.nats-sub-registrar.nats_registrar_header]] | Per-entity sub-registrar header declaring =register_<entity>_handlers()=. =nats-sub-registrar= profile. |
+| [[id:5C833D81-AF75-438F-A145-40BE3B93225D][ores.cpp.nats-sub-registrar.nats_registrar_implementation]] | Per-entity sub-registrar implementation wiring NATS subjects to the handler. =nats-sub-registrar= profile. |
+
+* See also
+
+- [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the architecture meta-pattern this facet is the NATS instance of.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.
+- [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]] — the handler this sub-registrar wires up.

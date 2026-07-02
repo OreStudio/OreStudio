@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 2DFD3188-C5DA-4180-AE79-A5579F281BB2
+:END:
+#+title: contact_information entities lack a NATS handler — no sub-registrar
+#+description: The nats-sub-registrar codegen profile excludes counterparty_contact_information and party_contact_information: both have an api protocol (get/save/delete) but no generated <entity>_handler.hpp in ores.refdata.core/messaging, so a per-entity registrar cannot reference a handler type. They were excluded when generating sub-registrars for refdata entities (Task-ID 818E9AC0-DF64-4480-BB7C-6132D8CA8B0F). Decide whether these aggregates should expose a NATS handler of their own (then generate handler + registrar) or remain managed via their parent party/counterparty handler (then they are intentionally registrar-less). Note: neither carries a history protocol either.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:nats:refdata:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

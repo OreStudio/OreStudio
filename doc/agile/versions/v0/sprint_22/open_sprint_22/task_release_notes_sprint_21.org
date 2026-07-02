@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 5076E124-409F-4D79-B207-3CD59968D4AA
+:END:
+#+title: Task: Generate release notes for Sprint 21
+#+description: Generate ORE Studio release notes from merged PRs and the closing sprint 21 backlog, tag main, and open a draft GitHub release.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_22:sprint_22:v0:
+#+owner: marco
+#+branch: feature/release-notes-sprint-21
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce the release notes for Sprint 21, now that it is closed:
+summarise merged PRs and the closed sprint 21 backlog into release
+notes, tag =main=, and open a draft GitHub release. Use the
+=agile-add-release-notes= skill.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- Release notes document generated covering Sprint 21's merged PRs
+  and closed backlog.
+- =main= tagged.
+- Draft GitHub release opened.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

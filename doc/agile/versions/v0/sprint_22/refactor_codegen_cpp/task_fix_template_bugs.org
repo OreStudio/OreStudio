@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: F7B3E1D9-6A4C-4F2B-7E8D-1C5A9B3F7D2E
+:END:
+#+title: Task: Fix C++ template bugs
+#+description: Fix the include guard regression and any other systematic template bugs identified in the drift audit. Verify all templates produce correct output before any bulk regeneration.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_22:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr: 963
+#+blocked_on: A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F
+#+blocked_since:
+#+created: 2026-05-30
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix every systematic template bug identified in [[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift and build drift
+catalog]]. One known bug must be fixed before any bulk regeneration can start:
+
+** Known bug: include guard regression
+
+The C++ domain type header templates generate include guards using the =component_include=
+path when available. A pre-existing bug constructs the guard symbol incorrectly:
+
+- *Template emits*: =ORES_REFDATA_DOMAIN_ROUNDING_TYPE_HPP=
+- *Correct guard*: =ORES_REFDATA_API_DOMAIN_ROUNDING_TYPE_HPP=
+
+The =_API_= segment is derived from the last part of =component_include= (=refdata.api=
+→ =API=), but the current template logic drops it. This affects every model that sets
+=component_include= to a path ending in =.api=.
+
+The fix must:
+1. Locate the include guard construction in the affected header templates.
+2. Correct the symbol to include the =API= (or =CORE=) segment from =component_include=.
+3. Verify the fixed guard matches what is in the production headers.
+
+Any additional bugs found in the drift audit are fixed in this task too.
+
+Template bug fixes must be completed *before* any bulk regeneration in Task 5, because
+regenerating with a buggy template would corrupt production include guards.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | None.    |
+| Last touched | 2026-05-30                             |
+
+* Acceptance
+
+- Include guard regression fixed: =ORES_REFDATA_API_DOMAIN_*= (not =ORES_REFDATA_DOMAIN_*=)
+  generated for models with =component_include= ending in =.api=.
+- All other systematic template bugs from the drift audit fixed.
+- Dry-run across all 75 models produces no malformed include guards.
+- Template fixes verified by checking at least one production header per component.
+- No change to template behaviour for models that do not use =component_include= (guard
+  construction for those models is unchanged).
+- Findings recorded in =* Result= section.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/963][#963]] | [codegen] Org-mode entity model POC + migration story scaffold |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =Now= field should be =Not yet started.= for BACKLOG tasks, not =Nothing.= | task_fix_template_bugs.org | Fixed | PR #940 round 1. |
+
+* Result
+
+** Include guard fix
+
+14 header templates updated to use =component_include_upper= (api files) and
+=component_core_upper= (core files) in their =#ifndef= / =#define= include guards,
+replacing the incorrect =component_upper= (which dropped the =.api= / =.core=
+segment).
+
+Templates fixed with =component_include_upper=:
+
+| Template | Guard segment |
+|----------+---------------|
+| =cpp_domain_type_class.hpp= | =ORES_{{component_include_upper}}_DOMAIN_...= |
+| =cpp_domain_type_class_non_temporal.hpp= | =ORES_{{component_include_upper}}_DOMAIN_...= |
+| =cpp_domain_type_json_io.hpp= | =ORES_{{component_include_upper}}_DOMAIN_..._JSON_IO_...= |
+| =cpp_domain_type_table.hpp= | =ORES_{{component_include_upper}}_DOMAIN_..._TABLE_...= |
+| =cpp_domain_type_table_io.hpp= | =ORES_{{component_include_upper}}_DOMAIN_..._TABLE_IO_...= |
+| =cpp_domain_type_generator.hpp= | =ORES_{{component_include_upper}}_..._GENERATOR_...= |
+| =cpp_protocol.hpp= (both =domain_entity= and =entity= sections) | =ORES_{{component_include_upper}}_MESSAGING_..._PROTOCOL_...= |
+
+Templates fixed with =component_core_upper=:
+
+| Template | Guard segment |
+|----------+---------------|
+| =cpp_domain_type_entity.hpp= | =ORES_{{component_core_upper}}_REPOSITORY_..._ENTITY_...= |
+| =cpp_domain_type_entity_non_temporal.hpp= | =ORES_{{component_core_upper}}_REPOSITORY_..._ENTITY_...= |
+| =cpp_domain_type_mapper.hpp= | =ORES_{{component_core_upper}}_REPOSITORY_..._MAPPER_...= |
+| =cpp_domain_type_mapper_non_temporal.hpp= | =ORES_{{component_core_upper}}_REPOSITORY_..._MAPPER_...= |
+| =cpp_domain_type_repository.hpp= | =ORES_{{component_core_upper}}_REPOSITORY_..._REPOSITORY_...= |
+| =cpp_domain_type_repository_non_temporal.hpp= | =ORES_{{component_core_upper}}_REPOSITORY_..._REPOSITORY_...= |
+| =cpp_service.hpp= | =ORES_{{component_core_upper}}_SERVICE_..._SERVICE_...= |
+
+Backward compatibility: for models without =component_include= / =component_core=
+set, both variables default to =component=, so guard format is unchanged.
+
+Spot-checked against =rounding_type= (all 18 files manually corrected in a prior
+sprint — template now matches production exactly). Also verified =iam/tenant=.
+
+All 12 C++ components dry-run clean (zero errors, zero warnings):
+=analytics-cpp=, =compute-cpp=, =controller-cpp=, =database-cpp=, =dq-cpp=,
+=iam-cpp=, =refdata-cpp=, =reporting-cpp=, =scheduler-cpp=, =trading-cpp=,
+=workflow-cpp=, =workspace-cpp=.

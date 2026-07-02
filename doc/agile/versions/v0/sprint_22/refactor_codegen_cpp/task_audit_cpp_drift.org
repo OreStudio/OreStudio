@@ -1,0 +1,338 @@
+:PROPERTIES:
+:ID: A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F
+:END:
+#+title: Task: Audit C++ template drift and build drift catalog
+#+description: Run codegen for all 75 _domain_entity.json models; collect diffs against the repo; classify each diff as clean / cosmetic / additive / breaking / path-error; produce a catalog table.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_22:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr: 942
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-30
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run =codegen.py generate --model X --profile all-cpp= for every =_domain_entity.json=
+model in =projects/ores.codegen/models/=. Collect the diff between what the generator
+produces and what is currently in the repository. Classify each per-model diff as one of:
+
+| Category | Definition |
+|----------+------------|
+| =clean= | Zero diff. Template and production agree byte-for-byte. |
+| =cosmetic= | Whitespace, comment rewrap, copyright year, or other non-semantic changes only. |
+| =additive= | New method, member, or construct added; no existing production API removed or renamed. |
+| =breaking= | Existing production API renamed, removed, or signature-changed. |
+| =path-error= | Generator writes to wrong directory due to missing or incorrect =component_include= / =component_core=. |
+
+A model may fall into multiple categories (e.g., =additive= + =breaking=). The primary
+category is the worst one present.
+
+The catalog is the primary deliverable that drives every subsequent task in the story.
+It makes the full scope visible before any code is changed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | None. |
+| Last touched | 2026-05-30                             |
+
+* Acceptance
+
+- All 75 =_domain_entity.json= models processed.
+- Per-model classification recorded in the =* Result= drift catalog table.
+- All breaking changes itemised with: method name, change type, and affected callers (file
+  paths and component names).
+- All path-errors itemised with: model file, current =component= value, and the correct
+  =component_include= / =component_core= target.
+- Known issues from [[id:E8890097-FAE9-40F8-B823-FCE23BAFD6C5][Verify and fix codegen for currency and auxiliaries]] confirmed or updated.
+- Findings recorded in =* Result= section.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/942][#942]] | [refactor] C++ template drift catalog (Task 1) |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =Now= field should be =Not yet started.= for BACKLOG tasks, not =Nothing.= | task_audit_cpp_drift.org | Fixed | PR #940 round 1. |
+| 2 | =ctx.workspace_id()= needs explicit string cast for database column comparison (×3) | book_repository.cpp | Declined | =ctx.workspace_id()= returns =const std::string&=; no cast needed. PR #942 round 1. |
+| 3 | =Now= field of DONE task must be =Nothing.= | task_audit_cpp_drift.org | Fixed in 513f1173d | PR #942 round 1. |
+
+* Result
+
+** Summary statistics
+
+| Category      | Count | Notes |
+|---------------+-------+-------|
+| =clean=       |     1 | refdata/book — template and repo agree exactly |
+| =cosmetic=    |     0 | — |
+| =additive=    |    16 | Template generates files not yet in repo (analytics ×4, trading instruments ×12) |
+| =breaking=    |    15 | API renamed, removed, or signature changed in existing files |
+| =path-error=  |    43 | Missing =component_include=/=component_core= in model; wrong output dir |
+| *Total*       |    *75* | |
+
+Edge case: =database/database_info= falls in the 43 path-errors but generates to
+[[proj:projects/ores.database][=projects/ores.database/=]] which is correct — =ores.database= is a flat component with
+no api/core split. It needs a separate diff-check (not a path-error fix) and is noted
+below.
+
+** Drift catalog
+
+All 75 models, sorted by component then entity. Primary category is the worst one
+present. =component_include= / =component_core= values shown only for path-error
+rows.
+
+*** analytics (4 models — additive)
+
+| Entity | Category | Diff detail |
+|--------+----------+-------------|
+| =pricing_engine_type= | additive | Template generates =pricing_engine_type_table_io.hpp/.cpp=; neither exists in repo. |
+| =pricing_model_config= | additive | Template generates =pricing_model_config_table_io.hpp/.cpp=; neither exists in repo. |
+| =pricing_model_product= | additive | Template generates =pricing_model_product_table_io.hpp/.cpp=; neither exists in repo. |
+| =pricing_model_product_parameter= | additive | Template generates table_io pair; neither exists in repo. |
+
+All four already carry correct =component_include: "analytics.api"= and
+=component_core: "analytics.core"=.
+
+*** compute (6 models — path-error)
+
+All are missing =component_include= / =component_core=. Codegen writes to
+[[proj:projects/ores.compute][=projects/ores.compute/=]] but the correct split is =ores.compute.api= /
+=ores.compute.core=.
+
+| Entity | Correct component_include | Correct component_core |
+|--------+---------------------------+------------------------|
+| =app= | =compute.api= | =compute.core= |
+| =app_version= | =compute.api= | =compute.core= |
+| =batch= | =compute.api= | =compute.core= |
+| =host= | =compute.api= | =compute.core= |
+| =result= | =compute.api= | =compute.core= |
+| =workunit= | =compute.api= | =compute.core= |
+
+*** controller (2 models — path-error)
+
+| Entity | Correct component_include | Correct component_core |
+|--------+---------------------------+------------------------|
+| =service_definition= | =controller.api= | =controller.core= |
+| =service_instance= | =controller.api= | =compute.core= |
+
+*** database (1 model — edge case)
+
+| Entity | Category | Notes |
+|--------+----------+-------|
+| =database_info= | edge case | =ores.database= is flat — no api/core split. Codegen writes to the correct path. Full diff check deferred to a separate task. Some template-generated files (table_io, generators/, protocol) do not yet exist in repo and would be additive. |
+
+*** dq (4 models — path-error)
+
+| Entity | Correct component_include | Correct component_core |
+|--------+---------------------------+------------------------|
+| =badge_definition= | =dq.api= | =dq.core= |
+| =badge_severity= | =dq.api= | =dq.core= |
+| =code_domain= | =dq.api= | =dq.core= |
+| =dataset_bundle= | =dq.api= | =dq.core= |
+
+*** iam (4 models — path-error)
+
+| Entity | Correct component_include | Correct component_core |
+|--------+---------------------------+------------------------|
+| =account_type= | =iam.api= | =iam.core= |
+| =tenant= | =iam.api= | =iam.core= |
+| =tenant_status= | =iam.api= | =iam.core= |
+| =tenant_type= | =iam.api= | =iam.core= |
+
+*** refdata (25 models)
+
+Models with =component_include= already set are the breaking/additive/clean cases.
+Models without it are path-errors.
+
+**** refdata — clean (1)
+
+| Entity | Notes |
+|--------+-------|
+| =book= | Template and repo agree byte-for-byte across all 18 generated files. |
+
+**** refdata — breaking: convention mappers (9)
+
+Only =<entity>_mapper.cpp= differs. The template generates:
+
+#+begin_src cpp
+r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id)
+    .value_or(utility::uuid::tenant_id::system());
+#+end_src
+
+Production has:
+
+#+begin_src cpp
+r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+#+end_src
+
+Semantic difference: template silently substitutes the system UUID on a null
+tenant_id; production throws =std::bad_optional_access=. No external callers of
+mappers directly (called only by the repository layer).
+
+| Entity |
+|--------|
+| =cds_convention= |
+| =deposit_convention= |
+| =fra_convention= |
+| =fx_convention= |
+| =ibor_index_convention= |
+| =ois_convention= |
+| =overnight_index_convention= |
+| =swap_convention= |
+| =zero_convention= |
+
+**** refdata — breaking: type-entity services (3)
+
+14 files differ for each. Key differences in service headers:
+
+1. Header guard: =ORES_REFDATA_SERVICE_= → =ORES_REFDATA_CORE_SERVICE_= (cosmetic)
+2. Single-entity lookup: =get_type()= → =find_type()= (rename; no external callers found)
+3. Missing bulk methods: template omits =save_types()= and =remove_types()= (removed from template; no external callers for refdata services)
+4. Protocol NATS subjects: underscores vs. hyphens (e.g., =currency_market_tiers.list= vs. =currency-market-tiers.list=)
+5. Protocol response field names changed (e.g., =types= → =currency_market_tiers=)
+
+| Entity |
+|--------|
+| =currency_market_tier= |
+| =monetary_nature= |
+| =rounding_type= |
+
+**** refdata — breaking: portfolio
+
+6 files differ (=generator.cpp=, =mapper.cpp=, =repository.cpp=, =service.hpp=,
+=service.cpp=, =protocol.hpp=). Key differences in =portfolio_service.hpp=:
+
+1. Header guard format (cosmetic)
+2. =get_portfolio(const std::string&)= → =find_portfolio(const boost::uuids::uuid&)= (rename + param type change; no external callers found)
+3. =save_portfolios()= bulk method missing from template
+
+**** refdata — path-error (11)
+
+| Entity | Correct component_include | Correct component_core |
+|--------+---------------------------+------------------------|
+| =business_unit= | =refdata.api= | =refdata.core= |
+| =contact_type= | =refdata.api= | =refdata.core= |
+| =counterparty= | =refdata.api= | =refdata.core= |
+| =counterparty_contact_information= | =refdata.api= | =refdata.core= |
+| =counterparty_identifier= | =refdata.api= | =refdata.core= |
+| =party= | =refdata.api= | =refdata.core= |
+| =party_contact_information= | =refdata.api= | =refdata.core= |
+| =party_identifier= | =refdata.api= | =refdata.core= |
+| =party_id_scheme= | =refdata.api= | =refdata.core= |
+| =party_status= | =refdata.api= | =refdata.core= |
+| =party_type= | =refdata.api= | =refdata.core= |
+
+*** reporting (4 models)
+
+**** reporting — breaking: report_definition
+
+8 files differ. Key differences in =report_definition_service.hpp=:
+
+1. Missing =ORES_REPORTING_CORE_EXPORT= macro and =export.hpp= include
+2. =get_definition()= → =find_definition()= (rename; *3 callers*: =report_definition_handler.hpp= ×2, =report_instance_handler.hpp= ×1, all in =ores.reporting.core=)
+3. Parameter change: =save_definition(const domain::report_definition& v)= → =save_definition(domain::report_definition v)= (by-value vs. const-ref)
+
+**** reporting — path-error (3)
+
+| Entity | Correct component_include | Correct component_core |
+|--------+---------------------------+------------------------|
+| =concurrency_policy= | =reporting.api= | =reporting.core= |
+| =report_instance= | =reporting.api= | =reporting.core= |
+| =report_type= | =reporting.api= | =reporting.core= |
+
+*** scheduler (1 model — path-error)
+
+| Entity | Correct component_include | Correct component_core |
+|--------+---------------------------+------------------------|
+| =job_definition= | =scheduler.api= | =scheduler.core= |
+
+*** trading (21 models)
+
+**** trading — additive: instruments (12)
+
+Template generates a =<entity>_protocol.hpp= file that does not yet exist in the
+repo's messaging directory. All 12 already carry correct =component_include= /
+=component_core=. The generated protocol files need to be committed.
+
+| Entity | Missing file |
+|--------+-------------|
+| =balance_guaranteed_swap_instrument= | =balance_guaranteed_swap_instrument_protocol.hpp= |
+| =callable_swap_instrument= | =callable_swap_instrument_protocol.hpp= |
+| =cap_floor_instrument= | =cap_floor_instrument_protocol.hpp= |
+| =fra_instrument= | =fra_instrument_protocol.hpp= |
+| =inflation_swap_instrument= | =inflation_swap_instrument_protocol.hpp= |
+| =knock_out_swap_instrument= | =knock_out_swap_instrument_protocol.hpp= |
+| =lifecycle_event= | =lifecycle_event_protocol.hpp= |
+| =rpa_instrument= | =rpa_instrument_protocol.hpp= |
+| =swaption_instrument= | =swaption_instrument_protocol.hpp= |
+| =trade_identifier= | =trade_identifier_protocol.hpp= |
+| =trade= | =trade_generator.hpp=, =trade_generator.cpp= |
+| =vanilla_swap_instrument= | =vanilla_swap_instrument_protocol.hpp= |
+
+**** trading — path-error: convention types (9)
+
+| Entity | Correct component_include | Correct component_core |
+|--------+---------------------------+------------------------|
+| =business_day_convention_type= | =trading.api= | =trading.core= |
+| =day_count_fraction_type= | =trading.api= | =trading.core= |
+| =floating_index_type= | =trading.api= | =trading.core= |
+| =leg_type= | =trading.api= | =trading.core= |
+| =party_role_type= | =trading.api= | =trading.core= |
+| =payment_frequency_type= | =trading.api= | =trading.core= |
+| =trade_id_type= | =trading.api= | =trading.core= |
+| =trade_party_role= | =trading.api= | =trading.core= |
+| =trade_type= | =trading.api= | =trading.core= |
+
+Note: the template does not generate =remove_types()= or =save_types()=. Once
+component_include is added and codegen is re-run for these nine entities, the
+produced service headers will lack those methods. =remove_types()= is called on
+all six templated instantiations in
+=ores.trading.core/messaging/instrument_ref_handler.hpp= (line 141). That call site
+must be updated when the service headers are regenerated.
+
+*** workflow (2 models — path-error)
+
+| Entity | Correct component_include | Correct component_core |
+|--------+---------------------------+------------------------|
+| =workflow_instance= | =workflow.api= | =workflow.core= |
+| =workflow_step= | =workflow.api= | =workflow.core= |
+
+*** workspace (1 model — breaking)
+
+10 files differ. Key differences in =workspace_service.hpp=:
+
+1. Missing =ORES_WORKSPACE_CORE_EXPORT= macro and =export.hpp= include
+2. Header guard format (cosmetic)
+3. Logger name string differs (cosmetic)
+4. =create_workspace()= method missing from template; 1 caller in =ores.workspace.core/messaging/workspace_handler.hpp= (line 122)
+5. Additional methods present in production service but absent from template
+
+** Breaking changes — caller index
+
+| Change | Type | Caller file | Component |
+|--------+------+-------------+-----------|
+| =find_definition()= renamed to =get_definition()= | method rename | =ores.reporting.core/messaging/report_definition_handler.hpp= (×2) | ores.reporting.core |
+| =find_definition()= renamed to =get_definition()= | method rename | =ores.reporting.core/messaging/report_instance_handler.hpp= (×1) | ores.reporting.core |
+| =create_workspace()= missing from template | method removed | =ores.workspace.core/messaging/workspace_handler.hpp= (line 122) | ores.workspace.core |
+| =remove_types()= missing from template | method removed | =ores.trading.core/messaging/instrument_ref_handler.hpp= (line 141) | ores.trading.core |
+
+All other breaking differences (=find_type()= rename, =save_types()= removal,
+protocol field renames, header guard format) have *no external callers* and are
+internal to the generated service headers.

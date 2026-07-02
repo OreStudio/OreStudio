@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: AA183987-2F31-4C54-B17A-85C88EC8E459
+:END:
+#+title: Task: Apply safe drift to workflow-cpp
+#+description: Apply safe drift to the workflow-cpp component using the pattern established by the refdata-cpp pilot. No model changes; only stateful-to-stateless repository migration via regeneration. Build and test green, raise PR.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_22:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr:
+#+blocked_on: C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story.
+
+* Goal
+
+Apply safe drift to =workflow-cpp= following the [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][refdata-cpp pilot]] pattern.
+No model changes expected; the main change is stateful → stateless repository
+migration through regeneration.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]] |
+| Next         | Start once refdata pattern is merged.  |
+| Last touched | 2026-05-31                             |
+
+* Acceptance
+
+- No model changes.
+- =workflow_instance_repository= and =workflow_step_repository= migrated to
+  stateless context-per-call API.
+- =cmake --build --preset linux-clang-debug-make= passes.
+- =ctest -R "ores\.workflow"= passes.
+- Final zero-diff invariant holds.
+- PR raised, reviewed, merged.
+
+* Plan
+
+1. =git rebase origin/main=.
+2. =projects/ores.codegen/codegen.sh regenerate --component workflow-cpp --profile all-cpp=.
+3. Inspect repository diffs — should be stateful → stateless migration only.
+4. =cmake --build --preset linux-clang-debug-make=. If callers of
+   stateful API break, restore individually and document.
+5. =ctest --test-dir build/output/linux-clang-debug-make -R "ores\.workflow" --output-on-failure=.
+6. Re-run regeneration; =git diff --exit-code= clean.
+7. Commit + push + raise PR.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 7F9C0F29-4268-4B62-A1BB-2153ECF0A858
+:END:
+#+title: Story: Commission: currency
+#+description: Commission currency and its ores.refdata auxiliaries (rounding_type, monetary_nature, currency_market_tier) across all layers: SQL, Qt, shell, CLI, documentation.
+#+type: story
+#+level: s2
+#+filetags: :product:refdata:commissioning:currency:sprint_22:v0:
+#+created: 2026-05-29
+#+updated: 2026-06-12
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Commission =currency= and its three ores.refdata auxiliary types — =rounding_type=,
+=monetary_nature=, and =currency_market_tier= — across all access layers: verify SQL DDL,
+verify the Qt UI end-to-end post-NATS migration, verify existing shell and CLI commands,
+fix any regressions found, and add documentation (manual chapter, recipes, NATS reference).
+File backlog captures for Wt and HTTP support. Auxiliary types are commissioned using the
+same per-layer approach as the primary entity; they may have fewer moving parts but the
+same checklist applies.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                                |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Auxiliary codegen synced. Currency-entity codegen sync (C++ core, messaging, Qt) and Wt/HTTP captures remain. |
+| Waiting on    | Nothing.                               |
+| Next          | Sync C++ core codegen for currency; then messaging; then Qt; then Wt/HTTP captures. |
+| Last touched  | 2026-06-26                             |
+
+* Acceptance
+
+The following acceptance criteria apply to =currency= and, where the layer exists, to each
+auxiliary type (=rounding_type=, =monetary_nature=, =currency_market_tier=).
+
+*SQL*
+- currency DDL verified against all DB-layer checklist criteria.
+- rounding_type, monetary_nature, currency_market_tier DDL verified against same checklist.
+- Any missing columns, indexes, or constraints fixed or filed as captures.
+
+*Qt*
+- Currency MDI list window loads and displays records correctly.
+- Currency detail window: edit and save round-trips without error (dropdowns for rounding_type, monetary_nature, currency_market_tier populated correctly).
+- Currency history window: shows change history for the entity.
+- Currency delete command: removes the record; history is preserved.
+- Currency eventing: a change made in one connected session appears in a second session without manual refresh.
+- rounding_type, monetary_nature, currency_market_tier Qt windows (if they exist): loads, detail, history, delete verified.
+
+*Shell*
+- currency: list, add, remove, history commands verified working post-NATS.
+- rounding_type, monetary_nature, currency_market_tier: shell commands verified or implemented.
+
+*CLI*
+- currency: list, add, remove commands verified working post-NATS.
+- rounding_type, monetary_nature, currency_market_tier: CLI commands verified or implemented.
+
+*Documentation*
+- Manual chapter for currency documents Qt windows, shell, and CLI commands.
+- CLI recipes for currency and auxiliaries created or updated.
+- Shell recipes for currency and auxiliaries created.
+- NATS message reference documents subjects and types for currency and auxiliaries.
+- Backlog captures filed for Wt and HTTP support (currency and auxiliaries).
+- All regressions found are fixed inline or filed as captures.
+- Site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:000FCB22-B1ED-4E09-AB47-03EB8A361B41][Appraise currency across all layers and produce evaluation checklist]] | DONE | 2026-05-29 | 2026-05-29 | Assess each layer; produce reusable entity evaluation checklist. |
+| [[id:F66CC098-A23B-4ECC-96A4-A99AF94BA838][Verify currency SQL against evaluation checklist]] | DONE | 2026-05-29 | 2026-05-29 | Inspect DDL against DB-layer checklist criteria; fix any gaps. |
+| [[id:E8890097-FAE9-40F8-B823-FCE23BAFD6C5][Verify and fix codegen for currency and auxiliaries]] | DONE | 2026-05-29 | 2026-05-30 | SQL zero-diff; component path fix in three auxiliaries; currency_domain_entity.json confirmed unnecessary; C++ drift filed. |
+| [[id:1816FAA3-B987-4307-B265-EBF6EDEE93AA][Verify and fix currency CLI commands]] | DONE | 2026-05-29 | 2026-05-29 | Confirm list/add/remove exist; implement missing; run against live service. |
+| [[id:3D394DE4-7101-4E4B-A774-DD583BC5F0B0][Verify currency shell commands and NATS integration]] | DONE | 2026-05-29 | 2026-05-31 | Run list/add/remove/history in shell; validates NATS end-to-end. |
+| [[id:E276A541-93EA-46EC-8CD8-D40803FEE587][Verify currency Qt UI end-to-end post-NATS]] | DONE | | 2026-06-12 | Manually test MDI list, detail, history, delete, eventing. Blocked on timestamp unification story. |
+| [[id:C6870B89-A806-4657-B75B-7B333946281D][Fix duplicate refdata rows: add tenant filters to auxiliary repositories]] | DONE | 2026-06-04 | 2026-06-05 | Rounding/monetary-nature/market-tier repos read unfiltered; apply change_reason tenant-filter pattern. |
+| [[id:B3788A76-208E-4422-B277-17DF8FF3A78C][Write currency documentation (manual chapter, recipes, NATS reference)]] | DONE | 2026-06-06 | 2026-06-06 | Manual chapter, CLI recipe, shell recipe, NATS message reference. |
+| [[id:27A5031E-0DA1-49D6-8A13-7C0812C8E40B][Sync SQL codegen for currency and auxiliaries]] | DONE | 2026-06-26 | 2026-06-26 | Re-run SQL codegen for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
+| [[id:D42C4A30-4B29-4526-BD83-359F0FC10731][Sync C++ core codegen for currency auxiliaries]] | DONE | | 2026-06-26 | Re-run domain, repository, service, and generator profiles for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
+| [[id:00B62E70-D961-4DFA-BAB4-BB3488B31C86][Sync C++ messaging codegen for currency auxiliaries]] | DONE | 2026-06-25 | 2026-06-26 | Re-run protocol, nats-eventing, and nats-handler profiles for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
+| [[id:10B1976B-A785-44B0-8DFA-F315ADFD4B8B][Sync Qt codegen for currency auxiliaries]] | DONE | 2026-06-25 | 2026-06-26 | Re-run Qt profile for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
+| [[id:84522F09-7044-4343-92E5-80588C2D325F][Define and implement entity view document type]] | DONE | | 2026-06-12 | Create entity view docs listing all artefacts per entity across every projection and component, with proj: links to artefacts and codegen archetypes; implement currency as the first example. |
+| [[id:8A84D304-431A-45CF-9E3C-6AC649F6A62F][Sync C++ core codegen for currency]] | BACKLOG | | | Re-run domain, repository, service, and generator profiles for currency; diff against repo; fix templates or code per drift classification. |
+| [[id:8B15EE84-1727-43B5-85E4-96E58F1BE03B][Sync C++ messaging codegen for currency]] | BACKLOG | | | Re-run protocol, nats-eventing, and nats-handler profiles for currency; diff against repo; fix templates or code per drift classification. |
+| [[id:EA647CBC-18C7-4555-9A49-FBF55BC192FD][Sync Qt codegen for currency]] | BACKLOG | | | Re-run the qt profile for currency; diff the 12 output files against the repo; fix templates or code per drift classification. |
+| [[id:3CE7779C-7D20-4203-A4E9-1FBDBFAEF537][File Wt and HTTP gap captures for currency]] | BACKLOG | | | Identify Wt UI and HTTP handler gaps for currency discovered during commissioning and file them as backlog captures for future work. |
+| [[id:F8A8163A-BC1F-4702-B920-1002ED764CEF][Migrate currency model from ores.codegen.table to ores.codegen.entity]] | DONE | 2026-06-26 | 2026-06-26 | Convert currency_table.org from the SQL-only ores.codegen.table type to the unified ores.codegen.entity type so that all currency code (C++, SQL, Qt, NATS) can be generated from a single model. |

@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 6682E5F1-DCE2-42E3-8FE2-E5FC89E576C1
+:END:
+#+title: Task: Write party_type documentation (manual chapter, NATS reference)
+#+description: Add the party_type entity chapter to the user manual covering all Qt windows, shell commands, and CLI commands; document the NATS message types.
+#+type: task
+#+level: s1
+#+filetags: :commission_party_type:sprint_22:v0:
+#+owner: marco
+#+branch: feature/write-documentation-party-type
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write the =party_type= documentation: a manual chapter mirroring the
+currencies chapter — entity description, Qt windows, shell and CLI
+commands — wired into =user_manual.org=; extend the refdata NATS
+message reference with party_type subjects and the
+=party_type_changed= event.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                              |
+| Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
+| Now          | Abandoned — covered by broader party documentation work. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-30                               |
+
+* Acceptance
+
+- Manual chapter exists, covers the entity end to end, and is wired into =user_manual.org=; the site builds cleanly.
+- NATS message reference documents =party_type= request/response subjects and the =party_type_changed= event.
+- Shell and CLI recipe coverage is referenced, not duplicated.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Abandoned. Party type documentation will be written as part of the broader
+party entities user guide rather than as a standalone chapter. See:
+
+- [[id:6111FDF8-96E6-4C40-88BD-C756B6841F85][Create a user guide for ores.qt]] — umbrella story for all Qt manual chapters.
+- [[id:40B50055-EB09-4B5B-B26C-24F0F9CD1C5B][Entity manual: add shell documentation per chapter]] — shell/CLI coverage per chapter.
+

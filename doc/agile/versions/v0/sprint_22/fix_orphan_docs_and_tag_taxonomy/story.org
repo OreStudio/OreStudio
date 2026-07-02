@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 20998FA2-2073-4956-AE46-EFDD44C0CFD1
+:END:
+#+title: Story: Fix orphan documents and introduce tag taxonomy
+#+description: Fix orphan docs in the org-roam graph (memory catalogue, manual chapter, codegen fixtures, trading entity); create a tag inventory document linked from document_types.org; add compass tag validation.
+#+type: story
+#+level: s2
+#+filetags: :documentation:codegen:compass:sprint_22:v0:
+#+created: 2026-06-11
+#+updated: 2026-06-12
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Clean up the org-roam link graph so every document with an =:ID:= is
+reachable by at least one inbound link, and introduce a canonical tag
+taxonomy so every filetag used in the repo is documented, described,
+and validated. The work has two phases: (1) fix four orphan clusters
+— the memory catalogue index, the shell-provisioning manual chapter,
+the codegen sample-composite test fixtures, and the trading
+payment-frequency entity; (2) create a tag inventory document and
+wire compass to reject unknown tags at CI time.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start task: fix memory catalogue.      |
+| Last touched  | 2026-06-11                               |
+
+* Acceptance
+
+- =memory.org= catalogue lists every file under =doc/llm/memory/=;
+  no orphans remain in that subtree.
+- =chapter_shell_provisioning.org= is linked from =user_manual.org=
+  via an =[[id:...]]= link and appears in the built HTML manual.
+- =ores.sample_composite.api=, =ores.sample_composite=,
+  =ores.sample_composite.core=, and =ores.trading.payment_frequency_type=
+  each have at least one inbound =[[id:...]]= link; orphan detector reports
+  zero findings for these documents.
+- A tag inventory document exists under =doc/meta/=, lists every
+  filetag in use across the repo in logical groups with descriptions,
+  and is linked from =document_types.org=.
+- =compass lint= (or equivalent) rejects a document whose =#+filetags:=
+  contains a tag not present in the inventory.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4A97AEEB-2574-4498-985D-5FECC5533A23][Fix memory catalogue]] | DONE | | 2026-06-12 | Audit doc/llm/memory/*.org files against the memory.org catalogue index; add missing entries for all memory files not yet listed. |
+| [[id:79FC93F4-1C7E-4352-B758-C1744B112AC5][Fix orphan links]] | BACKLOG | | | Add id: links to chapter_shell_provisioning.org from user_manual.org; link ores.sample_composite.* test fixtures from a parent doc; investigate and fix ores.trading.payment_frequency_type orphan status. |
+| [[id:3A0C104F-58A1-4829-8B21-50BD70DE1CD4][Create tag inventory]] | BACKLOG | | | Create a doc/meta/ document that inventories all filetags in logical groups with descriptions; link it from document_types.org. |
+| [[id:694C7788-ECBA-4934-B897-47C2EE35386B][Add compass tag validation]] | BACKLOG | | | Add compass validation that checks document filetags against the canonical tag inventory; fail on unknown tags. |
+
+* Decisions
+
+* Out of scope
+
+- Automated link-graph repair; all links are added manually.
+- Renaming or removing existing tags retroactively (inventory first,
+  enforcement second).
+- Orphan documents outside the four identified clusters.

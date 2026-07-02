@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: A5C7C26B-83D1-4035-A495-E5A4F525A107
+:END:
+#+title: Task: SQL variability: TimescaleDB hypertable support
+#+description: Add #+hypertable: true, #+hypertable_partition_column and #+hypertable_chunk_interval frontmatter flags to the entity org schema; extend org_loader.py and core.py to populate sql.hypertable dict; extend the SQL DDL template to emit SELECT create_hypertable(...) when the flag is set.
+#+type: task
+#+level: s1
+#+filetags: :codegen:sql:sprint_22:v0:codegen-sql-variability-marketdata:
+#+owner: marco
+#+branch: feature/sql-variability-hypertable
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-30
+#+updated: 2026-06-30
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Entities can declare themselves as TimescaleDB hypertables in their .org model, and the SQL codegen emits the correct hypertable creation call with partition column and chunk interval.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-30                               |
+
+* Acceptance
+
+- market_observation model sets #+hypertable: true and regenerated SQL includes create_hypertable call byte-identical to the hand-written file (minus comments).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Implemented in commit 4f587b1ab alongside tasks A5C7C26B and 6365026F. All three SQL variability flags (hypertable, bitemporal_trigger, has_gist_exclusion) were co-delivered in a single template pass. Zero diff on existing domain_entity entities verified.

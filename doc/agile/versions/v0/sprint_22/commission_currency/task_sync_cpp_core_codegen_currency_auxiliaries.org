@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: D42C4A30-4B29-4526-BD83-359F0FC10731
+:END:
+#+title: Task: Sync C++ core codegen for currency auxiliaries
+#+description: Re-run domain, repository, service, and generator profiles for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:codegen:cpp:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-12
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ensure the C++ core codegen templates (=domain=, =repository=, =service=, =generator=
+profiles) produce output that matches the repository for =rounding_type=,
+=monetary_nature=, and =currency_market_tier=. Fix templates to match code — not the
+reverse — unless the code is genuinely wrong.
+
+The previous verify-codegen task (2026-05-30) documented a 42-file diff when running
+=--profile all-cpp= on the =refdata-cpp= component. The diff was not committed because
+applying it blindly would break the build (callers use the old API). The known drift
+categories are:
+
+| Change | Template outputs | Repo has | Fix direction |
+|--------+------------------+----------+---------------|
+| Include guard | =ORES_REFDATA_DOMAIN_*= | =ORES_REFDATA_API_DOMAIN_*= | Fix template |
+| Method rename | =get_type= | =find_type= | Fix template (callers unchanged) |
+| =stamp()= removal | no =stamp()= call | has =stamp()= | Investigate; fix template if stamp is removed |
+| Batch method removal | no =save_types=, =remove_types= | has batch methods | Investigate; fix template if methods removed |
+| =display_order = 0= | default initialiser | absent | Fix template (remove default) |
+
+The template migration (cpp group migrated to literate org: 58 templates) may have
+introduced additional drift beyond this list. Run the profiles on each entity and
+produce a complete per-file diff table.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+- =codegen regenerate --component refdata-cpp --profile domain= produces zero diff for
+  =rounding_type=, =monetary_nature=, =currency_market_tier= files.
+- Same for =repository=, =service=, and =generator= profiles.
+- Per-change-category decision recorded: "fix template" or "fix code + justify".
+- No C++ build regressions (callers still compile after any template fixes applied).
+- Findings recorded in =* Result= with a diff table.
+
+* Plan
+
+1. Run each profile (=domain=, =generator=, =repository=, =service=) on =refdata-cpp=
+   component; scope diff to the three auxiliary entities.
+2. Tabulate every changed file with the category of change.
+3. For each category decide direction (template fix vs. code fix).
+4. Fix templates; re-run; iterate until zero diff.
+5. Build the project to verify no regressions.
+6. Commit and raise PR.
+
+* Notes
+
+** Drift summary (2026-06-07)
+
+Only domain headers drifted; repository, service, and generator profiles
+produced zero diff for all three currency auxiliary entities.
+
+| File | Change category | Decision |
+|------+-----------------+----------|
+| =rounding_type.hpp= | =display_order = 0= (default init) | Accept — avoids UB |
+| =rounding_type.hpp= | Trailing space in blank doc line | Accept — template artifact |
+| =monetary_nature.hpp= | =display_order = 0= | Accept |
+| =monetary_nature.hpp= | @brief + description rewrite | Accept — matches org model |
+| =monetary_nature.hpp= | Example values capitalised (Fiat, …) | Accept — matches org model |
+| =currency_market_tier.hpp= | =display_order = 0= | Accept |
+| =currency_market_tier.hpp= | @brief + description rewrite | Accept — matches org model |
+| =currency_market_tier.hpp= | Example values capitalised (G10, …) | Accept — matches org model |
+
+** Profile output path bug
+
+=domain= profile secondary templates (=_json_io=, =_table=, =_table_io=)
+write to =projects/ores.refdata.api/= instead of
+=projects/ores.refdata/api/=. These 400 spurious files were deleted; the
+bug is pre-existing and out of scope for this task. Captured as a known
+limitation of the current profile configuration.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Landed. Three domain headers updated (display_order default init, model-driven
+doc comment updates). Repository, service, and generator profiles zero-diff.
+Profile output path bug noted and deferred.

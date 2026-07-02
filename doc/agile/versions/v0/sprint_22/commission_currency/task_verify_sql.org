@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: F66CC098-A23B-4ECC-96A4-A99AF94BA838
+:END:
+#+title: Task: Verify currency SQL against evaluation checklist
+#+description: Inspect the DDL for currency, rounding_type, monetary_nature, and currency_market_tier against the DB-layer criteria in the entity evaluation checklist: columns, indexes, GIST constraint, temporal pattern, soft-FKs.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:
+#+owner: marco
+#+branch: feature/commission-currency
+#+pr: 1027
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-29
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Inspect =refdata_currencies_create.sql= against every criterion in the DB layer of the
+[[id:897A7156-504D-4581-AD4C-026D643C0838][ores.refdata entity evaluation checklist]]. Record which criteria pass, which fail, and what
+must be added or corrected. Fix any gaps inline or file captures for deferred work.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                 |
+| Last touched | 2026-05-29                               |
+
+* Acceptance
+
+- All DB-layer checklist criteria evaluated for: currency, rounding_type, monetary_nature, currency_market_tier.
+- Standard audit columns confirmed for all four entities.
+- GIST exclusion constraint and temporal pattern confirmed for all four.
+- Natural key and version indexes confirmed for all four.
+- Insert trigger and soft-delete rule confirmed for all four.
+- Validation functions confirmed for all four.
+- Any gaps fixed or filed as captures.
+- Findings recorded in =* Result= section.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1027][#1027]] | [ores.qt,ores.refdata] Commission currency Qt: fix plugin placement, icons, timestamps |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All four DDL files verified against the DB-layer criteria in [[id:897A7156-504D-4581-AD4C-026D643C0838][ores.refdata entity evaluation checklist]].
+No gaps at the DB layer. One gap found at the codegen layer (see below).
+
+The auxiliary types (rounding_type, monetary_nature, currency_market_tier) follow an
+identical structural pattern; currency is richer with entity-specific soft-FK validations
+in its insert trigger.
+
+*Codegen gap:* All three auxiliary types have both =<entity>_domain_entity.json= and
+=<entity>_entity.json= in =projects/ores.codegen/models/refdata/=. Currency has only
+=currency_entity.json= — the =currency_domain_entity.json= is missing. The domain struct
+(=currency.hpp=) may be hand-crafted or generated from the entity model alone. This is a
+drift risk: if the DB schema evolves, the domain struct may not be updated via codegen.
+Filed as a gap in the checklist result; needs a dedicated capture or fix.
+
+** currency (=refdata_currencies_create.sql=) — domain entity
+
+| Criterion | Status | Notes |
+|-----------+--------+-------|
+| Table =ores_refdata_currencies_tbl= | ✓ | |
+| =tenant_id= column | ✓ | Present; validated via =ores_iam_validate_tenant_fn=. Currencies are global but still tenant-scoped in storage. |
+| =version= | ✓ | |
+| =modified_by=, =performed_by= | ✓ | |
+| =change_reason_code=, =change_commentary= | ✓ | |
+| =valid_from=, =valid_to= | ✓ | |
+| CHECK =valid_from < valid_to= | ✓ | |
+| CHECK =iso_code <> ''= | ✓ | |
+| GIST exclusion (tenant_id, iso_code, tstzrange) | ✓ | |
+| Primary key (tenant_id, iso_code, valid_from, valid_to) | ✓ | |
+| Version unique index =currencies_version_uniq_idx= | ✓ | where =valid_to = infinity= |
+| ISO code unique index =currencies_iso_code_uniq_idx= | ✓ | where =valid_to = infinity= |
+| Tenant index =currencies_tenant_idx= | ✓ | where =valid_to = infinity= |
+| Insert trigger with version management | ✓ | |
+| Soft-delete rule | ✓ | |
+| Validation function =ores_refdata_validate_currency_fn= | ✓ | Validates against tenant + system tenant currencies |
+| Soft-FK: =rounding_type= validated | ✓ | |
+| Soft-FK: =monetary_nature= validated | ✓ | |
+| Soft-FK: =market_tier= validated | ✓ | |
+| Soft-FK: =coding_scheme_code= validated (optional) | ✓ | Nullable; validates against =ores_dq_coding_schemes_tbl= |
+| Soft-FK: =change_reason_code= validated | ✓ | |
+
+*Note:* =coding_scheme_code= is present in the DB table but not exposed in the C++
+domain struct (=currency.hpp=). This is a known pattern: the coding scheme link is a DQ
+concern managed at DB level; the application layer treats it as a pass-through. Acceptable.
+
+** rounding_type (=refdata_rounding_types_create.sql=) — auxiliary type
+
+| Criterion | Status | Notes |
+|-----------+--------+-------|
+| Table =ores_refdata_rounding_types_tbl= | ✓ | |
+| =tenant_id= | ✓ | |
+| =version=, =modified_by=, =performed_by= | ✓ | |
+| =change_reason_code=, =change_commentary= | ✓ | |
+| =valid_from=, =valid_to= | ✓ | |
+| =display_order= column | ✓ | Used in validation fn's error message ordering |
+| =description= column | ✓ | |
+| CHECK constraints | ✓ | |
+| GIST exclusion (tenant_id, code, tstzrange) | ✓ | |
+| Primary key, version index, code index, tenant index | ✓ | All present with =where valid_to = infinity= filter |
+| Insert trigger + soft-delete rule | ✓ | |
+| Validation function =ores_refdata_validate_rounding_type_fn= | ✓ | Default: ='Closest'= when null/empty |
+
+** monetary_nature (=refdata_monetary_natures_create.sql=) — auxiliary type
+
+Structurally identical to rounding_type. All criteria pass. Default: ='fiat'= when null/empty.
+
+| Criterion | Status |
+|-----------+--------|
+| All standard columns + =display_order= + =description= | ✓ |
+| GIST constraint, primary key, indexes | ✓ |
+| Insert trigger + soft-delete rule | ✓ |
+| Validation function =ores_refdata_validate_monetary_nature_fn= | ✓ |
+
+** currency_market_tier (=refdata_currency_market_tiers_create.sql=) — auxiliary type
+
+Structurally identical to rounding_type and monetary_nature. All criteria pass. Default: ='g10'= when null/empty.
+
+| Criterion | Status |
+|-----------+--------|
+| All standard columns + =display_order= + =description= | ✓ |
+| GIST constraint, primary key, indexes | ✓ |
+| Insert trigger + soft-delete rule | ✓ |
+| Validation function =ores_refdata_validate_currency_market_tier_fn= | ✓ |
+
+** Summary
+
+No gaps or defects found at the DB layer for any of the four entities. The three auxiliary
+types follow an identical, well-structured pattern. The checklist has been updated to
+formally capture the auxiliary type pattern (=display_order=, =description=, validation
+function) as distinct from domain entity expectations.

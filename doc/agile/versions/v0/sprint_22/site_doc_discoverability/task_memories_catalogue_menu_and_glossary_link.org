@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: F99B5D02-9202-48D2-8155-532E9DC78E5A
+:END:
+#+title: Task: Link memories glossary entry to memories catalogue and add catalogue to site menu
+#+description: Add an org-roam link from the Memory glossary entry to the memories catalogue page, and expose the memories catalogue in the published site navigation menu.
+#+type: task
+#+level: s1
+#+filetags: :site_doc_discoverability:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F306A93-6C30-47AC-BD37-7D762A49B475][Improve site documentation discoverability]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reader who lands on the Memory glossary entry can follow a direct
+link to the memories catalogue without knowing its URL.  A first-time
+visitor browsing the published site menu can reach the memories catalogue
+from the navigation without any prior knowledge of where it lives.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F306A93-6C30-47AC-BD37-7D762A49B475][Improve site documentation discoverability]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- The Memory glossary entry contains an =[[id:...]]= org-roam link pointing to the memories catalogue page.
+- The memories catalogue page appears as a reachable item in the published site navigation menu.
+- No URL knowledge is required to reach the memories catalogue from the site menu.
+- The site builds without error after the changes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

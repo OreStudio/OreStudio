@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: E704B5A9-9BD4-451F-8DDD-E12A4FA4E9C2
+:END:
+#+title: Task: Wire sub-registrars into the top-level registrar
+#+description: Replace the monolithic registrar.cpp body with delegating calls to each per-entity sub-registrar. Remove all direct handler includes from registrar.cpp. Keep the publish-from-dq block which has no per-entity sub-registrar.
+#+type: task
+#+level: s1
+#+filetags: :introduce-per-entity-sub-registrars:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: F8A8163A-BC1F-4702-B920-1002ED764CEF
+:END:
+#+title: Task: Migrate currency model from ores.codegen.table to ores.codegen.entity
+#+description: Convert currency_table.org from the SQL-only ores.codegen.table type to the unified ores.codegen.entity type so that all currency code (C++, SQL, Qt, NATS) can be generated from a single model.
+#+type: task
+#+level: s1
+#+filetags: :codegen:currency:migration:entity:sprint_22:v0:commission_currency:
+#+owner: marco
+#+branch: feature/decommission-table-model
+#+pr: 1347
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a valid ores.codegen.entity org model for currency that captures all columns, C++ configuration, Qt widget configuration, and NATS/messaging configuration present in the current handwritten code. Verify codegen regenerates all layers with zero unexpected diff.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+- currency_table.org converted to ores.codegen.entity format with all required frontmatter and sections. compass codegen regenerate --component refdata-cpp --profile all-cpp produces C++ files that match (or have only classified drift from) the existing handwritten files. compass codegen regenerate --component refdata --profile sql produces SQL files matching the existing DDL. The decommission_table_model story is unblocked.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1347][1347]] | [agile/refdata] Commission currency entity model; scaffold decommission-table-model story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Empty impl_includes block | currency.org | Fixed — added explanatory comment matching country.org | |
+| 1 | XJ fraction_symbol omitted | currency.org | Fixed — added explicit .fraction_symbol = "" | |
+| 1 | Fictional currencies fraction_symbol | currency.org | Fixed — added comment noting intentional omission | |
+| 1 | Four declaration blocks share UUID DCA78C69 | currency.org | Declined — same pattern as country.org; codegen accumulates into one slot | |
+| 1 | story.org Next field stale | story.org | Fixed | |
+| 1 | story.org Out of scope stub | story.org | Fixed — added junction exclusion | |
+| 1 | Currency described as sql_only (5 locations) | task_add-variability-guards.org, task_migrate-dual-file-entities.org, story.org | Fixed — currency removed; only purpose_type is table-only | Substantive |
+
+* Result
+
+=ores.refdata.currency.org= written at =projects/ores.refdata/modeling/= as a full
+=ores.codegen.entity= model (UUID: 035402B2-0136-44A5-BDB0-601F6864A9FA).
+
+*Verified:* =compass codegen entity generate 035402B2= produces all expected layers
+(domain, json-io, table-io, generator, mapper, entity, repository, service, protocol,
+NATS eventing, handler, SQL DDL, Qt list/detail/history/controller/UI) without error.
+
+*Drift summary* (generated vs handwritten, classified for the sync tasks):
+
+- =currency.hpp=: codegen missing standard audit fields (=version=, =tenant_id=,
+  =modified_by=, =change_reason_code=, =change_commentary=, =performed_by=, =recorded_at=);
+  generates =created_at= instead of =recorded_at=. These are template gaps to resolve in
+  the sync C++ domain task.
+- =ClientCurrencyModel.hpp=: codegen generates a simpler model class without =kColumns=
+  metadata array, =kDefaultWindowSize=, or =ImageCache= support. Qt sync task will
+  classify which sections are template improvements vs custom code.
+- =currency_generator.hpp=: codegen generates a simpler interface; custom generator
+  variants (fictional, unicode, unique) are injected via the entity model's custom
+  generator sections.
+- =currency_repository.hpp= / =.cpp=: codegen base template missing per-key overloads and
+  paginated read; custom repository sections in entity model inject these.
+- =currency_service.hpp= / =.cpp=: custom service methods (party-filtered lists)
+  injected via entity model; confirmed present in generated output.
+
+=currency_table.org= remains in place; the decommission story (69A50205) tracks its
+eventual removal once the sync tasks are complete and the new entity model is live.

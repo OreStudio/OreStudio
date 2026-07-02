@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: D4469217-12E2-41AC-AB35-AC70E849D88C
+:END:
+#+title: Task: Codegen architecture analysis and unified model roadmap
+#+description: System 2 analysis of structural codegen concerns; produces analysis document and defines the roadmap stories for a unified single-model code generator.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_22:v0:
+#+owner: marco
+#+branch: feature/codegen-architecture-analysis
+#+pr: 945
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-30
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Before the C++ template audit (Task 1) begins, conduct a System 2 analysis
+of the =ores.codegen= architecture: identify structural concerns that would
+cause the audit to produce misleading results or leave the system in a
+partially coherent state; and define a roadmap of stories that moves toward
+a single unified model file per entity driving all code generation facets.
+
+Deliverables:
+1. Analysis document: [[proj:doc/plans/2026-05-30-codegen-architecture-analysis.org][=doc/plans/2026-05-30-codegen-architecture-analysis.org=]]
+2. Five roadmap stories added to sprint 19 backlog
+3. This task file recording the full analysis
+
+* Status
+
+| Field        | Value                                                               |
+|--------------+---------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]]                                |
+| Now          | Nothing.                                                            |
+| Waiting on   | Nothing.                                                            |
+| Next         | None. |
+| Last touched | 2026-05-30                                                          |
+
+* Acceptance
+
+- [X] [[proj:doc/plans/2026-05-30-codegen-architecture-analysis.org][=doc/plans/2026-05-30-codegen-architecture-analysis.org=]] written with
+  all structural concerns documented.
+- [X] Five roadmap stories created in sprint 19 backlog.
+- [X] C++ refactor story task table updated with this task.
+- [X] Sprint 19 =* Stories= table updated with the five new stories.
+
+* Plan
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/945][#945]] | Codegen architecture analysis and unified model roadmap |
+
+* Review
+
+** Round 1 — 2026-05-30
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | DONE task status table: =Now= field must be =Nothing.= | task file | Fixed: set =Now= to =Nothing.= | Gemini review |
+| 2 | CLI should catch =ValueError= and log clean error; no raw traceback | safety guardrails story | Fixed: acceptance criterion updated | Gemini review |
+| 3 | Task 4 description lacks pre-flight decision table requirement | c++ refactor story | Fixed: description updated | Self-review |
+| 4 | =*_entity.json= naming collision with legacy =schema= models | single model story | Fixed: dispatch-on-root-key decision added | Self-review |
+| 5 | SQL CI pilot can start before Phase 2 | ci zero-diff story | Fixed: decision note added | Self-review |
+
+* Result
+
+** Structural concerns identified
+
+Eight structural concerns were identified. Each is documented in full in
+[[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and unified model roadmap]].
+
+| Concern | Story |
+|---------+-------|
+| C1 — Old SQL template still fires on domain_entity models | [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Safety guardrails]] |
+| C2 — Missing component_include/core is silently wrong | [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Safety guardrails]] |
+| C3 — all-cpp profile is not "all C++" | [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Safety guardrails]] |
+| C4 — Non-temporal entities silently get temporal output | [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Safety guardrails]] |
+| C5 — Qt section transcribes protocol class names | [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Phase 1: Qt derivation]] |
+| C6 — Dual model files per entity can drift | [[id:88113E9B-DBD4-4E08-8CD9-49B8A709B871][Phase 2: single model]] |
+| C7 — Temporal/non-temporal template duplication | [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Phase 3: temporal unification]] |
+| C8 — No CI enforcement of zero-diff invariant | [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][CI zero-diff invariant]] |
+
+** Breaking change scope note
+
+The C++ story found 4 breaking changes in a 3-entity sample. Task 4 of
+the C++ story ("Resolve breaking API drift") should record an explicit
+decision table before touching any production files:
+
+| Change | Callers | Decision |
+|--------+---------+----------|
+| =find_type= → =get_type= | 5 components | TBD |
+| =save_types()= removal | 15 services | TBD |
+| =remove_types()= removal | 15 services | TBD |
+| =stamp()= removal | TBD | TBD |
+| Include guard regression | None | Template fix (T2) |
+
+** Roadmap summary
+
+The vision is one =_entity.json= per entity driving all generation facets
+via profiles. The phased roadmap:
+
+| Phase | Story | Depends on |
+|-------+-------+------------|
+| Phase 0 (prerequisite) | [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Safety guardrails]] | Nothing |
+| Phase 1 | [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Qt field derivation]] | C++ audit complete |
+| Phase 2 | [[id:88113E9B-DBD4-4E08-8CD9-49B8A709B871][Single model file]] | Phase 1 |
+| Phase 3 (parallel with 2) | [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Temporal unification]] | C++ audit complete |
+| CI gate | [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Zero-diff invariant]] | Phase 2 |

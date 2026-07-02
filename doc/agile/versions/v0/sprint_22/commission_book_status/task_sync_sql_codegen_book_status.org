@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 152DE432-C6CC-4549-A098-79C7AFB30E1E
+:END:
+#+title: Task: Sync SQL codegen output for book_status
+#+description: Run the sql codegen profile for book_status and verify the generated DDL and DML match the appraise checklist findings.
+#+type: task
+#+level: s1
+#+filetags: :commission_book_status:sprint_22:v0:
+#+owner: marco
+#+branch: feature/sync-sql-codegen-book-status
+#+pr: 1341
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Generate and review SQL artefacts for book_status (DDL, DML, migration scripts) via the sql codegen profile. Diff against HEAD, classify every difference (template gap / code bug / cosmetic / accept), and apply fixes until zero unclassified diff.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+- SQL codegen runs cleanly; generated artefacts reviewed; every delta classified and decision recorded; any drift corrected; build passes.
+
+* Plan
+
+1. Fix entity model: add missing =subcomponent: api= flag (required for codegen to run).
+2. Run =sql= profile for =refdata-cpp= component; revert out-of-scope entity changes.
+3. Output location check: verify 4 book_status SQL files land in =projects/ores.sql/=.
+4. Diff each artefact against HEAD; classify every delta.
+
+* Notes
+
+** Output location check
+
+| File | Expected path | Actual | Result |
+|------+---------------+--------+--------|
+| =refdata_book_statuses_create.sql= | =projects/ores.sql/create/refdata/= | Correct | ✅ |
+| =refdata_book_statuses_notify_trigger_create.sql= | =projects/ores.sql/create/refdata/= | Correct | ✅ |
+| =refdata_book_statuses_drop.sql= | =projects/ores.sql/drop/refdata/= | Correct | ✅ |
+| =refdata_book_statuses_notify_trigger_drop.sql= | =projects/ores.sql/drop/refdata/= | Correct | ✅ |
+
+** Prerequisite fix
+
+Entity model =ores.refdata.book_status.org= was missing =:subcomponent: api= in its =** Flags= property drawer. Codegen raises a =ValueError= (Missing required flag: subcomponent) without it. Fix applied before running codegen.
+
+** Drift table
+
+| File | Category | Decision | Notes |
+|------+----------+----------+-------|
+| =refdata_book_statuses_create.sql= | — | Accept — zero diff | Exact match against HEAD |
+| =refdata_book_statuses_notify_trigger_create.sql= | — | Accept — zero diff | Exact match against HEAD |
+| =refdata_book_statuses_drop.sql= | — | Accept — zero diff | Exact match against HEAD |
+| =refdata_book_statuses_notify_trigger_drop.sql= | — | Accept — zero diff | Exact match against HEAD |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1341][#1341]] | [agile] Sync SQL codegen output for book_status |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+SQL codegen profile runs cleanly after adding missing =subcomponent: api= flag to the entity model. All 4 generated artefacts (create DDL, notify trigger create, drop DDL, notify trigger drop) land in =projects/ores.sql/= at the correct paths and produce zero diff against HEAD. No drift to classify or fix. Acceptance criteria met.

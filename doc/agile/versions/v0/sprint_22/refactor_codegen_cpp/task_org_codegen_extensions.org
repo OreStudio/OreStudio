@@ -1,0 +1,366 @@
+:PROPERTIES:
+:ID: 615B7214-F87B-49D3-866E-CDC198FF2A06
+:END:
+#+title: Task: Org-mode codegen POC — party as a unified literate model (C++ + SQL + custom methods)
+#+description: Proof-of-concept that a single org-mode file can replace both the C++ JSON model and the SQL JSON model for a single entity, with custom repository methods inline. One entity, party, is the guinea pig. Codegen parses the org file with a small hand-written Python parser (no external dependency unless absolutely needed) and produces both C++ and SQL output. Confirms the bigger model-in-org idea works before broader migration.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_22:v0:codegen:literate:org_mode:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr: 963
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+state: DONE
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story.
+
+* Goal
+
+Prove that one org-mode file can be the *unified source* for both C++ and
+SQL codegen for an entity, by migrating one entity — =party= — and
+validating that codegen produces *byte-identical output* compared with the
+current JSON-driven path (which today uses *two* separate JSON files: a
+=_domain_entity.json= for C++ and a =_table.json= for SQL).
+
+The pilot validates four claims simultaneously:
+
+1. C++ JSON + SQL JSON structures both map cleanly onto a single org-mode
+   file via headings, property drawers, prose, and babel blocks.
+2. A small hand-written Python parser (regex + state machine, ~150 LOC)
+   handles the restricted org subset we need without any external
+   dependency.
+3. Custom methods (=read_system_party=, paginated =read_latest=,
+   =get_total_party_count=, =read_descendants=) become a natural part of
+   the same literate file, eliminating the need for separate extension
+   files or "restore from HEAD" workarounds.
+4. Basic Python validation (~50 LOC) is sufficient — this is internal
+   tooling, we are the only users, no need for a heavy schema framework.
+
+If the POC succeeds, a follow-up story migrates the remaining ~100 models.
+If it surfaces problems we hadn't anticipated, the JSON path stays and the
+extension idea retreats to a simpler sidecar-fragment design.
+
+** Why party
+
+- It is the most complex refdata model: UUID PK with by-code lookup,
+  multiple flags (=has_tenant_id=, =service_find_by_uuid=,
+  =service_find_by_code=, =service_pagination=), missing-in-current-model
+  fields (=codename=, =transliterated_name=, =party_category=).
+- It has 4 custom repository methods that exercise the extension half of
+  the design (=read_system_party=, paginated =read_latest=,
+  =get_total_party_count=, =read_descendants=).
+- It is heavily depended on by refdata.api callers, so build verification
+  is a real test.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | None. |
+| Last touched | 2026-06-01                             |
+| Review       | PR #963 round 1: 6 comments, all accepted, fixed in commit =6361b5aa6=. |
+
+* Acceptance
+
+- Hand-written Python org parser added under
+  [[proj:projects/ores.codegen/src/codegen/org_loader.py][=projects/ores.codegen/src/codegen/org_loader.py=]] (~150 LOC, no external
+  dependency). If during implementation we hit a corner case the hand
+  parser can't handle, add =orgparse= then — but only then.
+- Hand-written Python validator (~50 LOC) checks required sections /
+  properties exist and have the expected types.
+- =party_entity.org= committed (single file replacing
+  =party_domain_entity.json= AND =party_entity.json=).
+- Codegen detects the =.org= form, parses it into the same internal data
+  structures as the JSON forms (same keys, same types) for *both* C++ and
+  SQL paths.
+- =codegen.sh regenerate --component refdata-cpp --profile all-cpp=
+  produces all party-related C++ files (=party.hpp=, =party_mapper.cpp=,
+  =party_repository.*=, =party_service.*=, etc.) byte-identical to what
+  the JSON path produces.
+- =codegen.sh regenerate= against the SQL profile produces party SQL
+  byte-identical to what the SQL JSON model produces today.
+- Custom methods (=read_system_party= and the 3 others) are sourced from
+  the org file and inserted into =party_repository.{hpp,cpp}= at template
+  markers — no =git checkout HEAD --= step needed.
+- =cmake --build --preset linux-clang-debug-make= passes.
+- =ctest -R "ores\.refdata"= passes.
+- Findings recorded in =* Result=, including:
+  - Line count: 2 JSON files vs 1 org file.
+  - Parser LOC and complexity (did we need =orgparse= after all?).
+  - Validator LOC and what it checks.
+  - Migration cost estimate for the remaining ~100 models.
+  - Recommendation: continue migration or retreat to sidecar fragments.
+
+* Plan
+
+** 1. Write a small Python org parser
+
+No external dependency required. The org subset we need is small:
+
+- =:PROPERTIES: ... :END:= drawers, with =:KEY: VALUE= entries.
+- =#+keyword: value= frontmatter lines.
+- Headings (=*=, =**=, =***=) with hierarchy.
+- Plain prose body between headings.
+- Named babel source blocks: =#+begin_src LANG :name NAME= ...
+  =#+end_src=.
+
+~150 LOC of regex + line-walking state machine. If we hit a real corner
+case during implementation (e.g., escaped =#+= sequences inside source
+blocks), we add =orgparse= then. Not before.
+
+** 2. Design: unified org file structure for an entity
+
+The org file replaces *both* the current C++ JSON
+(=*_domain_entity.json=) and SQL JSON (=*_entity.json= /
+=*_table.json=).
+
+Frontmatter:
+
+#+begin_example
+,:PROPERTIES:
+,:ID: <uuid>
+,:END:
+,#+title: party (refdata)
+,#+description: ...
+,#+type: entity
+,#+component: refdata
+,#+filetags: :model:entity:refdata:
+#+end_example
+
+Top-level sections:
+
+- =* Flags= — drawer holds schema, has_tenant_id, service_find_by_*,
+  has_batch_*, etc. (C++ codegen flags + SQL codegen flags).
+- =* Primary key= — drawer holds =:column:= =:type:= =:cpp_type:=
+  (SQL uses :type:, C++ uses both); body is the description.
+- =* Natural keys= — each natural key as a =** <column>= sub-heading
+  with drawer + body + babel block for =generator=.
+- =* Columns= — same pattern as natural keys; one =**= sub-heading per
+  column.
+- =* SQL= — drawer holds =:tablename:=, optional =:triggers:=,
+  optional =:indices:=. Sub-headings (=** Trigger XYZ=) hold any
+  custom SQL fragments as babel src blocks.
+- =* Repository conventions= — drawer holds =entity_singular_short=,
+  =entity_plural_short=, =entity_singular_words=, =entity_plural_words=.
+- =* C++ includes= — sub-headings =** Domain= and =** Entity= with the
+  include lists as plain item lists.
+- =* Qt= — large block of properties.
+- =* Custom repository methods= — each method as a =** <name>=
+  sub-heading with its own =:ID:= property, prose body explaining why
+  it exists, and =declaration= + =implementation= babel blocks.
+
+Each section is consumed by one or both paths:
+- C++ codegen consumes: Flags (C++ subset), Primary key, Natural keys,
+  Columns, Repository conventions, C++ includes, Qt, Custom repository
+  methods.
+- SQL codegen consumes: Flags (SQL subset), Primary key, Natural keys,
+  Columns, SQL.
+
+** 3. Implementation: parser + validator
+
+[[proj:projects/ores.codegen/src/codegen/org_loader.py][=projects/ores.codegen/src/codegen/org_loader.py=]] (new):
+
+#+begin_src python
+def load_entity_org(path: Path) -> dict:
+    """Parse an org-mode entity file into the canonical dict structure
+    consumed by both the C++ and SQL codegen paths."""
+    ...
+
+def validate_entity_dict(model: dict) -> list[str]:
+    """Return a list of validation errors (empty if model is well-formed).
+    Checks: required sections exist, required properties present, types
+    look right."""
+    ...
+#+end_src
+
+The parser:
+1. Walks the org file line by line with a small state machine.
+2. Tracks headings, drawers, frontmatter, prose, and babel blocks.
+3. Returns a dict with the same shape as the JSON loaders produce today.
+
+The validator:
+1. Required top-level: Flags, Primary key, Columns, SQL.
+2. Required Flags properties: schema, component.
+3. Required column properties: name, type.
+4. Maybe 20 such rules; ~50 LOC.
+5. Called automatically when the loader returns.
+
+Add a dispatch in =manifest.py= or wherever models are loaded:
+=.org= → =org_loader=, =.json= → existing JSON loader.
+
+** 4. Pilot: =party_entity.org= (single unified file)
+
+Hand-author =projects/ores.codegen/models/refdata/party_entity.org=
+covering:
+
+- Everything in the current =party_domain_entity.json= (C++ model).
+- Everything in the current =party_entity.json= (SQL model).
+- Missing fields the JSON models lack today (=codename=,
+  =transliterated_name=, =party_category=).
+- The 4 custom repository methods as inline =** <name>= sub-sections under
+  =* Custom repository methods=.
+
+Update mustache templates =cpp_domain_type_repository.hpp/.cpp.mustache= to
+have markers (post-render substitution) for:
+
+- additional includes (from the custom-method =declaration= and
+  =implementation= blocks).
+- additional declarations (from each method's =declaration= block).
+- additional definitions (from each method's =implementation= block).
+
+** 5. Verify equivalence
+
+For each file that codegen produces from the party model, generate it from
+both the JSON path and the org path. Diff the outputs.
+
+Acceptance: zero diff for everything that the JSON model can already
+express. The four custom methods are *added* by the org path (the JSON path
+currently produces nothing for them).
+
+** 6. Build + test
+
+- =cmake --build --preset linux-clang-debug-make= passes.
+- =ctest -R "ores\.refdata"= passes.
+- =git diff= for production files shows only the additive changes (the 4
+  custom methods now generated automatically, the missing fields now in
+  party.hpp from the model).
+
+** 7. Decide
+
+Document the findings in =* Result=. Pick one:
+- *Continue migration.* Open a story to migrate the remaining ~100 models.
+- *Retreat to sidecar fragments.* Strip the org-model code, keep the
+  extension-only mechanism in a smaller follow-up.
+
+** 8. Commit + push + raise PR
+
+The PR ships:
+- =orgparse= dependency added.
+- =org_loader.py= and its tests.
+- =party_domain_entity.org= alongside the JSON version (or replacing it —
+  decide during implementation).
+- Mustache template markers for custom methods.
+- Findings doc in =* Result=.
+
+* Notes
+
+** Prior art: Dogen's org-model codec
+
+Marco's Dogen project already migrated to org-mode for modeling. Key takeaways
+relevant to this POC ([[file:/home/marco/Development/mcraveiro.github.io/dogen/docs/literate_modeling_with_org_model.org][Dogen literate modeling chapter]]):
+
+- *Tag-based dispatch* rather than title-matching. Headlines carry semantic
+  tags like =:column:= or =:method:=. The parser dispatches on tags, not
+  heading titles. Renaming a heading does not break codegen as long as tags
+  stay. Adopt in *Stage 1.5* (after the basic POC works).
+- *Natural-language headlines.* =* Customer's full name :column:= reads
+  better than =* full_name=. The machine identifier lives in
+  =:PROPERTIES: :name: full_name :END:=. Pairs with tag-based dispatch.
+- *Stay close to native org-mode idioms.* Files should not surprise regular
+  org-mode users.
+- *Org-roam IDs for cross-document references.* Lines up with the
+  Stage 2 template→block linkage by UUID.
+- *Property drawers carry structured metadata*, headline body is the
+  human-readable comment. (Already doing this.)
+
+** Staged approach to template-block linkage
+
+The POC will land in two stages:
+
+*Stage 1 (this task)* — codegen reads org files, parses each section into a
+dict shaped like the JSON model, and feeds it to the existing mustache
+templates. For things that have a code body (includes, custom methods),
+the parser does language-specific stripping (e.g. removing =#include= from
+C++ include lines). This is *acceptable but inelegant* because the parser
+has to understand the syntax of the language inside each block.
+
+*Stage 2 (follow-up)* — once all JSON models have been migrated to org,
+refactor the linkage so each named block carries its own =:ID:= UUID, and
+mustache templates reference them by ID with a marker like =\<\<UUID\>\>= or
+=\{\{ext:UUID\}\}=. Codegen then substitutes the block content verbatim, no
+syntax parsing. This is the cleaner endgame; doing it now would require
+either (a) coordinated updates to all templates and all models, or
+(b) supporting both schemes during a long transition. Better to land
+Stage 1 first.
+
+** =orgparse= capability sanity check (to do before starting)
+
+Confirm:
+1. Reads =:ID:= from =:PROPERTIES:= drawers cleanly.
+2. Captures =#+keyword:= frontmatter as accessible metadata.
+3. Walks nested headings with body text intact.
+4. Doesn't choke on Mustache-like syntax in babel blocks if any.
+
+If any of these fail, fall back to a custom regex parser (~200 LOC) for the
+restricted org subset we need.
+
+** Mustache marker syntax (decide during implementation)
+
+Two approaches:
+
+| Approach | How | Tradeoff |
+|----------+-----+----------|
+| Post-render substitution | Output template has =<<EXT:NAME>>= literals; codegen replaces them with extension content after rendering. | Simple, no pystache changes. Markers visible during template review. |
+| Custom Mustache partial | =\{\{> ext:NAME \}\}= with a custom partial loader. | More native to Mustache. Requires pystache configuration. |
+
+Post-render is simpler; prefer unless it produces awkward template files.
+
+** Org as model: pros and cons summary
+
+| Pro | Con |
+|-----+-----|
+| Single source of "what + why" per entity. | More flexible structure than JSON; needs a validator. |
+| Custom methods become inline, not sidecar. | ~100 models to migrate if POC succeeds. |
+| Each section has =:ID:= for cross-referencing. | Org is more verbose than JSON for purely structured data. |
+| Same literate pattern as the rest of ORE Studio. | Tooling (jsonschema, lsp completion) doesn't apply. |
+| Generator expressions get babel-block treatment. | Org parsing is more brittle than JSON if the format drifts. |
+
+* PRs
+
+| PR   | Title |
+|------+-------|
+| #963 | [codegen] Org-mode literate codegen POC for party entity |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Org-mode property keys are case-insensitive; =:ID:= match should accept any case. | org_loader.py:170 | Accepted | PR #963 round 1. Fixed in =6361b5aa6= via =key.upper() == "ID"=. |
+| 2 | Strip surrounding quotes from =:name=/=:implements= header args. | org_loader.py:197 | Accepted | PR #963 round 1. Fixed in =6361b5aa6= via =.strip("\"'")=. |
+| 3 | =isdigit()= rejects negatives and floats; use try/except parse. | org_loader.py:304 | Accepted | PR #963 round 1. Fixed in =6361b5aa6= via int → float → string. |
+| 4 | =_includes_from_named_block= should filter to lines starting with =#include=. | org_loader.py:338 | Accepted | PR #963 round 1. Fixed in =6361b5aa6=. |
+| 5 | Column descriptions collapse paragraph breaks; preserve them. | org_loader.py:357 | Accepted | PR #963 round 1. Fixed in =6361b5aa6=; intra-paragraph newlines still collapse. |
+| 6 | =validate_model= is unused; wire into =load_org_model= and raise. | org_loader.py:654 | Accepted | PR #963 round 1. Fixed in =6361b5aa6= via =raise ValueError(...)=. |
+
+* Result
+
+POC successful. Mechanism proven end-to-end on the =party= entity:
+
+- Hand-written ~300 LOC Python parser (=org_loader.py=) handles the
+  restricted org subset we need; no external dependency required.
+- Basic validator (~50 LOC) catches missing required sections.
+- Single literate org file (=party_entity.org=) replaces the JSON model
+  and carries the four custom repository methods inline (=read_system_party=,
+  paginated =read_latest=, =get_total_party_count=, =read_descendants=).
+- Meta-model ([[proj:projects/ores.codegen/modeling/org_entity_meta_model.org][=projects/ores.codegen/modeling/org_entity_meta_model.org=]])
+  documents the file shape and hosts the kind-UUID registry.
+- Block-paste mechanism: babel blocks carry =:implements <kind-UUID>=;
+  templates carry =<<paste:<kind-UUID>>>= markers; codegen substitutes
+  after Mustache renders. =party_repository.{hpp,cpp}= regenerates with
+  the four custom methods natively — no =git checkout HEAD --= step.
+
+Findings recorded in [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]]. Per-component migration
+work tracked there.
+
+Commits:
+
+- =6399eac34= POC: org-mode entity model + loader for party
+- =20f675e7b= Org-mode meta-model + kind-UUID block-paste mechanism

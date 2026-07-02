@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 2CC79A8B-86FC-4DF2-A36B-DB53034785AF
+:END:
+#+title: Task: Open sprint 22
+#+description: Scaffold sprint 22, wire manifest, move postponed stories.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_22:sprint_22:v0:
+#+owner: marco
+#+branch: feature/open-sprint-22
+#+pr: 1399
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold sprint 22, wire it into the version manifest and agile index, and
+move postponed sprint 21 stories into the new sprint folder.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] |
+| Now          | Sprint scaffolded; wiring manifest and moving postponed stories. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR.                          |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- Sprint 22 folder scaffolded with mission set.
+- Sprint 22 wired into the version manifest and agile index.
+- Postponed sprint 21 stories moved into sprint 22.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1399][#1399]] | [agile] Open sprint 22 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

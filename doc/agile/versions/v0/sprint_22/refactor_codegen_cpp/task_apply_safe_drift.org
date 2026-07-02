@@ -1,0 +1,163 @@
+:PROPERTIES:
+:ID: C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A
+:END:
+#+title: Task: Apply safe drift to refdata-cpp (pilot)
+#+description: Pilot component. Add the codegen template flags refdata needs, set per-model flags, regenerate refdata-cpp, restore documented exclusions, and confirm build + tests green. This task establishes the per-component pattern that subsequent component tasks follow.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_22:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr:
+#+blocked_on: D85E2B30-8C64-46DF-819D-B50D2E70B73C
+#+blocked_since:
+#+created: 2026-05-30
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story.
+
+* Goal
+
+Apply safe drift to the =refdata-cpp= component and use it as the *reference
+implementation* for the per-component drift workflow. The remaining 11
+components each get their own task that follows this pattern.
+
+** Why refdata is the pilot
+
+Refdata is the most heterogeneous component:
+- 25 domain_entity models (more than any other component)
+- Mix of UUID-PK and string-PK entities
+- Mix of stateful and stateless repositories in production
+- Child entities (contact_information, identifier) with by-parent lookup
+- =party_repository= has hand-crafted methods (=read_system_party=, pagination,
+  CTE descendants) that cannot be regenerated
+
+Solving refdata establishes the template flags and exclusion pattern that
+everything else inherits.
+
+* Plan
+
+** 1. Rebase onto =origin/main=
+
+#+begin_src sh
+git rebase origin/main
+#+end_src
+
+** 2. Add template flags refdata needs
+
+| Flag | What it gates | Templates touched |
+|------+---------------+-------------------|
+| =service_find_by_uuid= | =find_X(uuid)= + =remove_X(uuid)= + =get_X_history(uuid)= | =cpp_service.hpp/.cpp.mustache= |
+| =service_find_by_code= | =find_X_by_code(string)= in service + =read_latest_by_code(ctx, string)= in repo | service + =cpp_domain_type_repository.hpp/.cpp.mustache= |
+| =service_list_by_uuid_parent= | =list_X_by_Y(uuid)= in service + =read_latest_by_Y(ctx, uuid)= in repo | service + repo |
+| =service_find_prefix= | =find_X(string)= instead of =get_X(string)= for string-PK entities | =cpp_service.hpp/.cpp.mustache= |
+
+All four flags are no-ops without a model opting in. After adding them,
+regenerating any component should produce zero diff (sanity check).
+
+** 3. Update refdata models
+
+Per-model flag application:
+
+| Model | Flags |
+|-------+-------|
+| =business_unit_domain_entity.json= | =service_find_by_uuid=, =service_find_by_code= (column: unit_code), missing fields (unit_type_id, status, optional parent_business_unit_id) |
+| =party_domain_entity.json= | =service_find_by_uuid=, =service_find_by_code= (column: short_code), missing fields (codename, transliterated_name, party_category) |
+| =counterparty_domain_entity.json= | =service_find_by_uuid=, =service_find_by_code= (column: short_code), missing field (transliterated_name) |
+| =party_contact_information_domain_entity.json= | =service_find_by_uuid=, =service_find_by_code= (column: contact_type), =service_list_by_uuid_parent= (suffix: party, column: party_id, order_by: contact_type) |
+| =party_identifier_domain_entity.json= | =service_find_by_uuid=, =service_find_by_code= (column: id_scheme), =service_list_by_uuid_parent= (suffix: party, column: party_id, order_by: id_scheme) |
+| =counterparty_contact_information_domain_entity.json= | =service_find_by_uuid=, =service_find_by_code= (column: contact_type), =service_list_by_uuid_parent= (suffix: counterparty, column: counterparty_id, order_by: contact_type) |
+| =counterparty_identifier_domain_entity.json= | =service_find_by_uuid=, =service_find_by_code= (column: id_scheme), =service_list_by_uuid_parent= (suffix: counterparty, column: counterparty_id, order_by: id_scheme) |
+| =portfolio_domain_entity.json= | =service_find_by_uuid= |
+| =contact_type_domain_entity.json= | =has_tenant_id=, =service_find_prefix= |
+| =party_type_domain_entity.json= | =service_find_prefix= |
+| =party_status_domain_entity.json= | =service_find_prefix= |
+| =party_id_scheme_domain_entity.json= | =service_find_prefix= |
+
+** 4. Regenerate refdata-cpp
+
+#+begin_src sh
+projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --profile all-cpp
+#+end_src
+
+** 5. Restore documented exclusions from HEAD
+
+| File | Reason |
+|------+--------|
+| =projects/ores.refdata.core/include/ores.refdata.core/repository/party_repository.hpp= | Custom methods beyond template scope |
+| =projects/ores.refdata.core/src/repository/party_repository.cpp= | =read_system_party= (stored proc), =read_latest(offset, limit)= (pagination), =get_total_party_count= (aggregate), =read_descendants= (recursive CTE) |
+
+If =party_repository_tests.cpp= or callers (=organisation_publisher_integration_tests.cpp=)
+break against the new stateless repo signatures, they need to be updated to the new API.
+
+** 6. Build with =make=
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug-make
+#+end_src
+
+The build must complete with exit code 0. Any error means a regenerated API
+doesn't match an existing caller — restore additional files OR update callers.
+
+** 7. Run refdata tests
+
+#+begin_src sh
+ctest --test-dir build/output/linux-clang-debug-make -R "ores\.refdata" --output-on-failure
+#+end_src
+
+** 8. Final zero-diff check
+
+After build + tests are green:
+
+#+begin_src sh
+projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --profile all-cpp
+# restore exclusions
+git checkout -- projects/ores.refdata.core/include/ores.refdata.core/repository/party_repository.hpp \
+                projects/ores.refdata.core/src/repository/party_repository.cpp
+git diff --exit-code   # must be zero
+#+end_src
+
+** 9. Commit + push + raise PR
+
+The commit message lists every file restored from HEAD with one-line reason
+(see "Restore exclusions" above).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Paused. WIP stashed (=git stash list= shows refdata-cpp template + 25 model updates + restored exclusions). |
+| Waiting on   | [[id:615B7214-F87B-49D3-866E-CDC198FF2A06][Org-mode codegen POC]] (custom methods need a first-class mechanism before refdata can ship cleanly). |
+| Next         | Resume once org-mode mechanism lands; party_repository custom methods will then come from the org file instead of a HEAD-restore. |
+| Last touched | 2026-05-31                             |
+
+* Acceptance
+
+- Template flags added (=service_find_by_uuid=, =service_find_by_code=,
+  =service_list_by_uuid_parent=, =service_find_prefix=).
+- Refdata models updated per the plan table.
+- =cmake --build --preset linux-clang-debug-make= passes (exit 0).
+- =ctest -R "ores\.refdata"= passes.
+- Final zero-diff invariant holds: =git diff --exit-code= clean after
+  regenerate + restore exclusions.
+- =party_repository.{hpp,cpp}= exclusions documented in commit message.
+- PR raised, reviewed, merged.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =Now= field should be =Not yet started.= for BACKLOG tasks, not =Nothing.= | task_apply_safe_drift.org | Fixed | PR #940 round 1. |
+
+* Result
+
+(Populated when task is complete.)

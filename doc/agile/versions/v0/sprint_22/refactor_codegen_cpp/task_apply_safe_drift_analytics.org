@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 1ABAAF88-B7A4-4774-8843-CF9CBC727E4B
+:END:
+#+title: Task: Apply safe drift to analytics-cpp
+#+description: Apply safe drift to the analytics-cpp component using the pattern established by the refdata-cpp pilot. Set service_find_by_uuid on pricing_model_config, pricing_model_product, pricing_model_product_parameter; service_find_by_code on pricing_model_config (name); service_find_prefix on pricing_engine_type. Regenerate, build and test green, raise PR.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_22:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr:
+#+blocked_on: C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story.
+
+* Goal
+
+Apply safe drift to =analytics-cpp= following the [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][refdata-cpp pilot]] pattern.
+Four pricing models need flag updates; no production exclusions expected.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]] |
+| Next         | Start once refdata pattern is merged.  |
+| Last touched | 2026-05-31                             |
+
+* Acceptance
+
+- Analytics models updated per plan table.
+- =cmake --build --preset linux-clang-debug-make= passes.
+- =ctest -R "ores\.analytics"= passes.
+- Final zero-diff invariant holds.
+- PR raised, reviewed, merged.
+
+* Plan
+
+** 1. Rebase onto =origin/main=
+** 2. Update analytics models
+
+| Model | Flags |
+|-------+-------|
+| =pricing_engine_type_domain_entity.json= | =service_find_prefix= |
+| =pricing_model_config_domain_entity.json= | =service_find_by_uuid=, =service_find_by_code= (column: =name=) |
+| =pricing_model_product_domain_entity.json= | =service_find_by_uuid= |
+| =pricing_model_product_parameter_domain_entity.json= | =service_find_by_uuid= |
+
+** 3. Regenerate
+
+#+begin_src sh
+projects/ores.codegen/codegen.sh regenerate --component analytics-cpp --profile all-cpp
+#+end_src
+
+** 4. Build + test
+** 5. Final zero-diff check
+** 6. Commit + push + raise PR
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

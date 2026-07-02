@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 734DE8CD-2EA4-44C9-8720-91B7627C172E
+:END:
+#+title: Task: Sync C++ messaging codegen for party_type
+#+description: Ensure C++ messaging codegen templates (protocol, nats-eventing, nats-handler profiles) produce zero-diff output for party_type; fix template drift.
+#+type: task
+#+level: s1
+#+filetags: :commission_party_type:sprint_22:v0:codegen:cpp:nats:
+#+owner: marco
+#+branch: feature/sync-cpp-messaging-codegen-party-type
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run codegen for party_type using the protocol, nats-eventing, and nats-handler profiles and validate that the generated output matches what is currently in the repository. These profiles generate: protocol — NATS request/response header structs (party_type_protocol.hpp); nats-eventing — domain changed-event struct with event_traits (party_type_changed_event.hpp); nats-handler — NATS message handler class (party_type_handler.hpp). Fix templates to match code unless the code is wrong.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
+| Now          | Nothing. |
+| Waiting on   | CI green.                              |
+| Next         | Nothing. |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- codegen regenerate --component refdata-cpp --profile protocol produces zero diff for party_type files.
+- Same for nats-eventing and nats-handler profiles.
+- Per-change-category decision recorded for any drift found.
+- Findings recorded in Result.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR   | Title                                                       |
+|------+-------------------------------------------------------------|
+| 1351 | [refdata,codegen] Sync C++ messaging codegen for party_type |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Ran all three messaging codegen profiles for =party_type= and classified drift. Template bug found and fixed.
+
+** Drift table
+
+| Profile      | Artefact                        | Diff? | Category                       | Decision                                         |
+|--------------+---------------------------------+-------+--------------------------------+--------------------------------------------------|
+| protocol     | party_type_protocol.hpp         | Yes   | Template gap                   | Accept — pre-template hand-written code; updated to canonical API shape |
+| nats-eventing | party_type_changed_event.hpp   | No    | —                              | Zero diff; no action                             |
+| nats-handler | party_type_handler.hpp          | Yes   | Template gap + Template bug    | Accept — handler also predated template; fixed template bug (=entity_plural= → =entity_plural_short= in list response) |
+
+** Changes accepted in protocol
+
+- NATS subject separators: =party-types= → =party_types= (underscore convention).
+- offset/limit field types: =int= → =std::uint32_t= (requires =<cstdint>=).
+- List response field name: =party_types= → =types= (short form per =entity_plural_short=).
+- Delete request: =std::string type= → =std::vector<std::string> codes= (batch delete; field name from model knob =delete_request_id_field=).
+- History request: =std::string type= → =std::string code= (field name from model knob =history_request_id_field=).
+- =success= / =message= fields added to all response types.
+- =from()= factory method added to =save_party_type_request=.
+- History response field ordering: =history= first, then =success/message=.
+
+** Changes accepted in handler
+
+- =log_handler_entry= / =[[maybe_unused]]= pattern removed (template normalisation).
+- Context naming: =ctx_expected=/=ctx= → =req_ctx_expected=/=req_ctx=.
+- Constructor: stacked-initialiser → single-line style.
+- List: =resp.party_types= → =resp.types=; decode-inside-if pattern; =static_cast= removed (request now =uint32_t=).
+- History: =req->type= → =req->code=; method moved before =remove=.
+- Remove: =svc.delete_type(req->type)= → =svc.delete_types(req->codes)= (batch).
+- Trailing newline before =#endif= added.
+
+** Template bug fixed
+
+=cpp_nats_handler.hpp.mustache= (and its org source =cpp_nats_handler_hpp.org=) used =resp.{{entity_plural}}= in the list method (both with and without offset/limit filter). The protocol template uses =entity_plural_short= for the response field name. Fixed 4 occurrences: 3 × =resp.{{entity_plural}}= and 1 × =resp.{{entity_plural}}.size()=.
+
+** Model knobs corrected
+
+=ores.refdata.party_type.org= had stale overrides in the =** Repository= PROPERTIES block:
+
+| Knob                     | Was    | Now    |
+|--------------------------+--------+--------|
+| =delete_request_id_field=  | =type=   | =codes=  |
+| =single_delete=            | =true=   | =false=  |
+| =history_request_id_field= | =type=   | =code=   |
+
+These now match the primary key column name (=code=) and the batch-delete convention.

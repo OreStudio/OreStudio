@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 43090342-4A42-4AF4-A758-AF03194942EE
+:END:
+#+title: Task: B3: Teach load_org_model() to parse table-only sections
+#+description: Extend load_org_model() in org_loader.py to parse * Validation function, * Insert trigger / ** Validations, and the #+has_tenant_id, #+coding_scheme, #+image_id frontmatter keys that currently only load_org_table_model() handles.
+#+type: task
+#+level: s1
+#+filetags: :codegen-unification-blockers:sprint_22:v0:
+#+owner: marco
+#+branch: feature/codegen-unification-blockers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+load_org_model() produces a domain_entity model dict that includes all fields previously only available via load_org_table_model(): validation_fn, insert_trigger.validations, has_tenant_id, coding_scheme, image_id. The table loader is not deleted yet.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- load_org_model() parses #+has_tenant_id, #+coding_scheme, #+image_id from frontmatter
+- load_org_model() parses * Validation function section into domain_entity.validation_fn
+- load_org_model() parses * Insert trigger / ** Validations org table into domain_entity.insert_trigger.validations
+- Existing entity org files that lack these sections produce identical output to before (no regression)
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Shipped in one commit on =feature/codegen-unification-blockers=.
+
+Extended =org_document_to_model()= in =codegen/org_loader.py= with five new parse paths:
+
+- Frontmatter scalars (after the existing string-key loop):
+  - =#+has_tenant_id= → =de["has_tenant_id"]= (bool via =_parse_typed=)
+  - =#+coding_scheme= → =de["coding_scheme"]= (raw string; boolean flags computed at render time)
+  - =#+image_id= → =de["image_id"]= (bool via =_parse_typed=)
+- Sections (after the =* SQL= block):
+  - =* Validation function= property drawer → =de["validation_fn"]= dict; =default= / =default_value= keys kept as raw strings for Mustache 0-falsy guard
+  - =* Insert trigger / ** Validations= org table → =de["insert_trigger"]["validations"]= list of row dicts
+
+=load_org_table_model()= is unchanged; it continues to produce ={"table": {...}}= as before.
+All existing entity org files that lack these sections produce identical output (9 smoke tests cover
+all paths including backward-compat, and 0 component-scaffold regression failures).
+
+Acceptance met:
+- =load_org_model()= parses =#+has_tenant_id=, =#+coding_scheme=, =#+image_id= from frontmatter. ✓
+- =load_org_model()= parses =* Validation function= into =domain_entity.validation_fn=. ✓
+- =load_org_model()= parses =* Insert trigger / ** Validations= into =domain_entity.insert_trigger.validations=. ✓
+- Existing entity org files without these sections produce identical output. ✓

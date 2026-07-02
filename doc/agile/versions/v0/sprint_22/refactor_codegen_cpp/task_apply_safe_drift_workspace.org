@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 950FB9D4-48E0-45A4-BC71-F9668D42BE9A
+:END:
+#+title: Task: Apply safe drift to workspace-cpp
+#+description: Apply safe drift to the workspace-cpp component using the pattern established by the refdata-cpp pilot. Add has_party_id template flag (party_id field across domain struct, entity, mapper, generator). Restore workspace_service, workspace_repository, workspace_protocol from HEAD because production is hand-crafted. Build and test green, raise PR.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_22:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr:
+#+blocked_on: C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A
+#+blocked_since:
+#+created: 2026-05-31
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story.
+
+* Goal
+
+Apply safe drift to =workspace-cpp= following the [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][refdata-cpp pilot]] pattern.
+Workspace has the most extensive hand-crafted surface in production: service
+methods (=create_workspace=, =archive_workspace=, =set_trade_scope=, etc.),
+repository methods (=list_active=, =find_by_id=, =archive=, =read_history=),
+and protocol types (hand-rolled request / response structures). The
+=has_party_id= template flag is needed for the domain field that production
+has and the current template does not generate.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]] |
+| Next         | Start once refdata pattern is merged.  |
+| Last touched | 2026-05-31                             |
+
+* Acceptance
+
+- New template flag added: =has_party_id= (domain struct, entity, mapper,
+  generator).
+- =cmake --build --preset linux-clang-debug-make= passes.
+- =ctest -R "ores\.workspace"= passes.
+- Final zero-diff invariant holds after regenerate + restore exclusions.
+- All 3 workspace exclusions documented in commit message.
+- PR raised, reviewed, merged.
+
+* Plan
+
+** 1. Rebase onto =origin/main=
+
+** 2. Add =has_party_id= template flag
+
+Touched templates:
+- =cpp_domain_type_class.hpp.mustache= — emit =party_id= field
+- =cpp_domain_type_entity.hpp.mustache= — emit =party_id= field
+- =cpp_domain_type_mapper.cpp.mustache= — bidirectional mapping
+- =cpp_domain_type_generator.cpp.mustache= — emit
+  =r.party_id = ctx.generate_uuid()=
+
+** 3. Confirm workspace model has =has_party_id: true=
+
+** 4. Regenerate
+
+#+begin_src sh
+projects/ores.codegen/codegen.sh regenerate --component workspace-cpp --profile all-cpp
+#+end_src
+
+** 5. Restore exclusions from HEAD
+
+| File | Reason |
+|------+--------|
+| =projects/ores.workspace.core/include/ores.workspace.core/service/workspace_service.hpp= | Custom: =create_workspace=, =archive_workspace=, =set_trade_scope=, =clear_trade_scope= |
+| =projects/ores.workspace.core/src/service/workspace_service.cpp= | Same |
+| =projects/ores.workspace.core/include/ores.workspace.core/repository/workspace_repository.hpp= | Custom: =list_active=, =find_by_id=, =archive=, =read_history= |
+| =projects/ores.workspace.core/src/repository/workspace_repository.cpp= | Same |
+| =projects/ores.workspace.api/include/ores.workspace.api/messaging/workspace_protocol.hpp= | Hand-crafted request / response types with callers in =ores.qt.workspace=, =ores.qt.api= |
+
+** 6. Build with =make=
+** 7. Run workspace tests
+** 8. Final zero-diff check (regenerate + restore exclusions, =git diff --exit-code= clean)
+** 9. Commit + push + raise PR
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

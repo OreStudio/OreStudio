@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: B5F1C8D3-4A7E-4B2F-9D6C-3E8A1B5D7C4F
+:END:
+#+title: Task: Resolve breaking API drift
+#+description: For every breaking change in the drift catalog, make an explicit decision: freeze the template to preserve the existing API, or update production code and all callers. No breaking change is silently discarded.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_22:v0:
+#+owner: marco
+#+branch: feature/refactor-codegen-cpp
+#+pr: 947
+#+blocked_on: A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F
+#+blocked_since:
+#+created: 2026-05-30
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The drift audit ([[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift and build drift catalog]]) identifies all breaking
+changes: existing production API renamed, removed, or signature-changed. For each one,
+make and record an explicit decision.
+
+Two outcomes are possible per breaking change:
+
+| Decision | Meaning | Action |
+|----------+---------+--------|
+| *Template frozen* | The production API is the contract; the template is wrong. | Revert the template change so it matches the production file. Document what was reverted and why. |
+| *Production updated* | The template represents the improved design; production must follow. | Update all callers of the old API across all components. Regenerate affected files. Verify CI. |
+
+"Production updated" decisions can only be made for changes where:
+1. The caller update is tractable (no widespread caller network, or callers can be updated
+   in the same PR).
+2. The new API is strictly better (not just different).
+3. The change does not break any user-facing contract (CLI, shell, Qt UI).
+
+** Known breaking changes from the three-entity sample
+
+| Change | Tentative decision | Rationale |
+|--------+--------------------+-----------|
+| =find_type= → =get_type= rename | Template frozen (keep =find_type=) | Callers in 5+ components; rename is cosmetic; high risk with no functional benefit. |
+| =save_types()= removal | Template frozen (keep =save_types=) | Actively used in messaging handlers across trading, refdata, iam; removal breaks NATS ingestion. |
+| =remove_types()= removal | Template frozen (keep =remove_types=) | Same handler usage as =save_types=. |
+| =stamp()= removal | Verify in audit | Need to confirm whether =stamp()= is used in callers before deciding. |
+| =display_order = 0= default | Additive (not breaking) | Does not remove any existing API; classify as additive in audit. |
+
+These are tentative. The drift audit may reveal additional breaking changes or may confirm
+that some of these are not present across all entities. Final decisions are recorded in the
+=* Result= section of this task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | None.              |
+| Last touched | 2026-05-30                             |
+
+* Acceptance
+
+- Every breaking change from the drift catalog has a recorded decision (template frozen or
+  production updated).
+- For "template frozen" decisions: the template is updated to match the production API;
+  the decision and rationale are recorded.
+- For "production updated" decisions: all callers across all components are updated; CI
+  passes; the update scope and affected files are recorded.
+- No breaking change is left in an ambiguous or unresolved state.
+- Findings recorded in =* Result= section.
+- Site builds cleanly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/947][#947]] | [codegen] Resolve breaking API drift (Task 4) |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =Now= field should be =Not yet started.= for BACKLOG tasks, not =Nothing.= | task_resolve_breaking_changes.org | Fixed | PR #940 round 1. |
+| 2 | Batch methods =save_N= / =remove_N= declared in header template but missing implementations in =.cpp= template — would cause linker errors. Also =get_= → =find_= rename missing from =.cpp=. | cpp_service.cpp.mustache | Fixed | PR #947 round 1. |
+| 3 | =.value()= → =.value_or(system())= on mapper =tenant_id= is a semantic change (silently masks bad data instead of throwing); codegen review policy requires cosmetic-only changes or explicit justification. | cpp_domain_type_mapper.cpp.mustache + 9 =*_convention_mapper.cpp= | Fixed — reverted template and production to =.value()= | PR #947 round 1 (owner review). |
+| 4 | =get_workspace= → =find_workspace= rename is not cosmetic; workspace service is excluded from bulk regeneration in Task 5 anyway, so renaming production to match template provides no codegen benefit. Template frozen instead. | cpp_service.{hpp,cpp}.mustache + workspace_service.{hpp,cpp} + workspace_handler.hpp | Fixed — reverted template =find_= → =get_= and reverted 3 production files | PR #947 round 1 (owner review). |
+
+* Result
+
+** Decision table
+
+All 15 breaking changes resolved. Decisions:
+
+| Change | Category | Decision | Action taken |
+|--------+----------+----------+--------------|
+| Mapper =.value_or(system())= → =.value()= in template (×9 convention mappers) | template frozen | Template updated | Reverted template to =.value()= to match production; semantic change not justified |
+| Service =find_type()= → =get_type()= rename (×3 type services) | template frozen | Template updated | Reverted =find_{{entity_singular_short}}= → =get_{{entity_singular_short}}= in service template; rename is not cosmetic |
+| Service =save_types()= missing from template | template frozen | Template updated | Added =save_{{entity_plural_short}}= batch method to service template |
+| Service =remove_types()= missing from template | template frozen | Template updated | Added =remove_{{entity_plural_short}}= batch method; 1 caller in =instrument_ref_handler.hpp= preserved |
+| Service EXPORT macro missing (=report_definition=, =workspace=) | template frozen | Template updated | Added =ORES_{{component_core_upper}}_EXPORT= and =export.hpp= include to service template |
+| Workspace =find_workspace= → =get_workspace= | template frozen | Reverted | Workspace service excluded from regeneration; rename was not cosmetic and had no codegen benefit; production and template both reverted to =get_workspace= |
+| Portfolio =get_portfolio(string)= → =find_portfolio(uuid)= | template frozen | Deferred to Task 5 | Template now generates =find_portfolio(string)=; portfolio service regenerated in Task 5 |
+| Portfolio =save_portfolios()= missing | template frozen | Template updated | Covered by batch method addition above |
+| =report_definition= =get_definition= → =find_definition= | template frozen | Template updated | Covered by global =find_= rename; 3 callers already use =find_definition=, no change needed |
+| =report_definition= =save_definition= by-value vs const-ref | template frozen | Deferred | Template keeps const-ref (=const domain::T& v=); production updated in Task 5 |
+| =report_definition= EXPORT macro missing | template frozen | Template updated | Covered by EXPORT addition above |
+| =workspace= =create_workspace()= missing | excluded | Workspace service hand-crafted; excluded from bulk regeneration | Not in template; =create_workspace= preserved in production |
+| =workspace= additional methods missing | excluded | Same as above | Not in template scope |
+| Protocol NATS subject hyphens vs underscores (×3) | deferred | Deferred to Task 5 | Minor cosmetic in protocol subjects; no callers broken |
+| Header guard format regressions | fixed in Task 3 | Already resolved | Resolved by =component_include_upper= / =component_core_upper= template fix |
+
+** Service template changes
+
+=cpp_service.hpp.mustache= updated with four changes:
+1. =get_{{entity_singular_short}}= → =find_{{entity_singular_short}}= for the optional single-item lookup.
+2. Added =save_{{entity_plural_short}}(const std::vector<domain::{{entity_singular}}>& ...)= batch method.
+3. Added =remove_{{entity_plural_short}}(const std::vector<std::string>& ...)= batch method.
+4. Added =ORES_{{component_core_upper}}_EXPORT= to class declaration and =export.hpp= include.
+
+All four changes are backward-compatible for entities without callers. Workspace renamed separately (2 callers updated).
+
+** Production file changes
+
+| File | Change |
+|------+--------|
+| (none) | All semantic changes reverted in PR review round 1; only template-frozen decisions remain. |
+
+** Excluded from regeneration
+
+=workspace_service= contains hand-crafted methods not generated by the template
+(=create_workspace()=, =archive_workspace()=, etc.). This service is excluded from
+bulk regeneration in Task 5; only domain and repository layers regenerate for workspace.

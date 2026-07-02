@@ -23,10 +23,15 @@ Five verbs, run in order at sprint close:
                (open/merge that PR the normal way — `compass pr create` /
                `compass pr merge`).
   5. draft   — tag main and open a **draft** GitHub release via `gh
-               release create --draft --notes-file`. Always draft: a human
-               reviews, attaches extras, and publishes it live. Idempotent:
-               safe to re-run if the tag or release already exists (e.g.
-               created by hand) — reuses/updates rather than erroring.
+               release create --draft --notes-file`. Title follows house
+               convention: '<tag>, "<codename>"' (--codename is required —
+               a codename is invented per release, e.g. "Capopolo",
+               "Otjinhungwa"). Always draft: a human reviews, attaches
+               extras, and publishes it live. Idempotent: safe to re-run
+               if the tag or release already exists (e.g. created by
+               hand) — reuses/updates rather than erroring, including the
+               title, so re-running with the right --codename fixes it in
+               place without losing the tag/PR/notes work already done.
 """
 import argparse
 import subprocess
@@ -224,12 +229,18 @@ def _cmd_draft(args, project_root):
         ["gh", "release", "view", tag], cwd=str(project_root),
         capture_output=True, text=True).returncode == 0
 
+    # House convention: "v0.0.20, "Capopolo"" — tag, comma, quoted codename
+    # (see `gh release list`). A codename is invented per release, so it
+    # can't be derived; require it explicitly rather than silently falling
+    # back to something like "Sprint N".
+    title = f'{tag}, "{args.codename}"'
+
     if release_exists:
         cmd = ["gh", "release", "edit", tag,
-              "--title", f"Sprint {args.sprint}", "--notes-file", str(md_file)]
+              "--title", title, "--notes-file", str(md_file)]
     else:
         cmd = ["gh", "release", "create", tag, "--draft",
-              "--title", f"Sprint {args.sprint}", "--notes-file", str(md_file)]
+              "--title", title, "--notes-file", str(md_file)]
     p = subprocess.run(cmd, cwd=str(project_root), capture_output=True, text=True)
     if p.returncode != 0:
         print(p.stderr.strip() or "❌ gh release create/edit failed.", file=sys.stderr)
@@ -276,6 +287,10 @@ def run(argv, project_root):
                         help="Tag main and open a draft GitHub release from "
                              "release_notes.md")
     dr.add_argument("--sprint", type=int, required=True)
+    dr.add_argument("--codename", required=True,
+                    help="Release codename, e.g. 'Otjinhungwa' — the release "
+                         "title becomes '<tag>, \"<codename>\"' per house "
+                         "convention (see `gh release list`)")
     dr.add_argument("--tag", default="",
                     help="Release tag (default: v<CMakeLists project version>)")
     dr.add_argument("--force", action="store_true",

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :synthetic_data_librarian_support:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/synthetic-data-librarian-support
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
 #+updated: 2026-07-02
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -37,11 +37,11 @@ is required, with the tradeoffs of each spelled out.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -54,9 +54,28 @@ is required, with the tradeoffs of each spelled out.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Investigated the existing Party Setup flow:
+=projects/ores.qt/application/src/PartyProvisioningWizard.cpp=
+(=PartyExecutePage=) already runs a fixed, automatic sequence of
+backend phases with no user confirmation for most of them: Phase 1
+(counterparty import), Phase 2 (publish the =organisation= bundle —
+already an automatic =dq.v1.bundles.publish= call, no picker),
+Phase 3 (create user-*selected* report definitions — the one phase
+that's user-confirmed, via =PartyReportSetupPage='s checklist), Phase 4
+(activate). There is no generic "apply bundle" abstraction reused
+across phases — each phase is bespoke inline logic.
+
+Decision: add a new automatic Phase 3.5 that publishes the
+=synthetic_market_data= bundle, mirroring Phase 2's =organisation=
+bundle-publish pattern (automatic, no user picker, uses
+=WorkflowStepsWidget= for progress) — not the Phase 3 reports pattern
+(no per-item selection makes sense yet, since this story only ships
+one seeded FX config). Sequenced after Phase 3 (reports) and before
+Phase 4 (activate), per explicit instruction. This satisfies "usable
+config on party creation" without needing a genuine
+event-driven trigger — going that route would duplicate the wizard's
+existing bundle-publish call for no benefit, since party creation in
+this app already goes through this one wizard.
 
 * Notes
 
@@ -73,3 +92,9 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Decided: wizard-phase defaulting, not an event-driven trigger. Added
+follow-on task
+[[id:A8A3E98A-CC26-460A-8BE9-744D175692B0][Wire synthetic FX bundle publish into Party Setup wizard (after Reports)]]
+to implement it. Decision and rationale recorded in the story's
+=* Decisions=.

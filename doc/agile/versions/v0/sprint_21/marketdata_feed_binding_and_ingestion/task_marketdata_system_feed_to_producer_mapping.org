@@ -53,8 +53,14 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+** Round 1 — 2026-07-02 (bot reviewer, PR #1386)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 4847562398 | Qt codegen placeholders (empty includes, missing param types) | FeedBindingDetailDialog.hpp/cpp, FeedBindingController.hpp, ClientFeedBindingModel.cpp | Accepted (pre-existing; blocked on synthetic codegen task) | Fixed in prior commits |
+| 4847662353 | Cross-tenant leak on republish subject (no tenant discriminator) | feed_ingest_loop.cpp | Accepted | Fixed in 012bae5 |
+| 4860881249 | subs_ map unsynchronized — race with postgres_event_source thread | feed_ingest_loop.cpp/.hpp | Accepted | Fixed in 555fc07 — mu_ widened; helpers renamed to _locked |
+| 4860881249 | Dead NATS subscription to ores.marketdata.feed_bindings | registrar.cpp | Accepted | Fixed in 555fc07 — removed; on_feed_bindings_changed param dropped |
+| 4860881249 | fan-out subscribe vs queue_subscribe | feed_ingest_loop.cpp | Deferred — single-instance for now | Added comment documenting assumption |
 
 * Result

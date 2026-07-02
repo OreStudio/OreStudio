@@ -20,11 +20,15 @@ Publishing a bundle starts a =bundle_publish_workflow= that fans out one
 step per member dataset, each step invoking a =SECURITY DEFINER=
 =ores_<service>_publish_<entity>_from_dq_fn= owned by the *target*
 service — this is the one sanctioned exception to strict service-table
-isolation (DQ never writes another service's tables directly). None of
-this is codegen-generated today: the bundle/artefact-type *entities*
-are codegen'd, but the publish functions, the per-artefact ETL/populate
-scripts, and the Qt wizard config pages are all hand-written per
-artefact type.
+isolation (DQ never writes another service's tables directly). Codegen
+already covers the *schema* side of a new artefact type — the bundle,
+junction, artefact-type lookup rows, and the entity's own shadow
+staging table (=ores_dq_<entity>_artefact_tbl=, via an
+=ores.codegen.lookup_entity= model) are all generated. What remains
+hand-written per artefact type is the *data*/*logic* side: the
+ETL/populate script that fills the shadow table, the target service's
+=publish_..._from_dq_fn= SQL function plus its NATS handler
+registration, and any Qt wizard config page.
 
 * Detail
 
@@ -73,22 +77,38 @@ artefact type.
   =target_subject= (the NATS subject the workflow step will call).
   Codegen lookup-entity model:
   =projects/ores.dq/modeling/ores.dq.artefact_type_lookup_entity.org=.
+- =ores_dq_<entity>_artefact_tbl= — the *shadow staging table* for one
+  artefact type: same columns as the target entity, plus =dataset_id=
+  and =tenant_id= bookkeeping, but no PK/FK constraints (a row can be
+  incomplete or reference an entity that doesn't exist yet in the
+  target service). This is also codegen-generated, from its own
+  =ores.codegen.lookup_entity= model living alongside the entity type
+  in =projects/ores.dq/modeling/= — e.g.
+  =ores.dq.report_definition_lookup_entity.org= drives
+  =sql_schema_artefact_create.mustache= to produce
+  =ores_dq_report_definitions_artefact_tbl=
+  (=projects/ores.sql/create/dq/dq_report_definitions_artefact_create.sql=,
+  header confirms =AUTO-GENERATED FILE=). Flags on the lookup-entity
+  model (=has_coding_scheme=, =has_image_id=, =has_artefact_insert_fn=)
+  control optional bookkeeping columns/functions.
 
-These three are the only codegen-generated parts of the pipeline. They
-give every dataset a stable "what am I, and who do I call to publish
-me" record — but they carry no logic themselves.
+So four of the five metadata/schema artefacts are codegen-generated
+today — bundle, junction, artefact-type lookup, and the per-entity
+shadow artefact table. What is *not* generated is the data that fills
+the shadow table (next) and the publish function that drains it
+(Stage 4).
 
 ** Stage 2 — Populating the artefact table (per-source, hand-written)
 
-Before a dataset can be published it must have rows in its
-=ores_dq_<entity>_artefact_tbl=. Today this is seeded by bespoke,
-source-specific Python generators under =projects/ores.codegen/src/=
-(e.g. =lei_generate_metadata_sql.py=, =crypto_generate_metadata_sql.py=,
-=iso_generate_metadata_sql.py=), each hand-written to parse one external
-source (GLEIF CSVs, ISO code lists, ...) and emit SQL =INSERT=
-statements under =projects/ores.sql/populate/dq/=. There is no shared
-"artefact populate" codegen profile — every new source repeats this
-by hand.
+Once the shadow table exists, it still needs rows. Today this is
+seeded by bespoke, source-specific Python generators under
+=projects/ores.codegen/src/= (e.g. =lei_generate_metadata_sql.py=,
+=crypto_generate_metadata_sql.py=, =iso_generate_metadata_sql.py=),
+each hand-written to parse one external source (GLEIF CSVs, ISO code
+lists, ...) and emit SQL =INSERT= statements under
+=projects/ores.sql/populate/dq/=. There is no shared "artefact
+populate" codegen profile — every new source repeats this by hand,
+which is expected: the parsing logic is inherently source-specific.
 
 ** Stage 3 — Bundle orchestration (workflow engine)
 
@@ -161,11 +181,16 @@ per artefact type:
 4. A wizard config page in =PublishBundleWizard= if the artefact type
    needs user-supplied parameters (stage 5).
 
-Only the bundle/artefact-type/junction *metadata rows* (stage 1) are
-already backed by codegen. Any effort to add a new bundle type at scale
-(e.g. a synthetic-market-data bundle) needs either to accept this
-hand-written cost per artefact type, or to extend =ores.codegen= with a
-reusable "publish-from-dq" profile before proceeding.
+The bundle row, junction row, artefact-type lookup row, and the shadow
+artefact *table* itself (stage 1) are all already backed by codegen.
+The publish function is the real gap: any effort to add a new bundle
+type at scale (e.g. a synthetic-market-data bundle) needs either to
+accept the hand-written cost of one more
+=publish_..._from_dq_fn=/handler pair, or to extend =ores.codegen= with
+a reusable "publish-from-dq" profile before proceeding — the 25
+existing functions are structurally identical enough (read artefact
+table, honor =mode=, upsert into one target table) to make a generic
+profile plausible.
 
 * See also
 

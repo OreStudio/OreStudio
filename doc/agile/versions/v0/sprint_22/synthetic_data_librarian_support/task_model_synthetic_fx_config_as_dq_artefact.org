@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :synthetic_data_librarian_support:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/synthetic-data-librarian-support
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
 #+updated: 2026-07-02
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -39,7 +39,7 @@ copy-and-adapt template, rather than waiting on the codegen facet.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

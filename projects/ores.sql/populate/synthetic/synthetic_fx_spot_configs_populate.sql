@@ -112,7 +112,11 @@ begin
     )
     values
     (v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
-     'Synthetic FX Spot',
+     'Synthetic FX Spot: EUR/USD',
      'Default synthetic FX spot generator for the party''s market data configuration.',
-     true, 'EUR', 'USD', 1.0850, 60, 'geometric');
+     true, 'EUR', 'USD', 1.0850, 3600, 'geometric'),
+    (v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
+     'Synthetic FX Spot: GBP/USD',
+     'Default synthetic FX spot generator for the party''s market data configuration.',
+     true, 'GBP', 'USD', 1.2650, 3600, 'geometric');
 end $$;

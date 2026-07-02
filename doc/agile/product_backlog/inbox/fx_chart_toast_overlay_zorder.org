@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: C810AAA1-E088-449D-ACF5-CF38055CB702
+:END:
+#+title: Fix notification toast blocking FX chart Y-axis area
+#+description: The 'Started N feed(s)' toast from MarketSimulatorWindow renders over the bottom-right corner of charts, permanently obscuring axis labels.
+#+type: capture
+#+level: cross
+#+filetags: :ores.qt:mktdata:synthetic:charts:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The "Started N feed(s)" notification emitted by `MarketSimulatorWindow` renders as a floating overlay in the bottom-right corner of the application window and stays visible permanently (or until dismissed), covering the Y-axis area of FX spot charts placed in that region of the MDI area. The fix is to move feed-start notifications to the main window's status bar (or a transient toast that auto-dismisses after ~3 s), ensuring they never overlap chart content. A permanent overlay that blocks axis labels is not acceptable in a trading UI.
+
+* Why
+
+User feedback (Gemini review 2026-07-02): "The notification toast/panel on the bottom right ('Started 2 feed(s)') is permanently rendering over the chart area, blocking critical axis data." The current implementation emits a `statusChanged` signal that the parent wires to a label widget positioned over the MDI area rather than into the application status bar.
+
+* References
+
+- `projects/ores.qt/synthetic/src/MarketSimulatorWindow.cpp` — emits `statusChanged`
+- The parent that renders it as an overlay (to be identified during implementation)
+
+* See also
+
+-

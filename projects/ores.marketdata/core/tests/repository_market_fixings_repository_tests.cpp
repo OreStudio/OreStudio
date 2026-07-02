@@ -38,7 +38,7 @@ const std::string tags("[repository]");
 }
 
 using namespace ores::logging;
-using namespace ores::marketdata::generator;
+using namespace ores::marketdata::generators;
 
 using ores::testing::database_helper;
 using ores::marketdata::repository::market_series_repository;
@@ -55,7 +55,8 @@ TEST_CASE("write_single_market_fixing", tags) {
     series_repo.write(h.context(), s);
 
     market_fixings_repository fixings_repo;
-    auto f = generate_synthetic_market_fixing(s.id, ctx);
+    auto f = generate_synthetic_market_fixing(ctx);
+    f.series_id = s.id;
     BOOST_LOG_SEV(lg, debug) << "Fixing: " << f;
     CHECK_NOTHROW(fixings_repo.write(h.context(), f));
 }
@@ -71,7 +72,8 @@ TEST_CASE("write_multiple_market_fixings", tags) {
     series_repo.write(h.context(), s);
 
     market_fixings_repository fixings_repo;
-    auto fixings = generate_synthetic_market_fixings(5, s.id, ctx);
+    auto fixings = generate_synthetic_market_fixings(5, ctx);
+    for (auto& f : fixings) f.series_id = s.id;
     BOOST_LOG_SEV(lg, debug) << "Fixings: " << fixings;
     CHECK_NOTHROW(fixings_repo.write(h.context(), fixings));
 }
@@ -87,7 +89,8 @@ TEST_CASE("read_latest_market_fixings_by_series", tags) {
     series_repo.write(h.context(), s);
 
     market_fixings_repository fixings_repo;
-    auto written = generate_synthetic_market_fixings(3, s.id, ctx);
+    auto written = generate_synthetic_market_fixings(3, ctx);
+    for (auto& f : written) f.series_id = s.id;
     fixings_repo.write(h.context(), written);
 
     auto read = fixings_repo.read_latest(h.context(), s.id);
@@ -109,7 +112,8 @@ TEST_CASE("remove_market_fixings", tags) {
     series_repo.write(h.context(), s);
 
     market_fixings_repository fixings_repo;
-    auto fixings = generate_synthetic_market_fixings(3, s.id, ctx);
+    auto fixings = generate_synthetic_market_fixings(3, ctx);
+    for (auto& f : fixings) f.series_id = s.id;
     fixings_repo.write(h.context(), fixings);
 
     auto before = fixings_repo.read_latest(h.context(), s.id);

@@ -37,6 +37,7 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid not null,
     "series_type" text not null,
     "metric" text not null,
     "qualifier" text not null,
@@ -65,8 +66,8 @@ create table if not exists "ores_marketdata_market_series_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists market_series_series_type_metric_qualifier_uniq_idx
-on "ores_marketdata_market_series_tbl" (tenant_id, series_type, metric, qualifier)
+create unique index if not exists market_series_party_id_series_type_metric_qualifier_uniq_idx
+on "ores_marketdata_market_series_tbl" (tenant_id, party_id, series_type, metric, qualifier)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

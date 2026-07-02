@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ores.marketdata:generation:nats:marketdata_feed_binding_and_ingestion:sprint_21:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/marketdata-system-feed-to-producer-mapping
+#+pr: 1386
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-29
 #+updated: 2026-06-29
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F6CD8E90-6EE2-4B4F-A4EC-C173C906222A][Market data feed binding, ingestion and official stream]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Introduce the marketdata-authority binding: a persisted feed-config mapping a sy
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F6CD8E90-6EE2-4B4F-A4EC-C173C906222A][Market data feed binding, ingestion and official stream]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -49,12 +49,18 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1386][#1386]] | [marketdata] Feed binding entity and ingest loop (system-feed to producer mapping) |
 
 * Review
 
+** Round 1 — 2026-07-02 (bot reviewer, PR #1386)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 4847562398 | Qt codegen placeholders (empty includes, missing param types) | FeedBindingDetailDialog.hpp/cpp, FeedBindingController.hpp, ClientFeedBindingModel.cpp | Accepted (pre-existing; blocked on synthetic codegen task) | Fixed in prior commits |
+| 4847662353 | Cross-tenant leak on republish subject (no tenant discriminator) | feed_ingest_loop.cpp | Accepted | Fixed in 012bae5 |
+| 4860881249 | subs_ map unsynchronized — race with postgres_event_source thread | feed_ingest_loop.cpp/.hpp | Accepted | Fixed in 555fc07 — mu_ widened; helpers renamed to _locked |
+| 4860881249 | Dead NATS subscription to ores.marketdata.feed_bindings | registrar.cpp | Accepted | Fixed in 555fc07 — removed; on_feed_bindings_changed param dropped |
+| 4860881249 | fan-out subscribe vs queue_subscribe | feed_ingest_loop.cpp | Deferred — single-instance for now | Added comment documenting assumption |
 
 * Result

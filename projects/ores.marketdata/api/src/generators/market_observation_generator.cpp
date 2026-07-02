@@ -18,38 +18,48 @@
  *
  */
 #include "ores.marketdata.api/generators/market_observation_generator.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
-#include <format>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
 
-namespace ores::marketdata::generator {
+namespace ores::marketdata::generators {
+
+using ores::utility::generation::generation_keys;
 
 domain::market_observation
-generate_synthetic_market_observation(const boost::uuids::uuid& series_id,
-                                      utility::generation::generation_context& ctx) {
+generate_synthetic_market_observation(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const int n = ++counter;
-
-    auto tp = ctx.past_timepoint();
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::market_observation r;
+    r.version = 1;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.series_id = series_id;
-    r.observation_datetime = tp;
-    r.point_id = std::to_string(n) + "Y";
-    r.value = std::format("{:.6f}", 0.01 + 0.001 * n);
-    r.source = std::nullopt;
-    r.recorded_at = tp;
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.party_id = ctx.generate_uuid();
+    r.series_id = ctx.generate_uuid();
+    r.observation_datetime = ctx.past_timepoint();
+    r.point_id = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
+    r.change_commentary = "Synthetic test data";
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::market_observation>
 generate_synthetic_market_observations(std::size_t n,
-                                       const boost::uuids::uuid& series_id,
                                        utility::generation::generation_context& ctx) {
     std::vector<domain::market_observation> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_market_observation(series_id, ctx));
+        r.push_back(generate_synthetic_market_observation(ctx));
     return r;
 }
 

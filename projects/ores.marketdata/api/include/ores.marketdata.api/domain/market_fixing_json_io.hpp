@@ -27,7 +27,7 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief Serialises a market_fixing to a stream in JSON format.
+ * @brief Dumps the market_fixing to a stream in JSON format.
  */
 ORES_MARKETDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const market_fixing& v);
 

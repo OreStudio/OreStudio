@@ -59,6 +59,7 @@ data is correctly owned and traceable.
 |------+-------+-------+-----+-------------|
 | [[id:FD9977D4-B5CB-4F72-AA8E-139F34A346D1][Synthetic config entities across all layers (currency pattern)]] | DONE | 2026-06-28 | 2026-06-28 | Hand-write the synthetic generation config domain model — synthetic_config (container), synthetic_fx_spot_config (sub-config, FK to container), synthetic_gmm_component (FK to sub-config) — across every layer, mirroring the currency reference entity (and book for FKs) so they convert to codegen types later: domain type + json_io + table_io + table, generator, repository (entity/mapper/repository), NATS protocol, SQL (create/triggers/notify), service, handler, eventing, CMake + registrar wiring. |
 | [[id:A433571D-5E17-4B3D-8C3C-72850BAE0554][Qt config UI for synthetic market data generation configs]] | DONE | 2026-06-28 | 2026-06-29 | Qt client UI to create/edit/list/delete the synthetic market data generation config entities (container + fx_spot sub-config + gmm components), mirroring the currency Qt setup exactly: table model, list window with pagination, create/edit dialogs, history view, controller, and plugin menu/toolbar wiring. |
+| [[id:7B130100-59F1-477D-910A-AF6D2C8D732C][Synthetic FX spot library: 30 pairs with historically-consistent starting spots]] | BACKLOG | — | — | Pre-canned library data bundle covering the 30 benchmark FX spot pairs (G10 + key EM vs USD) that seeds the CRM. Each config carries a GMM starting spot consistent with a single reference date t (2024-01-02). Apply is idempotent. |
 
 * Decisions
 

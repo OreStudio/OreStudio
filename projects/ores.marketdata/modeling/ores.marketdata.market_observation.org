@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901
+:ores.cpp.qt.enabled: false
 :END:
 #+title: ores.marketdata.market_observation
 #+description: Codegen entity model for the marketdata market_observations table; one (series, datetime, point) observation persisted as a TimescaleDB hypertable.
@@ -45,6 +46,20 @@ Surrogate UUID uniquely identifying this observation row.
 
 * Natural keys
 
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Party that owns this observation.
+
+Set server-side from the authenticated session. Enforced by RLS.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
 ** series_id
 :PROPERTIES:
 :type:     uuid
@@ -61,6 +76,10 @@ Reference to =ores_marketdata_market_series_tbl(id)= — identifies what was obs
 
 Financial valid-time: when the market value was observed (UTC).
 Also the hypertable partition column.
+
+#+begin_src cpp :name generator
+ctx.past_timepoint()
+#+end_src
 
 ** point_id
 :PROPERTIES:
@@ -124,10 +143,10 @@ Source tag identifying the producer channel that published this observation
 
 | name                         | columns                                                                           | unique | current_only | where_extra        |
 |------------------------------+-----------------------------------------------------------------------------------+--------+--------------+--------------------|
-| observations_current_uniq    | tenant_id, series_id, observation_datetime, coalesce(point_id, '')               | true   | true         |                    |
-| observations_series_datetime | tenant_id, series_id, observation_datetime desc                                   | false  | false        |                    |
-| observations_tenant_datetime | tenant_id, observation_datetime desc                                               | false  | false        |                    |
-| observations_source          | tenant_id, source, observation_datetime desc                                       | false  | false        | source is not null |
+| observations_current_uniq    | tenant_id, party_id, series_id, observation_datetime, coalesce(point_id, '')     | true   | true         |                    |
+| observations_series_datetime | tenant_id, party_id, series_id, observation_datetime desc                         | false  | false        |                    |
+| observations_tenant_datetime | tenant_id, party_id, observation_datetime desc                                    | false  | false        |                    |
+| observations_source          | tenant_id, party_id, source, observation_datetime desc                            | false  | false        | source is not null |
 
 * C++
 

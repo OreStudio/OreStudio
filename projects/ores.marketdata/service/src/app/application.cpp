@@ -19,13 +19,19 @@
  */
 #include "ores.marketdata.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.eventing.core/service/registrar.hpp"
+#include "ores.marketdata.api/eventing/feed_binding_changed_event.hpp"
 #include "ores.marketdata.core/messaging/registrar.hpp"
+#include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <memory>
 
 namespace ores::marketdata::service::app {
 
@@ -65,21 +71,50 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                                     cfg.nats.subject_prefix)
                               << "')";
 
+    try {
+        auto admin = nats.make_admin();
+        admin.ensure_stream(nats.make_stream_name("synthetic_ticks"),
+                            {nats.make_subject("synthetic.v1.tick.>")});
+        admin.ensure_stream(nats.make_stream_name("marketdata_ticks"),
+                            {nats.make_subject("marketdata.v1.tick.>")});
+        BOOST_LOG_SEV(lg(), info) << "JetStream streams ready: synthetic_ticks, marketdata_ticks";
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream streams: " << e.what();
+        throw;
+    }
+
+    auto ingest = std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database));
+
+    namespace ev = ores::eventing;
+    namespace mdev = ores::marketdata::eventing;
+    ev::service::event_bus event_bus;
+    ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
+    ev::service::registrar::register_mapping<mdev::feed_binding_changed_event>(
+        event_source, "ores.marketdata.feed_binding", "ores_marketdata_feed_bindings");
+    auto feed_binding_sub = event_bus.subscribe<mdev::feed_binding_changed_event>(
+        [ingest](const mdev::feed_binding_changed_event&) {
+            BOOST_LOG_SEV(lg(), info) << "Feed binding changed — refreshing ingest loop.";
+            ingest->refresh();
+        });
+    event_source.start();
+
     co_await ores::service::service::run(
         io_ctx,
         nats,
         make_context(cfg.database),
         "ores.marketdata.service",
-        [&cfg](auto& n, auto c, auto v) {
+        [&cfg, ingest](auto& n, auto c, auto v) {
             return ores::marketdata::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v), cfg.http_base_url);
         },
-        [&nats](boost::asio::io_context& ioc) {
+        [&nats, ingest](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
+            ingest->start();
         });
 
+    event_source.stop();
     co_return;
 }
 

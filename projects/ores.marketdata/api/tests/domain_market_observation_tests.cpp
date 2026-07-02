@@ -62,11 +62,11 @@ TEST_CASE("create_curve_observation_with_tenor", tags) {
     CHECK(sut.observation_datetime ==
           std::chrono::system_clock::time_point{std::chrono::sys_days{
               std::chrono::year{2024} / std::chrono::month{3} / std::chrono::day{20}}});
-    CHECK(sut.point_id.has_value());
-    CHECK(sut.point_id.value() == "1Y");
+    CHECK(!sut.point_id.empty());
+    CHECK(sut.point_id == "1Y");
     CHECK(sut.value == "0.034567");
-    CHECK(sut.source.has_value());
-    CHECK(sut.source.value() == "BLOOMBERG");
+    CHECK(!sut.source.empty());
+    CHECK(sut.source == "BLOOMBERG");
 }
 
 TEST_CASE("create_scalar_observation_without_point_id", tags) {
@@ -83,9 +83,9 @@ TEST_CASE("create_scalar_observation_without_point_id", tags) {
     sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Scalar observation: " << sut;
 
-    CHECK(!sut.point_id.has_value());
+    CHECK(sut.point_id.empty());
     CHECK(sut.value == "1.08450");
-    CHECK(!sut.source.has_value());
+    CHECK(sut.source.empty());
 }
 
 TEST_CASE("create_surface_observation_with_compound_point_id", tags) {
@@ -94,8 +94,8 @@ TEST_CASE("create_surface_observation_with_compound_point_id", tags) {
     auto sut = make_curve_observation("1Y/ATM", "0.1234");
     BOOST_LOG_SEV(lg, info) << "Surface observation: " << sut;
 
-    CHECK(sut.point_id.has_value());
-    CHECK(sut.point_id.value() == "1Y/ATM");
+    CHECK(!sut.point_id.empty());
+    CHECK(sut.point_id == "1Y/ATM");
 }
 
 TEST_CASE("market_observation_json_serialisation", tags) {
@@ -128,7 +128,7 @@ TEST_CASE("create_multiple_observations_for_curve", tags) {
 
     CHECK(observations.size() == tenors.size());
     for (std::size_t i = 0; i < tenors.size(); ++i) {
-        REQUIRE(observations[i].point_id.has_value());
-        CHECK(observations[i].point_id.value() == tenors[i]);
+        REQUIRE(!observations[i].point_id.empty());
+        CHECK(observations[i].point_id == tenors[i]);
     }
 }

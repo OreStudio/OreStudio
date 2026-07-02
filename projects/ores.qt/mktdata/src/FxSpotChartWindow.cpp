@@ -21,6 +21,7 @@
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/WatermarkChartView.hpp"
 #include <QActionGroup>
 #include <QApplication>
 #include <QBrush>
@@ -130,28 +131,9 @@ QFont ui_font(double pointSize, bool bold = false) {
     return f;
 }
 
-/// QChartView that paints a faint centred symbol watermark over the plot.
-class WatermarkChartView final : public QChartView {
-public:
-    WatermarkChartView(QChart* chart, QWidget* parent, QString text)
-        : QChartView(chart, parent)
-        , text_(std::move(text)) {}
-
-protected:
-    void paintEvent(QPaintEvent* e) override {
-        QChartView::paintEvent(e);
-        QPainter p(viewport());
-        p.setRenderHint(QPainter::Antialiasing);
-        p.setFont(ui_font(34, true));
-        p.setPen(QColor(255, 255, 255, 24));
-        p.drawText(viewport()->rect(), Qt::AlignCenter, text_);
-    }
-
-private:
-    QString text_;
-};
-
 } // namespace
+
+using ores::qt::WatermarkChartView;
 
 FxSpotChartWindow::FxSpotChartWindow(ClientManager* clientManager,
                                      const marketdata::domain::market_series& series,
@@ -168,6 +150,7 @@ FxSpotChartWindow::FxSpotChartWindow(ClientManager* clientManager,
     , chartView_(nullptr)
     , candleSeries_(nullptr)
     , lineSeries_(nullptr)
+    , trackerLine_(nullptr)
     , posMarker_(nullptr)
     , axisX_(nullptr)
     , axisXTime_(nullptr)
@@ -280,6 +263,16 @@ void FxSpotChartWindow::setupChart() {
         lineSeries_->setPen(pen);
     }
 
+    // Dashed horizontal price-tracker line: extends from left edge to terminal dot.
+    trackerLine_ = new QLineSeries();
+    {
+        QPen pen(QColor(0x22, 0xC5, 0x5E, 100));
+        pen.setWidthF(1.0);
+        pen.setCosmetic(true);
+        pen.setStyle(Qt::DashLine);
+        trackerLine_->setPen(pen);
+    }
+
     // Pulsing current-position marker for the line view.
     posMarker_ = new QScatterSeries();
     posMarker_->setMarkerShape(QScatterSeries::MarkerShapeCircle);
@@ -299,6 +292,7 @@ void FxSpotChartWindow::setupChart() {
     chart->setPlotAreaBackgroundVisible(true);
     chart->addSeries(candleSeries_);
     chart->addSeries(lineSeries_);
+    chart->addSeries(trackerLine_);
     chart->addSeries(posMarker_);
 
     // Categorical X (candlesticks).
@@ -320,6 +314,7 @@ void FxSpotChartWindow::setupChart() {
     axisXTime_->setLinePenColor(grid);
     chart->addAxis(axisXTime_, Qt::AlignBottom);
     lineSeries_->attachAxis(axisXTime_);
+    trackerLine_->attachAxis(axisXTime_);
     posMarker_->attachAxis(axisXTime_);
 
     // Shared price axis on the right — trading convention.
@@ -333,10 +328,21 @@ void FxSpotChartWindow::setupChart() {
     chart->addAxis(axisY_, Qt::AlignRight);
     candleSeries_->attachAxis(axisY_);
     lineSeries_->attachAxis(axisY_);
+    trackerLine_->attachAxis(axisY_);
     posMarker_->attachAxis(axisY_);
 
     chartView_ = new WatermarkChartView(chart, this, pretty_pair(oreKey_));
     chartView_->setRenderHint(QPainter::Antialiasing);
+
+    // Overlay shown while loading or when no data/error is available.
+    statusOverlay_ = new QLabel(tr("Loading…"), chartView_);
+    statusOverlay_->setAlignment(Qt::AlignCenter);
+    statusOverlay_->setAttribute(Qt::WA_TransparentForMouseEvents);
+    statusOverlay_->setStyleSheet(
+        "background: transparent; color: rgba(203,213,225,180); font-size: 16px;");
+    statusOverlay_->setGeometry(chartView_->rect());
+    statusOverlay_->raise();
+    statusOverlay_->show();
 }
 
 void FxSpotChartWindow::reload() {
@@ -365,6 +371,7 @@ void FxSpotChartWindow::startBackfill() {
                     return {};
                 marketdata::messaging::get_market_observations_request req;
                 req.series_id = boost::uuids::to_string(series_id);
+                req.limit = 500;
                 auto result = cm->process_authenticated_request(std::move(req));
                 BackfillResult r;
                 if (!result) {
@@ -372,8 +379,13 @@ void FxSpotChartWindow::startBackfill() {
                     r.error_message = QString::fromStdString(result.error());
                     return r;
                 }
-                r.points.reserve(result->observations.size());
-                for (const auto& o : result->observations) {
+                const auto sid = boost::uuids::to_string(series_id);
+                auto obs = std::move(result->market_observations);
+                obs.erase(std::remove_if(obs.begin(), obs.end(),
+                    [&](const auto& o) { return boost::uuids::to_string(o.series_id) != sid; }),
+                    obs.end());
+                r.points.reserve(obs.size());
+                for (const auto& o : obs) {
                     try {
                         r.points.emplace_back(static_cast<double>(to_ms(o.observation_datetime)),
                                               std::stod(o.value));
@@ -396,6 +408,10 @@ void FxSpotChartWindow::startBackfill() {
 void FxSpotChartWindow::onBackfillLoaded() {
     const auto result = backfillWatcher_->result();
     if (!result.success) {
+        if (statusOverlay_) {
+            statusOverlay_->setText(tr("⚠  Could not load data\n%1").arg(result.error_message));
+            statusOverlay_->show();
+        }
         emit errorOccurred(result.error_message);
         return;
     }
@@ -408,6 +424,12 @@ void FxSpotChartWindow::onBackfillLoaded() {
         samples_.pop_front();
     rebuildFromPoints();
 
+    if (statusOverlay_) {
+        if (samples_.empty())
+            statusOverlay_->setText(tr("No data available"));
+        else
+            statusOverlay_->hide();
+    }
     emit statusChanged(tr("Backfilled %1 observation(s) for %2").arg(samples_.size()).arg(oreKey_));
 
     startLiveSubscription();
@@ -424,6 +446,7 @@ void FxSpotChartWindow::startLiveSubscription() {
         subscription_ = std::make_unique<marketdata::client::fx_spot_subscription>(
             clientManager_->nats_client(),
             oreKey_.toStdString(),
+            clientManager_->currentTenantId(),
             [self](const marketdata::domain::fx_spot_tick& tick) {
                 const qint64 ms = to_ms(tick.datetime);
                 const double mid = tick.mid;
@@ -462,6 +485,7 @@ void FxSpotChartWindow::addSample(qint64 ms, double mid) {
 }
 
 void FxSpotChartWindow::rebuildFromPoints() {
+    axisY_->setRange(0.0, 0.0); // reset so applyYRange sets unconditionally
     candles_.clear();
     for (const auto& p : samples_) {
         const qint64 ms = static_cast<qint64>(p.x());
@@ -482,15 +506,28 @@ void FxSpotChartWindow::rebuildFromPoints() {
 
 void FxSpotChartWindow::applyYRange(double minV, double maxV) {
     const double rawRange = maxV - minV;
-    const double pad = (rawRange > 0.0) ? rawRange * 0.08 : std::max(maxV * 0.0005, 1e-6);
+    const double pad = std::max({rawRange * 0.05, maxV * 0.002, 0.0001});
     const double pMin = minV - pad;
     const double pMax = maxV + pad;
     const double step = nice_step(pMax - pMin, 6);
     const double rMin = std::floor(pMin / step) * step;
     const double rMax = std::ceil(pMax / step) * step;
-    axisY_->setRange(rMin, rMax);
+
+    // Only expand — never shrink. Axis contracts only on explicit reload so
+    // the chart doesn't jump on every tick.
+    const double curMin = axisY_->min();
+    const double curMax = axisY_->max();
+    if (curMin == 0.0 && curMax == 0.0) {
+        // First call — set unconditionally.
+        axisY_->setRange(rMin, rMax);
+    } else {
+        const double newMin = std::min(rMin, curMin);
+        const double newMax = std::max(rMax, curMax);
+        if (newMin != curMin || newMax != curMax)
+            axisY_->setRange(newMin, newMax);
+    }
     axisY_->setTickType(QValueAxis::TicksDynamic);
-    axisY_->setTickAnchor(rMin);
+    axisY_->setTickAnchor(axisY_->min());
     axisY_->setTickInterval(step);
 }
 
@@ -588,6 +625,11 @@ void FxSpotChartWindow::refreshLine() {
     axisXTime_->setRange(QDateTime::fromMSecsSinceEpoch(lo), QDateTime::fromMSecsSinceEpoch(hi));
     applyYRange(minY, maxY);
 
+    // Price-tracker: dashed horizontal from snapped X-left-edge to terminal dot.
+    const double currentPrice = pts.back().y();
+    trackerLine_->replace({{static_cast<double>(lo), currentPrice},
+                           {pts.back().x(),          currentPrice}});
+
     if (auto* chart = chartView_ ? chartView_->chart() : nullptr)
         chart->setTitle(tr("%1 (Mid)   %2").arg(oreKey_).arg(pts.back().y(), 0, 'f', 5));
 }
@@ -600,12 +642,14 @@ void FxSpotChartWindow::applyMode() {
 
     lineSeries_->setVisible(!candles);
     axisXTime_->setVisible(!candles);
+    trackerLine_->setVisible(!candles);
     posMarker_->setVisible(!candles); // current-position marker is line-view only
 
     // Clear the inactive series so no stale plot/axis lingers from the other
     // view; the active one is rebuilt from samples_/candles_ below.
     if (candles) {
         lineSeries_->clear();
+        trackerLine_->clear();
         posMarker_->clear();
         flashTimer_->stop();
     } else {

@@ -334,6 +334,15 @@ public:
     }
 
     /**
+     * @brief Get the tenant_id for the current session (empty if not logged in).
+     */
+    std::string currentTenantId() const {
+        if (!session_.is_logged_in())
+            return {};
+        return session_.auth().tenant_id;
+    }
+
+    /**
      * @brief Get the name of the currently selected party.
      */
     QString currentPartyName() const {

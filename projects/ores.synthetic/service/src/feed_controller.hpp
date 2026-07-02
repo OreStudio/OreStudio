@@ -30,7 +30,10 @@
 #include "process_factory.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <atomic>
+#include <random>
 #include <cctype>
+#include <chrono>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -75,18 +78,23 @@ public:
         , tenant_id_(std::move(tenant_id)) {}
 
     ~feed_controller() {
+        stop_flag_.store(true, std::memory_order_relaxed);
+        if (status_thread_.joinable())
+            status_thread_.join();
         shutdown();
     }
+
+    enum class start_result { started, already_running };
 
     /**
      * @brief Start one producer feed. Keyed by source_name (unique per producer).
      *
-     * Resolves/creates the market series for ore_key, derives the producer
-     * subject from source_name, builds the process and spawns its tick thread.
-     * Returns false if a feed with this source_name is already running or the
-     * series could not be resolved.
+     * Derives the producer subject from source_name, builds the process and
+     * spawns its tick thread. Series resolution is handled lazily by the
+     * marketdata ingest loop on first tick arrival — the synthetic service has
+     * no marketdata writes to perform.
      */
-    bool start(const std::string& ore_key,
+    start_result start(const std::string& ore_key,
                const std::string& source_name,
                std::vector<double> means,
                std::vector<double> stdevs,
@@ -94,36 +102,40 @@ public:
                double initial_price,
                double ticks_per_hour,
                const std::string& process_type = "geometric") {
-        // Resolve the series BEFORE locking — it makes blocking NATS RPCs, and we
-        // must not hold mu_ (which stop()/shutdown() also take) across network I/O.
-        // resolve_series is find-or-create, so a concurrent duplicate start costs
-        // at worst one extra lookup, not a corrupt state.
-        boost::uuids::uuid series_id{};
-        if (!resolve_series(ore_key, series_id))
-            return false;
-
         std::lock_guard lock(mu_);
         const std::string key = source_name.empty() ? ore_key : source_name;
         if (feeds_.contains(key))
-            return false;
+            return start_result::already_running;
 
+        // Use a persistent random_device so the OS entropy pool is not
+        // re-seeded between rapid successive calls (which can produce equal
+        // values on some platforms when called on separate temporaries).
+        static std::random_device rd;
+        const std::uint32_t seed = rd();
+        BOOST_LOG_SEV(lg(), ores::logging::info)
+            << "SYNTHETIC SEED: source='" << key << "' seed=" << seed;
         auto process = process_factory::make_process(
-            process_type, std::move(means), std::move(stdevs), std::move(weights), initial_price);
+            process_type, std::move(means), std::move(stdevs), std::move(weights), initial_price,
+            seed);
         auto feed = std::make_shared<fx_spot_feed>(nats_,
-                                                   auth_nats_,
                                                    ore_key,
                                                    producer_subject(key),
                                                    std::move(process),
-                                                   ticks_per_hour,
-                                                   series_id,
-                                                   tenant_id_);
+                                                   ticks_per_hour);
         running_feed rf;
         rf.feed = feed;
         rf.thread = std::thread([feed]() { feed->start([](const auto& /*tick*/) {}); });
         feeds_.emplace(key, std::move(rf));
-        BOOST_LOG_SEV(lg(), ores::logging::info) << "Started feed '" << key << "' (" << ore_key
-                                                 << "), now " << feeds_.size() << " running.";
-        return true;
+        BOOST_LOG_SEV(lg(), ores::logging::info)
+            << "SYNTHETIC START: source='" << key
+            << "' ore_key='" << ore_key
+            << "' subject='" << producer_subject(key)
+            << "' ticks_per_hour=" << ticks_per_hour
+            << " — now " << feeds_.size() << " feed(s) running";
+        if (!status_thread_.joinable()) {
+            status_thread_ = std::thread(&feed_controller::status_loop, this);
+        }
+        return start_result::started;
     }
 
     /**
@@ -165,7 +177,48 @@ public:
         return feeds_.size();
     }
 
+    /** @brief Snapshot of source_names for all currently running feeds. */
+    std::vector<std::string> list() const {
+        std::lock_guard lock(mu_);
+        std::vector<std::string> names;
+        names.reserve(feeds_.size());
+        for (const auto& [key, _] : feeds_)
+            names.push_back(key);
+        return names;
+    }
+
 private:
+    static constexpr std::chrono::minutes status_interval_{1};
+
+    void status_loop() {
+        using namespace std::chrono;
+        constexpr auto slice = milliseconds(200);
+        auto next = steady_clock::now() + status_interval_;
+        while (!stop_flag_.load(std::memory_order_relaxed)) {
+            std::this_thread::sleep_for(slice);
+            if (steady_clock::now() >= next) {
+                log_status();
+                next = steady_clock::now() + status_interval_;
+            }
+        }
+    }
+
+    void log_status() const {
+        std::lock_guard lock(mu_);
+        if (feeds_.empty()) {
+            BOOST_LOG_SEV(lg(), ores::logging::info) << "SYNTHETIC STATUS: no feeds running";
+            return;
+        }
+        for (const auto& [key, rf] : feeds_) {
+            const auto count = rf.feed ? rf.feed->publish_count() : 0;
+            BOOST_LOG_SEV(lg(), ores::logging::info)
+                << "SYNTHETIC STATUS: source='" << key
+                << "' ore_key='" << rf.feed->ore_key()
+                << "' subject='" << producer_subject(key)
+                << "' published=" << count;
+        }
+    }
+
     struct running_feed {
         std::shared_ptr<fx_spot_feed> feed;
         std::thread thread;
@@ -233,7 +286,7 @@ private:
         s.metric = metric;
         s.qualifier = qualifier;
         s.asset_class = asset_class::fx;
-        s.subclass = series_subclass::spot;
+        s.series_subclass = series_subclass::spot;
         s.is_scalar = true;
         s.modified_by = "ores.synthetic.service";
         s.performed_by = "ores.synthetic.service";
@@ -259,6 +312,9 @@ private:
 
     mutable std::mutex mu_;
     std::map<std::string, running_feed> feeds_;
+
+    std::atomic<bool> stop_flag_{false};
+    std::thread status_thread_;
 };
 
 }

@@ -1,0 +1,211 @@
+:PROPERTIES:
+:ID: D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890
+:END:
+#+title: ores.marketdata.feed_binding
+#+description: Codegen entity model for the marketdata feed_bindings table; binds an official ORE key to one raw synthetic producer channel.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: feed_binding
+#+entity_plural: feed_bindings
+#+entity_title: Feed Binding
+#+brief: Persisted mapping that binds an official ORE market series (ore_key) to one raw synthetic producer channel (source_name); enables/disables the ingest loop subscription.
+#+created: 2026-06-30
+#+updated: 2026-06-30
+
+A feed binding records which raw producer channel feeds an official market
+series. The marketdata service reads all enabled bindings at startup, subscribes
+to =synthetic.v1.tick.<source_name>=, persists each arriving tick as a
+=market_observation=, and republishes on the official tenant-scoped stream
+=marketdata.v1.tick.<tenant_id>.<ore_key>=.
+
+Rebinding (editing =source_name=) switches the ingest source without restarting
+producers. Setting =enabled = false= suspends the subscription without deleting
+the binding.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this feed binding.
+
+* Natural keys
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Party that owns this feed binding.
+
+Set server-side from the authenticated session. Enforced by RLS.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** ore_key
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Official ORE market data key for the series being bound (e.g. =FX/RATE/EUR/USD=).
+
+** source_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique producer identity; the ingest loop subscribes to
+=synthetic.v1.tick.<source_name>=. Matches the =source_name= field in
+=start_market_feed_config_request=.
+
+* Columns
+
+** enabled
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: true
+:END:
+
+When true the marketdata service maintains an active NATS subscription for this
+binding. Setting to false suspends ingestion without removing the binding record.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_marketdata_feed_bindings_tbl
+:END:
+
+** Checks
+
+| expression       |
+|------------------|
+| "ore_key" <> ''  |
+| "source_name" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: feed_binding
+:entity_plural_short:   feed_bindings
+:entity_singular_words: feed binding
+:entity_plural_words:   feed bindings
+:END:
+
+*** read_latest_all_tenants
+:PROPERTIES:
+:ID: B3E91D47-A2C6-4F18-9E5D-7C8B0A1F6D32
+:END:
+
+Reads the latest feed bindings across all tenants. Used by the ingest
+loop which must subscribe to all active bindings regardless of tenant.
+Skips the tenant_id filter and queries only on =valid_to == max=.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::feed_binding> read_latest_all_tenants(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::feed_binding>
+feed_binding_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<feed_binding_entity>> |
+                       where("valid_to"_c == max.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<feed_binding_entity, domain::feed_binding>(
+        ctx,
+        query,
+        [](const auto& entities) { return feed_binding_mapper::map(entities); },
+        lg(),
+        "Reading latest feed bindings across all tenants");
+}
+#+end_src
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fb
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.marketdata.api/domain/feed_binding.hpp
+:domain_class:            ores::marketdata::domain::feed_binding
+:protocol_include:        ores.marketdata.api/messaging/feed_binding_protocol.hpp
+:collection_name:         feed_bindings
+:item_var:                feed_binding
+:key_field:               ore_key
+:has_uuid_primary_key:    true
+:get_request_class:       marketdata::messaging::get_feed_bindings_request
+:get_response_class:      marketdata::messaging::get_feed_bindings_response
+:get_message_type:        get_feed_bindings_request
+:save_request_class:      marketdata::messaging::save_feed_binding_request
+:save_response_class:     marketdata::messaging::save_feed_binding_response
+:save_message_type:       save_feed_binding_request
+:save_request_item_field: data
+:delete_request_class:    marketdata::messaging::delete_feed_binding_request
+:delete_response_class:   marketdata::messaging::delete_feed_binding_response
+:delete_message_type:     delete_feed_binding_request
+:history_request_class:   marketdata::messaging::get_feed_binding_history_request
+:history_response_class:  marketdata::messaging::get_feed_binding_history_response
+:history_message_type:    get_feed_binding_history_request
+:settings_group:          FeedBindingListWindow
+:window_title:            Feed Bindings
+:icon:                    ServerLink
+:has_change_reason_cache: true
+:END:
+
+*** Detail fields
+
+| field       | label       | widget      | type      | is_key | is_required | placeholder       |
+|-------------+-------------+-------------+-----------+--------+-------------+-------------------|
+| ore_key     | ORE Key     | oreKeyEdit  | line_edit | true   | true        | Enter ORE key     |
+| source_name | Source Name | sourceEdit  | line_edit |        | true        | Enter source name |
+| enabled     | Enabled     | enabledEdit | check_box |        |             |                   |
+
+*** Columns (Qt model)
+
+| enum_name  | field       | header      | type    | width |
+|------------+-------------+-------------+---------+-------|
+| OreKey     | ore_key     | ORE Key     | string  | 200   |
+| SourceName | source_name | Source Name | string  | 200   |
+| Enabled    | enabled     | Enabled     | boolean | 80    |
+| Version    | version     | Version     | int     | 80    |
+| ModifiedBy | modified_by | Modified By | string  | 120   |

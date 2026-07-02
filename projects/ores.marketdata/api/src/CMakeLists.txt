@@ -44,7 +44,8 @@ target_link_libraries(${lib_target_name}
         ores.platform.lib
     PRIVATE
         ores.utility.lib
-        faker-cxx::faker-cxx)
+        faker-cxx::faker-cxx
+        libfort::fort)
 # Note: reflectcpp comes transitively through ores.platform.lib (PUBLIC)
 
 

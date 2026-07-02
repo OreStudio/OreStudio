@@ -57,12 +57,15 @@ public:
     /**
      * @brief Subscribe to tick updates for an ORE key.
      *
-     * @param nats      Connected NATS client to subscribe on.
-     * @param ore_key   ORE canonical key, e.g. "FX/RATE/EUR/USD".
-     *                  Converted internally to "marketdata.v1.tick.fx.rate.eur.usd".
-     * @param on_tick   Invoked on the NATS delivery thread for each valid tick.
+     * @param nats       Connected NATS client to subscribe on.
+     * @param ore_key    ORE canonical key, e.g. "FX/RATE/EUR/USD".
+     * @param tenant_id  Tenant UUID string; included in the NATS subject so the
+     *                   subscription matches the tenant-scoped publish path used
+     *                   by the ingest loop.
+     * @param on_tick    Invoked on the NATS delivery thread for each valid tick.
      */
-    fx_spot_subscription(ores::nats::service::client& nats, std::string ore_key, handler on_tick);
+    fx_spot_subscription(ores::nats::service::client& nats, std::string ore_key,
+                         std::string tenant_id, handler on_tick);
 
     ~fx_spot_subscription() = default;
 

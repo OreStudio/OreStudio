@@ -20,6 +20,7 @@
 #include "ores.qt/MarketDataController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FxSpotChartWindow.hpp"
+#include "ores.qt/FxSpotGridWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MarketFixingDetailMdiWindow.hpp"
 #include "ores.qt/MarketFixingsMdiWindow.hpp"
@@ -40,7 +41,9 @@ MarketDataController::MarketDataController(QMainWindow* mainWindow,
     , seriesListWindow_(nullptr)
     , seriesListMdiSubWindow_(nullptr)
     , fixingsListWindow_(nullptr)
-    , fixingsListMdiSubWindow_(nullptr) {
+    , fixingsListMdiSubWindow_(nullptr)
+    , fxSpotGridWindow_(nullptr)
+    , fxSpotGridMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "MarketDataController created";
 }
@@ -171,6 +174,8 @@ void MarketDataController::closeAllWindows() {
     seriesListMdiSubWindow_ = nullptr;
     fixingsListWindow_ = nullptr;
     fixingsListMdiSubWindow_ = nullptr;
+    fxSpotGridWindow_ = nullptr;
+    fxSpotGridMdiSubWindow_ = nullptr;
 }
 
 void MarketDataController::reloadListWindow() {
@@ -281,6 +286,54 @@ void MarketDataController::showFxSpotChartWindow(const marketdata::domain::marke
         });
 
     show_managed_window(subWindow, seriesListMdiSubWindow_);
+}
+
+void MarketDataController::showFxSpotGridWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "showFxSpotGridWindow called";
+
+    const QString key = build_window_key("fx_spot_grid", "singleton");
+    if (try_reuse_window(key)) {
+        BOOST_LOG_SEV(lg(), debug) << "Reusing existing FX spot grid window";
+        return;
+    }
+
+    fxSpotGridWindow_ = new FxSpotGridWindow(clientManager_);
+
+    connect(fxSpotGridWindow_,
+            &FxSpotGridWindow::statusChanged,
+            this,
+            &MarketDataController::statusMessage);
+    connect(fxSpotGridWindow_,
+            &FxSpotGridWindow::errorOccurred,
+            this,
+            &MarketDataController::errorMessage);
+
+    fxSpotGridMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
+    fxSpotGridMdiSubWindow_->setWidget(fxSpotGridWindow_);
+    fxSpotGridMdiSubWindow_->setWindowTitle(tr("FX Spot"));
+    fxSpotGridMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::ChartMultiple, IconUtils::DefaultIconColor));
+    fxSpotGridMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    fxSpotGridMdiSubWindow_->resize(fxSpotGridWindow_->sizeHint());
+
+    mdiArea_->addSubWindow(fxSpotGridMdiSubWindow_);
+    fxSpotGridMdiSubWindow_->show();
+
+    track_window(key, fxSpotGridMdiSubWindow_);
+    register_detachable_window(fxSpotGridMdiSubWindow_);
+
+    connect(fxSpotGridMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<MarketDataController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->fxSpotGridWindow_ = nullptr;
+                self->fxSpotGridMdiSubWindow_ = nullptr;
+            });
+
+    BOOST_LOG_SEV(lg(), debug) << "FX spot grid window created";
 }
 
 void MarketDataController::showFixingDetailWindow(const marketdata::domain::market_series& series) {

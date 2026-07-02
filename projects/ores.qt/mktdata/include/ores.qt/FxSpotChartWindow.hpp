@@ -26,6 +26,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include <QComboBox>
 #include <QFutureWatcher>
+#include <QLabel>
 #include <QPointF>
 #include <QTimer>
 #include <QToolBar>
@@ -147,6 +148,7 @@ private:
     QChartView* chartView_;
     QCandlestickSeries* candleSeries_;
     QLineSeries* lineSeries_;
+    QLineSeries* trackerLine_; // dashed horizontal at current price → Y-axis (line view)
     QScatterSeries* posMarker_; // pulsing marker at the latest point (line view)
     QBarCategoryAxis* axisX_;   // categorical, for candlesticks
     QDateTimeAxis* axisXTime_;  // time, for the line view
@@ -157,6 +159,8 @@ private:
 
     QFutureWatcher<BackfillResult>* backfillWatcher_;
     std::unique_ptr<marketdata::client::fx_spot_subscription> subscription_;
+
+    QLabel* statusOverlay_{nullptr}; // shown when chart has no data or an error
 };
 
 }

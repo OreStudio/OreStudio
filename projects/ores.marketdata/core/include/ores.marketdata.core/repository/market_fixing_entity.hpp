@@ -31,22 +31,27 @@ namespace ores::marketdata::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Database entity for a single index fixing.
- *
- * Maps to ores_marketdata_fixings_tbl (TimescaleDB hypertable).
- * fixing_date is stored as "YYYY-MM-DD" string mapped to a PostgreSQL
- * date column. valid_from/valid_to are managed by the insert/delete triggers.
+ * @brief Represents a market fixing in the database.
  */
 struct market_fixing_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_marketdata_fixings_tbl";
+    constexpr static const char* tablename = "ores_marketdata_market_fixings_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
+    int version = 0;
+    std::string party_id;
+
     std::string series_id;
+
     std::string fixing_date;
+
     std::string value;
     std::optional<std::string> source;
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };

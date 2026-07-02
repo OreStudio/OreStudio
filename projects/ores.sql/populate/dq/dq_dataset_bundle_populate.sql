@@ -63,5 +63,11 @@ BEGIN
         'ORE Analytics',
         'Default ORE analytics report definitions. Seeds the standard set of risk reports (NPV, VaR, CVA, XVA, etc.) for use during party provisioning.'
     );
+
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'synthetic_market_data',
+        'Synthetic Market Data',
+        'Synthetic market data generation configs for a party. Seeds a starter FX spot generator so synthetic tick generation works out of the box; more asset classes land here over time.'
+    );
 END $$;
 

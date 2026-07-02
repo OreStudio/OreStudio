@@ -40,11 +40,11 @@ infrastructure this story now builds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -58,11 +58,37 @@ infrastructure this story now builds.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Kept scope to the story's stated MVP: a single EUR/USD synthetic FX
+spot config, not the full 30-pair library (that stays a separate
+deferred task). Added a new =projects/ores.sql/populate/synthetic/=
+tree (mirroring =populate/reporting/=) with a wrapper
+=synthetic_populate.sql= and =synthetic_fx_spot_configs_populate.sql=,
+following =reporting_report_definitions_populate.sql='s exact
+structure: register a new DQ catalog ("Synthetic Market Data"),
+register the =synthetic.fx_spot_configs= dataset via
+=ores_dq_datasets_upsert_fn=, then idempotently insert one artefact row
+into =ores_dq_synthetic_fx_spot_configs_artefact_tbl=. Wired the new
+tree into the master =populate.sql= after the Reporting layer. Added a
+new =synthetic_market_data= bundle (=dq_dataset_bundle_populate.sql=)
+with the new dataset as its sole member
+(=dq_dataset_bundle_member_populate.sql=, display_order 10) —
+confirmed bundle-member registration has no ordering dependency on the
+dataset row existing yet (it's a plain text code, validated at publish
+time, not insert time), so this is safe regardless of populate.sql
+ordering.
 
 * Notes
+
+Ran all three populate scripts inside a rolled-back transaction
+against the live dev DB as the DDL user (=compass sql -u ddl=; the
+default =postgres= role fails =modified_by= account validation) —
+clean apply, correct rows in the bundle/junction/dataset/artefact
+tables. Then called
+=ores_synthetic_publish_fx_spot_configs_from_dq_fn= directly against
+a real party in the dev DB using the seeded dataset: it created both
+the shared =market_data_generation_config= container and the
+=fx_spot_generation_config= row (=FX/RATE/EUR/USD=), end to end from
+seed data to published party rows. =validate_schemas.sh= passes clean.
 
 * PRs
 
@@ -77,3 +103,9 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Shipped: a =synthetic_market_data= bundle containing one dataset
+(=synthetic.fx_spot_configs=, one EUR/USD config), selectable and
+applyable from the Qt Librarian like any other bundle. Verified
+idempotency (re-running the populate scripts is a no-op) and the full
+seed-to-published-party path against the live dev DB.

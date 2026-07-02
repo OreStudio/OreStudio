@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: F1B52238-B6FF-4B2E-B982-D9022483A34B
+:END:
+#+title: Task: Scaffold story: Synthetic data librarian support: FX foundation
+#+description: Break the story down into the full set of implementation tasks: db schema/codegen models for the synthetic data configuration container and FX sub-config, librarian defaulting logic on party creation, publishing/NATS eventing, and verification. Docs-only planning task.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_librarian_support:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Break this story into its full set of implementation tasks, so work can
+proceed task-by-task rather than as one undifferentiated blob. Expect
+tasks covering roughly: the codegen entity model(s) for the synthetic
+data configuration container and its FX sub-config; the SQL schema and
+migrations; librarian logic that defaults a configuration on party
+creation; NATS publishing/eventing for generated FX observations; and
+end-to-end verification. Review the existing
+=ores.synthetic.market_data_generation_config= entity model and the
+sprint 21 FX spot PoC/approach-analysis stories before enumerating tasks,
+to reuse what already exists rather than re-deriving it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- All follow-on tasks needed to deliver the story's acceptance criteria
+  are added to the story's =* Tasks= table, each with a clear goal.
+- Task breakdown reuses/references existing synthetic-market-data work
+  from sprint 21 rather than duplicating it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -75,7 +75,11 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 
-*** Market data generation
+*** Epic: Market data generation
+
+Build out synthetic market data generation infrastructure across the stack —
+SQL variability, entity models, and librarian-driven per-party configuration —
+starting from FX and generalising to other asset classes over time.
 
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
@@ -85,6 +89,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | [[id:6C515A93-C7D9-4B6C-B7B2-7AD433BACE44][Configurable feed status indicator in the FX spot grid]] | DONE | 2026-07-02 | 2026-07-03 | FX spot grid status pips use hardcoded CSS colours; replace with a configurable indicator once the right UX (badge vs. compact status dot) is settled. |
 | [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]] | DONE | 2026-07-02 | 2026-07-03 | Chart axis labels, per-component + combined PDF display, and stochastic process component gaps (incl. Ornstein-Uhlenbeck). |
 | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] | BACKLOG | | | Short-rate stochastic process + Curve Template raw instrument generation (deposits/FRAs/swaps), tenor-collision validation, tick-batch publishing — no bootstrapping, no vol surfaces, no QuantLib. |
+| [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] | BACKLOG | | | Librarian gives each new party a usable synthetic data configuration; FX only for now, but db tables/publishing built generically via codegen for future asset classes. |
 
 ** Tooling
 

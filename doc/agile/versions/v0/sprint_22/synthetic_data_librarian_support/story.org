@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: E5EC80BB-789B-4BD6-B6E5-DC7AA790692A
+:END:
+#+title: Story: Synthetic data librarian support: FX foundation
+#+description: Add librarian support for synthetic data so that creating a party yields a usable synthetic data configuration across asset classes. Scope the working implementation to FX only, but build the infrastructure generically (db tables, publishing, etc.) via codegen so other asset classes can be added later.
+#+type: story
+#+level: s2
+#+filetags: :market_data:synthetic:librarian:fx:codegen:v0:sprint_22:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+When a party is created, the librarian gives it a usable synthetic data
+configuration out of the box, so downstream generation, publishing, and
+consumption work without manual setup per party. The configuration model
+must span asset classes generically, but the only asset class wired up
+end-to-end in this story is FX (spot). The db tables (e.g.
+=ores.synthetic.market_data_generation_config= and its sub-configs),
+publishing/NATS eventing, and librarian defaulting logic are all generated
+via =ores.codegen= so the same infrastructure extends to future asset
+classes without rework.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-02                               |
+
+* Acceptance
+
+- Creating a party (via librarian) results in a usable synthetic data
+  configuration being available for it, covering at least FX spot.
+- The synthetic data configuration db schema and generated code
+  (entity, repository, NATS publishing) are asset-class-generic —
+  adding a new asset class means adding a sub-configuration, not
+  reworking the container/infrastructure.
+- All new entities/components are produced via =ores.codegen=, not
+  hand-written.
+- FX synthetic data generation, once configured, publishes observations
+  through the existing =ores.marketdata= NATS eventing path.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F1B52238-B6FF-4B2E-B982-D9022483A34B][Scaffold story: Synthetic data librarian support: FX foundation]] | BACKLOG | | | Break the story down into the full set of implementation tasks: db schema/codegen models for the synthetic data configuration container and FX sub-config, librarian defaulting logic on party creation, publishing/NATS eventing, and verification. Docs-only planning task. |
+
+* Decisions
+
+* Out of scope
+
+- Asset classes other than FX (spot) — infrastructure is generic, but
+  only FX is wired end-to-end.
+- New generation methodologies beyond what the sprint 21 approach
+  analysis and FX spot PoC already established.

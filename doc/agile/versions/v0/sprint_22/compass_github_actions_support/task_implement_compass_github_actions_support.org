@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 5E444AD5-CB85-4F0E-BD98-AA73DED71246
+:END:
+#+title: Task: Implement Compass GitHub Actions support
+#+description: Initial task for: Compass GitHub Actions support
+#+type: task
+#+level: s1
+#+filetags: :compass_github_actions_support:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B7C756F2-985A-49FA-BE98-D50C4F418B51][Compass GitHub Actions support]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+From compass, get a quick overview of all currently executing (and recently completed) GitHub Actions runs across the repo's workflows, at a glance see which ones are failing, and for failing runs pull the underlying error detail via the gh CLI -- without having to download the full job log.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B7C756F2-985A-49FA-BE98-D50C4F418B51][Compass GitHub Actions support]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- A compass command shows a summary table of GitHub Actions runs (workflow, branch, status, conclusion) across the repo, similar in spirit to compass pr / compass fleet.
+- Failing runs are visually distinguished from passing/in-progress ones.
+- For failing runs, the command surfaces the actual failure reason (e.g. via gh run view --log-failed or gh api annotations) without shelling out to download and grep the full raw log file.
+- Documented with a recipe under doc/recipes/compass/.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

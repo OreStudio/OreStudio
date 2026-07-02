@@ -110,7 +110,7 @@ jobs:
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          max-size: 2000M
+          max-size: 1000M
           save: false
 
       - name: Install Clang
@@ -218,7 +218,7 @@ jobs:
           ctest -VV --preset $preset --script "CTest.cmake,$cmake_args"
 
       - name: Delete sccache entry
-        if: success()
+        if: ${{ !cancelled() }}
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -228,7 +228,7 @@ jobs:
             || true
 
       - name: Save sccache
-        if: success()
+        if: ${{ !cancelled() }}
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}

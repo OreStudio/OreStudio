@@ -20,10 +20,14 @@ configuration out of the box, so downstream generation, publishing, and
 consumption work without manual setup per party. The configuration model
 must span asset classes generically, but the only asset class wired up
 end-to-end in this story is FX (spot). The db tables (e.g.
-=ores.synthetic.market_data_generation_config= and its sub-configs),
-publishing/NATS eventing, and librarian defaulting logic are all generated
-via =ores.codegen= so the same infrastructure extends to future asset
-classes without rework.
+=ores.synthetic.market_data_generation_config= and its sub-configs) and
+the entity's own publishing/NATS eventing are generated via
+=ores.codegen= as usual. The DQ publish-from-dq wiring specifically
+(artefact-type row, publish function, handler, registrar) is
+hand-written for this story, following the existing =report_definitions=
+instance as the template — generalising it into a reusable codegen
+facet is deferred to
+[[id:53116563-2667-48CD-941E-8521D3E42CBC][a dedicated backlog story]].
 
 * Status
 
@@ -31,9 +35,9 @@ classes without rework.
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Scaffolding done; 5 tasks queued.       |
+| Now           | Scaffolding done; codegen-facet tasks split off to backlog. |
 | Waiting on    | Nothing.                               |
-| Next          | Design the publish_from_dq codegen facet. |
+| Next          | Hand-write the synthetic FX config's DQ artefact-type wiring. |
 | Last touched  | 2026-07-02                               |
 
 * Acceptance
@@ -44,8 +48,11 @@ classes without rework.
   (entity, repository, NATS publishing) are asset-class-generic —
   adding a new asset class means adding a sub-configuration, not
   reworking the container/infrastructure.
-- All new entities/components are produced via =ores.codegen=, not
-  hand-written.
+- The synthetic FX config entity itself (domain, repository, NATS
+  eventing) is produced via =ores.codegen=, as usual for any entity.
+  The DQ publish-from-dq function/handler/registrar are hand-written
+  for now (see Decisions) — that gap is tracked separately, not a
+  blocker for this story.
 - FX synthetic data generation, once configured, publishes observations
   through the existing =ores.marketdata= NATS eventing path.
 
@@ -54,9 +61,9 @@ classes without rework.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:F1B52238-B6FF-4B2E-B982-D9022483A34B][Scaffold story: Synthetic data librarian support: FX foundation]] | DONE | | 2026-07-02 | Break the story down into the full set of implementation tasks: db schema/codegen models for the synthetic data configuration container and FX sub-config, librarian defaulting logic on party creation, publishing/NATS eventing, and verification. Docs-only planning task. |
-| [[id:1AA74B93-B0F4-4B30-8AEA-5EB7C1A8940B][Design the publish_from_dq codegen facet]] | BACKLOG | | | Design a new ores.codegen facet that hangs off an entity's existing codegen model and generates the artefact-type registration row, the derived shadow-table lookup_entity model, the SECURITY DEFINER publish-from-dq SQL function, the NATS handler, and registrar wiring. Use the report_definitions worked example in the publication pipeline doc as the reference shape to generalise from. |
-| [[id:60DC5E3A-ADB4-4A9F-8841-56B080330A10][Implement the publish_from_dq codegen facet]] | BACKLOG | | | Implement the facet designed in the previous task in ores.codegen, and prove it by regenerating one existing hand-written publish-from-dq instance (e.g. report_definitions) with zero behavioural diff, before applying it to a new type. |
-| [[id:44030333-A650-4EBF-9674-5819B8496114][Model synthetic FX spot config as a DQ artefact type]] | BACKLOG | | | Apply the publish_from_dq facet to ores.synthetic.market_data_generation_config / its FX spot sub-config: generate the artefact-type row, shadow table, publish function, handler, and registrar wiring so a synthetic FX config can be published from a DQ bundle into a party. |
+| [[id:1AA74B93-B0F4-4B30-8AEA-5EB7C1A8940B][Design the publish_from_dq codegen facet]] | ABANDONED | | 2026-07-02 | Split off to a dedicated backlog story ([[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]]) — too substantial to embed in this story. |
+| [[id:60DC5E3A-ADB4-4A9F-8841-56B080330A10][Implement the publish_from_dq codegen facet]] | ABANDONED | | 2026-07-02 | Split off alongside the design task, same backlog story. |
+| [[id:44030333-A650-4EBF-9674-5819B8496114][Model synthetic FX spot config as a DQ artefact type]] | BACKLOG | | | Hand-write the DQ artefact-type wiring for the synthetic FX config (artefact-type row, shadow table, publish function, handler, registrar), following report_definitions as the template — no codegen facet, that work is deferred to the backlog story above. |
 | [[id:15400ED3-A433-45E5-A0A2-4BF8B3A9459C][Seed FX spot synthetic config data and register the bundle]] | BACKLOG | | | Hand-write the populate script seeding the synthetic FX artefact table (reuse the sprint 21 deferred 30-pair library task's reference-date/spot-consistency analysis where useful), and register a new bundle (+ membership row) so it is selectable in the Librarian. |
 | [[id:CF7A91A8-5921-4211-90B0-0203D9B4A517][Decide the party-creation defaulting mechanism]] | BACKLOG | | | The Librarian's bundle Apply is a manual, user-driven action; there is no existing hook to auto-provision anything on party creation. Decide and document whether the story's 'party gets a usable config automatically' goal is satisfied by prompting Apply during party setup (e.g. from the Party Setup wizard) versus building a genuine auto-trigger (e.g. a party_changed_event listener), and record the decision and rationale in the story's Decisions section. |
 | [[id:6D767C51-AD61-4687-AD6F-1F3D273DCCE9][End-to-end verification: party to published FX ticks]] | BACKLOG | | | Create a party, apply the synthetic FX bundle per the decided mechanism, and confirm a usable synthetic FX spot config is created and ores.synthetic.service picks it up and publishes ticks over the existing ores.marketdata NATS eventing path. |
@@ -70,9 +77,13 @@ classes without rework.
 - Most of the pipeline's schema layer is already codegen-generated
   (bundle, junction, artefact-type, shadow artefact table); the actual
   codegen gap is the publish-from-dq SQL function + NATS handler +
-  registrar wiring, hand-written 25 times today. This story adds a
-  =publish_from_dq= facet to close that gap generically, rather than
-  hand-writing a 26th copy.
+  registrar wiring, hand-written 25 times today. A generic codegen
+  facet to close that gap was judged too substantial to build inside
+  this story — it's deferred to
+  [[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]] in the
+  product backlog. This story hand-writes its publish-from-dq
+  artefacts (a 26th copy, using =report_definitions= as the template)
+  so it isn't blocked on that larger effort.
 - There is no existing mechanism to trigger anything automatically on
   party creation (=party_service::save_party= is a plain upsert); "the
   librarian gives it a usable config" in the Goal will be satisfied

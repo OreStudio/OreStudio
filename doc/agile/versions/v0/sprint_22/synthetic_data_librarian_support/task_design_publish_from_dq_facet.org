@@ -38,11 +38,11 @@ naming conventions).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -78,3 +78,13 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned in favour of a dedicated backlog story: the
+=publish_from_dq= codegen facet is substantial enough work to deserve
+its own story rather than being embedded in (and blocking) the FX
+librarian story. See
+[[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]]
+(=doc/agile/product_backlog/next/publish_from_dq_codegen_facet/story.org=)
+for the carried-forward goal/acceptance. The FX story instead
+hand-writes its publish-from-dq function using =report_definitions= as
+the template.

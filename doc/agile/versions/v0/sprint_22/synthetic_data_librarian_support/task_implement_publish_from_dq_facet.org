@@ -32,11 +32,11 @@ applying the facet to any new entity.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -73,3 +73,7 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned alongside the design task — carried forward to
+[[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]] in the
+product backlog. Not needed for this story to ship.

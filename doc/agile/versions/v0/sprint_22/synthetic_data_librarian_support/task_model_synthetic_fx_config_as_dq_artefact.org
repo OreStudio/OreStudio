@@ -2,7 +2,7 @@
 :ID: 44030333-A650-4EBF-9674-5819B8496114
 :END:
 #+title: Task: Model synthetic FX spot config as a DQ artefact type
-#+description: Apply the publish_from_dq facet to ores.synthetic.market_data_generation_config / its FX spot sub-config: generate the artefact-type row, shadow table, publish function, handler, and registrar wiring so a synthetic FX config can be published from a DQ bundle into a party.
+#+description: Hand-write the DQ artefact-type wiring for ores.synthetic.market_data_generation_config / its FX spot sub-config: the artefact-type row, shadow table (via ores.codegen.lookup_entity, as report_definitions does today), publish function, handler, and registrar wiring, following the report_definitions instance as the template — no codegen facet, that work is deferred.
 #+type: task
 #+level: s1
 #+filetags: :synthetic_data_librarian_support:sprint_22:v0:
@@ -20,14 +20,20 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Apply the =publish_from_dq= facet to
-=ores.synthetic.market_data_generation_config= and its FX spot
-sub-config so that a synthetic FX config becomes publishable from a DQ
-bundle: the artefact-type row, shadow table, publish function
+Wire =ores.synthetic.market_data_generation_config= and its FX spot
+sub-config into the DQ publish-from-dq pattern so a synthetic FX
+config becomes publishable from a DQ bundle: the artefact-type row,
+shadow table (an =ores.codegen.lookup_entity= model, same mechanism
+=report_definitions= uses today), the publish function
 (=ores_synthetic_publish_fx_spot_config_from_dq_fn= or equivalent),
-NATS handler, and registrar wiring should all be facet-generated —
-this is the story's proof that the generic infrastructure holds for a
-type outside =ores.refdata=/=ores.reporting=.
+NATS handler, and registrar wiring. Deferred per
+[[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]]: this task
+hand-writes the publish function/handler/registrar using the
+=report_definitions= instance
+(=projects/ores.sql/create/reporting/reporting_publish_from_dq_create.sql=,
+=publish_from_dq_handler.{hpp,cpp}=,
+=projects/ores.reporting/core/src/messaging/registrar.cpp=) as the
+copy-and-adapt template, rather than waiting on the codegen facet.
 
 * Status
 
@@ -42,14 +48,15 @@ type outside =ores.refdata=/=ores.reporting=.
 
 * Acceptance
 
-- Enabling the facet on the synthetic FX config entity model generates
-  a working artefact-type row, shadow table, publish function,
-  handler, and registrar entry — no hand-written SQL/C++ beyond the
-  facet declaration.
-- The generated publish function writes only into
-  =ores.synthetic='s own tables, per the strict service-table
-  isolation exception documented in
-  [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern]].
+- Artefact-type row, shadow table (codegen'd lookup_entity model),
+  publish function, handler, and registrar entry all exist and are
+  wired for the synthetic FX config.
+- The publish function writes only into =ores.synthetic='s own
+  tables, per the strict service-table isolation exception documented
+  in [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern]].
+- The hand-written function/handler/registrar are written so they can
+  be dropped in favour of generated equivalents once
+  [[id:53116563-2667-48CD-941E-8521D3E42CBC][the codegen facet story]] lands, with no other rework required.
 
 * Plan
 

@@ -64,10 +64,10 @@ facet is deferred to
 | [[id:1AA74B93-B0F4-4B30-8AEA-5EB7C1A8940B][Design the publish_from_dq codegen facet]] | ABANDONED | | 2026-07-02 | Split off to a dedicated backlog story ([[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]]) — too substantial to embed in this story. |
 | [[id:60DC5E3A-ADB4-4A9F-8841-56B080330A10][Implement the publish_from_dq codegen facet]] | ABANDONED | | 2026-07-02 | Split off alongside the design task, same backlog story. |
 | [[id:44030333-A650-4EBF-9674-5819B8496114][Model synthetic FX spot config as a DQ artefact type]] | DONE | 2026-07-02 | 2026-07-02 | Hand-write the DQ artefact-type wiring for the synthetic FX config (artefact-type row, shadow table, publish function, handler, registrar), following report_definitions as the template — no codegen facet, that work is deferred to the backlog story above. |
-| [[id:15400ED3-A433-45E5-A0A2-4BF8B3A9459C][Seed FX spot synthetic config data and register the bundle]] | DONE | 2026-07-02 | 2026-07-02 | Hand-write the populate script seeding the synthetic FX artefact table (reuse the sprint 21 deferred 30-pair library task's reference-date/spot-consistency analysis where useful), and register a new bundle (+ membership row) so it is selectable in the Librarian. |
-| [[id:CF7A91A8-5921-4211-90B0-0203D9B4A517][Decide the party-creation defaulting mechanism]] | DONE | 2026-07-02 | 2026-07-02 | The Librarian's bundle Apply is a manual, user-driven action; there is no existing hook to auto-provision anything on party creation. Decide and document whether the story's 'party gets a usable config automatically' goal is satisfied by prompting Apply during party setup (e.g. from the Party Setup wizard) versus building a genuine auto-trigger (e.g. a party_changed_event listener), and record the decision and rationale in the story's Decisions section. |
-| [[id:6D767C51-AD61-4687-AD6F-1F3D273DCCE9][End-to-end verification: party to published FX ticks]] | BACKLOG | | | Create a party, apply the synthetic FX bundle per the decided mechanism, and confirm a usable synthetic FX spot config is created and ores.synthetic.service picks it up and publishes ticks over the existing ores.marketdata NATS eventing path. |
-| [[id:A8A3E98A-CC26-460A-8BE9-744D175692B0][Wire synthetic FX bundle publish into Party Setup wizard (after Reports)]] | DONE | 2026-07-02 | 2026-07-02 | Add a new automatic Phase 3.5 to PartyProvisioningWizard's PartyExecutePage that publishes the synthetic_market_data bundle, mirroring Phase 2's organisation bundle-publish pattern (automatic, WorkflowStepsWidget progress, no user picker). Sequence it after Phase 3 (report definitions) and before Phase 4 (activate). |
+| [[id:15400ED3-A433-45E5-A0A2-4BF8B3A9459C][Seed FX spot synthetic config data and register the bundle]] | DONE | 2026-07-02 | 2026-07-02 | Seed the synthetic FX artefact table (EUR/USD, GBP/USD) and add the dataset as a member of the existing ore_analytics bundle (display_order 20, right after ore.report_definitions at 10) — corrected from an earlier, unnecessary separate bundle. |
+| [[id:CF7A91A8-5921-4211-90B0-0203D9B4A517][Decide the party-creation defaulting mechanism]] | DONE | 2026-07-02 | 2026-07-02 | Corrected: no new trigger or wizard phase needed — riding the ore_analytics bundle means every existing "publish reports" call site (CLI provisioning script, Qt wizard) already picks up the FX configs for free. The earlier separate-bundle + new-wizard-phase approach was reverted. |
+| [[id:6D767C51-AD61-4687-AD6F-1F3D273DCCE9][End-to-end verification: party to published FX ticks]] | BACKLOG | | | Create a party, apply the ore_analytics bundle per the existing provisioning flow, and confirm a usable synthetic FX spot config is created and ores.synthetic.service picks it up and publishes ticks over the existing ores.marketdata NATS eventing path. |
+| [[id:A8A3E98A-CC26-460A-8BE9-744D175692B0][Wire synthetic FX bundle publish into Party Setup wizard (after Reports)]] | ABANDONED | 2026-07-02 | 2026-07-02 | Reverted: unnecessary. Adding the dataset as an ore_analytics bundle member (previous task) means the existing "publish reports" call sites already cover it — no new wizard phase or separate bundle needed. |
 
 * Decisions
 
@@ -90,17 +90,19 @@ facet is deferred to
   librarian gives it a usable config" in the Goal will be satisfied
   via the Librarian's existing manual bundle-Apply action unless the
   defaulting-decision task concludes an automatic trigger is required.
-- Defaulting mechanism decided:
-  =projects/ores.qt/application/src/PartyProvisioningWizard.cpp='s
-  =PartyExecutePage= already runs the party-creation flow as a fixed,
-  automatic sequence of backend phases — Phase 2 already
-  auto-publishes the =organisation= bundle with no user picker. Rather
-  than build a new =party_changed_event=-driven trigger, we add a new
-  automatic Phase 3.5 that publishes the =synthetic_market_data=
-  bundle the same way, sequenced after Phase 3 (report definitions)
-  and before Phase 4 (activate). Party creation in this app already
-  goes through this one wizard, so a wizard phase satisfies "usable
-  config on party creation" without introducing new infrastructure.
+- Defaulting mechanism decided, corrected: the synthetic FX dataset
+  (=synthetic.fx_spot_configs=) is a *member of the existing
+  =ore_analytics= bundle*, at =display_order 20= right after
+  =ore.report_definitions= (10) — not a separate bundle. Every
+  existing "publish reports" call site (the =ores.shell= party
+  provisioning script, and the Qt =PartyProvisioningWizard=) already
+  publishes =ore_analytics=, so riding that bundle means the FX config
+  is provisioned automatically with zero new code. An earlier attempt
+  built a separate =synthetic_market_data= bundle plus a new automatic
+  Phase 3.5 in =PartyProvisioningWizard=; both were reverted once it
+  became clear the CLI provisioning script (a second call site the
+  wizard-only fix didn't cover) proved the simpler, bundle-membership
+  approach was both sufficient and correct.
 
 * Out of scope
 

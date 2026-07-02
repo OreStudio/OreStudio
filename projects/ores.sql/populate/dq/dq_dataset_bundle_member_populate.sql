@@ -148,9 +148,6 @@ BEGIN
     -- --- ORE Analytics Bundle Members ---
 
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_analytics', 'ore.report_definitions', 10);
-
-    -- --- Synthetic Market Data Bundle Members ---
-
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_market_data', 'synthetic.fx_spot_configs', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_analytics', 'synthetic.fx_spot_configs', 20);
 END $$;
 

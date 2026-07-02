@@ -36,7 +36,7 @@ to offer yet. Insert it between =startReportInstall='s completion and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
@@ -88,8 +88,12 @@ compiled and linked cleanly with no warnings.
 
 * Result
 
-Shipped: every party created through the wizard now automatically
-gets the =synthetic_market_data= bundle applied (Phase 3.5), with no
-new user-facing prompt, regardless of whether reports were selected
-in Phase 3. Closes the loop from "party created" to "usable synthetic
-FX config" the story's Goal describes.
+Abandoned and reverted (git revert of the implementing commit). Manual
+testing via the =ores.shell= party provisioning script (Barclays test
+run) showed the CLI path never called this new wizard phase at all —
+it's a separate call site the Qt-only fix didn't cover. Root cause:
+the story never needed a new bundle or a new phase in the first place
+— adding =synthetic.fx_spot_configs= as a member of the existing
+=ore_analytics= bundle (see the seed-data task) means every existing
+"publish reports" call site, wizard and CLI alike, already covers it.
+This task's code was reverted in favour of that simpler fix.

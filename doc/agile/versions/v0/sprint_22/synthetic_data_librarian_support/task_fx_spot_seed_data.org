@@ -90,6 +90,21 @@ the shared =market_data_generation_config= container and the
 =fx_spot_generation_config= row (=FX/RATE/EUR/USD=), end to end from
 seed data to published party rows. =validate_schemas.sh= passes clean.
 
+*Correction (after a real Barclays test-provisioning run via
+=ores.shell=):* the standalone =synthetic_market_data= bundle was
+unnecessary and wrong. A second currency pair (GBP/USD) was added,
+then the bundle registration was corrected: removed the separate
+bundle, and instead added =synthetic.fx_spot_configs= as a member of
+the existing =ore_analytics= bundle at =display_order 20= (right
+after =ore.report_definitions= at 10). This means every existing
+"publish reports" call site — the =ores.shell= provisioning script and
+the Qt =PartyProvisioningWizard= — already covers the FX config with
+no new code, which a separate bundle would not have achieved (proven
+by the CLI script publishing reports but never touching the separate
+bundle). Verified against a freshly recreated dev DB: =ore_analytics=
+bundle members now list both datasets in the right order, with no
+stale =synthetic_market_data= row remaining.
+
 * PRs
 
 | PR | Title |
@@ -104,8 +119,9 @@ seed data to published party rows. =validate_schemas.sh= passes clean.
 
 * Result
 
-Shipped: a =synthetic_market_data= bundle containing one dataset
-(=synthetic.fx_spot_configs=, one EUR/USD config), selectable and
-applyable from the Qt Librarian like any other bundle. Verified
-idempotency (re-running the populate scripts is a no-op) and the full
-seed-to-published-party path against the live dev DB.
+Shipped (corrected): =synthetic.fx_spot_configs= (EUR/USD and GBP/USD,
+both ticking once a second) is a member of the existing
+=ore_analytics= bundle, right after report definitions — not a
+separate bundle. Every existing party-provisioning path picks it up
+automatically with no new code. Verified idempotency and the full
+seed-to-published-party path against a freshly recreated dev DB.

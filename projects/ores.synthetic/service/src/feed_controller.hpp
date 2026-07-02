@@ -107,7 +107,13 @@ public:
         if (feeds_.contains(key))
             return start_result::already_running;
 
-        const std::uint32_t seed = std::random_device{}();
+        // Use a persistent random_device so the OS entropy pool is not
+        // re-seeded between rapid successive calls (which can produce equal
+        // values on some platforms when called on separate temporaries).
+        static std::random_device rd;
+        const std::uint32_t seed = rd();
+        BOOST_LOG_SEV(lg(), ores::logging::info)
+            << "SYNTHETIC SEED: source='" << key << "' seed=" << seed;
         auto process = process_factory::make_process(
             process_type, std::move(means), std::move(stdevs), std::move(weights), initial_price,
             seed);

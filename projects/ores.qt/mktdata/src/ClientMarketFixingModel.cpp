@@ -137,9 +137,12 @@ void ClientMarketFixingModel::fetch_data() {
                 const auto count = static_cast<std::uint32_t>(result->total_available_count);
                 auto all = std::move(result->market_fixings);
                 const auto sid = boost::uuids::to_string(self->series_id_);
-                all.erase(std::remove_if(all.begin(), all.end(),
-                    [&](const auto& f) { return boost::uuids::to_string(f.series_id) != sid; }),
-                    all.end());
+                all.erase(std::remove_if(all.begin(),
+                                         all.end(),
+                                         [&](const auto& f) {
+                                             return boost::uuids::to_string(f.series_id) != sid;
+                                         }),
+                          all.end());
                 return {.success = true,
                         .entries = std::move(all),
                         .total_available_count = count,

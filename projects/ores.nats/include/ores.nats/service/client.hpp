@@ -155,10 +155,9 @@ public:
      * @p handler is called. @p handler is optional — pass @c {} to buffer
      * only. Call @c buffered_subscription::snapshot() to read history.
      */
-    [[nodiscard]] buffered_subscription
-    subscribe_buffered(std::string_view subject,
-                       std::size_t capacity,
-                       message_handler handler = {});
+    [[nodiscard]] buffered_subscription subscribe_buffered(std::string_view subject,
+                                                           std::size_t capacity,
+                                                           message_handler handler = {});
 
     /**
      * @brief Queue-group subscribe (competing consumers).

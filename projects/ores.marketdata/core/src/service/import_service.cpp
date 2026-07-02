@@ -48,52 +48,52 @@ struct series_classification {
 series_classification classify_series_type(const std::string& series_type) {
     static const std::map<std::string, series_classification> k_table = {
         // FX
-        {"FX",              {"fx",          "spot",         true}},
-        {"FXFWD",           {"fx",          "forward",      false}},
-        {"FX_OPTION",       {"fx",          "volatility",   false}},
+        {"FX", {"fx", "spot", true}},
+        {"FXFWD", {"fx", "forward", false}},
+        {"FX_OPTION", {"fx", "volatility", false}},
         // Rates curves
-        {"DISCOUNT",        {"rates",       "yield",        false}},
-        {"ZERO",            {"rates",       "yield",        false}},
-        {"MM",              {"rates",       "yield",        false}},
-        {"MM_FUTURE",       {"rates",       "fra",          false}},
-        {"FRA",             {"rates",       "fra",          false}},
-        {"IMM_FRA",         {"rates",       "fra",          false}},
-        {"IR_SWAP",         {"rates",       "yield",        false}},
+        {"DISCOUNT", {"rates", "yield", false}},
+        {"ZERO", {"rates", "yield", false}},
+        {"MM", {"rates", "yield", false}},
+        {"MM_FUTURE", {"rates", "fra", false}},
+        {"FRA", {"rates", "fra", false}},
+        {"IMM_FRA", {"rates", "fra", false}},
+        {"IR_SWAP", {"rates", "yield", false}},
         // Rates spreads
-        {"BASIS_SWAP",      {"rates",       "basis",        false}},
-        {"BMA_SWAP",        {"rates",       "basis",        false}},
-        {"CC_BASIS_SWAP",   {"rates",       "xccy",         false}},
-        {"CC_FIX_FLOAT_SWAP",{"rates",      "xccy",         false}},
+        {"BASIS_SWAP", {"rates", "basis", false}},
+        {"BMA_SWAP", {"rates", "basis", false}},
+        {"CC_BASIS_SWAP", {"rates", "xccy", false}},
+        {"CC_FIX_FLOAT_SWAP", {"rates", "xccy", false}},
         // Rates vols
-        {"SWAPTION",        {"rates",       "volatility",   false}},
-        {"CAPFLOOR",        {"rates",       "volatility",   false}},
+        {"SWAPTION", {"rates", "volatility", false}},
+        {"CAPFLOOR", {"rates", "volatility", false}},
         // Credit
-        {"HAZARD_RATE",     {"credit",      "spread",       false}},
-        {"CDS",             {"credit",      "spread",       false}},
-        {"CDS_INDEX",       {"credit",      "index_credit", false}},
-        {"INDEX_CDS_OPTION",{"credit",      "index_credit", false}},
-        {"RECOVERY_RATE",   {"credit",      "recovery",     true}},
+        {"HAZARD_RATE", {"credit", "spread", false}},
+        {"CDS", {"credit", "spread", false}},
+        {"CDS_INDEX", {"credit", "index_credit", false}},
+        {"INDEX_CDS_OPTION", {"credit", "index_credit", false}},
+        {"RECOVERY_RATE", {"credit", "recovery", true}},
         // Equity
-        {"EQUITY",          {"equity",      "spot",         true}},
-        {"EQUITY_FWD",      {"equity",      "forward",      false}},
-        {"EQUITY_DIVIDEND", {"equity",      "forward",      false}},
-        {"EQUITY_OPTION",   {"equity",      "volatility",   false}},
+        {"EQUITY", {"equity", "spot", true}},
+        {"EQUITY_FWD", {"equity", "forward", false}},
+        {"EQUITY_DIVIDEND", {"equity", "forward", false}},
+        {"EQUITY_OPTION", {"equity", "volatility", false}},
         // Commodity
-        {"COMMODITY",       {"commodity",   "spot",         true}},
-        {"COMMODITY_FWD",   {"commodity",   "forward",      false}},
-        {"COMMODITY_OPTION",{"commodity",   "volatility",   false}},
+        {"COMMODITY", {"commodity", "spot", true}},
+        {"COMMODITY_FWD", {"commodity", "forward", false}},
+        {"COMMODITY_OPTION", {"commodity", "volatility", false}},
         // Inflation
-        {"ZC_INFLATIONSWAP",    {"inflation","swap",        false}},
-        {"YY_INFLATIONSWAP",    {"inflation","swap",        false}},
-        {"ZC_INFLATIONCAPFLOOR",{"inflation","capfloor",    false}},
-        {"YY_INFLATIONCAPFLOOR",{"inflation","capfloor",    false}},
-        {"SEASONALITY",     {"inflation",   "seasonality",  false}},
+        {"ZC_INFLATIONSWAP", {"inflation", "swap", false}},
+        {"YY_INFLATIONSWAP", {"inflation", "swap", false}},
+        {"ZC_INFLATIONCAPFLOOR", {"inflation", "capfloor", false}},
+        {"YY_INFLATIONCAPFLOOR", {"inflation", "capfloor", false}},
+        {"SEASONALITY", {"inflation", "seasonality", false}},
         // Bond
-        {"BOND",            {"bond",        "price",        false}},
+        {"BOND", {"bond", "price", false}},
         // Cross-asset
-        {"CORRELATION",     {"cross_asset", "correlation",  true}},
+        {"CORRELATION", {"cross_asset", "correlation", true}},
         // Fixings (index series)
-        {"FIXING",          {"rates",       "yield",        true}},
+        {"FIXING", {"rates", "yield", true}},
     };
 
     const auto it = k_table.find(series_type);
@@ -144,7 +144,8 @@ import_service::import(const messaging::import_market_data_request& req) {
         s.metric = metric;
         s.qualifier = qualifier;
         s.asset_class = rfl::string_to_enum<domain::asset_class>(cl.asset_class).value();
-        s.series_subclass = rfl::string_to_enum<domain::series_subclass>(cl.series_subclass).value();
+        s.series_subclass =
+            rfl::string_to_enum<domain::series_subclass>(cl.series_subclass).value();
         s.is_scalar = cl.is_scalar;
         s.modified_by = "import";
         s.performed_by = "import";

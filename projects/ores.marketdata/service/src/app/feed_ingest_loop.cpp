@@ -19,23 +19,23 @@
  */
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <rfl/json.hpp>
 #include <algorithm>
 #include <chrono>
 #include <format>
 #include <rfl/enums.hpp>
+#include <rfl/json.hpp>
 #include <set>
 #include <stdexcept>
 
@@ -46,16 +46,18 @@ using namespace ores::logging;
 namespace {
 
 // "FX/RATE/EUR/USD" → "marketdata.v1.tick.fx.rate.eur.usd"
-std::string ore_key_to_publish_subject(const std::string& tenant_id_str,
-                                       std::string ore_key) {
-    std::transform(ore_key.begin(), ore_key.end(), ore_key.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+std::string ore_key_to_publish_subject(const std::string& tenant_id_str, std::string ore_key) {
+    std::transform(ore_key.begin(), ore_key.end(), ore_key.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
     std::replace(ore_key.begin(), ore_key.end(), '/', '.');
     return "marketdata.v1.tick." + tenant_id_str + "." + ore_key;
 }
 
 // "FX/RATE/EUR/USD" → {series_type="FX", metric="RATE", qualifier="EUR/USD"}
-struct ore_key_parts { std::string series_type, metric, qualifier; };
+struct ore_key_parts {
+    std::string series_type, metric, qualifier;
+};
 ore_key_parts parse_ore_key(const std::string& ore_key) {
     ore_key_parts p;
     std::istringstream ss(ore_key);
@@ -75,8 +77,7 @@ ore_key_parts parse_ore_key(const std::string& ore_key) {
 
 } // namespace
 
-feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
-                                   ores::database::context ctx)
+feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats, ores::database::context ctx)
     : nats_(nats)
     , ctx_(std::move(ctx)) {}
 
@@ -116,7 +117,9 @@ void feed_ingest_loop::refresh() {
     // Subscribe anything new
     for (const auto& b : bindings) {
         if (b.enabled && !subs_.contains(b.source_name))
-            subscribe_binding_locked(b.ore_key, b.source_name, b.tenant_id.to_string(),
+            subscribe_binding_locked(b.ore_key,
+                                     b.source_name,
+                                     b.tenant_id.to_string(),
                                      boost::uuids::to_string(b.party_id));
     }
 
@@ -132,10 +135,9 @@ void feed_ingest_loop::subscribe_binding_locked(const std::string& ore_key,
     const std::string publish_subject = ore_key_to_publish_subject(tenant_id_str, ore_key);
     const std::string ore_key_copy = ore_key;
 
-    BOOST_LOG_SEV(lg(), info)
-        << "INGEST SUBSCRIBE: source='" << source_name
-        << "' listening on '" << producer_subject
-        << "' → republishing on '" << publish_subject << "'";
+    BOOST_LOG_SEV(lg(), info) << "INGEST SUBSCRIBE: source='" << source_name << "' listening on '"
+                              << producer_subject << "' → republishing on '" << publish_subject
+                              << "'";
 
     auto st = std::make_shared<feed_stats>();
     st->ore_key = ore_key;
@@ -149,18 +151,22 @@ void feed_ingest_loop::subscribe_binding_locked(const std::string& ore_key,
     // runs as a single instance. If horizontal scaling is ever needed,
     // switch to queue_subscribe("ores.marketdata.service") to avoid
     // duplicate observations and duplicate republish.
-    auto tenant_ctx = ctx_.with_tenant(
-        ores::utility::uuid::tenant_id::from_string(tenant_id_str).value(),
-        "ores.marketdata.service");
+    auto tenant_ctx =
+        ctx_.with_tenant(ores::utility::uuid::tenant_id::from_string(tenant_id_str).value(),
+                         "ores.marketdata.service");
     auto sub = nats_.subscribe(
         producer_subject,
-        [this, ore_key_copy, publish_subject, uuid_gen, st, party_uuid,
+        [this,
+         ore_key_copy,
+         publish_subject,
+         uuid_gen,
+         st,
+         party_uuid,
          tenant_ctx = std::move(tenant_ctx)](ores::nats::message msg) mutable {
-            auto tick = rfl::json::read<domain::fx_spot_tick>(
-                ores::nats::as_string_view(msg.data));
+            auto tick = rfl::json::read<domain::fx_spot_tick>(ores::nats::as_string_view(msg.data));
             if (!tick) {
-                BOOST_LOG_SEV(lg(), warn) << "Failed to decode fx_spot_tick: "
-                                          << tick.error().what();
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Failed to decode fx_spot_tick: " << tick.error().what();
                 return;
             }
 
@@ -170,24 +176,27 @@ void feed_ingest_loop::subscribe_binding_locked(const std::string& ore_key,
 
             if (prev_count == 0) {
                 BOOST_LOG_SEV(lg(), info)
-                    << "INGEST FIRST TICK: source='" << ore_key_copy
-                    << "' subject='" << publish_subject
-                    << "' mid=" << tick->mid;
+                    << "INGEST FIRST TICK: source='" << ore_key_copy << "' subject='"
+                    << publish_subject << "' mid=" << tick->mid;
             }
 
             // Persist the observation
             try {
                 const auto kp = parse_ore_key(ore_key_copy);
                 repository::market_series_repository series_repo;
-                auto existing = series_repo.read_latest_by_type(
-                    tenant_ctx, kp.series_type, kp.metric, kp.qualifier,
-                    boost::uuids::to_string(party_uuid));
+                auto existing =
+                    series_repo.read_latest_by_type(tenant_ctx,
+                                                    kp.series_type,
+                                                    kp.metric,
+                                                    kp.qualifier,
+                                                    boost::uuids::to_string(party_uuid));
                 if (existing.empty()) {
-                    BOOST_LOG_SEV(lg(), info) << "Auto-creating market series for "
-                                              << ore_key_copy;
+                    BOOST_LOG_SEV(lg(), info) << "Auto-creating market series for " << ore_key_copy;
                     std::string ac_str = kp.series_type;
-                    std::transform(ac_str.begin(), ac_str.end(), ac_str.begin(),
-                                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                    std::transform(
+                        ac_str.begin(), ac_str.end(), ac_str.begin(), [](unsigned char c) {
+                            return static_cast<char>(std::tolower(c));
+                        });
                     domain::market_series series;
                     series.id = uuid_gen();
                     series.tenant_id = tenant_ctx.tenant_id();
@@ -195,8 +204,11 @@ void feed_ingest_loop::subscribe_binding_locked(const std::string& ore_key,
                     series.series_type = kp.series_type;
                     series.metric = kp.metric;
                     series.qualifier = kp.qualifier;
-                    series.asset_class = rfl::string_to_enum<domain::asset_class>(ac_str).value_or(domain::asset_class::fx);
-                    series.series_subclass = rfl::string_to_enum<domain::series_subclass>(ac_str).value_or(domain::series_subclass::spot);
+                    series.asset_class = rfl::string_to_enum<domain::asset_class>(ac_str).value_or(
+                        domain::asset_class::fx);
+                    series.series_subclass =
+                        rfl::string_to_enum<domain::series_subclass>(ac_str).value_or(
+                            domain::series_subclass::spot);
                     series.is_scalar = true;
                     series.modified_by = ctx_.service_account();
                     series.performed_by = ctx_.service_account();
@@ -217,8 +229,8 @@ void feed_ingest_loop::subscribe_binding_locked(const std::string& ore_key,
                 repository::market_observations_repository obs_repo;
                 obs_repo.write(tenant_ctx, obs);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to persist observation for "
-                                           << ore_key_copy << ": " << e.what();
+                BOOST_LOG_SEV(lg(), error)
+                    << "Failed to persist observation for " << ore_key_copy << ": " << e.what();
             }
 
             nats_.js_publish(publish_subject, msg.data);
@@ -260,16 +272,13 @@ void feed_ingest_loop::log_status() const {
         const auto last_rep = st->last_tick_rep.load(std::memory_order_relaxed);
         const auto last_tp = system_clock::time_point{system_clock::duration{last_rep}};
         const bool ever = (last_tp != system_clock::time_point::min());
-        const auto age_s = ever
-            ? duration_cast<seconds>(now - last_tp).count()
-            : -1LL;
+        const auto age_s = ever ? duration_cast<seconds>(now - last_tp).count() : -1LL;
 
-        BOOST_LOG_SEV(lg(), info)
-            << "INGEST STATUS: source='" << source
-            << "' ore_key='" << st->ore_key
-            << "' subject='" << st->nats_subject
-            << "' ticks=" << count
-            << (ever ? std::format(" last_tick={}s ago", age_s) : " last_tick=never");
+        BOOST_LOG_SEV(lg(), info) << "INGEST STATUS: source='" << source << "' ore_key='"
+                                  << st->ore_key << "' subject='" << st->nats_subject
+                                  << "' ticks=" << count
+                                  << (ever ? std::format(" last_tick={}s ago", age_s) :
+                                             " last_tick=never");
     }
 }
 

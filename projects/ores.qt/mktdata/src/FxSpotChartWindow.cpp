@@ -381,9 +381,12 @@ void FxSpotChartWindow::startBackfill() {
                 }
                 const auto sid = boost::uuids::to_string(series_id);
                 auto obs = std::move(result->market_observations);
-                obs.erase(std::remove_if(obs.begin(), obs.end(),
-                    [&](const auto& o) { return boost::uuids::to_string(o.series_id) != sid; }),
-                    obs.end());
+                obs.erase(std::remove_if(obs.begin(),
+                                         obs.end(),
+                                         [&](const auto& o) {
+                                             return boost::uuids::to_string(o.series_id) != sid;
+                                         }),
+                          obs.end());
                 r.points.reserve(obs.size());
                 for (const auto& o : obs) {
                     try {
@@ -627,8 +630,8 @@ void FxSpotChartWindow::refreshLine() {
 
     // Price-tracker: dashed horizontal from snapped X-left-edge to terminal dot.
     const double currentPrice = pts.back().y();
-    trackerLine_->replace({{static_cast<double>(lo), currentPrice},
-                           {pts.back().x(),          currentPrice}});
+    trackerLine_->replace(
+        {{static_cast<double>(lo), currentPrice}, {pts.back().x(), currentPrice}});
 
     if (auto* chart = chartView_ ? chartView_->chart() : nullptr)
         chart->setTitle(tr("%1 (Mid)   %2").arg(oreKey_).arg(pts.back().y(), 0, 'f', 5));

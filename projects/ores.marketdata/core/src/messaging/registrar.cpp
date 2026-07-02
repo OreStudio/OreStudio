@@ -18,14 +18,14 @@
  *
  */
 #include "ores.marketdata.core/messaging/registrar.hpp"
+#include "ores.marketdata.api/messaging/market_series_export_protocol.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_handler.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
-#include "ores.nats/domain/message.hpp"
-#include <functional>
 #include "ores.marketdata.core/messaging/market_fixing_handler.hpp"
 #include "ores.marketdata.core/messaging/market_observation_handler.hpp"
 #include "ores.marketdata.core/messaging/market_series_handler.hpp"
-#include "ores.marketdata.api/messaging/market_series_export_protocol.hpp"
+#include "ores.nats/domain/message.hpp"
+#include <functional>
 
 namespace ores::marketdata::messaging {
 

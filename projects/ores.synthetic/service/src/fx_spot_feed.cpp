@@ -20,7 +20,7 @@
 #include "fx_spot_feed.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick_json_io.hpp" // IWYU pragma: keep.
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/rfl/reflectors.hpp"                     // IWYU pragma: keep.
 #include <chrono>
 #include <rfl/json.hpp>
 #include <span>
@@ -99,8 +99,7 @@ void fx_spot_feed::start(handler on_tick) {
         const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
         if (n == 1 || n % 100 == 0) {
             BOOST_LOG_SEV(lg(), info)
-                << "SYNTHETIC PUBLISH: subject='" << nats_subject_
-                << "' ore_key='" << ore_key_
+                << "SYNTHETIC PUBLISH: subject='" << nats_subject_ << "' ore_key='" << ore_key_
                 << "' count=" << n << " mid=" << tick.mid;
         }
     }

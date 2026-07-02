@@ -96,8 +96,8 @@ void FeedBindingMdiWindow::setupToolbar() {
         tr("Bind synthetic"));
     bindSyntheticAction_->setToolTip(
         tr("Query available synthetic feeds and create bindings for selected ones."));
-    connect(bindSyntheticAction_, &QAction::triggered, this,
-            &FeedBindingMdiWindow::bindFromSynthetic);
+    connect(
+        bindSyntheticAction_, &QAction::triggered, this, &FeedBindingMdiWindow::bindFromSynthetic);
 
     editAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));

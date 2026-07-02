@@ -31,9 +31,8 @@ using namespace ores::logging;
 market_observation_service::market_observation_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::market_observation>
-market_observation_service::list_market_observations(std::uint32_t offset, std::uint32_t limit,
-                                                     const std::string& series_id) {
+std::vector<domain::market_observation> market_observation_service::list_market_observations(
+    std::uint32_t offset, std::uint32_t limit, const std::string& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Listing market observations";
     return repo_.read_latest(ctx_, offset, limit, series_id);
 }

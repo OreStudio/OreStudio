@@ -19,8 +19,8 @@
  */
 #include "ores.reporting.core/messaging/report_execution_handler.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_export_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"

@@ -31,12 +31,12 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <atomic>
-#include <random>
 #include <cctype>
 #include <chrono>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <random>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -95,13 +95,13 @@ public:
      * no marketdata writes to perform.
      */
     start_result start(const std::string& ore_key,
-               const std::string& source_name,
-               std::vector<double> means,
-               std::vector<double> stdevs,
-               std::vector<double> weights,
-               double initial_price,
-               double ticks_per_hour,
-               const std::string& process_type = "geometric") {
+                       const std::string& source_name,
+                       std::vector<double> means,
+                       std::vector<double> stdevs,
+                       std::vector<double> weights,
+                       double initial_price,
+                       double ticks_per_hour,
+                       const std::string& process_type = "geometric") {
         std::lock_guard lock(mu_);
         const std::string key = source_name.empty() ? ore_key : source_name;
         if (feeds_.contains(key))
@@ -114,24 +114,22 @@ public:
         const std::uint32_t seed = rd();
         BOOST_LOG_SEV(lg(), ores::logging::info)
             << "SYNTHETIC SEED: source='" << key << "' seed=" << seed;
-        auto process = process_factory::make_process(
-            process_type, std::move(means), std::move(stdevs), std::move(weights), initial_price,
-            seed);
-        auto feed = std::make_shared<fx_spot_feed>(nats_,
-                                                   ore_key,
-                                                   producer_subject(key),
-                                                   std::move(process),
-                                                   ticks_per_hour);
+        auto process = process_factory::make_process(process_type,
+                                                     std::move(means),
+                                                     std::move(stdevs),
+                                                     std::move(weights),
+                                                     initial_price,
+                                                     seed);
+        auto feed = std::make_shared<fx_spot_feed>(
+            nats_, ore_key, producer_subject(key), std::move(process), ticks_per_hour);
         running_feed rf;
         rf.feed = feed;
         rf.thread = std::thread([feed]() { feed->start([](const auto& /*tick*/) {}); });
         feeds_.emplace(key, std::move(rf));
         BOOST_LOG_SEV(lg(), ores::logging::info)
-            << "SYNTHETIC START: source='" << key
-            << "' ore_key='" << ore_key
-            << "' subject='" << producer_subject(key)
-            << "' ticks_per_hour=" << ticks_per_hour
-            << " — now " << feeds_.size() << " feed(s) running";
+            << "SYNTHETIC START: source='" << key << "' ore_key='" << ore_key << "' subject='"
+            << producer_subject(key) << "' ticks_per_hour=" << ticks_per_hour << " — now "
+            << feeds_.size() << " feed(s) running";
         if (!status_thread_.joinable()) {
             status_thread_ = std::thread(&feed_controller::status_loop, this);
         }
@@ -212,10 +210,8 @@ private:
         for (const auto& [key, rf] : feeds_) {
             const auto count = rf.feed ? rf.feed->publish_count() : 0;
             BOOST_LOG_SEV(lg(), ores::logging::info)
-                << "SYNTHETIC STATUS: source='" << key
-                << "' ore_key='" << rf.feed->ore_key()
-                << "' subject='" << producer_subject(key)
-                << "' published=" << count;
+                << "SYNTHETIC STATUS: source='" << key << "' ore_key='" << rf.feed->ore_key()
+                << "' subject='" << producer_subject(key) << "' published=" << count;
         }
     }
 

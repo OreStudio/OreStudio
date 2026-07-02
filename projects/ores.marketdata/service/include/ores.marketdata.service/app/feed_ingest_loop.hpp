@@ -67,8 +67,10 @@ public:
 
 private:
     // Both called only from refresh(), which holds mu_.
-    void subscribe_binding_locked(const std::string& ore_key, const std::string& source_name,
-                                  const std::string& tenant_id_str, const std::string& party_id_str);
+    void subscribe_binding_locked(const std::string& ore_key,
+                                  const std::string& source_name,
+                                  const std::string& tenant_id_str,
+                                  const std::string& party_id_str);
     void unsubscribe_binding_locked(const std::string& source_name);
     void status_loop();
     void log_status() const;

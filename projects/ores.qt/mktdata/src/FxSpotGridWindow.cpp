@@ -33,23 +33,23 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-static constexpr auto k_live_threshold  = std::chrono::seconds(10);
+static constexpr auto k_live_threshold = std::chrono::seconds(10);
 static constexpr auto k_stale_threshold = std::chrono::seconds(60);
-static constexpr int  k_stale_poll_ms  = 2000;
+static constexpr int k_stale_poll_ms = 2000;
 
 // ── badge colours ──────────────────────────────────────────────────────────
-static const QColor k_pending_bg      {100, 100, 100};
-static const QColor k_pending_fg      {220, 220, 220};
-static const QColor k_live_bg         { 22, 163,  74};
-static const QColor k_live_fg         {255, 255, 255};
-static const QColor k_stale_bg        {180, 120,   0};
-static const QColor k_stale_fg        {255, 255, 255};
-static const QColor k_disconnected_bg {185,  28,  28};
-static const QColor k_disconnected_fg {255, 255, 255};
+static const QColor k_pending_bg{100, 100, 100};
+static const QColor k_pending_fg{220, 220, 220};
+static const QColor k_live_bg{22, 163, 74};
+static const QColor k_live_fg{255, 255, 255};
+static const QColor k_stale_bg{180, 120, 0};
+static const QColor k_stale_fg{255, 255, 255};
+static const QColor k_disconnected_bg{185, 28, 28};
+static const QColor k_disconnected_fg{255, 255, 255};
 
 // ── rate colours ───────────────────────────────────────────────────────────
-static const QColor k_up_color  { 34, 197,  94};   // green-400
-static const QColor k_down_color{239,  68,  68};   // red-400
+static const QColor k_up_color{34, 197, 94};   // green-400
+static const QColor k_down_color{239, 68, 68}; // red-400
 static const QColor k_flat_color{180, 180, 180};
 
 static QString badge_style(const QColor& bg, const QColor& fg) {
@@ -60,7 +60,8 @@ static QString badge_style(const QColor& bg, const QColor& fg) {
                    "  padding: 2px 10px;"
                    "  font-size: 11px;"
                    "  font-weight: bold;"
-                   "}").arg(bg.name(), fg.name());
+                   "}")
+        .arg(bg.name(), fg.name());
 }
 
 static QLabel* make_badge(QWidget* parent) {
@@ -72,35 +73,40 @@ static QLabel* make_badge(QWidget* parent) {
 
 static QColor pair_color_for_status(FxSpotGridWindow::FeedStatus s) {
     switch (s) {
-    case FxSpotGridWindow::FeedStatus::Live:         return k_up_color;
-    case FxSpotGridWindow::FeedStatus::Stale:        return QColor(200, 140, 0);
-    case FxSpotGridWindow::FeedStatus::Disconnected: return k_down_color;
-    default:                                         return k_flat_color;
+        case FxSpotGridWindow::FeedStatus::Live:
+            return k_up_color;
+        case FxSpotGridWindow::FeedStatus::Stale:
+            return QColor(200, 140, 0);
+        case FxSpotGridWindow::FeedStatus::Disconnected:
+            return k_down_color;
+        default:
+            return k_flat_color;
     }
 }
 
-static void apply_badge(QLabel* lbl, FxSpotGridWindow::FeedStatus s,
+static void apply_badge(QLabel* lbl,
+                        FxSpotGridWindow::FeedStatus s,
                         std::chrono::system_clock::time_point last_tick) {
     using namespace std::chrono;
     switch (s) {
-    case FxSpotGridWindow::FeedStatus::Pending:
-        lbl->setText(QStringLiteral("PENDING"));
-        lbl->setStyleSheet(badge_style(k_pending_bg, k_pending_fg));
-        break;
-    case FxSpotGridWindow::FeedStatus::Live:
-        lbl->setText(QStringLiteral("● LIVE"));
-        lbl->setStyleSheet(badge_style(k_live_bg, k_live_fg));
-        break;
-    case FxSpotGridWindow::FeedStatus::Stale: {
-        const auto age = duration_cast<seconds>(system_clock::now() - last_tick).count();
-        lbl->setText(QStringLiteral("⏱ STALE: %1s").arg(age));
-        lbl->setStyleSheet(badge_style(k_stale_bg, k_stale_fg));
-        break;
-    }
-    case FxSpotGridWindow::FeedStatus::Disconnected:
-        lbl->setText(QStringLiteral("✕ DISCONNECTED"));
-        lbl->setStyleSheet(badge_style(k_disconnected_bg, k_disconnected_fg));
-        break;
+        case FxSpotGridWindow::FeedStatus::Pending:
+            lbl->setText(QStringLiteral("PENDING"));
+            lbl->setStyleSheet(badge_style(k_pending_bg, k_pending_fg));
+            break;
+        case FxSpotGridWindow::FeedStatus::Live:
+            lbl->setText(QStringLiteral("● LIVE"));
+            lbl->setStyleSheet(badge_style(k_live_bg, k_live_fg));
+            break;
+        case FxSpotGridWindow::FeedStatus::Stale: {
+            const auto age = duration_cast<seconds>(system_clock::now() - last_tick).count();
+            lbl->setText(QStringLiteral("⏱ STALE: %1s").arg(age));
+            lbl->setStyleSheet(badge_style(k_stale_bg, k_stale_fg));
+            break;
+        }
+        case FxSpotGridWindow::FeedStatus::Disconnected:
+            lbl->setText(QStringLiteral("✕ DISCONNECTED"));
+            lbl->setStyleSheet(badge_style(k_disconnected_bg, k_disconnected_fg));
+            break;
     }
 }
 
@@ -112,12 +118,15 @@ static QString pair_from_ore_key(const std::string& ore_key) {
     int skip = 0;
     std::string qualifier;
     while (std::getline(ss, seg, '/')) {
-        if (skip < 2) { ++skip; continue; }
-        if (!qualifier.empty()) qualifier += '/';
+        if (skip < 2) {
+            ++skip;
+            continue;
+        }
+        if (!qualifier.empty())
+            qualifier += '/';
         qualifier += seg;
     }
-    return qualifier.empty() ? QString::fromStdString(ore_key)
-                             : QString::fromStdString(qualifier);
+    return qualifier.empty() ? QString::fromStdString(ore_key) : QString::fromStdString(qualifier);
 }
 
 // ── FxSpotGridWindow ───────────────────────────────────────────────────────
@@ -130,7 +139,9 @@ FxSpotGridWindow::FxSpotGridWindow(ClientManager* clientManager, QWidget* parent
     , loadWatcher_(new QFutureWatcher<LoadResult>(this)) {
 
     setupUi();
-    connect(loadWatcher_, &QFutureWatcher<LoadResult>::finished, this,
+    connect(loadWatcher_,
+            &QFutureWatcher<LoadResult>::finished,
+            this,
             &FxSpotGridWindow::onLoadFinished);
     connect(staleTimer_, &QTimer::timeout, this, &FxSpotGridWindow::onStaleCheck);
     staleTimer_->start(k_stale_poll_ms);
@@ -144,8 +155,8 @@ void FxSpotGridWindow::setupUi() {
 
     table_->setHorizontalHeaderLabels(
         {tr("Currency Pair"), tr("Mid"), tr("24h Chg"), tr("Status")});
-    table_->horizontalHeader()->setSectionResizeMode(ColPair,   QHeaderView::ResizeToContents);
-    table_->horizontalHeader()->setSectionResizeMode(ColMid,    QHeaderView::ResizeToContents);
+    table_->horizontalHeader()->setSectionResizeMode(ColPair, QHeaderView::ResizeToContents);
+    table_->horizontalHeader()->setSectionResizeMode(ColMid, QHeaderView::ResizeToContents);
     table_->horizontalHeader()->setSectionResizeMode(ColChange, QHeaderView::ResizeToContents);
     table_->horizontalHeader()->setSectionResizeMode(ColStatus, QHeaderView::Stretch);
     table_->verticalHeader()->hide();
@@ -173,8 +184,8 @@ void FxSpotGridWindow::reload() {
         auto resp = cm->process_authenticated_request(
             m::get_feed_bindings_request{.offset = 0, .limit = 1000});
         if (!resp || !resp->success) {
-            r.error = resp ? QString::fromStdString(resp->message)
-                           : QString::fromStdString(resp.error());
+            r.error =
+                resp ? QString::fromStdString(resp->message) : QString::fromStdString(resp.error());
             return r;
         }
         for (auto& b : resp->feed_bindings)
@@ -190,8 +201,8 @@ void FxSpotGridWindow::reload() {
 void FxSpotGridWindow::onLoadFinished() {
     auto result = loadWatcher_->result();
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load feed bindings: "
-                                   << result.error.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to load feed bindings: " << result.error.toStdString();
         emit errorOccurred(result.error);
         return;
     }
@@ -199,8 +210,7 @@ void FxSpotGridWindow::onLoadFinished() {
     emit statusChanged(tr("Loaded %1 feed binding(s)").arg(result.bindings.size()));
 }
 
-void FxSpotGridWindow::buildRows(
-    const std::vector<marketdata::domain::feed_binding>& bindings) {
+void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_binding>& bindings) {
     rows_.clear();
     table_->setRowCount(0);
 
@@ -239,9 +249,9 @@ void FxSpotGridWindow::buildRows(
         table_->setCellWidget(row, ColStatus, container);
 
         RowState rs;
-        rs.row    = row;
+        rs.row = row;
         rs.ore_key = ore_key;
-        rs.badge  = badge;
+        rs.badge = badge;
         rows_.emplace(ore_key, std::move(rs));
         ++row;
     }
@@ -263,8 +273,8 @@ void FxSpotGridWindow::subscribe(RowState& rs) {
             ore_key,
             clientManager_->currentTenantId(),
             [self, ore_key](const marketdata::domain::fx_spot_tick& tick) {
-                const double mid  = tick.mid;
-                const auto   when = tick.datetime;
+                const double mid = tick.mid;
+                const auto when = tick.datetime;
                 QMetaObject::invokeMethod(
                     self,
                     [self, ore_key, mid, when]() {
@@ -275,23 +285,23 @@ void FxSpotGridWindow::subscribe(RowState& rs) {
             });
         BOOST_LOG_SEV(lg(), debug) << "Subscribed to " << ore_key;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Subscribe failed for " << ore_key
-                                  << ": " << e.what();
+        BOOST_LOG_SEV(lg(), warn) << "Subscribe failed for " << ore_key << ": " << e.what();
     }
 }
 
-void FxSpotGridWindow::applyTick(const std::string& ore_key, double mid,
-                                  std::chrono::system_clock::time_point when) {
+void FxSpotGridWindow::applyTick(const std::string& ore_key,
+                                 double mid,
+                                 std::chrono::system_clock::time_point when) {
     auto it = rows_.find(ore_key);
     if (it == rows_.end())
         return;
 
     RowState& rs = it->second;
     const bool first = !rs.ever_ticked;
-    const bool up    = mid >= rs.last_mid;
+    const bool up = mid >= rs.last_mid;
 
-    rs.last_mid    = mid;
-    rs.last_tick   = when;
+    rs.last_mid = mid;
+    rs.last_tick = when;
     rs.ever_ticked = true;
 
     const QColor dirColor = first ? k_flat_color : (up ? k_up_color : k_down_color);
@@ -302,7 +312,8 @@ void FxSpotGridWindow::applyTick(const std::string& ore_key, double mid,
 
     auto* midItem = table_->item(rs.row, ColMid);
     if (midItem) {
-        const QString arrow = first ? QString{} : (up ? QStringLiteral("↑ ") : QStringLiteral("↓ "));
+        const QString arrow =
+            first ? QString{} : (up ? QStringLiteral("↑ ") : QStringLiteral("↓ "));
         midItem->setText(arrow + QString::number(mid, 'f', 5));
         midItem->setForeground(dirColor);
     }

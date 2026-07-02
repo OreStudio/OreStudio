@@ -34,6 +34,7 @@ Five verbs, run in order at sprint close:
                place without losing the tag/PR/notes work already done.
 """
 import argparse
+import re
 import shutil
 import subprocess
 import sys
@@ -61,6 +62,8 @@ def _cmd_create(args, project_root):
     generate_cmd = [sys.executable,
                     str(Path(project_root) / "build" / "scripts" / "generate_release_notes.py"),
                     "--sprint-dir", str(sprint_dir)]
+    if args.screenshot_filename:
+        generate_cmd += ["--screenshot-filename", args.screenshot_filename]
     p = subprocess.run(generate_cmd, cwd=str(project_root))
     if p.returncode != 0:
         return p.returncode
@@ -120,6 +123,16 @@ def _cmd_commit(args, project_root):
 
     rel_sprint_dir = sprint_dir.relative_to(project_root)
     paths = [str(rel_sprint_dir / p) for p in existing]
+
+    # release_notes.org may reference a top-of-page screenshot under
+    # assets/images/ (house convention: ore_studio-v<tag>.png) — pick it
+    # up too so its raw.githubusercontent.com URL resolves once merged.
+    org_text = (sprint_dir / "release_notes.org").read_text(encoding="utf-8") \
+        if (sprint_dir / "release_notes.org").exists() else ""
+    m = re.search(r"\[\[proj:(assets/images/[^]]+)\]\]", org_text)
+    if m and (Path(project_root) / m.group(1)).exists():
+        paths.append(m.group(1))
+
     subprocess.run(["git", "add", "--"] + paths, cwd=str(project_root))
 
     staged = subprocess.run(
@@ -151,7 +164,6 @@ def _cmd_commit(args, project_root):
 
 def _cmake_project_version(project_root):
     text = (Path(project_root) / "CMakeLists.txt").read_text(encoding="utf-8")
-    import re
     m = re.search(r"project\(\w+\s+VERSION\s+([\d.]+)", text)
     return m.group(1) if m else None
 
@@ -274,6 +286,9 @@ def run(argv, project_root):
                          "(the just-closed sprint, not the current one)")
     cr.add_argument("--since-tag", default="",
                     help="Tag to collect PRs after (default: latest v*)")
+    cr.add_argument("--screenshot-filename", default="",
+                    help="Filename under assets/images/ to embed at the top "
+                         "(house convention: ore_studio-v<tag>.png)")
 
     ch = sub.add_parser("charts", help="Render the sprint's gnuplot health charts")
     ch.add_argument("--sprint", type=int, required=True)

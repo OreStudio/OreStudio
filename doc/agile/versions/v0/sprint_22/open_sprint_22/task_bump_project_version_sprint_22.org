@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: C653D61E-A2A6-47B4-96A2-7B1FC1A7EDAA
+:END:
+#+title: Task: Bump project version to 0.0.22 for sprint 22
+#+description: Missed as part of the sprint-opening process: bump the project version across CMakeLists.txt, vcpkg.json, and the GitHub workflow files (currently all still at 0.0.21, sprint 21's version).
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_22:sprint_22:v0:
+#+owner: marco
+#+branch: feature/bump-project-version-sprint-22
+#+pr: 1404
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bump the project version from =0.0.21= (sprint 21's version) to
+=0.0.22= for sprint 22, following [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]].
+This is normally part of opening a sprint (see
+[[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] itself) but was missed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- =CMakeLists.txt= =project(OreStudio VERSION 0.0.22 ...)=.
+- =vcpkg.json= =version-string= updated to =0.0.22=.
+- =.github/workflows/continuous-linux.yml=,
+  =continuous-windows.yml=, =continuous-macos.yml= package-path
+  references updated to =0.0.22=.
+- Fresh CMake configure picks up the new version with no other
+  drift.
+
+* Plan
+
+Followed [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] exactly: CMakeLists.txt,
+vcpkg.json, the three GitHub workflow package filenames, and
+readme.org's four badges (sprint, PRs-since, commits-since,
+screenshot). New sprint (22) started 2026-07-02, so PRs-since moved
+to that date with label v0.0.22; commits-since moved to v0.0.21 (the
+just-bumped-from version); screenshot pointed at v0.0.21 (the latest
+one that actually exists — v0.0.22 doesn't exist yet).
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1404][#1404]] | [build] Bump version to 0.0.22 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Bumped 0.0.21 → 0.0.22 across CMakeLists.txt, vcpkg.json, the three
+CI workflow package filenames, and readme.org's four badges
+(sprint, PRs-since, commits-since, screenshot). Verified via the
+recipe's own grep check (zero stray old-version references) and
+three independent PR reviews, all LGTM.

@@ -22,7 +22,7 @@
 #+html: <a href="https://visualstudio.microsoft.com/vs/whatsnew/"><img alt="MSVC Version" src="https://img.shields.io/badge/MSVC-2022-blue.svg"/></a>
 #+html: <a href="https://doc.qt.io/qt-6/"><img alt="Qt6" src="https://img.shields.io/badge/Qt-6-blue"/></a>
 #+html: <a href="https://orestudio.github.io/OreStudio/doxygen/html/index.html"><img alt="Doxygen" src="https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/doxygen_badge.svg"/></a>
-#+html: <a href="https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_21/sprint.html"><img alt="Agile Sprint" src="https://img.shields.io/badge/Sprint-21-blue.svg"/></a>
+#+html: <a href="https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_22/sprint.html"><img alt="Agile Sprint" src="https://img.shields.io/badge/Sprint-22-blue.svg"/></a>
 #+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://img.shields.io/static/v1?logo=gnuemacs&logoColor=fafafa&label=Made%20with&message=GNU%20Emacs&color=7F5AB6&style=flat"/></a>
 #+html: <a href="https://discord.gg/ztAaxmsnUJ"><img alt="Discord" src="https://img.shields.io/discord/1254062142626332732?color=5865F2&amp;logo=discord&amp;logoColor=white"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/pulse"><img alt="Commit Activity" src="https://img.shields.io/github/commit-activity/m/OreStudio/OreStudio"/></a>
@@ -40,8 +40,8 @@
 #+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml"><img alt="Continuous Windows" src="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml/badge.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml"><img alt="Continuous MacOS.yml" src="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml/badge.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml"><img alt="Nightly Linux" src="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml/badge.svg"/></a>
-#+html: <a href="https://github.com/OreStudio/OreStudio/pulls?q=is%3Apr+is%3Amerged+merged%3A%3E%3D2026-06-12"><img alt="PRs since v0.0.20" src="https://img.shields.io/badge/PRs%20since%20v0.0.20-GitHub%20search-blue"/></a>
-#+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src= "https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.20.svg"/></a>
+#+html: <a href="https://github.com/OreStudio/OreStudio/pulls?q=is%3Apr+is%3Amerged+merged%3A%3E%3D2026-07-02"><img alt="PRs since v0.0.22" src="https://img.shields.io/badge/PRs%20since%20v0.0.22-GitHub%20search-blue"/></a>
+#+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src= "https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.21.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/OreStudio/OreStudio/total.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Releases" src="https://img.shields.io/github/release/OreStudio/OreStudio.svg"/></a>
 #+html: <a href="https://deepwiki.com/OreStudio/OreStudio"><img alt="Ask DeepWiki" src="https://deepwiki.com/badge.svg"/></a>
@@ -55,7 +55,7 @@ running ORE — persistent storage for inputs and outputs, CRUD management, and 
 simple three-layer architecture (client / service / [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL]]) designed to be
 easy to understand and extend. ORE Studio was started by [[https://mcraveiro.github.io/][Marco Craveiro]].
 
-[[./assets/images/ore_studio-v0.0.20.png]]
+[[./assets/images/ore_studio-v0.0.21.png]]
 
 The project is built for people who want to *learn quantitative finance by
 building*. All the heavy mathematical lifting stays in ORE and QuantLib; ORE

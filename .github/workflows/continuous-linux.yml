@@ -261,7 +261,7 @@ jobs:
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
       - name: Delete cmake cache entry
-        if: success() && matrix.compiler == 'gcc' && matrix.buildtype == 'debug'
+        if: always() && matrix.compiler == 'gcc' && matrix.buildtype == 'debug'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -270,14 +270,14 @@ jobs:
             || true
 
       - name: Save cmake build cache
-        if: success() && matrix.compiler == 'gcc' && matrix.buildtype == 'debug'
+        if: always() && matrix.compiler == 'gcc' && matrix.buildtype == 'debug'
         uses: actions/cache/save@v6
         with:
           path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/projects
           key: cmake-build-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
 
       - name: Delete sccache entry
-        if: success()
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -286,7 +286,7 @@ jobs:
             || true
 
       - name: Save sccache
-        if: success()
+        if: always()
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}

@@ -8,7 +8,7 @@
 #+filetags: :introduce-per-entity-sub-registrars:sprint_21:v0:
 #+owner: marco
 #+branch: feature/introduce-nats-sub-registrar-templates
-#+pr:
+#+pr: 1397
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
@@ -78,7 +78,7 @@ next task.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1397][#1397]] | [codegen,refdata] Introduce per-entity NATS sub-registrars |
 
 * Review
 

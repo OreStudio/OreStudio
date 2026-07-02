@@ -152,7 +152,7 @@ private:
     [[nodiscard]] std::string currentNodeId() const;
     [[nodiscard]] std::vector<synthetic::domain::fx_spot_generation_config> selectedFxPairs() const;
     [[nodiscard]] std::vector<synthetic::domain::fx_spot_generation_config>
-        fxPairsForFeed(const std::string& feedId) const;
+    fxPairsForFeed(const std::string& feedId) const;
 
     void startPairsAsync(std::vector<synthetic::domain::fx_spot_generation_config> pairs);
     void stopPairsAsync(std::vector<synthetic::domain::fx_spot_generation_config> pairs);
@@ -210,7 +210,7 @@ private:
     QPushButton* feedStopButton_;
     QLabel* feedStatsLabel_;
     std::string feedSummaryId_; // id of the feed currently shown in the right panel
-    std::string fxSummaryId_;  // id of the fx pair currently shown in the right panel
+    std::string fxSummaryId_;   // id of the fx pair currently shown in the right panel
 
     // In-memory copies keyed by id (uuid string).
     std::map<std::string, synthetic::domain::market_data_generation_config> feeds_;

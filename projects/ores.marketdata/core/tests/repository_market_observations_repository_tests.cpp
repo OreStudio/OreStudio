@@ -73,7 +73,8 @@ TEST_CASE("write_multiple_market_observations", tags) {
 
     market_observations_repository obs_repo;
     auto observations = generate_synthetic_market_observations(5, ctx);
-    for (auto& o : observations) o.series_id = s.id;
+    for (auto& o : observations)
+        o.series_id = s.id;
     BOOST_LOG_SEV(lg, debug) << "Observations: " << observations;
     CHECK_NOTHROW(obs_repo.write(h.context(), observations));
 }
@@ -90,7 +91,8 @@ TEST_CASE("read_latest_market_observations_by_series", tags) {
 
     market_observations_repository obs_repo;
     auto written = generate_synthetic_market_observations(3, ctx);
-    for (auto& o : written) o.series_id = s.id;
+    for (auto& o : written)
+        o.series_id = s.id;
     obs_repo.write(h.context(), written);
 
     auto read = obs_repo.read_latest(h.context(), s.id);
@@ -113,7 +115,8 @@ TEST_CASE("remove_market_observations", tags) {
 
     market_observations_repository obs_repo;
     auto observations = generate_synthetic_market_observations(3, ctx);
-    for (auto& o : observations) o.series_id = s.id;
+    for (auto& o : observations)
+        o.series_id = s.id;
     obs_repo.write(h.context(), observations);
 
     auto before = obs_repo.read_latest(h.context(), s.id);

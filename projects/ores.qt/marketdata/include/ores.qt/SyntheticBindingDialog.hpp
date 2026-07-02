@@ -53,15 +53,16 @@ private:
     }
 
 public:
-    explicit SyntheticBindingDialog(
-        ClientManager* clientManager,
-        const std::string& username,
-        const std::vector<std::string>& existingSourceNames,
-        QWidget* parent = nullptr);
+    explicit SyntheticBindingDialog(ClientManager* clientManager,
+                                    const std::string& username,
+                                    const std::vector<std::string>& existingSourceNames,
+                                    QWidget* parent = nullptr);
 
     ~SyntheticBindingDialog() override = default;
 
-    int bindingsCreated() const { return bindingsCreated_; }
+    int bindingsCreated() const {
+        return bindingsCreated_;
+    }
 
 private slots:
     void onCreateClicked();

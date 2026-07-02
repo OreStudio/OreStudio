@@ -80,9 +80,10 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      */
-    std::vector<domain::market_observation>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit,
-                const std::string& series_id = {});
+    std::vector<domain::market_observation> read_latest(context ctx,
+                                                        std::uint32_t offset,
+                                                        std::uint32_t limit,
+                                                        const std::string& series_id = {});
 
     /**
      * @brief Gets the total count of active market observations.

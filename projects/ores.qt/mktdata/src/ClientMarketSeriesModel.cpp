@@ -232,9 +232,12 @@ void ClientMarketSeriesModel::fetch_data(std::uint32_t offset, std::uint32_t lim
                 }
                 auto all = std::move(result->market_series);
                 if (!self->series_type_filter_.empty()) {
-                    all.erase(std::remove_if(all.begin(), all.end(),
-                        [&](const auto& s) { return s.series_type != self->series_type_filter_; }),
-                        all.end());
+                    all.erase(std::remove_if(all.begin(),
+                                             all.end(),
+                                             [&](const auto& s) {
+                                                 return s.series_type != self->series_type_filter_;
+                                             }),
+                              all.end());
                 }
                 return {.success = true,
                         .entries = std::move(all),

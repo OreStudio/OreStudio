@@ -116,7 +116,8 @@ market_data_client::save_observations(const std::vector<domain::market_observati
         if (!resp)
             return std::unexpected(resp.error());
         if (!resp->success)
-            return std::unexpected(resp->message.empty() ? "save_observations failed" : resp->message);
+            return std::unexpected(resp->message.empty() ? "save_observations failed" :
+                                                           resp->message);
         ++count;
     }
     return count;

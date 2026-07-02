@@ -71,7 +71,8 @@ public:
         get_market_observations_response resp;
         if (auto req = decode<get_market_observations_request>(msg)) {
             try {
-                resp.market_observations = svc.list_market_observations(req->offset, req->limit, req->series_id);
+                resp.market_observations =
+                    svc.list_market_observations(req->offset, req->limit, req->series_id);
                 resp.total_available_count = static_cast<int>(svc.count_market_observations());
                 resp.success = true;
             } catch (const std::exception& e) {

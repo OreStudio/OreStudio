@@ -37,11 +37,10 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-SyntheticBindingDialog::SyntheticBindingDialog(
-    ClientManager* clientManager,
-    const std::string& username,
-    const std::vector<std::string>& existingSourceNames,
-    QWidget* parent)
+SyntheticBindingDialog::SyntheticBindingDialog(ClientManager* clientManager,
+                                               const std::string& username,
+                                               const std::vector<std::string>& existingSourceNames,
+                                               QWidget* parent)
     : QDialog(parent)
     , clientManager_(clientManager)
     , username_(username)
@@ -54,10 +53,9 @@ SyntheticBindingDialog::SyntheticBindingDialog(
 
     auto* layout = new QVBoxLayout(this);
 
-    layout->addWidget(new QLabel(
-        tr("Select synthetic FX rates to create feed bindings for. "
-           "Rows already bound are pre-checked and will be skipped."),
-        this));
+    layout->addWidget(new QLabel(tr("Select synthetic FX rates to create feed bindings for. "
+                                    "Rows already bound are pre-checked and will be skipped."),
+                                 this));
 
     table_->setColumnCount(3);
     table_->setHorizontalHeaderLabels({tr(""), tr("ORE Key"), tr("Source name")});
@@ -114,8 +112,8 @@ void SyntheticBindingDialog::loadConfigs() {
         if (!self)
             return;
         if (!ok) {
-            MessageBoxHelper::critical(self, self->tr("Load failed"),
-                                       self->tr("Could not load synthetic FX configs."));
+            MessageBoxHelper::critical(
+                self, self->tr("Load failed"), self->tr("Could not load synthetic FX configs."));
             self->reject();
             return;
         }
@@ -137,8 +135,8 @@ void SyntheticBindingDialog::populateTable(
         auto* chk = new QTableWidgetItem;
         chk->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 
-        const bool alreadyBound = std::ranges::find(existingSourceNames_, cfg.source_name)
-                                  != existingSourceNames_.end();
+        const bool alreadyBound =
+            std::ranges::find(existingSourceNames_, cfg.source_name) != existingSourceNames_.end();
         chk->setCheckState(alreadyBound ? Qt::Checked : Qt::Unchecked);
         if (alreadyBound)
             chk->setToolTip(tr("Already bound — will be skipped"));
@@ -177,8 +175,8 @@ void SyntheticBindingDialog::onCreateClicked() {
     }
 
     if (selected.empty()) {
-        MessageBoxHelper::information(this, tr("Nothing to create"),
-                                      tr("No new synthetic feeds selected."));
+        MessageBoxHelper::information(
+            this, tr("Nothing to create"), tr("No new synthetic feeds selected."));
         return;
     }
 
@@ -240,7 +238,8 @@ void SyntheticBindingDialog::createBindings(
                 self,
                 self->tr("Partial success"),
                 self->tr("Created %1 binding(s); %2 failed. Check logs for details.")
-                    .arg(ok).arg(failed));
+                    .arg(ok)
+                    .arg(failed));
             if (ok > 0)
                 self->accept();
             else

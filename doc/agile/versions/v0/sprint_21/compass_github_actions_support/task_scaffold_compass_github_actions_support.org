@@ -8,7 +8,7 @@
 #+filetags: :compass_github_actions_support:sprint_21:v0:
 #+owner: marco
 #+branch: feature/compass-github-actions-support
-#+pr:
+#+pr: 1406
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1406][#1406]] | [agile] Scaffold story: Compass GitHub Actions support |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :market-fixing-audit-column-mismatch:sprint_21:v0:
 #+owner: marco
 #+branch: hotfix/market-fixing-audit-column-mismatch
-#+pr:
+#+pr: 1401
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1401][#1401]] | [marketdata] Fix market_fixing entity carrying audit columns absent from lean SQL schema |
 
 * Review
 

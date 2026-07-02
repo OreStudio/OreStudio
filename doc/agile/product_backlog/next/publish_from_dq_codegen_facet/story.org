@@ -74,6 +74,18 @@ template to copy.
 
 * Decisions
 
+- Pre-existing bug found while hand-writing the FX story's shadow
+  artefact table: =ores.codegen='s enrichment step that populates the
+  mustache =entity= context (needed to render
+  =sql_schema_artefact_create.mustache=) is gated on
+  =model_type == 'schema'=, but =ores.codegen.lookup_entity= models map
+  to internal model_type =enum=. So =sql_schema_artefact_create= cannot
+  render from *any* =lookup_entity= model today, including the
+  pre-existing =ores.dq.report_definition_lookup_entity.org= — this
+  isn't new breakage from this story, it means the shadow-table
+  generation path has been silently broken/unused. Fix this as part of
+  (or as a prerequisite to) this facet's implementation.
+
 * Out of scope
 
 -

@@ -5,13 +5,13 @@
 #+description: Give compass a quick overview of all GitHub Actions runs, highlight which ones are failing, and for failing runs surface the error detail via gh CLI without needing to download full logs.
 #+type: story
 #+level: s2
-#+filetags: :compass:ci:github-actions:tooling:dx:sprint_21:v0:
+#+filetags: :compass:ci:github-actions:tooling:dx:sprint_22:v0:
 #+created: 2026-07-02
 #+updated: 2026-07-02
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -22,10 +22,10 @@ From compass, get a quick overview of all currently executing (and recently comp
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | STARTED                              |
-| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Not yet started.                       |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Scaffold task done; ready to pick up implementation. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Start the implement task.              |
 | Last touched  | 2026-07-02                               |
 
 * Acceptance

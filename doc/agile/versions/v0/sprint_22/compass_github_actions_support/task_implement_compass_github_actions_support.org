@@ -5,7 +5,7 @@
 #+description: Initial task for: Compass GitHub Actions support
 #+type: task
 #+level: s1
-#+filetags: :compass_github_actions_support:sprint_21:v0:
+#+filetags: :compass_github_actions_support:sprint_22:v0:
 #+owner: marco
 #+branch:
 #+pr:

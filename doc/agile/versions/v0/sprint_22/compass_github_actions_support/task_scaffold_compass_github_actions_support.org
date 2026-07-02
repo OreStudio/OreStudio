@@ -5,7 +5,7 @@
 #+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
 #+type: task
 #+level: s1
-#+filetags: :compass_github_actions_support:sprint_21:v0:
+#+filetags: :compass_github_actions_support:sprint_22:v0:
 #+owner: marco
 #+branch: feature/compass-github-actions-support
 #+pr: 1406

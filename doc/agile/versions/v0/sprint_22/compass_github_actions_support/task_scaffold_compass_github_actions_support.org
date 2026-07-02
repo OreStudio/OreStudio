@@ -58,6 +58,7 @@ plan itself stays — it is the historical record of what we did.)
 | 1 | Story wired into already-closed Sprint 21 instead of open Sprint 22 | sprint_21/sprint.org, story.org | Accepted | Moved story + tasks to sprint_22/compass_github_actions_support/, updated Parent sprint links |
 | 2 | Story row landed under Hotfixes instead of Tooling > Epic: Compass | sprint.org | Accepted | Re-wired row under Tooling > Epic: Compass in sprint_22/sprint.org |
 | 3 | story.org State (STARTED) disagreed with sprint table row (BACKLOG) | story.org, sprint.org | Accepted | Set sprint_22/sprint.org row to STARTED; synced Now/Next fields |
+| 4 | Stale "Sprint 21" reference left in scaffold task's Result after the move | task_scaffold_compass_github_actions_support.org | Accepted | Updated Result to say Sprint 22 and note the review-time correction |
 
 * Result
 

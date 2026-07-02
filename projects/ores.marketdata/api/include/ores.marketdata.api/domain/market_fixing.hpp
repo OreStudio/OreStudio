@@ -43,11 +43,6 @@ namespace ores::marketdata::domain {
  */
 struct market_fixing final {
     /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-    /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
@@ -83,28 +78,6 @@ struct market_fixing final {
      * @brief Source tag identifying the feed or authority that published this fixing.
      */
     std::string source;
-
-    /**
-     * @brief Username of the person who last modified this market fixing.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     *
-     * References change_reasons table (soft FK).
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
 
     /**
      * @brief Timestamp when this version of the record was recorded.

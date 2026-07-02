@@ -36,7 +36,6 @@ domain::market_fixing market_fixing_mapper::map(const market_fixing_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::market_fixing r;
-    r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
@@ -54,10 +53,6 @@ domain::market_fixing market_fixing_mapper::map(const market_fixing_entity& v) {
 
     r.value = v.value;
     r.source = v.source.value_or("");
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -70,7 +65,6 @@ market_fixing_entity market_fixing_mapper::map(const domain::market_fixing& v) {
     market_fixing_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
-    r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
 
     r.series_id = boost::uuids::to_string(v.series_id);
@@ -79,10 +73,6 @@ market_fixing_entity market_fixing_mapper::map(const domain::market_fixing& v) {
 
     r.value = v.value;
     r.source = v.source.empty() ? std::nullopt : std::optional(v.source);
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

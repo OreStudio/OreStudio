@@ -87,6 +87,10 @@ std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timep
 
 Serialised fixing value (numeric string).
 
+#+begin_src cpp :name generator
+std::to_string(faker::number::decimal<double>(0.0, 100.0))
+#+end_src
+
 ** source
 :PROPERTIES:
 :type:     text

@@ -39,7 +39,6 @@ struct market_fixing_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
-    int version = 0;
     std::string party_id;
 
     std::string series_id;
@@ -48,10 +47,6 @@ struct market_fixing_entity {
 
     std::string value;
     std::optional<std::string> source;
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };

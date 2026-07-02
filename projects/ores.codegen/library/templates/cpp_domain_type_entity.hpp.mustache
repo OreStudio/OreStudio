@@ -28,7 +28,9 @@ struct {{entity_singular}}_entity {
 {{#has_workspace_id}}
     std::string workspace_id;
 {{/has_workspace_id}}
+{{#has_audit_columns}}
     int version = 0;
+{{/has_audit_columns}}
 {{#natural_keys}}
 {{#is_uuid}}
     std::string {{column}}{{#default_value}} = {{{default_value}}}{{/default_value}};
@@ -66,10 +68,12 @@ struct {{entity_singular}}_entity {
     {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 {{/is_simple}}
 {{/columns}}
+{{#has_audit_columns}}
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
+{{/has_audit_columns}}
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };

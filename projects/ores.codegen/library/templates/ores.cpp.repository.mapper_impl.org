@@ -55,7 +55,9 @@ domain::{{entity_singular}}
 
     domain::{{entity_singular}} r;
 {{#has_identity_group}}
+{{#has_audit_columns}}
     r.identity.version = v.version;
+{{/has_audit_columns}}
 {{#has_tenant_id}}
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
 {{/has_tenant_id}}
@@ -70,7 +72,9 @@ domain::{{entity_singular}}
 {{/primary_key.is_uuid}}
 {{/has_identity_group}}
 {{^has_identity_group}}
+{{#has_audit_columns}}
     r.version = v.version;
+{{/has_audit_columns}}
 {{#has_tenant_id}}
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
 {{/has_tenant_id}}
@@ -156,17 +160,21 @@ domain::{{entity_singular}}
 {{/is_identity_group_column}}
 {{/columns}}
 {{#has_audit_group}}
+{{#has_audit_columns}}
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
     r.audit.change_commentary = v.change_commentary;
+{{/has_audit_columns}}
     r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
 {{/has_audit_group}}
 {{^has_audit_group}}
+{{#has_audit_columns}}
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
+{{/has_audit_columns}}
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 {{/has_audit_group}}
 
@@ -192,7 +200,9 @@ domain::{{entity_singular}}
 {{#has_workspace_id}}
     r.workspace_id = boost::uuids::to_string(v.identity.workspace_id);
 {{/has_workspace_id}}
+{{#has_audit_columns}}
     r.version = v.identity.version;
+{{/has_audit_columns}}
 {{/has_identity_group}}
 {{^has_identity_group}}
 {{#primary_key.is_text}}
@@ -207,7 +217,9 @@ domain::{{entity_singular}}
 {{#has_workspace_id}}
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
 {{/has_workspace_id}}
+{{#has_audit_columns}}
     r.version = v.version;
+{{/has_audit_columns}}
 {{/has_identity_group}}
 {{! Natural keys are not identity-group-column-aware: they always map flat.
     An entity with both has_identity_group and non-empty natural_keys would
@@ -275,16 +287,20 @@ domain::{{entity_singular}}
 {{/is_identity_group_column}}
 {{/columns}}
 {{#has_audit_group}}
+{{#has_audit_columns}}
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;
     r.change_reason_code = v.audit.change_reason_code;
     r.change_commentary = v.audit.change_commentary;
+{{/has_audit_columns}}
 {{/has_audit_group}}
 {{^has_audit_group}}
+{{#has_audit_columns}}
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
+{{/has_audit_columns}}
 {{/has_audit_group}}
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

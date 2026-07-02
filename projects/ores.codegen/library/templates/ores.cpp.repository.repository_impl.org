@@ -140,12 +140,22 @@ std::vector<domain::{{entity_singular}}>
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "{{primary_key.column}}"_c == {{primary_key.column}}) |
+{{#has_audit_columns}}
         order_by("version"_c.desc());
+{{/has_audit_columns}}
+{{^has_audit_columns}}
+        order_by("valid_from"_c.desc());
+{{/has_audit_columns}}
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("tenant_id"_c == tid && "{{primary_key.column}}"_c == {{primary_key.column}}) |
+{{#has_audit_columns}}
         order_by("version"_c.desc());
+{{/has_audit_columns}}
+{{^has_audit_columns}}
+        order_by("valid_from"_c.desc());
+{{/has_audit_columns}}
 {{/has_workspace_id}}
 {{/has_tenant_id}}
 {{^has_tenant_id}}
@@ -153,12 +163,22 @@ std::vector<domain::{{entity_singular}}>
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("workspace_id"_c == wid && "{{primary_key.column}}"_c == {{primary_key.column}}) |
+{{#has_audit_columns}}
         order_by("version"_c.desc());
+{{/has_audit_columns}}
+{{^has_audit_columns}}
+        order_by("valid_from"_c.desc());
+{{/has_audit_columns}}
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("{{primary_key.column}}"_c == {{primary_key.column}}) |
+{{#has_audit_columns}}
         order_by("version"_c.desc());
+{{/has_audit_columns}}
+{{^has_audit_columns}}
+        order_by("valid_from"_c.desc());
+{{/has_audit_columns}}
 {{/has_workspace_id}}
 {{/has_tenant_id}}
 

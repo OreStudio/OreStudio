@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: B7C756F2-985A-49FA-BE98-D50C4F418B51
+:END:
+#+title: Story: Compass GitHub Actions support
+#+description: Give compass a quick overview of all GitHub Actions runs, highlight which ones are failing, and for failing runs surface the error detail via gh CLI without needing to download full logs.
+#+type: story
+#+level: s2
+#+filetags: :compass:ci:github-actions:tooling:dx:sprint_21:v0:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+From compass, get a quick overview of all currently executing (and recently completed) GitHub Actions runs across the repo's workflows, at a glance see which ones are failing, and for failing runs pull the underlying error detail via the gh CLI -- without having to download the full job log.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-02                               |
+
+* Acceptance
+
+- A compass command shows a summary table of GitHub Actions runs (workflow, branch, status, conclusion) across the repo, similar in spirit to compass pr / compass fleet.
+- Failing runs are visually distinguished from passing/in-progress ones.
+- For failing runs, the command surfaces the actual failure reason (e.g. via gh run view --log-failed or gh api annotations) without shelling out to download and grep the full raw log file.
+- Documented with a recipe under doc/recipes/compass/.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0A3F1F3E-AFD1-4959-BCEC-7DED4C5B98B6][Scaffold story: Compass GitHub Actions support]] | DONE | 2026-07-02 | 2026-07-02 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5E444AD5-CB85-4F0E-BD98-AA73DED71246][Implement Compass GitHub Actions support]] | BACKLOG | | | Initial task for: Compass GitHub Actions support |
+
+* Decisions
+
+* Out of scope
+
+-

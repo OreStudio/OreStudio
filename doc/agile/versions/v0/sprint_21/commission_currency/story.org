@@ -27,7 +27,7 @@ same checklist applies.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | BACKLOG                                |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
 | Now           | Auxiliary codegen synced. Currency-entity codegen sync (C++ core, messaging, Qt) and Wt/HTTP captures remain. |
 | Waiting on    | Nothing.                               |

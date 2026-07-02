@@ -26,11 +26,11 @@ Introduce the marketdata-authority binding: a persisted feed-config mapping a sy
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F6CD8E90-6EE2-4B4F-A4EC-C173C906222A][Market data feed binding, ingestion and official stream]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-29                               |
 
 * Acceptance
@@ -64,3 +64,5 @@ plan itself stays — it is the historical record of what we did.)
 | 4860881249 | fan-out subscribe vs queue_subscribe | feed_ingest_loop.cpp | Deferred — single-instance for now | Added comment documenting assumption |
 
 * Result
+
+Delivered in PR #1386. Feed binding entity (domain, repository, service, NATS protocol, SQL) across all layers; ingest loop subscribes bound producer, persists observations per series under the correct tenant, republishes on the official tenant-scoped stream. Mutex race on =subs_= fixed in follow-up commits; dead NATS subscription removed; fan-out assumption documented. Chart and grid UI improvements (Y-axis tightening, tracker line, watermark) also landed on this branch.

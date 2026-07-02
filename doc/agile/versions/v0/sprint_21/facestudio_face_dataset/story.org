@@ -21,11 +21,11 @@ Move the 60 already-downloaded AI-generated face images from build/tmp/faces/ in
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Accumulation runs (June 11–13).        |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Close story after June 13 run.         |
+| Next          | Nothing. |
 | Last touched  | 2026-06-10                               |
 
 * Acceptance
@@ -40,7 +40,7 @@ Move the 60 already-downloaded AI-generated face images from build/tmp/faces/ in
 | [[id:E664FF66-C582-4DA8-A779-4940BEF3551E][Create external/facestudio/ dataset structure and move assets]] | DONE | 2026-06-10 | 2026-06-10 | Create the folder, move 60 images from build/tmp/faces/, add accumulation script, write manifest.json and methodology.txt with licence notes. |
 | [[id:5243FDF8-16E0-48D4-AD05-C2D4757A5EFA][Fix accumulate_faces.py: age range, 429 handling, multiple images per combination]] | DONE | 2026-06-10 | 2026-06-10 | Fix three bugs in the face accumulation script: filter ages outside 20–70, handle HTTP 429 by stopping cleanly, support N images per combination with indexed filenames, and update output path to external/facestudio/faces/. |
 | [[id:26733218-A6CA-495A-A219-489D00A04DE7][Rename existing face files to indexed spec and remove out-of-range images]] | DONE | 2026-06-10 | 2026-06-10 | Rename the 60 existing files in external/facestudio/faces/ to the indexed naming scheme and delete any files with age below 20 or above 70. |
-| [[id:6FB10825-AF15-4EBA-B58D-294EE2D9AFD5][Run face accumulation script each remaining sprint day (June 11, 12, 13)]] | BACKLOG | | | Run accumulate_faces.py on each of the 3 remaining sprint days to download up to 60 faces per day, building toward the 462-image target. |
+| [[id:6FB10825-AF15-4EBA-B58D-294EE2D9AFD5][Run face accumulation script each remaining sprint day (June 11, 12, 13)]] | DONE | | 2026-07-02 | Run accumulate_faces.py on each of the 3 remaining sprint days to download up to 60 faces per day, building toward the 462-image target. |
 
 * See also
 
@@ -57,3 +57,7 @@ Move the 60 already-downloaded AI-generated face images from build/tmp/faces/ in
 
 - Wiring the catalog into the seeder (separate story).
 - Automated regeneration / nightly accumulation job.
+
+* Result
+
+Dataset accumulated across sprint 21. Sufficient coverage for profile picture test data. Closed at health review 2 (2026-07-02).

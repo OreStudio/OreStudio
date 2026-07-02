@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: 4665FF0D-5A50-4F62-BE16-E3B7490CB1A9
+:END:
+#+title: Task: Health review 2 — sprint 21 close analysis
+#+description: System 2 health review 2 of sprint 21 — day 20, 13 days past planned close.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_21:v0:
+#+owner: marco
+#+branch: main
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E08D0CC8-CD56-4235-8B70-61AE5B4CF63E][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+System 2 health review of sprint 21 at day 20 — well past the planned close date — to assess whether the sprint should be closed now and what stories need reconciliation before doing so.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:E08D0CC8-CD56-4235-8B70-61AE5B4CF63E][Sprint health review — System 2 analysis]] |
+| Now          | Complete.                              |
+| Waiting on   | Nothing.                               |
+| Next         | Act on findings: reconcile market data story states; close sprint. |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- Full analysis written under =* Result=.
+- Summary row added to =sprint.org= =* Health Review= table.
+
+* Result
+
+** Review on 2026-07-02 (day 20 of planned 7 — sprint overdue by 13 days)
+
+*** Pre-analysis concerns
+
+Before collecting data, three concerns stood out:
+
+1. Review #1 (day 17) rated the sprint RED on goal alignment, sprint load, and focus. Have any of those improved, or has the sprint simply accumulated more drift?
+2. The user's question about "three stories for FX rates" is a signal that story ownership is unclear — work landed in PR #1386 that was not claimed by any story's task list.
+3. The sprint has 0 open PRs right now, which is unusual for a sprint still marked STARTED — is that a healthy quiet period, or is the sprint effectively over?
+
+*** Goal alignment
+
+Sprint mission: "Commission the =ores.refdata= entity library: finish currency and country, and start the twelve entities not touched in sprint 20."
+
+| Goal | Coverage | Stories | Verdict |
+|------+----------+---------+---------|
+| Finish Commission: currency | Partial | STARTED — 14/18 tasks done, Qt verification and Wt/HTTP captures still open | AMBER |
+| Finish Commission: country | DONE | Story file confirmed DONE | GREEN |
+| Start 12 new Commission entities | Partial | party_type STARTED (5/11), party_status STARTED (3/11), book_status STARTED (4/11); 9 entities still BACKLOG | RED — only 3 of 12 started |
+| Hard constraint: no new non-commission stories | Violated (continued) | Market data workstream (5+ stories), face dataset | RED |
+
+Since review #1 the constraint violation has deepened: PR #1386 landed the full market data feed binding + chart polish work, all on a branch tagged =bright_faraday= (the =marketdata_feed_binding_and_ingestion= task). The user correctly identified that this PR also delivered =source_agnostic_control_panel= (FxSpotGridWindow + MarketSimulatorWindow) and most of =synthetic_generation_configuration= — neither of which was ever linked to a task on those stories. That work is real and valuable, but it was untracked against the stories it delivered.
+
+*Goal alignment verdict: RED* — mission goals 1 and 3 still not met; hard constraint still violated; story ownership of market data work confused.
+
+*** Sprint load
+
+| Metric | Value | Target | Status |
+|--------+-------+--------+--------|
+| Total commits since 2026-06-12 | 923 | ≤ 300 | RED |
+| Commits since review #1 (2026-06-29) | 345 | — | 115/day average — very high burst |
+| Elapsed days | 20 | 7 | RED |
+| Total PRs merged | 126 | — | — |
+| PRs since review #1 | 32 in 3 days | — | 10.7/day — exceptional velocity |
+
+923 commits is 3× the sprint budget. The pace since review #1 has been extraordinary (345 commits, 32 PRs in 3 days), confirming this sprint has been significantly extended. The rate is not unsustainable per se — it reflects focused burst work — but the accumulated total means the sprint's scope signal is noise.
+
+*Sprint load verdict: RED* (923 vs 300; 20 days vs 7).
+
+*** PR velocity
+
+| Metric | Value | Notes |
+|--------+-------+-------|
+| PRs merged since review #1 | 32 | 2026-06-29 to 2026-07-02 |
+| PR/day since review #1 | 10.7 | Highest of the sprint |
+| Open PRs now | 0 | Clean — no WIP accumulation |
+| Long-open PRs | 0 | All cleared |
+
+Since review #1 the PR velocity has been the highest of the sprint. 0 open PRs is the first clean reading of the sprint — previous reviews showed 2+ open PRs. This is a genuine improvement.
+
+*PR velocity verdict: GREEN* — clean queue, high throughput.
+
+*** Story and task balance
+
+| Story | State (story file) | Sprint.org | Tasks done/total | Days open | Issue |
+|-------+--------------------+------------+------------------+-----------+-------|
+| Commission: currency | STARTED | STARTED | 14/18 | 20 | Qt verification + Wt/HTTP still open |
+| Commission: country | DONE | DONE | — | — | ✓ Clean |
+| Commission: party_type | STARTED | STARTED | 5/11 | ~6 | Active |
+| Commission: party_status | STARTED | STARTED | 3/11 | ~6 | Active |
+| Commission: book_status | STARTED | STARTED | 4/11 | ~6 | Active |
+| Resolve codegen unification blockers | STARTED | STARTED | ~8/10 | 5 | Active |
+| Accumulate face dataset | STARTED | STARTED | 4/5 | 22 | Carried from sprint 20; near-done |
+| Upgrade Qt | STARTED | STARTED | 0/2 | ~8 | No progress |
+| Synthetic generation configuration | STARTED | BACKLOG | 2/3 tasks DONE | 4 | Sprint.org stale; 2 tasks done untracked |
+| Marketdata feed binding + ingest | STARTED | BACKLOG | 1/1 task (PR merged) | 2 | Sprint.org stale; closed via force-merge without =task done= |
+| Config-driven synthetic feed generation | STARTED | BACKLOG | 0/3 | 4 | Sprint.org stale |
+| Source-agnostic control panel | BACKLOG (story) | BACKLOG | FxSpotGrid + MarketSimulator delivered in PR #1386 — not tracked | — | Work delivered but not claimed by story tasks |
+
+Critical accounting gap: =source_agnostic_control_panel= has two tasks (=qt_fx_spot_grid=, =qt_system_feed_mapping_ui=) both BACKLOG, yet the FxSpotGridWindow and MarketSimulatorWindow were fully implemented and merged in PR #1386. The story is effectively done but its tasks were never opened or closed.
+
+Similarly, =synthetic_generation_configuration= has 2 of 3 tasks DONE (config entities, Qt UI) but the story state is STARTED and it appears BACKLOG in sprint.org.
+
+*Story/task balance verdict: AMBER* — all STARTED stories have tasks (good), but sprint.org has at least 4 stale entries, and one story's delivered work is entirely unrecorded in its task list.
+
+*** Focus signal
+
+| Metric | Value | Verdict |
+|--------+-------+---------|
+| Simultaneously STARTED stories | 10 | RED (≥6 = RED) |
+| Themes | commission (5), market data (3), codegen tooling (1), face dataset (1) | Mixed |
+| Off-mission stories still STARTED | 4 | market data × 3, face dataset |
+
+The count has not improved since review #1 (was 9, now 10). The market data work that was "in progress" at review #1 has now landed, but the stories it inhabited are still marked STARTED because they weren't properly closed.
+
+*Focus signal verdict: RED* — 10 STARTED stories; off-mission work still in-flight in the tracker even though the code has shipped.
+
+*** Overall verdict
+
+| Dimension | Verdict |
+|-----------+---------|
+| Goal alignment | RED |
+| Sprint load | RED |
+| PR velocity | GREEN |
+| Story/task balance | AMBER |
+| Focus signal | RED |
+| *Overall* | *RED* |
+
+The sprint has run 20 days against a 7-day plan, accumulated 923 commits and 126 PRs, and still has 10 STARTED stories. PR velocity is the only green signal — the queue is clean and throughput was excellent in the final push. The single most damaging problem is accounting debt: the market data workstream delivered real, valuable work (FX spot grid, chart polish, feed binding, chart improvements) but the stories that owned that work were never properly opened, tracked, or closed. The =source_agnostic_control_panel= story is the clearest example — both tasks are BACKLOG yet the features are in production. The highest-value action before closing this sprint is to reconcile those story states so the next sprint starts with an honest baseline.
+
+** Recommended actions before sprint close
+
+1. Close the =marketdata_feed_binding_and_ingestion= task (`compass task done D8008A82`).
+2. Mark =source_agnostic_control_panel= tasks (=qt_fx_spot_grid=, =qt_system_feed_mapping_ui=) as DONE and close the story.
+3. Mark =synthetic_generation_configuration= story DONE (2 of 3 tasks delivered; =synthetic_fx_spot_library_data= is a separate backlog item).
+4. Close =Accumulate face dataset= (4/5 tasks done; last task has been idle for 22 days across two sprints — either close it or move the tail task to the next sprint explicitly).
+5. Update sprint.org =* Stories= table to reflect actual states.
+6. Run `compass sprint close` / mark sprint DONE.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |

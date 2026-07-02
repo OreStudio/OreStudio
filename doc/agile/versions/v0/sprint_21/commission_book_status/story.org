@@ -24,7 +24,7 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | BACKLOG                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
 | Now           | C++ codegen synced. Qt verification, shell/CLI, docs remain. |
 | Waiting on    | Nothing.                               |

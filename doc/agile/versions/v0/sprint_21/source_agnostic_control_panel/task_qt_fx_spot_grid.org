@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-29
 #+updated: 2026-06-29
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DE2F85D0-9238-41EA-9C2F-A42D37AEEB3D][Source-agnostic market data control panel]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Add an FX spot grid (named per trading-system conventions) listing all system fe
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DE2F85D0-9238-41EA-9C2F-A42D37AEEB3D][Source-agnostic market data control panel]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-29                               |
 
 * Acceptance
@@ -58,3 +58,7 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+Delivered in PR #1386 on branch feature/marketdata-system-feed-to-producer-mapping.

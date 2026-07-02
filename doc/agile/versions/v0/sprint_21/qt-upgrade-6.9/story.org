@@ -23,7 +23,7 @@ pin in =continuous-macos.yml= can then be removed.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | BACKLOG                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
 | Now           | Scaffold task in progress (PR #1304).  |
 | Waiting on    | Nothing.                               |

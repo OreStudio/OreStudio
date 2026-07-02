@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-01
 #+updated: 2026-07-01
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -57,11 +57,11 @@ sources or HTTP client support in the Librarian.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | BACKLOG                             |
 | Parent story | [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Deferred to next sprint.            |
 | Waiting on   | Librarian library-data infrastructure  |
-| Next         | Analyse ORE sample data to identify reference date; scaffold library bundle format. |
+| Next         | Move to sprint 22.                  |
 | Last touched | 2026-07-01                             |
 
 * Acceptance

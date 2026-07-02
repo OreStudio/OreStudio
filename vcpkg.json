@@ -22,6 +22,7 @@
         "boost-program-options",
         "boost-uuid",
         "boost-crc",
+        "boost-circular-buffer",
         "boost-scope-exit",
         "boost-process",
         "boost-iostreams",

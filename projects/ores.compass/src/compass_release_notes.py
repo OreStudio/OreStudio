@@ -154,23 +154,6 @@ def _cmd_draft(args, project_root):
               file=sys.stderr)
         return 1
 
-    branch = subprocess.run(
-        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-        cwd=str(project_root), capture_output=True, text=True).stdout.strip()
-    if branch != "main":
-        print(f"❌ Refusing to tag/release from '{branch}' — checkout main first "
-              "(git checkout main && git pull --ff-only).", file=sys.stderr)
-        return 1
-    local_head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=str(project_root),
-                                capture_output=True, text=True).stdout.strip()
-    subprocess.run(["git", "fetch", "origin", "main"], cwd=str(project_root))
-    remote_head = subprocess.run(["git", "rev-parse", "origin/main"], cwd=str(project_root),
-                                 capture_output=True, text=True).stdout.strip()
-    if local_head != remote_head:
-        print("❌ Local main is not up to date with origin/main — "
-              "git pull --ff-only first.", file=sys.stderr)
-        return 1
-
     tag = args.tag
     if not tag:
         version = _cmake_project_version(project_root)
@@ -184,18 +167,51 @@ def _cmd_draft(args, project_root):
     # each leg idempotent rather than assuming a clean-slate run.
     local_tag = subprocess.run(["git", "tag", "-l", tag], cwd=str(project_root),
                                capture_output=True, text=True).stdout.strip()
-    if not local_tag:
+    remote_tag = subprocess.run(
+        ["git", "ls-remote", "--tags", "origin", tag],
+        cwd=str(project_root), capture_output=True, text=True).stdout.strip()
+
+    # The main-branch / up-to-date check only matters when we are about to
+    # CREATE a new tag — that is the operation that could point at the
+    # wrong commit if run from a stale feature branch. Reusing a tag that
+    # already exists (locally and/or on origin) needs no branch check at
+    # all: gh release create/edit doesn't care what's checked out locally.
+    if not local_tag and not remote_tag and not args.force:
+        branch = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=str(project_root), capture_output=True, text=True).stdout.strip()
+        if branch != "main":
+            print(f"❌ Tag {tag} doesn't exist yet — refusing to create it from "
+                  f"'{branch}' (checkout main first, or pass --force if you know "
+                  "what you're doing).", file=sys.stderr)
+            return 1
+        local_head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=str(project_root),
+                                    capture_output=True, text=True).stdout.strip()
+        subprocess.run(["git", "fetch", "origin", "main"], cwd=str(project_root))
+        remote_head = subprocess.run(["git", "rev-parse", "origin/main"], cwd=str(project_root),
+                                     capture_output=True, text=True).stdout.strip()
+        if local_head != remote_head:
+            print("❌ Local main is not up to date with origin/main — "
+                  "git pull --ff-only first (or pass --force).", file=sys.stderr)
+            return 1
+
+    if local_tag:
+        print(f"ℹ️  Local tag {tag} already exists — reusing it.")
+    elif remote_tag:
+        # Exists on origin but not locally: fetch the real object rather
+        # than create a fresh one, which could point at a different commit.
+        p = subprocess.run(["git", "fetch", "origin", f"refs/tags/{tag}:refs/tags/{tag}"],
+                           cwd=str(project_root))
+        if p.returncode != 0:
+            return p.returncode
+        print(f"✅ Fetched existing tag {tag} from origin.")
+    else:
         p = subprocess.run(["git", "tag", "-s", tag, "-m", f"Sprint {args.sprint}"],
                            cwd=str(project_root))
         if p.returncode != 0:
             return p.returncode
         print(f"✅ Tagged {tag}.")
-    else:
-        print(f"ℹ️  Local tag {tag} already exists — reusing it.")
 
-    remote_tag = subprocess.run(
-        ["git", "ls-remote", "--tags", "origin", tag],
-        cwd=str(project_root), capture_output=True, text=True).stdout.strip()
     if not remote_tag:
         p = subprocess.run(["git", "push", "origin", tag], cwd=str(project_root))
         if p.returncode != 0:
@@ -262,6 +278,10 @@ def run(argv, project_root):
     dr.add_argument("--sprint", type=int, required=True)
     dr.add_argument("--tag", default="",
                     help="Release tag (default: v<CMakeLists project version>)")
+    dr.add_argument("--force", action="store_true",
+                    help="Skip the main-branch/up-to-date check when creating "
+                         "a brand new tag (has no effect when the tag already "
+                         "exists — that path never needs the check)")
 
     args = ap.parse_args(argv)
 

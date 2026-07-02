@@ -148,6 +148,7 @@ private:
     QChartView* chartView_;
     QCandlestickSeries* candleSeries_;
     QLineSeries* lineSeries_;
+    QLineSeries* trackerLine_; // dashed horizontal at current price → Y-axis (line view)
     QScatterSeries* posMarker_; // pulsing marker at the latest point (line view)
     QBarCategoryAxis* axisX_;   // categorical, for candlesticks
     QDateTimeAxis* axisXTime_;  // time, for the line view

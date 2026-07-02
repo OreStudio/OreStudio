@@ -150,6 +150,7 @@ FxSpotChartWindow::FxSpotChartWindow(ClientManager* clientManager,
     , chartView_(nullptr)
     , candleSeries_(nullptr)
     , lineSeries_(nullptr)
+    , trackerLine_(nullptr)
     , posMarker_(nullptr)
     , axisX_(nullptr)
     , axisXTime_(nullptr)
@@ -262,6 +263,16 @@ void FxSpotChartWindow::setupChart() {
         lineSeries_->setPen(pen);
     }
 
+    // Dashed horizontal price-tracker line: extends from left edge to terminal dot.
+    trackerLine_ = new QLineSeries();
+    {
+        QPen pen(QColor(0x22, 0xC5, 0x5E, 100));
+        pen.setWidthF(1.0);
+        pen.setCosmetic(true);
+        pen.setStyle(Qt::DashLine);
+        trackerLine_->setPen(pen);
+    }
+
     // Pulsing current-position marker for the line view.
     posMarker_ = new QScatterSeries();
     posMarker_->setMarkerShape(QScatterSeries::MarkerShapeCircle);
@@ -281,6 +292,7 @@ void FxSpotChartWindow::setupChart() {
     chart->setPlotAreaBackgroundVisible(true);
     chart->addSeries(candleSeries_);
     chart->addSeries(lineSeries_);
+    chart->addSeries(trackerLine_);
     chart->addSeries(posMarker_);
 
     // Categorical X (candlesticks).
@@ -302,6 +314,7 @@ void FxSpotChartWindow::setupChart() {
     axisXTime_->setLinePenColor(grid);
     chart->addAxis(axisXTime_, Qt::AlignBottom);
     lineSeries_->attachAxis(axisXTime_);
+    trackerLine_->attachAxis(axisXTime_);
     posMarker_->attachAxis(axisXTime_);
 
     // Shared price axis on the right — trading convention.
@@ -315,6 +328,7 @@ void FxSpotChartWindow::setupChart() {
     chart->addAxis(axisY_, Qt::AlignRight);
     candleSeries_->attachAxis(axisY_);
     lineSeries_->attachAxis(axisY_);
+    trackerLine_->attachAxis(axisY_);
     posMarker_->attachAxis(axisY_);
 
     chartView_ = new WatermarkChartView(chart, this, pretty_pair(oreKey_));
@@ -492,7 +506,7 @@ void FxSpotChartWindow::rebuildFromPoints() {
 
 void FxSpotChartWindow::applyYRange(double minV, double maxV) {
     const double rawRange = maxV - minV;
-    const double pad = std::max({rawRange * 0.5, maxV * 0.002, 0.002});
+    const double pad = std::max({rawRange * 0.05, maxV * 0.002, 0.0001});
     const double pMin = minV - pad;
     const double pMax = maxV + pad;
     const double step = nice_step(pMax - pMin, 6);
@@ -596,6 +610,11 @@ void FxSpotChartWindow::refreshLine() {
     posMarker_->clear();
     posMarker_->append(pts.back());
 
+    // Price-tracker: dashed horizontal from X-left-edge to terminal dot.
+    const double currentPrice = pts.back().y();
+    trackerLine_->replace({{static_cast<double>(lo), currentPrice},
+                           {pts.back().x(),          currentPrice}});
+
     // Clean, snapped time axis.
     qint64 lo = static_cast<qint64>(pts.front().x());
     qint64 hi = static_cast<qint64>(pts.back().x());
@@ -623,12 +642,14 @@ void FxSpotChartWindow::applyMode() {
 
     lineSeries_->setVisible(!candles);
     axisXTime_->setVisible(!candles);
+    trackerLine_->setVisible(!candles);
     posMarker_->setVisible(!candles); // current-position marker is line-view only
 
     // Clear the inactive series so no stale plot/axis lingers from the other
     // view; the active one is rebuilt from samples_/candles_ below.
     if (candles) {
         lineSeries_->clear();
+        trackerLine_->clear();
         posMarker_->clear();
         flashTimer_->stop();
     } else {

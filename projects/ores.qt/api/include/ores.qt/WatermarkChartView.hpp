@@ -49,10 +49,10 @@ protected:
         QPainter p(viewport());
         p.setRenderHint(QPainter::Antialiasing);
         QFont f;
-        f.setPointSizeF(34);
-        f.setBold(true);
+        f.setPointSizeF(30);
+        f.setBold(false);
         p.setFont(f);
-        p.setPen(QColor(255, 255, 255, 24));
+        p.setPen(QColor(255, 255, 255, 14));
         p.drawText(viewport()->rect(), Qt::AlignCenter, text_);
     }
 

@@ -610,11 +610,6 @@ void FxSpotChartWindow::refreshLine() {
     posMarker_->clear();
     posMarker_->append(pts.back());
 
-    // Price-tracker: dashed horizontal from X-left-edge to terminal dot.
-    const double currentPrice = pts.back().y();
-    trackerLine_->replace({{static_cast<double>(lo), currentPrice},
-                           {pts.back().x(),          currentPrice}});
-
     // Clean, snapped time axis.
     qint64 lo = static_cast<qint64>(pts.front().x());
     qint64 hi = static_cast<qint64>(pts.back().x());
@@ -629,6 +624,11 @@ void FxSpotChartWindow::refreshLine() {
                                            (tstep < 86'400'000 ? "HH:mm" : "dd HH:mm"));
     axisXTime_->setRange(QDateTime::fromMSecsSinceEpoch(lo), QDateTime::fromMSecsSinceEpoch(hi));
     applyYRange(minY, maxY);
+
+    // Price-tracker: dashed horizontal from snapped X-left-edge to terminal dot.
+    const double currentPrice = pts.back().y();
+    trackerLine_->replace({{static_cast<double>(lo), currentPrice},
+                           {pts.back().x(),          currentPrice}});
 
     if (auto* chart = chartView_ ? chartView_->chart() : nullptr)
         chart->setTitle(tr("%1 (Mid)   %2").arg(oreKey_).arg(pts.back().y(), 0, 'f', 5));

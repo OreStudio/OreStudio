@@ -1,5 +1,7 @@
 *July 2026*
 
+![ore_studio-v0.0.21.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.21.png)
+
 Sprint 21 set out to commission the `ores.refdata` entity library — closing out `currency` and `country` and starting the twelve entities untouched since sprint 20 — while holding the line against new tooling work that didn't directly unblock commissioning. The scope expanded well beyond that mission as the sprint ran: a full synthetic market data generation pipeline landed end to end, from approach analysis through an FX spot proof of concept to config-driven, per-tenant feed generation and a source-agnostic ingestion/binding layer in `ores.marketdata`; `compass` gained a round of quality-of-life fixes (bucketed search, blocked-dependency visualisation, environment awareness); and five hotfixes kept CI green across Windows, macOS, and codegen drift. The sprint ran three weeks past its original one-week estimate — both mid-sprint and close-out health reviews flagged it RED for scope creep — and closed with 126 merged PRs across all planned stories.
 
 ---

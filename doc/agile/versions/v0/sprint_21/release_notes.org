@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 163EDB9D-6A21-4DE5-929E-F599490C1A72
+:ID: BD04A0C9-CF47-40BF-A021-9BDDD13E310E
 :END:
 #+title: ORE Studio Sprint 21 – Release Notes
 #+description: Sprint 21 release notes (July 2026).
@@ -11,6 +11,8 @@
 #+startup: inlineimages
 
 /July 2026/
+
+[[proj:assets/images/ore_studio-v0.0.21.png]]
 
 Sprint 21 set out to commission the =ores.refdata= entity library —
 closing out =currency= and =country= and starting the twelve entities

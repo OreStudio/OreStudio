@@ -280,6 +280,34 @@ pipeline order:
     the user clicks Apply — no per-entity code here at all, since
     =report_definitions= needs no publish-time parameters (stage 5).
 
+** Codegen value assessment
+
+Rating each of the 13 worked-example files/artefacts by where codegen
+already pays off, where it plausibly could, and where it structurally
+can't — this is the reference to consult before adding a new type to
+the bundle system.
+
+| # | Artefact | Status today | Verdict |
+|---+---------------------------------------+------------------------+------------------------------------------------------------|
+| 5 | Shadow artefact table SQL | Generated | Already solved — no work needed |
+| 7,8 | Target entity model + table | Generated (ordinary entity codegen) | Already solved — orthogonal to bundling |
+| 12 | Workflow orchestration | Generated infra, generic | Already solved — zero marginal cost per new type |
+| 13 | Librarian UI shell (list bundle, Apply) | Generic | Already solved, except a bespoke wizard param page when publish needs user input |
+| 4 | Shadow-table =lookup_entity= model | Hand-authored, feeds a generator | Redundant hand-work — every column is copy-pasted from the target entity's own model; should be *derived* from it instead, removing column-drift risk |
+| 3 | Artefact-type registration row | Hand-written SQL insert | Mechanical — =target_subject= is 100% derivable from =<service>.<entity>= by naming convention |
+| 9 | Publish-from-dq SQL function | Hand-written (25 near-identical copies) | Highest-value codegen target — read artefact table, honor =mode=, upsert by natural key; structurally identical across all 25 instances |
+| 10,11 | NATS handler + registrar wiring | Hand-written per service | Mechanical, same shape as ordinary entity-messaging codegen — needs a "publish_from_dq" facet |
+| 1,2 | Bundle row + membership row | Hand-written one-liner SQL calls | Cheap to template but low ROI as a standalone archetype — better as a scripted step of an "add to bundle" helper |
+| 6 | Seed/populate data | Hand-written, always will be | Irreducibly manual — real domain content, not structure |
+
+*Recommendation:* build a single new =ores.codegen= facet — provisionally
+=publish_from_dq= — that hangs off an entity's existing codegen model
+and, from one declaration, generates items #3, #4, #9, #10, #11. Once
+that facet exists, adding a new type to the bundle system reduces to:
+model the entity normally (already required for any entity) → enable
+the =publish_from_dq= facet → hand-write only the bundle/membership
+rows (one-liners) and the actual seed data.
+
 * See also
 
 - [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern — Architecture and Decision]] — the design

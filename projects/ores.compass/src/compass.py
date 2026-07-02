@@ -5848,6 +5848,9 @@ def main():
         sys.exit(compass_timeline.run(sys.argv[2:], PROJECT_ROOT))
     if len(sys.argv) >= 2 and sys.argv[1] == "pr":
         sys.exit(cmd_pr(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "release-notes":
+        import compass_release_notes
+        sys.exit(compass_release_notes.run(sys.argv[2:], PROJECT_ROOT))
     if len(sys.argv) >= 2 and sys.argv[1] in ("bearings", "orient"):
         sys.exit(cmd_bearings(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "heading":
@@ -5865,8 +5868,8 @@ def main():
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
             "env", "nats", "db", "sql", "services", "client", "test", "build",
-            "site", "shell", "review", "pr", "bearings", "orient", "timeline",
-            "capture", "lint", "codegen",
+            "site", "shell", "review", "pr", "release-notes", "bearings",
+            "orient", "timeline", "capture", "lint", "codegen",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
         cmd_given = sys.argv[1]
@@ -5895,6 +5898,7 @@ def main():
         "  Shell:     shell\n"
         "  Review:    review\n"
         "  PR:        pr\n"
+        "  Release:   release-notes create | charts | export | commit | draft\n"
         "  Bearings:  bearings (alias: orient)\n"
         "  Lint:      lint\n"
         "\n"

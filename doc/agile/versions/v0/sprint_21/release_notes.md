@@ -1,0 +1,98 @@
+*July 2026*
+
+![ore_studio-v0.0.21.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.21.png)
+
+Sprint 21 set out to commission the `ores.refdata` entity library — closing out `currency` and `country` and starting the twelve entities untouched since sprint 20 — while holding the line against new tooling work that didn't directly unblock commissioning. The scope expanded well beyond that mission as the sprint ran: a full synthetic market data generation pipeline landed end to end, from approach analysis through an FX spot proof of concept to config-driven, per-tenant feed generation and a source-agnostic ingestion/binding layer in `ores.marketdata`; `compass` gained a round of quality-of-life fixes (bucketed search, blocked-dependency visualisation, environment awareness); and five hotfixes kept CI green across Windows, macOS, and codegen drift. The sprint ran three weeks past its original one-week estimate — both mid-sprint and close-out health reviews flagged it RED for scope creep — and closed with 126 merged PRs across all planned stories.
+
+---
+
+
+# ✅ Highlights
+
+-   All planned stories delivered.
+
+
+# 🛠️ Key Improvements
+
+
+## Financial Features
+
+-   **Commission: country**: Commission `country` across all access layers: verify the Qt UI end-to-end post-NATS migration, verify existing shell and CLI commands, fix any regressions found, and add the entity chapter to the user manual.
+-   **Consistent synthetic market data generation: approach analysis**: Establish a documented, developer-ready approach for generating a single consistent synthetic market data environment that covers all ORE-supported asset classes, can price all products in the ORE Examples suite, and can be evolved through time in a way that maintains cross-asset consistency.
+-   **PoC: synthetic market data generation — FX spot vertical slice**: Validate the approach developed in the sprint-21 analysis story by building a working vertical PoC limited to FX spot.
+-   **Synthetic generation configuration and config-driven feeds**: Replace the PoC's transient, boot-time, system-tenant generation with a proper producer: a persisted **synthetic generation config** in `ores.synthetic` that a user authors, and a service that generates from it autonomously and publishes on its own namespaced channel — stamping the config's tenant and source name so the data is correctly owned and traceable.
+-   **Config-driven synthetic feed generation (per-config series, lifecycle)**: A user can configure any FX spot rate in the Market Simulator and start a feed for it that generates correct, isolated synthetic market data — not just the single hard-wired EUR/USD PoC feed.
+-   **Market data feed binding, ingestion and official stream**: Make `ores.marketdata` the authority: a source-agnostic **feed-config binding** records which producer channel feeds each official series; an ingest loop subscribes to the bound producer channels, **persists** observations (tenant + source) and **remaps** them to the official tenant-scoped stream consumers use.
+-   **Source-agnostic market data control panel**: A generic Qt control panel to manage market data feeds — list, start/stop, monitor — driven by the feed-config registry and a source-agnostic control contract, with no knowledge of what produces each feed.
+-   **Hotfix: market\_fixing entity carries audit columns absent from lean SQL schema**: Restore the marketdata repository test suite by trimming `market_fixing`'s domain type, entity, mapper, generator, json\_io, handler and service down to the columns that actually exist on `ores_marketdata_market_fixings_tbl` — the table intentionally has no audit trail (`version`, `modified_by`, `performed_by`, `change_reason_code`, `change_commentary`) because fixing volume makes per-row audit impractical.
+
+
+## Service Architecture
+
+-   **Refactor ores.codegen: merge generator.py into codegen/ package**: Eliminate the structural coupling between `codegen/generate.py` and the top-level `generator.py` monolith.
+
+
+## Documentation & Tooling
+
+-   **Open sprint 21**: Scaffold sprint 21, move all 24 postponed stories from sprint\_20/ to sprint\_21/ (updating filetags and parent sprint references), wire the sprint into the version manifest and agile index, and update the vcpkg submodule to latest master.
+-   **Knowledge graph housekeeping**: Keep the org-roam knowledge graph navigable and internally consistent.
+-   **Fix readme badges**: readme.org badges are correct: Sprint badge shows the current sprint, PRs badge does not show a shields.io error.
+
+
+## Other
+
+-   **Accumulate face dataset**: Build the external/facestudio/ seed catalog; fix accumulation script; wire into seeder.
+-   **Fix compass review workflow for Claude-based code reviews**: Restore the compass PR review round workflow after the switch from Gemini to Claude as the automated code reviewer.
+-   **Compass environment improvements: port auto-assignment and fleet env-type display**: Improve compass env provision so it never collides with existing environments by scanning all ores\_dev\_\* directories and picking the next available base port.
+-   **Environment provisioning overhaul**: GCP-style naming, genesis env, light env type, direct-emacs compass commands, env type through the stack, bootstrap docs.
+-   **Hotfix: sccache wrapper breaks Windows builds**: Restore green Windows CI by ensuring sccache\_wrapper.sh is only used as a compiler launcher on platforms that can execute POSIX shell scripts.
+-   **Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++**: macOS CI compiles ores.utility without error.
+-   **Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression**: Restore the macOS debug CI build after it started failing during CPack Bundle packaging when Xcode 16 was selected (PR #1325).
+-   **Fix Qt party\_type build: request.type renamed to code/codes**: Restore the `ores.qt.party.lib` build after the party\_type messaging codegen sync renamed request fields, by updating the Qt party\_type consumers to the new field names.
+
+
+# ⚠️ Known Issues & Postponed
+
+-   None — all stories completed.
+
+
+# 📈 Sprint Charts
+
+
+## PRs and Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day. A high commits-to-PR ratio may indicate scope creep.
+
+![prs_commits.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/doc/agile/versions/v0/sprint_21/prs_commits.png)
+
+
+## Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces mostly additions; refactoring produces a mix.
+
+![line_churn.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/doc/agile/versions/v0/sprint_21/line_churn.png)
+
+
+## PR Cycle Time
+
+Hours from PR open to merge, one bar per PR. Long bars indicate review bottlenecks.
+
+![pr_cycle.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/doc/agile/versions/v0/sprint_21/pr_cycle.png)
+
+
+## Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint. Steady upward slope is healthy; plateauing signals a stall.
+
+![stories_done.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/doc/agile/versions/v0/sprint_21/stories_done.png)
+
+
+# 📊 Time Summary
+
+-   **Total effort**: not tracked
+-   **PRs merged**: 126 (since v0.0.20, 2026-06-12 to 2026-07-02)
+-   **Sprint duration**: 2026-06-11 → 2026-07-02
+
+---
+
+*Next sprint: Sprint 22 continues commissioning the `ores.refdata` entity library and turns to correcting codegen C++ generation drift, carrying forward the stories postponed from Sprint 21.*

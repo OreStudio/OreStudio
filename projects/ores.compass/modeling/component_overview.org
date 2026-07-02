@@ -323,3 +323,5 @@ per-pillar modules behind a thin dispatcher.
 - [[id:8BA366D7-B43F-4E5B-B4AD-A40C7E28881B][Story: ores.compass repository compass tool]] — the sprint story.
 - [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — the documentation map this tool complements.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the codegen backend for scaffolding and listing.
+- [[id:BD3F410B-401B-4EA3-8C86-E4B1F45CA9BF][The compass release-notes pipeline]] — design of the =release-notes=
+  command family (=create=/=charts=/=export=/=commit=/=draft=).

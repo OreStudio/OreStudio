@@ -24,61 +24,79 @@ sprint's PRs, tagging =main=, and opening a draft GitHub release.
 
 * How to use this skill
 
-1. /Confirm the sprint to close/. The most recently-completed
-   sprint folder under [[proj:doc/agile/versions/v0][=doc/agile/versions/v0/=]] is the target; ask
+The whole pipeline runs through =compass release-notes=
+(=projects/ores.compass/src/compass_release_notes.py=) — five
+verbs, run in order, from a task branch off =main=.
+
+1. /Confirm the sprint to close/. It is always the *previous*
+   (already-closed) sprint, not the one currently in flight — ask
    the user if there is any ambiguity.
 
-2. /Collect PR data/ since the last release tag:
+2. /Create/: collect PR data since the last release tag and render
+   the release notes org file.
 
    #+begin_src sh
-   python3 build/scripts/collect_release_pr_data.py
+   ./compass.sh release-notes create --sprint <N>
    #+end_src
 
-   Output lands in =tmp/release_pr_data/=. If already collected this
-   sprint, skip.
-
-3. /Generate the release notes org file/. The script reads
-   =sprint.org= and all =story.org= files, extracts story
-   descriptions into the Key Improvements section, derives
-   Highlights from the retrospective, and renders
-   =doc_release_notes.org.mustache= via pystache:
-
-   #+begin_src sh
-   python3 build/scripts/generate_release_notes.py
-   #+end_src
+   Pass =--since-tag v0.0.<N-1>= explicitly if a tag for the sprint
+   being closed already exists (e.g. created ahead of time) —
+   otherwise PR collection will pick up its own tag as "latest" and
+   undercount merged PRs.
 
    Output: =doc/agile/versions/v0/sprint_N/release_notes.org= — a
-   standard org-mode document with a proper UUID, frontmatter,
-   and a *summary blurb placeholder* that must be filled in.
+   standard org-mode document with a proper UUID, frontmatter, and
+   two *summary blurb placeholders* (opening paragraph, "Next
+   sprint" line) that must be filled in.
 
-4. /Fill in the blurb/. Open =release_notes.org= and replace the
-   =(( Summary blurb ... ))= placeholder with one paragraph
-   summarising the sprint's focus and key outcomes. Source material:
-   sprint mission (=sprint.org * Mission=) and retrospective
-   (=sprint.org * Retrospective=). Keep it to 4–6 sentences.
+3. /Fill in the blurbs/. Open =release_notes.org= and replace both
+   =(( ... ))= placeholders. Source material: sprint mission
+   (=sprint.org * Mission=), retrospective (=sprint.org *
+   Retrospective=), and health reviews. Keep the opening paragraph
+   to 4–6 sentences.
 
-5. /Export to Markdown/ inside Emacs:
-
-   #+begin_src emacs-lisp
-   ;; C-c C-e m m  (org-export-dispatch → Markdown → to file)
-   #+end_src
-
-   The exported =release_notes.md= is what GitHub Releases uses.
-
-6. /Open the PR/ via =PR Manager=. Merge once green.
-
-7. /Tag main and open a draft GitHub release/ (see the =* Tag and
-   release= section in [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]]):
+4. /Charts/: render the sprint's gnuplot health charts so the org
+   file's chart images resolve to real files.
 
    #+begin_src sh
-   git checkout main && git pull --ff-only origin main
-   git tag -s v0.0.<N> -m "Sprint <N>"
-   git push origin v0.0.<N>
-   gh release create v0.0.<N> \
-     --draft \
-     --title "Sprint <N>" \
-     --notes-file doc/agile/versions/v0/sprint_<N>/release_notes.md
+   ./compass.sh release-notes charts --sprint <N>
    #+end_src
+
+5. /Export/: batch-export =release_notes.org= to GitHub-flavoured
+   Markdown.
+
+   #+begin_src sh
+   ./compass.sh release-notes export --sprint <N>
+   #+end_src
+
+   Output: =release_notes.md= — this is the file that ships
+   verbatim as the GitHub release body.
+
+6. /Commit/: stage, commit, and push =release_notes.org=/=.md= and
+   the four chart PNGs on the current branch. There is no separate
+   "upload images" step — the markdown embeds them via
+   =raw.githubusercontent.com/.../main/...= URLs, so they only
+   render correctly once these files are merged to =main=.
+
+   #+begin_src sh
+   ./compass.sh release-notes commit --sprint <N>
+   #+end_src
+
+   Open and merge the PR the normal way (=compass pr create= /
+   =compass pr merge=) before the next step, so the images resolve.
+
+7. /Draft/: tag =main= and open a *draft* GitHub release. A
+   codename is invented per release (house convention: =v0.0.20,
+   "Capopolo"=) — =--codename= is required.
+
+   #+begin_src sh
+   ./compass.sh release-notes draft --sprint <N> --codename <Codename>
+   #+end_src
+
+   Idempotent: safe to re-run if the tag or release already exists
+   (e.g. tagged ahead of time, or fixing the title/body after the
+   fact) — reuses/updates in place rather than erroring or losing
+   work.
 
 8. /Hand off to a human/. The release is always created in /draft/
    so a maintainer can review, attach binaries/screenshots, and
@@ -88,29 +106,6 @@ The release is the upward signal that work landed (see [[id:FABB50E5-518C-42D6-9
 the glossary). Cutting it is a [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]] task — System 3
 owns it at sprint level.
 
-* Design notes
-
-The release notes pipeline separates three concerns:
-
-- /Mechanical collection/ — =collect_release_pr_data.py= gathers
-  all PR metadata; =generate_release_notes.py= parses sprint/story
-  org files and extracts story descriptions.
-
-- /Template rendering/ — the script renders
-  [[proj:projects/ores.codegen/library/templates/doc_release_notes.org.mustache][=projects/ores.codegen/library/templates/doc_release_notes.org.mustache=]]
-  via pystache (same infrastructure as all other documents).
-  Story descriptions are the first sentence of each story's =* Goal=
-  section; Highlights come from the =* Retrospective ** What went
-  well= bullets.
-
-- /Editorial judgement/ — the summary blurb is intentionally left
-  as a placeholder. It requires reading the sprint's mission,
-  retrospective, and PR list to synthesise a coherent narrative.
-  Claude fills it in; the human reviews.
-
-The output is an org-mode source file. The human exports it to
-Markdown in Emacs (=C-c C-e m m=) for the GitHub release.
-
 * Recipes
 
 - [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]] — the end-to-end procedure.
@@ -118,6 +113,9 @@ Markdown in Emacs (=C-c C-e m m=) for the GitHub release.
 
 * Reference
 
+- [[id:BD3F410B-401B-4EA3-8C86-E4B1F45CA9BF][The compass release-notes pipeline]] — why it's five verbs, the
+  image-resolution mechanism, tag/release idempotency, the title
+  convention.
 - [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]] phase — where this skill is invoked.
 - [[id:FABB50E5-518C-42D6-901E-848644E56CA2][Release]] (glossary).
 - [[id:571CC11B-E2A2-47C0-AE13-8BD4B974F0C3][Agile recipes]] — sibling recipes for the agile cycle.

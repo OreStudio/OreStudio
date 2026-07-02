@@ -36,11 +36,11 @@ to offer yet. Insert it between =startReportInstall='s completion and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -56,11 +56,23 @@ to offer yet. Insert it between =startReportInstall='s completion and
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added =startSyntheticDataPublish()=/=onSyntheticDataWorkflowComplete(bool)=
+as file-for-file mirrors of =startOrgPublish()=/=onOrgWorkflowComplete()=,
+swapping =bundle_code = "organisation"= for
+=bundle_code = "synthetic_market_data"= and relabeling logs/status text
+"Phase 3.5". Rewired exactly two call sites to route through the new
+phase instead of =startActivate()= directly: the end of
+=startReportInstall()='s success callback, and the
+=onOrgWorkflowComplete()= branch taken when no reports were selected
+(=reports.empty()=) — so the phase always runs after Phase 3 whether
+or not any reports existed to install. Phases 1, 2, and 4 themselves
+were left untouched.
 
 * Notes
+
+Built =ores.qt.lib= (the target containing this file) via
+=cmake --build --preset linux-clang-debug-make --target ores.qt.lib= —
+compiled and linked cleanly with no warnings.
 
 * PRs
 
@@ -75,3 +87,9 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Shipped: every party created through the wizard now automatically
+gets the =synthetic_market_data= bundle applied (Phase 3.5), with no
+new user-facing prompt, regardless of whether reports were selected
+in Phase 3. Closes the loop from "party created" to "usable synthetic
+FX config" the story's Goal describes.

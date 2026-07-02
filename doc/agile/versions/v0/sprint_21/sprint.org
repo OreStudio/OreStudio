@@ -24,16 +24,17 @@ Commission the =ores.refdata= entity library: finish currency and country, and s
 
 | Field          | Value                                  |
 |----------------+----------------------------------------|
-| State          | STARTED                              |
+| State          | DONE                                 |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
 | Previous       | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]                  |
 | Start          | 2026-06-12                               |
 | End (expected) | 2026-06-19                           |
-| Now            | Sprint in flight.                      |
+| End (actual)   | 2026-07-02                           |
+| Now            | Closed.                                |
 | Waiting on     | Nothing.                               |
-| Next           | Pick the first story.                  |
+| Next           | Open sprint 22.                        |
 | Release Notes  | Added at end of sprint.                |
-| Last touched   | 2026-06-29                               |
+| Last touched   | 2026-07-02                               |
 
 * Stories
 

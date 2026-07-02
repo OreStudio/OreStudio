@@ -20,11 +20,11 @@ correctly-formatted title and a structured body?
 * Answer
 
 1. /Create the PR/ with =compass pr create=. It validates the title
-   convention, assembles the body (Summary, Changes, and the
+   convention, assembles the body (Summary, Changes, the
    =## Traceability= table derived from the branch's task and story
-   docs), pushes the branch, opens the PR, records it on the task
-   (=#+pr:= and the =* PRs= table), commits and pushes that record,
-   and stamps the session journal:
+   docs, and an =**Environment:**= line), pushes the branch, opens
+   the PR, records it on the task (=#+pr:= and the =* PRs= table),
+   commits and pushes that record, and stamps the session journal:
 
    #+begin_src sh :results verbatim
    ./compass.sh pr create --title "[component] One-line description" \
@@ -32,8 +32,11 @@ correctly-formatted title and a structured body?
      --change "First change" --change "Second change"
    #+end_src
 
-   Use =--draft= for a draft PR and =--task <uuid-or-slug>= when the
-   branch carries more than one task.
+   Use =--draft= for a draft PR, =--task <uuid-or-slug>= when the
+   branch carries more than one task, and =--environment <name>= to
+   override the environment shown (default: the task's
+   =#+environment:= frontmatter field, e.g. =prime_origin=; falls
+   back to =(none)= if the task doesn't record one).
 
 2. /Confirm the PR URL/ it prints. There is nothing else to do — the
    task-doc record is already committed and pushed.
@@ -69,6 +72,12 @@ correctly-formatted title and a structured body?
   - Task:  =doc/agile/versions/v0/sprint_<NN>/<STORY_SLUG>/task_<TASK_SLUG>=
 - /Traceability is forward-only/: add it to new PRs; do not back-fill
   old ones.
+- /Environment line/ goes right after Traceability, always:
+  =**Environment:** <name>=. It records which =ores_dev_*= worktree
+  environment the work was done in (read from the task's
+  =#+environment:= field), so a reviewer or a later session can tell
+  where to reproduce/continue the work. =(none)= if the task doesn't
+  record one.
 
 * Script
 

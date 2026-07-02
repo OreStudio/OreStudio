@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life_sprint_21:sprint_22:v0:
 #+owner: marco
 #+branch: feature/pr-create-environment-field
-#+pr:
+#+pr: 1405
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
@@ -60,7 +60,7 @@ Answer and Conventions sections to match.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1405][#1405]] | [compass] pr create: record the environment on the PR |
 
 * Review
 

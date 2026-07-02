@@ -8,7 +8,7 @@
 #+filetags: :commission_party_type:sprint_22:v0:codegen:
 #+owner: marco
 #+branch: feature/resync-party-type-codegen-drift
-#+pr:
+#+pr: 1407
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
@@ -72,7 +72,7 @@ current template.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1407][#1407]] | [refdata] Resync party_type codegen; fix display_order SQL default drift |
 
 * Review
 

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :gmm-improvements:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/gmm-chart-axes
 #+pr:
 #+blocked_on:
 #+blocked_since:

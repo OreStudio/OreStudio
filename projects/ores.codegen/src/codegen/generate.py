@@ -62,6 +62,7 @@ _PROFILE_TO_FACETS = {
     "protocol": {"ores.cpp.protocol"},
     "nats-eventing": {"ores.cpp.nats-eventing"},
     "nats-handler": {"ores.cpp.nats-handler"},
+    "nats-sub-registrar": {"ores.cpp.nats-sub-registrar"},
     "qt": {"ores.cpp.qt"},
     "enum": {"ores.cpp.enum"},
     "field-group": {"ores.cpp.field-group"},

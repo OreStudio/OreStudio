@@ -66,6 +66,14 @@ next task.
 
 * Notes
 
+- *Approach changed at re-apply time.* The original plan targeted the
+  monolithic =facet_catalogue.org= + standalone =cpp_nats_registrar_*.org=
+  literate sources. Between first attempt and re-apply, codegen migrated to
+  the *physical-space graph*: facets/archetypes are now =ores.*.org= docs
+  under =library/templates/= (=#+type: facet|archetype=, =#+facet:=,
+  =#+output:=), discovered by =physical_space.py=. The templates were
+  re-modelled accordingly (see Result).
+
 * PRs
 
 | PR | Title |
@@ -87,14 +95,22 @@ handler header and wires its NATS subjects to the handler instance, so a
 compile failure in one entity's handler cannot block the rest of the
 service.
 
-- =facet_catalogue.org=: new =nats-sub-registrar= entry with hpp/cpp rows.
-- =cpp_nats_registrar.{hpp,cpp}.mustache= and their org literate sources
-  (=cpp_nats_registrar_{hpp,cpp}.org=) with tangle blocks.
-- =cpp_messaging.org=: archetypes table gains both rows; summary updated
-  to "Eight templates".
-- =list_only= flag wires only the list subject; =no_history= skips the
-  history subscription — both documented in the org sources.
+Re-modelled onto the *physical-space graph* (current codegen):
 
-Committed in =c90d0b989=. Mustache outputs match their tangle blocks
-byte-for-byte (re-tangle is a no-op). Next: generate sub-registrars for
-all refdata entities.
+- =ores.cpp.nats-sub-registrar.org= — facet doc (=#+type: facet=,
+  =#+model_types: domain_entity schema=, =#+facet_group: ores.cpp=).
+- =ores.cpp.nats-sub-registrar.nats_registrar_header.org= and
+  =…nats_registrar_implementation.org= — archetype docs with =#+output:=
+  paths, =#+facet:= back-reference, and the mustache tangle blocks.
+- =generate.py=: =nats-sub-registrar → {ores.cpp.nats-sub-registrar}= added
+  to the =_PROFILE_TO_FACETS= shim.
+- Tangled to =cpp_nats_registrar.{hpp,cpp}.mustache= via
+  =compass build --direct tangle_codegen_templates=.
+- Inventories regenerated (=regenerate_physical_space_inventories.py=):
+  facet now listed in =ores.cpp.org=.
+- =list_only= wires only the list subject; =no_history= skips the history
+  subscription — both documented in the archetype docs.
+
+The meta-pattern is documented under
+[[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]], whose NATS instance section links to
+these archetypes.

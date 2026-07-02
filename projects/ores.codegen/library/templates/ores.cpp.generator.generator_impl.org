@@ -130,6 +130,9 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{#is_uuid}}
     r.{{name}} = ctx.generate_uuid();
 {{/is_uuid}}
+{{#is_plain_string}}
+    r.{{name}} = std::string(faker::word::noun());
+{{/is_plain_string}}
 {{/generator_expr}}
 {{/columns}}
 {{#has_audit_columns}}

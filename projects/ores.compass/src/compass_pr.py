@@ -158,6 +158,12 @@ def _org_id(text):
     return m.group(1) if m else ""
 
 
+def _org_field(text, field):
+    """#+<field>: value from an org file's frontmatter, or "" if absent/blank."""
+    m = re.search(rf"^#\+{field}:\s*(.*)$", text, re.M | re.I)
+    return m.group(1).strip() if m else ""
+
+
 def _site_url(rel_path):
     return _SITE_BASE + str(rel_path).removesuffix(".org") + ".html"
 
@@ -209,6 +215,7 @@ def _cmd_create(args, project_root):
 
     summary = args.summary or "(Fill in: what changes, why.)"
     changes = "\n".join(f"- {c}" for c in (args.change or ["(Fill in.)"]))
+    environment = args.environment or _org_field(task_text, "environment") or "(none)"
     body = (
         f"## Summary\n\n{summary}\n\n"
         f"## Changes\n\n{changes}\n\n"
@@ -217,6 +224,7 @@ def _cmd_create(args, project_root):
         "|----------|------|----|\n"
         f"| Story | [{story_title}]({_site_url(story_rel)}) | {story_id} |\n"
         f"| Task | [{task_title}]({_site_url(task_rel)}) | {task_id} |\n\n"
+        f"**Environment:** {environment}\n\n"
         "🤖 Generated with [Claude Code](https://claude.com/claude-code)")
 
     # Ensure the branch exists on the remote under its own name — a
@@ -539,6 +547,9 @@ def run(argv, project_root):
     cr.add_argument("--task", default="",
                     help="Task UUID or slug (default: match #+branch: "
                          "against the current branch)")
+    cr.add_argument("--environment", default="",
+                    help="Environment the work was done in, e.g. "
+                         "prime_origin (default: the task's #+environment:)")
     cr.add_argument("--draft", action="store_true",
                     help="Open as a draft PR")
 

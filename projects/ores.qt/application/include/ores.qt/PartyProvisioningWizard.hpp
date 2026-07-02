@@ -223,6 +223,10 @@ private:
  *          with party_id param scoped to the current party.
  *          Workflow progress shown via WorkflowStepsWidget.
  * Phase 3: Create selected report definitions (sequential, non-workflow).
+ * Phase 3.5: Publish synthetic market data bundle (synthetic FX spot config
+ *            datasets), always applied automatically regardless of whether
+ *            any reports were selected. Workflow progress shown via
+ *            WorkflowStepsWidget.
  * Phase 4: Mark party status as Active.
  *
  * The Next button is only enabled after all phases complete.
@@ -247,11 +251,13 @@ public:
 private slots:
     void onCounterpartyWorkflowComplete(bool success);
     void onOrgWorkflowComplete(bool success);
+    void onSyntheticDataWorkflowComplete(bool success);
 
 private:
     void startCounterpartyPublish();
     void startOrgPublish();
     void startReportInstall();
+    void startSyntheticDataPublish();
     void startActivate();
     void markFailed(const QString& errorMsg);
     void appendLog(const QString& msg);

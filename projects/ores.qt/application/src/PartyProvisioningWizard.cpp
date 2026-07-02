@@ -632,8 +632,8 @@ void PartyExecutePage::onOrgWorkflowComplete(bool success) {
         statusLabel_->setText(tr("Creating report definitions..."));
         startReportInstall();
     } else {
-        statusLabel_->setText(tr("Activating party..."));
-        startActivate();
+        statusLabel_->setText(tr("Publishing synthetic data setup..."));
+        startSyntheticDataPublish();
     }
 }
 
@@ -670,8 +670,8 @@ void PartyExecutePage::startReportInstall() {
 
         BOOST_LOG_SEV(lg(), info) << "Phase 3 complete: " << result.created << " reports created";
         appendLog(tr("Created %1 report definition(s).").arg(result.created));
-        statusLabel_->setText(tr("Activating party..."));
-        startActivate();
+        statusLabel_->setText(tr("Publishing synthetic data setup..."));
+        startSyntheticDataPublish();
     });
 
     QFuture<ReportResult> future =
@@ -729,6 +729,102 @@ void PartyExecutePage::startReportInstall() {
         });
 
     watcher->setFuture(future);
+}
+
+// Phase 3.5: Publish synthetic market data bundle (synthetic FX spot configs).
+void PartyExecutePage::startSyntheticDataPublish() {
+    ClientManager* clientManager = wizard_->clientManager();
+
+    appendLog(tr("Phase 3.5: publishing synthetic data setup..."));
+    BOOST_LOG_SEV(lg(), info) << "Phase 3.5: synthetic market data bundle publish";
+
+    struct BundleResult {
+        bool success = false;
+        std::string error_message;
+        std::string instance_id;
+        int datasets_dispatched = 0;
+    };
+
+    auto* watcher = new QFutureWatcher<BundleResult>(this);
+    connect(watcher, &QFutureWatcher<BundleResult>::finished, this, [this, watcher]() {
+        BundleResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 3.5 async task threw: " << e.what();
+            result.error_message = e.what();
+        }
+        watcher->deleteLater();
+
+        if (!result.success) {
+            markFailed(QString::fromStdString(result.error_message));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Synthetic data workflow started: instance="
+                                  << result.instance_id;
+        appendLog(tr("Synthetic data workflow started: %1 dataset(s) dispatched.")
+                      .arg(result.datasets_dispatched));
+
+        progressBar_->setVisible(false);
+        stepsWidget_->setVisible(true);
+
+        connect(stepsWidget_,
+                &WorkflowStepsWidget::instanceReachedTerminalState,
+                this,
+                &PartyExecutePage::onSyntheticDataWorkflowComplete,
+                Qt::SingleShotConnection);
+        stepsWidget_->setInstance(QUuid::fromString(QString::fromStdString(result.instance_id)));
+        stepsWidget_->preSeed(result.datasets_dispatched);
+    });
+
+    QFuture<BundleResult> future =
+        QtConcurrent::run([clientManager, publishedBy = publishedBy_]() -> BundleResult {
+            BundleResult result;
+            dq::messaging::publish_bundle_params syntheticParams;
+            syntheticParams.party_id = boost::uuids::to_string(clientManager->currentPartyId());
+
+            dq::messaging::publish_bundle_request request;
+            request.bundle_code = "synthetic_market_data";
+            request.mode = dq::domain::publication_mode::upsert;
+            request.published_by = publishedBy;
+            request.atomic = true;
+            request.params_json = dq::messaging::build_params_json(syntheticParams);
+
+            auto resp = clientManager->process_authenticated_request(std::move(request),
+                                                                     std::chrono::minutes(5));
+
+            if (!resp) {
+                result.error_message = "Failed to communicate with server (synthetic data publish)";
+                return result;
+            }
+            if (!resp->success) {
+                result.error_message = resp->error_message;
+                return result;
+            }
+            result.success = true;
+            result.instance_id = resp->instance_id;
+            result.datasets_dispatched = resp->datasets_dispatched;
+            return result;
+        });
+
+    watcher->setFuture(future);
+}
+
+void PartyExecutePage::onSyntheticDataWorkflowComplete(bool success) {
+    // Leave stepsWidget_ visible; show spinner for transition to Phase 4.
+    progressBar_->setRange(0, 0);
+    progressBar_->setVisible(true);
+
+    if (!success) {
+        markFailed(tr("Synthetic data setup workflow completed with errors."));
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Phase 3.5 complete: synthetic data workflow succeeded";
+    appendLog(tr("Synthetic data setup published successfully."));
+    statusLabel_->setText(tr("Activating party..."));
+    startActivate();
 }
 
 // Phase 4: Mark party status as Active.

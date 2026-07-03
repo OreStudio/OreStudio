@@ -42,14 +42,18 @@ gap, the cardinality-limit check, is tracked separately — see
 
 - =counterparty.org=:
   - =* Insert trigger ** Validations= table gains rows for
-    =party_type= (=ores_refdata_validate_party_type_fn=) and =status=
-    (=ores_refdata_validate_party_status_fn=).
+    =party_type= (=ores_refdata_validate_party_type_fn=), =status=
+    (=ores_refdata_validate_party_status_fn=), *and*
+    =business_center_code= (=ores_refdata_validate_business_centre_fn=
+    — confirmed via =refdata_counterparties_create.sql:116-117= this
+    is a call-and-reassign validation, the same shape as
+    =party_type=/=status=, *not* a =soft_fk_validations= entry; an
+    earlier pass of the appraisal misclassified it).
   - =soft_fk_validations= gains an entry for =parent_counterparty_id=
-    (nullable self-referential soft FK to the counterparties table)
-    and for =business_center_code= (non-nullable soft FK to business
-    centres).
+    only (nullable self-referential soft FK to the counterparties
+    table).
   - =business_center_code='s =:nullable:= property flips from =true=
-    to =false=.
+    to =false= — a separate fix from its value-validation row above.
   - A =transliterated_name= column is added (nullable text, matching
     the hand-written SQL's current column definition).
   - Natural keys / uniqueness declared to preserve the current
@@ -66,11 +70,18 @@ gap, the cardinality-limit check, is tracked separately — see
     uniqueness (not the collapsed =(counterparty_id, id_scheme)= a
     naive regen currently produces).
 - =counterparty_contact_information.org=:
-  - =* Insert trigger ** Validations= gains rows for =contact_type=
-    (=ores_refdata_validate_contact_type_fn=) and =country_code=
-    (=ores_refdata_validate_country_fn=).
+  - =* Insert trigger ** Validations= gains a row for =contact_type=
+    (=ores_refdata_validate_contact_type_fn=).
   - =soft_fk_validations= gains an entry for =counterparty_id=
     (non-nullable).
+  - =country_code= is *not* covered by this task —
+    =ores_refdata_validate_country_fn= only checks non-null/non-empty
+    (verified against its body) and is unused elsewhere; the real
+    check in the live SQL is an inline, tenant-scoped, nullable-safe
+    existence check against =ores_refdata_countries_tbl.alpha2_code=
+    that doesn't match any current facet as-is. Left as an open gap —
+    either extend a facet (nullable/tenant-scoped existence check) or
+    accept a paste block; needs its own decision, not bundled here.
 - After authoring, a scoped regen (per [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for
   a domain entity?]]) produces a diff containing *only* these fixes
   plus the wanted security-definer/docstring improvements — the

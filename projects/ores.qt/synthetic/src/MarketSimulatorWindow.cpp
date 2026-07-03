@@ -31,6 +31,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/ProcessTypeLabel.hpp"
 #include "ores.qt/WatermarkChartView.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
@@ -1006,6 +1007,8 @@ void MarketSimulatorWindow::showFxPairSummary(
                                            "color: gray;");
     summaryHero_->setVisible(true);
 
+    summaryForm_->addRow(tr("Process"),
+                         new QLabel(processTypeLabel(fx.process_type), summaryPage_));
     summaryForm_->addRow(tr("Initial price"),
                          new QLabel(QString::number(fx.gmm_initial_price), summaryPage_));
     {

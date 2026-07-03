@@ -20,6 +20,7 @@
 #include "ores.qt/ClientFxSpotGenerationConfigModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/ProcessTypeLabel.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include <QtConcurrent>
@@ -95,7 +96,7 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
             case TicksPerHour:
                 return static_cast<qlonglong>(fx_spot_generation_config.ticks_per_hour);
             case ProcessType:
-                return QString::fromStdString(fx_spot_generation_config.process_type);
+                return processTypeLabel(fx_spot_generation_config.process_type);
             case Enabled:
             case Version:
                 return static_cast<qlonglong>(fx_spot_generation_config.version);

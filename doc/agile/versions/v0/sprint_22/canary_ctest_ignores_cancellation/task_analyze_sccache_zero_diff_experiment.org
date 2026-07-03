@@ -71,7 +71,8 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Capture's What/Why/References/See also left as unfilled template placeholders despite content existing in #+description | doc/agile/product_backlog/inbox/sccache_external_cache_backend.org | Accepted | Fixed in 7c4252251. |
+| 2 | Duplicated rationale comment across continuous-macos.yml/continuous-windows.yml | .github/workflows/continuous-{macos,windows}.yml | Declined | Not worth a composite-action abstraction for two call sites; flagged as a spot to update in both places if the mitigation changes. |
 
 * Result
 

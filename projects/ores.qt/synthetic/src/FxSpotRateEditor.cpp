@@ -77,7 +77,15 @@ constexpr double kJumpMin = 0.0;     // weight of the jump component
 constexpr double kJumpMax = 0.5;     // up to 50% mixture share
 
 // Advanced table columns (no per-component Type — engine is config-level now).
-enum Col { ColName = 0, ColProfile = 1, ColMean = 2, ColStdev = 3, ColWeight = 4, ColActions = 5 };
+enum Col {
+    ColColor = 0,
+    ColName = 1,
+    ColProfile = 2,
+    ColMean = 3,
+    ColStdev = 4,
+    ColWeight = 5,
+    ColActions = 6
+};
 
 double sliderToValue(int slider, double lo, double hi) {
     return lo + (hi - lo) * (slider / 100.0);
@@ -528,8 +536,9 @@ QWidget* FxSpotRateEditor::buildAdvancedControls() {
     compLayout->setContentsMargins(12, 12, 12, 12);
     compLayout->setSpacing(8);
 
-    componentTable_ = new QTableWidget(0, 6, compBox);
-    componentTable_->setHorizontalHeaderLabels({tr("Component Name"),
+    componentTable_ = new QTableWidget(0, 7, compBox);
+    componentTable_->setHorizontalHeaderLabels({tr("Colour"),
+                                                tr("Component Name"),
                                                 tr("Profile"),
                                                 tr("Drift (μ %)"),
                                                 tr("Volatility (σ %)"),
@@ -546,7 +555,7 @@ QWidget* FxSpotRateEditor::buildAdvancedControls() {
         auto* hdr = componentTable_->horizontalHeader();
         hdr->setStretchLastSection(false);
         hdr->setSectionResizeMode(ColName, QHeaderView::Stretch);
-        for (int col : {ColProfile, ColMean, ColStdev, ColWeight, ColActions})
+        for (int col : {ColColor, ColProfile, ColMean, ColStdev, ColWeight, ColActions})
             hdr->setSectionResizeMode(col, QHeaderView::ResizeToContents);
     }
     compLayout->addWidget(componentTable_);
@@ -720,6 +729,19 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     const int row = componentTable_->rowCount();
     componentTable_->insertRow(row);
 
+    // Colour indicator, matching the row's PDF curve colour on the Live Return
+    // Distribution Preview chart (ReturnDistributionChart::componentColor()).
+    auto* colorSwatch = new QLabel(componentTable_);
+    colorSwatch->setFixedSize(16, 16);
+    colorSwatch->setStyleSheet(
+        QStringLiteral("background-color: %1; border-radius: 3px;")
+            .arg(ReturnDistributionChart::componentColor(row).name()));
+    auto* colorCell = new QWidget(componentTable_);
+    auto* colorLayout = new QHBoxLayout(colorCell);
+    colorLayout->setContentsMargins(4, 2, 4, 2);
+    colorLayout->addWidget(colorSwatch, 0, Qt::AlignCenter);
+    componentTable_->setCellWidget(row, ColColor, colorCell);
+
     // A flat, frameless look so the inner widgets don't draw a heavy border
     // inside the cell grid (avoids the "box in box" effect).
     const QString flatEdit = QStringLiteral("border: none; background: transparent;");
@@ -843,6 +865,7 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
         }
         rebuildModelFromAdvanced();
         updateRemoveButtonsEnabled();
+        updateComponentColors(); // remaining rows shifted up — repaint swatches
         refreshCharts();
     });
 
@@ -891,6 +914,16 @@ void FxSpotRateEditor::updateRemoveButtonsEnabled() {
         if (auto* cell = componentTable_->cellWidget(r, ColActions)) {
             if (auto* btn = cell->findChild<QPushButton*>())
                 btn->setEnabled(canRemove);
+        }
+    }
+}
+
+void FxSpotRateEditor::updateComponentColors() {
+    for (int r = 0; r < componentTable_->rowCount(); ++r) {
+        if (auto* cell = componentTable_->cellWidget(r, ColColor)) {
+            if (auto* swatch = cell->findChild<QLabel*>())
+                swatch->setStyleSheet(QStringLiteral("background-color: %1; border-radius: 3px;")
+                                           .arg(ReturnDistributionChart::componentColor(r).name()));
         }
     }
 }

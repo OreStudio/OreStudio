@@ -23,7 +23,6 @@
 #include <QFutureWatcher>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QPalette>
 #include <QPointer>
 #include <QPushButton>
 #include <QSpinBox>
@@ -61,8 +60,11 @@ SamplePricePathsChart::SamplePricePathsChart(ClientManager* cm, QWidget* parent)
     chart_->legend()->setVisible(false);
     chart_->setMargins(QMargins(4, 4, 4, 4));
 
-    const QColor textColor = palette().color(QPalette::WindowText);
-    const QColor gridColor(textColor.red(), textColor.green(), textColor.blue(), 40);
+    // The app's dark theme is applied via QSS only, so QWidget::palette() still
+    // returns Qt's default (light-mode) colours here — use explicit theme
+    // colours instead, matching FxSpotChartWindow's chart styling.
+    const QColor textColor(0xCB, 0xD5, 0xE1);
+    const QColor gridColor(255, 255, 255, 18);
     chart_->setTitleBrush(textColor);
 
     axisX_->setTitleText(tr("Update Steps"));

@@ -155,6 +155,9 @@ private:
     void addTableRow(const ModelComponent& c);
     void applyProfileToRow(int row, const QString& profile); // fills σ
     void updateRemoveButtonsEnabled(); // disable Remove when only one row remains
+    // Re-paint each row's colour swatch to match its current row index (colour
+    // indices shift when a row is removed from the middle of the table).
+    void updateComponentColors();
 
     void onEngineChanged();
     [[nodiscard]] std::string currentEngine() const; // "geometric" / "arithmetic"

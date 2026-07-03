@@ -30,11 +30,11 @@ charts.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]] |
-| Now          | Locating and instrumenting the GMM preview chart widgets.  |
+| Now          | Done.                                   |
 | Waiting on   | Nothing.                               |
-| Next         | Add axis labels/ticks to both charts.  |
+| Next         | Move to the next task.                 |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -46,11 +46,26 @@ charts.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Both charts (=ReturnDistributionChart=, =SamplePricePathsChart= in
+=projects/ores.qt/synthetic/=) already configured =QValueAxis= titles,
+ranges and grid/label colours in their constructors — the axes were
+never actually missing. The bug: both called
+=palette().color(QPalette::WindowText)= to pick text/grid colours, but
+the app's dark theme is applied purely via a QSS stylesheet
+(=main.cpp=, =:/TradingStyle.qss=), never via =QApplication::setPalette=,
+so =QWidget::palette()= on a freshly-constructed, unparented widget
+returns Qt's default light-mode colours — near-black text on
+=QChart::ChartThemeDark='s near-black background, effectively
+invisible. Fixed by switching both charts to the same explicit
+theme-colour constants =FxSpotChartWindow= already uses
+(=QColor(0xCB, 0xD5, 0xE1)= text, =QColor(255, 255, 255, 18)= grid)
+instead of reading =palette()=.
 
 * Notes
+
+Root cause confirmed by comparing against the working
+=FxSpotChartWindow= (=projects/ores.qt/mktdata/=), which hardcodes its
+axis colours rather than reading =palette()=.
 
 * PRs
 
@@ -65,3 +80,10 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Fixed both =ReturnDistributionChart= and =SamplePricePathsChart= to use
+explicit theme colours instead of =QWidget::palette()=, which was
+returning invisible near-black text/gridlines against the dark chart
+background. Axis titles, ranges and ticks were already correctly
+configured; only the colour was wrong. Built
+=ores.qt.synthetic.lib= clean (clang debug/make).

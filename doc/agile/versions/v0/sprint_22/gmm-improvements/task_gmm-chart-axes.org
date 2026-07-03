@@ -8,7 +8,7 @@
 #+filetags: :gmm-improvements:sprint_22:v0:
 #+owner: marco
 #+branch: story/gmm-improvements
-#+pr:
+#+pr: 1409
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
@@ -71,7 +71,7 @@ axis colours rather than reading =palette()=.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1409][#1409]] | [synthetic] GMM improvements: chart axes, per-component PDFs, Ornstein-Uhlenbeck |
 
 * Review
 

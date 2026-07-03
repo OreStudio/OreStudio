@@ -45,11 +45,11 @@ indicators, before deciding.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6C515A93-C7D9-4B6C-B7B2-7AD433BACE44][Configurable feed status indicator in the FX spot grid]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -80,3 +80,12 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned badges. Reviewed the original mockup screenshot — it
+already used icon+text inline in the Status column (no pill), with
+the icon *shape* differing by state (pulse/hourglass/disconnect),
+not just color. That's a better fit than a badge for a live per-row
+indicator scanned down a grid, and lighter weight than
+=BadgeCache=/=BadgeLabelUtils='s pill rendering. Picked icons from
+the app's existing =IconUtils= dual-theme convention (FluentUI +
+Solarized pairs) — see the story's =* Decisions= for the full table.

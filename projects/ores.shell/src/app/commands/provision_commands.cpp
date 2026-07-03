@@ -705,7 +705,7 @@ void provision_commands::process_party(std::ostream& out,
         }
     }
 
-    // Phase 3.5: publish the synthetic FX spot config dataset — a
+    // Phase 4: publish the synthetic FX spot config dataset — a
     // member of the ore_analytics bundle (alongside report
     // definitions), opted in on its own so this doesn't re-trigger
     // report creation already handled by Phase 3.
@@ -739,7 +739,7 @@ void provision_commands::process_party(std::ostream& out,
             return;
     }
 
-    // Phase 4: activate the party. Hard failure by design — a
+    // Phase 5: activate the party. Hard failure by design — a
     // completed run must mean a provisioned party (the wizard merely
     // warns here).
     out << "[5/5] Activating party '" << party->full_name << "'..." << std::endl;

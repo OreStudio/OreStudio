@@ -84,13 +84,28 @@ begin
     end if;
 
     if p_mode = 'replace_all' then
-        update ores_synthetic_fx_spot_generation_configs_tbl
-        set valid_to = current_timestamp
+        -- Capture the fx-config ids being replaced before voiding them, so the
+        -- GMM components that reference them can be voided too — otherwise
+        -- they're orphaned (still valid_to = infinity) pointing at a now-closed
+        -- fx_spot_config_id, since the re-inserted rows below get fresh ids.
+        create temp table replaced_fx_configs (id uuid) on commit drop;
+
+        insert into replaced_fx_configs (id)
+        select id from ores_synthetic_fx_spot_generation_configs_tbl
         where tenant_id = p_target_tenant_id
           and party_id = v_party_id
           and valid_to = ores_utility_infinity_timestamp_fn();
 
+        update ores_synthetic_fx_spot_generation_configs_tbl
+        set valid_to = current_timestamp
+        where id in (select id from replaced_fx_configs);
+
         get diagnostics v_deleted = row_count;
+
+        update ores_synthetic_gmm_components_tbl
+        set valid_to = current_timestamp
+        where fx_spot_config_id in (select id from replaced_fx_configs)
+          and valid_to = ores_utility_infinity_timestamp_fn();
     end if;
 
     -- Resolve (or create) the shared container for this (tenant, party).

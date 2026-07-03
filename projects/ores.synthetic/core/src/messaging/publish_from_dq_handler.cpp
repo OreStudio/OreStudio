@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include <algorithm>
+#include <array>
 #include <format>
 #include <rfl/json.hpp>
 #include <string>
@@ -61,6 +62,25 @@ std::string subject_to_fn(std::string_view subject) {
     return "ores_synthetic_publish_" + entity + "_from_dq_fn";
 }
 
+/**
+ * @brief Allow-list of SQL functions subject_to_fn() may resolve to.
+ *
+ * Today the only queue_subscribe for this handler is the exact literal
+ * subject "synthetic.v1.fx-spot-configs.publish-from-dq" (see
+ * registrar.cpp), so subject_to_fn() can only ever produce the one entry
+ * below. It is written generically, though, so a future wildcard
+ * subscription (e.g. "synthetic.v1.*.publish-from-dq") would make
+ * fn_name attacker/publisher-influenced and interpolated directly into
+ * raw SQL. Check against this allow-list before use so that remains
+ * safe if such a subscription is ever added — extend the list, not just
+ * the subscription, when a new entity is wired up.
+ */
+bool is_known_fn(std::string_view fn_name) {
+    static constexpr std::array<std::string_view, 1> known = {
+        "ores_synthetic_publish_fx_spot_configs_from_dq_fn"};
+    return std::find(known.begin(), known.end(), fn_name) != known.end();
+}
+
 } // namespace
 
 publish_from_dq_handler::publish_from_dq_handler(ores::nats::service::client& nats,
@@ -82,7 +102,7 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
     const auto& cmd = *parsed;
 
     const auto fn_name = subject_to_fn(msg.subject);
-    if (fn_name.empty()) {
+    if (fn_name.empty() || !is_known_fn(fn_name)) {
         wf->fail("Cannot derive SQL function from subject: " + std::string(msg.subject));
         return;
     }

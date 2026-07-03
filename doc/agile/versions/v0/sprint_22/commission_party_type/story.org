@@ -24,7 +24,7 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
 | Now           | Verify codegen done. Drift found across C++ core, messaging, Qt.       |
 | Waiting on    | Nothing.                                                               |
@@ -64,3 +64,4 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 | [[id:6682E5F1-DCE2-42E3-8FE2-E5FC89E576C1][Write party_type documentation (manual chapter, NATS reference)]] | ABANDONED | | | Add the party_type entity chapter to the user manual covering all Qt windows, shell commands, and CLI commands; document the NATS message types. |
 | [[id:E906BC3E-8BC1-411F-B8DD-EE0191DE3087][File Wt and HTTP gap captures for party_type]] | ABANDONED | | | File backlog captures for Wt widget and HTTP endpoint support for party_type, which are out of scope for this sprint per the commissioning epic. |
 | [[id:96C76FF3-0279-4E75-80A3-37248545025C][Migrate party_type to unified codegen model]] | DONE | | 2026-06-30 | Move _table.org sections (validation function, insert trigger, coding scheme, image_id, has_tenant_id) into ores.refdata.party_type.org; verify generated SQL is byte-identical to the table-pathway output; delete party_type_table.org. Blocked on codegen model unification infrastructure (steps 1-4 of D2256981). |
+| [[id:17699BFE-C676-4323-A8CD-A2F99A8D361B][Resync party_type codegen formatting and SQL default drift]] | DONE | 2026-07-02 | 2026-07-02 | Regen shows non-zero diff across nearly all party_type profiles (Qt, C++ domain/repository/messaging, generator) due to formatting/style drift since last sync (2026-06-30); also SQL display_order column loses 'default 0'. Regenerate and reconcile, or fix templates if drift is a template regression, so entity is zero-diff again. party_status shows the same drift; purpose_type is clean. |

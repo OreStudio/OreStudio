@@ -40,7 +40,9 @@ struct party_type_entity {
     sqlgen::PrimaryKey<std::string> code;
     std::string tenant_id;
     int version = 0;
+
     std::string name;
+
     std::string description;
     int display_order = 0;
     std::string modified_by;

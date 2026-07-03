@@ -8,7 +8,7 @@
 #+filetags: :commission_counterparty:sprint_22:v0:
 #+owner: marco
 #+branch: feature/author-counterparty-validation-sections
-#+pr:
+#+pr: 1424
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -164,7 +164,7 @@ Discovered but out of scope, left as documented gaps:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1424][#1424]] | [refdata,codegen] Populate counterparty codegen facets; fix Validations facet template bug |
 
 * Review
 

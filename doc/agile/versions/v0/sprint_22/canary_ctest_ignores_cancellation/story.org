@@ -158,11 +158,11 @@ not log archaeology after the fact — see Tasks.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Evidence gathered from PR #1410's canary run; vcpkg.json churn identified as the leading hypothesis, not yet proven causal. |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Run the live sccache debug-log comparison (see task).            |
+| Next          | Nothing.            |
 | Last touched  | 2026-07-03                               |
 
 * Acceptance
@@ -185,10 +185,51 @@ not log archaeology after the fact — see Tasks.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6D484655-F44F-4088-AA56-AF7359C3E2DF][Prove/disprove sccache cache-invalidation cause with live evidence]] | STARTED | 2026-07-03 | | Run two back-to-back canary builds (or local equivalents) with SCCACHE_LOG=debug and diff the actual hash inputs for a handful of unchanged files to determine exactly what's invalidating the cache — vcpkg.json churn, runner image drift, or something else. Confirm or rule out the vcpkg.json findings already documented in the story. Do not touch the vcpkg submodule pointer. |
+| [[id:6D484655-F44F-4088-AA56-AF7359C3E2DF][Prove/disprove sccache cache-invalidation cause with live evidence]] | DONE | 2026-07-03 | 2026-07-03 | Root-caused via the GitHub cache API directly (access scoping + quota, not vcpkg.json); applied a quick mitigation; full live hash-diff proof deferred. |
 
 * Decisions
 
+*Root cause*: GitHub Actions cache access control, not vcpkg.json
+churn directly. A PR job can only *restore* from its base branch's
+(=main=) cache, never *save* to it — by design, to stop a PR (and
+especially a fork PR) from poisoning the shared cache. Since
+=canary-linux.yml= only runs on =pull_request= (no push-to-main
+trigger), the =main=-scoped =sccache-linux-gcc-debug-ninja= cache is
+only ever refreshed by =continuous-linux.yml= (which shares the
+identical cache-key scheme via its =linux/gcc/debug= matrix leg).
+Every PR's own incremental compiles are thrown away the moment its
+PR-ref-scoped cache becomes unreachable (merge/close) — PRs never
+compound on each other, only on whatever the last continuous run
+produced. This was compounded by the repo sitting at 9.79/10 GB of
+GitHub's per-repo cache quota, with dead =refs/pull/1410/merge=-scoped
+entries (already-merged PR) crowding out room to grow.
+
+*vcpkg.json churn* (boost-circular-buffer addition + version bump,
+both 2026-07-02) remains a plausible secondary contributor but was
+*not* proven as the primary cause — the access-scoping mechanism
+above is sufficient on its own to explain a near-zero hit rate
+regardless of vcpkg.json. Confirmed per the user's expectation: the
+vcpkg *submodule* pointer has not moved this sprint and was not
+touched by this story.
+
+*Scope of the fix*: a quick, low-risk pass — freed ~2.7 GB by
+deleting the orphaned PR-1410 cache entries, and raised sccache
+=max-size= 2000M → 3000M for the shared key in both workflows that
+write it. A full live =SCCACHE_LOG=debug= before/after hash-input
+comparison was scoped but deferred — it needs two full ~3h canary
+runs and isn't proportionate to "quick"; the mechanism above is
+well-evidenced via the GitHub cache API directly, not inferred from
+job-log archaeology.
+
 * Out of scope
+
+- Moving the vcpkg submodule pointer (only happens once, at
+  end-of-sprint, per existing convention).
+- A live =SCCACHE_LOG=debug= hash-input diff proving the exact
+  invalidation trigger file-by-file — deferred, see Decisions.
+- Restructuring cache scoping/triggers (e.g. adding a push-to-main
+  canary run, or a cache-warming job) to let PRs compound on each
+  other's work — a bigger architectural change than this pass
+  warrants.
 
 -

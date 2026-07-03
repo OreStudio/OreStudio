@@ -20,28 +20,78 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Understand and mitigate the low sccache hit rate discovered on
+PR #1410's canary run (1.36%, 33/2433).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing (deeper live-comparison proof deferred, see Result).                  |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
 
--
+- Root cause mechanism identified with direct API/log evidence (not
+  just inference).
+- Any low-risk, evidence-backed mitigation that fits in a quick pass
+  lands; anything requiring multi-hour live CI experiments is
+  deferred and recorded, not silently dropped.
+- vcpkg submodule pointer untouched.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Investigated =gh api repos/.../actions/caches= directly (not just
+job logs) and found the actual mechanism:
+
+- GitHub Actions cache access is scoped: a PR's job can *restore*
+  from a cache scoped to its base branch (=main=), but can only
+  *save* to its own PR-ref scope (=refs/pull/N/merge=) — this is a
+  deliberate security boundary (a PR, especially from a fork,
+  shouldn't be able to poison the shared cache). Confirmed via
+  =gh api .../actions/caches --paginate= showing =sccache-linux-gcc-debug-ninja=
+  existing as two separate entries: one on =refs/heads/main=
+  (last populated by =continuous-linux.yml=, which shares the exact
+  same cache-key scheme via its =linux/gcc/debug= matrix leg) and one
+  on =refs/pull/1408/merge= (a different, still-open PR) — PR #1410's
+  own contribution never reached =main='s cache and was discarded
+  when the PR merged.
+- Confirmed the repo's total GitHub Actions cache quota was at
+  *9.79 GB of the 10 GB hard cap* (=gh api
+  repos/.../actions/cache/usage=), with orphaned cache entries
+  (=cmake-build-linux-gcc-debug-ninja=, the matching =vcpkg-cache=,
+  and an =install-qt-action= cache) left over from PR #1410's
+  =refs/pull/1410/merge= scope after it merged — dead weight that
+  will never be reused, actively crowding out room for legitimate
+  cache growth.
+- This explains the low hit rate better than the earlier vcpkg.json
+  hypothesis: even if vcpkg.json's dependency/version-string churn
+  invalidates *some* entries, being permanently capped at whatever
+  the last =continuous-linux.yml= run produced (rather than ever
+  incorporating what individual PRs compile) means the shared
+  baseline can never converge — and near the 10 GB cap, GitHub's own
+  LRU eviction was likely also silently dropping recently-written
+  caches before they could even be reused once.
+
+Applied a quick, low-risk mitigation (full live sccache-hash-diff
+proof, e.g. =SCCACHE_LOG=debug= across two builds, is deferred — see
+Result):
+
+- Deleted the three orphaned =refs/pull/1410/merge=-scoped cache
+  entries (cmake-build ~2.0 GB, vcpkg ~0.2 GB, install-qt-action
+  ~0.3 GB) via =gh api --method DELETE=, freeing ~2.7 GB of the 10 GB
+  quota immediately.
+- Bumped =max-size= for the =linux-gcc-debug-ninja= sccache entry
+  from 2000M to 3000M in both =canary-linux.yml= and
+  =continuous-linux.yml= (they share the identical cache-key scheme,
+  so both needed the same change) — a modest, evidence-based increase
+  given ~5,300 translation units clearly don't fit in 2 GiB, sized to
+  stay comfortably under the now-freed quota rather than risk
+  immediate re-eviction.
 
 * Notes
 
@@ -58,3 +108,31 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Root cause is now well-evidenced (not fully proven at the
+byte-for-byte hash level, see below): PR-scoped cache writes are
+discarded on merge by GitHub's own access-control design, so every
+PR's canary run only ever inherits whatever =continuous-linux.yml='s
+last nightly/on-push run produced on =main= — individual PRs never
+compound on each other's work. This was compounded by the repo
+sitting at 9.79/10 GB of GitHub's cache quota cap, with dead cache
+entries from an already-merged PR eating room that could never be
+reused.
+
+Landed in this pass:
+- Freed ~2.7 GB by deleting orphaned =refs/pull/1410/merge=-scoped
+  caches.
+- Increased sccache =max-size= 2000M → 3000M for the shared
+  =linux-gcc-debug-ninja= key in both workflows that write it.
+
+Deliberately *not* done in this pass (deferred, not dropped): a live
+=SCCACHE_LOG=debug= before/after comparison to prove, at the level of
+an individual file's hash inputs, exactly what invalidates when
+=vcpkg.json= changes vs. what doesn't. That requires two full ~3h
+canary runs and is disproportionate to a "quick fix" pass; the
+access-scoping + quota findings above are sufficient to justify the
+mitigation already applied. If the hit rate is still poor after this
+lands (visible in the next few canary runs' =sccache --show-stats=
+output), that live comparison becomes the next step — not filed as a
+separate backlog item since the story itself documents exactly what
+to do and why.

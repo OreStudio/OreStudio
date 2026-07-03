@@ -101,7 +101,7 @@ jobs:
         with:
           variant: sccache
           key: linux-gcc-debug-ninja
-          max-size: 2000M
+          max-size: 3000M
           save: false
 
       - name: Install dev packages

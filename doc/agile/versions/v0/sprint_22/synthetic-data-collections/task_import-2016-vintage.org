@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: 47DEAA57-C548-45BF-9D42-33207D4587CB
+#+blocked_since: 2026-07-03
 #+created: 2026-07-03
 #+updated: 2026-07-03
 #+environment:
@@ -35,11 +35,11 @@ straightforward.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Blocked.                                |
+| Waiting on   | [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] — no non-interactive way to trigger =import_market_data_request= exists yet. |
+| Next         | Resume once the shell import command lands. |
 | Last touched | 2026-07-03                               |
 
 * Acceptance

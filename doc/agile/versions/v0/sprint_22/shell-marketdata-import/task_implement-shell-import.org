@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: E10830F5-1596-4748-99BB-41B8057CEFA4
+:END:
+#+title: Task: Implement ores.shell market data import command
+#+description: Add a shell command sending import_market_data_request (file/stdin content, optional source tag) over NATS, reusing the existing import_service.
+#+type: task
+#+level: s1
+#+filetags: :shell-marketdata-import:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a command to =ores.shell= that reads a market-data file (ORE
+=market.txt=/=fixings.txt= format) and an optional =--source= tag, then
+sends =import_market_data_request= over NATS
+(=marketdata.v1.import=) exactly as =ImportTradeDialog= does today —
+same request/response, same =import_service=, just a non-interactive
+entry point.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- =ores.shell= gains an import command taking =--file=/=--fixings= paths
+  and an optional =--source= tag.
+- Round-trips successfully against
+  =external/ore/examples/Legacy/Example_56/Input/market.txt=.
+- A recipe documents the command, following the existing =ores.shell=
+  command doc convention.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

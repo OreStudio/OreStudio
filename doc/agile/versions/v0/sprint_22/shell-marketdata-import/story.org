@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 47DEAA57-C548-45BF-9D42-33207D4587CB
+:END:
+#+title: Story: ores.shell command for market data import
+#+description: Add an ores.shell command to trigger import_market_data_request (ORE market.txt/fixings.txt import), so imports can run non-interactively without the Qt ImportTradeDialog.
+#+type: story
+#+level: s2
+#+category: enabler
+#+filetags: :market_data:shell:cli:sprint_22:v0:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=import_market_data_request=
+(=projects/ores.marketdata/api/include/ores.marketdata.api/messaging/import_protocol.hpp=,
+served by =ores.marketdata.core::service::import_service=) is only
+ever triggered by the Qt =ImportTradeDialog=
+(=projects/ores.qt/trading/src/ImportTradeDialog.cpp=) — there's no
+non-interactive way to run a market data import. This blocks
+[[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]]'s "import the
+2016-02-05 vintage" task, and more generally blocks any scripted or
+provisioning-time import. Add an =ores.shell= command that reads a
+=market.txt=/=fixings.txt= file (or stdin) and an optional =source= tag,
+and sends the same =import_market_data_request= over NATS that the Qt
+dialog already sends.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-03                               |
+
+* Acceptance
+
+- A new =ores.shell= command (e.g. =marketdata import --file <path>
+  [--fixings <path>] [--source <tag>]=) sends an
+  =import_market_data_request= over NATS via the existing shell client
+  infrastructure, reusing =import_service= as-is — no new server-side
+  code.
+- Running it against
+  =external/ore/examples/Legacy/Example_56/Input/market.txt= with
+  =--source ore.reference= produces the expected
+  =series_count=/=observation_count= response and queryable
+  =market_observation= rows.
+- Documented in a recipe (=doc/recipes/=), following existing
+  =ores.shell= command documentation conventions.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E10830F5-1596-4748-99BB-41B8057CEFA4][Implement ores.shell market data import command]] | BACKLOG | | | Add a shell command sending import_market_data_request (file/stdin content, optional source tag) over NATS, reusing the existing import_service. |
+
+* Decisions
+
+* Out of scope
+
+-

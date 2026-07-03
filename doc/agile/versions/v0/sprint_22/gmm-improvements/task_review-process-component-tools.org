@@ -139,6 +139,7 @@ directory.
 | 7 | No unit tests for ou_process | ou_process.hpp/.cpp | Declined | Matches untested gmm_process/arithmetic_gmm_process; no Catch2 convention yet for this directory |
 | 8 | Validation logic ("are these parameters good?") hardcoded in the UI instead of the engine (raised directly by user, not the bot review) | FxSpotRateEditor.cpp, process_factory.cpp | Fixed | c314e99cd — new ores.synthetic.api::domain::validate_process_parameters(), shared by process_factory and the Qt client; server-side enforcement at save/feed-start time not yet wired up, captured: FDEAC2F6-A87F-4281-82CC-437B06D5B02F |
 | 9 | Advanced component table headers too verbose, dialog congested (raised directly by user, not the bot review) | FxSpotRateEditor.cpp | Fixed | c314e99cd — headers shortened to symbols (μ/σ/w); explanations moved to per-header tooltips, updated per engine by updateEngineUi() |
+| 10 | Opening an existing "ou" record defaults to Simple mode (construction-time gap: engineCombo_->setCurrentIndex() runs before the currentIndexChanged connection, so onEngineChanged() never fires); Save without touching anything silently overwrites the persisted kappa with 1.0. Reported across three consecutive re-review rounds after #1's fix only covered the live combo-switch path | FxSpotRateEditor.cpp | Fixed | 247eccda3 — moved the forcing logic from onEngineChanged() into updateEngineUi(), which runs both on every engine change and once at construction time |
 
 * Result
 

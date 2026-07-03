@@ -159,6 +159,7 @@ void feed_ingest_loop::subscribe_binding_locked(const std::string& ore_key,
         [this,
          ore_key_copy,
          publish_subject,
+         source_name,
          uuid_gen,
          st,
          party_uuid,
@@ -225,6 +226,8 @@ void feed_ingest_loop::subscribe_binding_locked(const std::string& ore_key,
                 obs.series_id = existing.front().id;
                 obs.observation_datetime = tick->datetime;
                 obs.value = std::to_string(tick->mid);
+                obs.source = source_name;
+                obs.point_id = "SPOT"; // scalar FX spot series has no tenor/surface coordinate
 
                 repository::market_observations_repository obs_repo;
                 obs_repo.write(tenant_ctx, obs);

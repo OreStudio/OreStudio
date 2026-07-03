@@ -34,12 +34,12 @@ that UX question first; only then build the chosen implementation.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-02                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-07-03                               |
 
 * Acceptance
 
@@ -56,7 +56,7 @@ that UX question first; only then build the chosen implementation.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:084ADDBB-7AFB-4259-8D10-CF0A83C5509B][Decide UX for feed status indicator in FX spot grid]] | DONE | 2026-07-03 | 2026-07-03 | Badge (colored pill) vs. compact status dot/icon vs. other, for a live per-row connection-health indicator scanned across many grid rows. Record the decision and rationale in the story's Decisions section before any implementation. |
-| [[id:A7D16AD1-35AE-4485-B5ED-A614EC8C42C0][Implement chosen feed status indicator in FX spot grid]] | BACKLOG | | | Wire the decided indicator (badge domain via BadgeCache/BadgeLabelUtils, or a new compact status-dot component) through MarketDataController into FxSpotGridWindow, replacing the current hardcoded CSS pill styling. Depends on the UX decision task. |
+| [[id:A7D16AD1-35AE-4485-B5ED-A614EC8C42C0][Implement chosen feed status indicator in FX spot grid]] | DONE | 2026-07-03 | 2026-07-03 | Wire the decided indicator (badge domain via BadgeCache/BadgeLabelUtils, or a new compact status-dot component) through MarketDataController into FxSpotGridWindow, replacing the current hardcoded CSS pill styling. Depends on the UX decision task. |
 
 * Decisions
 

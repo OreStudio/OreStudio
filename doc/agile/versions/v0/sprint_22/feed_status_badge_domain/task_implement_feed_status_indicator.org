@@ -7,10 +7,10 @@
 #+level: s1
 #+filetags: :feed_status_badge_domain:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/feed-status-badge-domain
 #+pr:
-#+blocked_on: 084ADDBB-7AFB-4259-8D10-CF0A83C5509B
-#+blocked_since: 2026-07-02
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-02
 #+updated: 2026-07-02
 #+environment:
@@ -35,12 +35,12 @@ component instead.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6C515A93-C7D9-4B6C-B7B2-7AD433BACE44][Configurable feed status indicator in the FX spot grid]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-02                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-03                               |
 
 * Acceptance
 
@@ -52,9 +52,37 @@ component instead.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Abandoned badges (see story Decisions). Implemented icon+text inline
+in the Status column instead:
+
+- Added three new =Icon= enum entries to
+  =projects/ores.qt/api/include/ores.qt/IconUtils.hpp= /
+  =IconUtils.cpp=: =FeedLive= (ic_fluent_live_20 / soundwave.svg),
+  =FeedStale= (ic_fluent_hourglass_20 / hourglass.svg), =FeedPending=
+  (ic_fluent_radio_button_20 / record.svg). Reused the existing
+  =Icon::PlugDisconnected= for Disconnected — it already pairs
+  =ic_fluent_plug_disconnected_20= with =link-broken.svg=, exactly
+  the picks made independently for this story.
+- Copied the FluentUI (20px, regular+filled) and Solarized
+  (Bold+Linear) SVG assets into
+  =projects/ores.qt/application/resources/icons/= and registered
+  them in =resources.qrc=.
+- Rewrote =FxSpotGridWindow.cpp=: replaced =make_badge=/=apply_badge=
+  (QLabel with a hardcoded-CSS pill stylesheet) with
+  =make_status_indicator=/=apply_status_indicator= — an icon
+  =QLabel= (recolored via =IconUtils::createRecoloredIcon=) plus a
+  text =QLabel=, laid out in an =QHBoxLayout=, no pill background.
+  =RowState::badge= became =statusIcon=/=statusText=.
+
+Caught and fixed one mistake during implementation: copying Solar
+assets by filename silently overwrote =link-broken.svg=, which was
+already vendored and in use by =Icon::PlugDisconnected= elsewhere in
+the app, with a different (stroke-based) rendering from a newer
+local checkout of the solar-icons source repo. Reverted that file to
+its committed version before the final build; the vendored copy
+(fill-based paths) is what ships.
+
+Verified: =ores.qt.mktdata.lib= builds clean.
 
 * Notes
 
@@ -71,3 +99,10 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Replaced =FxSpotGridWindow='s hardcoded-CSS pill status with an
+icon+text indicator, reusing the app's existing =IconUtils=
+FluentUI/Solarized dual-theme convention (three new =Icon= entries,
+one existing entry reused for Disconnected). No badge domain, no
+=BadgeCache= involvement — the story's UX decision ruled that out.
+Build verified green.

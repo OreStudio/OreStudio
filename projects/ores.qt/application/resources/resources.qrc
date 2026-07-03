@@ -58,8 +58,11 @@
     <file>icons/fluentui/filled/ic_fluent_handshake_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_folder_open_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_history_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_hourglass_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_info_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_key_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_live_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_radio_button_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_key_multiple_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_keyboard_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_library_20_filled.svg</file>
@@ -146,8 +149,11 @@
     <file>icons/fluentui/regular/ic_fluent_globe_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_handshake_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_history_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_hourglass_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_info_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_key_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_live_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_radio_button_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_key_multiple_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_keyboard_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_library_20_regular.svg</file>
@@ -223,6 +229,9 @@
     <file>icons/solarized/Bold/key-minimalistic-square.svg</file>
     <file>icons/solarized/Bold/keyboard.svg</file>
     <file>icons/solarized/Bold/link-broken.svg</file>
+    <file>icons/solarized/Bold/hourglass.svg</file>
+    <file>icons/solarized/Bold/record.svg</file>
+    <file>icons/solarized/Bold/soundwave.svg</file>
     <file>icons/solarized/Bold/layers.svg</file>
     <file>icons/solarized/Bold/lock-password.svg</file>
     <file>icons/solarized/Bold/lock-password-unlocked.svg</file>
@@ -301,6 +310,9 @@
     <file>icons/solarized/Linear/key-minimalistic-square.svg</file>
     <file>icons/solarized/Linear/keyboard.svg</file>
     <file>icons/solarized/Linear/link-broken.svg</file>
+    <file>icons/solarized/Linear/hourglass.svg</file>
+    <file>icons/solarized/Linear/record.svg</file>
+    <file>icons/solarized/Linear/soundwave.svg</file>
     <file>icons/solarized/Linear/layers.svg</file>
     <file>icons/solarized/Linear/lock-password.svg</file>
     <file>icons/solarized/Linear/lock-password-unlocked.svg</file>

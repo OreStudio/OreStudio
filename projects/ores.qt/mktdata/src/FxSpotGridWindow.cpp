@@ -19,6 +19,8 @@
  */
 #include "ores.qt/FxSpotGridWindow.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
 #include <QMetaObject>
@@ -37,38 +39,43 @@ static constexpr auto k_live_threshold = std::chrono::seconds(10);
 static constexpr auto k_stale_threshold = std::chrono::seconds(60);
 static constexpr int k_stale_poll_ms = 2000;
 
-// ── badge colours ──────────────────────────────────────────────────────────
-static const QColor k_pending_bg{100, 100, 100};
-static const QColor k_pending_fg{220, 220, 220};
-static const QColor k_live_bg{22, 163, 74};
-static const QColor k_live_fg{255, 255, 255};
-static const QColor k_stale_bg{180, 120, 0};
-static const QColor k_stale_fg{255, 255, 255};
-static const QColor k_disconnected_bg{185, 28, 28};
-static const QColor k_disconnected_fg{255, 255, 255};
+// ── status colours ─────────────────────────────────────────────────────────
+static const QColor k_pending_color{140, 140, 140};
+static const QColor k_live_color{22, 163, 74};
+static const QColor k_stale_color{200, 140, 0};
+static const QColor k_disconnected_color{220, 38, 38};
 
 // ── rate colours ───────────────────────────────────────────────────────────
 static const QColor k_up_color{34, 197, 94};   // green-400
 static const QColor k_down_color{239, 68, 68}; // red-400
 static const QColor k_flat_color{180, 180, 180};
 
-static QString badge_style(const QColor& bg, const QColor& fg) {
-    return QString("QLabel {"
-                   "  background-color: %1;"
-                   "  color: %2;"
-                   "  border-radius: 8px;"
-                   "  padding: 2px 10px;"
-                   "  font-size: 11px;"
-                   "  font-weight: bold;"
-                   "}")
-        .arg(bg.name(), fg.name());
+static QColor status_color(FxSpotGridWindow::FeedStatus s) {
+    switch (s) {
+        case FxSpotGridWindow::FeedStatus::Live:
+            return k_live_color;
+        case FxSpotGridWindow::FeedStatus::Stale:
+            return k_stale_color;
+        case FxSpotGridWindow::FeedStatus::Disconnected:
+            return k_disconnected_color;
+        case FxSpotGridWindow::FeedStatus::Pending:
+            return k_pending_color;
+    }
+    return k_pending_color;
 }
 
-static QLabel* make_badge(QWidget* parent) {
-    auto* lbl = new QLabel(parent);
-    lbl->setAlignment(Qt::AlignCenter);
-    lbl->setMinimumWidth(110);
-    return lbl;
+static Icon status_icon(FxSpotGridWindow::FeedStatus s) {
+    switch (s) {
+        case FxSpotGridWindow::FeedStatus::Live:
+            return Icon::FeedLive;
+        case FxSpotGridWindow::FeedStatus::Stale:
+            return Icon::FeedStale;
+        case FxSpotGridWindow::FeedStatus::Disconnected:
+            return Icon::PlugDisconnected;
+        case FxSpotGridWindow::FeedStatus::Pending:
+            return Icon::FeedPending;
+    }
+    return Icon::FeedPending;
 }
 
 static QColor pair_color_for_status(FxSpotGridWindow::FeedStatus s) {
@@ -84,30 +91,57 @@ static QColor pair_color_for_status(FxSpotGridWindow::FeedStatus s) {
     }
 }
 
-static void apply_badge(QLabel* lbl,
-                        FxSpotGridWindow::FeedStatus s,
-                        std::chrono::system_clock::time_point last_tick) {
+namespace {
+
+// Icon + short text label inline in the Status column — no pill/badge
+// background. The icon *shape* differs per state (not just its color),
+// so status doesn't rely on color alone.
+struct StatusIndicator {
+    QLabel* iconLabel = nullptr;
+    QLabel* textLabel = nullptr;
+};
+
+}
+
+static StatusIndicator make_status_indicator(QWidget* parent) {
+    StatusIndicator ind;
+    ind.iconLabel = new QLabel(parent);
+    ind.iconLabel->setFixedSize(16, 16);
+    ind.textLabel = new QLabel(parent);
+    QFont f = ind.textLabel->font();
+    f.setPointSizeF(f.pointSizeF() - 1);
+    ind.textLabel->setFont(f);
+    return ind;
+}
+
+static void apply_status_indicator(const StatusIndicator& ind,
+                                   FxSpotGridWindow::FeedStatus s,
+                                   std::chrono::system_clock::time_point last_tick) {
     using namespace std::chrono;
+
+    const QColor color = status_color(s);
+    const QIcon icon = IconUtils::createRecoloredIcon(status_icon(s), color);
+    ind.iconLabel->setPixmap(icon.pixmap(16, 16));
+
+    QString text;
     switch (s) {
         case FxSpotGridWindow::FeedStatus::Pending:
-            lbl->setText(QStringLiteral("PENDING"));
-            lbl->setStyleSheet(badge_style(k_pending_bg, k_pending_fg));
+            text = QStringLiteral("PENDING");
             break;
         case FxSpotGridWindow::FeedStatus::Live:
-            lbl->setText(QStringLiteral("● LIVE"));
-            lbl->setStyleSheet(badge_style(k_live_bg, k_live_fg));
+            text = QStringLiteral("LIVE");
             break;
         case FxSpotGridWindow::FeedStatus::Stale: {
             const auto age = duration_cast<seconds>(system_clock::now() - last_tick).count();
-            lbl->setText(QStringLiteral("⏱ STALE: %1s").arg(age));
-            lbl->setStyleSheet(badge_style(k_stale_bg, k_stale_fg));
+            text = QStringLiteral("STALE: %1s").arg(age);
             break;
         }
         case FxSpotGridWindow::FeedStatus::Disconnected:
-            lbl->setText(QStringLiteral("✕ DISCONNECTED"));
-            lbl->setStyleSheet(badge_style(k_disconnected_bg, k_disconnected_fg));
+            text = QStringLiteral("DISCONNECTED");
             break;
     }
+    ind.textLabel->setText(text);
+    ind.textLabel->setStyleSheet(QStringLiteral("color: %1; font-weight: 600;").arg(color.name()));
 }
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -239,19 +273,23 @@ void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_bind
         chgItem->setForeground(k_flat_color);
         table_->setItem(row, ColChange, chgItem);
 
-        // Status badge (widget-in-cell so it renders as a pill)
+        // Status indicator: icon + text inline, no pill background.
         auto* container = new QWidget(table_);
-        auto* cl = new QVBoxLayout(container);
+        auto* cl = new QHBoxLayout(container);
         cl->setContentsMargins(6, 4, 6, 4);
-        auto* badge = make_badge(container);
-        apply_badge(badge, FeedStatus::Pending, {});
-        cl->addWidget(badge);
+        cl->setSpacing(6);
+        auto indicator = make_status_indicator(container);
+        apply_status_indicator(indicator, FeedStatus::Pending, {});
+        cl->addWidget(indicator.iconLabel);
+        cl->addWidget(indicator.textLabel);
+        cl->addStretch();
         table_->setCellWidget(row, ColStatus, container);
 
         RowState rs;
         rs.row = row;
         rs.ore_key = ore_key;
-        rs.badge = badge;
+        rs.statusIcon = indicator.iconLabel;
+        rs.statusText = indicator.textLabel;
         rows_.emplace(ore_key, std::move(rs));
         ++row;
     }
@@ -320,7 +358,7 @@ void FxSpotGridWindow::applyTick(const std::string& ore_key,
 
     if (rs.last_status != FeedStatus::Live) {
         rs.last_status = FeedStatus::Live;
-        apply_badge(rs.badge, FeedStatus::Live, when);
+        apply_status_indicator({rs.statusIcon, rs.statusText}, FeedStatus::Live, when);
     }
 }
 
@@ -333,7 +371,7 @@ void FxSpotGridWindow::onStaleCheck() {
         // For other statuses, only repaint on transition.
         if (status == FeedStatus::Stale || status != rs.last_status) {
             rs.last_status = status;
-            apply_badge(rs.badge, status, rs.last_tick);
+            apply_status_indicator({rs.statusIcon, rs.statusText}, status, rs.last_tick);
             if (auto* p = table_->item(rs.row, ColPair))
                 p->setForeground(pair_color_for_status(status));
         }

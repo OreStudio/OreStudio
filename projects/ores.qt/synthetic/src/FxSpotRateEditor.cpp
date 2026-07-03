@@ -58,6 +58,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <optional>
 #include <utility>
 
 namespace ores::qt {
@@ -1526,6 +1527,9 @@ void FxSpotRateEditor::refreshCharts() {
         pathsChart_->setComponents(pathComps);
         pathsChart_->setInitialPrice(price);
         pathsChart_->setProcessType(engine);
+        // Mean reversion isn't obvious from a noisy path alone — draw θ as a
+        // reference line so it's visible what the price is reverting toward.
+        pathsChart_->setReferenceLevel(ou ? std::make_optional(price) : std::nullopt);
         pathsChart_->scheduleRefresh();
     }
 }

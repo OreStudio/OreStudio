@@ -23,11 +23,13 @@
 #include "ores.logging/make_logger.hpp"
 #include <QWidget>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 class QChart;
 class QChartView;
+class QGraphicsSimpleTextItem;
 class QValueAxis;
 class QSpinBox;
 class QPushButton;
@@ -74,6 +76,13 @@ public:
     /** @brief Set the price-process engine ("geometric" or "arithmetic"). */
     void setProcessType(const std::string& processType);
 
+    /**
+     * @brief Draw a dashed horizontal reference line at @p level (e.g. "ou"'s θ),
+     * labelled on the chart. Pass std::nullopt to remove it (the default —
+     * mean-reversion is "ou"-specific, other engines have no such level).
+     */
+    void setReferenceLevel(std::optional<double> level);
+
     /** @brief Schedule a debounced refresh (~400 ms after the last call). */
     void scheduleRefresh();
 
@@ -104,6 +113,8 @@ private:
     std::uint32_t seed_{1};
     bool inFlight_{false};
     bool pending_{false}; // a refresh was requested while one was in flight
+    std::optional<double> referenceLevel_;
+    QGraphicsSimpleTextItem* referenceLabelItem_{nullptr}; // owned by chart_'s scene
 };
 
 }

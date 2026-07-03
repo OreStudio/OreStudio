@@ -21,11 +21,11 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-07-03                               |
 
 * Acceptance
@@ -36,7 +36,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:22B3B8D4-3937-47BB-B378-847D72F95D12][Implement compass client start/stop subcommands]] | BACKLOG | | | Rework run_client() in compass_services.py to use argparse subparsers matching compass services; rename cmd_client to cmd_client_start; extract the PID-terminate logic from cmd_stop's closure into a shared _terminate() helper and add cmd_client_stop. Update the devops-run-client skill and user-manual chapter_2_connecting references from the old flat compass client invocation. |
+| [[id:22B3B8D4-3937-47BB-B378-847D72F95D12][Implement compass client start/stop subcommands]] | DONE | | 2026-07-03 | Rework run_client() in compass_services.py to use argparse subparsers matching compass services; rename cmd_client to cmd_client_start; extract the PID-terminate logic from cmd_stop's closure into a shared _terminate() helper and add cmd_client_stop. Update the devops-run-client skill and user-manual chapter_2_connecting references from the old flat compass client invocation. |
 
 * Decisions
 

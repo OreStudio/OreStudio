@@ -33,9 +33,9 @@ launched and torn down consistently with the rest of compass.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:25A93F0B-FD5C-4EA1-9194-093073B44C44][Add compass client start/stop subcommands]] |
-| Now          | Done. Verified start/stop against a live instance.       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | N/A.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-03                               |
 
 * Acceptance

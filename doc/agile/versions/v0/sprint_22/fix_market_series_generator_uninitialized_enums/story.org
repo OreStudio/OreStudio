@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 83B12C2D-5202-4738-8147-5F28E566D997
+:END:
+#+title: Story: Fix uninitialized asset_class/series_subclass in market_series generator
+#+description: compass.sh CDash nightly Valgrind run flagged Uninitialized Memory Conditional/Read defects in market_series_mapper::map() via rfl::enum_to_string, traced to generate_synthetic_market_series() never setting asset_class/series_subclass before the mapper serializes them.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:bugfix:valgrind:ci:sprint_22:v0:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Eliminate the two Valgrind uninitialized-memory defects the nightly
+=linux-gcc-debug-ninja= dynamic-analysis run flagged in
+=ores.marketdata.core.tests= so the CDash dashboard reports a clean
+run for this component.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-07-03                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B6BAAABC-C602-4413-A223-9AD532384934][Set asset_class/series_subclass in generate_synthetic_market_series]] | DONE | | 2026-07-03 | generate_synthetic_market_series() never assigns r.asset_class/r.series_subclass, leaving both enum fields uninitialized; market_series_mapper::map() then calls rfl::enum_to_string() on the garbage value, which Valgrind flags as an uninitialized-memory conditional/read via enchantum::contains. Assign both fields deterministically from the generation index. |
+
+* Decisions
+
+Fixed the generator (root cause) rather than the struct default — kept
+=domain::market_series= consistent with sibling domain structs, which
+also leave required enum fields without default member initializers,
+relying on the generator/mapper to always set them.
+
+* Out of scope
+
+- Did not audit other generators for the same missing-field pattern;
+  worth a follow-up sweep if this class of bug recurs.
+
+* Result
+
+Both Valgrind defects (Uninitialized Memory Conditional, Uninitialized
+Memory Read) from
+https://my.cdash.org/builds/3701562/dynamic_analysis/7928918 are fixed
+by [[id:B6BAAABC-C602-4413-A223-9AD532384934][the one task]] in this
+story. Verified locally: =ores.marketdata.core.tests= builds clean and
+runs 0-error under =valgrind= with the project's own
+=build/valgrind/custom.supp= suppressions and =CTest.cmake= memcheck
+flags.

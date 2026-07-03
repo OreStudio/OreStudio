@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 22B3B8D4-3937-47BB-B378-847D72F95D12
+:END:
+#+title: Task: Implement compass client start/stop subcommands
+#+description: Rework run_client() in compass_services.py to use argparse subparsers matching compass services; rename cmd_client to cmd_client_start; extract the PID-terminate logic from cmd_stop's closure into a shared _terminate() helper and add cmd_client_stop. Update the devops-run-client skill and user-manual chapter_2_connecting references from the old flat compass client invocation.
+#+type: task
+#+level: s1
+#+filetags: :compass:cli:devx:sprint_22:v0:add_compass_client_start_stop_subcommands:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:25A93F0B-FD5C-4EA1-9194-093073B44C44][Add compass client start/stop subcommands]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:25A93F0B-FD5C-4EA1-9194-093073B44C44][Add compass client start/stop subcommands]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

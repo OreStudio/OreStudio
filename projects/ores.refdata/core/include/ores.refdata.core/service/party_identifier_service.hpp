@@ -23,8 +23,9 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_identifier.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/party_identifier_repository.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -34,10 +35,10 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing party identifiers.
  *
- * This service provides functionality for:
- * - Managing party identifiers (CRUD operations)
+ * Provides a higher-level interface for party identifier operations,
+ * wrapping the underlying repository.
  */
-class party_identifier_service {
+class ORES_REFDATA_CORE_EXPORT party_identifier_service {
 private:
     inline static std::string_view logger_name = "ores.refdata.service.party_identifier_service";
 
@@ -51,62 +52,70 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a party_identifier_service with required repositories.
+     * @brief Constructs a party_identifier_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit party_identifier_service(context ctx);
 
     /**
-     * @brief Lists all party identifiers.
+     * @brief Lists party identifiers with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of party identifiers for the requested page.
      */
-    std::vector<domain::party_identifier> list_party_identifiers();
+    std::vector<domain::party_identifier> list_party_identifiers(std::uint32_t offset,
+                                                                 std::uint32_t limit);
 
     /**
-     * @brief Lists party identifiers for a specific party.
+     * @brief Gets the total count of active party identifiers.
+     *
+     * @return Total number of active party identifiers.
      */
-    std::vector<domain::party_identifier>
-    list_party_identifiers_by_party(const boost::uuids::uuid& party_id);
+    std::uint32_t count_party_identifiers();
 
     /**
-     * @brief Finds a party identifier by its ID.
+     * @brief Retrieves a single party identifier by its id.
+     *
+     * @param id The id of the party identifier.
+     * @return The party identifier if found, std::nullopt otherwise.
      */
-    std::optional<domain::party_identifier> find_party_identifier(const boost::uuids::uuid& id);
-
-    /**
-     * @brief Finds a party identifier by its code.
-     */
-    std::optional<domain::party_identifier> find_party_identifier_by_code(const std::string& code);
+    std::optional<domain::party_identifier> get_party_identifier(const std::string& id);
 
     /**
      * @brief Saves a party identifier (creates or updates).
      *
-     * @param party_identifier The party identifier to save
+     * @param party_identifier The party identifier to save.
+     * @throws std::exception on failure.
      */
     void save_party_identifier(const domain::party_identifier& party_identifier);
 
     /**
-     * @brief Saves multiple party identifiers (creates or updates).
+     * @brief Saves a batch of party identifiers.
      *
-     * @param party_identifiers The party identifiers to save
+     * @param party_identifiers The party identifiers to save.
+     * @throws std::exception on failure.
      */
     void save_party_identifiers(const std::vector<domain::party_identifier>& party_identifiers);
 
     /**
-     * @brief Removes a party identifier.
+     * @brief Deletes a party identifier by its id.
      *
-     * @param id The ID of the party identifier to remove
+     * @param id The id of the party identifier to delete.
+     * @throws std::exception on failure.
      */
-    void remove_party_identifier(const boost::uuids::uuid& id);
+    void delete_party_identifier(const std::string& id);
 
     /**
-     * @brief Gets the version history for a party identifier.
-     *
-     * @param id The party identifier ID
-     * @return Vector of all versions, newest first
+     * @brief Deletes party identifiers by their ids.
      */
-    std::vector<domain::party_identifier>
-    get_party_identifier_history(const boost::uuids::uuid& id);
+    void delete_party_identifiers(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a party identifier.
+     */
+    std::vector<domain::party_identifier> get_party_identifier_history(const std::string& id);
 
 private:
     context ctx_;

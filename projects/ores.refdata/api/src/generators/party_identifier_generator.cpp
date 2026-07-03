@@ -19,9 +19,10 @@
  */
 #include "ores.refdata.api/generators/party_identifier_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <array>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
 
 namespace ores::refdata::generators {
 
@@ -30,32 +31,23 @@ using ores::utility::generation::generation_keys;
 domain::party_identifier
 generate_synthetic_party_identifier(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::party_identifier r;
     r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value_or(
-        utility::uuid::tenant_id::system());
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    static constexpr std::array<const char*, 10> id_schemes = {"LEI",
-                                                               "BIC",
-                                                               "MIC",
-                                                               "NATIONAL_ID",
-                                                               "CEDB",
-                                                               "NATURAL_PERSON",
-                                                               "ACER",
-                                                               "DTCC_PARTICIPANT_ID",
-                                                               "MPID",
-                                                               "INTERNAL"};
-
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    r.id_scheme = std::string(id_schemes[counter % id_schemes.size()]);
-    r.id_value = std::string(faker::string::alphanumeric(20)) + "_" + std::to_string(++counter);
+    r.id_scheme = std::string("LEI") + "-" + std::to_string(idx);
+    r.id_value = std::string(faker::string::alphanumeric(20)) + "-" + std::to_string(idx);
     r.description = std::string("Test identifier");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

@@ -30,9 +30,9 @@ commissioning stories: [[id:EEE4880F-525A-4805-8082-B8638CB54ABA][Wt entity UI �
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | counterparty (+ its two child entities) now regenerate safely — validation logic is fully captured in the .org models except two documented, separately-tracked gaps (country_code, cardinality limit). |
+| Now           | counterparty (+ its two child entities) now regenerate safely with no known gaps — country_code and the cardinality-limit check are both closed. |
 | Waiting on    | Nothing.                               |
-| Next          | Pick up the cardinality-limit facet task, or resume the Qt/shell/CLI/manual work.            |
+| Next          | Resume the Qt/shell/CLI/manual work.            |
 | Last touched  | 2026-07-03                               |
 
 * Acceptance
@@ -57,8 +57,8 @@ commissioning stories: [[id:EEE4880F-525A-4805-8082-B8638CB54ABA][Wt entity UI �
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:8A555D81-D1C3-48A7-A839-485D78C675AE][Appraise counterparty across all layers and produce evaluation checklist]] | DONE | 2026-07-03 | 2026-07-03 | Found counterparty is on the unified codegen model (ahead of currency in that respect — no separate _table.org), but a scoped regen attempt showed it and both child entities have substantial hand-written SQL validation never captured in the .org models; not safe to regenerate as-is. |
-| [[id:51AA2AAB-9845-434D-94C7-52A863E9AA05][Populate existing codegen facets for counterparty models]] | DONE | 2026-07-03 | 2026-07-03 | Populated all three models; found and fixed a real codegen template bug along the way (Validations facet was reading the wrong nested path, never worked for any entity without a legacy _table.org companion); verified against currency (zero regression). country_code and the cardinality-limit check remain as documented, separately-tracked gaps. |
-| [[id:97EA25C4-1E01-476D-97A0-EC9977262EB6][Add a generic cardinality-limit-validation facet to the SQL codegen template]] | BACKLOG | | | counterparty_identifier and the sibling party_identifier table both hand-write an identical cardinality check (count existing rows per scheme, compare against party_id_schemes.max_cardinality, raise on violation) — confirmed via grep, not a one-off. Add a new generic facet (e.g. cardinality_limit_validations) to ores.sql.schema.domain_entity_create.org modelled on the existing soft_fk_validations facet's structure, then adopt it in both party_identifier.org and counterparty_identifier.org, replacing their hand-written versions with declarative model content. |
+| [[id:51AA2AAB-9845-434D-94C7-52A863E9AA05][Populate existing codegen facets for counterparty models]] | DONE | 2026-07-03 | 2026-07-03 | Populated all three models; found and fixed a real codegen template bug along the way (Validations facet was reading the wrong nested path, never worked for any entity without a legacy _table.org companion); verified against currency (zero regression). |
+| [[id:97EA25C4-1E01-476D-97A0-EC9977262EB6][Add a generic cardinality-limit-validation facet to the SQL codegen template]] | DONE | 2026-07-03 | 2026-07-03 | Extended the existing Validations facet with optional cardinality columns instead of a new top-level facet; adopted in both counterparty_identifier and party_identifier. Also closed the country_code gap via a new SQL paste marker. |
 
 * Decisions
 
@@ -83,9 +83,15 @@ surfaced ~20 unrelated entities' pre-existing drift when tried by
 mistake — reverted in full, not investigated further, but worth a
 dedicated cleanup story given the volume.
 
-*Deferred, not solved*: =country_code= validation in
-=counterparty_contact_information= doesn't match any current codegen
-facet (checked =text_code_validations= and =soft_fk_validations=,
-neither fits its tenant-scoped, nullable-safe existence-check shape).
-Needs either a new facet or an accepted paste block — a separate
-decision from this story's scope.
+*Resolved*: both remaining gaps closed in the cardinality-limit-facet
+task. =country_code= (didn't match any existing facet) is now a SQL
+paste block via a new =<<paste:UUID>>= marker in the insert-trigger
+template — the paste-block mechanism (=:implements <UUID>=, already
+used for C++ repository methods) turned out to be fully generic
+(any language, anywhere in the document), so no new machinery was
+needed, just a new marker. The cardinality-limit check is now an
+extension of the existing Validations facet (optional columns:
+=cardinality_limit_table=, =cardinality_limit_column=,
+=cardinality_scope_column=, =cardinality_noun=) rather than a
+separate top-level facet — adopted in both =counterparty_identifier=
+and =party_identifier=, its only two consumers.

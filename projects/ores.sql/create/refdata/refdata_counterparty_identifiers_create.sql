@@ -75,6 +75,8 @@ create or replace function ores_refdata_counterparty_identifiers_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
+    v_max_cardinality integer;
+    v_current_count integer;
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
@@ -92,6 +94,29 @@ begin
 
     -- Validate id_scheme
     NEW.id_scheme := ores_refdata_validate_party_id_scheme_fn(NEW.tenant_id, NEW.id_scheme);
+
+    -- Validate cardinality limit for this id_scheme
+    select max_cardinality into v_max_cardinality
+    from ores_refdata_party_id_schemes_tbl
+    where tenant_id = NEW.tenant_id
+      and code = NEW.id_scheme
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_max_cardinality is not null then
+        select count(*) into v_current_count
+        from "ores_refdata_counterparty_identifiers_tbl"
+        where tenant_id = NEW.tenant_id
+          and counterparty_id = NEW.counterparty_id
+          and id_scheme = NEW.id_scheme
+          and id != NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        if v_current_count >= v_max_cardinality then
+            raise exception 'Cardinality violation for id_scheme %: % already has % identifier(s) (max %).',
+                NEW.id_scheme, NEW.counterparty_id, v_current_count, v_max_cardinality
+                using errcode = '23514';
+        end if;
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

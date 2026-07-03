@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_counterparty:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/author-counterparty-validation-sections
+#+pr: 1424
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +29,11 @@ check declaratively instead of by copy-paste.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Read refdata_party_identifiers_create.sql and refdata_counterparty_identifiers_create.sql side by side to confirm the two hand-written checks are truly identical in structure; design the facet's mustache params off soft_fk_validations' pattern (column/table/nullable/error_message-style keys). |
+| Next         | Nothing.                  |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
@@ -58,9 +58,46 @@ check declaratively instead of by copy-paste.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Decided against a wholly separate =cardinality_limit_validations=
+top-level facet — the cardinality check is naturally an extension of
+a row that's *already* in the =* Insert trigger ** Validations= table
+(the =id_scheme= row, already validated via a lookup function), so it
+was added as optional columns on that same table instead:
+=cardinality_limit_table=, =cardinality_limit_column=,
+=cardinality_scope_column=, =cardinality_noun= (for the error
+message's plural noun). No parser changes needed at all — org tables
+already convert generically to dicts, so extra columns just appear as
+extra keys; only the mustache template needed a new
+=\{\{#cardinality_limit_table\}\}= conditional block nested inside the
+existing validations loop, plus one derived boolean
+(=domain_entity.sql.has_cardinality_limit_validations=, computed in
+=core.py= to gate the =declare= block's two extra local variables).
+
+Also added the SQL paste-marker mechanism for =country_code=
+(deferred from the prior task): a new =<<paste:UUID>>= marker in the
+insert-trigger body of
+=ores.sql.schema.domain_entity_create.org=, right after the
+validations loop. The paste-block collector
+(=_collect_implementations= in =org_loader.py=) already walks the
+whole document for any =:implements <UUID>= Babel block regardless of
+language, so no code changes were needed there — only a new marker in
+the template and a =#+begin_src sql :implements <UUID>= block in
+=counterparty_contact_information.org='s =country_code= section.
+
+Adopted the cardinality facet in *both* =counterparty_identifier.org=
+and =party_identifier.org= (not just counterparty) — the facet is
+generic and =party_identifier= has the identical hand-written check,
+so leaving it un-adopted there would have meant two copies of the
+same logic (one declarative, one still hand-written) instead of one.
+=party_identifier.org= also gained the =* SQL ** Soft FK validations=
+entry for =party_id= and the =* Insert trigger ** Validations= row for
+=id_scheme= it was missing entirely (same gap class as counterparty).
+
+Regenerated both entities scoped (=codegen entity generate=), verified
+the diffs are functionally equivalent to the prior hand-written SQL
+(same query shape, same errcode, minor wording differences only — e.g.
+"for id_scheme %" vs. the original "for scheme %"), and verified all
+touched =.cpp= files compile in isolation.
 
 * Notes
 
@@ -77,3 +114,18 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Landed as an extension of the existing Validations facet (optional
+columns), not a new top-level facet — cheaper to build, and keeps the
+declarative model simpler for entities that don't need it (the
+columns are just absent). Both known consumers
+(=party_identifier=, =counterparty_identifier=) now express the
+cardinality check declaratively; regenerating either produces
+functionally-equivalent SQL to what was previously hand-written.
+
+Also closed the =country_code= gap left open by the prior task, using
+a new SQL paste marker rather than forcing it into a facet shape that
+didn't fit — confirmed the paste-block mechanism is fully generic
+(any =:implements <UUID>= Babel block, any language, anywhere in the
+document), so this required only a template change, no Python code
+changes beyond the one derived boolean for the cardinality knob.

@@ -99,6 +99,23 @@ begin
     -- Validate contact_type
     NEW.contact_type := ores_refdata_validate_contact_type_fn(NEW.tenant_id, NEW.contact_type);
 
+    -- Paste block: doesn't fit soft_fk_validations (joins on id, not
+    -- an alpha-2 code column) or the Validations table
+    -- (ores_refdata_validate_country_fn only checks non-null/empty,
+    -- not existence).
+    -- Validate country_code (nullable, inline check against countries table)
+    if NEW.country_code is not null and NEW.country_code != '' then
+        if not exists (
+            select 1 from ores_refdata_countries_tbl
+            where tenant_id = NEW.tenant_id
+              and alpha2_code = NEW.country_code
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid country_code: %. Must be a valid ISO 3166-1 alpha-2 code.',
+                NEW.country_code
+                using errcode = '23503';
+        end if;
+    end if;
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

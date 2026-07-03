@@ -8,7 +8,7 @@
 #+filetags: :marketdata:bugfix:valgrind:sprint_22:v0:fix_market_series_generator_uninitialized_enums:
 #+owner: marco
 #+branch: feature/fix-market-series-generator-uninitialized-enums
-#+pr:
+#+pr: 1412
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -71,7 +71,7 @@ counter (matching the file's existing pattern for other fields).
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1412][#1412]] | [marketdata] Fix uninitialized asset_class/series_subclass in market_series generator |
 
 * Review
 

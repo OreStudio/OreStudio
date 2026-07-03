@@ -93,11 +93,13 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
             case OreKey:
                 return QString::fromStdString(fx_spot_generation_config.ore_key);
             case GmmInitialPrice:
+                return fx_spot_generation_config.gmm_initial_price;
             case TicksPerHour:
                 return static_cast<qlonglong>(fx_spot_generation_config.ticks_per_hour);
             case ProcessType:
                 return processTypeLabel(fx_spot_generation_config.process_type);
             case Enabled:
+                return fx_spot_generation_config.enabled ? tr("Yes") : tr("No");
             case Version:
                 return static_cast<qlonglong>(fx_spot_generation_config.version);
             case ModifiedBy:

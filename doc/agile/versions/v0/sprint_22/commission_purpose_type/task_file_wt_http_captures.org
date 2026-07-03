@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_purpose_type:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/commission-purpose-type
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ File well-structured backlog captures for purpose_type Wt web UI support and HTT
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
@@ -58,3 +58,15 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+No per-entity captures were filed. Wt and HTTP support are now owned by
+two standalone top-level commissioning stories that cover all entities
+generically, superseding the per-commission "file Wt/HTTP captures"
+pattern:
+
+- [[id:03FC50B3-622B-4456-AE66-2F180B526723][HTTP entity endpoints — top-level commissioning story]]
+- [[id:EEE4880F-525A-4805-8082-B8638CB54ABA][Wt entity UI — top-level commissioning story]]
+
+purpose_type will be picked up as part of those stories' per-entity
+rollout, not here. Closed as superseded; Wt/HTTP explicitly out of scope
+for this commissioning exercise.

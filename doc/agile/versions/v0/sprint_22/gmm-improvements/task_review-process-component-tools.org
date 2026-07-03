@@ -134,9 +134,11 @@ directory.
 | 2 | UI hardcodes engine-specific isOuEngine() checks throughout (raised directly by user, not the bot review) | FxSpotRateEditor.cpp | Fixed | 1d07dae74 — data-driven EngineInfo table (code/label/supportsMixing) replaces scattered checks |
 | 3 | Switching to OU silently truncates mixture components | FxSpotRateEditor.cpp | Fixed (as a side effect of #1) | Advanced mode is now forced open when the collapse happens, so it's visible/editable, not silent |
 | 4 | Duplicated chart theme colour constants across 5 call sites | ReturnDistributionChart.cpp, SamplePricePathsChart.cpp | Declined (follow-up) | Captured: 4EE11531-E6AB-4094-8297-F0E7DB12EC39 |
-| 5 | Weight/Volatility column headers and tooltips still say generic text for OU | FxSpotRateEditor.cpp | Declined | Inline warning banner already documents the remapping, matching the existing "arithmetic" engine precedent |
+| 5 | Weight/Volatility column headers and tooltips still say generic text for OU | FxSpotRateEditor.cpp | Fixed (superseded) | c314e99cd — see #9; headers shortened and tooltips now update per engine |
 | 6 | Per-component QLineSeries::setName() calls are effectively dead code (legend hidden) | ReturnDistributionChart.cpp | Fixed | 1d07dae74 — one-line comment clarifying the swatch column is the intended indicator |
 | 7 | No unit tests for ou_process | ou_process.hpp/.cpp | Declined | Matches untested gmm_process/arithmetic_gmm_process; no Catch2 convention yet for this directory |
+| 8 | Validation logic ("are these parameters good?") hardcoded in the UI instead of the engine (raised directly by user, not the bot review) | FxSpotRateEditor.cpp, process_factory.cpp | Fixed | c314e99cd — new ores.synthetic.api::domain::validate_process_parameters(), shared by process_factory and the Qt client; server-side enforcement at save/feed-start time not yet wired up, captured: FDEAC2F6-A87F-4281-82CC-437B06D5B02F |
+| 9 | Advanced component table headers too verbose, dialog congested (raised directly by user, not the bot review) | FxSpotRateEditor.cpp | Fixed | c314e99cd — headers shortened to symbols (μ/σ/w); explanations moved to per-header tooltips, updated per engine by updateEngineUi() |
 
 * Result
 
@@ -155,3 +157,15 @@ hardcoded change-reason-code string literals replaced with
 market observations were missing =source=/=point_id= (tenor) —
 =feed_ingest_loop.cpp= now captures =source_name= and sets
 =point_id = "SPOT"= for scalar FX spot series.
+
+PR #1409 review round 1 addressed: forced Advanced mode for
+non-mixing engines (closing a real correctness gap — Simple mode
+could previously save a meaningless κ and silently drop jump
+components); replaced scattered =isOuEngine()= checks with a
+data-driven =EngineInfo= table so future single-regime engines (rate
+processes) are a table row, not more special-cased UI logic; moved
+parameter validation out of the UI into a shared
+=ores.synthetic.api::domain::validate_process_parameters()= used by
+both =process_factory= and the Qt client; and shortened the Advanced
+table's headers to symbols with per-engine tooltips instead of
+permanent verbose text, addressing dialog congestion.

@@ -158,11 +158,11 @@ not log archaeology after the fact — see Tasks.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Nothing.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Nothing.            |
+| Now           | Reopened: the access-scoping/quota explanation doesn't hold up numerically (32 files changed vs. a 20-min-fresh cache cannot explain 98.6% misses). Running a live zero-source-diff experiment (two back-to-back canary runs on the identical commit) to find the real proximate cause. |
+| Waiting on    | ~3h canary run with SCCACHE_LOG=debug enabled.                               |
+| Next          | Compare hit rates and per-file hash debug output between the two identical-commit runs.            |
 | Last touched  | 2026-07-03                               |
 
 * Acceptance
@@ -188,6 +188,23 @@ not log archaeology after the fact — see Tasks.
 | [[id:6D484655-F44F-4088-AA56-AF7359C3E2DF][Prove/disprove sccache cache-invalidation cause with live evidence]] | DONE | 2026-07-03 | 2026-07-03 | Root-caused via the GitHub cache API directly (access scoping + quota, not vcpkg.json); applied a quick mitigation; full live hash-diff proof deferred. |
 
 * Decisions
+
+*Correction (2026-07-03, same day)*: the entry below was written after
+PR #1410's canary run and initially treated as settling the story
+(task/story briefly marked DONE). Checked the numbers more carefully
+after being challenged on them: the =main=-scoped cache that run
+restored was only ~20 minutes stale (built by =continuous-linux.yml=
+at 08:45, canary started 08:46), and the actual file diff between
+that cache's basis commit and PR #1410's build was only *32 files*
+(=git diff --name-only <continuous's commit> <PR's commit>=). 32
+changed files cannot plausibly explain 2400/2433 (98.6%) cache
+misses even with generous header-cascade effects. So the
+access-scoping/quota explanation below is a *real, worth-fixing
+architectural gap* (it explains why the cache never improves across
+days), but it is *not* the proximate cause of this specific run's
+near-total miss rate. That cause is still unknown. Reopened; running
+a live zero-source-diff experiment (see Plan) instead of relying on
+inference.
 
 *Root cause*: GitHub Actions cache access control, not vcpkg.json
 churn directly. A PR job can only *restore* from its base branch's

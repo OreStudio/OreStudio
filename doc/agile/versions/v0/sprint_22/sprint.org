@@ -121,7 +121,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 21.
 |-------+-------+-------+-----+-------------|
 | [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Verify Windows and macOS CI builds]] | BACKLOG | | | Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups. |
 | [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] | BACKLOG | | | Qt 6.8.x references -framework AGL (removed in macOS 15); the latest supported Qt drops that dependency. CI pinned to macos-14 as stopgap. |
-| [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] | DONE | 2026-07-03 | 2026-07-03 | Root-caused (GitHub cache access scoping + quota exhaustion, not vcpkg.json); freed quota and raised sccache max-size as a quick mitigation. |
+| [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] | STARTED | 2026-07-03 | | Cache-quota fix applied but doesn't explain the magnitude (32 files changed vs. 98.6% miss rate); running a live zero-source-diff experiment. |
 
 ** Documentation
 

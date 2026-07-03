@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 51AA2AAB-9845-434D-94C7-52A863E9AA05
+:END:
+#+title: Task: Author missing Validation function / Insert trigger sections for counterparty models
+#+description: counterparty.org, counterparty_identifier.org, and counterparty_contact_information.org have no Validation function / Insert trigger sections, but the currently-shipped SQL has substantial hand-written validation logic (FK existence checks, party_type/status/id_scheme/contact_type/country_code validation, a cardinality limit, a mandatory business_center_code check, and a dropped transliterated_name column) that a naive regen would silently delete. Port the existing hand-written logic verbatim into the three .org models' Validation function / Insert trigger sections, then regenerate scoped to counterparty and verify the diff is zero (or only the expected security-definer/docstring improvements).
+#+type: task
+#+level: s1
+#+filetags: :commission_counterparty:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make it safe to regenerate counterparty, counterparty_identifier, and
+counterparty_contact_information by capturing their existing
+hand-written SQL validation logic in the =.org= models, so codegen
+stops being a data-integrity hazard for this entity family.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Read the current create.sql files for all three tables; port each validation clause into the matching .org model's Validation function / Insert trigger sections (see task_appraise_counterparty.org's Result for the full inventory). |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- =counterparty.org= gains sections capturing: =party_type=
+  validation, =status= validation, the soft-FK check on
+  =parent_counterparty_id=, and the mandatory + FK-checked
+  =business_center_code=. The =transliterated_name= column and the
+  current uniqueness semantics (separate =full_name= search index +
+  unique =short_code=) are preserved, not silently dropped.
+- =counterparty_identifier.org= gains sections capturing: =id_scheme=
+  validation, the soft-FK check on =counterparty_id=, and the
+  cardinality-limit check. The =(counterparty_id, id_scheme,
+  id_value)= uniqueness is preserved.
+- =counterparty_contact_information.org= gains sections capturing:
+  =contact_type= validation, the soft-FK check on =counterparty_id=,
+  and =country_code= validation.
+- After authoring, a scoped regen (per [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for
+  a domain entity?]]) produces a diff that is empty, or contains only
+  the expected/wanted improvements (security-definer fix, docstring
+  title) — no loss of the validations listed above.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

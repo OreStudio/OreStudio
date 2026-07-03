@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 8A555D81-D1C3-48A7-A839-485D78C675AE
+:END:
+#+title: Task: Appraise counterparty across all layers and produce evaluation checklist
+#+description: Walk counterparty across SQL, codegen (all profiles), Qt, shell, and CLI; score each layer against the commissioning checklist used by other entities (party_type, country); note any regen drift, missing shell/CLI implementation, or Qt regressions found.
+#+type: task
+#+level: s1
+#+filetags: :commission_counterparty:sprint_22:v0:
+#+owner: marco
+#+branch: feature/appraise-counterparty
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Determine whether counterparty (and its child tables
+counterparty_identifier, counterparty_contact_information) can be
+safely regenerated, and if not, what's missing from the models before
+it can be.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | See follow-up task: author the missing Validation function / Insert trigger sections in all three .org models.            |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- Confirmed whether counterparty.org is on the unified codegen model
+  (=ores.codegen.entity=) or still needs table-pathway migration.
+- A regen attempt (scoped correctly, per the =How do I regenerate all
+  layers for a domain entity?= recipe) is diffed and the result
+  classified: safe drift vs. destructive (validation/data loss).
+- If destructive: the exact missing model content is documented so a
+  follow-up task can author it, rather than attempting the regen
+  blind.
+
+* Plan
+
+Followed [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]]:
+=./compass.sh codegen regenerate --component refdata-cpp --profile
+all-cpp= then =--component refdata --profile sql=, scoped the diff to
+counterparty afterward per the recipe's step 3. First attempt (before
+correcting) ran component-wide without immediately scoping/discarding
+the rest — reverted in full (=git checkout -- .=) once caught; no
+unrelated changes were committed.
+
+Compared counterparty.org against currency.org (the reference for an
+already-commissioned entity) to check unified-model status:
+
+- =counterparty.org= is already =#+type: ores.codegen.entity= (the
+  unified model) with *no* separate =_table.org= companion file —
+  ahead of =currency= in that specific respect, which still has both
+  =ores.refdata.currency.org= (entity) *and*
+  =ores.refdata.currency_table.org= (=ores.codegen.table=, not yet
+  decommissioned).
+- However, =currency.org= has =* Validation function= and
+  =* Insert trigger ** Validations= sections capturing its custom SQL
+  logic. =counterparty.org=, =counterparty_identifier.org=, and
+  =counterparty_contact_information.org= have *none* of these
+  sections at all.
+
+Ran the scoped regen anyway to see what a zero-diff (or non-zero)
+result would actually look like, rather than assuming from the
+section gap alone. Result: severely destructive, on the *parent*
+table as well as both children — see Result.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+*Not safe to regenerate as-is.* Regen (reverted immediately, never
+committed) showed the current hand-written SQL for all three tables
+carries real business logic that the =.org= models don't know about
+and would silently delete:
+
+*refdata_counterparties_create.sql* (parent):
+- Drops the =transliterated_name= column entirely.
+- Changes =business_center_code= from =not null= to nullable, and
+  =status= from =not null default 'Active'= to =not null= with no
+  default.
+- Removes validation of =party_type= (=ores_refdata_validate_party_type_fn=),
+  =status= (=ores_refdata_validate_party_status_fn=), the soft-FK
+  check on =parent_counterparty_id=, and the mandatory + FK-checked
+  =business_center_code= (=ores_refdata_validate_business_centre_fn=).
+- Changes uniqueness semantics: currently a non-unique =full_name=
+  search index *plus* a unique =short_code= constraint; regen
+  replaces both with a single composite =(full_name, short_code)=
+  uniqueness — i.e. would newly *allow* duplicate =short_code=s across
+  different =full_name=s.
+
+*refdata_counterparty_identifiers_create.sql* (child):
+- Removes =id_scheme= validation, the soft-FK check on
+  =counterparty_id=, and a cardinality-limit check (max identifiers
+  per scheme, looked up from =party_id_schemes.max_cardinality=).
+- Changes the unique index from =(counterparty_id, id_scheme,
+  id_value)= to =(counterparty_id, id_scheme)= — would newly forbid a
+  counterparty having more than one identifier of the same scheme
+  regardless of value, a real semantics change.
+
+*refdata_counterparty_contact_informations_create.sql* (child):
+- Removes =contact_type= validation, the soft-FK check on
+  =counterparty_id=, and =country_code= validation against the
+  countries table.
+
+All three files *do* correctly gain the =security definer set
+search_path = public, pg_temp= fix (matching the country/party_type
+pattern) and a proper docstring title — those parts of a regen would
+be genuine improvements. But the losses above are far more
+significant: this is hand-written validation logic living directly
+in generated SQL, never migrated into the =.org= models, matching the
+same class of problem flagged for =market_observation= in story
+=D6C90C13= (market data cleanup).
+
+*Recommendation*: scaffold a follow-up task to author =* Validation
+function= and =* Insert trigger ** Validations= sections in all three
+=.org= models (counterparty, counterparty_identifier,
+counterparty_contact_information), porting the existing hand-written
+SQL logic in verbatim, *before* any regen is attempted again. Until
+that's done, do not run codegen regenerate against these three models.

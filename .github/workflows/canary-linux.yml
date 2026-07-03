@@ -36,7 +36,8 @@ jobs:
     environment: CI
     env:
       # Temporary: diagnosing near-zero sccache hit rate (story
-      # canary_ctest_ignores_cancellation). Remove once resolved.
+      # canary_ctest_ignores_cancellation, task
+      # analyze_sccache_zero_diff_experiment). Remove once resolved.
       SCCACHE_LOG: sccache=debug
       SCCACHE_ERROR_LOG: /tmp/sccache_debug.log
     steps:

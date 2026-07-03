@@ -7,7 +7,7 @@ Native port of the build/scripts service-lifecycle scripts:
     stop-services.sh    ->  compass services stop
     status-services.sh  ->  compass services status
     clear-logs.sh       ->  compass services clear-logs
-    start-client.sh     ->  compass client
+    start-client.sh     ->  compass client start
 
 The controller spawns IAM and every domain service; this module only
 manages nats-server, the controller, and the Qt client, plus PID-file

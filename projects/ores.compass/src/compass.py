@@ -4912,7 +4912,7 @@ def cmd_bearings(argv):
                 print(f"  Client   : {_C_GREEN}running{_C_RESET}  ({_desc})")
             else:
                 print(f"  Client   : not running  "
-                      f"({_ycmd('compass client')})")
+                      f"({_ycmd('compass client start')})")
         except SystemExit:
             print("  Services : (no preset in .env — compass env configure)")
         # ── Genesis env check (when .env exists) ────────────────────────────
@@ -5910,6 +5910,7 @@ def main():
         "  db:       recreate | setup | drop | sql | reset-system | reset-tenant (provision)\n"
         "  sql:      alias for db sql — run SQL in the environment\n"
         "  services: start | stop | status | clear-logs (operate)\n"
+        "  client:   start | stop (operate)\n"
     )
     parser = argparse.ArgumentParser(
         description="Compass: developer toolkit for ORE Studio — orient, scaffold, capture, and search.",

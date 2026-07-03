@@ -203,6 +203,7 @@ import_service::import(const messaging::import_market_data_request& req) {
             fix.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
             fix.series_id = sid;
             fix.fixing_date = f.date;
+            fix.source = req.source;
             fix.value = f.value;
             fixings.push_back(std::move(fix));
         }

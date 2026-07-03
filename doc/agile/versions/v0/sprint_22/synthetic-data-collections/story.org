@@ -132,15 +132,39 @@ two archetypes, and closes the gaps that surfaced while designing it:
   scripted/provisioning-time import needs it too), and keeps this
   story's tasks focused on collections rather than shell infrastructure.
   [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]] is blocked on it.
-- Also found and fixed while sourcing reference values: two rows in
-  =external/ore/examples/Legacy/Example_56/Input/market.txt= had
-  reversed =FX/RATE/CCY1/CCY2= key order (=USD/GBP=, =USD/CHF= storing
-  =CCY2/CCY1=-shaped values) — corrected to =GBP/USD=/=CHF/USD=
-  (values unchanged) for internal consistency with the file's other
-  =EUR/xxx= rows. Confirmed this doesn't affect the example's own ORE
-  run (its =todaysmarket.xml= uses a separate =FX/CCY1/CCY2= key
-  namespace, not =FX/RATE/=). Worth reporting upstream to the ORE
-  project.
+- Also found while sourcing reference values: a systematic bug across
+  several vendored ORE example =market.txt= files — =FX/RATE/USD/GBP=
+  and =FX/RATE/USD/CHF= rows storing values that are mathematically
+  =EURUSD/EURGBP=/=EURUSD/EURCHF= (i.e. the GBP/CHF-in-USD rate), not
+  USD-in-GBP/CHF as the key order implies, inconsistent with every
+  other =EUR/xxx= row in the same files. Reported upstream to the ORE
+  project with the full file list (10+ instances found across
+  =Legacy=, =ORE-API=, =ORE-Python=, =XvaRisk=, =InitialMargin=).
+  *Only fixed locally where provably safe*: =XvaRisk/Input/market_20160205_eonia_200bp_up.txt=,
+  =XvaRisk/Input/market_20160205_eur6m_200bp_up.txt=, and
+  =ORE-Python/Notebooks/Example_7/Input/market.txt= — each has its own
+  local =curveconfig.xml= with zero reference to the old key anywhere.
+  *Left unfixed* (bug still present in the vendored tree, deliberately
+  not patched): =Legacy/Example_56=, =Legacy/Example_44=,
+  =InitialMargin/Input/Simm/simm_market.txt= — these three have no
+  local =curveconfig.xml= and resolve the *shared*
+  =external/ore/examples/Input/curveconfig.xml= (via
+  =curveConfigFile = ../../../Input/curveconfig.xml= in their SIMM
+  run configs), which itself has a literal
+  =<SpotRate>FX/RATE/USD/GBP</SpotRate>=/=<SpotRate>FX/RATE/USD/CHF</SpotRate>=
+  wiring — initially fixed then reverted after a PR review caught that
+  this shared-config path couldn't be ruled out as live without
+  actually running the SIMM examples. =ORE-API=,
+  =ORE-Python/Notebooks/Example_9=, =Example_4=, =Example_3= were
+  investigated and left unfixed for the same reason (their own local
+  =curveconfig.xml= directly wires the old key). The ~20 further
+  instances the upstream issue lists beyond these were not
+  individually verified safe/unsafe — flagged in the issue for ORE to
+  triage, not something this story attempted to fix.
+- Fixing the same bug's blind spot: =import_service='s fixings-import
+  loop didn't set =market_fixing.source= even though the field exists
+  with identical intent to =market_observation.source= — the
+  observations loop got tagged, fixings didn't. Fixed symmetrically.
 - Vintage/reference data lives in =ores.marketdata= as ordinary
   (dated, source-tagged) =market_observation= rows, not as a new
   synthetic-specific table or store. =ores.synthetic= queries it at

@@ -84,6 +84,11 @@ defaulting to empty string (preserves existing behaviour for the
 =import_service.cpp=. Purely additive — no signature break, no new
 mechanism.
 
+*PR #1423 review round 1 caught*: the fixings-import loop right below
+the observations loop built =domain::market_fixing= without setting
+its =source= field, even though it exists with identical intent
+(=market_fixing.hpp:80=). Fixed symmetrically: =fix.source = req.source;=.
+
 * Notes
 
 * PRs
@@ -96,7 +101,10 @@ mechanism.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | market_fixing.source not wired despite identical intent to market_observation.source | import_service.cpp | Fixed | Added fix.source = req.source; symmetric to the observations loop |
+| 2 | Shared external/ore/examples/Input/curveconfig.xml also wires FX/RATE/USD/GBP-CHF, resolved by Example_56/Example_44/InitialMargin-Simm (previously believed safe) via curveConfigFile=../../../Input/curveconfig.xml in their SIMM run configs | market.txt (3 files) | Fixed (reverted) | Reverted the 3 files back to original reversed keys — couldn't rule out the shared-config path being live without running the SIMM examples; only XvaRisk (x2) and Example_7 confirmed safe (own local curveconfig.xml, zero reference) |
+| 3 | "4 more instances" undercounts the bug's footprint; story doc stale relative to later commits | story.org | Fixed | Decisions section rewritten with the full, accurate fixed/reverted/unverified file breakdown; filed capture 3BC19819-6BEB-456E-9647-F6AB258A6635 for the vendor-refresh-drift risk on the 3 files actually fixed |
+| 4 | No unit test coverage for import_service | import_service.cpp | Declined | Pre-existing gap, not introduced by this PR; no import_service test suite exists at all yet |
 
 * Result
 

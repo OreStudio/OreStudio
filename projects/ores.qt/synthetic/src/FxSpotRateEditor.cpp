@@ -27,6 +27,7 @@
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/ReturnDistributionChart.hpp"
 #include "ores.qt/SamplePricePathsChart.hpp"
+#include "ores.synthetic.api/domain/process_parameter_validation.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include <QAbstractItemView>
@@ -570,16 +571,21 @@ QWidget* FxSpotRateEditor::buildAdvancedControls() {
     compLayout->setContentsMargins(12, 12, 12, 12);
     compLayout->setSpacing(8);
 
+    // Short header labels — full explanations live in per-header tooltips
+    // (updated per engine by updateEngineUi()) rather than permanent header
+    // text, to keep this table from growing wider than the dialog can spare.
     componentTable_ = new QTableWidget(0, 7, compBox);
-    componentTable_->setHorizontalHeaderLabels({tr("Colour"),
-                                                tr("Component Name"),
-                                                tr("Profile"),
-                                                tr("Drift (μ %)"),
-                                                tr("Volatility (σ %)"),
-                                                tr("Weight"),
-                                                tr("Actions")});
+    componentTable_->setHorizontalHeaderLabels(
+        {tr(""), tr("Name"), tr("Profile"), tr("μ"), tr("σ"), tr("w"), tr("")});
+    if (auto* hdr = componentTable_->horizontalHeaderItem(ColColor))
+        hdr->setToolTip(tr("Colour — matches this component's curve on the Return "
+                           "distribution chart."));
+    if (auto* hdr = componentTable_->horizontalHeaderItem(ColProfile))
+        hdr->setToolTip(tr("A preset that fills in Volatility (σ)."));
+    if (auto* hdr = componentTable_->horizontalHeaderItem(ColActions))
+        hdr->setToolTip(tr("Remove this process."));
     // (A "Jump (planned)" column is intentionally omitted — not backed.)
-    componentTable_->setMinimumWidth(560);
+    componentTable_->setMinimumWidth(480);
     componentTable_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     componentTable_->setShowGrid(false); // avoid cell-border + inner-widget "box in box"
     componentTable_->verticalHeader()->setVisible(false);
@@ -808,7 +814,8 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     meanSpin->setValue(c.mean * 100.0);
     meanSpin->setFrame(false);
     meanSpin->setStyleSheet(flatEdit);
-    meanSpin->setToolTip(tr("Average %1 per update (%); 0 = no drift.").arg(incrementNoun()));
+    // Explanation lives on the column header tooltip (ColMean), which updates per
+    // engine — a per-row static tooltip here would go stale for e.g. "ou".
 
     auto* stdevSpin = new QDoubleSpinBox(componentTable_);
     stdevSpin->setRange(0.0, 100.0);
@@ -816,17 +823,14 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     stdevSpin->setSuffix(tr(" %"));
     stdevSpin->setValue(c.stdev * 100.0);
     stdevSpin->setFrame(false);
-    stdevSpin->setStyleSheet(flatEdit);
-    stdevSpin->setToolTip(
-        tr("Volatility of the %1 per update (%); 0 = constant.").arg(incrementNoun()));
+    stdevSpin->setStyleSheet(flatEdit); // see ColStdev header tooltip
 
     auto* weightSpin = new QDoubleSpinBox(componentTable_);
     weightSpin->setRange(0.0, 1e6);
     weightSpin->setDecimals(3);
     weightSpin->setValue(c.weight);
     weightSpin->setFrame(false);
-    weightSpin->setStyleSheet(flatEdit);
-    weightSpin->setToolTip(tr("Relative share when blending processes (normalised on save)."));
+    weightSpin->setStyleSheet(flatEdit); // see ColWeight header tooltip
 
     // Icon-only trash button, centred in the Actions cell via a small container.
     auto* removeBtn = new QPushButton(componentTable_);
@@ -994,6 +998,21 @@ void FxSpotRateEditor::updateEngineUi() {
     if (modeGroup_) {
         if (auto* simpleBtn = modeGroup_->button(0))
             simpleBtn->setEnabled(mixing);
+    }
+
+    if (componentTable_) {
+        if (auto* meanHdr = componentTable_->horizontalHeaderItem(ColMean))
+            meanHdr->setToolTip(ou ? tr("Unused by Ornstein-Uhlenbeck.") :
+                                     tr("Drift (μ) — average %1 per update (%).")
+                                         .arg(incrementNoun()));
+        if (auto* stdevHdr = componentTable_->horizontalHeaderItem(ColStdev))
+            stdevHdr->setToolTip(ou ? tr("σ — Ornstein-Uhlenbeck volatility.") :
+                                      tr("Volatility (σ) of the %1 per update (%).")
+                                          .arg(incrementNoun()));
+        if (auto* weightHdr = componentTable_->horizontalHeaderItem(ColWeight))
+            weightHdr->setToolTip(
+                ou ? tr("κ — Ornstein-Uhlenbeck reversion speed (0 = driftless random walk).") :
+                     tr("Relative share when blending processes (normalised on save)."));
     }
 }
 
@@ -1259,20 +1278,21 @@ void FxSpotRateEditor::onSaveClicked() {
     else
         rebuildModelFromSimple();
 
-    // Reject an all-zero weight set: the server builds a std::discrete_distribution
-    // from the weights, which is undefined behaviour when they sum to zero. Doesn't
-    // apply to single-regime engines (e.g. "ou", where κ = 0 is a valid parameter —
-    // a driftless random walk): there's no discrete_distribution over regimes since
-    // there's only one process, not a mixture.
-    if (currentEngineSupportsMixing()) {
-        double weightSum = 0.0;
-        for (const auto& mc : components_)
-            weightSum += mc.weight;
-        if (weightSum <= 0.0) {
-            QMessageBox::warning(this,
-                                 tr("Invalid weights"),
-                                 tr("All component weights are zero. At least one component must "
-                                    "have a positive weight."));
+    // Ask the engine itself whether these parameters are valid — the same rules
+    // process_factory enforces server-side (ores.synthetic.api::domain, shared,
+    // not duplicated UI-side logic).
+    {
+        std::vector<double> means, stdevs, weights;
+        for (const auto& mc : components_) {
+            means.push_back(mc.mean);
+            stdevs.push_back(mc.stdev);
+            weights.push_back(mc.weight);
+        }
+        const auto validation = synthetic::domain::validate_process_parameters(
+            currentEngine(), means, stdevs, weights, priceSpin_->value());
+        if (!validation.valid) {
+            QMessageBox::warning(
+                this, tr("Invalid parameters"), QString::fromStdString(validation.message));
             return;
         }
     }

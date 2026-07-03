@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 395AAFAD-9013-4DF8-BD60-E5B50ADA6385
+:END:
+#+title: Story: Reconcile currency Qt custom features with codegen
+#+description: Scope and reconcile currency's Qt layer (~2x the code of a comparable synced entity: CSV/XML import-export, feature-flagged synthetic data generation, full version-navigation UI, flag image handling) against the qt codegen profile, deciding feature-by-feature what becomes a template capability vs. stays custom, before attempting a full regenerate.
+#+type: story
+#+level: s2
+#+filetags: :commission_currency:qt:codegen:sprint_22:v0:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bring currency's Qt layer (=ores.qt/refdata=: =ClientCurrencyModel=,
+=CurrencyController=, =CurrencyMdiWindow=, =CurrencyDetailDialog=,
+=CurrencyHistoryDialog= + =.ui= files) in line with the current qt
+codegen profile, without silently losing any of the real functionality
+it has grown beyond the template. Discovered while scoping "Sync Qt
+codegen for currency"
+([[id:EA647CBC-18C7-4555-9A49-FBF55BC192FD][task]], blocked on this
+story): currency's Qt files are roughly *2x the size* of a comparable
+already-synced auxiliary entity (~3600 vs ~1900 lines across the 6
+hand-written source files), and the excess is real product
+functionality, not legacy cruft:
+
+- =CurrencyMdiWindow=: CSV export, XML import/export, and a
+  feature-flagged "generate synthetic test data" button (gated by the
+  =system.synthetic_data_generation= setting) — none of which exist in
+  any other entity's MDI window or in the template.
+- =CurrencyController=: extra NATS notification wiring
+  (=onNotificationReceived=), and handler names that predate the
+  template's current naming convention (=onOpenCurrencyVersion= vs. the
+  template's =onOpenVersion=, etc.).
+- =CurrencyDetailDialog= (1351 lines vs. ~300 for a synced peer): full
+  version-navigation UI (first/prev/next/last/revert), flag image
+  selection wired through =ImageCache=, its own generate-button,
+  stale-marking — plus 3 combo-box fields (=monetary_nature=,
+  =market_tier=, =rounding_type=) backed by soft-FK reference tables.
+  The template does have a combo-field mechanism, but *no entity in the
+  codebase exercises it yet* — currency would be the first, with no
+  working example to mirror.
+
+This story is about deciding, feature by feature, what should become a
+first-class qt-profile capability (version-navigation UI and CSV/XML
+import-export look like strong candidates to benefit other entities
+too) versus what stays currency-specific custom code — *before*
+attempting a full regenerate. A blind mechanical sync (the approach
+that worked cleanly for the
+[[id:8A84D304-431A-45CF-9E3C-6AC649F6A62F][C++ core sync task]]) is not
+safe here: Qt UI behavior can't be verified without running the app,
+and the risk of silently dropping a working feature is high.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-04                               |
+
+* Acceptance
+
+- Every feature present in currency's Qt layer but absent from the qt
+  codegen templates is triaged: either promoted to a template capability
+  (with at least currency as a real consumer) or explicitly documented as
+  currency-specific custom code to preserve across regeneration.
+- The combo-field template mechanism is either exercised end-to-end for
+  currency's 3 combo fields (piloting it for the first time) or explicitly
+  deferred with a documented reason.
+- Once triaged, "Sync Qt codegen for currency" can proceed as a mechanical
+  regenerate + reconcile pass with a concrete, reviewed plan — not a
+  speculative rewrite.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

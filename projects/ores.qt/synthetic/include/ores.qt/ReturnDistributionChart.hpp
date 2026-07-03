@@ -31,25 +31,41 @@ class QValueAxis;
 namespace ores::qt {
 
 /**
- * @brief Live, client-rendered plot of a Gaussian-mixture return density.
+ * @brief Live, client-rendered plot of a Gaussian mixture density.
  *
- * Plots f(x) = Σ wᵢ·N(x; μᵢ, σᵢ) where x is the per-update log-return shown
- * in percent (μ, σ are multiplied by 100 for display). No backend call: the
- * curve is recomputed instantly from the supplied components.
+ * Plots f(x) = Σ wᵢ·N(x; μᵢ, σᵢ). No backend call: the curve is recomputed
+ * instantly from the supplied components. Two domains are supported (see
+ * setDomain()): a per-update log-return mixture (the usual GMM case, shown in
+ * percent) or a single-component steady-state price distribution (for a
+ * mean-reverting engine like Ornstein-Uhlenbeck, shown in raw price units).
  */
 class ReturnDistributionChart final : public QWidget {
     Q_OBJECT
 
 public:
-    /** @brief One Gaussian mixture component (in raw log-return units). */
+    /** @brief One Gaussian mixture component (in raw log-return units, or — in
+     *  Domain::Price — the single steady-state component in price units). */
     struct Component {
         double mean;
         double stdev;
         double weight;
     };
 
+    enum class Domain {
+        Return, // per-update log-return mixture, shown in % (the GMM case)
+        Price   // steady-state price distribution, shown in raw price units
+    };
+
     explicit ReturnDistributionChart(QWidget* parent = nullptr);
     ~ReturnDistributionChart() override = default;
+
+    /**
+     * @brief Switch what setComponents() plots and how the chart is labelled.
+     * Domain::Return (the default) scales values ×100 and reads "Return per
+     * Update (%)"; Domain::Price plots raw values and reads "Price". Call
+     * before setComponents() when switching (e.g. on an engine change).
+     */
+    void setDomain(Domain domain);
 
     /** @brief Recompute and redraw the mixture density. */
     void setComponents(const std::vector<Component>& components);
@@ -66,6 +82,7 @@ private:
     QChartView* view_;
     QValueAxis* axisX_;
     QValueAxis* axisY_;
+    Domain domain_ = Domain::Return;
 };
 
 }

@@ -499,9 +499,9 @@ void FxSpotRateEditor::buildBehaviourTab() {
     middleRow->addWidget(modeStack_, 1);
 
     // RIGHT: compact PDF chart group, top-aligned. For single-regime engines
-    // (e.g. "ou") the PDF doesn't apply — swap the chart out for a short info
-    // message instead of showing a disabled chart that still eats vertical
-    // space (see updateEngineUi()).
+    // (e.g. "ou") the increment PDF doesn't apply, but the *steady-state price*
+    // distribution does (closed-form: N(θ, σ/√(2κ))) — updateEngineUi() switches
+    // the chart's domain rather than disabling it.
     auto* distBox = new QGroupBox(tr("Return distribution"), tab);
     distBox->setMinimumWidth(300);
     distBox->setMaximumWidth(380);
@@ -511,12 +511,6 @@ void FxSpotRateEditor::buildBehaviourTab() {
     distChart_->setMaximumWidth(380);
     distChart_->setMinimumHeight(240);
     distLayout->addWidget(distChart_);
-    distInfoLabel_ = new QLabel(distBox);
-    distInfoLabel_->setWordWrap(true);
-    distInfoLabel_->setAlignment(Qt::AlignCenter);
-    distInfoLabel_->setStyleSheet("color: gray;");
-    distInfoLabel_->setVisible(false);
-    distLayout->addWidget(distInfoLabel_);
     middleRow->addWidget(distBox, 0, Qt::AlignTop);
 
     layout->addLayout(middleRow);
@@ -1106,8 +1100,8 @@ void FxSpotRateEditor::onEngineChanged() {
     if (engineCombo_)
         fx_.process_type = currentEngine();
     updateEngineUi();
-    // Engine also determines whether the Return Distribution PDF chart applies
-    // (it doesn't for "ou", a level process rather than an increment mixture).
+    // Engine also determines which distribution the Return Distribution chart
+    // plots (increment PDF, or "ou"'s steady-state price distribution).
     refreshCharts();
 }
 
@@ -1175,19 +1169,9 @@ void FxSpotRateEditor::updateEngineUi() {
         engineWarningLabel_->setVisible(ou || arithmetic);
     }
 
-    // The Return Distribution chart plots an increment PDF, which doesn't apply to
-    // "ou" (a level process, not a mixture). Space is at a premium here, so swap
-    // the chart out for a short message instead of showing a disabled chart that
-    // still claims 240px of height for nothing.
-    if (distChart_) {
-        distChart_->setVisible(mixing);
-        if (distInfoLabel_) {
-            distInfoLabel_->setVisible(!mixing);
-            distInfoLabel_->setText(
-                tr("N/A for this engine — it reverts toward a level rather than mixing "
-                   "return distributions. See the component row's tooltip for κ/σ."));
-        }
-    }
+    // The Return Distribution chart's domain (increment PDF vs. steady-state
+    // price) is set from refreshCharts(), which also supplies its components —
+    // no separate handling needed here.
 
     if (addComponentBtn_)
         addComponentBtn_->setEnabled(mixing);
@@ -1506,14 +1490,25 @@ void FxSpotRateEditor::refreshCharts() {
     const std::string engine = currentEngine();
     const double price = priceSpin_ ? priceSpin_->value() : fx_.gmm_initial_price;
 
+    const bool ou = engine == "ou";
+    if (distChart_)
+        distChart_->setDomain(ou ? ReturnDistributionChart::Domain::Price :
+                                   ReturnDistributionChart::Domain::Return);
+
     if (!currentEngineSupportsMixing()) {
         // Single-regime path — wording/remapping below is OU-specific for now (the
         // only such engine); a future second one will need its own case here.
         // Scalar params (κ, σ) reused from Weight/Volatility — not a mixture, so no
-        // normalisation. θ (long-run mean) is the Initial Price, sent separately
-        // below; the increment PDF chart doesn't apply to a level process.
-        if (!components_.empty())
-            pathComps.push_back({0.0, components_.front().stdev, components_.front().weight});
+        // normalisation. θ (long-run mean) is the Initial Price.
+        if (!components_.empty()) {
+            const double kappa = components_.front().weight;
+            const double sigma = components_.front().stdev;
+            pathComps.push_back({0.0, sigma, kappa});
+            // Steady-state price distribution is closed-form for OU:
+            // N(θ, σ/√(2κ)) — undefined (no stationary distribution) at κ = 0.
+            if (ou && kappa > 0.0)
+                distComps.push_back({price, sigma / std::sqrt(2.0 * kappa), 1.0});
+        }
     } else {
         double sum = 0.0;
         for (const auto& c : components_)
@@ -1526,7 +1521,7 @@ void FxSpotRateEditor::refreshCharts() {
     }
 
     if (distChart_)
-        distChart_->setComponents(distComps); // empty for "ou" — PDF n/a to a level process
+        distChart_->setComponents(distComps); // empty for κ=0 "ou" — no stationary distribution
     if (pathsChart_) {
         pathsChart_->setComponents(pathComps);
         pathsChart_->setInitialPrice(price);

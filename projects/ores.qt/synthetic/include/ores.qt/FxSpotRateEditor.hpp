@@ -232,10 +232,7 @@ private:
     QStackedWidget* modeStack_;
     // Single shared charts (used by both Simple and Advanced modes).
     ReturnDistributionChart* distChart_; // compact, top-right
-    // Shown instead of distChart_ for single-regime engines (the PDF doesn't
-    // apply), so the panel doesn't burn space on a disabled chart.
-    QLabel* distInfoLabel_;
-    SamplePricePathsChart* pathsChart_; // prominent, full-width bottom
+    SamplePricePathsChart* pathsChart_;  // prominent, full-width bottom
 
     // Behaviour tab — Simple page. simpleModeStack_ switches between the GBM/
     // arithmetic sliders (index 0) and "ou"'s θ/κ/σ controls (index 1).

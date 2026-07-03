@@ -168,7 +168,7 @@ jobs:
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          max-size: 2000M
+          max-size: 3000M
           save: false
 
       - name: Install dev packages

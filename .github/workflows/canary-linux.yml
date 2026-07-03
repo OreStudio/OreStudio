@@ -34,6 +34,11 @@ jobs:
       cancel-in-progress: true
     runs-on: ubuntu-24.04
     environment: CI
+    env:
+      # Temporary: diagnosing near-zero sccache hit rate (story
+      # canary_ctest_ignores_cancellation). Remove once resolved.
+      SCCACHE_LOG: sccache=debug
+      SCCACHE_ERROR_LOG: /tmp/sccache_debug.log
     steps:
       - name: Free disk space
         run: |
@@ -101,7 +106,7 @@ jobs:
         with:
           variant: sccache
           key: linux-gcc-debug-ninja
-          max-size: 2000M
+          max-size: 3000M
           save: false
 
       - name: Install dev packages
@@ -236,3 +241,11 @@ jobs:
       - name: Show sccache statistics
         if: always()
         run: sccache --show-stats
+
+      - name: Show sccache debug log (temporary diagnostic)
+        if: always()
+        run: |
+          echo "=== sccache debug log size ==="
+          wc -l /tmp/sccache_debug.log 2>/dev/null || echo "no log file"
+          echo "=== first 200 cache-miss reason lines ==="
+          grep -i "cache miss\|hash key\|Should be a hit\|Computing hash" /tmp/sccache_debug.log 2>/dev/null | head -200 || true

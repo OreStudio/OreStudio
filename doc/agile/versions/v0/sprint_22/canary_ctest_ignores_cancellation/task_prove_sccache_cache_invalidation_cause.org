@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 6D484655-F44F-4088-AA56-AF7359C3E2DF
+:END:
+#+title: Task: Prove/disprove sccache cache-invalidation cause with live evidence
+#+description: Run two back-to-back canary builds (or local equivalents) with SCCACHE_LOG=debug and diff the actual hash inputs for a handful of unchanged files to determine exactly what's invalidating the cache — vcpkg.json churn, runner image drift, or something else. Confirm or rule out the vcpkg.json findings already documented in the story. Do not touch the vcpkg submodule pointer.
+#+type: task
+#+level: s1
+#+filetags: :canary_ctest_ignores_cancellation:sprint_22:v0:
+#+owner: marco
+#+branch: feature/prove-sccache-cache-invalidation-cause
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Understand and mitigate the low sccache hit rate discovered on
+PR #1410's canary run (1.36%, 33/2433). *Scope narrowed*: this task
+now covers landing the diagnostic telemetry (cache cleanup, max-size
+bump, =SCCACHE_LOG=debug= instrumentation) and the zero-source-diff
+experiment setup. Actually analyzing the two runs' results is split
+into a follow-up task (see story) so this doesn't block on ~3h+ of
+live CI runtime.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | See follow-up task for the actual analysis once the two experiment runs complete.                  |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- Evidence-backed mitigations (cache cleanup, max-size bump) land.
+- =SCCACHE_LOG=debug= instrumentation lands so a zero-source-diff
+  rerun experiment can be analyzed without needing another PR.
+- vcpkg submodule pointer untouched.
+- Full root-cause proof is *not* required to close this task — that's
+  the follow-up task's job, once the live runs finish.
+
+* Plan
+
+Investigated =gh api repos/.../actions/caches= directly (not just
+job logs) and found the actual mechanism:
+
+- GitHub Actions cache access is scoped: a PR's job can *restore*
+  from a cache scoped to its base branch (=main=), but can only
+  *save* to its own PR-ref scope (=refs/pull/N/merge=) — this is a
+  deliberate security boundary (a PR, especially from a fork,
+  shouldn't be able to poison the shared cache). Confirmed via
+  =gh api .../actions/caches --paginate= showing =sccache-linux-gcc-debug-ninja=
+  existing as two separate entries: one on =refs/heads/main=
+  (last populated by =continuous-linux.yml=, which shares the exact
+  same cache-key scheme via its =linux/gcc/debug= matrix leg) and one
+  on =refs/pull/1408/merge= (a different, still-open PR) — PR #1410's
+  own contribution never reached =main='s cache and was discarded
+  when the PR merged.
+- Confirmed the repo's total GitHub Actions cache quota was at
+  *9.79 GB of the 10 GB hard cap* (=gh api
+  repos/.../actions/cache/usage=), with orphaned cache entries
+  (=cmake-build-linux-gcc-debug-ninja=, the matching =vcpkg-cache=,
+  and an =install-qt-action= cache) left over from PR #1410's
+  =refs/pull/1410/merge= scope after it merged — dead weight that
+  will never be reused, actively crowding out room for legitimate
+  cache growth.
+- This explains the low hit rate better than the earlier vcpkg.json
+  hypothesis: even if vcpkg.json's dependency/version-string churn
+  invalidates *some* entries, being permanently capped at whatever
+  the last =continuous-linux.yml= run produced (rather than ever
+  incorporating what individual PRs compile) means the shared
+  baseline can never converge — and near the 10 GB cap, GitHub's own
+  LRU eviction was likely also silently dropping recently-written
+  caches before they could even be reused once.
+
+Applied a quick, low-risk mitigation (full live sccache-hash-diff
+proof, e.g. =SCCACHE_LOG=debug= across two builds, is deferred — see
+Result):
+
+- Deleted the three orphaned =refs/pull/1410/merge=-scoped cache
+  entries (cmake-build ~2.0 GB, vcpkg ~0.2 GB, install-qt-action
+  ~0.3 GB) via =gh api --method DELETE=, freeing ~2.7 GB of the 10 GB
+  quota immediately.
+- Bumped =max-size= for the =linux-gcc-debug-ninja= sccache entry
+  from 2000M to 3000M in both =canary-linux.yml= and
+  =continuous-linux.yml= (they share the identical cache-key scheme,
+  so both needed the same change) — a modest, evidence-based increase
+  given ~5,300 translation units clearly don't fit in 2 GiB, sized to
+  stay comfortably under the now-freed quota rather than risk
+  immediate re-eviction.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+An earlier version of this section claimed the access-scoping/quota
+finding was "root cause, well-evidenced" — checked against the actual
+numbers (only 32 files changed vs. a 20-minute-fresh cache, which
+cannot explain a 98.6% miss rate) and that claim didn't hold up. See
+the story's Decisions "Correction" entry for the full walk-back. That
+finding is real and worth keeping regardless, just not sufficient on
+its own — scope of *this* task narrowed to landing the diagnostics,
+not proving the cause, so it can close without waiting on ~3h+ live
+CI runs:
+
+- Freed ~2.7 GB of GitHub's cache quota by deleting orphaned
+  =refs/pull/1410/merge=-scoped cache entries left over from a
+  merged PR.
+- Increased sccache =max-size= 2000M → 3000M for the shared
+  =linux-gcc-debug-ninja= key in both =canary-linux.yml= and
+  =continuous-linux.yml= (they must match).
+- Instrumented =canary-linux.yml= with =SCCACHE_LOG=debug= /
+  =SCCACHE_ERROR_LOG= and a log-dump step, tagged as temporary
+  (comment marks it for removal once the story resolves).
+- Set up (but didn't wait out) a zero-source-diff experiment: this
+  PR's own canary run is "run 1"; a =gh run rerun= of the identical
+  commit gives "run 2" with zero source diff between them. If run 2
+  still misses heavily, the cause is inherent to the build itself
+  (timestamps, absolute paths, non-deterministic flags), not source
+  or dependency drift.
+
+Analyzing the two runs' actual output is the follow-up task's job —
+splitting it off rather than blocking this task (and the PR) on
+several hours of CI runtime.

@@ -18,7 +18,11 @@
  *
  */
 #include "ores.refdata.core/service/book_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
@@ -27,9 +31,14 @@ using namespace ores::logging;
 book_service::book_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::book> book_service::list_books() {
+std::vector<domain::book> book_service::list_books(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all books";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t book_service::count_books() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total books count";
+    return repo_.get_total_book_count(ctx_);
 }
 
 std::optional<domain::book> book_service::get_book(const std::string& id) {
@@ -44,14 +53,31 @@ void book_service::save_book(const domain::book& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Book id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving book: " << v.id;
-    repo_.write(ctx_, v);
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved book: " << v.id;
 }
 
-void book_service::remove_book(const std::string& id) {
+void book_service::save_books(const std::vector<domain::book>& books) {
+    for (const auto& e : books)
+        if (e.id.is_nil())
+            throw std::invalid_argument("Book id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << books.size() << " books";
+    auto ts = books;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void book_service::delete_book(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book: " << id;
     repo_.remove(ctx_, id);
     BOOST_LOG_SEV(lg(), info) << "Removed book: " << id;
+}
+
+void book_service::delete_books(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
 }
 
 std::vector<domain::book> book_service::get_book_history(const std::string& id) {

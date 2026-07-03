@@ -33,12 +33,14 @@ domain::book book_mapper::map(const book_entity& v) {
 
     domain::book r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id)
-                      .value_or(utility::uuid::tenant_id::system());
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+
+
     r.name = v.name;
+
     r.description = v.description.value_or("");
     r.parent_portfolio_id = boost::lexical_cast<boost::uuids::uuid>(v.parent_portfolio_id);
     r.owner_unit_id = v.owner_unit_id.has_value() ?
@@ -68,7 +70,10 @@ book_entity book_mapper::map(const domain::book& v) {
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
+
+
     r.name = v.name;
+
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.parent_portfolio_id = boost::uuids::to_string(v.parent_portfolio_id);
     r.owner_unit_id = v.owner_unit_id.has_value() ?

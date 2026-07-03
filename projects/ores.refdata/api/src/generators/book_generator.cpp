@@ -40,9 +40,10 @@ domain::book generate_synthetic_book(utility::generation::generation_context& ct
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
     r.name = std::string("BOOK_") + std::to_string(faker::number::integer(1, 999)) + "-" +
-             std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
+             std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.parent_portfolio_id = ctx.generate_uuid();
     r.owner_unit_id = std::nullopt;

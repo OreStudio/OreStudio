@@ -17,16 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_REPOSITORY_BOOK_ENTITY_HPP
-#define ORES_REFDATA_REPOSITORY_BOOK_ENTITY_HPP
+#ifndef ORES_REFDATA_CORE_REPOSITORY_BOOK_ENTITY_HPP
+#define ORES_REFDATA_CORE_REPOSITORY_BOOK_ENTITY_HPP
 
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
-#include "sqlgen/Timestamp.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a book in the database.
@@ -40,7 +42,10 @@ struct book_entity {
     std::string workspace_id;
     int version = 0;
     std::string party_id;
+
+
     std::string name;
+
     std::optional<std::string> description;
     std::string parent_portfolio_id;
     std::optional<std::string> owner_unit_id;
@@ -53,8 +58,8 @@ struct book_entity {
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const book_entity& v);

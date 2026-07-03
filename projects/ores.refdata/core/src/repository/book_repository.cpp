@@ -47,7 +47,7 @@ void book_repository::write(context ctx, const std::vector<domain::book>& v) {
 }
 
 std::vector<domain::book> book_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query =
@@ -65,7 +65,7 @@ std::vector<domain::book> book_repository::read_latest(context ctx) {
 
 std::vector<domain::book> book_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest book. id: " << id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<book_entity>> |
@@ -98,7 +98,7 @@ std::vector<domain::book> book_repository::read_all(context ctx, const std::stri
 
 void book_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book: " << id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query =
@@ -107,5 +107,57 @@ void book_repository::remove(context ctx, const std::string& id) {
 
     execute_delete_query(ctx, query, lg(), "Removing book from database.");
 }
+
+std::vector<domain::book>
+book_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest books with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::read<std::vector<book_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<book_entity, domain::book>(
+        ctx,
+        query,
+        [](const auto& entities) { return book_mapper::map(entities); },
+        lg(),
+        "Reading latest books with pagination.");
+}
+
+std::uint32_t book_repository::get_total_book_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active book count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::select_from<book_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active book count: " << count;
+    return count;
+}
+
+void book_repository::remove(context ctx, const std::vector<std::string>& ids) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<book_entity> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing books.");
+}
+
 
 }

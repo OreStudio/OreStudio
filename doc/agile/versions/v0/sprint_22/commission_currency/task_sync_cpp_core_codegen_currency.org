@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
 #+branch: feature/sync-cpp-core-codegen-currency
-#+pr:
+#+pr: 1419
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
@@ -98,7 +98,7 @@ suite) — out of scope for this task.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1419][#1419]] | [refdata] Sync C++ core codegen for currency |
 
 * Review
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :synthetic_data_librarian_support:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/synthetic-data-librarian-support
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
 #+updated: 2026-07-02
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,11 +31,11 @@ created" to "synthetic FX ticks flowing."
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-02                               |
 
 * Acceptance
@@ -50,11 +50,28 @@ created" to "synthetic FX ticks flowing."
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Ran the full =barclays_system_provision.ores= flow (=provision system=
+→ =provision tenant --source gleif ...= → =provision party "BARCLAYS PLC" ...=)
+against a freshly recreated dev DB, on top of all the fixes landed
+during this story: =synthetic.fx_spot_configs= riding the
+=ore_analytics= bundle, the =stamp()=/=account_party= fix, and the
+default GMM component seeding. No manual DB/CLI steps beyond the
+standard recipe.
 
 * Notes
+
+Confirmed via live logs and DB queries, not just a clean exit code:
+- =tenant_admin= is now associated with all 81 =Operational= parties
+  under the tenant (including BARCLAYS PLC), not just the System
+  Party — the =account_party= fix verified in production conditions.
+- Both seeded FX configs (EUR/USD, GBP/USD) exist for BARCLAYS PLC
+  with exactly one GMM component each (no duplicates across repeated
+  publishes).
+- =ores.synthetic.service.0.log= shows both feeds auto-starting
+  (=SYNTHETIC START= for =synthetic.eurusd=/=synthetic.gbpusd=) and
+  continuously publishing realistic mid-price ticks on
+  =synthetic.v1.tick.synthetic.{eurusd,gbpusd}= (e.g. 119 ticks
+  published within ~2 minutes at the seeded 3600 ticks/hour rate).
 
 * PRs
 
@@ -69,3 +86,12 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Verified end-to-end: creating and provisioning a party via the
+standard recipe now yields usable, ticking synthetic FX spot configs
+with zero extra manual steps. Along the way this task's testing
+surfaced and led to fixing two real bugs outside this story's
+original scope: the missing GMM component on publish, and the
+long-standing =account_party= stamping bug that silently broke party
+association for every tenant provisioned via this flow. Story
+acceptance criteria re-checked below and all met.

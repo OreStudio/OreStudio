@@ -380,7 +380,7 @@ should connect to =local1=, not to staging or production. Rather than pick
 the label by hand each time, set it when you launch the client — the
 =--instance-name= command-line option (see [[*Telling windows apart (instance colour and name)][Telling windows apart]]) opens
 the client with the /Label/ already set, so Quick Connect is pre-filtered
-to that environment. The =compass client= command does this
+to that environment. The =compass client start= command does this
 for you, taking the label from =ORES_CHECKOUT_LABEL= in your =.env=.
 
 *** When the connection fails
@@ -543,7 +543,7 @@ ores --instance-name "Local dev" --instance-color 2196F3
 
 The colour and the name are independent: the colour is only a visual
 marker, and the name is what identifies the instance. If you launch via
-=compass client=, its =--colour red|green|blue|<hex>=
+=compass client start=, its =--colour red|green|blue|<hex>=
 sets the marker colour and =--name= sets the instance name; when you omit
 =--name=, the name comes from =ORES_CHECKOUT_LABEL= in your =.env= — never
 from the colour.

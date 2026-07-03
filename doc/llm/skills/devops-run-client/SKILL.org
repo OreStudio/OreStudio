@@ -27,9 +27,14 @@ Launching the Qt client, detached so the terminal stays free; colour and instanc
 1. /Launch/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh client --colour <colour> --instance-name <name>
+   ./projects/ores.compass/compass.sh client start --colour <colour> --instance-name <name>
    #+end_src
 
+2. /Stop/ (pass the same =--colour= the instance was started with):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh client stop --colour <colour>
+   #+end_src
 
 * Recipes
 

@@ -5995,8 +5995,8 @@ def main():
                           help="Operate: service lifecycle — start, stop, "
                                "status, clear-logs")
     subparsers.add_parser("client",
-                          help="Operate: launch the Qt client (detached; "
-                               "--colour/--instance-name for parallel runs)")
+                          help="Operate: Qt client lifecycle — start (detached; "
+                               "--colour/--instance-name for parallel runs), stop")
     subparsers.add_parser("test",
                           help="Test: 'test results' shows last run overview; "
                                "'test logging on|off|status' toggles test logging; 'test --help'")

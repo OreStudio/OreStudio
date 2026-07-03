@@ -223,8 +223,8 @@ def _cmd_create(args, project_root):
         "| Artefact | Link | ID |\n"
         "|----------|------|----|\n"
         f"| Story | [{story_title}]({_site_url(story_rel)}) | {story_id} |\n"
-        f"| Task | [{task_title}]({_site_url(task_rel)}) | {task_id} |\n\n"
-        f"**Environment:** {environment}\n\n"
+        f"| Task | [{task_title}]({_site_url(task_rel)}) | {task_id} |\n"
+        f"| Environment | {environment} | |\n\n"
         "🤖 Generated with [Claude Code](https://claude.com/claude-code)")
 
     # Ensure the branch exists on the remote under its own name — a

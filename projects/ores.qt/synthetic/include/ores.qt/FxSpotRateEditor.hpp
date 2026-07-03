@@ -179,16 +179,18 @@ private:
     [[nodiscard]] QString componentTooltip(bool ou, bool arithmetic) const;
 
     // Ornstein-Uhlenbeck's κ is a per-tick reversion rate — realistic values span
-    // many orders of magnitude (minutes to months), which is unusable to type
-    // directly (e.g. 0.000001). The Weight cell edits/displays half-life in
-    // minutes instead; these convert to/from the κ actually stored and sent to
-    // the simulation engine. Half-life is expressed relative to the *current*
-    // "New price every" tick interval — changing that interval afterwards does
-    // not retroactively rescale an already-entered κ (same as the interval's
-    // effect on any other per-tick parameter).
+    // many orders of magnitude (minutes to months), which is why the Simple
+    // page's κ control is a log-scale slider with a live half-life readout
+    // rather than a plain linear spinbox. Half-life is expressed relative to
+    // the *current* "New price every" tick interval — changing that interval
+    // afterwards does not retroactively rescale an already-entered κ (same as
+    // the interval's effect on any other per-tick parameter).
     [[nodiscard]] double secondsPerTick() const;
     [[nodiscard]] double halfLifeMinutesFromKappa(double kappa) const;
     [[nodiscard]] double kappaFromHalfLifeMinutes(double halfLifeMinutes) const;
+    // "Calculated Half-Life t½: X min (Y.Y days)", or the κ=0 case — shared by
+    // the Simple page's live readout, wherever κ changes.
+    [[nodiscard]] QString ouHalfLifeText(double kappa) const;
 
     [[nodiscard]] QString defaultSourceName() const;
     [[nodiscard]] std::vector<ModelComponent> currentComponents() const;

@@ -20,6 +20,7 @@
 #include "ores.qt/SamplePricePathsChart.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
+#include <QFont>
 #include <QFutureWatcher>
 #include <QGraphicsSimpleTextItem>
 #include <QHBoxLayout>
@@ -286,19 +287,30 @@ void SamplePricePathsChart::doRefresh() {
                 auto* refSeries = new QLineSeries(self);
                 refSeries->append(0.0, *self->referenceLevel_);
                 refSeries->append(maxLen - 1, *self->referenceLevel_);
-                QPen refPen(QColor(0xF0, 0xC0, 0x40));
+                // High-contrast white and noticeably thicker than the path lines
+                // (1px default) — amber at 1px was getting lost among a dozen
+                // overlapping coloured paths.
+                QPen refPen(QColor(0xFF, 0xFF, 0xFF));
+                refPen.setWidthF(2.5);
                 refPen.setStyle(Qt::DashLine);
-                self->chart_->addSeries(refSeries);
                 refSeries->setPen(refPen);
+                self->chart_->addSeries(refSeries); // added last -> painted on top
                 refSeries->attachAxis(self->axisX_);
                 refSeries->attachAxis(self->axisY_);
 
-                self->referenceLabelItem_ = new QGraphicsSimpleTextItem(
-                    self->tr("Long-Term Equilibrium Mean (θ)"), self->chart_);
-                self->referenceLabelItem_->setBrush(QColor(0xF0, 0xC0, 0x40));
+                auto* label = new QGraphicsSimpleTextItem(
+                    self->tr("θ = Long-Term Equilibrium Mean"), self->chart_);
+                QFont f = label->font();
+                f.setBold(true);
+                label->setFont(f);
+                label->setBrush(QColor(0xFF, 0xFF, 0xFF));
+                // A touch right of the axis (x=0 clashes with the axis labels) and
+                // just above the line so it doesn't sit on top of a path.
+                const double labelX = std::max(1.0, (maxLen - 1) * 0.03);
                 const QPointF pos =
-                    self->chart_->mapToPosition(QPointF(0.0, *self->referenceLevel_), refSeries);
-                self->referenceLabelItem_->setPos(pos.x() + 6, pos.y() - 16);
+                    self->chart_->mapToPosition(QPointF(labelX, *self->referenceLevel_), refSeries);
+                label->setPos(pos.x(), pos.y() - 18);
+                self->referenceLabelItem_ = label;
             }
 
             // The Y-axis autoscales to each run, so a calmer and a more volatile

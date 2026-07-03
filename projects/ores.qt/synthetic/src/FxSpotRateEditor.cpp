@@ -1149,17 +1149,12 @@ void FxSpotRateEditor::updateEngineUi() {
         }
     }
 
+    // Only arithmetic gets a warning: its negative-price possibility is a real
+    // surprise nothing else in the UI communicates. OU's single-regime nature
+    // is now self-evident from its dedicated Simple page and the Advanced
+    // table's header/row tooltips, so it doesn't need a persistent banner.
     if (engineWarningLabel_) {
-        if (ou) {
-            engineWarningLabel_->setText(
-                tr("⚠ Single regime — Weight/σ fields are repurposed. Hover for details."));
-            engineWarningLabel_->setToolTip(
-                tr("Ornstein-Uhlenbeck engine: a single regime, not a mixture. Simple mode "
-                   "shows dedicated θ/κ/σ controls; Advanced mode's fields are reused as: κ "
-                   "(reversion speed) = Weight, σ (volatility) = Volatility (σ), and θ "
-                   "(long-run mean) = Initial Price. Drift (μ) is unused. \"Add process\" is "
-                   "disabled while this engine is selected."));
-        } else if (arithmetic) {
+        if (arithmetic) {
             engineWarningLabel_->setText(
                 tr("⚠ Absolute price increments — may go negative. Hover for details."));
             engineWarningLabel_->setToolTip(
@@ -1167,7 +1162,7 @@ void FxSpotRateEditor::updateEngineUi() {
                    "%/log-returns), and the price can go negative or zero — unrealistic for an "
                    "FX rate. Intended for testing the process abstraction."));
         }
-        engineWarningLabel_->setVisible(ou || arithmetic);
+        engineWarningLabel_->setVisible(arithmetic);
     }
 
     // The Return Distribution chart's domain (increment PDF vs. steady-state
@@ -1297,6 +1292,15 @@ void FxSpotRateEditor::onResetSimple() {
     refreshCharts();
 }
 
+QString FxSpotRateEditor::ouHalfLifeText(double kappa) const {
+    if (kappa <= 0.0)
+        return tr("κ = 0 — no reversion (driftless random walk)");
+    const double minutes = halfLifeMinutesFromKappa(kappa);
+    return tr("Calculated Half-Life t½: %1 min (%2 days)")
+        .arg(minutes, 0, 'f', 3)
+        .arg(minutes / (24.0 * 60.0), 0, 'f', 1);
+}
+
 void FxSpotRateEditor::syncOuSimpleFromModel() {
     if (priceSpin_)
         ouThetaLabel_->setText(tr("%1").arg(priceSpin_->value(), 0, 'f', 5));
@@ -1310,20 +1314,14 @@ void FxSpotRateEditor::syncOuSimpleFromModel() {
     ouSigmaSlider_->setValue(valueToSlider(sigma, kVolMin, kVolMax));
     syncing_ = false;
 
-    ouHalfLifeLabel_->setText(
-        kappa > 0.0 ?
-            tr("Calculated Half-Life t½: %1 min").arg(halfLifeMinutesFromKappa(kappa), 0, 'f', 3) :
-            tr("κ = 0 — no reversion (driftless random walk)"));
+    ouHalfLifeLabel_->setText(ouHalfLifeText(kappa));
 }
 
 void FxSpotRateEditor::rebuildOuModelFromSimple() {
     const double kappa = kappaSpin_->value();
     const double sigma = ouSigmaSpin_->value() / 100.0;
 
-    ouHalfLifeLabel_->setText(
-        kappa > 0.0 ?
-            tr("Calculated Half-Life t½: %1 min").arg(halfLifeMinutesFromKappa(kappa), 0, 'f', 3) :
-            tr("κ = 0 — no reversion (driftless random walk)"));
+    ouHalfLifeLabel_->setText(ouHalfLifeText(kappa));
 
     // Preserve the existing single component's id so this updates in place.
     std::string id;

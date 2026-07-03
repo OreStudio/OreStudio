@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,7 +29,7 @@ regressions found.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

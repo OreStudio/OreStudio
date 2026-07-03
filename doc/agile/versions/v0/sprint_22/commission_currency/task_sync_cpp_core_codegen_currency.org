@@ -104,6 +104,10 @@ suite) — out of scope for this task.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =read_all_currencies= called =read_latest= instead of =read_all=, leaving =read_all(ctx)= uncovered (raised independently by all 3 review passes) | =repository_currency_repository_tests.cpp= | Accepted | Fixed in a6fe483e7 |
+| 2 | Missing explicit =#include <unordered_set>= after generator rewrite | =currency_generator.cpp= | Accepted | Fixed in a6fe483e7 |
+| 3 | Doxygen =/**@{*/= grouping lost when =read_all(ctx)= split out and moved | =currency_repository.hpp= | Declined | Cosmetic; matches modeling org layout |
+| 4 | Batch =remove(ctx, iso_codes)= behavior change: now scopes by =valid_to == max= | =currency_repository.cpp= | Declined (intentional) | Old code had no =valid_to= filter, so the delete-via-update rule would close every historical version instead of just the current one; now matches single-=remove= semantics and the org doc |
+| 5 | Task notes describe fixing a hardcoded =r.version = 1=, not found in the pre-PR base commit | task notes | Declined (clarified) | =r.version = 1= was present in the working tree at session start (introduced by a prior crashed agent run before this PR's base commit was captured), not in committed history; the fix itself is correct and verified against the insert trigger's optimistic-concurrency check |
 
 * Result

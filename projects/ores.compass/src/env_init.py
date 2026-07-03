@@ -395,24 +395,21 @@ def run(argv, project_root: Path) -> int:
     nats_prefix = (os.environ.get("ORES_NATS_SUBJECT_PREFIX")
                    or f"ores.dev.{env_name.replace('-', '.')}")
 
-    # Ports: scan sibling environments to find the next free slot, then override
-    # with any values already in .env (pre-assigned by env provision or a prior
-    # configure run).  Scanning handles fresh clones that bypass env provision.
+    # Ports: scan sibling environments to find the next free base_port slot,
+    # then override with any value already in .env (pre-assigned by env
+    # provision or a prior configure run). Scanning handles fresh clones that
+    # bypass env provision. NATS ports are always re-derived from base_port
+    # (like http_port/wt_port/site_port below) rather than read back from
+    # .env, so a checkout still on the old independent 42221xxx/8221xxx
+    # scheme actually migrates on its next `env configure` run.
     base_port, nats_port, nats_monitor_port = _scan_ports(checkout_root.parent)
     if existing.get("ORES_BASE_PORT"):
         try:
             base_port = int(existing["ORES_BASE_PORT"])
-            nats_port = base_port + 5
-            nats_monitor_port = base_port + 6
         except ValueError:
             print("Warning: invalid ORES_BASE_PORT in .env, using scanned value.")
-    if existing.get("ORES_NATS_PORT"):
-        try:
-            nats_port = int(existing["ORES_NATS_PORT"])
-            nats_monitor_port = int(existing.get("ORES_NATS_MONITOR_PORT")
-                                    or str(nats_port + 1))
-        except ValueError:
-            print("Warning: invalid ORES_NATS_PORT in .env, using scanned value.")
+    nats_port = base_port + 5
+    nats_monitor_port = base_port + 6
 
     if "release" in preset:
         http_port = base_port + 1
@@ -554,7 +551,7 @@ ORES_ENV_VERSION={env_version}
 # ---------------------------------------------------------------------------
 ORES_ENV_NAME={env_name}
 ORES_PROVISION_TYPE={provision_type}
-ORES_CHECKOUT_LABEL={label}
+ORES_CHECKOUT_LABEL={label_lower}
 ORES_ENV_TYPE={env_type}
 ORES_BASE_PORT={base_port}
 """)

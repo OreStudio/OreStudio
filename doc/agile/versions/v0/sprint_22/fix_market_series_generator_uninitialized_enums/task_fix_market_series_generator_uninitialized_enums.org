@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: B6BAAABC-C602-4413-A223-9AD532384934
+:END:
+#+title: Task: Set asset_class/series_subclass in generate_synthetic_market_series
+#+description: generate_synthetic_market_series() never assigns r.asset_class/r.series_subclass, leaving both enum fields uninitialized; market_series_mapper::map() then calls rfl::enum_to_string() on the garbage value, which Valgrind flags as an uninitialized-memory conditional/read via enchantum::contains. Assign both fields deterministically from the generation index.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:bugfix:valgrind:sprint_22:v0:fix_market_series_generator_uninitialized_enums:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:83B12C2D-5202-4738-8147-5F28E566D997][Fix uninitialized asset_class/series_subclass in market_series generator]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:83B12C2D-5202-4738-8147-5F28E566D997][Fix uninitialized asset_class/series_subclass in market_series generator]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

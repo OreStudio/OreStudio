@@ -1,0 +1,256 @@
+:PROPERTIES:
+:ID: 8A555D81-D1C3-48A7-A839-485D78C675AE
+:END:
+#+title: Task: Appraise counterparty across all layers and produce evaluation checklist
+#+description: Walk counterparty across SQL, codegen (all profiles), Qt, shell, and CLI; score each layer against the commissioning checklist used by other entities (party_type, country); note any regen drift, missing shell/CLI implementation, or Qt regressions found.
+#+type: task
+#+level: s1
+#+filetags: :commission_counterparty:sprint_22:v0:
+#+owner: marco
+#+branch: feature/appraise-counterparty
+#+pr: 1420
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Determine whether counterparty (and its child tables
+counterparty_identifier, counterparty_contact_information) can be
+safely regenerated, and if not, what's missing from the models before
+it can be.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | See follow-up task: author the missing Validation function / Insert trigger sections in all three .org models.            |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- Confirmed whether counterparty.org is on the unified codegen model
+  (=ores.codegen.entity=) or still needs table-pathway migration.
+- A regen attempt (scoped correctly, per the =How do I regenerate all
+  layers for a domain entity?= recipe) is diffed and the result
+  classified: safe drift vs. destructive (validation/data loss).
+- If destructive: the exact missing model content is documented so a
+  follow-up task can author it, rather than attempting the regen
+  blind.
+
+* Plan
+
+Followed [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]]:
+=./compass.sh codegen regenerate --component refdata-cpp --profile
+all-cpp= then =--component refdata --profile sql=, scoped the diff to
+counterparty afterward per the recipe's step 3. First attempt (before
+correcting) ran component-wide without immediately scoping/discarding
+the rest — reverted in full (=git checkout -- .=) once caught; no
+unrelated changes were committed.
+
+Compared counterparty.org against currency.org (the reference for an
+already-commissioned entity) to check unified-model status:
+
+- =counterparty.org= is already =#+type: ores.codegen.entity= (the
+  unified model) with *no* separate =_table.org= companion file —
+  ahead of =currency= in that specific respect, which still has both
+  =ores.refdata.currency.org= (entity) *and*
+  =ores.refdata.currency_table.org= (=ores.codegen.table=, not yet
+  decommissioned).
+- However, =currency.org= has =* Validation function= and
+  =* Insert trigger ** Validations= sections capturing its custom SQL
+  logic. =counterparty.org=, =counterparty_identifier.org=, and
+  =counterparty_contact_information.org= have *none* of these
+  sections at all.
+
+Ran the scoped regen anyway to see what a zero-diff (or non-zero)
+result would actually look like, rather than assuming from the
+section gap alone. Result: severely destructive, on the *parent*
+table as well as both children — see Result.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1420][#1420]] | Appraise counterparty: regen unsafe, validation logic missing from models |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | business_center_code misclassified as soft_fk_validations; it's actually a Validations-table call-and-reassign pattern | task_appraise_counterparty.org, task_author_counterparty_validation_sections.org | Accepted | Fixed in 59787a311; verified against refdata_counterparties_create.sql:116-117 before accepting. |
+| 2 | country_code claimed "nothing new to build" via ores_refdata_validate_country_fn, but that function only checks null/empty and is unused elsewhere; real check doesn't match any facet | task_appraise_counterparty.org, task_author_counterparty_validation_sections.org | Accepted | Fixed in 59787a311; verified the function's body and grepped for call sites before accepting. Left as an explicit open gap. |
+| 3 | #+pr: and * PRs table empty on this PR's own task | task_appraise_counterparty.org | Accepted | Fixed in 59787a311 (#1420). |
+
+* Result
+
+*Not safe to regenerate as-is.* Regen (reverted immediately, never
+committed) showed the current hand-written SQL for all three tables
+carries real business logic that the =.org= models don't know about
+and would silently delete:
+
+*refdata_counterparties_create.sql* (parent):
+- Drops the =transliterated_name= column entirely.
+- Changes =business_center_code= from =not null= to nullable, and
+  =status= from =not null default 'Active'= to =not null= with no
+  default.
+- Removes validation of =party_type= (=ores_refdata_validate_party_type_fn=),
+  =status= (=ores_refdata_validate_party_status_fn=), the soft-FK
+  check on =parent_counterparty_id=, and the mandatory + FK-checked
+  =business_center_code= (=ores_refdata_validate_business_centre_fn=).
+- Changes uniqueness semantics: currently a non-unique =full_name=
+  search index *plus* a unique =short_code= constraint; regen
+  replaces both with a single composite =(full_name, short_code)=
+  uniqueness — i.e. would newly *allow* duplicate =short_code=s across
+  different =full_name=s.
+
+*refdata_counterparty_identifiers_create.sql* (child):
+- Removes =id_scheme= validation, the soft-FK check on
+  =counterparty_id=, and a cardinality-limit check (max identifiers
+  per scheme, looked up from =party_id_schemes.max_cardinality=).
+- Changes the unique index from =(counterparty_id, id_scheme,
+  id_value)= to =(counterparty_id, id_scheme)= — would newly forbid a
+  counterparty having more than one identifier of the same scheme
+  regardless of value, a real semantics change.
+
+*refdata_counterparty_contact_informations_create.sql* (child):
+- Removes =contact_type= validation, the soft-FK check on
+  =counterparty_id=, and =country_code= validation against the
+  countries table.
+
+All three files *do* correctly gain the =security definer set
+search_path = public, pg_temp= fix (matching the country/party_type
+pattern) and a proper docstring title — those parts of a regen would
+be genuine improvements. But the losses above are far more
+significant: this is hand-written validation logic living directly
+in generated SQL, never migrated into the =.org= models, matching the
+same class of problem flagged for =market_observation= in story
+=D6C90C13= (market data cleanup).
+
+*Recommendation*: scaffold a follow-up task to author =* Validation
+function= and =* Insert trigger ** Validations= sections in all three
+=.org= models (counterparty, counterparty_identifier,
+counterparty_contact_information), porting the existing hand-written
+SQL logic in verbatim, *before* any regen is attempted again. Until
+that's done, do not run codegen regenerate against these three models.
+
+** Addendum: is this a missing-template-feature problem, or a bespoke-per-entity problem?
+
+Checked each piece of "missing" logic against the codegen template
+(=projects/ores.codegen/library/templates/ores.sql.schema.domain_entity_create.org=)
+and the wider codebase, rather than assuming it all needs hand-pasted
+SQL. Conclusion: almost everything is a *model content* gap (an
+existing, generic, reusable facet just isn't populated for these
+three entities), not a template capability gap.
+
+*Correction (same day, after review)*: the first pass of this
+addendum misclassified =business_center_code= and overstated the
+=country_code= finding. Both caught by review on PR #1420 and
+verified directly against the live SQL before accepting — corrected
+below.
+
+*Already a generic, reusable, proven facet — just needs rows added*:
+
+- =party_type=, =status=, =id_scheme=, =contact_type=, *and
+  =business_center_code=* validation all fit the =* Insert trigger
+  ** Validations= table (=column | validation_function=), the exact
+  mechanism =currency.org= already uses for =rounding_type=/
+  =monetary_nature=/=market_tier=. Confirmed
+  =refdata_counterparties_create.sql:116-117= validates
+  =business_center_code= via =NEW.business_center_code :=
+  ores_refdata_validate_business_centre_fn(NEW.tenant_id,
+  NEW.business_center_code)= — the same call-and-reassign shape as
+  =party_type=/=status=, *not* a bare soft-FK exists-check. (An
+  earlier pass of this doc filed it under =soft_fk_validations=
+  instead — wrong: that facet emits a different SQL shape and would
+  drop =ores_refdata_validate_business_centre_fn='s own
+  normalise/bootstrap logic.)
+
+*Not actually solved — corrected*:
+
+- =country_code=: =ores_refdata_validate_country_fn= *does* already
+  exist, but checked its body directly — it only validates
+  non-null/non-empty, it does *not* check existence against
+  =ores_refdata_countries_tbl=, and =grep= confirms it is called
+  nowhere in the codebase (dead code, not a false-negative from
+  search). The real validation in
+  =refdata_counterparty_contact_informations_create.sql:101-113= is a
+  distinct inline, tenant-scoped, nullable-safe existence check
+  against =ores_refdata_countries_tbl.alpha2_code= that doesn't match
+  =domain_entity.validations=, =soft_fk_validations=, or the
+  =text_code_validations= facet (closest candidate, but lacking
+  tenant-scoping and a nullable branch) as currently written. This is
+  either a genuine small template gap (a nullable/tenant-scoped
+  variant of an existence-check facet) or, if not worth generalising
+  for one caller, a paste block — *not* "nothing new to build" as
+  originally claimed. Adopting =ores_refdata_validate_country_fn= as
+  written, as first suggested, would have silently weakened
+  validation from "must exist in the tenant's countries table" down
+  to "must be non-empty".
+
+*Already a generic facet in the template, but has zero adopters
+anywhere in the codebase*:
+
+- The soft-FK existence check (=parent_counterparty_id= self-ref,
+  =counterparty_id= on both children) maps directly onto
+  =domain_entity.sql.soft_fk_validations= (template lines 358–389:
+  supports =column=, =table=, =nullable=, =error_message=,
+  tenant-scoping). Grepped every =.org= model in the repo
+  (=projects/*/modeling/*.org= and =projects/*/*/modeling/*.org=) —
+  *no entity anywhere currently uses this facet*. It's fully built,
+  looks correct, and is simply unused dead-ish infrastructure. Using
+  it here would make counterparty its first real adopter.
+
+*Not a validation/template gap at all — just wrong or missing model
+content*:
+
+- =business_center_code='s mandatory-ness (nullability): =counterparty.org=
+  currently declares =:nullable: true= on that column — the model
+  itself is stale/wrong relative to the actual business rule. No
+  facet needed; flip the property and the standard =not null=
+  generation (already generic) handles it. (Its *value* validation is
+  the Validations-table row above — two separate fixes on the same
+  column.)
+- =transliterated_name=: not declared anywhere in =counterparty.org=
+  (confirmed: zero matches). It only exists in the hand-written SQL.
+  This is a plain missing-column fix, unrelated to validation logic.
+- Uniqueness semantics (non-unique =full_name= search index *plus* a
+  separate unique =short_code= key): the =natural_keys=/
+  =has_multiple_natural_keys= composite-key facet is generic and
+  widely used elsewhere, so this is likely also fixable by declaring
+  the natural keys correctly — though the "extra non-unique search
+  index alongside the unique key" combination needs a closer look at
+  authoring time to confirm it's fully expressible declaratively, or
+  needs one small extra index as a paste block.
+
+*A genuine template gap — but not bespoke to counterparty*:
+
+- The cardinality-limit check (count existing identifiers per scheme,
+  compare against =party_id_schemes.max_cardinality=) has *no*
+  matching facet in the template. But grepping
+  =projects/ores.sql/create/*/*.sql= for =max_cardinality= shows the
+  *identical* pattern already hand-written in
+  =refdata_party_identifiers_create.sql= (the sibling =party=
+  identifier table) as well as =refdata_counterparty_identifiers_create.sql=.
+  Since it recurs verbatim across two entities, this is a real
+  candidate for a *new* generic template facet (e.g.
+  =cardinality_limit_validations=) that would benefit both
+  =party_identifier= and =counterparty_identifier= — not a one-off
+  paste block to write twice.
+
+This changes the shape of the follow-up work: most of it is
+populating existing declarative facets (low-risk, mechanical), and
+only the cardinality-limit check is real codegen engineering (a small,
+narrowly-scoped template addition with a second, existing beneficiary
+already identified).

@@ -2,7 +2,7 @@
 :ID: 38F1C14C-517C-4EE9-B541-AEA47B252687
 :END:
 #+title: Story: Commission: counterparty
-#+description: Commission counterparty: verify Qt UI post-NATS, implement shell and CLI commands, fix regressions, add manual chapter, capture Wt/HTTP backlog.
+#+description: Commission counterparty: verify Qt UI post-NATS, implement shell and CLI commands, fix regressions, add manual chapter. Wt/HTTP support is tracked by the dedicated top-level commissioning stories, not per-entity captures.
 #+type: story
 #+level: s2
 #+filetags: :product:refdata:commissioning:counterparty:sprint_22:v0:
@@ -17,18 +17,22 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 Commission =counterparty= across all access layers: verify the Qt UI end-to-end post-NATS
 migration, implement shell commands (list, add, remove — *not yet implemented*), implement
 CLI commands (list, add, remove — *not yet implemented*), fix any regressions found, and add
-the entity chapter to the user manual. File backlog captures for Wt and HTTP support.
+the entity chapter to the user manual.
+
+Wt and HTTP support are *not* tracked here — they're covered by the dedicated top-level
+commissioning stories: [[id:EEE4880F-525A-4805-8082-B8638CB54ABA][Wt entity UI — top-level commissioning story]] and
+[[id:03FC50B3-622B-4456-AE66-2F180B526723][HTTP entity endpoints — top-level commissioning story]] (both currently inbox captures).
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Appraisal done: not safe to regenerate counterparty (parent or children) yet — hand-written SQL validation logic needs to be ported into the .org models first. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-05-29                               |
+| Next          | Author the missing Validation function / Insert trigger sections (see task), then resume the Qt/shell/CLI/manual work. |
+| Last touched  | 2026-07-03                               |
 
 * Acceptance
 
@@ -44,7 +48,6 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 - CLI add command: implemented and working (new implementation).
 - CLI remove command: implemented and working (new implementation).
 - Manual: entity chapter documents all Qt windows, shell, and CLI commands.
-- Backlog captures filed for Wt and HTTP support.
 - All regressions found are fixed inline or filed as captures.
 - Site builds cleanly.
 
@@ -52,4 +55,6 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:8A555D81-D1C3-48A7-A839-485D78C675AE][Appraise counterparty across all layers and produce evaluation checklist]] | DONE | 2026-07-03 | 2026-07-03 | Found counterparty is on the unified codegen model (ahead of currency in that respect — no separate _table.org), but a scoped regen attempt showed it and both child entities have substantial hand-written SQL validation never captured in the .org models; not safe to regenerate as-is. |
+| [[id:51AA2AAB-9845-434D-94C7-52A863E9AA05][Populate existing codegen facets for counterparty models]] | BACKLOG | | | Populate the Validations table, soft_fk_validations, a corrected nullable flag, and a missing column — all existing, generic, already-proven-elsewhere facets; no new template capability needed. |
+| [[id:97EA25C4-1E01-476D-97A0-EC9977262EB6][Add a generic cardinality-limit-validation facet to the SQL codegen template]] | BACKLOG | | | counterparty_identifier and the sibling party_identifier table both hand-write an identical cardinality check (count existing rows per scheme, compare against party_id_schemes.max_cardinality, raise on violation) — confirmed via grep, not a one-off. Add a new generic facet (e.g. cardinality_limit_validations) to ores.sql.schema.domain_entity_create.org modelled on the existing soft_fk_validations facet's structure, then adopt it in both party_identifier.org and counterparty_identifier.org, replacing their hand-written versions with declarative model content. |

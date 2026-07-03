@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 97EA25C4-1E01-476D-97A0-EC9977262EB6
+:END:
+#+title: Task: Add a generic cardinality-limit-validation facet to the SQL codegen template
+#+description: counterparty_identifier and the sibling party_identifier table both hand-write an identical cardinality check (count existing rows per scheme, compare against party_id_schemes.max_cardinality, raise on violation) — confirmed via grep, not a one-off. Add a new generic facet (e.g. cardinality_limit_validations) to ores.sql.schema.domain_entity_create.org modelled on the existing soft_fk_validations facet's structure, then adopt it in both party_identifier.org and counterparty_identifier.org, replacing their hand-written versions with declarative model content.
+#+type: task
+#+level: s1
+#+filetags: :commission_counterparty:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace two hand-written, verbatim-identical SQL cardinality checks
+(=party_identifier=, =counterparty_identifier=) with one generic
+codegen template facet, so future identifier-scheme entities get the
+check declaratively instead of by copy-paste.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Read refdata_party_identifiers_create.sql and refdata_counterparty_identifiers_create.sql side by side to confirm the two hand-written checks are truly identical in structure; design the facet's mustache params off soft_fk_validations' pattern (column/table/nullable/error_message-style keys). |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- A new facet (e.g. =domain_entity.sql.cardinality_limit_validations=)
+  is added to
+  =projects/ores.codegen/library/templates/ores.sql.schema.domain_entity_create.org=,
+  parameterised at least by: the column holding the scheme value, the
+  table/column to look up the max cardinality from, and the
+  table/column set to count existing rows against.
+- =party_identifier.org= and =counterparty_identifier.org= both adopt
+  the new facet, replacing their hand-written cardinality checks.
+- Regenerating both entities (scoped, per [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all
+  layers for a domain entity?]]) produces SQL functionally equivalent
+  to the current hand-written version — same error message/errcode
+  behaviour, same query shape — verified by diff review, not just
+  "it compiles".
+- This task can land independently of and in either order relative to
+  =Populate existing codegen facets for counterparty models= — they
+  touch different facets and don't conflict, though both need to have
+  landed before counterparty_identifier's regen is fully clean.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

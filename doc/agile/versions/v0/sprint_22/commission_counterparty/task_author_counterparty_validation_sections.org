@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 51AA2AAB-9845-434D-94C7-52A863E9AA05
+:END:
+#+title: Task: Populate existing codegen facets for counterparty models (validations, soft-FKs, nullability, missing column)
+#+description: counterparty.org, counterparty_identifier.org, and counterparty_contact_information.org are missing declarative facet content that already exists generically in the codegen templates — the * Insert trigger ** Validations table (proven, used by currency.org), the soft_fk_validations facet (built, zero adopters anywhere yet), a stale :nullable: true on business_center_code, and a plainly undeclared transliterated_name column. None of this needs new template capability; it's model content only. The cardinality-limit check (max identifiers per scheme) is the one genuine template gap and is split into its own task since it also benefits party_identifier.
+#+type: task
+#+level: s1
+#+filetags: :commission_counterparty:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make it safe to regenerate counterparty, counterparty_identifier, and
+counterparty_contact_information by populating the *existing, generic*
+codegen facets these models are simply missing — no new template
+capability needed for anything in this task (the one genuine template
+gap, the cardinality-limit check, is tracked separately — see
+=author_counterparty_cardinality_limit_facet=).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Add the Validations table rows and soft_fk_validations entries per the list below; fix the nullable flag; add the missing column. |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- =counterparty.org=:
+  - =* Insert trigger ** Validations= table gains rows for
+    =party_type= (=ores_refdata_validate_party_type_fn=), =status=
+    (=ores_refdata_validate_party_status_fn=), *and*
+    =business_center_code= (=ores_refdata_validate_business_centre_fn=
+    — confirmed via =refdata_counterparties_create.sql:116-117= this
+    is a call-and-reassign validation, the same shape as
+    =party_type=/=status=, *not* a =soft_fk_validations= entry; an
+    earlier pass of the appraisal misclassified it).
+  - =soft_fk_validations= gains an entry for =parent_counterparty_id=
+    only (nullable self-referential soft FK to the counterparties
+    table).
+  - =business_center_code='s =:nullable:= property flips from =true=
+    to =false= — a separate fix from its value-validation row above.
+  - A =transliterated_name= column is added (nullable text, matching
+    the hand-written SQL's current column definition).
+  - Natural keys / uniqueness declared to preserve the current
+    semantics: unique =short_code=, plus a separate non-unique
+    =full_name= search index — confirm at authoring time whether the
+    existing =natural_keys= facet expresses the "extra non-unique
+    index" part, or whether that needs one small paste-block index.
+- =counterparty_identifier.org=:
+  - =* Insert trigger ** Validations= gains a row for =id_scheme=
+    (=ores_refdata_validate_party_id_scheme_fn=).
+  - =soft_fk_validations= gains an entry for =counterparty_id=
+    (non-nullable).
+  - Natural keys preserve =(counterparty_id, id_scheme, id_value)=
+    uniqueness (not the collapsed =(counterparty_id, id_scheme)= a
+    naive regen currently produces).
+- =counterparty_contact_information.org=:
+  - =* Insert trigger ** Validations= gains a row for =contact_type=
+    (=ores_refdata_validate_contact_type_fn=).
+  - =soft_fk_validations= gains an entry for =counterparty_id=
+    (non-nullable).
+  - =country_code= is *not* covered by this task —
+    =ores_refdata_validate_country_fn= only checks non-null/non-empty
+    (verified against its body) and is unused elsewhere; the real
+    check in the live SQL is an inline, tenant-scoped, nullable-safe
+    existence check against =ores_refdata_countries_tbl.alpha2_code=
+    that doesn't match any current facet as-is. Left as an open gap —
+    either extend a facet (nullable/tenant-scoped existence check) or
+    accept a paste block; needs its own decision, not bundled here.
+- After authoring, a scoped regen (per [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for
+  a domain entity?]]) produces a diff containing *only* these fixes
+  plus the wanted security-definer/docstring improvements — the
+  cardinality-limit check is expected to still show as a diff (it's
+  out of scope for this task) until its own task lands.
+- Since =soft_fk_validations= currently has zero real-world users,
+  treat this as validating the facet itself works end-to-end (correct
+  SQL emitted, migration applies cleanly) — not just trusting the
+  template reads correctly.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 01143977-5DA2-48AE-B4BE-109585BC4962
+:END:
+#+title: Task: Short-rate stochastic process (Hull-White/CIR/Vasicek)
+#+description: New IStochasticProcess implementation for mean-reverting short-rate dynamics, wired into process_factory, mirroring ou_process's shape.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-synthetic-generation:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a mean-reverting short-rate stochastic process (Hull-White, CIR,
+or Vasicek — pick one for the first pass) implementing
+=IStochasticProcess=
+(=projects/ores.marketdata/api/include/ores.marketdata.api/domain/i_stochastic_process.hpp=),
+wired into =process_factory::make_process()=
+(=projects/ores.synthetic/service/src/process_factory.cpp=). Same
+shape as =ou_process=
+(=projects/ores.synthetic/service/src/processes/ou_process.hpp=): pure
+closed-form math, no QuantLib.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- New process class implements =IStochasticProcess=, selectable via a
+  new =process_type= value in =process_factory=.
+- No QuantLib dependency introduced anywhere in
+  =projects/ores.synthetic/=.
+- Parameters (kappa, theta, sigma — or the CIR/Hull-White equivalents)
+  are validated via =ores.synthetic.api::domain::validate_process_parameters=
+  (extend it for the new engine, don't duplicate its rules).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

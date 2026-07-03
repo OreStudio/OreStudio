@@ -1,0 +1,105 @@
+#+TITLE: Specification: Decentralized Market Data & Synthetic Generation Architecture (FX & IR Support)
+#+AUTHOR: Dr. Marco Craveiro, Gemini
+#+DATE: [2026-07-03 Fri]
+#+OPTIONS: toc:2 num:nil
+
+* Introduction & Core Design Philosophy
+
+The objective is to overhaul and expand a synthetic market data generator to cleanly support modern quantitative finance simulation workflows. The target user base spans from educational novices to advanced quants/traders.
+
+To satisfy both audiences without overwhelming novices or restricting quants, the system adheres to the *Progressive Disclosure* design pattern (Simple vs. Advanced modes) coupled with a decoupled, asynchronous pipeline architecture.
+
+* Architectural Blueprint: Decoupling via Unified Cache
+
+A strict boundary is maintained between two distinct domains:
+
+1. *The Synthetic Data Generator:* A stochastic simulation engine that generates raw, noisy market instruments over time.
+2. *The Market Data Layer:* A deterministic financial library that consumes raw instrument states from a unified real-time cache to perform curve bootstrapping and surface interpolation.
+
+#+BEGIN_SRC text
++------------------------------------+
+|     Stochastic Simulator Engine     |
+| (Hull-White IR, GMM Spot FX, etc.)  |
++------------------------------------+
+|
+(Publishes Raw Liquid Ticks)
+v
++------------------------------------+
+|  Unified Market Data Cache / Grid  | <--- Alternative Input: Bloomberg API
++------------------------------------+
+|
+(Reads Raw Instruments)
+v
++------------------------------------+
+|         Market Data Engine         |
+|  - Yield Curve Bootstrapping       |
+|  - FX Volatility Surface Build     |
++------------------------------------+
+#+END_SRC
+
+* Domain 1: Interest Rate (IR) Component Generation
+
+Unlike FX spots, which simulate a single scalar price, IR simulation models an entire term structure. The synthetic engine does *not* bootstrap the final yield curve; instead, it generates the individual raw constituent instruments.
+
+ 1. Mathematical Engine Options
+
+- *Primary Models:* Hull-White (1-Factor/2-Factor), Cox-Ingersoll-Ross (CIR), or Vasicek.
+- *Configurable Parameters:* Mean Reversion Speed ($\kappa$), Long-Term Mean ($\theta$), and Short-Rate Volatility ($\sigma$).
+
+ 2. Raw Instrument Grid Configuration
+The user configures a *Curve Template* specifying which raw tenors the simulation runner will continuously publish to the cache:
+
+- *Short-End:* Cash Deposits (Overnight, 1M, 3M)
+- *Mid-Curve:* Forward Rate Agreements (FRAs), Eurodollar Futures
+- *Long-End:* Interest Rate Swaps (IRS: 2Y, 5Y, 10Y, 30Y)
+
+ 3. UI/UX Specifications (As shown in watermarked_img_13211964691182201314.png)
+
+- *Left Panel:* Sliders mapping the short-rate mathematical factors alongside the instrument grid mapping tenors to roles.
+- *Visual Feedback Panel:* Displays an *Implied Yield Curve Model Profile*. This profile plots a quick, local analytical curve shape ($Yield$ vs. $Maturity$) and a *Tenor Evolution over Time* graph. This visual aid communicates the macroeconomic impact of $\kappa$ and $\theta$ settings to the user before publishing raw data.
+
+* Domain 2: Market Data Layer (Bootstrapping Curve Engine)
+
+The Market Data Layer functions as a stateful consumer of the unified cache. On every simulation tick or historical loop, it executes deterministic financial operations:
+
+1. It intercepts the raw published cash deposits, FRAs, and Swaps.
+2. It executes a production-grade bootstrapping pipeline (e.g., Piecewise Linear Zero Rates or Monotonic Cubic Splines).
+3. It stores the finalized continuous yield curves (e.g., =USD_ZERO_CURVE=) back into the system state to serve as upstream dependencies for other modules.
+
+* Domain 3: FX Spot & Volatility Surface Generation
+
+FX option pricing relies heavily on the *Forward exchange rate* ($F_t = S_0 \cdot e^{(r_d - r_f)t}$). Therefore, setting up the IR curve bootstrapping pipeline is a hard dependency for generating arbitrage-free FX volatility surfaces.
+
+ 1. Simulation Execution Sequence
+For every step/tick in a multi-pair universe, the engine coordinates calculations in this explicit order:
+
+1. *Evolve Rates:* Update IR curves stochastically via short-rate models.
+2. *Compute Forwards:* The Market Data Layer reads the updated yield curves and calculates the clean forward curve for the target currency pair.
+3. *Calibrate GMMs:* The GMM weight router takes the current spot and the updated forward curve, forcing the distribution weights to satisfy the forward martingale constraint.
+
+ 2. The Thijs van den Berg Framework Integration
+To construct an interpolation engine between sparse maturity pillars (e.g., 1M, 3M, 6M, 1Y) that eliminates calendar-spread arbitrage, the system implements the *Frozen Pool Strategy* (Thijs van den Berg, 2026):
+
+- *The Component Pool:* Concatenate the Gaussian mixture components across adjacent pillars, freezing their absolute location ($\mu$) and variance widths ($\sigma$).
+- *Linear Weight Routing:* Transition mixture weights linearly along a straight path in $2N$ weight space across a variance clock $s(t)$. This structural restriction guarantees a non-negative Dupire Local Volatility surface ($a(t, K) \ge 0$).
+
+ 3. UI/UX Specifications (As shown in watermarked_img_13211964691182201314.png & watermarked_img_8490758311063865977.png)
+
+- *Simple Mode (Novice Profile):* Standard macro behavior presets (e.g., "Volatile Bull Market", "Market Crash"). The raw math is hidden behind basic sliders for *ATM Volatility Level*, *Skew/Smile Intensity*, and *Term Structure Slope*.
+- *Advanced Mode (Quant Profile):* Exposes a explicit *Market Data Dependencies* section to map the surface calibration to explicit data sources:
+#+BEGIN_SRC text
+- Discount Curve Domestic (USD): [ USD_ZERO_CURVE v ]
+- Discount Curve Foreign (EUR):  [ EUR_ZERO_CURVE  v ]
+- Spot FX Source:               [ EURUSD_SPOT     v ]
+#+END_SRC
+
+
+- *Live Surface & Density Preview Panel:* Displays a 3D Implied Volatility Surface ($Volatility$ vs. $Strike$ vs. $Maturity$) alongside the GMM Probability Density Function curves per pillar.
+
+- Target Layout Rules for Charts (Fixing image_42887d.png Flaws)
+
+To ensure the charting engine behaves correctly during dynamic data generation, the following rendering updates must be enforced:
+
+- *Tight Y-Axis Bounds:* Abandon rigid, hardcoded padding ranges. The Y-axis window must dynamically scale immediately around the minimum and maximum values of the lookback window, adding a minimal safety padding percentage.
+- *Price Tracker Lines:* Render horizontal, dashed tracker lines from the current live terminal spot indicator dot to its precise value mark on the right Y-axis.
+- *Visual Clutter Controls:* Decrease the opacity and weight of background watermark labels (e.g., =EUR/USD= text elements) so they sit clearly behind the green time-series plot. Ensure viewport containers dynamically calculate layouts to eliminate clipping and overlap from notification toast panels.

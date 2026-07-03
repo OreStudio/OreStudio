@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 51AA2AAB-9845-434D-94C7-52A863E9AA05
 :END:
-#+title: Task: Author missing Validation function / Insert trigger sections for counterparty models
-#+description: counterparty.org, counterparty_identifier.org, and counterparty_contact_information.org have no Validation function / Insert trigger sections, but the currently-shipped SQL has substantial hand-written validation logic (FK existence checks, party_type/status/id_scheme/contact_type/country_code validation, a cardinality limit, a mandatory business_center_code check, and a dropped transliterated_name column) that a naive regen would silently delete. Port the existing hand-written logic verbatim into the three .org models' Validation function / Insert trigger sections, then regenerate scoped to counterparty and verify the diff is zero (or only the expected security-definer/docstring improvements).
+#+title: Task: Populate existing codegen facets for counterparty models (validations, soft-FKs, nullability, missing column)
+#+description: counterparty.org, counterparty_identifier.org, and counterparty_contact_information.org are missing declarative facet content that already exists generically in the codegen templates — the * Insert trigger ** Validations table (proven, used by currency.org), the soft_fk_validations facet (built, zero adopters anywhere yet), a stale :nullable: true on business_center_code, and a plainly undeclared transliterated_name column. None of this needs new template capability; it's model content only. The cardinality-limit check (max identifiers per scheme) is the one genuine template gap and is split into its own task since it also benefits party_identifier.
 #+type: task
 #+level: s1
 #+filetags: :commission_counterparty:sprint_22:v0:
@@ -21,9 +21,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Make it safe to regenerate counterparty, counterparty_identifier, and
-counterparty_contact_information by capturing their existing
-hand-written SQL validation logic in the =.org= models, so codegen
-stops being a data-integrity hazard for this entity family.
+counterparty_contact_information by populating the *existing, generic*
+codegen facets these models are simply missing — no new template
+capability needed for anything in this task (the one genuine template
+gap, the cardinality-limit check, is tracked separately — see
+=author_counterparty_cardinality_limit_facet=).
 
 * Status
 
@@ -33,28 +35,51 @@ stops being a data-integrity hazard for this entity family.
 | Parent story | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Read the current create.sql files for all three tables; port each validation clause into the matching .org model's Validation function / Insert trigger sections (see task_appraise_counterparty.org's Result for the full inventory). |
+| Next         | Add the Validations table rows and soft_fk_validations entries per the list below; fix the nullable flag; add the missing column. |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
 
-- =counterparty.org= gains sections capturing: =party_type=
-  validation, =status= validation, the soft-FK check on
-  =parent_counterparty_id=, and the mandatory + FK-checked
-  =business_center_code=. The =transliterated_name= column and the
-  current uniqueness semantics (separate =full_name= search index +
-  unique =short_code=) are preserved, not silently dropped.
-- =counterparty_identifier.org= gains sections capturing: =id_scheme=
-  validation, the soft-FK check on =counterparty_id=, and the
-  cardinality-limit check. The =(counterparty_id, id_scheme,
-  id_value)= uniqueness is preserved.
-- =counterparty_contact_information.org= gains sections capturing:
-  =contact_type= validation, the soft-FK check on =counterparty_id=,
-  and =country_code= validation.
+- =counterparty.org=:
+  - =* Insert trigger ** Validations= table gains rows for
+    =party_type= (=ores_refdata_validate_party_type_fn=) and =status=
+    (=ores_refdata_validate_party_status_fn=).
+  - =soft_fk_validations= gains an entry for =parent_counterparty_id=
+    (nullable self-referential soft FK to the counterparties table)
+    and for =business_center_code= (non-nullable soft FK to business
+    centres).
+  - =business_center_code='s =:nullable:= property flips from =true=
+    to =false=.
+  - A =transliterated_name= column is added (nullable text, matching
+    the hand-written SQL's current column definition).
+  - Natural keys / uniqueness declared to preserve the current
+    semantics: unique =short_code=, plus a separate non-unique
+    =full_name= search index — confirm at authoring time whether the
+    existing =natural_keys= facet expresses the "extra non-unique
+    index" part, or whether that needs one small paste-block index.
+- =counterparty_identifier.org=:
+  - =* Insert trigger ** Validations= gains a row for =id_scheme=
+    (=ores_refdata_validate_party_id_scheme_fn=).
+  - =soft_fk_validations= gains an entry for =counterparty_id=
+    (non-nullable).
+  - Natural keys preserve =(counterparty_id, id_scheme, id_value)=
+    uniqueness (not the collapsed =(counterparty_id, id_scheme)= a
+    naive regen currently produces).
+- =counterparty_contact_information.org=:
+  - =* Insert trigger ** Validations= gains rows for =contact_type=
+    (=ores_refdata_validate_contact_type_fn=) and =country_code=
+    (=ores_refdata_validate_country_fn=).
+  - =soft_fk_validations= gains an entry for =counterparty_id=
+    (non-nullable).
 - After authoring, a scoped regen (per [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for
-  a domain entity?]]) produces a diff that is empty, or contains only
-  the expected/wanted improvements (security-definer fix, docstring
-  title) — no loss of the validations listed above.
+  a domain entity?]]) produces a diff containing *only* these fixes
+  plus the wanted security-definer/docstring improvements — the
+  cardinality-limit check is expected to still show as a diff (it's
+  out of scope for this task) until its own task lands.
+- Since =soft_fk_validations= currently has zero real-world users,
+  treat this as validating the facet itself works end-to-end (correct
+  SQL emitted, migration applies cleanly) — not just trusting the
+  template reads correctly.
 
 * Plan
 

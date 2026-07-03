@@ -8,7 +8,7 @@
 #+filetags: :feed_status_badge_domain:sprint_22:v0:
 #+owner: marco
 #+branch: feature/feed-status-badge-domain
-#+pr:
+#+pr: 1410
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
@@ -90,7 +90,7 @@ Verified: =ores.qt.mktdata.lib= builds clean.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1410][#1410]] | [qt] Replace FX spot grid status badge with icon+text indicator |
 
 * Review
 

@@ -96,7 +96,12 @@ Verified: =ores.qt.mktdata.lib= builds clean.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Icon SVG re-rasterized on every 2s stale-poll tick just to update the seconds counter | FxSpotGridWindow.cpp | Accepted | Fixed in 37c81fb60: split into apply_status_indicator (transitions only) and update_status_text (every poll). |
+| 2 | statusIcon/statusText/iconLabel/textLabel camelCase vs. file's snake_case convention | FxSpotGridWindow.hpp/.cpp | Accepted | Fixed in 37c81fb60: renamed to status_icon_label/status_text_label, icon_label/text_label. |
+| 3 | Story Acceptance still said "badge domain or equivalent", stale vs. the recorded Decisions | story.org | Accepted | Fixed in 37c81fb60. |
+| 4 | Unreachable dead code after exhaustive switch in status_color/status_icon | FxSpotGridWindow.cpp | Declined | Harmless; satisfies compiler return-value warning. |
+| 5 | pair_color_for_status's Stale case duplicates k_stale_color as a magic number | FxSpotGridWindow.cpp | Declined | Pre-existing, function untouched by this PR. |
+| 6 | resources.qrc insertion breaks local alphabetical clustering near key_*/keyboard entries | resources.qrc | Declined | Cosmetic; file isn't globally sorted per reviewer's own note. |
 
 * Result
 

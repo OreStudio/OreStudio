@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 6C515A93-C7D9-4B6C-B7B2-7AD433BACE44
+:END:
+#+title: Story: Configurable feed status indicator in the FX spot grid
+#+description: FX spot grid status pips use hardcoded CSS colours; replace with a configurable indicator once the right UX (badge vs. compact status dot) is settled.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:ui:sprint_22:v0:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=FxSpotGridWindow= currently shows per-row feed connection status
+(PENDING/LIVE/STALE/DISCONNECTED) via hardcoded CSS pill styling,
+bypassing the app's shared badge infrastructure
+(=BadgeCache=/=BadgeLabelUtils=) used for categorical state
+everywhere else in the UI.
+
+The original capture proposed reusing badges as-is (a =feed_status=
+badge domain, tenant-configurable colours via =BadgeLabelUtils::apply=).
+On review, whether a wide colored-pill badge is actually the right
+UX for a *live, per-row connection indicator scanned across many
+grid rows* (vs. badges' usual job: categorical state on a single
+record in a detail/list view) is genuinely open — a compact
+traffic-light-style dot/icon may scan better in a dense grid. Resolve
+that UX question first; only then build the chosen implementation.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Nothing.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-07-03                               |
+
+* Acceptance
+
+- UX direction (badge vs. compact status dot/icon vs. other) decided
+  and recorded in =* Decisions=, with rationale.
+- =FxSpotGridWindow= no longer applies hardcoded-CSS pill styling —
+  status renders as icon+text per the decided direction (see
+  =* Decisions=; tenant-configurable colours were explicitly traded
+  away in favour of this lighter approach, not carried over from
+  the original badge-domain proposal).
+- The four states (PENDING/LIVE/STALE/DISCONNECTED) render
+  correctly in the grid.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:084ADDBB-7AFB-4259-8D10-CF0A83C5509B][Decide UX for feed status indicator in FX spot grid]] | DONE | 2026-07-03 | 2026-07-03 | Badge (colored pill) vs. compact status dot/icon vs. other, for a live per-row connection-health indicator scanned across many grid rows. Record the decision and rationale in the story's Decisions section before any implementation. |
+| [[id:A7D16AD1-35AE-4485-B5ED-A614EC8C42C0][Implement chosen feed status indicator in FX spot grid]] | DONE | 2026-07-03 | 2026-07-03 | Wire the decided indicator (badge domain via BadgeCache/BadgeLabelUtils, or a new compact status-dot component) through MarketDataController into FxSpotGridWindow, replacing the current hardcoded CSS pill styling. Depends on the UX decision task. |
+
+* Decisions
+
+*UX*: abandoned the badge (colored-pill) direction. Going with the
+original mockup's own pattern instead: a compact per-state icon +
+short text label inline in the Status column (no pill background).
+The icon's *shape* differs by state, not just its color, so it
+doesn't rely on color alone. No new component needed beyond icons +
+=QLabel= text — no =feed_status= badge domain, no
+=BadgeCache=/=BadgeLabelUtils= involvement.
+
+*Icons*: picked from the app's existing dual-theme convention
+(=IconUtils::getIconDef= pairs every icon with a FluentUI name and a
+Solarized filename):
+
+| State        | FluentUI                         | Solarized         |
+|--------------+-----------------------------------+--------------------|
+| Live         | ic_fluent_live_20                | soundwave.svg      |
+| Stale        | ic_fluent_hourglass_20            | hourglass.svg      |
+| Disconnected | ic_fluent_plug_disconnected_20    | link-broken.svg    |
+| Pending      | ic_fluent_radio_button_20         | record.svg         |
+
+=Stale='s pairing is a clean 1:1 name match. Solar's core set has no
+plug/socket icon carrying a "disconnected" sense, so
+=link-broken.svg= (broken chain link) stands in — the standard glyph
+for that concept in that library.
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-07-01 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Add a =feed_status= badge domain to the badge definition tables with four
+values: =PENDING= (gray), =LIVE= (green), =STALE= (amber), =DISCONNECTED=
+(red). Wire =BadgeCache*= through =MarketDataController= into
+=FxSpotGridWindow= and switch from the current hardcoded CSS to
+=BadgeLabelUtils::apply= so colours become tenant-configurable.
+
+** Why
+
+=FxSpotGridWindow= currently applies badge-style CSS directly with hardcoded
+colours (=projects/ores.qt/mktdata/src/FxSpotGridWindow.cpp=). This bypasses
+the badge infrastructure used everywhere else in the UI and makes the status
+colours non-configurable. Using =BadgeCache= brings feed status in line with
+the rest of the application and allows operators to restyle badges without
+a code change.
+
+** References
+
+- =projects/ores.qt/mktdata/src/FxSpotGridWindow.cpp= — current hardcoded pill styling
+- =projects/ores.qt/api/src/BadgeLabelUtils.cpp= — the standard apply()
+- =projects/ores.qt/api/include/ores.qt/plugin_context.hpp= — badge_cache field

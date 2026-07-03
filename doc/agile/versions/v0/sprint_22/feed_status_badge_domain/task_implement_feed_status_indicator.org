@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: A7D16AD1-35AE-4485-B5ED-A614EC8C42C0
+:END:
+#+title: Task: Implement chosen feed status indicator in FX spot grid
+#+description: Wire the decided indicator (badge domain via BadgeCache/BadgeLabelUtils, or a new compact status-dot component) through MarketDataController into FxSpotGridWindow, replacing the current hardcoded CSS pill styling. Depends on the UX decision task.
+#+type: task
+#+level: s1
+#+filetags: :feed_status_badge_domain:sprint_22:v0:
+#+owner: marco
+#+branch: feature/feed-status-badge-domain
+#+pr: 1410
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6C515A93-C7D9-4B6C-B7B2-7AD433BACE44][Configurable feed status indicator in the FX spot grid]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Blocked on [[id:084ADDBB-7AFB-4259-8D10-CF0A83C5509B][Decide UX for feed status indicator in FX spot grid]].
+Once the direction is settled, wire it through
+=MarketDataController= into =FxSpotGridWindow=
+(=projects/ores.qt/mktdata/src/FxSpotGridWindow.cpp=), replacing the
+current hardcoded CSS pill styling for
+PENDING/LIVE/STALE/DISCONNECTED. If the badge direction is chosen:
+add a =feed_status= badge domain and switch to
+=BadgeLabelUtils::apply= (see =BadgeCache=/=plugin_context.hpp=). If
+the status-dot direction is chosen: scope and build the new
+component instead.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6C515A93-C7D9-4B6C-B7B2-7AD433BACE44][Configurable feed status indicator in the FX spot grid]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- =FxSpotGridWindow= no longer applies hardcoded per-status CSS.
+- All four states (PENDING/LIVE/STALE/DISCONNECTED) render
+  correctly per the decided direction.
+- If badges: colours/labels come from the new =feed_status= badge
+  domain, not hardcoded values.
+
+* Plan
+
+Abandoned badges (see story Decisions). Implemented icon+text inline
+in the Status column instead:
+
+- Added three new =Icon= enum entries to
+  =projects/ores.qt/api/include/ores.qt/IconUtils.hpp= /
+  =IconUtils.cpp=: =FeedLive= (ic_fluent_live_20 / soundwave.svg),
+  =FeedStale= (ic_fluent_hourglass_20 / hourglass.svg), =FeedPending=
+  (ic_fluent_radio_button_20 / record.svg). Reused the existing
+  =Icon::PlugDisconnected= for Disconnected — it already pairs
+  =ic_fluent_plug_disconnected_20= with =link-broken.svg=, exactly
+  the picks made independently for this story.
+- Copied the FluentUI (20px, regular+filled) and Solarized
+  (Bold+Linear) SVG assets into
+  =projects/ores.qt/application/resources/icons/= and registered
+  them in =resources.qrc=.
+- Rewrote =FxSpotGridWindow.cpp=: replaced =make_badge=/=apply_badge=
+  (QLabel with a hardcoded-CSS pill stylesheet) with
+  =make_status_indicator=/=apply_status_indicator= — an icon
+  =QLabel= (recolored via =IconUtils::createRecoloredIcon=) plus a
+  text =QLabel=, laid out in an =QHBoxLayout=, no pill background.
+  =RowState::badge= became =statusIcon=/=statusText=.
+
+Caught and fixed one mistake during implementation: copying Solar
+assets by filename silently overwrote =link-broken.svg=, which was
+already vendored and in use by =Icon::PlugDisconnected= elsewhere in
+the app, with a different (stroke-based) rendering from a newer
+local checkout of the solar-icons source repo. Reverted that file to
+its committed version before the final build; the vendored copy
+(fill-based paths) is what ships.
+
+Verified: =ores.qt.mktdata.lib= builds clean.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1410][#1410]] | [qt] Replace FX spot grid status badge with icon+text indicator |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Icon SVG re-rasterized on every 2s stale-poll tick just to update the seconds counter | FxSpotGridWindow.cpp | Accepted | Fixed in 37c81fb60: split into apply_status_indicator (transitions only) and update_status_text (every poll). |
+| 2 | statusIcon/statusText/iconLabel/textLabel camelCase vs. file's snake_case convention | FxSpotGridWindow.hpp/.cpp | Accepted | Fixed in 37c81fb60: renamed to status_icon_label/status_text_label, icon_label/text_label. |
+| 3 | Story Acceptance still said "badge domain or equivalent", stale vs. the recorded Decisions | story.org | Accepted | Fixed in 37c81fb60. |
+| 4 | Unreachable dead code after exhaustive switch in status_color/status_icon | FxSpotGridWindow.cpp | Declined | Harmless; satisfies compiler return-value warning. |
+| 5 | pair_color_for_status's Stale case duplicates k_stale_color as a magic number | FxSpotGridWindow.cpp | Declined | Pre-existing, function untouched by this PR. |
+| 6 | resources.qrc insertion breaks local alphabetical clustering near key_*/keyboard entries | resources.qrc | Declined | Cosmetic; file isn't globally sorted per reviewer's own note. |
+
+* Result
+
+Replaced =FxSpotGridWindow='s hardcoded-CSS pill status with an
+icon+text indicator, reusing the app's existing =IconUtils=
+FluentUI/Solarized dual-theme convention (three new =Icon= entries,
+one existing entry reused for Disconnected). No badge domain, no
+=BadgeCache= involvement — the story's UX decision ruled that out.
+Build verified green.

@@ -81,6 +81,9 @@ enum class Icon {
     ExportCsv,
     ExportFpml,
     ExportOre,
+    FeedLive,       ///< Market data feed actively updating
+    FeedPending,    ///< Market data feed not yet connected
+    FeedStale,      ///< Market data feed has not updated recently
     Flag,
     Folder,
     FolderOpen,

@@ -134,6 +134,12 @@ static IconDef getIconDef(Icon icon) {
             return {"ic_fluent_arrow_upload_fpml_20", "export_fpml.svg"};
         case Icon::ExportOre:
             return {"ic_fluent_arrow_upload_ore_20", "export_ore.svg"};
+        case Icon::FeedLive:
+            return {"ic_fluent_live_20", "soundwave.svg"};
+        case Icon::FeedPending:
+            return {"ic_fluent_radio_button_20", "record.svg"};
+        case Icon::FeedStale:
+            return {"ic_fluent_hourglass_20", "hourglass.svg"};
         case Icon::Flag:
             return {"ic_fluent_flag_20", "flag.svg"};
         case Icon::Folder:

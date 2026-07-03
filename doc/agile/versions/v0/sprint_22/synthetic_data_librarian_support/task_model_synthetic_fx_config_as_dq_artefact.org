@@ -8,7 +8,7 @@
 #+filetags: :synthetic_data_librarian_support:sprint_22:v0:
 #+owner: marco
 #+branch: feature/synthetic-data-librarian-support
-#+pr:
+#+pr: 1408
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
@@ -96,7 +96,7 @@ prerequisite fix.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1408][#1408]] | [synthetic] Synthetic data librarian support: FX foundation |
 
 * Review
 

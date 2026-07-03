@@ -76,6 +76,12 @@ def run_provision(argv: list[str], project_root: Path) -> int:
                          help="Pass --install-packages to compass env configure.")
     pkg_grp.add_argument("--skip-packages", action="store_true",
                          help="Pass --skip-packages to compass env configure.")
+    p.add_argument("-n", "--dry-run", action="store_true",
+                   help="Show what would be provisioned (including the "
+                        "disk-space check) without creating anything.")
+    p.add_argument("--min-free-gb", type=int, default=None,
+                   help="Override the low-disk-space warning threshold in GiB "
+                        "(default 20). Useful for testing the warning.")
     args = p.parse_args(argv)
 
     parent_dir = project_root.parent
@@ -100,12 +106,27 @@ def run_provision(argv: list[str], project_root: Path) -> int:
     # nearly-full disk before creating it. Light worktrees are cheap, so only
     # the full path is gated.
     if args.env_type == "full":
-        from disk_guard import check_disk_space
-        if not check_disk_space(parent_dir, assume_yes=args.yes):
+        from disk_guard import check_disk_space, MIN_FREE_GB
+        min_free = args.min_free_gb if args.min_free_gb is not None else MIN_FREE_GB
+        if not check_disk_space(parent_dir, assume_yes=args.yes or args.dry_run,
+                                min_free_gb=min_free):
             return 1
 
     # Assign ports.
     base_port, nats_port, nats_monitor_port = _scan_ports(parent_dir)
+
+    if args.dry_run:
+        print(f"[dry-run] Would provision '{name}' ({args.env_type}):")
+        print(f"[dry-run]   Path      : {worktree_dir}")
+        print(f"[dry-run]   Base port : {base_port}")
+        print(f"[dry-run]   NATS port : {nats_port} (monitor {nats_monitor_port})")
+        print(f"[dry-run]   git worktree add {worktree_dir} origin/main")
+        if args.env_type == "full":
+            print("[dry-run]   then: git submodule update --init vcpkg")
+        if args.preset:
+            print(f"[dry-run]   then: compass env configure --preset {args.preset}")
+        print("[dry-run] No changes made.")
+        return 0
 
     # Create git worktree off origin/main.
     print(f"Provisioning worktree: {worktree_dir}")

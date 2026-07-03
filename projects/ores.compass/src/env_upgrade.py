@@ -25,6 +25,12 @@ def run(argv, checkout_root: Path) -> int:
     )
     p.add_argument("-y", "--yes", action="store_true",
                    help="Skip confirmation prompt")
+    p.add_argument("-n", "--dry-run", action="store_true",
+                   help="Show what would happen (including the disk-space "
+                        "check) without making any changes.")
+    p.add_argument("--min-free-gb", type=int, default=None,
+                   help="Override the low-disk-space warning threshold in GiB "
+                        "(default 20). Useful for testing the warning.")
     args = p.parse_args(argv)
 
     env_file = checkout_root / ".env"
@@ -70,9 +76,20 @@ def run(argv, checkout_root: Path) -> int:
 
     # Promotion to full pulls in vcpkg and a build tree — guard against a
     # nearly-full disk before committing to the operation.
-    from disk_guard import check_disk_space
-    if not check_disk_space(checkout_root, assume_yes=args.yes):
+    from disk_guard import check_disk_space, MIN_FREE_GB
+    min_free = args.min_free_gb if args.min_free_gb is not None else MIN_FREE_GB
+    if not check_disk_space(checkout_root, assume_yes=args.yes or args.dry_run,
+                            min_free_gb=min_free):
         return 1
+
+    if args.dry_run:
+        print(f"[dry-run] Would upgrade '{env_name}' light → full:")
+        print(f"[dry-run]   ORES_PROVISION_TYPE : {current_type}  →  full")
+        print(f"[dry-run]   ORES_PRESET         : {current_preset or '(unset)'}  →  {preset}")
+        print(f"[dry-run]   then: git submodule update --init vcpkg")
+        print(f"[dry-run]   then: cmake --preset {preset}  (triggers vcpkg install)")
+        print("[dry-run] No changes made.")
+        return 0
 
     if not args.yes:
         print(f"Upgrade '{env_name}' from light → full?\n")

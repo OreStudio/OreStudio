@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 62E7C0B3-02C8-4DFE-9C56-6FB36CB5121B
+:END:
+#+title: Custom jump distributions and cross-rate correlation matrices
+#+description: Configurable jump-size distributions and cross-rate correlation for multi-asset synthetic FX scenarios.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:gmm:process:backlog:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two related but distinct capabilities, both currently listed as
+placeholders in the FxSpotRateEditor "Component Tools" disclosure
+panel: (1) custom/configurable jump-size distributions — beyond a
+default distribution once jump/Poisson processes exist (depends on
+[[id:84635A47-0E1A-4B67-A775-15F256D54A2D][Implement jump/Poisson stochastic process component]]); (2)
+cross-rate correlation matrices, so multiple synthetic FX pairs
+generated concurrently can be driven by correlated shocks rather than
+independent RNG streams per pair, for more realistic multi-asset
+synthetic scenarios.
+
+* Why
+
+Currently listed as "Planned — not yet available" placeholders with
+no implementation
+(=projects/ores.qt/synthetic/src/FxSpotRateEditor.cpp=,
+=buildAdvancedControls()=, the futureBox/futureText widget). Reviewed
+during
+[[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]]'s
+process-tools inventory task and explicitly scoped out.
+
+* References
+
+- =projects/ores.qt/synthetic/src/FxSpotRateEditor.cpp= (Component Tools panel)
+
+* See also
+
+- [[id:84635A47-0E1A-4B67-A775-15F256D54A2D][Implement jump/Poisson stochastic process component]]

@@ -107,7 +107,7 @@ prerequisite fix.
 | 1 | replace_all orphans GMM components (raised by all 3 reviewers) | synthetic_publish_from_dq_create.sql | Fixed | 53db445c — capture replaced fx-config ids before voiding, void matching GMM rows too |
 | 2 | subject_to_fn has no allow-list before SQL interpolation | publish_from_dq_handler.cpp | Fixed | 53db445c — added is_known_fn() allow-list |
 | 3 | Phase 3.5 comment vs [4/5] printed counter mismatch | provision_commands.cpp | Fixed | 53db445c — renumbered to Phase 4/Phase 5 |
-| 4 | No unit test for stamp_account_party | account_party_handler.hpp | Declined | context needs a real connection pool; no lightweight mock path in this codebase's test conventions; matches untested reporting equivalent |
+| 4 | No unit test for stamp_account_party | account_party_handler.hpp | Fixed | Reconsidered after pushback — 715f58b adds a real DB-backed regression test using existing database_helper/set_party() test infra |
 | 5 | Version churn on every GMM publish (unconditional insert) | synthetic_publish_from_dq_create.sql | Declined | Matches existing unconditional-insert pattern immediately above for fx_spot_generation_configs; not a new problem |
 | 6 | Container name picked from alphabetically-first artefact row | synthetic_publish_from_dq_create.sql | Declined | Cosmetic; matches this story's single-pair MVP scope, revisit once more pairs land |
 

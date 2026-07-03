@@ -134,6 +134,27 @@ int valueToSlider(double value, double lo, double hi) {
     return std::clamp(static_cast<int>(std::lround(t * 100.0)), 0, 100);
 }
 
+// κ realistically spans several orders of magnitude (minutes- to months-long
+// half-lives), so a linear slider is useless — most of its range would map to
+// indistinguishably-fast reversion. Map it log-scale instead; 0 is a special
+// case (no reversion) pinned to the low end rather than -infinity.
+constexpr double kKappaMin = 1e-6;
+constexpr double kKappaMax = 1.0;
+
+double kappaSliderToValue(int slider) {
+    const double t = slider / 100.0;
+    return std::pow(10.0, std::log10(kKappaMin) + t * (std::log10(kKappaMax) - std::log10(kKappaMin)));
+}
+
+int kappaValueToSlider(double kappa) {
+    if (kappa <= kKappaMin)
+        return 0;
+    const double k = std::min(kappa, kKappaMax);
+    const double t = (std::log10(k) - std::log10(kKappaMin)) /
+                     (std::log10(kKappaMax) - std::log10(kKappaMin));
+    return std::clamp(static_cast<int>(std::lround(t * 100.0)), 0, 100);
+}
+
 std::string to_lower(const std::string& s) {
     std::string r = s;
     std::transform(r.begin(), r.end(), r.begin(), [](unsigned char c) {
@@ -329,6 +350,15 @@ void FxSpotRateEditor::buildInstrumentTab() {
     priceSpin_->setDecimals(4);
     priceSpin_->setValue(fx_.gmm_initial_price > 0 ? fx_.gmm_initial_price : 1.0);
     priceSpin_->setToolTip(tr("The spot rate the simulation starts from."));
+    // "ou" echoes this as θ on its Simple page — keep that (and both charts,
+    // which also read this as the OU level / GBM starting price) live.
+    connect(priceSpin_, &QDoubleSpinBox::valueChanged, this, [this](double) {
+        if (syncing_)
+            return;
+        if (currentEngine() == "ou" && ouThetaLabel_)
+            ouThetaLabel_->setText(tr("%1").arg(priceSpin_->value(), 0, 'f', 5));
+        refreshCharts();
+    });
 
     enabledCheck_ = new QCheckBox(tr("Enabled"), tab);
     enabledCheck_->setChecked(fx_.enabled);
@@ -508,6 +538,16 @@ void FxSpotRateEditor::buildBehaviourTab() {
 }
 
 QWidget* FxSpotRateEditor::buildSimpleControls() {
+    // "ou"'s Simple page has nothing in common with the GBM/arithmetic sliders
+    // (single scalar params, not a drift/vol/jump mixture) — switch between two
+    // independent pages rather than trying to make one widget cover both.
+    simpleModeStack_ = new QStackedWidget(this);
+    simpleModeStack_->addWidget(buildGbmSimpleControls()); // index 0
+    simpleModeStack_->addWidget(buildOuSimpleControls());  // index 1
+    return simpleModeStack_;
+}
+
+QWidget* FxSpotRateEditor::buildGbmSimpleControls() {
     auto* paramsBox = new QGroupBox(tr("Parameters"), this);
     paramsBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     auto* paramsLayout = new QVBoxLayout(paramsBox);
@@ -571,6 +611,125 @@ QWidget* FxSpotRateEditor::buildSimpleControls() {
         });
 
     return paramsBox;
+}
+
+QWidget* FxSpotRateEditor::buildOuSimpleControls() {
+    auto* box = new QGroupBox(tr("Stochastic Drivers"), this);
+    box->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    auto* layout = new QVBoxLayout(box);
+    layout->setContentsMargins(12, 12, 12, 12);
+    layout->setSpacing(8);
+
+    // θ — read-only here; edited via the Initial Price field on the Instrument
+    // tab, echoed so it's visible alongside the other two drivers.
+    auto* thetaRow = new QHBoxLayout();
+    auto* thetaTitle = new QLabel(tr("Long-Term Mean (θ)"), box);
+    thetaTitle->setToolTip(tr("The level the price reverts toward. Set via the Initial Price "
+                              "field on the Instrument tab."));
+    thetaRow->addWidget(thetaTitle);
+    thetaRow->addStretch(1);
+    ouThetaLabel_ = new QLabel(box);
+    ouThetaLabel_->setStyleSheet("color: gray;");
+    thetaRow->addWidget(ouThetaLabel_);
+    layout->addLayout(thetaRow);
+
+    // κ — log-scale slider (see kappaSliderToValue/kappaValueToSlider) so one
+    // control spans minutes- to months-long half-lives, paired with a spinbox
+    // for exact entry, and a live half-life readout underneath.
+    const QString kappaTip =
+        tr("Mean reversion speed. Roughly, the price halves its distance from θ every "
+           "ln(2)/κ updates. 0 = no reversion (driftless random walk).");
+    auto* kappaTitle = new QLabel(tr("Mean Reversion Speed (κ)"), box);
+    kappaTitle->setToolTip(kappaTip);
+    layout->addWidget(kappaTitle);
+    auto* kappaRow = new QHBoxLayout();
+    kappaSlider_ = new QSlider(Qt::Horizontal, box);
+    kappaSlider_->setRange(0, 100);
+    kappaSlider_->setToolTip(kappaTip);
+    kappaRow->addWidget(kappaSlider_, 1);
+    kappaSpin_ = new QDoubleSpinBox(box);
+    kappaSpin_->setRange(0.0, 10.0);
+    kappaSpin_->setDecimals(6);
+    kappaSpin_->setFixedWidth(110);
+    kappaSpin_->setToolTip(kappaTip);
+    kappaRow->addWidget(kappaSpin_);
+    layout->addLayout(kappaRow);
+    ouHalfLifeLabel_ = new QLabel(box);
+    ouHalfLifeLabel_->setStyleSheet("color: gray;");
+    layout->addWidget(ouHalfLifeLabel_);
+
+    // σ — same slider+spinbox pattern, same range as the GBM Simple page's
+    // volatility slider (kVolMin/kVolMax): both are a per-tick vol in %.
+    const QString sigmaTip = tr("Size of each random nudge, before reversion pulls the price "
+                                 "back toward θ.");
+    auto* sigmaTitle = new QLabel(tr("Volatility Coefficient (σ)"), box);
+    sigmaTitle->setToolTip(sigmaTip);
+    layout->addWidget(sigmaTitle);
+    auto* sigmaRow = new QHBoxLayout();
+    ouSigmaSlider_ = new QSlider(Qt::Horizontal, box);
+    ouSigmaSlider_->setRange(0, 100);
+    ouSigmaSlider_->setToolTip(sigmaTip);
+    sigmaRow->addWidget(ouSigmaSlider_, 1);
+    ouSigmaSpin_ = new QDoubleSpinBox(box);
+    ouSigmaSpin_->setRange(0.0, 100.0);
+    ouSigmaSpin_->setDecimals(3);
+    ouSigmaSpin_->setSuffix(tr(" %"));
+    ouSigmaSpin_->setFixedWidth(110);
+    ouSigmaSpin_->setToolTip(sigmaTip);
+    sigmaRow->addWidget(ouSigmaSpin_);
+    layout->addLayout(sigmaRow);
+
+    auto* note = new QLabel(
+        tr("Switch to Advanced mode for the raw κ/σ table (e.g. to inspect provenance)."), box);
+    note->setWordWrap(true);
+    note->setStyleSheet("color: gray;");
+    layout->addWidget(note);
+
+    auto* resetRow = new QHBoxLayout();
+    auto* resetBtn = new QPushButton(tr("Reset"), box);
+    resetBtn->setToolTip(tr("Restore default parameters (15 min half-life, Normal volatility)."));
+    connect(resetBtn, &QPushButton::clicked, this, &FxSpotRateEditor::onResetOuSimple);
+    resetRow->addWidget(resetBtn);
+    resetRow->addStretch(1);
+    layout->addLayout(resetRow);
+    layout->addStretch(1);
+
+    // Slider <-> spinbox, kept in sync both ways without feedback loops; either
+    // one changing rebuilds the model and refreshes charts.
+    connect(kappaSlider_, &QSlider::valueChanged, this, [this](int v) {
+        const QSignalBlocker blocker(kappaSpin_);
+        kappaSpin_->setValue(kappaSliderToValue(v));
+        if (syncing_)
+            return;
+        rebuildOuModelFromSimple();
+        refreshCharts();
+    });
+    connect(kappaSpin_, &QDoubleSpinBox::valueChanged, this, [this](double v) {
+        const QSignalBlocker blocker(kappaSlider_);
+        kappaSlider_->setValue(kappaValueToSlider(v));
+        if (syncing_)
+            return;
+        rebuildOuModelFromSimple();
+        refreshCharts();
+    });
+    connect(ouSigmaSlider_, &QSlider::valueChanged, this, [this](int v) {
+        const QSignalBlocker blocker(ouSigmaSpin_);
+        ouSigmaSpin_->setValue(sliderToValue(v, kVolMin, kVolMax) * 100.0);
+        if (syncing_)
+            return;
+        rebuildOuModelFromSimple();
+        refreshCharts();
+    });
+    connect(ouSigmaSpin_, &QDoubleSpinBox::valueChanged, this, [this](double v) {
+        const QSignalBlocker blocker(ouSigmaSlider_);
+        ouSigmaSlider_->setValue(valueToSlider(v / 100.0, kVolMin, kVolMax));
+        if (syncing_)
+            return;
+        rebuildOuModelFromSimple();
+        refreshCharts();
+    });
+
+    return box;
 }
 
 QWidget* FxSpotRateEditor::buildAdvancedControls() {
@@ -955,26 +1114,12 @@ void FxSpotRateEditor::onEngineChanged() {
 void FxSpotRateEditor::updateEngineUi() {
     // Generic, capability-driven gating (any engine with supportsMixing = false
     // behaves this way, not just "ou" specifically). Called both on every engine
-    // change AND once at the end of buildBehaviourTab() during construction — the
-    // latter matters when opening an *existing* single-regime record, since
-    // engineCombo_->setCurrentIndex() runs before its currentIndexChanged signal
-    // is connected, so onEngineChanged() never fires for the initial value. If
-    // this forcing lived only in onEngineChanged() (as it used to), an existing
-    // "ou" record would silently open on the Simple page; clicking Save without
-    // touching anything would then overwrite its real κ with a Simple-mode-
-    // derived value that has no defined meaning for a single-regime process.
+    // change AND once at the end of buildBehaviourTab() during construction.
     const bool mixing = currentEngineSupportsMixing();
-    if (!mixing) {
-        if (modeGroup_ && modeGroup_->checkedId() != 1) {
-            if (auto* advancedBtn = modeGroup_->button(1))
-                advancedBtn->setChecked(true);
-            onModeChanged();
-        }
-        if (components_.size() > 1) {
-            // Single-regime process — collapse to the first row so its reused
-            // fields have one unambiguous value.
-            components_.resize(1);
-        }
+    if (!mixing && components_.size() > 1) {
+        // Single-regime process — collapse to the first row so its reused
+        // fields have one unambiguous value.
+        components_.resize(1);
     }
     // The warning banner's wording is inherently engine-specific — a boolean
     // can't express *how* a single-regime engine's fields are repurposed, so
@@ -991,16 +1136,22 @@ void FxSpotRateEditor::updateEngineUi() {
     if (ou && isNew_ && !components_.empty() && components_.front().weight == 1.0)
         components_.front().weight = kappaFromHalfLifeMinutes(15.0);
 
-    // Always resync the table from the model: besides picking up the row-count/
-    // κ-default changes above, the Weight cell's *display units* depend on the
-    // engine ("ou" shows a derived half-life in minutes, others show the raw
-    // stored value — see addTableRow), so the cells must be rebuilt any time the
-    // engine could have changed, including switching *out of* "ou".
+    // Always resync both the table and "ou"'s dedicated Simple page from the
+    // model — cheap, and guarantees whichever page becomes visible (either via
+    // this engine change or a later Simple/Advanced click) is never stale.
     if (componentTable_) {
         syncing_ = true;
         syncAdvancedFromModel();
         syncing_ = false;
         updateComponentColors();
+    }
+    if (simpleModeStack_) {
+        simpleModeStack_->setCurrentIndex(ou ? 1 : 0);
+        if (ou) {
+            syncing_ = true;
+            syncOuSimpleFromModel();
+            syncing_ = false;
+        }
     }
 
     if (engineWarningLabel_) {
@@ -1008,11 +1159,11 @@ void FxSpotRateEditor::updateEngineUi() {
             engineWarningLabel_->setText(
                 tr("⚠ Single regime — Weight/σ fields are repurposed. Hover for details."));
             engineWarningLabel_->setToolTip(
-                tr("Ornstein-Uhlenbeck engine: a single regime, not a mixture. Simple mode is "
-                   "disabled — Advanced mode's fields are reused as: κ (reversion speed) = "
-                   "Weight, σ (volatility) = Volatility (σ), and θ (long-run mean) = Initial "
-                   "Price. Drift (μ) is unused. \"Add process\" is disabled while this engine is "
-                   "selected."));
+                tr("Ornstein-Uhlenbeck engine: a single regime, not a mixture. Simple mode "
+                   "shows dedicated θ/κ/σ controls; Advanced mode's fields are reused as: κ "
+                   "(reversion speed) = Weight, σ (volatility) = Volatility (σ), and θ "
+                   "(long-run mean) = Initial Price. Drift (μ) is unused. \"Add process\" is "
+                   "disabled while this engine is selected."));
         } else if (arithmetic) {
             engineWarningLabel_->setText(
                 tr("⚠ Absolute price increments — may go negative. Hover for details."));
@@ -1040,11 +1191,6 @@ void FxSpotRateEditor::updateEngineUi() {
 
     if (addComponentBtn_)
         addComponentBtn_->setEnabled(mixing);
-
-    if (modeGroup_) {
-        if (auto* simpleBtn = modeGroup_->button(0))
-            simpleBtn->setEnabled(mixing);
-    }
 
     if (componentTable_) {
         if (auto* meanHdr = componentTable_->horizontalHeaderItem(ColMean))
@@ -1166,6 +1312,53 @@ void FxSpotRateEditor::onResetSimple() {
     refreshCharts();
 }
 
+void FxSpotRateEditor::syncOuSimpleFromModel() {
+    if (priceSpin_)
+        ouThetaLabel_->setText(tr("%1").arg(priceSpin_->value(), 0, 'f', 5));
+    const double kappa = components_.empty() ? 0.0 : components_.front().weight;
+    const double sigma = components_.empty() ? 0.0 : components_.front().stdev;
+
+    syncing_ = true;
+    kappaSpin_->setValue(kappa);
+    kappaSlider_->setValue(kappaValueToSlider(kappa));
+    ouSigmaSpin_->setValue(sigma * 100.0);
+    ouSigmaSlider_->setValue(valueToSlider(sigma, kVolMin, kVolMax));
+    syncing_ = false;
+
+    ouHalfLifeLabel_->setText(
+        kappa > 0.0 ?
+            tr("Calculated Half-Life t½: %1 min").arg(halfLifeMinutesFromKappa(kappa), 0, 'f', 3) :
+            tr("κ = 0 — no reversion (driftless random walk)"));
+}
+
+void FxSpotRateEditor::rebuildOuModelFromSimple() {
+    const double kappa = kappaSpin_->value();
+    const double sigma = ouSigmaSpin_->value() / 100.0;
+
+    ouHalfLifeLabel_->setText(
+        kappa > 0.0 ?
+            tr("Calculated Half-Life t½: %1 min").arg(halfLifeMinutesFromKappa(kappa), 0, 'f', 3) :
+            tr("κ = 0 — no reversion (driftless random walk)"));
+
+    // Preserve the existing single component's id so this updates in place.
+    std::string id;
+    if (!components_.empty())
+        id = components_.front().id;
+    components_ = {ModelComponent{id, "Primary process", 0.0, sigma, kappa}};
+}
+
+void FxSpotRateEditor::onResetOuSimple() {
+    components_ = {ModelComponent{components_.empty() ? std::string() : components_.front().id,
+                                  "Primary process",
+                                  0.0,
+                                  v0 * 2,
+                                  kappaFromHalfLifeMinutes(15.0)}};
+    syncing_ = true;
+    syncOuSimpleFromModel();
+    syncing_ = false;
+    refreshCharts();
+}
+
 void FxSpotRateEditor::onResetAdvanced() {
     components_ = {ModelComponent{{}, "Primary process", 0.0, v0 * 2, 1.0}};
     syncing_ = true;
@@ -1224,6 +1417,10 @@ void FxSpotRateEditor::updateWeightSumLabel() {
 }
 
 void FxSpotRateEditor::syncSimpleFromModel() {
+    if (currentEngine() == "ou") {
+        syncOuSimpleFromModel();
+        return;
+    }
     if (components_.empty())
         return;
 
@@ -1260,6 +1457,10 @@ void FxSpotRateEditor::syncSimpleFromModel() {
 }
 
 void FxSpotRateEditor::rebuildModelFromSimple() {
+    if (currentEngine() == "ou") {
+        rebuildOuModelFromSimple();
+        return;
+    }
     const double drift = sliderToValue(driftSlider_->value(), kDriftMin, kDriftMax);
     const double vol = sliderToValue(volSlider_->value(), kVolMin, kVolMax);
     const double jumpFraction = sliderToValue(jumpSlider_->value(), kJumpMin, kJumpMax);

@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 22B3B8D4-3937-47BB-B378-847D72F95D12
+:END:
+#+title: Task: Implement compass client start/stop subcommands
+#+description: Rework run_client() in compass_services.py to use argparse subparsers matching compass services; rename cmd_client to cmd_client_start; extract the PID-terminate logic from cmd_stop's closure into a shared _terminate() helper and add cmd_client_stop. Update the devops-run-client skill and user-manual chapter_2_connecting references from the old flat compass client invocation.
+#+type: task
+#+level: s1
+#+filetags: :compass:cli:devx:sprint_22:v0:add_compass_client_start_stop_subcommands:
+#+owner: marco
+#+branch: feature/add-compass-client-start-stop-subcommands
+#+pr: 1416
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:25A93F0B-FD5C-4EA1-9194-093073B44C44][Add compass client start/stop subcommands]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+While manually verifying party_type Qt UI, launched the client with the
+old flat =compass client --colour ...= syntax and noticed it has no
+=stop= counterpart, unlike every other Operate-pillar command
+(=services start/stop/status=, =env configure=, =nats init=). Add
+=compass client start=/=compass client stop= so the client can be
+launched and torn down consistently with the rest of compass.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:25A93F0B-FD5C-4EA1-9194-093073B44C44][Add compass client start/stop subcommands]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- =compass client start --colour <c> --instance-name <n>= launches the
+  Qt client (unchanged behaviour from the old flat =compass client=).
+- =compass client stop --colour <c>= terminates the matching instance's
+  PID (SIGTERM, SIGKILL after a 10s grace period), scoped by =--colour=
+  the same way =start='s PID file is scoped.
+- =compass client --help= lists both subcommands.
+- Skill and manual references to the flat form are updated.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+Extracted the PID-terminate logic that =cmd_stop= had inlined as a
+closure (capturing =stopped=/=gone= counters via =nonlocal=) into a
+standalone =_terminate(name, pid_file, grace)= helper returning
+=\"stopped\"=/=\"gone\"=, so both =cmd_stop= and the new
+=cmd_client_stop= share one implementation. Renamed =cmd_client= to
+=cmd_client_start= and factored colour resolution into
+=_client_colour()= so start and stop agree on how a colour maps to a
+PID file name.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1416][#1416]] | [compass] Add client start/stop subcommands |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Bare compass client bearings hint now errors (subcommand required) | compass.py:4915 | Accepted | Flagged by all 3 review passes; fixed to `compass client start` |
+| 2 | Stale start-client.sh migration comment still says "compass client" | compass_services.py:10 | Accepted | Fixed |
+| 3 | client missing from top-level --help epilog | compass.py:5912 | Accepted | Added `client: start | stop (operate)` line |
+| 4 | Duplicated "unknown colour" error string across start/stop | compass_services.py | Declined | Minor DRY nit, not worth the indirection for a 2-line string |
+| 5 | No `client status` subcommand | (n/a) | Declined | Out of scope — task's acceptance criteria only called for start/stop |
+
+* Result
+
+=projects/ores.compass/src/compass_services.py=: added =_terminate()=
+(shared by =cmd_stop= and the new =cmd_client_stop=), =_client_colour()=
+(shared by =cmd_client_start=/=cmd_client_stop=), renamed
+=cmd_client= → =cmd_client_start=, reworked =run_client()= to use
+=start=/=stop= subparsers like =run()= (services). Updated
+=projects/ores.compass/src/compass.py='s top-level help text, the
+=devops-run-client= skill, and =doc/manual/user_guide/chapter_2_connecting.org=.
+Verified live: =compass client start --colour green ...= launched
+=ores.qt=, =compass client stop --colour green= terminated it cleanly
+(SIGTERM, exited within grace period); =compass client stop --colour
+blue= against an already-exited instance correctly reported =gone=
+without touching an unrelated, separately-launched =ores.qt= process.

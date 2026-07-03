@@ -7,7 +7,7 @@ Native port of the build/scripts service-lifecycle scripts:
     stop-services.sh    ->  compass services stop
     status-services.sh  ->  compass services status
     clear-logs.sh       ->  compass services clear-logs
-    start-client.sh     ->  compass client
+    start-client.sh     ->  compass client start
 
 The controller spawns IAM and every domain service; this module only
 manages nats-server, the controller, and the Qt client, plus PID-file
@@ -303,36 +303,46 @@ def cmd_start(ctx, args):
     return 0 if ok else 1
 
 
+def _terminate(name, pid_file, grace) -> str:
+    """SIGTERM (then SIGKILL after `grace` seconds) the PID in `pid_file`.
+
+    Returns "stopped", "gone" (already dead / no PID file), for callers that
+    tally results across several processes.
+    """
+    pid = _read_pid(pid_file)
+    if pid is None:
+        print(f"  skip    {name} (no PID file — already stopped)")
+        return "gone"
+    pid_file.unlink(missing_ok=True)
+    if not _pid_alive(pid):
+        print(f"  gone    {name:<38} PID {pid}")
+        return "gone"
+    os.kill(pid, signal.SIGTERM)
+    print(f"  stop    {name:<38} PID {pid}")
+    print(f"Waiting for {name} to exit...", end="", flush=True)
+    for _ in range(grace * 2):
+        if not _pid_alive(pid):
+            break
+        time.sleep(0.5)
+        print(".", end="", flush=True)
+    print(" done")
+    if _pid_alive(pid):
+        os.kill(pid, signal.SIGKILL)
+        print(f"  killed  PID {pid} (did not exit within grace period)")
+    print()
+    return "stopped"
+
+
 def cmd_stop(ctx, args):
     print(f"Stopping ORE Studio services ({ctx.preset})\n")
     stopped = gone = 0
 
     def _term(name, pid_file, grace):
         nonlocal stopped, gone
-        pid = _read_pid(pid_file)
-        if pid is None:
-            print(f"  skip    {name} (no PID file — already stopped)")
+        if _terminate(name, pid_file, grace) == "stopped":
+            stopped += 1
+        else:
             gone += 1
-            return
-        pid_file.unlink(missing_ok=True)
-        if not _pid_alive(pid):
-            print(f"  gone    {name:<38} PID {pid}")
-            gone += 1
-            return
-        os.kill(pid, signal.SIGTERM)
-        print(f"  stop    {name:<38} PID {pid}")
-        stopped += 1
-        print(f"Waiting for {name} to exit...", end="", flush=True)
-        for _ in range(grace * 2):
-            if not _pid_alive(pid):
-                break
-            time.sleep(0.5)
-            print(".", end="", flush=True)
-        print(" done")
-        if _pid_alive(pid):
-            os.kill(pid, signal.SIGKILL)
-            print(f"  killed  PID {pid} (did not exit within grace period)")
-        print()
 
     print("[Controller]")
     # The controller must stop all its children before it exits: 30 s grace.
@@ -430,24 +440,32 @@ def cmd_clear_logs(ctx, args):
     return 0
 
 
-def cmd_client(ctx, args):
+def _client_colour(colour_arg):
+    """Resolve --colour to (hex, tag), or ("", "") if unset. Returns None on
+    an invalid value (caller prints the error and exits)."""
+    if not colour_arg:
+        return "", ""
+    c = colour_arg.lower()
+    if c in CLIENT_COLOURS:
+        return CLIENT_COLOURS[c], c
+    if len(c) == 6 and all(ch in "0123456789abcdef" for ch in c):
+        return c.upper(), c
+    return None
+
+
+def cmd_client_start(ctx, args):
     if not (ctx.bin_dir / "ores.qt").exists():
         print(f"error: ores.qt not found in {ctx.bin_dir}", file=sys.stderr)
         print(f"       cmake --build --preset {ctx.preset}", file=sys.stderr)
         return 1
     ctx.run_dir.mkdir(parents=True, exist_ok=True)
 
-    colour_hex = colour_tag = ""
-    if args.colour:
-        c = args.colour.lower()
-        if c in CLIENT_COLOURS:
-            colour_hex, colour_tag = CLIENT_COLOURS[c], c
-        elif len(c) == 6 and all(ch in "0123456789abcdef" for ch in c):
-            colour_hex, colour_tag = c.upper(), c
-        else:
-            print(f"error: unknown colour '{args.colour}' — use red, green, "
-                  f"blue, or a 6-digit hex value", file=sys.stderr)
-            return 1
+    resolved = _client_colour(args.colour)
+    if resolved is None:
+        print(f"error: unknown colour '{args.colour}' — use red, green, "
+              f"blue, or a 6-digit hex value", file=sys.stderr)
+        return 1
+    colour_hex, colour_tag = resolved
 
     pid_name = f"ores.qt.{colour_tag}" if colour_tag else "ores.qt"
     log_file = f"{pid_name}.log"
@@ -464,6 +482,19 @@ def cmd_client(ctx, args):
 
     _launch(ctx, pid_name, "ores.qt", client_args)
     print(f"\nLogs : {ctx.log_dir / log_file}")
+    return 0
+
+
+def cmd_client_stop(ctx, args):
+    resolved = _client_colour(args.colour)
+    if resolved is None:
+        print(f"error: unknown colour '{args.colour}' — use red, green, "
+              f"blue, or a 6-digit hex value", file=sys.stderr)
+        return 1
+    _, colour_tag = resolved
+    pid_name = f"ores.qt.{colour_tag}" if colour_tag else "ores.qt"
+    print(f"Stopping {pid_name} ({ctx.preset})\n")
+    _terminate(pid_name, ctx.run_dir / f"{pid_name}.pid", grace=10)
     return 0
 
 
@@ -510,14 +541,24 @@ def run(argv, project_root: Path) -> int:
 def run_client(argv, project_root: Path) -> int:
     ap = argparse.ArgumentParser(
         prog="compass client",
-        description="Operate pillar: launch the Qt client detached.")
-    _common(ap)
-    ap.add_argument("--colour", "--color", default=None,
+        description="Operate pillar: launch/stop the Qt client, detached.")
+    sub = ap.add_subparsers(dest="subcmd", required=True)
+
+    st = sub.add_parser("start", help="Launch the Qt client detached")
+    _common(st)
+    st.add_argument("--colour", "--color", default=None,
                     help="red, green, blue, or 6-digit hex — instance accent")
-    ap.add_argument("--instance-name", default=None)
-    ap.add_argument("--log-level", default="debug")
+    st.add_argument("--instance-name", default=None)
+    st.add_argument("--log-level", default="debug")
+
+    sp = sub.add_parser("stop", help="Stop a running Qt client instance")
+    _common(sp)
+    sp.add_argument("--colour", "--color", default=None,
+                    help="Must match the --colour the instance was started "
+                         "with (default: the uncoloured instance)")
+
     args = ap.parse_args(argv)
     env = load_env(project_root)
     validate_env_version(project_root, env)
     ctx = Ctx(project_root, env, args.preset)
-    return cmd_client(ctx, args)
+    return {"start": cmd_client_start, "stop": cmd_client_stop}[args.subcmd](ctx, args)

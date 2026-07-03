@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 25A93F0B-FD5C-4EA1-9194-093073B44C44
+:END:
+#+title: Story: Add compass client start/stop subcommands
+#+description: compass client was a flat command (only launch, no way to stop via compass); every other Operate-pillar command (services, env, nats) uses start/stop/status subcommands. Add client start (existing launch behaviour) and client stop (--colour-scoped PID termination, reusing the same terminate logic as services stop).
+#+type: story
+#+level: s2
+#+filetags: :compass:cli:devx:sprint_22:v0:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-07-03                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:22B3B8D4-3937-47BB-B378-847D72F95D12][Implement compass client start/stop subcommands]] | DONE | | 2026-07-03 | Rework run_client() in compass_services.py to use argparse subparsers matching compass services; rename cmd_client to cmd_client_start; extract the PID-terminate logic from cmd_stop's closure into a shared _terminate() helper and add cmd_client_stop. Update the devops-run-client skill and user-manual chapter_2_connecting references from the old flat compass client invocation. |
+
+* Decisions
+
+* Out of scope
+
+-

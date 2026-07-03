@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98
+:END:
+#+title: Story: IR Rates synthetic data generation
+#+description: Generate synthetic interest-rate curve raw instruments (deposits, FRAs, swaps) via short-rate stochastic processes, publishing tick batches consumable by future curve-bootstrapping and vol-surface work without building either.
+#+type: story
+#+level: s2
+#+filetags: :market_data:synthetic:rates:sprint_22:v0:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Extend synthetic market data generation from FX spot to interest-rate
+curves: a short-rate stochastic engine (Hull-White/CIR/Vasicek) drives
+a configurable "Curve Template" (short-end deposits, mid-curve
+FRAs/futures, long-end swaps) per currency+index, publishing tick
+batches of raw instrument observations. Deliberately scoped to raw
+instrument generation only — no bootstrapping, no vol surfaces — but
+the output shape must be validated against what those two, imminent,
+follow-on stories will need.
+
+No QuantLib dependency: the short-rate process is pure closed-form
+math (same shape as the FX spot engines already in
+=projects/ores.synthetic/service/src/processes/=), consistent with
+keeping =ores.synthetic= lean for future GPU/high-instrument-count
+optimisation (target: 30-50 FX rates, hundreds of IR rates, tens of
+vol surfaces).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-03                               |
+
+* Acceptance
+
+- A short-rate stochastic engine (Hull-White, CIR, or Vasicek — the
+  team's choice among the three) is implemented as a new
+  =IStochasticProcess= in =projects/ores.synthetic/service/src/processes/=
+  and wired into =process_factory=, with zero QuantLib dependency.
+- A new sub-config (e.g. =ir_curve_generation_config=, owned by
+  =market_data_generation_config=, mirroring
+  =fx_spot_generation_config=) lets a party configure one Curve
+  Template per currency+index (e.g. USD-SOFR, EUR-ESTR): short-end
+  deposits, mid-curve FRAs/futures, long-end swaps.
+- A lightweight, QuantLib-free tenor type (parses labels like "3M",
+  "2Y", "1W" and supports simple =std::chrono=-based date-window
+  overlap checks — no business-day calendar machinery) exists and is
+  used by the tenor-collision validator below. No such type exists
+  anywhere in the codebase today (confirmed by investigation); this
+  is new, reusable infrastructure, not an adaptation of an existing
+  utility.
+- The Curve Template is validated at configuration time against
+  tenor collisions/gaps (e.g. a swap tenor landing inside a futures
+  instrument's active delivery window) using that tenor type — a
+  pure, engine-side validator in =ores.synthetic.api= (same pattern as
+  =validate_process_parameters= from the GMM improvements story), not
+  UI-hardcoded logic. This directly prevents the "multi-dimensional
+  iterative solver collapse" failure mode a downstream bootstrapper
+  would otherwise hit.
+- Each generation step publishes a "tick batch": N individual ticks
+  (one per configured tenor/instrument), each its own
+  =market_observation= row sharing one =observation_datetime=, with
+  =point_id= set to the tenor label (=asset_class::rates=,
+  =series_subclass::yield/fra/basis= as appropriate — no schema
+  changes needed, these already exist).
+- The shared =observation_datetime= across a tick batch is confirmed
+  sufficient for a future bootstrap consumer to group "ticks belonging
+  to one generation cycle" without building that consumer here.
+
+* Explicitly not required (would over-scope this story)
+
+- Curve bootstrapping itself (deterministic yield-curve construction,
+  throttled/dirty-flag evaluation) — separate future story.
+- FX/IR volatility surfaces, frozen-pool interpolation, CIP-derived
+  forwards — separate future story. Gemini's analysis
+  (=doc/analysis/gemini_ir_rates_synthetic_support.org=) conflates this
+  with IR rate generation; this story deliberately does not.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3D39EF0A-585F-4C66-B84F-433CAFA4DEB2][Lightweight QuantLib-free tenor type]] | BACKLOG | | | Parse tenor labels (3M, 2Y, 1W) and support simple std::chrono-based date-window overlap checks, with no business-day calendar machinery and no QuantLib dependency. |
+| [[id:01143977-5DA2-48AE-B4BE-109585BC4962][Short-rate stochastic process (Hull-White/CIR/Vasicek)]] | BACKLOG | | | New IStochasticProcess implementation for mean-reverting short-rate dynamics, wired into process_factory, mirroring ou_process's shape. |
+| [[id:20D82F58-758D-498A-8B08-AA664408CB8F][Curve Template sub-config (ir_curve_generation_config)]] | BACKLOG | | | New sub-config owned by market_data_generation_config, one per currency+index, configuring the raw instrument grid (deposits, FRAs/futures, swaps). |
+| [[id:E6B7DEF3-F35F-454A-8ECF-CCD9E8E07A83][Tenor-collision/gap validation on the Curve Template]] | BACKLOG | | | Pure, engine-side validator (ores.synthetic.api) rejecting instrument grids where tenors overlap or collide with an active delivery window, using the new tenor type. |
+| [[id:615FD100-BCD9-4CF5-B9DF-197447769AA9][Tick-batch publishing and persistence for curve instruments]] | BACKLOG | | | Each generation step publishes N individual ticks (one per tenor), each its own market_observation row sharing one observation_datetime, point_id set to the tenor label. |
+
+* Decisions
+
+- Short-rate SDEs (Hull-White/CIR/Vasicek) chosen over the sprint-21
+  approach doc's GMM-fit-on-historical-par-rate-vectors technique
+  (=doc/analysis/intermediate_analysis_technique_to_asset_class_mapping.org=,
+  Step 1). The GMM-on-vectors technique is a batch/snapshot draw, not
+  a streaming per-tick generation — it doesn't fit the
+  =IStochasticProcess=/=process_factory=/=feed_controller=/NATS-tick
+  architecture already built for FX spot. Short-rate SDEs are
+  structurally identical in shape to the =ou_process= just added
+  (mean-reverting, closed-form transition density), so they slot into
+  the existing architecture directly. This decision supersedes the
+  sprint-21 doc's IR generation technique.
+- No QuantLib dependency, confirmed unnecessary: the short-rate
+  process is pure math (no calendar/date types needed), and the
+  tenor-collision validator only needs simple date-window overlap
+  (confirmed sufficient — no business-day-calendar-aware scheduling
+  required for that check specifically). Full QuantLib-grade calendar
+  logic would only be needed for actual bootstrapping, which is out
+  of scope.
+- Validated against prior art already in the repo before committing
+  to this scope: =market_data_generation_config='s docstring already
+  anticipated "vol surface, interest-rate curves later" as sibling
+  sub-configs; =ores.marketdata='s schema already has
+  =asset_class::rates=, =series_subclass::yield/fra/basis/xccy=, and
+  =market_observation.point_id= was explicitly designed for
+  tenor/surface coordinates (non-scalar series) — no schema redesign
+  needed for this story.
+- Tenor-collision validation is in scope here (raw-instrument-grid
+  concern); the throttled/dirty-flag bootstrap evaluation pattern
+  Luigi Ballabio's principles call for is downstream consumer work,
+  out of scope — this story's only obligation to it is ensuring the
+  tick-batch contract (shared =observation_datetime=) carries enough
+  signal for a future consumer to throttle.
+
+* Out of scope
+
+- Curve bootstrapping (see Acceptance).
+- FX/IR volatility surfaces, frozen-pool interpolation (see Acceptance).
+- Business-day-calendar-aware tenor arithmetic (the tenor type here
+  is deliberately simple date-window overlap only).

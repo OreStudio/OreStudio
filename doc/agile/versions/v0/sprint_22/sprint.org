@@ -83,6 +83,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] | BACKLOG | | | Drop legacy pre-codegen ores_marketdata_series/observations/fixings_tbl (superseded, zero C++ references); remove their stale validation_ignore.txt entries; preserve market_observation's hand-written repository/service overrides against codegen regeneration. |
 | [[id:6C515A93-C7D9-4B6C-B7B2-7AD433BACE44][Configurable feed status indicator in the FX spot grid]] | DONE | 2026-07-02 | 2026-07-03 | FX spot grid status pips use hardcoded CSS colours; replace with a configurable indicator once the right UX (badge vs. compact status dot) is settled. |
 | [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]] | DONE | 2026-07-02 | 2026-07-03 | Chart axis labels, per-component + combined PDF display, and stochastic process component gaps (incl. Ornstein-Uhlenbeck). |
+| [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] | BACKLOG | | | Short-rate stochastic process + Curve Template raw instrument generation (deposits/FRAs/swaps), tenor-collision validation, tick-batch publishing — no bootstrapping, no vol surfaces, no QuantLib. |
 
 ** Tooling
 

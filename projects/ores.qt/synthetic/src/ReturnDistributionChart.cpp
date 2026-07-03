@@ -201,6 +201,9 @@ void ReturnDistributionChart::setComponents(const std::vector<Component>& compon
         QPen compPen(componentColor(static_cast<int>(ci)));
         compPen.setWidth(2);
         compLine->setPen(compPen);
+        // Named for potential tooling/debugging use, but the chart's own legend is
+        // hidden (compact layout) — the colour-to-component mapping is conveyed via
+        // FxSpotRateEditor's component-table swatch column, not an in-chart legend.
         compLine->setName(tr("Component %1").arg(ci + 1));
         chart_->addSeries(compLine);
         compLine->attachAxis(axisX_);

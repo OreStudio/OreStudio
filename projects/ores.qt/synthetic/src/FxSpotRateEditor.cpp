@@ -77,6 +77,40 @@ constexpr double kVolMax = 0.02;     // 2% per update
 constexpr double kJumpMin = 0.0;     // weight of the jump component
 constexpr double kJumpMax = 0.5;     // up to 50% mixture share
 
+/**
+ * @brief Price-process engine metadata: the single source of truth for what
+ * appears in the engine combo and how the editor's generic gating (Add
+ * process / Simple mode / weight normalisation / the all-zero-weight guard)
+ * behaves per engine — the UI asks "does this engine support mixing?"
+ * rather than hardcoding "is this the ou engine?" throughout. More single-
+ * regime engines (e.g. Vasicek/CIR/Hull-White for rates) are expected to
+ * follow the same shape: add a row here, not new special-cases in the UI.
+ */
+struct EngineInfo {
+    const char* code;  // matches process_type / process_factory's dispatch key
+    const char* label; // combo box display text (wrapped in tr() at use site)
+    // False for single-regime processes (e.g. mean-reverting): the Advanced
+    // component table collapses to one row, "Add process" is disabled, the
+    // all-zero-weight guard and weight-sum-to-1 normalisation are skipped
+    // (that row's Weight field is repurposed as a scalar parameter, not a
+    // mixture share). Per-engine field remapping/wording stays engine-
+    // specific — a boolean can't express what a field means, only whether
+    // there can be more than one of them.
+    bool supportsMixing;
+};
+constexpr EngineInfo kEngines[] = {
+    {"geometric", QT_TR_NOOP("Geometric Brownian Motion"), true},
+    {"arithmetic", QT_TR_NOOP("Arithmetic Brownian Motion"), true},
+    {"ou", QT_TR_NOOP("Ornstein-Uhlenbeck (mean-reverting)"), false},
+};
+
+const EngineInfo* find_engine(const std::string& code) {
+    for (const auto& e : kEngines)
+        if (code == e.code)
+            return &e;
+    return nullptr;
+}
+
 // Advanced table columns (no per-component Type — engine is config-level now).
 enum Col {
     ColColor = 0,
@@ -341,9 +375,8 @@ void FxSpotRateEditor::buildBehaviourTab() {
     auto* headerRow = new QHBoxLayout();
     headerRow->addWidget(new QLabel(tr("Engine:"), tab));
     engineCombo_ = new QComboBox(tab);
-    engineCombo_->addItem(tr("Geometric Brownian Motion"), QStringLiteral("geometric"));
-    engineCombo_->addItem(tr("Arithmetic Brownian Motion"), QStringLiteral("arithmetic"));
-    engineCombo_->addItem(tr("Ornstein-Uhlenbeck (mean-reverting)"), QStringLiteral("ou"));
+    for (const auto& e : kEngines)
+        engineCombo_->addItem(tr(e.label), QString::fromLatin1(e.code));
     engineCombo_->setToolTip(
         tr("The price-process engine. Geometric uses log-returns (stays positive); "
            "arithmetic uses absolute price changes (symmetric, may go negative); "
@@ -889,8 +922,9 @@ std::string FxSpotRateEditor::currentEngine() const {
     return engineCombo_ ? engineCombo_->currentData().toString().toStdString() : "geometric";
 }
 
-bool FxSpotRateEditor::isOuEngine() const {
-    return currentEngine() == "ou";
+bool FxSpotRateEditor::currentEngineSupportsMixing() const {
+    const auto* info = find_engine(currentEngine());
+    return info ? info->supportsMixing : true; // unknown engine: don't block on it
 }
 
 QString FxSpotRateEditor::incrementNoun() const {
@@ -901,30 +935,50 @@ void FxSpotRateEditor::onEngineChanged() {
     if (engineCombo_)
         fx_.process_type = currentEngine();
     updateEngineUi();
-    if (isOuEngine() && componentTable_ && componentTable_->rowCount() > 1) {
-        // OU is a single-regime process — collapse to the first row so the
-        // reused Volatility (σ) / Weight (κ) fields have one unambiguous value.
-        components_.resize(1);
-        syncing_ = true;
-        syncAdvancedFromModel();
-        syncing_ = false;
-        updateComponentColors();
+    if (!currentEngineSupportsMixing()) {
+        // A single-regime engine has no defined Simple-mode mapping (the sliders
+        // drive drift/vol/jump-fraction, which don't correspond to a single
+        // process's parameters), so force Advanced mode — the only surface where
+        // those parameters are directly editable.
+        if (modeGroup_ && modeGroup_->checkedId() != 1) {
+            if (auto* advancedBtn = modeGroup_->button(1))
+                advancedBtn->setChecked(true);
+            onModeChanged();
+        }
+        if (componentTable_ && componentTable_->rowCount() > 1) {
+            // Single-regime process — collapse to the first row so its reused
+            // fields have one unambiguous value.
+            components_.resize(1);
+            syncing_ = true;
+            syncAdvancedFromModel();
+            syncing_ = false;
+            updateComponentColors();
+        }
     }
-    // Engine only affects the path simulation, not the increment PDF.
+    // Engine also determines whether the Return Distribution PDF chart applies
+    // (it doesn't for "ou", a level process rather than an increment mixture).
     refreshCharts();
 }
 
 void FxSpotRateEditor::updateEngineUi() {
-    const bool ou = isOuEngine();
-    const bool arithmetic = currentEngine() == "arithmetic";
+    // Generic, capability-driven gating (any engine with supportsMixing = false
+    // behaves this way, not just "ou" specifically).
+    const bool mixing = currentEngineSupportsMixing();
+    // The warning banner's wording is inherently engine-specific — a boolean
+    // can't express *how* a single-regime engine's fields are repurposed, so
+    // this part stays keyed on the engine code, unlike the gating above.
+    const auto engine = currentEngine();
+    const bool ou = engine == "ou";
+    const bool arithmetic = engine == "arithmetic";
 
     if (engineWarningLabel_) {
         if (ou) {
             engineWarningLabel_->setText(
-                tr("⚠ Ornstein-Uhlenbeck engine: a single regime, not a mixture. Reuses this "
-                   "editor's fields as: κ (reversion speed) = Weight, σ (volatility) = "
-                   "Volatility (σ), and θ (long-run mean) = Initial Price. Drift (μ) is "
-                   "unused. \"Add process\" is disabled while this engine is selected."));
+                tr("⚠ Ornstein-Uhlenbeck engine: a single regime, not a mixture. Simple mode is "
+                   "disabled — Advanced mode's fields are reused as: κ (reversion speed) = "
+                   "Weight, σ (volatility) = Volatility (σ), and θ (long-run mean) = Initial "
+                   "Price. Drift (μ) is unused. \"Add process\" is disabled while this engine is "
+                   "selected."));
         } else if (arithmetic) {
             engineWarningLabel_->setText(
                 tr("⚠ Arithmetic engine: μ and σ are absolute price increments (not "
@@ -935,7 +989,12 @@ void FxSpotRateEditor::updateEngineUi() {
     }
 
     if (addComponentBtn_)
-        addComponentBtn_->setEnabled(!ou);
+        addComponentBtn_->setEnabled(mixing);
+
+    if (modeGroup_) {
+        if (auto* simpleBtn = modeGroup_->button(0))
+            simpleBtn->setEnabled(mixing);
+    }
 }
 
 void FxSpotRateEditor::onAddComponentRow() {
@@ -1020,7 +1079,9 @@ void FxSpotRateEditor::rebuildModelFromAdvanced() {
 }
 
 void FxSpotRateEditor::updateWeightSumLabel() {
-    if (isOuEngine()) {
+    if (!currentEngineSupportsMixing()) {
+        // Wording is OU-specific for now (the only non-mixing engine); a future
+        // second one will need its own case here, same as the warning banner.
         const double kappa = components_.empty() ? 0.0 : components_.front().weight;
         weightSumLabel_->setText(tr("κ (reversion speed) = %1").arg(kappa, 0, 'f', 3));
         return;
@@ -1113,10 +1174,12 @@ void FxSpotRateEditor::refreshCharts() {
     const std::string engine = currentEngine();
     const double price = priceSpin_ ? priceSpin_->value() : fx_.gmm_initial_price;
 
-    if (engine == "ou") {
-        // Single regime, scalar params (κ, σ) reused from Weight/Volatility — not a
-        // mixture, so no normalisation. θ (long-run mean) is the Initial Price, sent
-        // separately below; the increment PDF chart doesn't apply to a level process.
+    if (!currentEngineSupportsMixing()) {
+        // Single-regime path — wording/remapping below is OU-specific for now (the
+        // only such engine); a future second one will need its own case here.
+        // Scalar params (κ, σ) reused from Weight/Volatility — not a mixture, so no
+        // normalisation. θ (long-run mean) is the Initial Price, sent separately
+        // below; the increment PDF chart doesn't apply to a level process.
         if (!components_.empty())
             pathComps.push_back({0.0, components_.front().stdev, components_.front().weight});
     } else {
@@ -1198,9 +1261,10 @@ void FxSpotRateEditor::onSaveClicked() {
 
     // Reject an all-zero weight set: the server builds a std::discrete_distribution
     // from the weights, which is undefined behaviour when they sum to zero. Doesn't
-    // apply to "ou": κ = 0 is a valid parameter (driftless random walk), and there's
-    // no discrete_distribution over regimes since it's a single process.
-    if (!isOuEngine()) {
+    // apply to single-regime engines (e.g. "ou", where κ = 0 is a valid parameter —
+    // a driftless random walk): there's no discrete_distribution over regimes since
+    // there's only one process, not a mixture.
+    if (currentEngineSupportsMixing()) {
         double weightSum = 0.0;
         for (const auto& mc : components_)
             weightSum += mc.weight;
@@ -1233,9 +1297,10 @@ void FxSpotRateEditor::onSaveClicked() {
         crSel->commentary.empty() ? "Authored via Market Simulator" : crSel->commentary;
     fx.version = 0;
 
-    // Build the component stack, normalising weights to sum 1. Not for "ou": its one
-    // row's weight is κ (reversion speed), a scalar parameter, not a mixture share.
-    const bool ou = isOuEngine();
+    // Build the component stack, normalising weights to sum 1. Skipped for
+    // single-regime engines (e.g. "ou"): their one row's Weight field is a
+    // scalar parameter (κ), not a mixture share.
+    const bool mixing = currentEngineSupportsMixing();
     double total = 0.0;
     for (const auto& mc : components_)
         total += mc.weight;
@@ -1260,7 +1325,7 @@ void FxSpotRateEditor::onSaveClicked() {
         c.description = mc.description;
         c.mean = mc.mean;
         c.stdev = mc.stdev;
-        c.weight = (!ou && total > 0.0) ? mc.weight / total : mc.weight;
+        c.weight = (mixing && total > 0.0) ? mc.weight / total : mc.weight;
         c.modified_by = username_.toStdString();
         namespace reason = ores::dq::domain::change_reason_constants::codes;
         c.change_reason_code =

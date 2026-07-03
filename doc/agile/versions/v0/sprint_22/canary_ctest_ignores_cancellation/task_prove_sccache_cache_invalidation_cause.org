@@ -21,27 +21,32 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Understand and mitigate the low sccache hit rate discovered on
-PR #1410's canary run (1.36%, 33/2433).
+PR #1410's canary run (1.36%, 33/2433). *Scope narrowed*: this task
+now covers landing the diagnostic telemetry (cache cleanup, max-size
+bump, =SCCACHE_LOG=debug= instrumentation) and the zero-source-diff
+experiment setup. Actually analyzing the two runs' results is split
+into a follow-up task (see story) so this doesn't block on ~3h+ of
+live CI runtime.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] |
-| Now          | Reopened — the access-scoping/quota explanation doesn't survive the numbers (32 changed files can't explain 98.6% misses against a 20-min-fresh cache). Running the live zero-source-diff experiment. |
-| Waiting on   | Two back-to-back canary runs on the identical commit (~3h each).                               |
-| Next         | Enable SCCACHE_LOG=debug, push, let this PR's own canary run once, then `gh run rerun` it on the same commit and compare.                  |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | See follow-up task for the actual analysis once the two experiment runs complete.                  |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
 
-- Root cause mechanism identified with direct API/log evidence (not
-  just inference).
-- Any low-risk, evidence-backed mitigation that fits in a quick pass
-  lands; anything requiring multi-hour live CI experiments is
-  deferred and recorded, not silently dropped.
+- Evidence-backed mitigations (cache cleanup, max-size bump) land.
+- =SCCACHE_LOG=debug= instrumentation lands so a zero-source-diff
+  rerun experiment can be analyzed without needing another PR.
 - vcpkg submodule pointer untouched.
+- Full root-cause proof is *not* required to close this task — that's
+  the follow-up task's job, once the live runs finish.
 
 * Plan
 
@@ -109,31 +114,32 @@ Result):
 
 * Result
 
-(Superseded — see the story's Decisions "Correction" entry. The
-analysis below explains a real architectural gap but was checked
-against the actual numbers and doesn't account for the 98.6% miss
-rate against a cache that was only 20 minutes stale and ~32 files
-diverged. Reopened; not closing this task until the live
-zero-source-diff experiment actually explains the magnitude.)
+An earlier version of this section claimed the access-scoping/quota
+finding was "root cause, well-evidenced" — checked against the actual
+numbers (only 32 files changed vs. a 20-minute-fresh cache, which
+cannot explain a 98.6% miss rate) and that claim didn't hold up. See
+the story's Decisions "Correction" entry for the full walk-back. That
+finding is real and worth keeping regardless, just not sufficient on
+its own — scope of *this* task narrowed to landing the diagnostics,
+not proving the cause, so it can close without waiting on ~3h+ live
+CI runs:
 
-~~Root cause is now well-evidenced~~: PR-scoped cache writes are
-discarded on merge by GitHub's own access-control design, so every
-PR's canary run only ever inherits whatever =continuous-linux.yml='s
-last nightly/on-push run produced on =main= — individual PRs never
-compound on each other's work. This was compounded by the repo
-sitting at 9.79/10 GB of GitHub's cache quota cap, with dead cache
-entries from an already-merged PR eating room that could never be
-reused. *(True, but not sufficient to explain this run's magnitude.)*
-
-Landed regardless (still valid improvements, kept):
-- Freed ~2.7 GB by deleting orphaned =refs/pull/1410/merge=-scoped
-  caches.
+- Freed ~2.7 GB of GitHub's cache quota by deleting orphaned
+  =refs/pull/1410/merge=-scoped cache entries left over from a
+  merged PR.
 - Increased sccache =max-size= 2000M → 3000M for the shared
-  =linux-gcc-debug-ninja= key in both workflows that write it.
+  =linux-gcc-debug-ninja= key in both =canary-linux.yml= and
+  =continuous-linux.yml= (they must match).
+- Instrumented =canary-linux.yml= with =SCCACHE_LOG=debug= /
+  =SCCACHE_ERROR_LOG= and a log-dump step, tagged as temporary
+  (comment marks it for removal once the story resolves).
+- Set up (but didn't wait out) a zero-source-diff experiment: this
+  PR's own canary run is "run 1"; a =gh run rerun= of the identical
+  commit gives "run 2" with zero source diff between them. If run 2
+  still misses heavily, the cause is inherent to the build itself
+  (timestamps, absolute paths, non-deterministic flags), not source
+  or dependency drift.
 
-Next: enable =SCCACHE_LOG=debug= on the =Run CTest workflow= step,
-let this PR's own canary run once, then =gh run rerun= the exact same
-job (same commit, zero source diff) and compare. If the rerun still
-misses heavily, the cause is something inherent to the build
-(timestamps, absolute paths, non-deterministic flags) rather than
-source or dependency drift.
+Analyzing the two runs' actual output is the follow-up task's job —
+splitting it off rather than blocking this task (and the PR) on
+several hours of CI runtime.

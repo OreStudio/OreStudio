@@ -160,9 +160,9 @@ not log archaeology after the fact — see Tasks.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Reopened: the access-scoping/quota explanation doesn't hold up numerically (32 files changed vs. a 20-min-fresh cache cannot explain 98.6% misses). Running a live zero-source-diff experiment (two back-to-back canary runs on the identical commit) to find the real proximate cause. |
-| Waiting on    | ~3h canary run with SCCACHE_LOG=debug enabled.                               |
-| Next          | Compare hit rates and per-file hash debug output between the two identical-commit runs.            |
+| Now           | Telemetry (cache cleanup, max-size bump, SCCACHE_LOG=debug) merged. Analysis of the zero-source-diff experiment split into its own task so this doesn't block the PR on ~6h of live CI runtime. |
+| Waiting on    | Two ~3h canary runs (run 1 = this PR's own canary; run 2 = a rerun of the identical commit).                               |
+| Next          | See the analysis task.            |
 | Last touched  | 2026-07-03                               |
 
 * Acceptance
@@ -185,7 +185,8 @@ not log archaeology after the fact — see Tasks.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6D484655-F44F-4088-AA56-AF7359C3E2DF][Prove/disprove sccache cache-invalidation cause with live evidence]] | DONE | 2026-07-03 | 2026-07-03 | Root-caused via the GitHub cache API directly (access scoping + quota, not vcpkg.json); applied a quick mitigation; full live hash-diff proof deferred. |
+| [[id:6D484655-F44F-4088-AA56-AF7359C3E2DF][Prove/disprove sccache cache-invalidation cause with live evidence]] | DONE | 2026-07-03 | 2026-07-03 | Landed quota cleanup, max-size bump, and SCCACHE_LOG=debug telemetry; the access-scoping/quota finding is real but doesn't explain this run's full magnitude — analysis of the live experiment split into a follow-up task. |
+| [[id:6ABEFC56-BB37-4237-A448-F8503AC63DCD][Analyze sccache zero-source-diff experiment results]] | BACKLOG | | | PR #1414's canary run (run 1, SCCACHE_LOG=debug) and a gh run rerun of the identical commit (run 2, zero source diff) form a controlled experiment. Compare sccache --show-stats hit rates and the debug log's cache-miss reasons between the two runs to determine whether the cause is content/dependency drift or something inherent to the build itself (timestamps, absolute paths, non-deterministic flags). Land whatever fix the finding points to. |
 
 * Decisions
 

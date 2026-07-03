@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 6ABEFC56-BB37-4237-A448-F8503AC63DCD
+:END:
+#+title: Task: Analyze sccache zero-source-diff experiment results
+#+description: PR #1414's canary run (run 1, SCCACHE_LOG=debug) and a gh run rerun of the identical commit (run 2, zero source diff) form a controlled experiment. Compare sccache --show-stats hit rates and the debug log's cache-miss reasons between the two runs to determine whether the cause is content/dependency drift or something inherent to the build itself (timestamps, absolute paths, non-deterministic flags). Land whatever fix the finding points to.
+#+type: task
+#+level: s1
+#+filetags: :canary_ctest_ignores_cancellation:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Determine the actual cause of the near-zero sccache hit rate
+(1.36% on PR #1410's canary run) using the telemetry landed by the
+sibling task: PR #1414's own canary run (=SCCACHE_LOG=debug=
+enabled) is "run 1"; a =gh run rerun= of that exact same commit
+gives "run 2" with *zero source diff* between them. Whichever way
+this comes out, land the appropriate fix or close-out.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] |
+| Now          | Waiting for run 1 (PR #1414's canary) to finish, then trigger run 2 via `gh run rerun`.                       |
+| Waiting on   | ~3h canary runtime, twice.                               |
+| Next         | Once both runs are done: compare sccache --show-stats and the debug-log cache-miss reasons. |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- Both runs' =sccache --show-stats= hit rates recorded and compared.
+- A conclusion reached: either "same-commit rerun still misses
+  heavily" (points to something inherent/non-deterministic in the
+  build — timestamps, absolute paths, flags) or "same-commit rerun
+  hits well" (points back to content/dependency drift, needing a
+  closer look at what in the 32-file diff cascades so broadly).
+- Whatever fix the conclusion points to is either landed, or — if
+  it's a bigger architectural change (e.g. restructuring cache
+  scoping/triggers) — filed as a clearly-scoped follow-up rather than
+  attempted here.
+- Remove the temporary =SCCACHE_LOG=debug=/=SCCACHE_ERROR_LOG=
+  instrumentation from =canary-linux.yml= once no longer needed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

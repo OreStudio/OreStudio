@@ -31,11 +31,11 @@ this comes out, land the appropriate fix or close-out.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] |
-| Now          | Waiting for run 1 (PR #1414's canary) to finish, then trigger run 2 via `gh run rerun`.                       |
-| Waiting on   | ~3h canary runtime, twice.                               |
-| Next         | Once both runs are done: compare sccache --show-stats and the debug-log cache-miss reasons. |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing — see the story's Decisions for the follow-up recommendation (external sccache backend). |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
@@ -74,3 +74,29 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+The planned "run 1 vs. gh run rerun" comparison turned out to be
+unnecessary — PR #1417 (the trigger PR, essentially zero C++ diff
+from what had just built minutes earlier) already gave a decisive,
+unambiguous result on its own: *0.00% hit rate (0/2435)*, and the
+restore step logged =Cache not found for input keys:
+sccache-linux-gcc-debug-ninja= — no cache to even attempt a lookup
+against. Checking the GitHub cache API at that moment
+(=gh api repos/.../actions/caches=) showed why: 12 cache entries for
+other OS/compiler variants (windows-clang, macos-clang ×
+debug/release, plus their vcpkg/Qt caches) had been touched recently
+by =continuous-*.yml= runs, evicting the Linux-gcc-debug entry to
+stay under GitHub's fixed *10 GB total per-repository* cache quota.
+
+No further debug-log analysis was needed — the =SCCACHE_LOG=debug=
+instrumentation added no value (verified: it's just per-invocation
+client boilerplate at that log scope, no cache-decision detail) and
+was removed. The =max-size= 2000M→3000M bump from the earlier
+(premature) pass was reverted — it was actively counterproductive,
+making the Linux-gcc cache consume more of the shared 10 GB pool and
+accelerating eviction of the other platforms' caches.
+
+See the story's Decisions for the full write-up and the follow-up
+recommendation (move sccache to an external cache backend —
+S3/GCS/Azure/self-hosted — to escape the 10 GB shared-quota
+contention entirely; scoped as a separate story, not attempted here).

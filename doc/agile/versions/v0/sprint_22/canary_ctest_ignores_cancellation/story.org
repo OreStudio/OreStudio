@@ -158,11 +158,11 @@ not log archaeology after the fact — see Tasks.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Telemetry (cache cleanup, max-size bump, SCCACHE_LOG=debug) merged. Analysis of the zero-source-diff experiment split into its own task so this doesn't block the PR on ~6h of live CI runtime. |
-| Waiting on    | Two ~3h canary runs (run 1 = this PR's own canary; run 2 = a rerun of the identical commit).                               |
-| Next          | See the analysis task.            |
+| Now           | Nothing.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing — a follow-up story to move sccache to an external cache backend is recommended but out of this story's scope.            |
 | Last touched  | 2026-07-03                               |
 
 * Acceptance
@@ -186,9 +186,64 @@ not log archaeology after the fact — see Tasks.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:6D484655-F44F-4088-AA56-AF7359C3E2DF][Prove/disprove sccache cache-invalidation cause with live evidence]] | DONE | 2026-07-03 | 2026-07-03 | Landed quota cleanup, max-size bump, and SCCACHE_LOG=debug telemetry; the access-scoping/quota finding is real but doesn't explain this run's full magnitude — analysis of the live experiment split into a follow-up task. |
-| [[id:6ABEFC56-BB37-4237-A448-F8503AC63DCD][Analyze sccache zero-source-diff experiment results]] | BACKLOG | | | PR #1414's canary run (run 1, SCCACHE_LOG=debug) and a gh run rerun of the identical commit (run 2, zero source diff) form a controlled experiment. Compare sccache --show-stats hit rates and the debug log's cache-miss reasons between the two runs to determine whether the cause is content/dependency drift or something inherent to the build itself (timestamps, absolute paths, non-deterministic flags). Land whatever fix the finding points to. |
+| [[id:6ABEFC56-BB37-4237-A448-F8503AC63DCD][Analyze sccache zero-source-diff experiment results]] | DONE | 2026-07-03 | 2026-07-03 | Decisive result obtained without needing the planned rerun: 0.00% hit rate, cache not found at all — evicted by cross-platform quota contention on GitHub's fixed 10 GB per-repo cache limit. Reverted the counterproductive max-size bump and removed the unhelpful debug instrumentation. |
 
 * Decisions
+
+*Final finding (2026-07-03, same day, live experiment)*: PR #1417 (a
+trigger PR touching only a workflow comment — zero C++ diff from what
+had just been compiled minutes earlier) ran canary and got a *0.00%*
+hit rate (0/2435), even worse than PR #1410's 1.36%. Crucially, the
+restore step didn't even find a cache to try:
+
+#+begin_example
+Cache not found for input keys: sccache-linux-gcc-debug-ninja
+#+end_example
+
+Checking =gh api repos/.../actions/caches= at that moment explained
+why: the =main=-scoped =sccache-linux-gcc-debug-ninja= entry had been
+evicted entirely. The repo's cache list showed *12 other entries*
+competing for the same fixed *10 GB total repository quota*:
+=sccache-windows-clang-debug-ninja= (1083MB), =sccache-macos-clang-debug-ninja=
+(1712MB), =sccache-windows-clang-release-ninja= (802MB),
+=sccache-macos-clang-release-ninja= (602MB), plus their =vcpkg-cache=
+and =install-qt-action= caches — all recently touched by
+=continuous-*.yml= runs on other platforms, all sharing the *same*
+10 GB pool as the Linux/gcc canary cache. GitHub's LRU eviction had
+simply dropped the Linux-gcc entry to make room for the others.
+
+*This is the real mechanism*, and it also explains PR #1410's partial
+(1.36%, not 0%) result: whether the Linux-gcc-debug cache survives at
+all, at any given moment, depends on which OS/compiler caches were
+touched most recently across the *entire* repo, not on anything
+specific to a given PR's diff. The earlier =max-size= 2000M→3000M
+bump (from the first, premature pass at this story) was
+counterproductive — it makes each cache entry larger, consuming more
+of the shared 10 GB pool and *accelerating* eviction of the other
+platforms' caches (and vice versa). Reverted it back to 2000M in both
+=canary-linux.yml= and =continuous-linux.yml=. Also removed the
+=SCCACHE_LOG=debug= instrumentation — it turned out to add no value
+(pure per-invocation client boilerplate, no useful hash/lookup
+detail at that log scope) and the decisive evidence came from the
+plain =actions/cache/restore= log line and the GitHub cache API
+directly, not from sccache's own logging.
+
+*What this means going forward*: GitHub's 10 GB per-repo cache quota
+is a hard, non-purchasable platform limit (same across all plan
+tiers) — it cannot be raised. ORE Studio currently runs 6+ distinct
+build variants (linux-gcc × {debug,release}, linux-clang ×
+{debug,release}, windows-clang × {debug,release}, macos-clang ×
+{debug,release}, roughly) all sharing that one pool alongside
+vcpkg/Qt caches, and the combined working set is evidently larger
+than 10 GB — hence constant thrashing. The durable fix is almost
+certainly to move sccache off GitHub's built-in =actions/cache= onto
+an external backend sccache natively supports (S3/GCS/Azure Blob, or
+a self-hosted Redis/webdav endpoint) — bounded only by storage you
+provision, not shared across unrelated platforms, and not subject to
+GitHub's 7-day-unused eviction. That is a bigger infrastructure change
+(needs a bucket/credentials, IAM setup, workflow changes across every
+platform's workflow file) than fits in this story's scope — recorded
+here as the follow-up recommendation rather than attempted now.
 
 *Correction (2026-07-03, same day)*: the entry below was written after
 PR #1410's canary run and initially treated as settling the story
@@ -244,10 +299,15 @@ job-log archaeology.
 - Moving the vcpkg submodule pointer (only happens once, at
   end-of-sprint, per existing convention).
 - A live =SCCACHE_LOG=debug= hash-input diff proving the exact
-  invalidation trigger file-by-file — deferred, see Decisions.
-- Restructuring cache scoping/triggers (e.g. adding a push-to-main
-  canary run, or a cache-warming job) to let PRs compound on each
-  other's work — a bigger architectural change than this pass
-  warrants.
+  invalidation trigger file-by-file — turned out unnecessary once the
+  cache-quota mechanism was found directly via the GitHub API; see
+  Decisions.
+- Migrating sccache to an external cache backend (S3/GCS/Azure/
+  self-hosted) to escape GitHub's 10 GB shared-quota contention —
+  this is the actual durable fix the evidence points to, but is a
+  real infra project (bucket/credentials/IAM, workflow changes across
+  every platform). Captured as a backlog item
+  (=doc/agile/product_backlog/inbox/sccache_external_cache_backend.org=)
+  rather than attempted in this story.
 
 -

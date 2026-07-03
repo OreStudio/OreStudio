@@ -99,12 +99,14 @@ jobs:
         with:
           submodules: true
 
-      - name: Restore sccache
-        uses: actions/cache/restore@v6
-        with:
-          path: ${{ env.SCCACHE_DIR }}
-          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-
+      # sccache is NOT cached across runs on this platform (deliberately —
+      # see story canary_ctest_ignores_cancellation): GitHub's actions/cache
+      # is capped at a fixed 10 GB per repository, shared across every
+      # OS/compiler/buildtype variant. Linux gates every PR via canary, so
+      # it gets the shared quota; Windows only runs on a schedule/tag push
+      # and doesn't need to compete for it. Revisit if/when sccache moves to
+      # an external cache backend (see the sccache_external_cache_backend
+      # backlog capture) that isn't quota-shared.
       - name: Ccache for gh actions
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
@@ -216,23 +218,6 @@ jobs:
           $preset="${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja"
           $cmake_args="build_group=Continuous,preset=$preset"
           ctest -VV --preset $preset --script "CTest.cmake,$cmake_args"
-
-      - name: Delete sccache entry
-        if: ${{ !cancelled() }}
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api --method DELETE \
-            "/repos/${{ github.repository }}/actions/caches?key=sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja" \
-            || true
-
-      - name: Save sccache
-        if: ${{ !cancelled() }}
-        uses: actions/cache/save@v6
-        with:
-          path: ${{ env.SCCACHE_DIR }}
-          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
 
       - name: Show sccache statistics
         if: always()

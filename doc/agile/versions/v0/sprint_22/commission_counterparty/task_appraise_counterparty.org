@@ -89,7 +89,9 @@ table as well as both children — see Result.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | business_center_code misclassified as soft_fk_validations; it's actually a Validations-table call-and-reassign pattern | task_appraise_counterparty.org, task_author_counterparty_validation_sections.org | Accepted | Fixed in 59787a311; verified against refdata_counterparties_create.sql:116-117 before accepting. |
+| 2 | country_code claimed "nothing new to build" via ores_refdata_validate_country_fn, but that function only checks null/empty and is unused elsewhere; real check doesn't match any facet | task_appraise_counterparty.org, task_author_counterparty_validation_sections.org | Accepted | Fixed in 59787a311; verified the function's body and grepped for call sites before accepting. Left as an explicit open gap. |
+| 3 | #+pr: and * PRs table empty on this PR's own task | task_appraise_counterparty.org | Accepted | Fixed in 59787a311 (#1420). |
 
 * Result
 

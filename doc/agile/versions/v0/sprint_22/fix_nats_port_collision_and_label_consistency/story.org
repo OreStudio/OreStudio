@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 05243CFE-F838-4759-9956-9400D6C90FDC
+:END:
+#+title: Story: Fix NATS port collision with legacy env and label inconsistency
+#+description: solid_dirac's NATS ports (42222/8222) collided with a stray, untracked nats-server from the deleted legacy OreStudio.local2 checkout, invisible to env_init.py's collision scan since that dir predates .env-based port tracking. Migrate NATS ports to derive from ORES_BASE_PORT so every port for an environment is identifiable from one number, and fix env configure writing nats-<hyphenated-name>.conf while compass nats init/services use the underscored ORES_CHECKOUT_LABEL, which could silently produce two divergent config files for the same environment.
+#+type: story
+#+level: s2
+#+filetags: :compass:infra:nats:bugfix:sprint_22:v0:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Any environment's NATS ports should be trivially identifiable from its
+=ORES_BASE_PORT= alone, and a legacy/untracked checkout should never be
+able to silently steal another environment's ports without at least a
+loud, diagnosable failure.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-07-03                               |
+
+* Acceptance
+
+- NATS client/monitor ports derive from =ORES_BASE_PORT= like every
+  other per-environment port.
+- =env configure= and =compass nats init= produce one canonical,
+  consistently-named NATS config for a given environment.
+- solid_dirac's own service fleet starts clean end-to-end.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:EF866209-32CE-43B4-9617-D4A2F28525D1][Derive NATS ports from base port; unify config label to underscore form]] | DONE | | 2026-07-03 | env_init.py: replace the independent 42221xxx/8221xxx NATS port sequence with base_port+5/+6 derivation; fix env configure passing the hyphenated ORES_ENV_NAME to nats_init.generate() and nats_store_dir instead of the underscored label used everywhere else (compass nats init, compass_services.py). Bump .env-format version. |
+
+* Decisions
+
+Chose to derive NATS ports from =ORES_BASE_PORT= rather than just
+widening the old independent 42221-base sequence or adding the legacy
+=OreStudio.*= dirs more thoroughly to the scan — a single base port per
+environment is easier to reason about and matches how http/wt/site
+ports already work, so there's one number to know per environment
+instead of two unrelated numbering schemes.
+
+* Out of scope
+
+- Did not update any other worktree's =.env= — each will pick up the
+  new scheme next time =compass env configure= runs there, per the
+  =.env=-format version bump.
+- Did not audit whether other legacy =OreStudio.*= checkouts
+  (=local1=, =local3=) have similar undetectable port collisions
+  waiting to happen; only =local2= was actually observed colliding.

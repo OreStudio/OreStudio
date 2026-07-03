@@ -58,8 +58,11 @@ What it does:
 
 1. Generates (or validates) an adjective-noun name, e.g. =festive-hawking=.
 2. Scans sibling =ores_dev_*= and legacy =OreStudio.*= directories for used
-   =ORES_BASE_PORT= and =ORES_NATS_PORT= values, then assigns the next free
-   slot (base ports 50000, 51000, …; NATS ports 42221, 42222, …).
+   =ORES_BASE_PORT= values, then assigns the next free 1000-wide slot
+   (50000, 51000, …). Every port for the environment derives from that one
+   base port — http/wt (+0..+3), site (+4), NATS client (+5), NATS monitor
+   (+6) — so all ports for an environment are identifiable at a glance from
+   its base port alone.
 3. Runs =git worktree add ../ores_dev_festive_hawking origin/main=.
 4. Writes a skeleton =.env= with =ORES_ENV_NAME=, =ORES_ENV_TYPE=,
    =ORES_BASE_PORT=, =ORES_NATS_PORT=, =ORES_NATS_MONITOR_PORT=.

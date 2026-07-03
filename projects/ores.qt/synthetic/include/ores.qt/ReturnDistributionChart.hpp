@@ -20,6 +20,7 @@
 #ifndef ORES_QT_RETURN_DISTRIBUTION_CHART_HPP
 #define ORES_QT_RETURN_DISTRIBUTION_CHART_HPP
 
+#include <QColor>
 #include <QWidget>
 #include <vector>
 
@@ -52,6 +53,13 @@ public:
 
     /** @brief Recompute and redraw the mixture density. */
     void setComponents(const std::vector<Component>& components);
+
+    /**
+     * @brief Colour assigned to the component at @p index (cycles through a
+     * fixed qualitative palette). Shared with FxSpotRateEditor's component
+     * table so each row's colour indicator matches its PDF curve here.
+     */
+    static QColor componentColor(int index);
 
 private:
     QChart* chart_;

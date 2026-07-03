@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: D583B57B-B896-48A6-AD66-1F01FAE3FA3D
+:END:
+#+title: Reconcile SQL codegen template drift on synthetic validation fn
+#+description: Regenerating the fx_spot_generation_config SQL layer drops the tracked system-tenant fallback logic from its validation function, indicating the template has drifted from the checked-in output.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:sql:synthetic:drift:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Regenerating =projects/ores.synthetic/modeling/ores.synthetic.fx_spot_generation_config.org=
+via =compass codegen generate --model ... --profile sql= (done to add
+=ou= to the =process_type= check constraint for the GMM-improvements
+story) produced a diff that, besides the intended check-constraint
+change, also silently dropped custom validation logic from the
+tracked =ores_synthetic_validate_fx_spot_generation_config_fn()=
+function in
+=projects/ores.sql/create/synthetic/synthetic_fx_spot_generation_configs_create.sql=:
+the "system tenant canonical set" pass-through/fallback branch (the
+block starting "Allow pass-through if neither this tenant nor the
+system tenant has seeded active fx_spot_generation_configs yet...")
+was replaced by a simpler null-check-only body. Either the
+=sql_schema_domain_entity_create.mustache= template (or the model's
+=* Validation function= section) has drifted behind manual edits
+previously made to the generated file, or the template itself
+regressed. The regeneration was reverted; only the single
+check-constraint line was hand-edited instead, to avoid losing the
+validation logic.
+
+* Why
+
+Someone should compare the template output against the tracked file
+for this entity (and possibly others sharing the same template) and
+reconcile — either port the system-tenant fallback logic into the
+model/template properly, or determine it was an unintentional manual
+patch that should be redone as a template change. Left as-is, any
+future full regeneration of this entity's SQL layer will silently
+regress tenant validation behaviour.
+
+* References
+
+- =projects/ores.sql/create/synthetic/synthetic_fx_spot_generation_configs_create.sql=
+- =projects/ores.synthetic/modeling/ores.synthetic.fx_spot_generation_config.org=
+
+* See also
+
+-

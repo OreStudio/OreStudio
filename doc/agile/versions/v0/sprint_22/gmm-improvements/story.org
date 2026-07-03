@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: F4604E72-EF59-4894-A6D4-A68971C793EB
+:END:
+#+title: Story: GMM improvements: tidy up synthetic data generation loose ends
+#+description: Tidy up loose ends from the GMM-based synthetic market data generation work: chart axes, per-component PDF display, and stochastic process component gaps (incl. Ornstein-Uhlenbeck).
+#+type: story
+#+level: s2
+#+filetags: :market_data:synthetic:gmm:sprint_22:v0:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Tidy up loose ends left over from the GMM-based synthetic market data
+generation work (FX spot PoC and its config UI): give the preview
+charts readable axes, make each GMM component's PDF visible alongside
+the combined mixture PDF, and close the gap on stochastic process
+"component tools" that were designed but never implemented —
+Ornstein-Uhlenbeck in particular.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Done — all three tasks closed.         |
+| Waiting on    | Nothing.                               |
+| Next          | Raise a PR.                            |
+| Last touched  | 2026-07-03                               |
+
+* Acceptance
+
+- Live Return Distribution Preview and Live Sample Price Paths Preview
+  charts (FX Rate → Price behaviour tab) have labelled X and Y axes.
+- The Live Return Distribution Preview renders each GMM component's
+  individual PDF plus the combined mixture PDF, with the combined
+  curve in a visually distinct colour.
+- The other stochastic process types catalogued in
+  [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] are reviewed against what is
+  actually implemented; gaps are either implemented or explicitly
+  scoped out with rationale.
+- Ornstein-Uhlenbeck (mean-reverting) is implemented as a synthetic
+  process, matching the design already recorded in
+  [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] and
+  [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] (=synthetic_ou=), or the
+  decision to defer it is recorded with rationale.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7CB8B816-BE19-4E02-B0C0-7A800EAD6344][Add X/Y axis labels to GMM preview charts]] | DONE | 2026-07-02 | 2026-07-02 | Add labelled X and Y axes to the Live Return Distribution Preview and Live Sample Price Paths Preview charts on the FX Rate Price behaviour tab. |
+| [[id:553D514F-EB3E-4FF0-9CD8-A847C3B88A11][Display per-component and combined GMM PDFs]] | DONE | 2026-07-02 | 2026-07-02 | Render each GMM component's own PDF curve on the Live Return Distribution Preview, plus the combined mixture PDF in a distinct colour. |
+| [[id:402BDE9B-A604-4D5F-A6F3-B8F8D3165994][Review stochastic process component tools; implement Ornstein-Uhlenbeck]] | DONE | | 2026-07-03 | Review catalogued vs implemented stochastic process types and close the gap, prioritising the designed-but-unimplemented Ornstein-Uhlenbeck (mean-reverting) process. |
+
+* Decisions
+
+- Ornstein-Uhlenbeck reuses the existing GMM component fields
+  (weight = κ, volatility σ field = σ, initial price = θ) rather than
+  adding new persisted columns or protocol fields, since OU is a
+  single-regime process (3 scalars) rather than a K-component mixture.
+  This follows the same precedent already set by the "arithmetic"
+  engine, which reuses the same %-suffixed μ/σ fields for absolute
+  price increments via a warning banner rather than relabelling
+  fields.
+- Jump/Poisson processes and cross-rate correlation matrices were
+  reviewed and left explicitly out of scope for this story — both are
+  already flagged to users as "planned, not wired to anything" in the
+  FxSpotRateEditor "Component Tools" disclosure panel, so the gap was
+  visible, not silently dropped.
+
+* Out of scope
+
+- New persisted schema/protocol fields dedicated to Ornstein-Uhlenbeck
+  parameters (see Decisions — reused existing GMM fields instead).
+- Jump/Poisson processes and cross-rate correlation matrices (already
+  tracked as planned in the "Component Tools" panel).

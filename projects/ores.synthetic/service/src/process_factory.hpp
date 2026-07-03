@@ -39,8 +39,16 @@ public:
     /**
      * @brief Build the price process for the given engine.
      *
-     * @param process_type "geometric" (GBM) or "arithmetic" (additive). Any
-     *        unrecognised value falls back to geometric.
+     * @param process_type "geometric" (GBM), "arithmetic" (additive), or "ou"
+     *        (Ornstein-Uhlenbeck, mean-reverting). Any unrecognised value
+     *        falls back to geometric.
+     *
+     * For "ou" the GMM component channels are repurposed as scalar
+     * parameters rather than a mixture (OU is a single-regime process, not a
+     * mixture): weights[0] = kappa (reversion speed), stdevs[0] = sigma
+     * (volatility), and initial_price doubles as theta (long-run mean) — the
+     * process reverts toward its own starting level by default. means is
+     * unused for "ou".
      */
     static std::unique_ptr<ores::marketdata::domain::IStochasticProcess>
     make_process(const std::string& process_type,

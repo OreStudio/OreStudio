@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/MarketSimulatorWindow.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
@@ -1384,7 +1385,8 @@ void MarketSimulatorWindow::startPairsAsync(
             b.party_id = partyId;
             b.enabled = true;
             b.performed_by = username;
-            b.change_reason_code = "system.new_record";
+            b.change_reason_code =
+                std::string(ores::dq::domain::change_reason_constants::codes::new_record);
             b.change_commentary = "Auto-created by Market Simulator on feed start";
             auto bind_req =
                 ores::marketdata::messaging::save_feed_binding_request::from(std::move(b));

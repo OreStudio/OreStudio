@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 4EE11531-E6AB-4094-8297-F0E7DB12EC39
+:END:
+#+title: Hoist duplicated Qt chart theme colours into a shared helper
+#+description: Chart text/grid colour constants (0xCBD5E1 text, 0xFFFFFF12-ish grid) are copy-pasted across five call sites and can drift out of sync.
+#+type: capture
+#+level: cross
+#+filetags: :qt:synthetic:charts:tech-debt:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=QColor(0xCB, 0xD5, 0xE1)= (chart text) and the near-transparent white
+grid colour are hardcoded independently in at least five places:
+=ReturnDistributionChart.cpp=, =SamplePricePathsChart.cpp=,
+=FxSpotChartWindow.cpp=, and =MarketSimulatorWindow.cpp= (two spots).
+This exists because the app's dark theme is applied via QSS only
+(never =QApplication::setPalette=), so =QWidget::palette()= can't be
+used to derive chart colours reliably — see
+[[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]]'s
+chart-axes task for the investigation. Hoist these literals into a
+small shared helper (e.g. a =ChartTheme= namespace/struct in
+=ores.qt= common code) so all QtCharts call sites read from one place.
+
+* Why
+
+Five independent copies of the same colour literals can silently
+drift out of sync as the theme evolves, and any future dark/light
+theme toggle would need to touch all five sites individually. Flagged
+during PR #1409 review as a non-blocking follow-up.
+
+* References
+
+- =projects/ores.qt/synthetic/src/ReturnDistributionChart.cpp=
+- =projects/ores.qt/synthetic/src/SamplePricePathsChart.cpp=
+- =projects/ores.qt/mktdata/src/FxSpotChartWindow.cpp=
+- =projects/ores.qt/synthetic/src/MarketSimulatorWindow.cpp=
+
+* See also
+
+-

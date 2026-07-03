@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/FxSpotRateEditor.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -26,6 +27,7 @@
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/ReturnDistributionChart.hpp"
 #include "ores.qt/SamplePricePathsChart.hpp"
+#include "ores.synthetic.api/domain/process_parameter_validation.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include <QAbstractItemView>
@@ -76,8 +78,50 @@ constexpr double kVolMax = 0.02;     // 2% per update
 constexpr double kJumpMin = 0.0;     // weight of the jump component
 constexpr double kJumpMax = 0.5;     // up to 50% mixture share
 
+/**
+ * @brief Price-process engine metadata: the single source of truth for what
+ * appears in the engine combo and how the editor's generic gating (Add
+ * process / Simple mode / weight normalisation / the all-zero-weight guard)
+ * behaves per engine — the UI asks "does this engine support mixing?"
+ * rather than hardcoding "is this the ou engine?" throughout. More single-
+ * regime engines (e.g. Vasicek/CIR/Hull-White for rates) are expected to
+ * follow the same shape: add a row here, not new special-cases in the UI.
+ */
+struct EngineInfo {
+    const char* code;  // matches process_type / process_factory's dispatch key
+    const char* label; // combo box display text (wrapped in tr() at use site)
+    // False for single-regime processes (e.g. mean-reverting): the Advanced
+    // component table collapses to one row, "Add process" is disabled, the
+    // all-zero-weight guard and weight-sum-to-1 normalisation are skipped
+    // (that row's Weight field is repurposed as a scalar parameter, not a
+    // mixture share). Per-engine field remapping/wording stays engine-
+    // specific — a boolean can't express what a field means, only whether
+    // there can be more than one of them.
+    bool supportsMixing;
+};
+constexpr EngineInfo kEngines[] = {
+    {"geometric", QT_TR_NOOP("Geometric Brownian Motion"), true},
+    {"arithmetic", QT_TR_NOOP("Arithmetic Brownian Motion"), true},
+    {"ou", QT_TR_NOOP("Ornstein-Uhlenbeck (mean-reverting)"), false},
+};
+
+const EngineInfo* find_engine(const std::string& code) {
+    for (const auto& e : kEngines)
+        if (code == e.code)
+            return &e;
+    return nullptr;
+}
+
 // Advanced table columns (no per-component Type — engine is config-level now).
-enum Col { ColName = 0, ColProfile = 1, ColMean = 2, ColStdev = 3, ColWeight = 4, ColActions = 5 };
+enum Col {
+    ColColor = 0,
+    ColName = 1,
+    ColProfile = 2,
+    ColMean = 3,
+    ColStdev = 4,
+    ColWeight = 5,
+    ColActions = 6
+};
 
 double sliderToValue(int slider, double lo, double hi) {
     return lo + (hi - lo) * (slider / 100.0);
@@ -332,11 +376,13 @@ void FxSpotRateEditor::buildBehaviourTab() {
     auto* headerRow = new QHBoxLayout();
     headerRow->addWidget(new QLabel(tr("Engine:"), tab));
     engineCombo_ = new QComboBox(tab);
-    engineCombo_->addItem(tr("Geometric Brownian Motion"), QStringLiteral("geometric"));
-    engineCombo_->addItem(tr("Arithmetic Brownian Motion"), QStringLiteral("arithmetic"));
+    for (const auto& e : kEngines)
+        engineCombo_->addItem(tr(e.label), QString::fromLatin1(e.code));
     engineCombo_->setToolTip(
         tr("The price-process engine. Geometric uses log-returns (stays positive); "
-           "arithmetic uses absolute price changes (symmetric, may go negative)."));
+           "arithmetic uses absolute price changes (symmetric, may go negative); "
+           "Ornstein-Uhlenbeck reverts toward a long-run level (a single regime, not a "
+           "mixture)."));
     {
         const int idx = engineCombo_->findData(QString::fromStdString(fx_.process_type));
         engineCombo_->setCurrentIndex(idx >= 0 ? idx : 0);
@@ -400,14 +446,9 @@ void FxSpotRateEditor::buildBehaviourTab() {
     layout->addLayout(headerRow);
 
     // Inline, non-blocking warning shown only for the arithmetic engine (full width).
-    engineWarningLabel_ =
-        new QLabel(tr("⚠ Arithmetic engine: μ and σ are absolute price increments (not "
-                      "%/log-returns), and the price can go negative or zero — unrealistic for an "
-                      "FX rate. Intended for testing the process abstraction."),
-                   tab);
+    engineWarningLabel_ = new QLabel(tab);
     engineWarningLabel_->setWordWrap(true);
     engineWarningLabel_->setStyleSheet("color:#d08020;");
-    engineWarningLabel_->setVisible(currentEngine() == "arithmetic");
     layout->addWidget(engineWarningLabel_);
 
     connect(
@@ -451,6 +492,8 @@ void FxSpotRateEditor::buildBehaviourTab() {
     layout->addWidget(pathsBox, 1);
 
     connect(modeGroup_, &QButtonGroup::idClicked, this, [this](int) { onModeChanged(); });
+
+    updateEngineUi(); // initial header/tooltip/warning sync for the starting engine
 
     tabWidget_->addTab(tab, tr("Price behaviour"));
 }
@@ -528,15 +571,21 @@ QWidget* FxSpotRateEditor::buildAdvancedControls() {
     compLayout->setContentsMargins(12, 12, 12, 12);
     compLayout->setSpacing(8);
 
-    componentTable_ = new QTableWidget(0, 6, compBox);
-    componentTable_->setHorizontalHeaderLabels({tr("Component Name"),
-                                                tr("Profile"),
-                                                tr("Drift (μ %)"),
-                                                tr("Volatility (σ %)"),
-                                                tr("Weight"),
-                                                tr("Actions")});
+    // Short header labels — full explanations live in per-header tooltips
+    // (updated per engine by updateEngineUi()) rather than permanent header
+    // text, to keep this table from growing wider than the dialog can spare.
+    componentTable_ = new QTableWidget(0, 7, compBox);
+    componentTable_->setHorizontalHeaderLabels(
+        {tr(""), tr("Name"), tr("Profile"), tr("μ"), tr("σ"), tr("w"), tr("")});
+    if (auto* hdr = componentTable_->horizontalHeaderItem(ColColor))
+        hdr->setToolTip(tr("Colour — matches this component's curve on the Return "
+                           "distribution chart."));
+    if (auto* hdr = componentTable_->horizontalHeaderItem(ColProfile))
+        hdr->setToolTip(tr("A preset that fills in Volatility (σ)."));
+    if (auto* hdr = componentTable_->horizontalHeaderItem(ColActions))
+        hdr->setToolTip(tr("Remove this process."));
     // (A "Jump (planned)" column is intentionally omitted — not backed.)
-    componentTable_->setMinimumWidth(560);
+    componentTable_->setMinimumWidth(480);
     componentTable_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     componentTable_->setShowGrid(false); // avoid cell-border + inner-widget "box in box"
     componentTable_->verticalHeader()->setVisible(false);
@@ -546,16 +595,17 @@ QWidget* FxSpotRateEditor::buildAdvancedControls() {
         auto* hdr = componentTable_->horizontalHeader();
         hdr->setStretchLastSection(false);
         hdr->setSectionResizeMode(ColName, QHeaderView::Stretch);
-        for (int col : {ColProfile, ColMean, ColStdev, ColWeight, ColActions})
+        for (int col : {ColColor, ColProfile, ColMean, ColStdev, ColWeight, ColActions})
             hdr->setSectionResizeMode(col, QHeaderView::ResizeToContents);
     }
     compLayout->addWidget(componentTable_);
 
     auto* compButtons = new QHBoxLayout();
-    auto* addBtn = new QPushButton(tr("Add process"), compBox);
-    addBtn->setToolTip(tr("Add another process — two or more processes form a regime mix."));
-    connect(addBtn, &QPushButton::clicked, this, &FxSpotRateEditor::onAddComponentRow);
-    compButtons->addWidget(addBtn);
+    addComponentBtn_ = new QPushButton(tr("Add process"), compBox);
+    addComponentBtn_->setToolTip(
+        tr("Add another process — two or more processes form a regime mix."));
+    connect(addComponentBtn_, &QPushButton::clicked, this, &FxSpotRateEditor::onAddComponentRow);
+    compButtons->addWidget(addComponentBtn_);
     auto* resetAdvBtn = new QPushButton(tr("Reset"), compBox);
     resetAdvBtn->setToolTip(tr("Restore a single Normal-profile component."));
     connect(resetAdvBtn, &QPushButton::clicked, this, &FxSpotRateEditor::onResetAdvanced);
@@ -720,6 +770,19 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     const int row = componentTable_->rowCount();
     componentTable_->insertRow(row);
 
+    // Colour indicator, matching the row's PDF curve colour on the Live Return
+    // Distribution Preview chart (ReturnDistributionChart::componentColor()).
+    auto* colorSwatch = new QLabel(componentTable_);
+    colorSwatch->setFixedSize(16, 16);
+    colorSwatch->setStyleSheet(
+        QStringLiteral("background-color: %1; border-radius: 3px;")
+            .arg(ReturnDistributionChart::componentColor(row).name()));
+    auto* colorCell = new QWidget(componentTable_);
+    auto* colorLayout = new QHBoxLayout(colorCell);
+    colorLayout->setContentsMargins(4, 2, 4, 2);
+    colorLayout->addWidget(colorSwatch, 0, Qt::AlignCenter);
+    componentTable_->setCellWidget(row, ColColor, colorCell);
+
     // A flat, frameless look so the inner widgets don't draw a heavy border
     // inside the cell grid (avoids the "box in box" effect).
     const QString flatEdit = QStringLiteral("border: none; background: transparent;");
@@ -751,7 +814,8 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     meanSpin->setValue(c.mean * 100.0);
     meanSpin->setFrame(false);
     meanSpin->setStyleSheet(flatEdit);
-    meanSpin->setToolTip(tr("Average %1 per update (%); 0 = no drift.").arg(incrementNoun()));
+    // Explanation lives on the column header tooltip (ColMean), which updates per
+    // engine — a per-row static tooltip here would go stale for e.g. "ou".
 
     auto* stdevSpin = new QDoubleSpinBox(componentTable_);
     stdevSpin->setRange(0.0, 100.0);
@@ -759,17 +823,14 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     stdevSpin->setSuffix(tr(" %"));
     stdevSpin->setValue(c.stdev * 100.0);
     stdevSpin->setFrame(false);
-    stdevSpin->setStyleSheet(flatEdit);
-    stdevSpin->setToolTip(
-        tr("Volatility of the %1 per update (%); 0 = constant.").arg(incrementNoun()));
+    stdevSpin->setStyleSheet(flatEdit); // see ColStdev header tooltip
 
     auto* weightSpin = new QDoubleSpinBox(componentTable_);
     weightSpin->setRange(0.0, 1e6);
     weightSpin->setDecimals(3);
     weightSpin->setValue(c.weight);
     weightSpin->setFrame(false);
-    weightSpin->setStyleSheet(flatEdit);
-    weightSpin->setToolTip(tr("Relative share when blending processes (normalised on save)."));
+    weightSpin->setStyleSheet(flatEdit); // see ColWeight header tooltip
 
     // Icon-only trash button, centred in the Actions cell via a small container.
     auto* removeBtn = new QPushButton(componentTable_);
@@ -843,6 +904,7 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
         }
         rebuildModelFromAdvanced();
         updateRemoveButtonsEnabled();
+        updateComponentColors(); // remaining rows shifted up — repaint swatches
         refreshCharts();
     });
 
@@ -864,6 +926,11 @@ std::string FxSpotRateEditor::currentEngine() const {
     return engineCombo_ ? engineCombo_->currentData().toString().toStdString() : "geometric";
 }
 
+bool FxSpotRateEditor::currentEngineSupportsMixing() const {
+    const auto* info = find_engine(currentEngine());
+    return info ? info->supportsMixing : true; // unknown engine: don't block on it
+}
+
 QString FxSpotRateEditor::incrementNoun() const {
     return currentEngine() == "arithmetic" ? tr("price change") : tr("log-return");
 }
@@ -871,10 +938,86 @@ QString FxSpotRateEditor::incrementNoun() const {
 void FxSpotRateEditor::onEngineChanged() {
     if (engineCombo_)
         fx_.process_type = currentEngine();
-    if (engineWarningLabel_)
-        engineWarningLabel_->setVisible(currentEngine() == "arithmetic");
-    // Engine only affects the path simulation, not the increment PDF.
+    updateEngineUi();
+    // Engine also determines whether the Return Distribution PDF chart applies
+    // (it doesn't for "ou", a level process rather than an increment mixture).
     refreshCharts();
+}
+
+void FxSpotRateEditor::updateEngineUi() {
+    // Generic, capability-driven gating (any engine with supportsMixing = false
+    // behaves this way, not just "ou" specifically). Called both on every engine
+    // change AND once at the end of buildBehaviourTab() during construction — the
+    // latter matters when opening an *existing* single-regime record, since
+    // engineCombo_->setCurrentIndex() runs before its currentIndexChanged signal
+    // is connected, so onEngineChanged() never fires for the initial value. If
+    // this forcing lived only in onEngineChanged() (as it used to), an existing
+    // "ou" record would silently open on the Simple page; clicking Save without
+    // touching anything would then overwrite its real κ with a Simple-mode-
+    // derived value that has no defined meaning for a single-regime process.
+    const bool mixing = currentEngineSupportsMixing();
+    if (!mixing) {
+        if (modeGroup_ && modeGroup_->checkedId() != 1) {
+            if (auto* advancedBtn = modeGroup_->button(1))
+                advancedBtn->setChecked(true);
+            onModeChanged();
+        }
+        if (componentTable_ && componentTable_->rowCount() > 1) {
+            // Single-regime process — collapse to the first row so its reused
+            // fields have one unambiguous value.
+            components_.resize(1);
+            syncing_ = true;
+            syncAdvancedFromModel();
+            syncing_ = false;
+            updateComponentColors();
+        }
+    }
+    // The warning banner's wording is inherently engine-specific — a boolean
+    // can't express *how* a single-regime engine's fields are repurposed, so
+    // this part stays keyed on the engine code, unlike the gating above.
+    const auto engine = currentEngine();
+    const bool ou = engine == "ou";
+    const bool arithmetic = engine == "arithmetic";
+
+    if (engineWarningLabel_) {
+        if (ou) {
+            engineWarningLabel_->setText(
+                tr("⚠ Ornstein-Uhlenbeck engine: a single regime, not a mixture. Simple mode is "
+                   "disabled — Advanced mode's fields are reused as: κ (reversion speed) = "
+                   "Weight, σ (volatility) = Volatility (σ), and θ (long-run mean) = Initial "
+                   "Price. Drift (μ) is unused. \"Add process\" is disabled while this engine is "
+                   "selected."));
+        } else if (arithmetic) {
+            engineWarningLabel_->setText(
+                tr("⚠ Arithmetic engine: μ and σ are absolute price increments (not "
+                   "%/log-returns), and the price can go negative or zero — unrealistic for an "
+                   "FX rate. Intended for testing the process abstraction."));
+        }
+        engineWarningLabel_->setVisible(ou || arithmetic);
+    }
+
+    if (addComponentBtn_)
+        addComponentBtn_->setEnabled(mixing);
+
+    if (modeGroup_) {
+        if (auto* simpleBtn = modeGroup_->button(0))
+            simpleBtn->setEnabled(mixing);
+    }
+
+    if (componentTable_) {
+        if (auto* meanHdr = componentTable_->horizontalHeaderItem(ColMean))
+            meanHdr->setToolTip(ou ? tr("Unused by Ornstein-Uhlenbeck.") :
+                                     tr("Drift (μ) — average %1 per update (%).")
+                                         .arg(incrementNoun()));
+        if (auto* stdevHdr = componentTable_->horizontalHeaderItem(ColStdev))
+            stdevHdr->setToolTip(ou ? tr("σ — Ornstein-Uhlenbeck volatility.") :
+                                      tr("Volatility (σ) of the %1 per update (%).")
+                                          .arg(incrementNoun()));
+        if (auto* weightHdr = componentTable_->horizontalHeaderItem(ColWeight))
+            weightHdr->setToolTip(
+                ou ? tr("κ — Ornstein-Uhlenbeck reversion speed (0 = driftless random walk).") :
+                     tr("Relative share when blending processes (normalised on save)."));
+    }
 }
 
 void FxSpotRateEditor::onAddComponentRow() {
@@ -891,6 +1034,16 @@ void FxSpotRateEditor::updateRemoveButtonsEnabled() {
         if (auto* cell = componentTable_->cellWidget(r, ColActions)) {
             if (auto* btn = cell->findChild<QPushButton*>())
                 btn->setEnabled(canRemove);
+        }
+    }
+}
+
+void FxSpotRateEditor::updateComponentColors() {
+    for (int r = 0; r < componentTable_->rowCount(); ++r) {
+        if (auto* cell = componentTable_->cellWidget(r, ColColor)) {
+            if (auto* swatch = cell->findChild<QLabel*>())
+                swatch->setStyleSheet(QStringLiteral("background-color: %1; border-radius: 3px;")
+                                           .arg(ReturnDistributionChart::componentColor(r).name()));
         }
     }
 }
@@ -924,11 +1077,7 @@ void FxSpotRateEditor::syncAdvancedFromModel() {
     for (const auto& c : components_)
         addTableRow(c);
     updateRemoveButtonsEnabled();
-    // Refresh weight-sum label.
-    double sum = 0.0;
-    for (const auto& c : components_)
-        sum += c.weight;
-    weightSumLabel_->setText(tr("Weight Sum = %1 (normalised on save)").arg(sum, 0, 'f', 3));
+    updateWeightSumLabel();
 }
 
 void FxSpotRateEditor::rebuildModelFromAdvanced() {
@@ -949,7 +1098,17 @@ void FxSpotRateEditor::rebuildModelFromAdvanced() {
         next.push_back(c);
     }
     components_ = std::move(next);
+    updateWeightSumLabel();
+}
 
+void FxSpotRateEditor::updateWeightSumLabel() {
+    if (!currentEngineSupportsMixing()) {
+        // Wording is OU-specific for now (the only non-mixing engine); a future
+        // second one will need its own case here, same as the warning banner.
+        const double kappa = components_.empty() ? 0.0 : components_.front().weight;
+        weightSumLabel_->setText(tr("κ (reversion speed) = %1").arg(kappa, 0, 'f', 3));
+        return;
+    }
     double sum = 0.0;
     for (const auto& c : components_)
         sum += c.weight;
@@ -1035,20 +1194,30 @@ void FxSpotRateEditor::rebuildModelFromSimple() {
 void FxSpotRateEditor::refreshCharts() {
     std::vector<ReturnDistributionChart::Component> distComps;
     std::vector<SamplePricePathsChart::Component> pathComps;
-    double sum = 0.0;
-    for (const auto& c : components_)
-        sum += c.weight;
-    for (const auto& c : components_) {
-        const double w = sum > 0.0 ? c.weight / sum : c.weight;
-        distComps.push_back({c.mean, c.stdev, w});
-        pathComps.push_back({c.mean, c.stdev, w});
+    const std::string engine = currentEngine();
+    const double price = priceSpin_ ? priceSpin_->value() : fx_.gmm_initial_price;
+
+    if (!currentEngineSupportsMixing()) {
+        // Single-regime path — wording/remapping below is OU-specific for now (the
+        // only such engine); a future second one will need its own case here.
+        // Scalar params (κ, σ) reused from Weight/Volatility — not a mixture, so no
+        // normalisation. θ (long-run mean) is the Initial Price, sent separately
+        // below; the increment PDF chart doesn't apply to a level process.
+        if (!components_.empty())
+            pathComps.push_back({0.0, components_.front().stdev, components_.front().weight});
+    } else {
+        double sum = 0.0;
+        for (const auto& c : components_)
+            sum += c.weight;
+        for (const auto& c : components_) {
+            const double w = sum > 0.0 ? c.weight / sum : c.weight;
+            distComps.push_back({c.mean, c.stdev, w});
+            pathComps.push_back({c.mean, c.stdev, w});
+        }
     }
 
-    const double price = priceSpin_ ? priceSpin_->value() : fx_.gmm_initial_price;
-    const std::string engine = currentEngine();
-
     if (distChart_)
-        distChart_->setComponents(distComps); // PDF is engine-independent (increment dist)
+        distChart_->setComponents(distComps); // empty for "ou" — PDF n/a to a level process
     if (pathsChart_) {
         pathsChart_->setComponents(pathComps);
         pathsChart_->setInitialPrice(price);
@@ -1113,17 +1282,21 @@ void FxSpotRateEditor::onSaveClicked() {
     else
         rebuildModelFromSimple();
 
-    // Reject an all-zero weight set: the server builds a std::discrete_distribution
-    // from the weights, which is undefined behaviour when they sum to zero.
+    // Ask the engine itself whether these parameters are valid — the same rules
+    // process_factory enforces server-side (ores.synthetic.api::domain, shared,
+    // not duplicated UI-side logic).
     {
-        double weightSum = 0.0;
-        for (const auto& mc : components_)
-            weightSum += mc.weight;
-        if (weightSum <= 0.0) {
-            QMessageBox::warning(this,
-                                 tr("Invalid weights"),
-                                 tr("All component weights are zero. At least one component must "
-                                    "have a positive weight."));
+        std::vector<double> means, stdevs, weights;
+        for (const auto& mc : components_) {
+            means.push_back(mc.mean);
+            stdevs.push_back(mc.stdev);
+            weights.push_back(mc.weight);
+        }
+        const auto validation = synthetic::domain::validate_process_parameters(
+            currentEngine(), means, stdevs, weights, priceSpin_->value());
+        if (!validation.valid) {
+            QMessageBox::warning(
+                this, tr("Invalid parameters"), QString::fromStdString(validation.message));
             return;
         }
     }
@@ -1148,7 +1321,10 @@ void FxSpotRateEditor::onSaveClicked() {
         crSel->commentary.empty() ? "Authored via Market Simulator" : crSel->commentary;
     fx.version = 0;
 
-    // Build the component stack, normalising weights to sum 1.
+    // Build the component stack, normalising weights to sum 1. Skipped for
+    // single-regime engines (e.g. "ou"): their one row's Weight field is a
+    // scalar parameter (κ), not a mixture share.
+    const bool mixing = currentEngineSupportsMixing();
     double total = 0.0;
     for (const auto& mc : components_)
         total += mc.weight;
@@ -1173,9 +1349,11 @@ void FxSpotRateEditor::onSaveClicked() {
         c.description = mc.description;
         c.mean = mc.mean;
         c.stdev = mc.stdev;
-        c.weight = total > 0.0 ? mc.weight / total : mc.weight;
+        c.weight = (mixing && total > 0.0) ? mc.weight / total : mc.weight;
         c.modified_by = username_.toStdString();
-        c.change_reason_code = rowIsNew ? "system.new_record" : "common.non_material_update";
+        namespace reason = ores::dq::domain::change_reason_constants::codes;
+        c.change_reason_code =
+            rowIsNew ? std::string(reason::new_record) : std::string(reason::non_material_update);
         c.change_commentary = "Authored via Market Simulator";
         c.version = 0;
         comps.push_back(c);

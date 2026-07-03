@@ -1,0 +1,172 @@
+:PROPERTIES:
+:ID: 402BDE9B-A604-4D5F-A6F3-B8F8D3165994
+:END:
+#+title: Task: Review stochastic process component tools; implement Ornstein-Uhlenbeck
+#+description: Review catalogued vs implemented stochastic process types and close the gap, prioritising the designed-but-unimplemented Ornstein-Uhlenbeck (mean-reverting) process.
+#+type: task
+#+level: s1
+#+filetags: :gmm-improvements:sprint_22:v0:
+#+owner: marco
+#+branch: story/gmm-improvements
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The synthetic market data generator design
+([[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]],
+[[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]]) catalogues several
+stochastic process types as component tools — GBM, Brownian/Wiener,
+jump, regime-mix, Ornstein-Uhlenbeck (=synthetic_ou=, mean-reverting)
+among them. Ornstein-Uhlenbeck in particular is documented but not
+implemented anywhere under =projects/= (confirmed via grep and
+compass search; no separate open capture/task exists for it — this
+task is its home). Review which catalogued process types are
+implemented vs designed-only, and close the gaps, prioritising
+Ornstein-Uhlenbeck.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]] |
+| Now          | Done.                                   |
+| Waiting on   | Nothing.                               |
+| Next         | Close the story (last open task).      |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- Inventory of catalogued vs implemented stochastic process types is
+  documented.
+- Ornstein-Uhlenbeck is implemented as a selectable process type with
+  parameters (kappa, theta/mean level, sigma) exposed in the config
+  UI, or its deferral is explicitly recorded with rationale.
+- Any other implementation gaps found are implemented or explicitly
+  scoped out with rationale.
+
+* Plan
+
+*Inventory.* Process types catalogued in
+[[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] /
+[[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] vs implemented under
+=projects/ores.synthetic/service/src/processes/=: GBM/geometric
+(=gmm_process=) — implemented; arithmetic Brownian
+(=arithmetic_gmm_process=) — implemented; Ornstein-Uhlenbeck
+(=synthetic_ou=) — designed, not implemented (confirmed by grep — this
+task's reason for existing). Jump/Poisson processes and cross-rate
+correlation matrices are also designed-only, already tracked as
+"planned, not wired to anything" in the FxSpotRateEditor "Component
+Tools" disclosure panel — left as-is (out of scope; not silently
+dropped, already visibly flagged to users).
+
+*Implementation — Ornstein-Uhlenbeck.* Added =ou_process=
+(=IStochasticProcess=) implementing the exact per-tick OU
+discretisation: =X_{t+1} = θ + (X_t - θ)e^{-κ} + σ√((1-e^{-2κ})/(2κ))·Z=,
+with κ≤0 degenerating to a driftless random walk. Wired a new ="ou"=
+branch in =process_factory::make_process()=.
+
+OU is a single-regime process (3 scalars: κ, θ, σ), not a K-component
+mixture, so rather than adding new persisted columns/protocol fields
+it reuses the existing GMM-component channels: =weights[0] = κ=,
+=stdevs[0] = σ=, and =initial_price= doubles as =θ= (reverts toward its
+own starting level by default). This is the same pattern already
+established for the "arithmetic" engine, which reuses the %-suffixed
+μ/σ fields for absolute price increments via a warning banner rather
+than relabelling fields.
+
+UI (=FxSpotRateEditor=): added "Ornstein-Uhlenbeck (mean-reverting)" to
+the engine combo; added =updateEngineUi()= to swap the inline warning
+banner text and disable "Add process" (OU has one regime, not a
+mixture) while selected; switching to OU collapses the Advanced table
+to its first row; the weight-sum label becomes a "κ = ..." echo
+instead of "Weight Sum = ..." for OU. =refreshCharts()= skips
+normalisation for OU (κ/σ are scalars, not mixture shares) and clears
+the Return Distribution Preview (the increment-mixture PDF doesn't
+apply to a mean-reverting *level* process) — Sample Price Paths still
+renders correctly since it plots whatever the server returns
+regardless of engine. =onSaveClicked()= skips the "all weights zero"
+guard (κ=0 is a valid OU parameter) and the weight-normalise-to-1 step
+for OU, so κ persists as entered rather than being silently
+overwritten to 1.0.
+
+SQL: extended the =process_type= check constraint
+(=ores.synthetic.fx_spot_generation_config.org= model) to allow ='ou'=.
+Regenerating via =compass codegen generate= dropped unrelated
+hand-patched validation-function logic (template/output drift,
+unrelated to this change) — reverted the full regen and hand-edited
+just the one constraint line; filed
+[[id:D583B57B-B896-48A6-AD66-1F01FAE3FA3D][a capture]] for the drift itself.
+
+* Notes
+
+Known, deliberate limitation: the Volatility (σ) field keeps its "%"
+suffix and the value is still divided by 100 internally for OU, same
+as the pre-existing "arithmetic" engine's reuse of that field for
+absolute (non-%) units — cosmetically imprecise but functionally
+consistent with the established pattern, not fixed here to avoid
+widening this task's footprint.
+
+No dedicated unit test was added for =ou_process=, matching the
+existing =gmm_process=/=arithmetic_gmm_process= (neither has one
+either) — no established Catch2 convention exists yet for this
+directory.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | OU silently invalid when Simple mode stays selected — kappa derived from unrelated Drift/Vol/Jump sliders, jump component silently dropped | FxSpotRateEditor.cpp | Fixed | 1d07dae74 — onEngineChanged forces Advanced mode + locks Simple toggle for non-mixing engines |
+| 2 | UI hardcodes engine-specific isOuEngine() checks throughout (raised directly by user, not the bot review) | FxSpotRateEditor.cpp | Fixed | 1d07dae74 — data-driven EngineInfo table (code/label/supportsMixing) replaces scattered checks |
+| 3 | Switching to OU silently truncates mixture components | FxSpotRateEditor.cpp | Fixed (as a side effect of #1) | Advanced mode is now forced open when the collapse happens, so it's visible/editable, not silent |
+| 4 | Duplicated chart theme colour constants across 5 call sites | ReturnDistributionChart.cpp, SamplePricePathsChart.cpp | Declined (follow-up) | Captured: 4EE11531-E6AB-4094-8297-F0E7DB12EC39 |
+| 5 | Weight/Volatility column headers and tooltips still say generic text for OU | FxSpotRateEditor.cpp | Fixed (superseded) | c314e99cd — see #9; headers shortened and tooltips now update per engine |
+| 6 | Per-component QLineSeries::setName() calls are effectively dead code (legend hidden) | ReturnDistributionChart.cpp | Fixed | 1d07dae74 — one-line comment clarifying the swatch column is the intended indicator |
+| 7 | No unit tests for ou_process | ou_process.hpp/.cpp | Declined | Matches untested gmm_process/arithmetic_gmm_process; no Catch2 convention yet for this directory |
+| 8 | Validation logic ("are these parameters good?") hardcoded in the UI instead of the engine (raised directly by user, not the bot review) | FxSpotRateEditor.cpp, process_factory.cpp | Fixed | c314e99cd — new ores.synthetic.api::domain::validate_process_parameters(), shared by process_factory and the Qt client; server-side enforcement at save/feed-start time not yet wired up, captured: FDEAC2F6-A87F-4281-82CC-437B06D5B02F |
+| 9 | Advanced component table headers too verbose, dialog congested (raised directly by user, not the bot review) | FxSpotRateEditor.cpp | Fixed | c314e99cd — headers shortened to symbols (μ/σ/w); explanations moved to per-header tooltips, updated per engine by updateEngineUi() |
+| 10 | Opening an existing "ou" record defaults to Simple mode (construction-time gap: engineCombo_->setCurrentIndex() runs before the currentIndexChanged connection, so onEngineChanged() never fires); Save without touching anything silently overwrites the persisted kappa with 1.0. Reported across three consecutive re-review rounds after #1's fix only covered the live combo-switch path | FxSpotRateEditor.cpp | Fixed | 247eccda3 — moved the forcing logic from onEngineChanged() into updateEngineUi(), which runs both on every engine change and once at construction time |
+
+* Result
+
+Ornstein-Uhlenbeck is implemented end-to-end: =ou_process= (core
+numerics), =process_factory= dispatch, SQL constraint, and UI (engine
+selector, reused parameter fields, adjusted validation/save/preview
+paths for its single-regime shape). Other designed-only process types
+(jump/Poisson, correlation matrices) reviewed and left explicitly
+scoped out — already flagged to users in the existing "Component
+Tools" panel, not silently dropped. Built =ores.qt.synthetic.lib=,
+=ores.synthetic.service.lib= and =ores.marketdata.service.lib= clean
+(clang debug/make). Also fixed, on user report during this task:
+hardcoded change-reason-code string literals replaced with
+=ores.dq.api= constants across =FeedDialog.cpp=,
+=MarketSimulatorWindow.cpp=, =FxSpotRateEditor.cpp=; and synthetic
+market observations were missing =source=/=point_id= (tenor) —
+=feed_ingest_loop.cpp= now captures =source_name= and sets
+=point_id = "SPOT"= for scalar FX spot series.
+
+PR #1409 review round 1 addressed: forced Advanced mode for
+non-mixing engines (closing a real correctness gap — Simple mode
+could previously save a meaningless κ and silently drop jump
+components); replaced scattered =isOuEngine()= checks with a
+data-driven =EngineInfo= table so future single-regime engines (rate
+processes) are a table row, not more special-cased UI logic; moved
+parameter validation out of the UI into a shared
+=ores.synthetic.api::domain::validate_process_parameters()= used by
+both =process_factory= and the Qt client; and shortened the Advanced
+table's headers to symbols with per-engine tooltips instead of
+permanent verbose text, addressing dialog congestion.

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/ReturnDistributionChart.hpp"
-#include <QPalette>
 #include <QVBoxLayout>
 #include <QtCharts/QAreaSeries>
 #include <QtCharts/QChart>
@@ -46,6 +45,26 @@ double gaussian(double x, double mean, double stdev) {
     return std::exp(-0.5 * z * z) / (s * std::sqrt(2.0 * pi));
 }
 
+// Qualitative palette for per-component curves; deliberately excludes steel
+// blue (the fixed combined-mixture colour, below) so components are always
+// visually distinct from the mixture.
+const QColor componentPalette[] = {
+    QColor(0xFF, 0x6B, 0x6B), // coral
+    QColor(0xFF, 0xB6, 0x27), // amber
+    QColor(0x4E, 0xCD, 0xC4), // mint
+    QColor(0xB3, 0x8D, 0xF5), // violet
+    QColor(0xA8, 0xD8, 0x5A), // lime
+    QColor(0xF7, 0x81, 0xBF), // pink
+    QColor(0xC9, 0xC9, 0xC9), // grey
+};
+constexpr int componentPaletteSize =
+    static_cast<int>(sizeof(componentPalette) / sizeof(componentPalette[0]));
+
+}
+
+QColor ReturnDistributionChart::componentColor(int index) {
+    const int i = ((index % componentPaletteSize) + componentPaletteSize) % componentPaletteSize;
+    return componentPalette[i];
 }
 
 ReturnDistributionChart::ReturnDistributionChart(QWidget* parent)
@@ -63,8 +82,11 @@ ReturnDistributionChart::ReturnDistributionChart(QWidget* parent)
     chart_->legend()->setVisible(false);
     chart_->setMargins(QMargins(4, 4, 4, 4));
 
-    const QColor textColor = palette().color(QPalette::WindowText);
-    const QColor gridColor(textColor.red(), textColor.green(), textColor.blue(), 40);
+    // The app's dark theme is applied via QSS only, so QWidget::palette() still
+    // returns Qt's default (light-mode) colours here — use explicit theme
+    // colours instead, matching FxSpotChartWindow's chart styling.
+    const QColor textColor(0xCB, 0xD5, 0xE1);
+    const QColor gridColor(255, 255, 255, 18);
     chart_->setTitleBrush(textColor);
 
     axisX_->setTitleText(tr("Return per Update (%)"));
@@ -124,23 +146,31 @@ void ReturnDistributionChart::setComponents(const std::vector<Component>& compon
     const double xMax = maxMean + span;
 
     constexpr int samples = 256;
-    // Compute the raw mixture density, then normalise to a peak of 1 so the
+    // Compute each component's weighted contribution alongside the raw mixture
+    // density, then normalise everything to the mixture's peak of 1 so the
     // chart shows the distribution SHAPE on a clean 0..1 "relative likelihood"
     // scale, rather than raw density values (which can be huge for a narrow
     // distribution and read confusingly as a probability > 1).
     std::vector<std::pair<double, double>> pts;
     pts.reserve(samples + 1);
+    std::vector<std::vector<double>> componentYs(
+        components.size(), std::vector<double>(samples + 1, 0.0));
     double yMax = 0.0;
     for (int i = 0; i <= samples; ++i) {
         const double x = xMin + (xMax - xMin) * i / samples;
         double y = 0.0;
-        for (const auto& c : components)
-            y += c.weight * gaussian(x, c.mean * 100.0, c.stdev * 100.0);
+        for (std::size_t ci = 0; ci < components.size(); ++ci) {
+            const auto& c = components[ci];
+            const double yi = c.weight * gaussian(x, c.mean * 100.0, c.stdev * 100.0);
+            componentYs[ci][i] = yi;
+            y += yi;
+        }
         pts.emplace_back(x, y);
         yMax = std::max(yMax, y);
     }
-    auto* line = new QLineSeries(this);
     const double norm = yMax > 0.0 ? yMax : 1.0;
+
+    auto* line = new QLineSeries(this);
     for (const auto& [x, y] : pts)
         line->append(x, y / norm);
 
@@ -159,6 +189,26 @@ void ReturnDistributionChart::setComponents(const std::vector<Component>& compon
     chart_->addSeries(area);
     area->attachAxis(axisX_);
     area->attachAxis(axisY_);
+
+    // Per-component contribution curves, drawn on top of the mixture fill in
+    // colours matching the component table's colour indicator (componentColor()).
+    for (std::size_t ci = 0; ci < components.size(); ++ci) {
+        auto* compLine = new QLineSeries(this);
+        for (int i = 0; i <= samples; ++i) {
+            const double x = xMin + (xMax - xMin) * i / samples;
+            compLine->append(x, componentYs[ci][i] / norm);
+        }
+        QPen compPen(componentColor(static_cast<int>(ci)));
+        compPen.setWidth(2);
+        compLine->setPen(compPen);
+        // Named for potential tooling/debugging use, but the chart's own legend is
+        // hidden (compact layout) — the colour-to-component mapping is conveyed via
+        // FxSpotRateEditor's component-table swatch column, not an in-chart legend.
+        compLine->setName(tr("Component %1").arg(ci + 1));
+        chart_->addSeries(compLine);
+        compLine->attachAxis(axisX_);
+        compLine->attachAxis(axisY_);
+    }
 
     axisX_->setRange(xMin, xMax);
     axisY_->setRange(0.0, 1.05);

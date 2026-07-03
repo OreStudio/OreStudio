@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/FeedDialog.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include <QDialogButtonBox>
 #include <QFormLayout>
@@ -108,7 +109,9 @@ void FeedDialog::onSave() {
     feed.description = descEdit_->toPlainText().toStdString();
     feed.enabled = enabledCheck_->isChecked();
     feed.modified_by = username_.toStdString();
-    feed.change_reason_code = isNew_ ? "system.new_record" : "common.non_material_update";
+    namespace reason = ores::dq::domain::change_reason_constants::codes;
+    feed.change_reason_code =
+        isNew_ ? std::string(reason::new_record) : std::string(reason::non_material_update);
     feed.change_commentary = "Authored via Market Simulator";
     feed.version = 0;
 

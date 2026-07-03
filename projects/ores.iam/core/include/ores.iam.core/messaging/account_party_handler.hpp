@@ -43,11 +43,40 @@ inline auto& account_party_handler_lg() {
     return instance;
 }
 
+/**
+ * @brief Stamps server-authoritative bookkeeping fields on an
+ * account_party, deliberately NOT using the generic
+ * ores::service::messaging::stamp() helper.
+ *
+ * account_party::party_id has a different meaning from every other
+ * domain type's party_id: elsewhere party_id names the party a row
+ * belongs to (a security boundary always overwritten from the
+ * caller's own JWT context), but here it names the *target* party
+ * being associated with the account — an arbitrary value the client
+ * is meant to supply. The generic stamp() matches on the field name
+ * alone and would clobber it with the caller's own current party,
+ * silently associating every request with the caller's party instead
+ * of the one actually requested.
+ */
+inline void stamp_account_party(domain::account_party& ap, const ores::database::context& ctx) {
+    ap.tenant_id = ctx.tenant_id().to_string();
+    const auto& actor = ctx.actor();
+    const auto& svc = ctx.service_account();
+    if (!actor.empty())
+        ap.modified_by = actor;
+    else if (!svc.empty())
+        ap.modified_by = svc;
+    if (!svc.empty())
+        ap.performed_by = svc;
+    if (ap.change_reason_code.empty())
+        ap.change_reason_code =
+            std::string(ores::service::messaging::change_reasons::new_record);
+}
+
 } // namespace
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using ores::service::messaging::log_handler_entry;
@@ -145,7 +174,7 @@ public:
                 auto wf_ctx = tenant_context::with_tenant(ctx_, tenant_id);
                 service::account_party_service svc(wf_ctx);
                 for (auto ap : req->account_parties) {
-                    stamp(ap, wf_ctx);
+                    stamp_account_party(ap, wf_ctx);
                     svc.save_account_party(ap);
                 }
                 BOOST_LOG_SEV(account_party_handler_lg(), debug)
@@ -191,7 +220,7 @@ public:
             }
             service::account_party_service svc(ctx);
             for (auto ap : req->account_parties) {
-                stamp(ap, ctx);
+                stamp_account_party(ap, ctx);
                 svc.save_account_party(ap);
             }
             BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;

@@ -7,41 +7,63 @@
 #+level: s1
 #+filetags: :marketdata:bugfix:valgrind:sprint_22:v0:fix_market_series_generator_uninitialized_enums:
 #+owner: marco
-#+branch:
+#+branch: feature/fix-market-series-generator-uninitialized-enums
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:83B12C2D-5202-4738-8147-5F28E566D997][Fix uninitialized asset_class/series_subclass in market_series generator]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Assign =r.asset_class= and =r.series_subclass= in
+=generate_synthetic_market_series()= so no field of the generated
+=domain::market_series= is left uninitialized, eliminating the
+Valgrind uninitialized-memory defects surfaced by the nightly
+=linux-gcc-debug-ninja= dynamic-analysis run
+(https://my.cdash.org/builds/3701562/dynamic_analysis/7928918).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:83B12C2D-5202-4738-8147-5F28E566D997][Fix uninitialized asset_class/series_subclass in market_series generator]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
 
--
+- =r.asset_class= and =r.series_subclass= are always assigned a valid enumerator.
+- =ores.marketdata.core.tests [repository]= passes under
+  =valgrind --track-origins=yes --suppressions=build/valgrind/custom.supp=
+  with 0 errors.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Traced the CDash Valgrind report's stack trace (=enchantum::contains=
+→ =rfl::enum_to_string= → =market_series_mapper::map= →
+=market_series_repository::write=, in the
+=write_single_market_series= test) to
+=market_series_mapper.cpp:81= (=r.asset_class =
+=rfl::enum_to_string(v.asset_class)=). =v= came from
+=generate_synthetic_market_series()=, which builds every other field
+of =domain::market_series= but never touches =asset_class= or
+=series_subclass= — both plain =enum class= members with no default
+member initializer in the struct, so they held whatever garbage was on
+the stack. Fixed by cycling both fields deterministically through
+their full enumerator sets, keyed off the existing per-call =idx=
+counter (matching the file's existing pattern for other fields).
 
 * Notes
 
@@ -58,3 +80,16 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Fixed =generate_synthetic_market_series()= to assign =r.asset_class= and
+=r.series_subclass= by cycling deterministically through both enums'
+full enumerator sets using the existing =idx= counter.
+=ores.marketdata.core.tests= builds clean and
+=valgrind --error-exitcode=1 --track-origins=yes --trace-children=yes
+--tool=memcheck --leak-check=full --show-reachable=yes --num-callers=50
+--suppressions=build/valgrind/custom.supp= against the =[repository]=
+tag tests reports =0 errors from 0 contexts= (all 15 test cases pass),
+matching the project's own CTest memcheck configuration
+(=CTest.cmake=). This directly addresses both defects (Uninitialized
+Memory Conditional, Uninitialized Memory Read) from the CDash nightly
+run.

@@ -126,7 +126,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 21.
 | [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] | BACKLOG | | | Qt 6.8.x references -framework AGL (removed in macOS 15); the latest supported Qt drops that dependency. CI pinned to macos-14 as stopgap. |
 | [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] | STARTED | 2026-07-03 | | Cache-quota fix applied but doesn't explain the magnitude (32 files changed vs. 98.6% miss rate); running a live zero-source-diff experiment. |
 | [[id:05243CFE-F838-4759-9956-9400D6C90FDC][Fix NATS port collision with legacy env and label inconsistency]] | DONE | 2026-07-03 | 2026-07-03 | solid_dirac's NATS ports collided with a stray legacy env's server; migrate to base-port-derived NATS ports and unify the config label to underscore form. |
-| [[id:83B12C2D-5202-4738-8147-5F28E566D997][Fix uninitialized asset_class/series_subclass in market_series generator]] | STARTED | 2026-07-03 | | Nightly Valgrind flagged uninitialized-memory defects in market_series_mapper::map(); generate_synthetic_market_series() never set the two enum fields. |
+| [[id:83B12C2D-5202-4738-8147-5F28E566D997][Fix uninitialized asset_class/series_subclass in market_series generator]] | DONE | 2026-07-03 | 2026-07-03 | Nightly Valgrind flagged uninitialized-memory defects in market_series_mapper::map(); generate_synthetic_market_series() never set the two enum fields. |
 
 ** Documentation
 

@@ -20,6 +20,7 @@
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <array>
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
@@ -27,6 +28,25 @@
 namespace ores::marketdata::generators {
 
 using ores::utility::generation::generation_keys;
+
+namespace {
+
+constexpr std::array<domain::asset_class, 8> asset_classes{
+    domain::asset_class::fx,        domain::asset_class::rates,     domain::asset_class::credit,
+    domain::asset_class::equity,    domain::asset_class::commodity, domain::asset_class::inflation,
+    domain::asset_class::bond,      domain::asset_class::cross_asset};
+
+constexpr std::array<domain::series_subclass, 15> series_subclasses{
+    domain::series_subclass::spot,         domain::series_subclass::forward,
+    domain::series_subclass::volatility,   domain::series_subclass::yield,
+    domain::series_subclass::basis,        domain::series_subclass::fra,
+    domain::series_subclass::xccy,         domain::series_subclass::spread,
+    domain::series_subclass::index_credit, domain::series_subclass::recovery,
+    domain::series_subclass::swap,         domain::series_subclass::capfloor,
+    domain::series_subclass::seasonality,  domain::series_subclass::price,
+    domain::series_subclass::correlation};
+
+}
 
 domain::market_series
 generate_synthetic_market_series(utility::generation::generation_context& ctx) {
@@ -45,6 +65,9 @@ generate_synthetic_market_series(utility::generation::generation_context& ctx) {
     r.series_type = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.metric = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.qualifier = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.asset_class = asset_classes[static_cast<std::size_t>(idx) % asset_classes.size()];
+    r.series_subclass =
+        series_subclasses[static_cast<std::size_t>(idx) % series_subclasses.size()];
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

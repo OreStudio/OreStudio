@@ -43,7 +43,7 @@ loud, diagnosable failure.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:EF866209-32CE-43B4-9617-D4A2F28525D1][Derive NATS ports from base port; unify config label to underscore form]] | BACKLOG | | | env_init.py: replace the independent 42221xxx/8221xxx NATS port sequence with base_port+5/+6 derivation; fix env configure passing the hyphenated ORES_ENV_NAME to nats_init.generate() and nats_store_dir instead of the underscored label used everywhere else (compass nats init, compass_services.py). Bump .env-format version. |
+| [[id:EF866209-32CE-43B4-9617-D4A2F28525D1][Derive NATS ports from base port; unify config label to underscore form]] | DONE | | 2026-07-03 | env_init.py: replace the independent 42221xxx/8221xxx NATS port sequence with base_port+5/+6 derivation; fix env configure passing the hyphenated ORES_ENV_NAME to nats_init.generate() and nats_store_dir instead of the underscored label used everywhere else (compass nats init, compass_services.py). Bump .env-format version. |
 
 * Decisions
 

@@ -170,7 +170,8 @@ Discovered but out of scope, left as documented gaps:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Regen drops currently-enforced country_code and cardinality-limit validations from live-deployed trigger functions; gap window not flagged in PR description | refdata_counterparty_identifiers_create.sql, refdata_counterparty_contact_informations_create.sql | Accepted | Fixed in 995e7d0f (same PR, follow-up commit) — both restored: country_code via a new SQL paste block, cardinality-limit via a Validations-facet extension. No gap window remains. |
+| 2 | Add a comment near country_code/natural keys noting the deferred gap isn't visible without cross-referencing agile docs | ores.refdata.counterparty_contact_information.org, ores.refdata.counterparty_identifier.org | Accepted (superseded) | Moot — the gap itself is closed in 995e7d0f, not just documented as deferred. |
 
 * Result
 

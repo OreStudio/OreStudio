@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :gmm-improvements:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: story/gmm-improvements
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -36,12 +36,12 @@ Ornstein-Uhlenbeck.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]] |
-| Now          | Not yet started.                       |
+| Now          | Inventorying implemented vs designed-only process types.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-02                               |
+| Next         | Implement Ornstein-Uhlenbeck end-to-end.  |
+| Last touched | 2026-07-03                               |
 
 * Acceptance
 

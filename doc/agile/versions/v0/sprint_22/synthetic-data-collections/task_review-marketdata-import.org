@@ -34,11 +34,11 @@ found — do not rebuild import functionality that already exists.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Reviewing ores.marketdata import_service/import_protocol.  |
+| Now          | Done.                                   |
 | Waiting on   | Nothing.                               |
-| Next         | Document gap analysis.                 |
+| Next         | Move to the next task.                 |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
@@ -51,9 +51,38 @@ found — do not rebuild import functionality that already exists.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*Gap analysis.* =ores.marketdata.core::service::import_service=
+(=projects/ores.marketdata/core/src/service/import_service.cpp=)
+already does almost everything needed:
+- Parses ORE's =market.txt= format exactly as needed — plain
+  whitespace/comma-delimited =<date> <quote-name> <value>=, both
+  =YYYYMMDD= and =YYYY-MM-DD= date formats (via the shared
+  =ores::ore::market::parse_market_data= parser) — no new parser
+  required.
+- Decomposes ORE quote-name keys (=FX/RATE/EUR/USD= etc.) into
+  =series_type=/=metric=/=qualifier= via the existing series key
+  registry, auto-creating the =market_series= catalog entry if it
+  doesn't exist.
+- Writes =observation_datetime= from the file's own date column — so
+  importing =20160205 FX/RATE/EUR/USD 1.132337= already lands at the
+  correct vintage date with zero extra plumbing.
+- Exposed over NATS (=marketdata.v1.import=) and already has one
+  caller (=ImportTradeDialog.cpp= in =ores.qt.trading=), so the
+  request/response shape and wiring are proven.
+
+*The one real gap*: =market_observation.source= was never set —
+=import_service.cpp:178= wrote =point_id= but nothing touched
+=source=, so every imported observation landed with an empty source,
+making "give me only the =ore.reference= vintage" unqueryable.
+
+*Extension made*: added an optional =source= field to
+=import_market_data_request=
+(=projects/ores.marketdata/api/include/ores.marketdata.api/messaging/import_protocol.hpp=),
+defaulting to empty string (preserves existing behaviour for the
+=ImportTradeDialog= caller, which doesn't set it), and wired
+=obs.source = req.source;= into the observation-building loop in
+=import_service.cpp=. Purely additive — no signature break, no new
+mechanism.
 
 * Notes
 
@@ -70,3 +99,14 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+=import_service= already handled parsing, key decomposition, and
+date-from-file — the only missing piece was tagging observations with
+a =source=. Added an optional =source= field to
+=import_market_data_request= and wired it through to
+=market_observation.source= in the import loop; empty-string default
+preserves the existing =ImportTradeDialog= caller's behaviour
+unchanged. Built =ores.marketdata.core.lib= and =ores.qt.trading.lib=
+clean (clang debug/make). Unblocks
+[[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]], which can now tag its
+import with =source = "ore.reference"= and query for it precisely.

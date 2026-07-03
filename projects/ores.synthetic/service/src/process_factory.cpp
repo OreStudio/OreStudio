@@ -21,6 +21,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "processes/arithmetic_gmm_process.hpp"
 #include "processes/gmm_process.hpp"
+#include "processes/ou_process.hpp"
+#include <stdexcept>
 
 namespace ores::synthetic::service {
 
@@ -41,6 +43,15 @@ process_factory::make_process(const std::string& process_type,
     if (process_type == "arithmetic")
         return std::make_unique<arithmetic_gmm_process>(
             std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
+    if (process_type == "ou") {
+        if (stdevs.empty() || weights.empty())
+            throw std::invalid_argument(
+                "ou process requires at least one component (weights[0] = kappa, "
+                "stdevs[0] = sigma)");
+        const double kappa = weights.front();
+        const double sigma = stdevs.front();
+        return std::make_unique<ou_process>(kappa, initial_price, sigma, initial_price, seed);
+    }
     if (process_type != "geometric") {
         using namespace ores::logging;
         BOOST_LOG_SEV(lg(), warn) << "Unknown process_type '" << process_type

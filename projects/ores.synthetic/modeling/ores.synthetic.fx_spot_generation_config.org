@@ -151,7 +151,8 @@ faker::number::integer(1, 3600)
 :default_value: "geometric"
 :END:
 
-Price-process engine: "geometric" (multiplicative) or "arithmetic" (additive).
+Price-process engine: "geometric" (multiplicative), "arithmetic"
+(additive), or "ou" (Ornstein-Uhlenbeck, mean-reverting).
 
 #+begin_src cpp :name generator
 std::string("geometric")
@@ -188,7 +189,7 @@ faker::datatype::boolean()
 | "ore_key" <> ''                                       |
 | "gmm_initial_price" > 0                               |
 | "ticks_per_hour" > 0                                  |
-| "process_type" in ('geometric', 'arithmetic')         |
+| "process_type" in ('geometric', 'arithmetic', 'ou')   |
 
 ** Soft FK validations
 
@@ -278,7 +279,7 @@ faker::datatype::boolean()
 | quote_currency_code | Quote Currency      | quoteCurrencyEdit    | line_edit |        | true        | Enter quote currency code       |
 | gmm_initial_price   | Initial Price       | gmmInitialPriceEdit  | line_edit |        | true        | Enter initial price             |
 | ticks_per_hour      | Ticks per Hour      | ticksPerHourEdit     | spin_box  |        | true        |                                 |
-| process_type        | Process Type        | processTypeEdit      | line_edit |        | true        | geometric or arithmetic         |
+| process_type        | Process Type        | processTypeEdit      | line_edit |        | true        | geometric, arithmetic, or ou    |
 | enabled             | Enabled             | enabledCheck         | check_box |        |             |                                 |
 
 *** Columns (Qt model)

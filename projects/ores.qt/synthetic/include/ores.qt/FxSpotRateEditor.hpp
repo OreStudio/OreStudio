@@ -38,6 +38,7 @@
 #include <vector>
 
 class QButtonGroup;
+class QPushButton;
 class QSlider;
 class QStackedWidget;
 class QTableWidget;
@@ -150,6 +151,7 @@ private:
     void rebuildModelFromSimple();   // sliders -> model
     void rebuildModelFromAdvanced(); // table -> model
     void refreshCharts();            // model -> both charts + weight-sum label
+    void updateWeightSumLabel();     // weight-sum label text (or κ echo for "ou")
 
     // Advanced table row construction; returns nothing, appends to table.
     void addTableRow(const ModelComponent& c);
@@ -160,7 +162,9 @@ private:
     void updateComponentColors();
 
     void onEngineChanged();
-    [[nodiscard]] std::string currentEngine() const; // "geometric" / "arithmetic"
+    void updateEngineUi(); // relabel headers/tooltips/warning and gate Add for "ou"
+    [[nodiscard]] std::string currentEngine() const; // "geometric" / "arithmetic" / "ou"
+    [[nodiscard]] bool isOuEngine() const;
     [[nodiscard]] QString incrementNoun() const;     // label noun for the active engine
 
     [[nodiscard]] QString defaultSourceName() const;
@@ -217,6 +221,7 @@ private:
 
     // Behaviour tab — Advanced page.
     QTableWidget* componentTable_;
+    QPushButton* addComponentBtn_; // disabled for the single-regime "ou" engine
     QLabel* weightSumLabel_;
 
     std::vector<std::string> knownCodes_;

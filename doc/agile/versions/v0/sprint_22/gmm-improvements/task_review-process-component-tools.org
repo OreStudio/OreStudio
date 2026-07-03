@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-02
 #+updated: 2026-07-02
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -36,11 +36,11 @@ Ornstein-Uhlenbeck.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]] |
-| Now          | Inventorying implemented vs designed-only process types.  |
+| Now          | Done.                                   |
 | Waiting on   | Nothing.                               |
-| Next         | Implement Ornstein-Uhlenbeck end-to-end.  |
+| Next         | Close the story (last open task).      |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
@@ -55,11 +55,70 @@ Ornstein-Uhlenbeck.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*Inventory.* Process types catalogued in
+[[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] /
+[[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] vs implemented under
+=projects/ores.synthetic/service/src/processes/=: GBM/geometric
+(=gmm_process=) — implemented; arithmetic Brownian
+(=arithmetic_gmm_process=) — implemented; Ornstein-Uhlenbeck
+(=synthetic_ou=) — designed, not implemented (confirmed by grep — this
+task's reason for existing). Jump/Poisson processes and cross-rate
+correlation matrices are also designed-only, already tracked as
+"planned, not wired to anything" in the FxSpotRateEditor "Component
+Tools" disclosure panel — left as-is (out of scope; not silently
+dropped, already visibly flagged to users).
+
+*Implementation — Ornstein-Uhlenbeck.* Added =ou_process=
+(=IStochasticProcess=) implementing the exact per-tick OU
+discretisation: =X_{t+1} = θ + (X_t - θ)e^{-κ} + σ√((1-e^{-2κ})/(2κ))·Z=,
+with κ≤0 degenerating to a driftless random walk. Wired a new ="ou"=
+branch in =process_factory::make_process()=.
+
+OU is a single-regime process (3 scalars: κ, θ, σ), not a K-component
+mixture, so rather than adding new persisted columns/protocol fields
+it reuses the existing GMM-component channels: =weights[0] = κ=,
+=stdevs[0] = σ=, and =initial_price= doubles as =θ= (reverts toward its
+own starting level by default). This is the same pattern already
+established for the "arithmetic" engine, which reuses the %-suffixed
+μ/σ fields for absolute price increments via a warning banner rather
+than relabelling fields.
+
+UI (=FxSpotRateEditor=): added "Ornstein-Uhlenbeck (mean-reverting)" to
+the engine combo; added =updateEngineUi()= to swap the inline warning
+banner text and disable "Add process" (OU has one regime, not a
+mixture) while selected; switching to OU collapses the Advanced table
+to its first row; the weight-sum label becomes a "κ = ..." echo
+instead of "Weight Sum = ..." for OU. =refreshCharts()= skips
+normalisation for OU (κ/σ are scalars, not mixture shares) and clears
+the Return Distribution Preview (the increment-mixture PDF doesn't
+apply to a mean-reverting *level* process) — Sample Price Paths still
+renders correctly since it plots whatever the server returns
+regardless of engine. =onSaveClicked()= skips the "all weights zero"
+guard (κ=0 is a valid OU parameter) and the weight-normalise-to-1 step
+for OU, so κ persists as entered rather than being silently
+overwritten to 1.0.
+
+SQL: extended the =process_type= check constraint
+(=ores.synthetic.fx_spot_generation_config.org= model) to allow ='ou'=.
+Regenerating via =compass codegen generate= dropped unrelated
+hand-patched validation-function logic (template/output drift,
+unrelated to this change) — reverted the full regen and hand-edited
+just the one constraint line; filed
+[[id:D583B57B-B896-48A6-AD66-1F01FAE3FA3D][a capture]] for the drift itself.
 
 * Notes
+
+Known, deliberate limitation: the Volatility (σ) field keeps its "%"
+suffix and the value is still divided by 100 internally for OU, same
+as the pre-existing "arithmetic" engine's reuse of that field for
+absolute (non-%) units — cosmetically imprecise but functionally
+consistent with the established pattern, not fixed here to avoid
+widening this task's footprint.
+
+No dedicated unit test was added for =ou_process=, matching the
+existing =gmm_process=/=arithmetic_gmm_process= (neither has one
+either) — no established Catch2 convention exists yet for this
+directory.
 
 * PRs
 
@@ -74,3 +133,19 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Ornstein-Uhlenbeck is implemented end-to-end: =ou_process= (core
+numerics), =process_factory= dispatch, SQL constraint, and UI (engine
+selector, reused parameter fields, adjusted validation/save/preview
+paths for its single-regime shape). Other designed-only process types
+(jump/Poisson, correlation matrices) reviewed and left explicitly
+scoped out — already flagged to users in the existing "Component
+Tools" panel, not silently dropped. Built =ores.qt.synthetic.lib=,
+=ores.synthetic.service.lib= and =ores.marketdata.service.lib= clean
+(clang debug/make). Also fixed, on user report during this task:
+hardcoded change-reason-code string literals replaced with
+=ores.dq.api= constants across =FeedDialog.cpp=,
+=MarketSimulatorWindow.cpp=, =FxSpotRateEditor.cpp=; and synthetic
+market observations were missing =source=/=point_id= (tenor) —
+=feed_ingest_loop.cpp= now captures =source_name= and sets
+=point_id = "SPOT"= for scalar FX spot series.

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/FxSpotRateEditor.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -342,9 +343,12 @@ void FxSpotRateEditor::buildBehaviourTab() {
     engineCombo_ = new QComboBox(tab);
     engineCombo_->addItem(tr("Geometric Brownian Motion"), QStringLiteral("geometric"));
     engineCombo_->addItem(tr("Arithmetic Brownian Motion"), QStringLiteral("arithmetic"));
+    engineCombo_->addItem(tr("Ornstein-Uhlenbeck (mean-reverting)"), QStringLiteral("ou"));
     engineCombo_->setToolTip(
         tr("The price-process engine. Geometric uses log-returns (stays positive); "
-           "arithmetic uses absolute price changes (symmetric, may go negative)."));
+           "arithmetic uses absolute price changes (symmetric, may go negative); "
+           "Ornstein-Uhlenbeck reverts toward a long-run level (a single regime, not a "
+           "mixture)."));
     {
         const int idx = engineCombo_->findData(QString::fromStdString(fx_.process_type));
         engineCombo_->setCurrentIndex(idx >= 0 ? idx : 0);
@@ -408,14 +412,9 @@ void FxSpotRateEditor::buildBehaviourTab() {
     layout->addLayout(headerRow);
 
     // Inline, non-blocking warning shown only for the arithmetic engine (full width).
-    engineWarningLabel_ =
-        new QLabel(tr("⚠ Arithmetic engine: μ and σ are absolute price increments (not "
-                      "%/log-returns), and the price can go negative or zero — unrealistic for an "
-                      "FX rate. Intended for testing the process abstraction."),
-                   tab);
+    engineWarningLabel_ = new QLabel(tab);
     engineWarningLabel_->setWordWrap(true);
     engineWarningLabel_->setStyleSheet("color:#d08020;");
-    engineWarningLabel_->setVisible(currentEngine() == "arithmetic");
     layout->addWidget(engineWarningLabel_);
 
     connect(
@@ -459,6 +458,8 @@ void FxSpotRateEditor::buildBehaviourTab() {
     layout->addWidget(pathsBox, 1);
 
     connect(modeGroup_, &QButtonGroup::idClicked, this, [this](int) { onModeChanged(); });
+
+    updateEngineUi(); // initial header/tooltip/warning sync for the starting engine
 
     tabWidget_->addTab(tab, tr("Price behaviour"));
 }
@@ -561,10 +562,11 @@ QWidget* FxSpotRateEditor::buildAdvancedControls() {
     compLayout->addWidget(componentTable_);
 
     auto* compButtons = new QHBoxLayout();
-    auto* addBtn = new QPushButton(tr("Add process"), compBox);
-    addBtn->setToolTip(tr("Add another process — two or more processes form a regime mix."));
-    connect(addBtn, &QPushButton::clicked, this, &FxSpotRateEditor::onAddComponentRow);
-    compButtons->addWidget(addBtn);
+    addComponentBtn_ = new QPushButton(tr("Add process"), compBox);
+    addComponentBtn_->setToolTip(
+        tr("Add another process — two or more processes form a regime mix."));
+    connect(addComponentBtn_, &QPushButton::clicked, this, &FxSpotRateEditor::onAddComponentRow);
+    compButtons->addWidget(addComponentBtn_);
     auto* resetAdvBtn = new QPushButton(tr("Reset"), compBox);
     resetAdvBtn->setToolTip(tr("Restore a single Normal-profile component."));
     connect(resetAdvBtn, &QPushButton::clicked, this, &FxSpotRateEditor::onResetAdvanced);
@@ -887,6 +889,10 @@ std::string FxSpotRateEditor::currentEngine() const {
     return engineCombo_ ? engineCombo_->currentData().toString().toStdString() : "geometric";
 }
 
+bool FxSpotRateEditor::isOuEngine() const {
+    return currentEngine() == "ou";
+}
+
 QString FxSpotRateEditor::incrementNoun() const {
     return currentEngine() == "arithmetic" ? tr("price change") : tr("log-return");
 }
@@ -894,10 +900,42 @@ QString FxSpotRateEditor::incrementNoun() const {
 void FxSpotRateEditor::onEngineChanged() {
     if (engineCombo_)
         fx_.process_type = currentEngine();
-    if (engineWarningLabel_)
-        engineWarningLabel_->setVisible(currentEngine() == "arithmetic");
+    updateEngineUi();
+    if (isOuEngine() && componentTable_ && componentTable_->rowCount() > 1) {
+        // OU is a single-regime process — collapse to the first row so the
+        // reused Volatility (σ) / Weight (κ) fields have one unambiguous value.
+        components_.resize(1);
+        syncing_ = true;
+        syncAdvancedFromModel();
+        syncing_ = false;
+        updateComponentColors();
+    }
     // Engine only affects the path simulation, not the increment PDF.
     refreshCharts();
+}
+
+void FxSpotRateEditor::updateEngineUi() {
+    const bool ou = isOuEngine();
+    const bool arithmetic = currentEngine() == "arithmetic";
+
+    if (engineWarningLabel_) {
+        if (ou) {
+            engineWarningLabel_->setText(
+                tr("⚠ Ornstein-Uhlenbeck engine: a single regime, not a mixture. Reuses this "
+                   "editor's fields as: κ (reversion speed) = Weight, σ (volatility) = "
+                   "Volatility (σ), and θ (long-run mean) = Initial Price. Drift (μ) is "
+                   "unused. \"Add process\" is disabled while this engine is selected."));
+        } else if (arithmetic) {
+            engineWarningLabel_->setText(
+                tr("⚠ Arithmetic engine: μ and σ are absolute price increments (not "
+                   "%/log-returns), and the price can go negative or zero — unrealistic for an "
+                   "FX rate. Intended for testing the process abstraction."));
+        }
+        engineWarningLabel_->setVisible(ou || arithmetic);
+    }
+
+    if (addComponentBtn_)
+        addComponentBtn_->setEnabled(!ou);
 }
 
 void FxSpotRateEditor::onAddComponentRow() {
@@ -957,11 +995,7 @@ void FxSpotRateEditor::syncAdvancedFromModel() {
     for (const auto& c : components_)
         addTableRow(c);
     updateRemoveButtonsEnabled();
-    // Refresh weight-sum label.
-    double sum = 0.0;
-    for (const auto& c : components_)
-        sum += c.weight;
-    weightSumLabel_->setText(tr("Weight Sum = %1 (normalised on save)").arg(sum, 0, 'f', 3));
+    updateWeightSumLabel();
 }
 
 void FxSpotRateEditor::rebuildModelFromAdvanced() {
@@ -982,7 +1016,15 @@ void FxSpotRateEditor::rebuildModelFromAdvanced() {
         next.push_back(c);
     }
     components_ = std::move(next);
+    updateWeightSumLabel();
+}
 
+void FxSpotRateEditor::updateWeightSumLabel() {
+    if (isOuEngine()) {
+        const double kappa = components_.empty() ? 0.0 : components_.front().weight;
+        weightSumLabel_->setText(tr("κ (reversion speed) = %1").arg(kappa, 0, 'f', 3));
+        return;
+    }
     double sum = 0.0;
     for (const auto& c : components_)
         sum += c.weight;
@@ -1068,20 +1110,28 @@ void FxSpotRateEditor::rebuildModelFromSimple() {
 void FxSpotRateEditor::refreshCharts() {
     std::vector<ReturnDistributionChart::Component> distComps;
     std::vector<SamplePricePathsChart::Component> pathComps;
-    double sum = 0.0;
-    for (const auto& c : components_)
-        sum += c.weight;
-    for (const auto& c : components_) {
-        const double w = sum > 0.0 ? c.weight / sum : c.weight;
-        distComps.push_back({c.mean, c.stdev, w});
-        pathComps.push_back({c.mean, c.stdev, w});
+    const std::string engine = currentEngine();
+    const double price = priceSpin_ ? priceSpin_->value() : fx_.gmm_initial_price;
+
+    if (engine == "ou") {
+        // Single regime, scalar params (κ, σ) reused from Weight/Volatility — not a
+        // mixture, so no normalisation. θ (long-run mean) is the Initial Price, sent
+        // separately below; the increment PDF chart doesn't apply to a level process.
+        if (!components_.empty())
+            pathComps.push_back({0.0, components_.front().stdev, components_.front().weight});
+    } else {
+        double sum = 0.0;
+        for (const auto& c : components_)
+            sum += c.weight;
+        for (const auto& c : components_) {
+            const double w = sum > 0.0 ? c.weight / sum : c.weight;
+            distComps.push_back({c.mean, c.stdev, w});
+            pathComps.push_back({c.mean, c.stdev, w});
+        }
     }
 
-    const double price = priceSpin_ ? priceSpin_->value() : fx_.gmm_initial_price;
-    const std::string engine = currentEngine();
-
     if (distChart_)
-        distChart_->setComponents(distComps); // PDF is engine-independent (increment dist)
+        distChart_->setComponents(distComps); // empty for "ou" — PDF n/a to a level process
     if (pathsChart_) {
         pathsChart_->setComponents(pathComps);
         pathsChart_->setInitialPrice(price);
@@ -1147,8 +1197,10 @@ void FxSpotRateEditor::onSaveClicked() {
         rebuildModelFromSimple();
 
     // Reject an all-zero weight set: the server builds a std::discrete_distribution
-    // from the weights, which is undefined behaviour when they sum to zero.
-    {
+    // from the weights, which is undefined behaviour when they sum to zero. Doesn't
+    // apply to "ou": κ = 0 is a valid parameter (driftless random walk), and there's
+    // no discrete_distribution over regimes since it's a single process.
+    if (!isOuEngine()) {
         double weightSum = 0.0;
         for (const auto& mc : components_)
             weightSum += mc.weight;
@@ -1181,7 +1233,9 @@ void FxSpotRateEditor::onSaveClicked() {
         crSel->commentary.empty() ? "Authored via Market Simulator" : crSel->commentary;
     fx.version = 0;
 
-    // Build the component stack, normalising weights to sum 1.
+    // Build the component stack, normalising weights to sum 1. Not for "ou": its one
+    // row's weight is κ (reversion speed), a scalar parameter, not a mixture share.
+    const bool ou = isOuEngine();
     double total = 0.0;
     for (const auto& mc : components_)
         total += mc.weight;
@@ -1206,9 +1260,11 @@ void FxSpotRateEditor::onSaveClicked() {
         c.description = mc.description;
         c.mean = mc.mean;
         c.stdev = mc.stdev;
-        c.weight = total > 0.0 ? mc.weight / total : mc.weight;
+        c.weight = (!ou && total > 0.0) ? mc.weight / total : mc.weight;
         c.modified_by = username_.toStdString();
-        c.change_reason_code = rowIsNew ? "system.new_record" : "common.non_material_update";
+        namespace reason = ores::dq::domain::change_reason_constants::codes;
+        c.change_reason_code =
+            rowIsNew ? std::string(reason::new_record) : std::string(reason::non_material_update);
         c.change_commentary = "Authored via Market Simulator";
         c.version = 0;
         comps.push_back(c);

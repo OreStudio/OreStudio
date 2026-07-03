@@ -66,7 +66,7 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     check ("ore_key" <> ''),
     check ("gmm_initial_price" > 0),
     check ("ticks_per_hour" > 0),
-    check ("process_type" in ('geometric', 'arithmetic'))
+    check ("process_type" in ('geometric', 'arithmetic', 'ou'))
 );
 
 -- Composite natural key: unique combination for active records

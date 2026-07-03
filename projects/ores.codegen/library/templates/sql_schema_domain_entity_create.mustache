@@ -398,7 +398,7 @@ begin
     end if;
 
 {{/domain_entity.sql.text_code_validations}}
-{{#domain_entity.validations}}
+{{#domain_entity.insert_trigger.validations}}
 {{#nullable}}
     -- Validate {{column}} (optional field -- skip validation when null)
     if NEW.{{column}} is not null then
@@ -411,7 +411,7 @@ begin
     NEW.{{column}} := {{validation_function}}({{#domain_entity.has_tenant_id}}NEW.tenant_id, {{/domain_entity.has_tenant_id}}NEW.{{column}});
 
 {{/nullable}}
-{{/domain_entity.validations}}
+{{/domain_entity.insert_trigger.validations}}
 {{#domain_entity.has_audit_columns}}
 {{#domain_entity.has_tenant_in_pk}}
     -- Validate change_reason_code

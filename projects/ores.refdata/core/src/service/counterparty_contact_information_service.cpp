@@ -19,7 +19,7 @@
  */
 #include "ores.refdata.core/service/counterparty_contact_information_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/uuid/uuid_io.hpp>
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -29,86 +29,72 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 counterparty_contact_information_service::counterparty_contact_information_service(context ctx)
-    : ctx_(ctx)
-    , repo_(ctx) {}
+    : ctx_(std::move(ctx)) {}
 
 std::vector<domain::counterparty_contact_information>
-counterparty_contact_information_service::list_counterparty_contact_informations() {
+counterparty_contact_information_service::list_counterparty_contact_informations(
+    std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all counterparty contact informations";
-    return repo_.read_latest();
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::vector<domain::counterparty_contact_information>
-counterparty_contact_information_service::list_counterparty_contact_informations_by_counterparty(
-    const boost::uuids::uuid& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing counterparty contact informations for counterparty: "
-                               << counterparty_id;
-    return repo_.read_latest_by_counterparty_id(counterparty_id);
+std::uint32_t counterparty_contact_information_service::count_counterparty_contact_informations() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total counterparty contact informations count";
+    return repo_.get_total_counterparty_contact_information_count(ctx_);
 }
 
 std::optional<domain::counterparty_contact_information>
-counterparty_contact_information_service::find_counterparty_contact_information(
-    const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding counterparty contact information: " << id;
-    auto results = repo_.read_latest(id);
-    if (results.empty()) {
+counterparty_contact_information_service::get_counterparty_contact_information(
+    const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty contact information: " << id;
+    auto results = repo_.read_latest(ctx_, id);
+    if (results.empty())
         return std::nullopt;
-    }
-    return results.front();
-}
-
-std::optional<domain::counterparty_contact_information>
-counterparty_contact_information_service::find_counterparty_contact_information_by_code(
-    const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding counterparty contact information by code: " << code;
-    auto results = repo_.read_latest_by_code(code);
-    if (results.empty()) {
-        return std::nullopt;
-    }
     return results.front();
 }
 
 void counterparty_contact_information_service::save_counterparty_contact_information(
-    const domain::counterparty_contact_information& counterparty_contact_information) {
-    if (counterparty_contact_information.id.is_nil()) {
-        throw std::invalid_argument("Counterparty Contact Information ID cannot be nil.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving counterparty contact information: "
-                               << counterparty_contact_information.id;
-    auto cci = counterparty_contact_information;
-    stamp(cci, ctx_);
-    repo_.write(cci);
-    BOOST_LOG_SEV(lg(), info) << "Saved counterparty contact information: "
-                              << counterparty_contact_information.id;
+    const domain::counterparty_contact_information& v) {
+    if (v.id.is_nil())
+        throw std::invalid_argument("Counterparty Contact Information id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving counterparty contact information: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved counterparty contact information: " << v.id;
 }
 
 void counterparty_contact_information_service::save_counterparty_contact_informations(
     const std::vector<domain::counterparty_contact_information>&
         counterparty_contact_informations) {
-    for (const auto& cci : counterparty_contact_informations) {
-        if (cci.id.is_nil())
-            throw std::invalid_argument("Counterparty Contact Information ID cannot be nil.");
-    }
+    for (const auto& e : counterparty_contact_informations)
+        if (e.id.is_nil())
+            throw std::invalid_argument("Counterparty Contact Information id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparty_contact_informations.size()
                                << " counterparty contact informations";
-    auto stamped = counterparty_contact_informations;
-    for (auto& cci : stamped)
-        stamp(cci, ctx_);
-    repo_.write(stamped);
+    auto ts = counterparty_contact_informations;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
-void counterparty_contact_information_service::remove_counterparty_contact_information(
-    const boost::uuids::uuid& id) {
+void counterparty_contact_information_service::delete_counterparty_contact_information(
+    const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty contact information: " << id;
-    repo_.remove(id);
+    repo_.remove(ctx_, id);
     BOOST_LOG_SEV(lg(), info) << "Removed counterparty contact information: " << id;
+}
+
+void counterparty_contact_information_service::delete_counterparty_contact_informations(
+    const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
 }
 
 std::vector<domain::counterparty_contact_information>
 counterparty_contact_information_service::get_counterparty_contact_information_history(
-    const boost::uuids::uuid& id) {
+    const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty contact information: " << id;
-    return repo_.read_all(id);
+    return repo_.read_all(ctx_, id);
 }
 
 }

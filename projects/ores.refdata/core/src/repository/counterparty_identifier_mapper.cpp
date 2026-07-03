@@ -37,9 +37,14 @@ counterparty_identifier_mapper::map(const counterparty_identifier_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.counterparty_id = boost::lexical_cast<boost::uuids::uuid>(v.counterparty_id);
+
+
     r.id_scheme = v.id_scheme;
+
+
     r.id_value = v.id_value;
-    r.description = v.description;
+
+    r.description = v.description.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -59,9 +64,14 @@ counterparty_identifier_mapper::map(const domain::counterparty_identifier& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.counterparty_id = boost::uuids::to_string(v.counterparty_id);
+
+
     r.id_scheme = v.id_scheme;
+
+
     r.id_value = v.id_value;
-    r.description = v.description;
+
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

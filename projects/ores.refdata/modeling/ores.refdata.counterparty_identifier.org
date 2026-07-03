@@ -66,22 +66,24 @@ References the party_id_scheme lookup table (e.g. LEI, BIC).
 std::string("LEI")
 #+end_src
 
-* Columns
-
 ** id_value
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
 :END:
 
 The identifier value.
 
-The actual identifier string within the scheme.
+The actual identifier string within the scheme. Part of the natural
+key alongside counterparty_id and id_scheme — a counterparty can hold
+more than one identifier under the same scheme as long as the value
+differs.
 
 #+begin_src cpp :name generator
 std::string(faker::string::alphanumeric(20))
 #+end_src
+
+* Columns
 
 ** description
 :PROPERTIES:
@@ -104,6 +106,23 @@ std::string("Test identifier")
 :PROPERTIES:
 :tablename: ores_refdata_counterparty_identifiers_tbl
 :END:
+
+** Soft FK validations
+
+*** counterparty_id
+:PROPERTIES:
+:table:         ores_refdata_counterparties_tbl
+:nullable:      false
+:error_message: Invalid counterparty_id: %. No active counterparty found with this id.
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column    | validation_function                       |
+|-----------+--------------------------------------------|
+| id_scheme | ores_refdata_validate_party_id_scheme_fn |
 
 * C++
 

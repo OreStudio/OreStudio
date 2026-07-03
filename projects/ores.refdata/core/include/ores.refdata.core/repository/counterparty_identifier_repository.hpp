@@ -24,7 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include "ores.refdata.core/export.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <cstdint>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -48,24 +48,57 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit counterparty_identifier_repository(context ctx);
-
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
-    void write(const domain::counterparty_identifier& counterparty_identifier);
-    void write(const std::vector<domain::counterparty_identifier>& counterparty_identifiers);
+    /**
+     * @brief Writes counterparty identifiers to database.
+     */
+    /**@{*/
+    void write(context ctx, const domain::counterparty_identifier& v);
+    void write(context ctx, const std::vector<domain::counterparty_identifier>& v);
+    /**@}*/
 
-    std::vector<domain::counterparty_identifier> read_latest();
-    std::vector<domain::counterparty_identifier> read_latest(const boost::uuids::uuid& id);
-    std::vector<domain::counterparty_identifier> read_latest_by_code(const std::string& code);
+    /**
+     * @brief Reads latest counterparty identifiers, possibly filtered by id.
+     */
+    /**@{*/
+    std::vector<domain::counterparty_identifier> read_latest(context ctx);
+    std::vector<domain::counterparty_identifier> read_latest(context ctx, const std::string& id);
+    /**@}*/
+
+    /**
+     * @brief Reads all counterparty identifiers, possibly filtered by id.
+     */
+    std::vector<domain::counterparty_identifier> read_all(context ctx, const std::string& id);
+
+    /**
+     * @brief Reads latest counterparty identifiers with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
     std::vector<domain::counterparty_identifier>
-    read_latest_by_counterparty_id(const boost::uuids::uuid& counterparty_id);
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
-    std::vector<domain::counterparty_identifier> read_all(const boost::uuids::uuid& id);
-    void remove(const boost::uuids::uuid& id);
+    /**
+     * @brief Gets the total count of active counterparty identifiers.
+     * @param ctx Repository context with database connection
+     * @return Total number of active counterparty identifiers
+     */
+    std::uint32_t get_total_counterparty_identifier_count(context ctx);
 
-private:
-    context ctx_;
+    /**
+     * @brief Deletes a counterparty identifier by closing its temporal validity.
+     */
+    void remove(context ctx, const std::string& id);
+
+    /**
+     * @brief Deletes counterparty identifiers by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
 };
 
 }

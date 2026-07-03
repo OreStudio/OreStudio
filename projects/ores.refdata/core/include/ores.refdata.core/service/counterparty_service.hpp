@@ -23,8 +23,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -35,10 +35,10 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing counterparties.
  *
- * This service provides functionality for:
- * - Managing counterparties (CRUD operations)
+ * Provides a higher-level interface for counterparty operations,
+ * wrapping the underlying repository.
  */
-class counterparty_service {
+class ORES_REFDATA_CORE_EXPORT counterparty_service {
 private:
     inline static std::string_view logger_name = "ores.refdata.service.counterparty_service";
 
@@ -52,61 +52,70 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a counterparty_service with required repositories.
+     * @brief Constructs a counterparty_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit counterparty_service(context ctx);
 
     /**
-     * @brief Lists counterparties with pagination.
+     * @brief Lists counterparties with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of counterparties for the requested page.
      */
-    std::vector<domain::counterparty> list_counterparties(std::uint32_t offset = 0,
-                                                          std::uint32_t limit = 100);
+    std::vector<domain::counterparty> list_counterparties(std::uint32_t offset,
+                                                          std::uint32_t limit);
 
     /**
-     * @brief Returns total number of active counterparties.
+     * @brief Gets the total count of active counterparties.
+     *
+     * @return Total number of active counterparties.
      */
     std::uint32_t count_counterparties();
 
     /**
-     * @brief Finds a counterparty by its ID.
+     * @brief Retrieves a single counterparty by its id.
+     *
+     * @param id The id of the counterparty.
+     * @return The counterparty if found, std::nullopt otherwise.
      */
-    std::optional<domain::counterparty> find_counterparty(const boost::uuids::uuid& id);
-
-    /**
-     * @brief Finds a counterparty by its code.
-     */
-    std::optional<domain::counterparty> find_counterparty_by_code(const std::string& code);
+    std::optional<domain::counterparty> get_counterparty(const std::string& id);
 
     /**
      * @brief Saves a counterparty (creates or updates).
      *
-     * @param counterparty The counterparty to save
+     * @param counterparty The counterparty to save.
+     * @throws std::exception on failure.
      */
     void save_counterparty(const domain::counterparty& counterparty);
 
     /**
-     * @brief Saves multiple counterparties (creates or updates).
+     * @brief Saves a batch of counterparties.
      *
-     * @param counterparties The counterparties to save
+     * @param counterparties The counterparties to save.
+     * @throws std::exception on failure.
      */
     void save_counterparties(const std::vector<domain::counterparty>& counterparties);
 
     /**
-     * @brief Removes a counterparty.
+     * @brief Deletes a counterparty by its id.
      *
-     * @param id The ID of the counterparty to remove
+     * @param id The id of the counterparty to delete.
+     * @throws std::exception on failure.
      */
-    void remove_counterparty(const boost::uuids::uuid& id);
+    void delete_counterparty(const std::string& id);
 
     /**
-     * @brief Gets the version history for a counterparty.
-     *
-     * @param id The counterparty ID
-     * @return Vector of all versions, newest first
+     * @brief Deletes counterparties by their ids.
      */
-    std::vector<domain::counterparty> get_counterparty_history(const boost::uuids::uuid& id);
+    void delete_counterparties(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a counterparty.
+     */
+    std::vector<domain::counterparty> get_counterparty_history(const std::string& id);
 
 private:
     context ctx_;

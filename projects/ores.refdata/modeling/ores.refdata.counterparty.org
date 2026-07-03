@@ -38,20 +38,6 @@ Surrogate key for the counterparty record.
 
 * Natural keys
 
-** full_name
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:END:
-
-Full legal name of the counterparty.
-
-The official registered name of the external entity.
-
-#+begin_src cpp :name generator
-std::string(faker::company::name())
-#+end_src
-
 ** short_code
 :PROPERTIES:
 :type:     text
@@ -67,6 +53,38 @@ std::string(faker::string::alpha(6))
 #+end_src
 
 * Columns
+
+** full_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Full legal name of the counterparty.
+
+The official registered name of the external entity. Not unique
+(e.g. the same legal name can recur across branches with distinct
+short codes) — see the non-unique search index declared under the
+SQL Indexes section below.
+
+#+begin_src cpp :name generator
+std::string(faker::company::companyName())
+#+end_src
+
+** transliterated_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Transliterated (e.g. Latin-script) rendering of the full legal name,
+for counterparties whose registered name uses a non-Latin script.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
 
 ** party_type
 :PROPERTIES:
@@ -102,7 +120,7 @@ std::nullopt
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
 :END:
 
 Business center location code.
@@ -118,6 +136,7 @@ std::string("USNY")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:default:  'Active'
 :END:
 
 Current lifecycle status.
@@ -134,6 +153,31 @@ std::string("Active")
 :PROPERTIES:
 :tablename: ores_refdata_counterparties_tbl
 :END:
+
+** Soft FK validations
+
+*** parent_counterparty_id
+:PROPERTIES:
+:table:         ores_refdata_counterparties_tbl
+:nullable:      true
+:error_message: Invalid parent_counterparty_id: %. No active counterparty found with this id.
+:END:
+
+** Indexes
+
+| name      | columns             | unique | current_only | where_extra |
+|-----------+----------------------+--------+--------------+-------------|
+| full_name | tenant_id, full_name | false  | true         |             |
+
+* Insert trigger
+
+** Validations
+
+| column                | validation_function                   |
+|-----------------------+----------------------------------------|
+| party_type            | ores_refdata_validate_party_type_fn   |
+| status                | ores_refdata_validate_party_status_fn |
+| business_center_code  | ores_refdata_validate_business_centre_fn |
 
 * C++
 

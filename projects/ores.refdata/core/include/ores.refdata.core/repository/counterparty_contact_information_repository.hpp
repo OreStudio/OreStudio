@@ -24,7 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.core/export.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <cstdint>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -48,26 +48,59 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit counterparty_contact_information_repository(context ctx);
-
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
-    void write(const domain::counterparty_contact_information& counterparty_contact_information);
-    void write(const std::vector<domain::counterparty_contact_information>&
-                   counterparty_contact_informations);
+    /**
+     * @brief Writes counterparty contact informations to database.
+     */
+    /**@{*/
+    void write(context ctx, const domain::counterparty_contact_information& v);
+    void write(context ctx, const std::vector<domain::counterparty_contact_information>& v);
+    /**@}*/
 
-    std::vector<domain::counterparty_contact_information> read_latest();
-    std::vector<domain::counterparty_contact_information> read_latest(const boost::uuids::uuid& id);
+    /**
+     * @brief Reads latest counterparty contact informations, possibly filtered by id.
+     */
+    /**@{*/
+    std::vector<domain::counterparty_contact_information> read_latest(context ctx);
+    std::vector<domain::counterparty_contact_information> read_latest(context ctx,
+                                                                      const std::string& id);
+    /**@}*/
+
+    /**
+     * @brief Reads all counterparty contact informations, possibly filtered by id.
+     */
+    std::vector<domain::counterparty_contact_information> read_all(context ctx,
+                                                                   const std::string& id);
+
+    /**
+     * @brief Reads latest counterparty contact informations with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
     std::vector<domain::counterparty_contact_information>
-    read_latest_by_code(const std::string& code);
-    std::vector<domain::counterparty_contact_information>
-    read_latest_by_counterparty_id(const boost::uuids::uuid& counterparty_id);
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
-    std::vector<domain::counterparty_contact_information> read_all(const boost::uuids::uuid& id);
-    void remove(const boost::uuids::uuid& id);
+    /**
+     * @brief Gets the total count of active counterparty contact informations.
+     * @param ctx Repository context with database connection
+     * @return Total number of active counterparty contact informations
+     */
+    std::uint32_t get_total_counterparty_contact_information_count(context ctx);
 
-private:
-    context ctx_;
+    /**
+     * @brief Deletes a counterparty contact information by closing its temporal validity.
+     */
+    void remove(context ctx, const std::string& id);
+
+    /**
+     * @brief Deletes counterparty contact informations by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
 };
 
 }

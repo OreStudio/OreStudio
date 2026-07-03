@@ -209,6 +209,23 @@ std::string("https://example.com")
 :tablename: ores_refdata_counterparty_contact_informations_tbl
 :END:
 
+** Soft FK validations
+
+*** counterparty_id
+:PROPERTIES:
+:table:         ores_refdata_counterparties_tbl
+:nullable:      false
+:error_message: Invalid counterparty_id: %. No active counterparty found with this id.
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column       | validation_function                    |
+|--------------+------------------------------------------|
+| contact_type | ores_refdata_validate_contact_type_fn |
+
 * C++
 
 ** Flags

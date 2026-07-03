@@ -21,6 +21,7 @@
 #define ORES_REFDATA_API_MESSAGING_COUNTERPARTY_IDENTIFIER_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -28,18 +29,27 @@ namespace ores::refdata::messaging {
 
 struct get_counterparty_identifiers_request {
     using response_type = struct get_counterparty_identifiers_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.counterparty-identifiers.list";
-    std::string counterparty_id;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparty_identifiers.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_counterparty_identifiers_response {
-    std::vector<ores::refdata::domain::counterparty_identifier> identifiers;
+    std::vector<ores::refdata::domain::counterparty_identifier> counterparty_identifiers;
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_counterparty_identifier_request {
     using response_type = struct save_counterparty_identifier_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.counterparty-identifiers.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparty_identifiers.save";
     ores::refdata::domain::counterparty_identifier data;
+
+    static save_counterparty_identifier_request
+    from(ores::refdata::domain::counterparty_identifier v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_counterparty_identifier_response {
@@ -49,11 +59,23 @@ struct save_counterparty_identifier_response {
 
 struct delete_counterparty_identifier_request {
     using response_type = struct delete_counterparty_identifier_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.counterparty-identifiers.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparty_identifiers.delete";
     std::vector<std::string> ids;
 };
 
 struct delete_counterparty_identifier_response {
+    bool success = false;
+    std::string message;
+};
+
+struct get_counterparty_identifier_history_request {
+    using response_type = struct get_counterparty_identifier_history_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparty_identifiers.history";
+    std::string id;
+};
+
+struct get_counterparty_identifier_history_response {
+    std::vector<ores::refdata::domain::counterparty_identifier> history;
     bool success = false;
     std::string message;
 };

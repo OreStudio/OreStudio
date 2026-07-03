@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 73E7622C-CBD2-48C8-96B9-DEA8AA7C45C6
+:END:
+#+title: Task: Seed Basic and Realistic dataset bundles
+#+description: Create the Basic and Realistic dataset bundles, both seeding initial spot from the imported 2016-02-05 vintage, differing only in GMM/process parameters.
+#+type: task
+#+level: s1
+#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create =Basic= and =Realistic= dataset bundles (mirroring how
+=ore_analytics= was created in
+[[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]]), each seeding its
+FX configs' initial price from the imported =2016-02-05= vintage
+([[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]]). The two bundles differ
+only in GMM/process parameters: =Basic= uses simple/exaggerated
+dynamics (easy to eyeball, exercises every UI feature); =Realistic=
+uses dynamics calibrated to look like actual FX behaviour. Decide
+during implementation whether these sit alongside or replace
+=ore_analytics=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- =Basic= and =Realistic= dataset bundles exist, each with FX configs
+  for at least EUR/USD and GBP/USD.
+- Both bundles' initial prices match the imported =2016-02-05= vintage
+  values exactly (no independently hand-typed numbers).
+- Provisioning a party with either bundle produces working, ticking
+  feeds end to end (matching the existing =ore_analytics= verification
+  pattern).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: D1234E9D-D79A-4C59-991C-988D1D8F515F
+:END:
+#+title: Story: Synthetic data collections: Basic and Realistic
+#+description: Two sample synthetic FX collections (Basic, Realistic) seeded from real ORE reference market data, with a market_simulator grouping by collection instead of feed type, and a vintage-availability guard in ores.synthetic.
+#+type: story
+#+level: s2
+#+category: feature
+#+filetags: :market_data:synthetic:librarian:collections:sprint_22:v0:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+[[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] gave every party a
+single synthetic FX collection (the =ore_analytics= dataset bundle).
+This story adds a second sample collection so parties can pick between
+two archetypes, and closes the gaps that surfaced while designing it:
+
+- *Two named collections*: =Basic= (simple/exaggerated process
+  dynamics, easy to eyeball on a chart while exercising every UI
+  feature) and =Realistic= (calibrated to look like actual FX
+  behaviour). Both seed their initial spot from the *same* real
+  reference data — the difference between them is process dynamics
+  only, not the starting point. A bad/arbitrary starting spot isn't
+  "basic," it's just wrong.
+- *Reference/vintage data as market data, not a synthetic-service
+  concept*: a "vintage" is real, dated =market_observation= rows
+  (=asset_class::fx=, tagged with a distinguishing =source=, e.g.
+  =ore.reference=), imported once from ORE's own bundled example data
+  into =ores.marketdata= — reusing the exact schema fields already
+  designed for this (=source=, =point_id=, =observation_datetime=), not
+  a new table or a synthetic-specific store. =ores.synthetic= is a
+  *consumer* of this at feed-start (asks =ores.marketdata= "what was
+  =FX/RATE/EUR/USD= as of =2016-02-05= from source =ore.reference=?"),
+  never a store of it — so it's reusable by future IR/vol-surface work
+  without any synthetic-specific plumbing, and scales to more vintages
+  as just more dated rows, never more collection names.
+- *Market Simulator UI groups by collection, not by feed type*: today
+  the tree's top-level node is a feed-source label ("Synthetic FX
+  Spot: EUR/USD") with all configured pairs flattened under it
+  regardless of which collection they belong to. It should group by
+  collection (=Basic= / =Realistic=) instead, since every entry can be
+  enabled simultaneously across collections and users need to tell
+  them apart at a glance.
+- *Feed/subject namespacing by collection*: NATS subjects and
+  =source_name= values collide across collections today (both would
+  publish as =synthetic.eurusd=). Prefix with the collection:
+  =synthetic.basic.eurusd= / =synthetic.realistic.eurusd=.
+- *Vintage-availability guard*: if the reference-data import hasn't
+  been run, starting a =Realistic= feed should fail with an actionable
+  error pointing at the import, not silently default to a wrong value
+  or crash deep in feed-start logic.
+
+* Prior investigation (this session)
+
+- ORE's bundled example data is anchored overwhelmingly to one date:
+  =2016-02-05= appears in 288 of 392 example =Input/*.xml=
+  =asofDate= parameters (≈73%); the remainder is a long tail of
+  one-off dates, no second dominant cluster.
+- Real FX spot values as of that date, from
+  =external/ore/examples/Legacy/Example_56/Input/market.txt= (the
+  richest FX quote set at that date): EURUSD =1.132337=, GBPUSD
+  ≈=1.3946= (derived via EUR/GBP), EURCHF =1.125046=, USDCHF ≈=0.9936=,
+  EURJPY =128.15=.
+- =market.txt= format: plain whitespace-delimited
+  =<date> <quote-name> <value>=, e.g.
+  =20160205 FX/RATE/EUR/USD 1.132337= — trivial to parse.
+- =ores.marketdata.core::service::import_service= already exists
+  (=projects/ores.marketdata/core/include/ores.marketdata.core/service/import_service.hpp=)
+  — this story reviews/extends it rather than building import
+  functionality from scratch.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-03                               |
+
+* Acceptance
+
+- Existing =ores.marketdata= import functionality
+  (=import_service=/=import_protocol=) is reviewed against the need to
+  import ORE's =market.txt= reference data as dated =market_observation=
+  rows tagged with a distinguishing source; extended if needed, not
+  rebuilt.
+- A =Basic= and a =Realistic= dataset bundle both exist (alongside the
+  existing =ore_analytics= bundle, or replacing/extending it — decide
+  during implementation), each seeding its FX configs' initial price
+  from the same imported =2016-02-05= reference vintage.
+- =Basic= and =Realistic= differ only in GMM/process parameters, not in
+  starting spot.
+- =ores.synthetic= validates vintage-data availability before a feed
+  that depends on it starts — both as an on-demand "validate every
+  entry" toolbar action in Market Simulator, and as an implicit check
+  at feed-start — surfacing a clear, actionable error (pointing at the
+  import step) rather than a silent bad default or a deep crash.
+- Market Simulator's feed tree groups by collection (=Basic= /
+  =Realistic=) as the top-level node, not by feed-source label.
+- Synthetic feed =source_name=/NATS subject is namespaced by
+  collection: =synthetic.basic.<pair>= / =synthetic.realistic.<pair>=,
+  so two collections can run the same pair concurrently without
+  colliding.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:32D9596A-ADB6-4ECE-9307-025B58C4C82A][Review and extend ores.marketdata import for ORE reference vintages]] | BACKLOG | | | Review existing import_service/import_protocol against the need to import ORE market.txt data as dated, source-tagged market_observation rows; extend as needed. |
+| [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]] | BACKLOG | | | Import FX spot values from external/ore/examples/Legacy/Example_56/Input/market.txt into ores.marketdata as market_observation rows tagged source=ore.reference. |
+| [[id:E468C540-0CE0-4F89-870D-7ED2CFCDF219][Vintage-availability guard in ores.synthetic]] | BACKLOG | | | Validate required vintage data exists in ores.marketdata before a dependent feed starts, plus a Market Simulator toolbar action to validate every configured entry on demand. |
+| [[id:73E7622C-CBD2-48C8-96B9-DEA8AA7C45C6][Seed Basic and Realistic dataset bundles]] | BACKLOG | | | Create the Basic and Realistic dataset bundles, both seeding initial spot from the imported 2016-02-05 vintage, differing only in GMM/process parameters. |
+| [[id:A3787A77-1F23-496D-B0E8-A198BE237735][Namespace feed source_name/NATS subject by collection]] | BACKLOG | | | Prefix synthetic feed source_name and NATS subjects with the owning collection (synthetic.basic.<pair> / synthetic.realistic.<pair>) so concurrent collections don't collide. |
+| [[id:E3DEBE80-3B35-42D4-97B6-F1994D671F4F][Group Market Simulator feed tree by collection]] | BACKLOG | | | Change the Market Data Feeds tree's top-level node from a feed-source label to the owning collection (Basic / Realistic). |
+
+* Decisions
+
+- Vintage/reference data lives in =ores.marketdata= as ordinary
+  (dated, source-tagged) =market_observation= rows, not as a new
+  synthetic-specific table or store. =ores.synthetic= queries it at
+  feed-start; it never owns or caches a private copy. Rationale: reuses
+  the exact schema fields (=source=, =point_id=, =observation_datetime=)
+  already designed for this in the IR Rates story's investigation;
+  scales to more vintages as more rows, not more collection names or
+  schema changes; reusable by future IR/vol-surface work for free.
+- Collections differ only in process parameters, never in starting
+  spot — both =Basic= and =Realistic= seed from the same reference
+  vintage. A collection that starts from a nonsensical spot isn't
+  "basic," it's broken.
+- Vintage-availability validation is both a toolbar "validate all"
+  action and an implicit start-time check — not one or the other. The
+  toolbar action lets a user audit an entire collection proactively;
+  the start-time check is the safety net for anyone who skips it.
+
+* Out of scope
+
+- Adding vintages beyond =2016-02-05= (this story imports and uses
+  one; the reference-data mechanism is designed to support more later
+  without rework, but adding a second vintage is follow-on work).
+- Asset classes beyond FX (matches the scope boundary already set by
+  the FX foundation story).
+- Curve bootstrapping / vol surfaces (separate stories, per
+  [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]]'s scope reasoning).

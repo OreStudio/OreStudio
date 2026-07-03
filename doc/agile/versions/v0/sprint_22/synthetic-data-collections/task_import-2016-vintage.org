@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 9C428EBD-E6B2-4616-9225-D374C0555904
+:END:
+#+title: Task: Import the 2016-02-05 ORE reference vintage
+#+description: Import FX spot values from external/ore/examples/Legacy/Example_56/Input/market.txt into ores.marketdata as market_observation rows tagged source=ore.reference.
+#+type: task
+#+level: s1
+#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Using the (possibly extended) import mechanism from
+[[id:32D9596A-ADB6-4ECE-9307-025B58C4C82A][Review and extend ores.marketdata import for ORE reference vintages]],
+import FX spot values from
+=external/ore/examples/Legacy/Example_56/Input/market.txt= (the
+richest FX quote set at the dominant ORE anchor date) into
+=ores.marketdata= as =market_observation= rows: =observation_datetime=
+=2016-02-05= (the ORE vintage date), =source = "ore.reference"=,
+=point_id = "SPOT"=. At minimum EURUSD (=1.132337=) and GBPUSD
+(≈=1.3946=, derived via EUR/GBP); include EURCHF/USDCHF/EURJPY if
+straightforward.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- =market_observation= rows exist for at least EURUSD and GBPUSD,
+  dated =2016-02-05=, tagged =source = "ore.reference"=.
+- Values match the source file exactly (EURUSD =1.132337=).
+- Import is re-runnable (idempotent or safely repeatable) rather than
+  a one-shot manual script.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 32D9596A-ADB6-4ECE-9307-025B58C4C82A
+:END:
+#+title: Task: Review and extend ores.marketdata import for ORE reference vintages
+#+description: Review existing import_service/import_protocol against the need to import ORE market.txt data as dated, source-tagged market_observation rows; extend as needed.
+#+type: task
+#+level: s1
+#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores.marketdata.core::service::import_service=
+(=projects/ores.marketdata/core/include/ores.marketdata.core/service/import_service.hpp=)
+already exists. Review it (and =import_protocol=) against what's
+needed to import ORE's =market.txt= reference data: plain
+whitespace-delimited =<date> <quote-name> <value>= rows (e.g.
+=20160205 FX/RATE/EUR/USD 1.132337=), written into =market_observation=
+with a distinguishing =source= (e.g. =ore.reference=) and
+=observation_datetime= set to the vintage date. Extend only the gaps
+found — do not rebuild import functionality that already exists.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- Documented gap analysis: what =import_service=/=import_protocol=
+  already supports vs what's missing for =market.txt=-shaped,
+  source-tagged, dated FX reference imports.
+- Any extension is additive to the existing service, not a parallel
+  import mechanism.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

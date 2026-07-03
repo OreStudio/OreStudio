@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-synthetic-generation:sprint_22:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1411
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -63,7 +63,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1411][#1411]] | [agile] Raise IR Rates synthetic data generation story |
 
 * Review
 

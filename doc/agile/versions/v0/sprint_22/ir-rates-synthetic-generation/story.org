@@ -39,7 +39,7 @@ vol surfaces).
 | State         | BACKLOG                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
 | Now           | Not yet started.                       |
-| Waiting on    | [[https://github.com/OreStudio/OreStudio/pull/1409][PR #1409]] to merge — this story's tasks reference =ou_process= and =ores.synthetic.api::domain::validate_process_parameters()=, both added by [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]], which is still open. Those references are correct but will only resolve in the working tree once that PR merges. |
+| Waiting on    | Nothing — [[https://github.com/OreStudio/OreStudio/pull/1409][PR #1409]] ([[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]], which added =ou_process= and =ores.synthetic.api::domain::validate_process_parameters()=) merged via =4be33f2b4= prior to this branch's rebase. |
 | Next          | Break the story into tasks.            |
 | Last touched  | 2026-07-03                               |
 

@@ -69,9 +69,10 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | ou_process / validate_process_parameters cited as existing prior art but absent from the repo (reported independently by three review passes) | story.org, task_short-rate-process.org, task_tenor-collision-validation.org, task_tick-batch-publishing.org | Fixed | bd0104de5 — added explicit "Waiting on PR #1409" note; the references are real (live on the still-open PR #1409/story/gmm-improvements branch, not yet merged to main) |
+| 1 | ou_process / validate_process_parameters cited as existing prior art but absent from the repo (reported independently by three review passes) | story.org, task_short-rate-process.org, task_tenor-collision-validation.org, task_tick-batch-publishing.org | Fixed | bd0104de5 — added explicit "Waiting on PR #1409" note; the references are real (live on PR #1409/story/gmm-improvements, which has since merged) |
 | 2 | Filename typo: gemini_ir_curve_boostrapping.org vs its correctly-spelled .png companion | doc/analysis/ | Fixed | bd0104de5 — renamed |
 | 3 | Missing required #+category: field | story.org | Fixed | bd0104de5 — added "feature" |
 | 4 | Committed PNGs appear unreferenced from any .org file | doc/analysis/ | Declined | Intentional — raw source material for the analysis docs, not embedded content |
+| 5 | "Waiting on PR #1409" note stale — PR #1409 merged into main (4be33f2b4) before this branch's rebase, but story.org still said "still open" | story.org | Fixed | Updated to "Nothing" with a note that #1409 merged prior to this branch's rebase |
 
 * Result

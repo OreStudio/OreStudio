@@ -15,22 +15,29 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Any environment's NATS ports should be trivially identifiable from its
+=ORES_BASE_PORT= alone, and a legacy/untracked checkout should never be
+able to silently steal another environment's ports without at least a
+loud, diagnosable failure.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-07-03                               |
 
 * Acceptance
 
--
+- NATS client/monitor ports derive from =ORES_BASE_PORT= like every
+  other per-environment port.
+- =env configure= and =compass nats init= produce one canonical,
+  consistently-named NATS config for a given environment.
+- solid_dirac's own service fleet starts clean end-to-end.
 
 * Tasks
 
@@ -40,6 +47,18 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Decisions
 
+Chose to derive NATS ports from =ORES_BASE_PORT= rather than just
+widening the old independent 42221-base sequence or adding the legacy
+=OreStudio.*= dirs more thoroughly to the scan — a single base port per
+environment is easier to reason about and matches how http/wt/site
+ports already work, so there's one number to know per environment
+instead of two unrelated numbering schemes.
+
 * Out of scope
 
--
+- Did not update any other worktree's =.env= — each will pick up the
+  new scheme next time =compass env configure= runs there, per the
+  =.env=-format version bump.
+- Did not audit whether other legacy =OreStudio.*= checkouts
+  (=local1=, =local3=) have similar undetectable port collisions
+  waiting to happen; only =local2= was actually observed colliding.

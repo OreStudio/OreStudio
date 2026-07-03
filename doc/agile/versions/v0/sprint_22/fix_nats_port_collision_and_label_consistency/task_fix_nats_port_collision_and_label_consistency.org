@@ -7,35 +7,63 @@
 #+level: s1
 #+filetags: :compass:infra:nats:bugfix:sprint_22:v0:fix_nats_port_collision_and_label_consistency:
 #+owner: marco
-#+branch:
+#+branch: feature/fix-nats-port-collision-and-label-consistency
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:05243CFE-F838-4759-9956-9400D6C90FDC][Fix NATS port collision with legacy env and label inconsistency]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Trying to run the party_type Qt UI verification task's live services,
+=compass services start= repeatedly reported NATS as "ready" while
+=ores.controller.service= and =ores.wt.service= died moments later
+with a non-deterministic corrupted-byte error. Root cause: a legacy,
+untracked =nats-server= from the deleted =OreStudio.local2= checkout
+was squatting on solid_dirac's assigned ports (42222/8222); solid_dirac's
+own NATS fatal-crashed on the port conflict every time, but the
+readiness probe was fooled because *something* answered on 42222 —
+the wrong broker. Controller/wt then talked to a stranger's NATS/JetStream
+state, which explains the earlier crashes far better than a
+memory-safety bug in our own code.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:05243CFE-F838-4759-9956-9400D6C90FDC][Fix NATS port collision with legacy env and label inconsistency]] |
-| Now          | Not yet started.                       |
+| Now          | Done. Full service fleet (24 services) verified running clean.       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | N/A.                  |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
 
--
+- Killed the stray legacy =OreStudio.local2= =nats-server= (pid squatting on 42222/8222).
+- =env_init.py='s port scheme no longer has an independent
+  42221xxx/8221xxx sequence that can silently collide with untracked
+  legacy checkouts; NATS client/monitor ports derive from
+  =ORES_BASE_PORT= (+5/+6), the same base every other per-env port
+  (http/wt/site) already derives from.
+- =env configure= and =compass nats init= agree on one canonical,
+  underscored =nats-<label>.conf= / =build/nats/<label>/= — previously
+  =env configure= used the hyphenated =ORES_ENV_NAME= for these paths
+  while =compass nats init=/=compass_services.py= used the underscored
+  =ORES_CHECKOUT_LABEL=, which could silently produce two divergent
+  config files for the same environment (reproduced locally: got both
+  =nats-solid_dirac.conf= and =nats-solid-dirac.conf= on disk at once).
+- =.env=-format version bumped (7 → 8) via =compass env version new= so
+  other checkouts pick up the new port derivation next time they run
+  =env configure= — this task does not touch any other environment's
+  =.env=.
+- =compass services start= brings up all 24 services clean, including
+  =ores.controller.service= and =ores.wt.service=, with no crash.
 
 * Plan
 
@@ -43,7 +71,21 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Found via =ss -ltnp= that ports 42222/8222 were owned by pid 2554514,
+=nats-server --config .../OreStudio.local2/build/config/nats-local2.conf=
+— a legacy checkout with no =.env= at all (predates =.env=-based port
+tracking), so =env_init.py='s =_scan_ports()= collision check — which
+only globs sibling =.env= files — could never see it. Killed the stray
+process, then redesigned port assignment so a whole environment's ports
+are one contiguous, identifiable block off =ORES_BASE_PORT= rather than
+mixing that scheme with an unrelated hardcoded 42221-base sequence for
+NATS alone.
+
 * Notes
+
+Left other active worktrees' =.env= files untouched, per instruction —
+they will pick up version 8 (and the corresponding new NATS ports) the
+next time someone runs =compass env configure= on them.
 
 * PRs
 
@@ -58,3 +100,18 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+=projects/ores.compass/src/env_init.py=: =_scan_ports()= now only
+scans/assigns =base_port=; =nats_port = base_port + 5= and
+=nats_monitor_port = base_port + 6= (was an independent
+=42221 + N= / =8221 + N= sequence). Both call sites (fresh-clone scan
+path and existing-=.env= override path) updated consistently.
+=env configure= now passes =label_lower= (underscored) to
+=nats_init.generate()= and uses it for =nats_store_dir=, matching
+=compass nats init= and =compass_services.py=. Bumped
+=doc/knowledge/architecture/env_format_version_log.org= to version 8
+and updated the affected recipe
+(=doc/recipes/compass/how_do_i_provision_an_environment_with_compass.org=).
+solid_dirac's own =.env= migrated to NATS ports 50005/50006; verified
+=compass services start= brings up all 24 services including
+=ores.controller.service=/=ores.wt.service= with no crash.

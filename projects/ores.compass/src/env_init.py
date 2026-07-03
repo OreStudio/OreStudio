@@ -89,13 +89,15 @@ def _read_env(env_file: Path) -> dict:
 
 
 def _scan_ports(parent_dir: Path) -> tuple[int, int, int]:
-    """Scan sibling worktrees for used port values; return (base_port, nats_port, nats_monitor_port).
+    """Scan sibling worktrees for used base ports; return (base_port, nats_port, nats_monitor_port).
 
-    Scans both ores_dev_* and legacy OreStudio.* directories.
-    Used by both env configure (first-run port assignment) and env provision.
+    All ports for an environment derive from a single base_port (spaced 1000
+    apart) so every port owned by an environment is identifiable at a glance:
+    base_port+0/1 (http), +2/3 (wt), +4 (site), +5 (NATS client), +6 (NATS
+    monitor). Scans both ores_dev_* and legacy OreStudio.* directories for
+    ORES_BASE_PORT so a stray legacy checkout can't collide silently.
     """
     used_base: set = set()
-    used_nats: set = set()
     for pattern in ("ores_dev_*/.env", "OreStudio.*/.env"):
         for env_file in parent_dir.glob(pattern):
             d = _read_env(env_file)
@@ -104,18 +106,11 @@ def _scan_ports(parent_dir: Path) -> tuple[int, int, int]:
                     used_base.add(int(d["ORES_BASE_PORT"]))
                 except ValueError:
                     pass
-            if d.get("ORES_NATS_PORT"):
-                try:
-                    used_nats.add(int(d["ORES_NATS_PORT"]))
-                except ValueError:
-                    pass
     base_port = 50000
     while base_port in used_base:
         base_port += 1000
-    nats_port = 42221
-    while nats_port in used_nats:
-        nats_port += 1
-    nats_monitor_port = 8221 + (nats_port - 42221)
+    nats_port = base_port + 5
+    nats_monitor_port = base_port + 6
     return base_port, nats_port, nats_monitor_port
 
 
@@ -407,13 +402,15 @@ def run(argv, project_root: Path) -> int:
     if existing.get("ORES_BASE_PORT"):
         try:
             base_port = int(existing["ORES_BASE_PORT"])
+            nats_port = base_port + 5
+            nats_monitor_port = base_port + 6
         except ValueError:
             print("Warning: invalid ORES_BASE_PORT in .env, using scanned value.")
     if existing.get("ORES_NATS_PORT"):
         try:
             nats_port = int(existing["ORES_NATS_PORT"])
             nats_monitor_port = int(existing.get("ORES_NATS_MONITOR_PORT")
-                                    or str(8221 + (nats_port - 42221)))
+                                    or str(nats_port + 1))
         except ValueError:
             print("Warning: invalid ORES_NATS_PORT in .env, using scanned value.")
 
@@ -427,7 +424,10 @@ def run(argv, project_root: Path) -> int:
 
     nats_url = f"nats://localhost:{nats_port}"
     nats_monitor_url = f"http://localhost:{nats_monitor_port}"
-    nats_store_dir = checkout_root / "build" / "nats" / env_name / "jetstream"
+    # Underscored label for filesystem paths — keeps a single canonical
+    # nats-<label>.conf / build/nats/<label>/ regardless of whether
+    # ORES_ENV_NAME uses hyphens (e.g. festive-hawking).
+    nats_store_dir = checkout_root / "build" / "nats" / label_lower / "jetstream"
     nats_certs_dir = checkout_root / "build" / "keys" / "nats"
 
     # NATS mTLS certificates (idempotent; skips files that already exist).
@@ -723,9 +723,11 @@ ORES_IAM_SERVICE_JWT_PRIVATE_KEY="{jwt_key_oneline}"
     print("Done.")
 
     # NATS setup — per-environment server config + JetStream store dir.
+    # Use label_lower (underscored) so this matches `compass nats init`,
+    # which keys off ORES_CHECKOUT_LABEL — one canonical nats-<label>.conf.
     print("\n--- NATS setup ---")
     import nats_init
-    nats_init.generate(checkout_root, env_name, nats_port, nats_monitor_port, nats_store_dir)
+    nats_init.generate(checkout_root, label_lower, nats_port, nats_monitor_port, nats_store_dir)
 
     print(f"\n=== Environment initialised for '{env_name}' "
           f"(db: {db_name}, NATS port: {nats_port}) ===\n")
@@ -733,7 +735,7 @@ ORES_IAM_SERVICE_JWT_PRIVATE_KEY="{jwt_key_oneline}"
     print("  1. Create the database (first time only):")
     print("       ./projects/ores.compass/compass.sh db recreate -y\n")
     print("  2. Start NATS:")
-    print(f"       nats-server --config build/config/nats-{env_name}.conf\n")
+    print(f"       nats-server --config build/config/nats-{label_lower}.conf\n")
     print("  3. In Emacs, set up SQL connections:")
     print("       M-x ores-db/setup-connections\n")
     print("  4. Start services via prodigy — they read ORES_PRESET and "

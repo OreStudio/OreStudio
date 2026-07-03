@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]]
+#+blocked_since: 2026-07-04
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-07-04
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Ensure the Qt codegen profile produces output matching the repository for curren
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-26                               |
+| Now          | Scoping inventory found currency's Qt layer carries substantial custom functionality (CSV/XML import-export, feature-flagged synthetic data generation, full version-nav UI) not covered by the qt profile; a blind regenerate risks losing it. |
+| Waiting on   | [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] |
+| Next         | Resume once the reconciliation story triages each custom feature. |
+| Last touched | 2026-07-04                               |
 
 * Acceptance
 

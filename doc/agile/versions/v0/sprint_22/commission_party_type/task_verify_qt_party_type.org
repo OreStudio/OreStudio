@@ -76,6 +76,25 @@ infra story]] (PR #1415): killed the stray process and migrated NATS
 ports to derive from =ORES_BASE_PORT=. Full 24-service fleet now starts
 clean.
 
+*Eventing was genuinely broken, separately:* provisioned a fresh
+Barclays Plc tenant and found real eventing did not fire for
+=party_type=. Root cause:
+=projects/ores.refdata/service/src/app/application.cpp= (the
+hand-maintained Postgres LISTEN/NOTIFY → NATS relay) never had
+=party_type= registered — the SQL trigger and
+=party_type_changed_event.hpp= were both correctly generated, but
+nothing wired them into the relay. Confirmed this is a known, already
+captured class of bug
+([[id:1FEE0D30-0466-41F0-9137-97864DA6DA3E][capture]], originally found
+for =ores.synthetic=); at least 14 other =ores.refdata= entities have
+the same gap and are presumably still broken. Fixed =party_type='s
+registration inline (include + =register_mapping<>= +
+=event_bus.subscribe<>=), verified it builds and the service restarts
+clean. Added a line item to the
+[[id:897A7156-504D-4581-AD4C-026D643C0838][domain entity evaluation
+checklist]] naming this exact mechanism so future commissioning work
+catches it without needing two live Qt clients open.
+
 * PRs
 
 | PR | Title |

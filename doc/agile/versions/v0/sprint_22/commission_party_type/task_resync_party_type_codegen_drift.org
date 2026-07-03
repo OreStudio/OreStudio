@@ -78,7 +78,9 @@ current template.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | claude-review: fix correct, no issues found | (all) | Accepted | 3 independent bot passes, all issue-level (no line comments); CI green |
+| 2 | party_status/contact_type have the same unaddressed blank-line drift | party_type_entity.hpp, party_type_mapper.cpp | Declined (out of scope) | Already tracked — this task's Notes flag party_status explicitly; contact_type not yet tracked, left as-is |
+| 3 | reflectors.hpp IWYU include missing repo-wide (~143/148 *_entity.cpp files), not just party_type/party_status | party_type_entity.cpp | Declined (out of scope) | Filed as backlog capture doc/agile/product_backlog/inbox/sweep_missing_rfl_reflectors_include.org for a dedicated sweep |
 
 * Result
 

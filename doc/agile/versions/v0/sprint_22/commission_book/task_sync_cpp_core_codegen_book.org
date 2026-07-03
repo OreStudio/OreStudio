@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 9AB461BD-AD46-4980-A801-BE6104270C52
+:END:
+#+title: Task: Sync C++ core codegen output for book
+#+description: Regenerate book's api/core/sql from the new graph-based codegen and land a build-consistent core sync.
+#+type: task
+#+level: s1
+#+filetags: :product:refdata:commissioning:book:codegen:sprint_22:v0:commission_book:
+#+owner: marco
+#+branch: feature/sync-cpp-core-codegen-book
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Regenerate the book entity's C++ core (api domain/messaging, core repository/service/handler) and SQL from the new graph-based codegen, reconcile any protocol/handler/service drift, and ensure the change is build-consistent (no dangling old-API consumers).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- book_entity uses db_timestamp; service/handler use the delete_* naming and pagination; protocol matches regenerated handler; no non-generated consumer references removed/renamed symbols; refdata builds cleanly.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

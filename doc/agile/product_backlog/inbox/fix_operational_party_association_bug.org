@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 900F8BB7-15F6-4DB4-A49A-DAFF4F7E7D4D
+:END:
+#+title: Fix operational-party association bug in tenant provisioning
+#+description: provision_tenant's Phase 3 associates the tenant admin account only with the System Party, repeatedly, instead of every distinct Operational party.
+#+type: capture
+#+level: cross
+#+filetags: :code:bug:iam:shell:provisioning:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.shell/src/app/commands/provision_commands.cpp='s
+=provision_commands::process_tenant=, Phase 3
+("Associating '<user>' with the operational parties...", around line
+397), is supposed to loop over every party with
+=party_category == "Operational"= returned by
+=refdata::messaging::get_parties_request= and create one
+=account_party= association per party via
+=iam.v1.account-parties.save=. In a real test run
+(=barclays_system_provision.ores=, tenant =barclays=), log evidence
+from =ores.iam.service.0.log= around =2026-07-03 00:26:04= shows
+~20 identical =account_party_mapper= "Mapping domain entity" trace
+lines, *all with the exact same =party_id=* — the tenant's
+auto-created System Party's UUID
+(=4996676e-a823-4a30-a17a-08e828a769d2=, =party_category = "System"=,
+which the =if (party.party_category != "Operational") continue;=
+filter should have skipped) — never any of the ~81 distinct
+=Operational= parties that actually exist in that tenant (BARCLAYS PLC
+plus ~80 GLEIF-imported subsidiaries).
+
+Net effect: after running the recipe, =tenant_admin= ends up
+associated *only* with the System Party, never with any real
+operational party. Since login auto-selects when an account has
+exactly one associated party
+(=projects/ores.iam/core/include/ores.iam.core/messaging/auth_handler.hpp=,
+the =account_parties.size() == 1= branch), every subsequent login
+lands on System Party context regardless of which tenant/party the
+user thinks they're using — this presents as a login bug but is
+actually this association step silently doing the wrong thing.
+
+Root cause not yet diagnosed. Candidates: a stale/shared loop variable
+instead of the per-iteration =party.id=; =get_parties_request='s
+response at that point in the script not actually containing the
+categories/ids the code assumes; or a comparison/filter bug. Needs
+investigation before a fix — reproduce via
+=doc/recipes/shell/provisioning/barclays_system_provision.org= against
+a freshly recreated DB and inspect the account-parties rows/logs at
+each phase.
+
+* Why
+
+Discovered while implementing
+[[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] — a party-scoped
+synthetic FX config was correctly created in the database, but
+appeared invisible in the Qt client because the logged-in account was
+never actually linked to the party being tested, due to this bug. A
+narrow, party-specific association step was added directly to
+=process_party= as a workaround (not touching this Phase 3 bug), but
+the underlying loop bug in =process_tenant= remains and will keep
+producing tenants whose admin account can't see any of its own
+operational parties.
+
+* References
+
+- =projects/ores.shell/src/app/commands/provision_commands.cpp=,
+  =process_tenant= Phase 3 (~line 397) and =process_party='s new
+  association step (added as a workaround, not a fix for this bug).
+- =projects/ores.iam/core/include/ores.iam.core/messaging/auth_handler.hpp=,
+  the =account_parties.size() == 1= auto-select branch — explains why
+  the symptom looks like a login bug.
+- =doc/recipes/shell/provisioning/barclays_system_provision.org= — the
+  recipe that reproduces this.
+
+* See also
+
+- [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] — the story during
+  which this was found.

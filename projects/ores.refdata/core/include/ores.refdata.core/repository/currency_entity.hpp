@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,12 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_REPOSITORY_CURRENCY_HPP
-#define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_HPP
+#ifndef ORES_REFDATA_CORE_REPOSITORY_CURRENCY_ENTITY_HPP
+#define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
@@ -39,17 +40,19 @@ struct currency_entity {
     sqlgen::PrimaryKey<std::string> iso_code;
     std::string tenant_id;
     int version = 0;
+
     std::string name;
+
     std::string numeric_code;
     std::string symbol;
     std::string fraction_symbol;
-    int fractions_per_unit;
+    int fractions_per_unit = 0;
     std::string rounding_type;
-    int rounding_precision;
+    int rounding_precision = 0;
     std::string format;
     std::string monetary_nature;
     std::string market_tier;
-    std::optional<std::string> image_id; // UUID stored as string, converted in mapper
+    std::optional<std::string> image_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

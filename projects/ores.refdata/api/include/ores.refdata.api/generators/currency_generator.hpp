@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_DOMAIN_CURRENCY_GENERATORHPP
-#define ORES_REFDATA_DOMAIN_CURRENCY_GENERATORHPP
+#ifndef ORES_REFDATA_API_GENERATORS_CURRENCY_GENERATOR_HPP
+#define ORES_REFDATA_API_GENERATORS_CURRENCY_GENERATOR_HPP
 
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/export.hpp"
@@ -34,23 +34,21 @@ ORES_REFDATA_API_EXPORT domain::currency
 generate_synthetic_currency(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates a synthetic currency from the unicode set.
- */
-ORES_REFDATA_API_EXPORT std::vector<domain::currency>
-generate_synthetic_unicode_currencies(utility::generation::generation_context& ctx);
-
-/**
- * @brief Generates N synthetic currencies. May contain duplicates.
- *
- * @note c++ 23 generators are not supported on all compilers.
+ * @brief Generates N synthetic currencies.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::currency>
 generate_synthetic_currencies(std::size_t n, utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic currencies. Does not contain duplicates.
+ * @brief Generates a set of currencies using Unicode symbols.
  *
- * @note c++ 23 generators are not supported on all compilers.
+ * Used for testing internationalisation and symbol rendering.
+ */
+ORES_REFDATA_API_EXPORT std::vector<domain::currency>
+generate_synthetic_unicode_currencies(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic currencies with unique ISO codes.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::currency>
 generate_unique_synthetic_currencies(std::size_t n, utility::generation::generation_context& ctx);
@@ -58,7 +56,7 @@ generate_unique_synthetic_currencies(std::size_t n, utility::generation::generat
 /**
  * @brief Generates a set of fictional currencies.
  *
- * These are intentionally fake currencies with made-up codes that do not
+ * These are intentionally fake currencies with made-up ISO codes that do not
  * correspond to any real ISO 4217 codes. Useful for testing and demo
  * purposes where real currency data should not be used.
  *
@@ -67,7 +65,6 @@ generate_unique_synthetic_currencies(std::size_t n, utility::generation::generat
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::currency>
 generate_fictional_currencies(std::size_t n, utility::generation::generation_context& ctx);
-
 }
 
 #endif

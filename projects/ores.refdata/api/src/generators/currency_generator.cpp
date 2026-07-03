@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -22,7 +22,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include <faker-cxx/finance.h>
+#include <string>
 #include <unordered_set>
 
 namespace ores::refdata::generators {
@@ -30,33 +30,46 @@ namespace ores::refdata::generators {
 using ores::utility::generation::generation_keys;
 
 domain::currency generate_synthetic_currency(utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
+    static std::atomic<int> counter{0};
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::currency r;
-
-    const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
-    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
-
-    // Use fictional currency with unique code to avoid conflicts across tests
-    static std::atomic<std::size_t> counter{0};
-    const auto suffix = ++counter;
-    r.iso_code = "X" + std::to_string(suffix % 100).substr(0, 2) + std::to_string(suffix);
-    r.name = "Test Currency " + std::to_string(suffix);
-    r.numeric_code = std::to_string(10000 + suffix);
-    r.symbol = "T" + std::to_string(suffix % 10);
-    r.fraction_symbol = "";
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.iso_code = "X" + std::to_string(idx);
+    r.name = "Test Currency " + std::to_string(faker::number::integer(1000, 9999)) + "-" +
+             std::to_string(idx);
+    r.numeric_code = std::to_string(faker::number::integer(10001, 99999));
+    // faker::finance::currencySymbol() can return an empty string for some
+    // real-world currencies in its data set; fall back to a deterministic
+    // symbol so generated test data always has a non-empty symbol.
+    const auto sym = faker::finance::currencySymbol();
+    r.symbol = sym.empty() ? "$" : std::string(sym);
+    r.fraction_symbol = std::string("c");
     r.fractions_per_unit = 100;
-    r.rounding_type = "Closest";
+    r.rounding_type = std::string("Closest");
     r.rounding_precision = 2;
-    r.format = "%3% %1$.2f";
-    r.monetary_nature = "fiat";
-    r.market_tier = "g10";
+    r.format = std::string("%3% %1$.2f");
+    r.monetary_nature = std::string("fiat");
+    r.market_tier = std::string("g10");
+    r.image_id = std::nullopt;
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
     r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
-    r.modified_by = modified_by;
     r.recorded_at = ctx.past_timepoint();
+    return r;
+}
 
+std::vector<domain::currency>
+generate_synthetic_currencies(std::size_t n, utility::generation::generation_context& ctx) {
+    std::vector<domain::currency> r;
+    r.reserve(n);
+    while (r.size() < n)
+        r.push_back(generate_synthetic_currency(ctx));
     return r;
 }
 
@@ -68,7 +81,6 @@ generate_synthetic_unicode_currencies(utility::generation::generation_context& c
     const auto tenant_id =
         parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
 
-    // Use fictional ISO codes with unique suffix to avoid conflicts across tests
     static std::atomic<std::size_t> batch{0};
     const auto b = ++batch;
     const auto suffix = "_" + std::to_string(b);
@@ -76,7 +88,7 @@ generate_synthetic_unicode_currencies(utility::generation::generation_context& c
 
     std::vector<domain::currency> r;
     r.push_back({.tenant_id = tenant_id,
-                 .iso_code = "XU" + std::to_string(b), // Fictional USD-like
+                 .iso_code = "XU" + std::to_string(b),
                  .name = "Test Dollar" + suffix,
                  .numeric_code = "90001",
                  .symbol = "$",
@@ -93,7 +105,7 @@ generate_synthetic_unicode_currencies(utility::generation::generation_context& c
                  .recorded_at = now});
 
     r.push_back({.tenant_id = tenant_id,
-                 .iso_code = "XE" + std::to_string(b), // Fictional EUR-like
+                 .iso_code = "XE" + std::to_string(b),
                  .name = "Test Euro" + suffix,
                  .numeric_code = "90002",
                  .symbol = "\xE2\x82\xAC",
@@ -110,7 +122,7 @@ generate_synthetic_unicode_currencies(utility::generation::generation_context& c
                  .recorded_at = now});
 
     r.push_back({.tenant_id = tenant_id,
-                 .iso_code = "XG" + std::to_string(b), // Fictional GBP-like
+                 .iso_code = "XG" + std::to_string(b),
                  .name = "Test Pound" + suffix,
                  .numeric_code = "90003",
                  .symbol = "\xC2\xA3",
@@ -127,10 +139,11 @@ generate_synthetic_unicode_currencies(utility::generation::generation_context& c
                  .recorded_at = now});
 
     r.push_back({.tenant_id = tenant_id,
-                 .iso_code = "XJ" + std::to_string(b), // Fictional JPY-like (no fractions)
+                 .iso_code = "XJ" + std::to_string(b),
                  .name = "Test Yen" + suffix,
                  .numeric_code = "90004",
                  .symbol = "\xC2\xA5",
+                 .fraction_symbol = "",
                  .fractions_per_unit = 0,
                  .rounding_type = "Closest",
                  .rounding_precision = 0,
@@ -143,7 +156,7 @@ generate_synthetic_unicode_currencies(utility::generation::generation_context& c
                  .recorded_at = now});
 
     r.push_back({.tenant_id = tenant_id,
-                 .iso_code = "XI" + std::to_string(b), // Fictional INR-like
+                 .iso_code = "XI" + std::to_string(b),
                  .name = "Test Rupee" + suffix,
                  .numeric_code = "90005",
                  .symbol = "\xE2\x82\xB9",
@@ -160,7 +173,7 @@ generate_synthetic_unicode_currencies(utility::generation::generation_context& c
                  .recorded_at = now});
 
     r.push_back({.tenant_id = tenant_id,
-                 .iso_code = "XB" + std::to_string(b), // Fictional BTC-like
+                 .iso_code = "XB" + std::to_string(b),
                  .name = "Test Crypto" + suffix,
                  .numeric_code = "90006",
                  .symbol = "\xE2\x82\xBF",
@@ -177,7 +190,7 @@ generate_synthetic_unicode_currencies(utility::generation::generation_context& c
                  .recorded_at = now});
 
     r.push_back({.tenant_id = tenant_id,
-                 .iso_code = "XR" + std::to_string(b), // Fictional RUB-like
+                 .iso_code = "XR" + std::to_string(b),
                  .name = "Test Ruble" + suffix,
                  .numeric_code = "90007",
                  .symbol = "\xE2\x82\xBD",
@@ -196,16 +209,6 @@ generate_synthetic_unicode_currencies(utility::generation::generation_context& c
 }
 
 std::vector<domain::currency>
-generate_synthetic_currencies(std::size_t n, utility::generation::generation_context& ctx) {
-    std::vector<domain::currency> r;
-    r.reserve(n);
-    while (r.size() < n)
-        r.push_back(generate_synthetic_currency(ctx));
-
-    return r;
-}
-
-std::vector<domain::currency>
 generate_unique_synthetic_currencies(std::size_t n, utility::generation::generation_context& ctx) {
     std::unordered_set<std::string> seen;
     seen.reserve(n);
@@ -216,7 +219,6 @@ generate_unique_synthetic_currencies(std::size_t n, utility::generation::generat
     std::size_t suffix = 0;
     while (r.size() < n) {
         auto currency = generate_synthetic_currency(ctx);
-        // Loop until we find a unique key
         if (!seen.insert(currency.iso_code).second) {
             auto base_code = currency.iso_code;
             do {
@@ -240,6 +242,9 @@ generate_fictional_currencies(std::size_t n, utility::generation::generation_con
     std::vector<domain::currency> all;
     all.reserve(50);
 
+    // Fictional currencies intentionally omit fraction_symbol. These are
+    // synthetic test data; no real sub-unit symbol is needed, and
+    // fractions_per_unit controls numeric precision in calculations only.
     all.push_back({.tenant_id = tenant_id,
                    .iso_code = "XAE",
                    .name = "Aerilonian Dollar",
@@ -996,5 +1001,4 @@ generate_fictional_currencies(std::size_t n, utility::generation::generation_con
 
     return std::vector<domain::currency>(all.begin(), all.begin() + n);
 }
-
 }

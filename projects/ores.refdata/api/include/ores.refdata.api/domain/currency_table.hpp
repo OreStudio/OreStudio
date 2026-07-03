@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -28,12 +28,7 @@
 namespace ores::refdata::domain {
 
 /**
- * @brief Converts a single currency to table format string.
- */
-ORES_REFDATA_API_EXPORT std::string convert_to_table(const currency& c);
-
-/**
- * @brief Converts a vector of currencies to table format string.
+ * @brief Converts currencies to the table format.
  */
 ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<currency>& v);
 

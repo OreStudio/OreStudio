@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <cstdint>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -31,13 +32,13 @@
 namespace ores::refdata::repository {
 
 /**
- * @brief Reads and writes currencies off of data storage.
+ * @brief Reads and writes currencies to data storage.
  */
 class ORES_REFDATA_CORE_EXPORT currency_repository {
 private:
     inline static std::string_view logger_name = "ores.refdata.repository.currency_repository";
 
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
@@ -52,16 +53,15 @@ public:
     std::string sql();
 
     /**
-     * @brief Writes currencies to database. Expects the currency set to have
-     * unique ISO codes.
+     * @brief Writes currencies to database.
      */
     /**@{*/
-    void write(context ctx, const domain::currency& currencies);
-    void write(context ctx, const std::vector<domain::currency>& currencies);
+    void write(context ctx, const domain::currency& v);
+    void write(context ctx, const std::vector<domain::currency>& v);
     /**@}*/
 
     /**
-     * @brief Reads latest currencies, possibly filtered by ISO code.
+     * @brief Reads latest currencies, possibly filtered by iso_code.
      */
     /**@{*/
     std::vector<domain::currency> read_latest(context ctx);
@@ -69,11 +69,15 @@ public:
     /**@}*/
 
     /**
+     * @brief Reads all currencies, possibly filtered by iso_code.
+     */
+    std::vector<domain::currency> read_all(context ctx, const std::string& iso_code);
+
+    /**
      * @brief Reads latest currencies with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
-     * @return Vector of currencies within the specified range
      */
     std::vector<domain::currency>
     read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
@@ -81,13 +85,23 @@ public:
     /**
      * @brief Gets the total count of active currencies.
      * @param ctx Repository context with database connection
-     * @return Total number of currencies with valid_to == max_timestamp
+     * @return Total number of active currencies
      */
     std::uint32_t get_total_currency_count(context ctx);
 
     /**
-     * @brief Reads currencies at the supplied time point, possibly filtered by
-     * ISO code.
+     * @brief Deletes a currency by closing its temporal validity.
+     */
+    void remove(context ctx, const std::string& iso_code);
+
+    /**
+     * @brief Deletes currencies by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& iso_codes);
+
+    /**
+     * @brief Reads currencies at the supplied time point, possibly filtered
+     * by iso_code.
      */
     /**@{*/
     std::vector<domain::currency> read_at_timepoint(context ctx, const std::string& as_of);
@@ -96,25 +110,9 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads all currencies, possibly filtered by ISO code.
+     * @brief Reads all currencies (all versions), unfiltered.
      */
-    /**@{*/
     std::vector<domain::currency> read_all(context ctx);
-    std::vector<domain::currency> read_all(context ctx, const std::string& iso_code);
-    /**@}*/
-
-    /**
-     * @brief Deletes a currency by closing its temporal validity.
-     *
-     * Sets the valid_to timestamp to now, effectively "deleting" the currency
-     * from the current point in time onwards while preserving history.
-     */
-    void remove(context ctx, const std::string& iso_code);
-
-    /**
-     * @brief Deletes currencies by closing their temporal validity.
-     */
-    void remove(context ctx, const std::vector<std::string>& iso_codes);
 };
 
 }

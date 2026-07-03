@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/sync-cpp-core-codegen-currency
+#+pr: 1419
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
-#+updated: 2026-06-26
-#+environment:
+#+updated: 2026-07-03
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Ensure the C++ core codegen profiles (domain, repository, service, generator) pr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
+| Now          | Codegen drift fixed for all four profiles; api/core build clean; currency tests green. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-26                               |
+| Next         | Raise PR.                              |
+| Last touched | 2026-07-03                               |
 
 * Acceptance
 
@@ -43,18 +43,71 @@ Ensure the C++ core codegen profiles (domain, repository, service, generator) pr
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Re-ran the domain, repository, generator profiles against the currency
+entity and reconciled drift between codegen output and the checked-in
+code across api and core. Repository methods were updated to be
+tenant-aware (=tenant_id= now filters every query); pagination,
+=get_total_currency_count=, filtered =read_all=, and batch =remove= are
+now covered natively by the base =repository= template, so the modeling
+doc no longer pastes them as custom overrides — only the two
+=read_at_timepoint= overloads and the unfiltered =read_all=/=read_all=
+by iso_code remain hand-written (no native equivalent, needed by the
+CLI's =export --all-versions=/=export --as-of=).
+
+Also fixed the codegen diff tool itself
+(=compass_codegen_entity.py=): =_diff_entity= runs clang-format inside a
+bare =tempfile.TemporaryDirectory()=, which has no =.clang-format=
+ancestor to discover, so clang-format silently fell back to LLVM's
+2-space default style instead of the repo's 4-space style — every diff
+run showed spurious whole-file re-indentation noise on top of any real
+drift. Seeded the tempdir root with a copy of the repo's
+=.clang-format= to fix this for all future entity diffs, not just
+currency.
+
+During verification found and fixed two real bugs introduced by the
+in-flight generator rewrite:
+- =generate_synthetic_currency= assigned =r.symbol =
+  std::string(faker::finance::currencySymbol());= directly;
+  faker-cxx's currency data set includes some real-world currencies
+  with an empty symbol, so ~generate_single_currency~ failed
+  intermittently (confirmed via 20x stress run before/after). Fixed
+  with a fallback to =\"$\"= when faker returns empty.
+- =generate_synthetic_currency= hardcoded =r.version = 1;=, but the
+  domain type's =version= field defaults to 0, which the insert
+  trigger (=ores_refdata_currencies_insert_fn=) treats as "don't
+  care" for optimistic concurrency. Hardcoding 1 broke any test that
+  writes the same currency object multiple times without bumping
+  =.version= (e.g. =build_versions_from_repository_history=), which
+  surfaced as an intermittent "Version conflict: expected version 1,
+  but current version is 2" once the row's real version advanced past
+  1. Removed the hardcoded assignment so it defaults to 0.
+
+Verified: =ores.refdata.api.lib=, =ores.refdata.core.lib=,
+=ores.refdata.api.tests=, =ores.refdata.core.tests= all build clean.
+=ores.refdata.api.tests= full suite green (412 assertions/71 cases).
+Currency-scoped tests in both suites green, repeatedly. Noted but did
+not chase: an unrelated, pre-existing hang in
+=ores.refdata.core.tests= (reproduces on unmodified =main=, unrelated
+to currency — hits different party/counterparty tests depending on
+random seed, looks like a leaked DB connection/lock under the full
+suite) — out of scope for this task.
+
 * Notes
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1419][#1419]] | [refdata] Sync C++ core codegen for currency |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =read_all_currencies= called =read_latest= instead of =read_all=, leaving =read_all(ctx)= uncovered (raised independently by all 3 review passes) | =repository_currency_repository_tests.cpp= | Accepted | Fixed in a6fe483e7 |
+| 2 | Missing explicit =#include <unordered_set>= after generator rewrite | =currency_generator.cpp= | Accepted | Fixed in a6fe483e7 |
+| 3 | Doxygen =/**@{*/= grouping lost when =read_all(ctx)= split out and moved | =currency_repository.hpp= | Declined | Cosmetic; matches modeling org layout |
+| 4 | Batch =remove(ctx, iso_codes)= behavior change: now scopes by =valid_to == max= | =currency_repository.cpp= | Declined (intentional) | Old code had no =valid_to= filter, so the delete-via-update rule would close every historical version instead of just the current one; now matches single-=remove= semantics and the org doc |
+| 5 | Task notes describe fixing a hardcoded =r.version = 1=, not found in the pre-PR base commit | task notes | Declined (clarified) | =r.version = 1= was present in the working tree at session start (introduced by a prior crashed agent run before this PR's base commit was captured), not in committed history; the fix itself is correct and verified against the insert trigger's optimistic-concurrency check |
 
 * Result

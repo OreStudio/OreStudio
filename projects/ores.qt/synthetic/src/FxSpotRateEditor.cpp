@@ -939,11 +939,24 @@ void FxSpotRateEditor::onEngineChanged() {
     if (engineCombo_)
         fx_.process_type = currentEngine();
     updateEngineUi();
-    if (!currentEngineSupportsMixing()) {
-        // A single-regime engine has no defined Simple-mode mapping (the sliders
-        // drive drift/vol/jump-fraction, which don't correspond to a single
-        // process's parameters), so force Advanced mode — the only surface where
-        // those parameters are directly editable.
+    // Engine also determines whether the Return Distribution PDF chart applies
+    // (it doesn't for "ou", a level process rather than an increment mixture).
+    refreshCharts();
+}
+
+void FxSpotRateEditor::updateEngineUi() {
+    // Generic, capability-driven gating (any engine with supportsMixing = false
+    // behaves this way, not just "ou" specifically). Called both on every engine
+    // change AND once at the end of buildBehaviourTab() during construction — the
+    // latter matters when opening an *existing* single-regime record, since
+    // engineCombo_->setCurrentIndex() runs before its currentIndexChanged signal
+    // is connected, so onEngineChanged() never fires for the initial value. If
+    // this forcing lived only in onEngineChanged() (as it used to), an existing
+    // "ou" record would silently open on the Simple page; clicking Save without
+    // touching anything would then overwrite its real κ with a Simple-mode-
+    // derived value that has no defined meaning for a single-regime process.
+    const bool mixing = currentEngineSupportsMixing();
+    if (!mixing) {
         if (modeGroup_ && modeGroup_->checkedId() != 1) {
             if (auto* advancedBtn = modeGroup_->button(1))
                 advancedBtn->setChecked(true);
@@ -959,15 +972,6 @@ void FxSpotRateEditor::onEngineChanged() {
             updateComponentColors();
         }
     }
-    // Engine also determines whether the Return Distribution PDF chart applies
-    // (it doesn't for "ou", a level process rather than an increment mixture).
-    refreshCharts();
-}
-
-void FxSpotRateEditor::updateEngineUi() {
-    // Generic, capability-driven gating (any engine with supportsMixing = false
-    // behaves this way, not just "ou" specifically).
-    const bool mixing = currentEngineSupportsMixing();
     // The warning banner's wording is inherently engine-specific — a boolean
     // can't express *how* a single-regime engine's fields are repurposed, so
     // this part stays keyed on the engine code, unlike the gating above.

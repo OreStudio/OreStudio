@@ -130,7 +130,13 @@ directory.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | OU silently invalid when Simple mode stays selected — kappa derived from unrelated Drift/Vol/Jump sliders, jump component silently dropped | FxSpotRateEditor.cpp | Fixed | 1d07dae74 — onEngineChanged forces Advanced mode + locks Simple toggle for non-mixing engines |
+| 2 | UI hardcodes engine-specific isOuEngine() checks throughout (raised directly by user, not the bot review) | FxSpotRateEditor.cpp | Fixed | 1d07dae74 — data-driven EngineInfo table (code/label/supportsMixing) replaces scattered checks |
+| 3 | Switching to OU silently truncates mixture components | FxSpotRateEditor.cpp | Fixed (as a side effect of #1) | Advanced mode is now forced open when the collapse happens, so it's visible/editable, not silent |
+| 4 | Duplicated chart theme colour constants across 5 call sites | ReturnDistributionChart.cpp, SamplePricePathsChart.cpp | Declined (follow-up) | Captured: 4EE11531-E6AB-4094-8297-F0E7DB12EC39 |
+| 5 | Weight/Volatility column headers and tooltips still say generic text for OU | FxSpotRateEditor.cpp | Declined | Inline warning banner already documents the remapping, matching the existing "arithmetic" engine precedent |
+| 6 | Per-component QLineSeries::setName() calls are effectively dead code (legend hidden) | ReturnDistributionChart.cpp | Fixed | 1d07dae74 — one-line comment clarifying the swatch column is the intended indicator |
+| 7 | No unit tests for ou_process | ou_process.hpp/.cpp | Declined | Matches untested gmm_process/arithmetic_gmm_process; no Catch2 convention yet for this directory |
 
 * Result
 

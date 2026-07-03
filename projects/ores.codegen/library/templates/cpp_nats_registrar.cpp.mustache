@@ -4,6 +4,7 @@
 #include "ores.{{component_core}}/messaging/{{entity_singular}}_registrar.hpp"
 #include "ores.{{component_core}}/messaging/{{entity_singular}}_handler.hpp"
 #include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+<<paste:068323E2-D722-46F1-8B86-46BD32426003>>
 #include <memory>
 
 namespace ores::{{component}}::messaging {
@@ -39,6 +40,7 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
         [h](ores::nats::message msg) { h->history(std::move(msg)); }));
 {{/no_history}}
 {{/list_only}}
+<<paste:FB267332-79AB-4873-AFDA-CEEE68A0F398>>
     return subs;
 }
 
@@ -48,6 +50,7 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
 #include "ores.{{component_core}}/messaging/{{entity_singular}}_registrar.hpp"
 #include "ores.{{component_core}}/messaging/{{entity_singular}}_handler.hpp"
 #include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+<<paste:068323E2-D722-46F1-8B86-46BD32426003>>
 #include <memory>
 
 namespace ores::{{component}}::messaging {
@@ -83,6 +86,7 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
         [h](ores::nats::message msg) { h->history(std::move(msg)); }));
 {{/no_history}}
 {{/list_only}}
+<<paste:FB267332-79AB-4873-AFDA-CEEE68A0F398>>
     return subs;
 }
 

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.refdata.core/messaging/currency_registrar.hpp"
+#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.core/messaging/currency_handler.hpp"
 #include <memory>
@@ -43,6 +44,10 @@ register_currency_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         delete_currency_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->remove(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_currency_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->history(std::move(msg));
         }));
     return subs;
 }

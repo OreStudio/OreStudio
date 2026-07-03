@@ -25,6 +25,21 @@ Model flags consumed by this template:
 - =list_only= (bool, Flags) — wire only the list subject.
   Set on read-only lookup entities.
 
+Custom-includes paste point: the marker
+=<<paste:068323E2-D722-46F1-8B86-46BD32426003>>= is emitted after the standard
+protocol include so an entity can pull in extra headers (e.g. a split
+=<entity>_history_protocol.hpp=). Provide them as
+=#+begin_src cpp :name custom_includes :implements 068323E2-D722-46F1-8B86-46BD32426003=.
+
+Custom-subscription paste point: the marker
+=<<paste:FB267332-79AB-4873-AFDA-CEEE68A0F398>>= is emitted just before the
+=return= so an entity can wire hand-crafted subjects (beyond the standard
+list/save/remove/history) that are not modelled by codegen. Provide them in
+the entity model as
+=#+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398=;
+entities without such a block collapse the marker to nothing. Example:
+=party= wires its =read_parties_for_cache= subject this way.
+
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
 
@@ -41,6 +56,7 @@ The full template source. Edit here and re-tangle with
 #include "ores.{{component_core}}/messaging/{{entity_singular}}_registrar.hpp"
 #include "ores.{{component_core}}/messaging/{{entity_singular}}_handler.hpp"
 #include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+<<paste:068323E2-D722-46F1-8B86-46BD32426003>>
 #include <memory>
 
 namespace ores::{{component}}::messaging {
@@ -76,6 +92,7 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
         [h](ores::nats::message msg) { h->history(std::move(msg)); }));
 {{/no_history}}
 {{/list_only}}
+<<paste:FB267332-79AB-4873-AFDA-CEEE68A0F398>>
     return subs;
 }
 
@@ -85,6 +102,7 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
 #include "ores.{{component_core}}/messaging/{{entity_singular}}_registrar.hpp"
 #include "ores.{{component_core}}/messaging/{{entity_singular}}_handler.hpp"
 #include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+<<paste:068323E2-D722-46F1-8B86-46BD32426003>>
 #include <memory>
 
 namespace ores::{{component}}::messaging {
@@ -120,6 +138,7 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
         [h](ores::nats::message msg) { h->history(std::move(msg)); }));
 {{/no_history}}
 {{/list_only}}
+<<paste:FB267332-79AB-4873-AFDA-CEEE68A0F398>>
     return subs;
 }
 

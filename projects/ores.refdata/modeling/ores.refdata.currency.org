@@ -223,8 +223,19 @@ drop function if exists ores_refdata_validate_currency_fn;
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
-:no_history:      true
 :END:
+
+** Custom NATS subscriptions
+
+=currency= has a history operation, but its =get_currency_history_request=
+lives in a split =currency_history_protocol.hpp= (not the standard
+=currency_protocol.hpp= the generated registrar includes). Pull that header in
+via the sub-registrar's custom-includes paste point so the generated
+=currency_registrar.cpp= can wire the standard history subscription.
+
+#+begin_src cpp :name custom_includes :implements 068323E2-D722-46F1-8B86-46BD32426003
+#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
+#+end_src
 
 ** Repository
 :PROPERTIES:

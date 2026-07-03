@@ -8,7 +8,7 @@
 #+filetags: :synthetic-data-collections:sprint_22:v0:
 #+owner: marco
 #+branch: story/synthetic-data-collections
-#+pr:
+#+pr: 1423
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -90,7 +90,7 @@ mechanism.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1423][#1423]] | [marketdata] Synthetic data collections WIP: import source tagging, ORE key fixes |
 
 * Review
 

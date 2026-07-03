@@ -97,7 +97,8 @@ next time someone runs =compass env configure= on them.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | ORES_NATS_PORT override always won over base_port-derived value; existing checkouts never actually migrate | env_init.py:401-415 | Accepted | Flagged independently by 3 review passes; dropped the override entirely, nats_port/nats_monitor_port always derive from base_port now, matching http_port/wt_port/site_port |
+| 2 | ORES_CHECKOUT_LABEL still written from un-normalized label, not label_lower | env_init.py:554/557 | Accepted | Fixed; verified locally by forcing a stale .env and re-running env configure — migrates correctly to base_port+5/+6 |
 
 * Result
 
@@ -115,3 +116,14 @@ and updated the affected recipe
 solid_dirac's own =.env= migrated to NATS ports 50005/50006; verified
 =compass services start= brings up all 24 services including
 =ores.controller.service=/=ores.wt.service= with no crash.
+
+*Post-review fix:* the existing-=.env= override path initially still
+read back a stale =ORES_NATS_PORT=, unconditionally overwriting the
+freshly-derived =base_port+5/+6= — meaning no already-configured
+checkout (including solid_dirac's own, before this fix) would actually
+migrate on re-configure. Dropped the override; =nats_port=/=nats_monitor_port=
+now always derive from =base_port=, same as =http_port=/=wt_port=/=site_port=.
+Also fixed =ORES_CHECKOUT_LABEL= to use =label_lower= instead of the
+un-normalized =label=. Re-verified by forcing solid_dirac's =.env= back
+to the stale =42222=/=8222= values and re-running =compass env
+configure= — correctly migrated to =50005=/=50006=.

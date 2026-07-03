@@ -96,6 +96,14 @@ def run_provision(argv: list[str], project_root: Path) -> int:
         print(f"❌ Directory already exists: {worktree_dir}", file=sys.stderr)
         return 1
 
+    # A full worktree pulls in vcpkg and a build tree — guard against a
+    # nearly-full disk before creating it. Light worktrees are cheap, so only
+    # the full path is gated.
+    if args.env_type == "full":
+        from disk_guard import check_disk_space
+        if not check_disk_space(parent_dir, assume_yes=args.yes):
+            return 1
+
     # Assign ports.
     base_port, nats_port, nats_monitor_port = _scan_ports(parent_dir)
 

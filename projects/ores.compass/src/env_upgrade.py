@@ -68,6 +68,12 @@ def run(argv, checkout_root: Path) -> int:
 
     env_name = existing.get("ORES_ENV_NAME", checkout_root.name)
 
+    # Promotion to full pulls in vcpkg and a build tree — guard against a
+    # nearly-full disk before committing to the operation.
+    from disk_guard import check_disk_space
+    if not check_disk_space(checkout_root, assume_yes=args.yes):
+        return 1
+
     if not args.yes:
         print(f"Upgrade '{env_name}' from light → full?\n")
         print(f"  ORES_PROVISION_TYPE : light  →  full")

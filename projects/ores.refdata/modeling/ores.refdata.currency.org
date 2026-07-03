@@ -939,51 +939,38 @@ and =helpers.hpp= are already in the standard template output.
 
 *** Repository implementations
 
-#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-std::vector<domain::currency>
-currency_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies with offset: " << offset
-                               << " and limit: " << limit;
+Note: pagination (=read_latest= with offset/limit), =get_total_currency_count=,
+filtered =read_all=, and batch =remove= are now generated natively by the base
+=repository= template (tenant-aware). =read_at_timepoint=, and the unfiltered
+overloads of =read_all= and =read_at_timepoint= (used by the CLI's
+=export --all-versions= / =export --as-of= without =--key=), have no native
+equivalent and remain custom pastes.
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx,
+                                                                     const std::string& as_of) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading currencies at timepoint: " << as_of;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto ts = make_timestamp(as_of, lg());
     const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid && "valid_from"_c <= ts.value() &&
+                             "valid_to"_c >= ts.value());
 
     return execute_read_query<currency_entity, domain::currency>(
         ctx,
         query,
         [](const auto& entities) { return currency_mapper::map(entities); },
         lg(),
-        "Reading latest currencies with pagination.");
-}
-
-std::uint32_t currency_repository::get_total_currency_count(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency count";
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-
-    struct count_result {
-        long long count;
-    };
-
-    const auto query = sqlgen::select_from<currency_entity>(sqlgen::count().as<"count">()) |
-                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
-
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active currency count: " << count;
-    return count;
+        "Reading currencies at timepoint.");
 }
 
 std::vector<domain::currency>
 currency_repository::read_at_timepoint(context ctx, const std::string& as_of,
                                       const std::string& iso_code) {
+    const auto tid = ctx.tenant_id().to_string();
     const auto ts = make_timestamp(as_of, lg());
     const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("iso_code"_c == iso_code &&
+                       where("tenant_id"_c == tid && "iso_code"_c == iso_code &&
                              "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
 
     return execute_read_query<currency_entity, domain::currency>(
@@ -994,66 +981,41 @@ currency_repository::read_at_timepoint(context ctx, const std::string& as_of,
         "Reading currencies at timepoint by ISO code.");
 }
 
-std::vector<domain::currency> currency_repository::read_all(context ctx,
-                                                            const std::string& iso_code) {
+std::vector<domain::currency> currency_repository::read_all(context ctx) {
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("iso_code"_c == iso_code) | order_by("valid_from"_c.desc());
+                       where("tenant_id"_c == tid) | order_by("valid_from"_c.desc());
 
     return execute_read_query<currency_entity, domain::currency>(
         ctx,
         query,
         [](const auto& entities) { return currency_mapper::map(entities); },
         lg(),
-        "Reading all currencies by ISO code");
-}
-
-void currency_repository::remove(context ctx, const std::vector<std::string>& iso_codes) {
-    const auto query = sqlgen::delete_from<currency_entity> | where("iso_code"_c.in(iso_codes));
-    execute_delete_query(ctx, query, lg(), "batch removing currencies");
+        "Reading all currencies.");
 }
 #+end_src
 
-*** read_latest (paginated)
+*** read_at_timepoint (unfiltered and filtered by iso_code)
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
     /**
-     * @brief Reads latest currencies with pagination support.
-     * @param ctx Repository context with database connection
-     * @param offset Number of records to skip
-     * @param limit Maximum number of records to return
-     * @return Vector of currencies within the specified range
+     * @brief Reads currencies at the supplied time point, possibly filtered
+     * by iso_code.
      */
-    std::vector<domain::currency>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
-#+end_src
-
-*** get_total_currency_count
-
-#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-    /**
-     * @brief Gets the total count of active currencies.
-     * @param ctx Repository context with database connection
-     * @return Total number of currencies with valid_to == max_timestamp
-     */
-    std::uint32_t get_total_currency_count(context ctx);
-#+end_src
-
-*** read_at_timepoint (filtered by iso_code)
-
-#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**@{*/
+    std::vector<domain::currency> read_at_timepoint(context ctx, const std::string& as_of);
     std::vector<domain::currency>
     read_at_timepoint(context ctx, const std::string& as_of, const std::string& iso_code);
+    /**@}*/
 #+end_src
 
-*** read_all (filtered by iso_code)
+*** read_all (unfiltered)
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-    std::vector<domain::currency> read_all(context ctx, const std::string& iso_code);
-
     /**
-     * @brief Deletes currencies by closing their temporal validity.
+     * @brief Reads all currencies (all versions), unfiltered.
      */
-    void remove(context ctx, const std::vector<std::string>& iso_codes);
+    std::vector<domain::currency> read_all(context ctx);
 #+end_src
 
 * See also

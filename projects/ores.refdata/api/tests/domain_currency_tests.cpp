@@ -256,7 +256,7 @@ TEST_CASE("currency_convert_single_to_table", tags) {
     ccy.modified_by = "admin";
     ccy.recorded_at = datetime::make_timepoint(2025, 1, 1);
 
-    auto table = convert_to_table(ccy);
+    auto table = convert_to_table(std::vector<currency>{ccy});
 
     BOOST_LOG_SEV(lg, debug) << "Table output:" << table;
 

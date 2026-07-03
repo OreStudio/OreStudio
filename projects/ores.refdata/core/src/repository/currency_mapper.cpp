@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -34,10 +34,10 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     domain::currency r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    BOOST_LOG_SEV(lg(), trace) << "Mapped version: entity.version=" << v.version
-                               << " -> domain.version=" << r.version;
     r.iso_code = v.iso_code.value();
+
     r.name = v.name;
+
     r.numeric_code = v.numeric_code;
     r.symbol = v.symbol;
     r.fraction_symbol = v.fraction_symbol;
@@ -47,9 +47,9 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     r.format = v.format;
     r.monetary_nature = v.monetary_nature;
     r.market_tier = v.market_tier;
-    if (v.image_id) {
-        r.image_id = boost::lexical_cast<boost::uuids::uuid>(*v.image_id);
-    }
+    r.image_id = v.image_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
+                     std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -59,6 +59,7 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
+
 currency_entity currency_mapper::map(const domain::currency& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
@@ -66,7 +67,9 @@ currency_entity currency_mapper::map(const domain::currency& v) {
     r.iso_code = v.iso_code;
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.name = v.name;
+
     r.numeric_code = v.numeric_code;
     r.symbol = v.symbol;
     r.fraction_symbol = v.fraction_symbol;
@@ -76,14 +79,12 @@ currency_entity currency_mapper::map(const domain::currency& v) {
     r.format = v.format;
     r.monetary_nature = v.monetary_nature;
     r.market_tier = v.market_tier;
-    if (v.image_id) {
-        r.image_id = boost::uuids::to_string(*v.image_id);
-    }
+    r.image_id =
+        v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

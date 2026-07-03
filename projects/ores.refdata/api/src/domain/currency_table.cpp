@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,45 +18,26 @@
  *
  */
 #include "ores.refdata.api/domain/currency_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
-#include <sstream>
 
 namespace ores::refdata::domain {
 
-std::string convert_to_table(const currency& c) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "ISO Code" << "Version" << "Name" << "Symbol" << "Asset Class"
-          << "Market Tier" << "Fractions/Unit" << "Precision" << "Change Reason" << "Modified By"
-          << "Recorded At" << fort::endr;
-
-    table << c.iso_code << c.version << c.name << c.symbol << c.monetary_nature << c.market_tier
-          << c.fractions_per_unit << c.rounding_precision << c.change_reason_code << c.modified_by
-          << c.recorded_at << fort::endr;
-
-    std::ostringstream ss;
-    ss << std::endl << table.to_string() << std::endl;
-    return ss.str();
-}
 
 std::string convert_to_table(const std::vector<currency>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ISO Code" << "Version" << "Name" << "Symbol" << "Asset Class"
-          << "Market Tier" << "Fractions/Unit" << "Precision" << "Change Reason" << "Modified By"
-          << "Recorded At" << fort::endr;
+    table << fort::header << "Code" << "Currency Name" << "Numeric Code" << "Symbol" << "Fraction"
+          << "Per Unit" << "Rounding Type" << "Precision" << "Format" << "Monetary Nature"
+          << "Market Tier" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& c : v) {
-        table << c.iso_code << c.version << c.name << c.symbol << c.monetary_nature << c.market_tier
-              << c.fractions_per_unit << c.rounding_precision << c.change_reason_code
-              << c.modified_by << c.recorded_at << fort::endr;
+        table << c.iso_code << c.name << c.numeric_code << c.symbol << c.fraction_symbol
+              << c.fractions_per_unit << c.rounding_type << c.rounding_precision << c.format
+              << c.monetary_nature << c.market_tier << c.modified_by << c.version << fort::endr;
     }
-
-    std::ostringstream ss;
-    ss << std::endl << table.to_string() << std::endl;
-    return ss.str();
+    return table.to_string();
 }
 
 }

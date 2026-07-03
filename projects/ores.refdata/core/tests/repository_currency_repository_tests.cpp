@@ -125,7 +125,7 @@ TEST_CASE("read_all_currencies", tags) {
     currency_repository repo;
     repo.write(h.context(), written_currencies);
 
-    auto read_currencies = repo.read_all(h.context());
+    auto read_currencies = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     CHECK(!read_currencies.empty());

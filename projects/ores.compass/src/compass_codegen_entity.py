@@ -182,6 +182,14 @@ def _diff_entity(model_path: Path, base_dir: Path, project_root: Path,
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_root = Path(tmpdir)
+        # clang-format only discovers .clang-format by walking up from the
+        # formatted file; a bare tempdir has no such ancestor, so it silently
+        # falls back to LLVM's default style (2-space indent) instead of the
+        # repo's 4-space style. Seed the tempdir root with a copy so the
+        # diff reflects real drift, not this formatting artefact.
+        repo_clang_format = project_root / ".clang-format"
+        if repo_clang_format.exists():
+            (tmp_root / ".clang-format").write_bytes(repo_clang_format.read_bytes())
         logging.disable(logging.CRITICAL)
         try:
             for unit in units:

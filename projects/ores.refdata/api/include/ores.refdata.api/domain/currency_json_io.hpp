@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -26,6 +26,9 @@
 
 namespace ores::refdata::domain {
 
+/**
+ * @brief Dumps the currency to a stream in JSON format.
+ */
 ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const currency& v);
 
 }

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -23,9 +23,8 @@
 #include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/currency_entity.hpp"
 #include "ores.refdata.core/repository/currency_mapper.hpp"
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include <sqlgen/postgres.hpp>
+
 
 namespace ores::refdata::repository {
 
@@ -38,27 +37,22 @@ std::string currency_repository::sql() {
     return generate_create_table_sql<currency_entity>(lg());
 }
 
-void currency_repository::write(context ctx, const domain::currency& currency) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency to database: " << currency;
-
-    execute_write_query(ctx, currency_mapper::map(currency), lg(), "Writing currency to database.");
+void currency_repository::write(context ctx, const domain::currency& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing currency: " << v.iso_code;
+    execute_write_query(ctx, currency_mapper::map(v), lg(), "Writing currency to database.");
 }
 
-void currency_repository::write(context ctx, const std::vector<domain::currency>& currencies) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currencies to database. Count: " << currencies.size();
-
-    execute_write_query(
-        ctx, currency_mapper::map(currencies), lg(), "Writing currencies to database.");
+void currency_repository::write(context ctx, const std::vector<domain::currency>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing currencies. Count: " << v.size();
+    execute_write_query(ctx, currency_mapper::map(v), lg(), "Writing currencies to database.");
 }
-
 
 std::vector<domain::currency> currency_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc());
-
-    const auto sql = postgres::to_sql(query);
-    BOOST_LOG_SEV(lg(), debug) << "Query: " << sql;
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("iso_code"_c);
 
     return execute_read_query<currency_entity, domain::currency>(
         ctx,
@@ -70,30 +64,57 @@ std::vector<domain::currency> currency_repository::read_latest(context ctx) {
 
 std::vector<domain::currency> currency_repository::read_latest(context ctx,
                                                                const std::string& iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies. ISO code: " << iso_code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("iso_code"_c == iso_code && "valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency. iso_code: " << iso_code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<currency_entity>> |
+        where("tenant_id"_c == tid && "iso_code"_c == iso_code && "valid_to"_c == max.value());
 
     return execute_read_query<currency_entity, domain::currency>(
         ctx,
         query,
         [](const auto& entities) { return currency_mapper::map(entities); },
         lg(),
-        "Reading latest currencies by ISO code.");
+        "Reading latest currency by iso_code.");
+}
+
+std::vector<domain::currency> currency_repository::read_all(context ctx,
+                                                            const std::string& iso_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all currency versions. iso_code: " << iso_code;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<currency_entity>> |
+                       where("tenant_id"_c == tid && "iso_code"_c == iso_code) |
+                       order_by("version"_c.desc());
+
+    return execute_read_query<currency_entity, domain::currency>(
+        ctx,
+        query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        lg(),
+        "Reading all currency versions by iso_code.");
+}
+
+void currency_repository::remove(context ctx, const std::string& iso_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing currency: " << iso_code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<currency_entity> |
+        where("tenant_id"_c == tid && "iso_code"_c == iso_code && "valid_to"_c == max.value());
+
+    execute_delete_query(ctx, query, lg(), "Removing currency from database.");
 }
 
 std::vector<domain::currency>
 currency_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies with offset: " << offset
                                << " and limit: " << limit;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("iso_code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<currency_entity, domain::currency>(
         ctx,
@@ -105,15 +126,16 @@ currency_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_
 
 std::uint32_t currency_repository::get_total_currency_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency count";
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
     };
 
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::select_from<currency_entity>(sqlgen::count().as<"count">()) |
-                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -123,13 +145,24 @@ std::uint32_t currency_repository::get_total_currency_count(context ctx) {
     return count;
 }
 
+void currency_repository::remove(context ctx, const std::vector<std::string>& iso_codes) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<currency_entity> |
+        where("tenant_id"_c == tid && "iso_code"_c.in(iso_codes) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing currencies.");
+}
+
+
 std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx,
                                                                      const std::string& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading currencies at timepoint: " << as_of;
-
+    const auto tid = ctx.tenant_id().to_string();
     const auto ts = make_timestamp(as_of, lg());
-    const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
+    const auto query =
+        sqlgen::read<std::vector<currency_entity>> |
+        where("tenant_id"_c == tid && "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
 
     return execute_read_query<currency_entity, domain::currency>(
         ctx,
@@ -142,11 +175,11 @@ std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx
 std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx,
                                                                      const std::string& as_of,
                                                                      const std::string& iso_code) {
-
+    const auto tid = ctx.tenant_id().to_string();
     const auto ts = make_timestamp(as_of, lg());
     const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("iso_code"_c == iso_code && "valid_from"_c <= ts.value() &&
-                             "valid_to"_c >= ts.value());
+                       where("tenant_id"_c == tid && "iso_code"_c == iso_code &&
+                             "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
 
     return execute_read_query<currency_entity, domain::currency>(
         ctx,
@@ -157,7 +190,9 @@ std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx
 }
 
 std::vector<domain::currency> currency_repository::read_all(context ctx) {
-    const auto query = sqlgen::read<std::vector<currency_entity>> | order_by("valid_from"_c.desc());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<currency_entity>> | where("tenant_id"_c == tid) |
+                       order_by("valid_from"_c.desc());
 
     return execute_read_query<currency_entity, domain::currency>(
         ctx,
@@ -165,36 +200,6 @@ std::vector<domain::currency> currency_repository::read_all(context ctx) {
         [](const auto& entities) { return currency_mapper::map(entities); },
         lg(),
         "Reading all currencies.");
-}
-
-std::vector<domain::currency> currency_repository::read_all(context ctx,
-                                                            const std::string& iso_code) {
-    const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("iso_code"_c == iso_code) | order_by("valid_from"_c.desc());
-
-    return execute_read_query<currency_entity, domain::currency>(
-        ctx,
-        query,
-        [](const auto& entities) { return currency_mapper::map(entities); },
-        lg(),
-        "Reading all currencies by ISO code");
-}
-
-void currency_repository::remove(context ctx, const std::string& iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency from database: " << iso_code;
-
-    // Delete only the current record - the database trigger will close the
-    // temporal record instead of actually deleting it (sets valid_to = current_timestamp)
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::delete_from<currency_entity> |
-                       where("iso_code"_c == iso_code && "valid_to"_c == max.value());
-
-    execute_delete_query(ctx, query, lg(), "Removing currency from database.");
-}
-
-void currency_repository::remove(context ctx, const std::vector<std::string>& iso_codes) {
-    const auto query = sqlgen::delete_from<currency_entity> | where("iso_code"_c.in(iso_codes));
-    execute_delete_query(ctx, query, lg(), "batch removing currencies");
 }
 
 }

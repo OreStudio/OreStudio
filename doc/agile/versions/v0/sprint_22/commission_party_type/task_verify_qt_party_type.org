@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/verify-qt-party-type
 #+pr:
-#+blocked_on: D48BEA76-F879-4C16-8310-933B7EAEBCDF
-#+blocked_since: 2026-07-03
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-07-03
 #+environment: solid_dirac
@@ -29,11 +29,11 @@ regressions found.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
-| Now          | Blocked: ores.controller.service crashes on startup before the Qt client can reach live services. |
-| Waiting on   | [[id:D48BEA76-F879-4C16-8310-933B7EAEBCDF][Bug capture: ores.controller.service crashes with corrupted UTF-8 byte]] |
-| Next         | Resume once the controller crash is fixed; retry compass services start. |
+| Now          | Unblocked: root cause was a legacy env's NATS server squatting on solid_dirac's ports, not a controller bug (see PR #1415). Service fleet is up clean (24/24). Resuming Qt UI verification. |
+| Waiting on   | Nothing.                               |
+| Next         | Launch the Qt client and drive party_type list/detail/history/delete/eventing. |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
@@ -64,6 +64,17 @@ full analysis. Filed as a separate bug rather than debugged in-line
 since it looks like memory corruption (ASAN/valgrind territory), not a
 party_type-related regression. Blocking further progress on this task
 until fixed.
+
+*Update:* not memory corruption. A legacy, untracked =nats-server= from
+the deleted =OreStudio.local2= checkout was squatting on solid_dirac's
+NATS ports (42222/8222); solid_dirac's own NATS fatal-crashed on the
+port conflict every time, but =compass services start='s readiness
+probe was fooled because something was answering on 42222. Controller
+and wt.service connected to the wrong broker, producing the corrupted
+reads. Fixed in [[id:05243CFE-F838-4759-9956-9400D6C90FDC][a separate
+infra story]] (PR #1415): killed the stray process and migrated NATS
+ports to derive from =ORES_BASE_PORT=. Full 24-service fleet now starts
+clean.
 
 * PRs
 

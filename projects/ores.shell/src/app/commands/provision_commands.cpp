@@ -762,6 +762,47 @@ void provision_commands::process_party(std::ostream& out,
         return;
     }
 
+    // Associate the logged-in account with the party just provisioned,
+    // so it becomes visible/selectable on next login rather than
+    // falling back to whatever single party the account already had
+    // (e.g. the tenant's System Party). Non-fatal, as the wizard and
+    // process_tenant's equivalent step treat this.
+    if (session.auth().account_id.empty()) {
+        out << "⚠ No account id in the session; skipping party association. "
+               "Re-login and use account-parties add to associate manually."
+            << std::endl;
+    } else {
+        try {
+            const auto account_uuid =
+                boost::lexical_cast<boost::uuids::uuid>(session.auth().account_id);
+            iam::domain::account_party association;
+            association.tenant_id = party->tenant_id.to_string();
+            association.account_id = account_uuid;
+            association.party_id = party->id;
+            association.modified_by = username;
+            association.performed_by = username;
+            association.change_reason_code =
+                std::string(dq::domain::change_reason_constants::codes::new_record);
+            association.change_commentary =
+                "Party provisioning: account associated with provisioned party";
+
+            iam::messaging::save_account_party_request assoc_req;
+            assoc_req.account_parties.push_back(std::move(association));
+            auto assoc = do_request(out, session, assoc_req, std::chrono::seconds(30), true);
+            if (assoc && assoc->success)
+                out << "  Account associated with '" << party->full_name << "'." << std::endl;
+            else
+                out << "⚠ Party association failed; continuing (associate manually with "
+                       "account-parties add)."
+                    << std::endl;
+        } catch (const boost::bad_lexical_cast&) {
+            out << "⚠ Session account id is not a UUID; skipping association." << std::endl;
+        }
+        // Non-fatal: clear any failure mark this request may have left
+        // so the script does not abort.
+        command_feedback::reset();
+    }
+
     out << "✓ Party '" << party->full_name << "' provisioned and active." << std::endl;
     out << "Next: logout and log back in to use the party." << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Party provisioned: " << party->id;

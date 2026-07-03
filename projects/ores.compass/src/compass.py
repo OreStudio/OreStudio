@@ -109,7 +109,12 @@ def parse_org_roam_mtime(mtime_value):
 def validate_paths(command):
     if not os.path.exists(ORG_ROAM_DB):
         print(f"❌ Error: org-roam.db not found at project root: {ORG_ROAM_DB}", file=sys.stderr)
-        print("   Run: compass build --direct org-roam-db-sync", file=sys.stderr)
+        print("", file=sys.stderr)
+        print_instruction(
+            INSTRUCTION_MANDATORY,
+            "regenerate the index now, then retry — do NOT work around it with find/grep:",
+            "compass build --direct org-roam-db-sync",
+            marker="FIX FIRST", stream=sys.stderr)
         sys.exit(1)
 
 def get_roam_conn():
@@ -179,7 +184,12 @@ def cmd_index(args):
     print(f"📝 Found {file_count} files registered in org-roam.db")
 
     if file_count == 0:
-        print("⚠️  org-roam.db is empty. Run: compass build --direct org-roam-db-sync")
+        print("⚠️  org-roam.db is empty.")
+        print_instruction(
+            INSTRUCTION_MANDATORY,
+            "regenerate the index now, then retry:",
+            "compass build --direct org-roam-db-sync",
+            marker="FIX FIRST")
         roam_conn.close()
         sys.exit(1)
 
@@ -4778,6 +4788,39 @@ def _ycmd(cmd):
     return f"{_C_YELLOW}{cmd}{_C_RESET}"
 
 
+# Instruction classes — how strongly the reader must act on a next-action.
+# The constant value IS the label printed to the reader. Route every
+# next-action through print_instruction so the notation stays consistent and
+# the full set is easy to audit.
+INSTRUCTION_MANDATORY = "NEXT ACTION"             # must do now: stale index,
+                                                  # missing artefact, required step.
+INSTRUCTION_SUGGESTION = "SUGGESTED NEXT ACTION"  # optional; the reader may take it.
+
+
+def print_instruction(kind, headline, cmd, marker=None, stream=None):
+    """Print a classified next-action in compass's one imperative notation.
+
+    kind classifies how strongly the reader must act:
+      INSTRUCTION_MANDATORY  ("NEXT ACTION")           — must do now; '▶', yellow.
+      INSTRUCTION_SUGGESTION ("SUGGESTED NEXT ACTION") — optional;    '•', cyan.
+    Routing every next-action through here keeps the notation identical
+    everywhere and makes the whole set of instructions easy to evaluate.
+
+    headline one-line reason, ending with a colon.
+    cmd      the exact command to run.
+    marker   optional sub-label for ordering nuance — "FIX FIRST", "THEN".
+    stream   defaults to stdout; pass sys.stderr for error paths.
+    """
+    bullet, color = {
+        INSTRUCTION_MANDATORY:  ("▶", _C_YELLOW),
+        INSTRUCTION_SUGGESTION: ("•", _C_CYAN),
+    }.get(kind, ("▶", _C_YELLOW))
+    label = kind if not marker else f"{kind} · {marker}"
+    out = stream if stream is not None else sys.stdout
+    print(f"{color}{bullet} {label} — {headline}{_C_RESET}", file=out)
+    print(f"      {_ycmd(cmd)}", file=out)
+
+
 def _bearings_section(icon, title, cmd=None):
     print(f"\n{_C_BOLD}{_C_CYAN}{icon}  {title}{_C_RESET}")
     if cmd:
@@ -4815,12 +4858,10 @@ def _claude_refresh_warnings():
     for target, source, cmd in warnings:
         target_path = PROJECT_ROOT / target.rstrip("/")
         if not target_path.exists():
-            print(f"  {_C_YELLOW}⚠  {target} does not exist — "
-                  f"run to provision:{_C_RESET}")
+            headline = f"{target} does not exist — provision it:"
         else:
-            print(f"  {_C_YELLOW}⚠  {target} is older than {source} — "
-                  f"a refresh may be required:{_C_RESET}")
-        print(f"     {_ycmd(cmd)}")
+            headline = f"{target} is stale versus {source} — refresh it:"
+        print_instruction(INSTRUCTION_MANDATORY, headline, cmd)
     if warnings:
         print()
 
@@ -5548,6 +5589,13 @@ def cmd_build(argv):
                 print(f"❌ Direct build failed for target '{target}' (exit {rc})",
                       file=sys.stderr)
                 return rc
+        if "org_roam_db_sync" in targets and not args.dry_run:
+            print("")
+            print_instruction(
+                INSTRUCTION_MANDATORY,
+                "the FTS search cache is now stale — rebuild it before searching:",
+                "compass index",
+                marker="THEN")
         return 0
 
     preset = args.preset or _tr_read_preset()

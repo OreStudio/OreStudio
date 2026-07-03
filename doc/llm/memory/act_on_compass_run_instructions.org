@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: FD7BDD44-8451-43AC-8601-957E719A9866
+:END:
+#+title: Act on a compass command's 'Run:' instruction before anything else
+#+description: When a compass command prints a remediation like 'Run: <cmd>', run it immediately and retry; never route around a stale index with find/grep.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :compass:bearings:workflow:memory:feedback:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+
+When a compass command fails and prints a remediation like 'Run: <cmd>' (e.g. 'compass build --direct org-roam-db-sync', then 'compass index'), run that command immediately and retry — do NOT route around a stale index with find/grep or other Unix tools.
+
+*Why:* A search failed with 'org-roam.db not found — Run: compass build --direct org-roam-db-sync'; instead of running it, falling back to find/grep both ignored the explicit instruction and violated the compass-over-Unix-tools rule. The tool told us exactly how to fix it.
+
+*How to apply:* On any compass error whose output contains a 'Run:'/'FIX FIRST'/'NEXT' directive, execute that exact command first (regenerate the index if stale: compass build --direct org-roam-db-sync, then compass index), then re-run the original command. Never substitute find/grep/ls for a compass command that is merely blocked by a stale index.

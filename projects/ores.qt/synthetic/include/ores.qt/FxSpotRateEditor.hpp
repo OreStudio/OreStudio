@@ -166,6 +166,21 @@ private:
     [[nodiscard]] std::string currentEngine() const; // "geometric" / "arithmetic" / "ou"
     [[nodiscard]] bool currentEngineSupportsMixing() const;
     [[nodiscard]] QString incrementNoun() const; // label noun for the active engine
+    // Detailed hover text for a component row's Name/μ/σ/Weight cells, explaining
+    // what those fields mean for the current engine.
+    [[nodiscard]] QString componentTooltip(bool ou, bool arithmetic) const;
+
+    // Ornstein-Uhlenbeck's κ is a per-tick reversion rate — realistic values span
+    // many orders of magnitude (minutes to months), which is unusable to type
+    // directly (e.g. 0.000001). The Weight cell edits/displays half-life in
+    // minutes instead; these convert to/from the κ actually stored and sent to
+    // the simulation engine. Half-life is expressed relative to the *current*
+    // "New price every" tick interval — changing that interval afterwards does
+    // not retroactively rescale an already-entered κ (same as the interval's
+    // effect on any other per-tick parameter).
+    [[nodiscard]] double secondsPerTick() const;
+    [[nodiscard]] double halfLifeMinutesFromKappa(double kappa) const;
+    [[nodiscard]] double kappaFromHalfLifeMinutes(double halfLifeMinutes) const;
 
     [[nodiscard]] QString defaultSourceName() const;
     [[nodiscard]] std::vector<ModelComponent> currentComponents() const;
@@ -209,7 +224,10 @@ private:
     QStackedWidget* modeStack_;
     // Single shared charts (used by both Simple and Advanced modes).
     ReturnDistributionChart* distChart_; // compact, top-right
-    SamplePricePathsChart* pathsChart_;  // prominent, full-width bottom
+    // Shown instead of distChart_ for single-regime engines (the PDF doesn't
+    // apply), so the panel doesn't burn space on a disabled chart.
+    QLabel* distInfoLabel_;
+    SamplePricePathsChart* pathsChart_; // prominent, full-width bottom
 
     // Behaviour tab — Simple page.
     QSlider* driftSlider_;

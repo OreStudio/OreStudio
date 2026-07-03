@@ -102,7 +102,7 @@ struct EngineInfo {
 constexpr EngineInfo kEngines[] = {
     {"geometric", QT_TR_NOOP("Geometric Brownian Motion"), true},
     {"arithmetic", QT_TR_NOOP("Arithmetic Brownian Motion"), true},
-    {"ou", QT_TR_NOOP("Ornstein-Uhlenbeck (mean-reverting)"), false},
+    {"ou", QT_TR_NOOP("Ornstein-Uhlenbeck"), false},
 };
 
 const EngineInfo* find_engine(const std::string& code) {
@@ -468,7 +468,10 @@ void FxSpotRateEditor::buildBehaviourTab() {
     modeStack_->addWidget(buildAdvancedControls()); // index 1
     middleRow->addWidget(modeStack_, 1);
 
-    // RIGHT: compact PDF chart group, top-aligned.
+    // RIGHT: compact PDF chart group, top-aligned. For single-regime engines
+    // (e.g. "ou") the PDF doesn't apply — swap the chart out for a short info
+    // message instead of showing a disabled chart that still eats vertical
+    // space (see updateEngineUi()).
     auto* distBox = new QGroupBox(tr("Return distribution"), tab);
     distBox->setMinimumWidth(300);
     distBox->setMaximumWidth(380);
@@ -478,6 +481,12 @@ void FxSpotRateEditor::buildBehaviourTab() {
     distChart_->setMaximumWidth(380);
     distChart_->setMinimumHeight(240);
     distLayout->addWidget(distChart_);
+    distInfoLabel_ = new QLabel(distBox);
+    distInfoLabel_->setWordWrap(true);
+    distInfoLabel_->setAlignment(Qt::AlignCenter);
+    distInfoLabel_->setStyleSheet("color: gray;");
+    distInfoLabel_->setVisible(false);
+    distLayout->addWidget(distInfoLabel_);
     middleRow->addWidget(distBox, 0, Qt::AlignTop);
 
     layout->addLayout(middleRow);
@@ -961,14 +970,10 @@ void FxSpotRateEditor::updateEngineUi() {
                 advancedBtn->setChecked(true);
             onModeChanged();
         }
-        if (componentTable_ && componentTable_->rowCount() > 1) {
+        if (components_.size() > 1) {
             // Single-regime process — collapse to the first row so its reused
             // fields have one unambiguous value.
             components_.resize(1);
-            syncing_ = true;
-            syncAdvancedFromModel();
-            syncing_ = false;
-            updateComponentColors();
         }
     }
     // The warning banner's wording is inherently engine-specific — a boolean
@@ -978,21 +983,59 @@ void FxSpotRateEditor::updateEngineUi() {
     const bool ou = engine == "ou";
     const bool arithmetic = engine == "arithmetic";
 
+    // κ = 1.0 is the generic single-row default weight (a full mixture share),
+    // but reused as OU's reversion speed it reverts within ~1 tick — the price
+    // sits in a band so tight it looks "stuck" rather than visibly mean-
+    // reverting. Rescale it to a slower, more legible default the first time a
+    // *new* config switches to "ou", without touching a loaded record's real κ.
+    if (ou && isNew_ && !components_.empty() && components_.front().weight == 1.0)
+        components_.front().weight = kappaFromHalfLifeMinutes(15.0);
+
+    // Always resync the table from the model: besides picking up the row-count/
+    // κ-default changes above, the Weight cell's *display units* depend on the
+    // engine ("ou" shows a derived half-life in minutes, others show the raw
+    // stored value — see addTableRow), so the cells must be rebuilt any time the
+    // engine could have changed, including switching *out of* "ou".
+    if (componentTable_) {
+        syncing_ = true;
+        syncAdvancedFromModel();
+        syncing_ = false;
+        updateComponentColors();
+    }
+
     if (engineWarningLabel_) {
         if (ou) {
             engineWarningLabel_->setText(
-                tr("⚠ Ornstein-Uhlenbeck engine: a single regime, not a mixture. Simple mode is "
+                tr("⚠ Single regime — Weight/σ fields are repurposed. Hover for details."));
+            engineWarningLabel_->setToolTip(
+                tr("Ornstein-Uhlenbeck engine: a single regime, not a mixture. Simple mode is "
                    "disabled — Advanced mode's fields are reused as: κ (reversion speed) = "
                    "Weight, σ (volatility) = Volatility (σ), and θ (long-run mean) = Initial "
                    "Price. Drift (μ) is unused. \"Add process\" is disabled while this engine is "
                    "selected."));
         } else if (arithmetic) {
             engineWarningLabel_->setText(
-                tr("⚠ Arithmetic engine: μ and σ are absolute price increments (not "
+                tr("⚠ Absolute price increments — may go negative. Hover for details."));
+            engineWarningLabel_->setToolTip(
+                tr("Arithmetic engine: μ and σ are absolute price increments (not "
                    "%/log-returns), and the price can go negative or zero — unrealistic for an "
                    "FX rate. Intended for testing the process abstraction."));
         }
         engineWarningLabel_->setVisible(ou || arithmetic);
+    }
+
+    // The Return Distribution chart plots an increment PDF, which doesn't apply to
+    // "ou" (a level process, not a mixture). Space is at a premium here, so swap
+    // the chart out for a short message instead of showing a disabled chart that
+    // still claims 240px of height for nothing.
+    if (distChart_) {
+        distChart_->setVisible(mixing);
+        if (distInfoLabel_) {
+            distInfoLabel_->setVisible(!mixing);
+            distInfoLabel_->setText(
+                tr("N/A for this engine — it reverts toward a level rather than mixing "
+                   "return distributions. See the component row's tooltip for κ/σ."));
+        }
     }
 
     if (addComponentBtn_)
@@ -1012,17 +1055,83 @@ void FxSpotRateEditor::updateEngineUi() {
             stdevHdr->setToolTip(
                 ou ? tr("σ — Ornstein-Uhlenbeck volatility.") :
                      tr("Volatility (σ) of the %1 per update (%).").arg(incrementNoun()));
-        if (auto* weightHdr = componentTable_->horizontalHeaderItem(ColWeight))
+        if (auto* weightHdr = componentTable_->horizontalHeaderItem(ColWeight)) {
+            // The header text itself, not just its tooltip: "w" reads as a weight/
+            // share, which is misleading once this column holds κ instead.
+            weightHdr->setText(ou ? tr("κ") : tr("w"));
             weightHdr->setToolTip(
                 ou ? tr("κ — Ornstein-Uhlenbeck reversion speed (0 = driftless random walk).") :
                      tr("Relative share when blending processes (normalised on save)."));
+        }
+
+        // Detailed per-row tooltip on hover, in addition to the column-header ones
+        // above — explains what this specific component's three numbers mean in
+        // the current engine's terms, without having to reach for the headers.
+        const QString rowTip = componentTooltip(ou, arithmetic);
+        for (int r = 0; r < componentTable_->rowCount(); ++r) {
+            for (int col : {ColName, ColMean, ColStdev, ColWeight}) {
+                if (auto* w = componentTable_->cellWidget(r, col))
+                    w->setToolTip(rowTip);
+            }
+        }
     }
+}
+
+double FxSpotRateEditor::secondsPerTick() const {
+    return secondsSpin_ ? std::max(1, secondsSpin_->value()) : 1.0;
+}
+
+double FxSpotRateEditor::halfLifeMinutesFromKappa(double kappa) const {
+    if (kappa <= 0.0)
+        return 0.0; // 0 = driftless random walk, shown as 0 (infinite half-life)
+    return (std::log(2.0) / kappa) * secondsPerTick() / 60.0;
+}
+
+double FxSpotRateEditor::kappaFromHalfLifeMinutes(double halfLifeMinutes) const {
+    if (halfLifeMinutes <= 0.0)
+        return 0.0;
+    return std::log(2.0) / (halfLifeMinutes * 60.0 / secondsPerTick());
+}
+
+QString FxSpotRateEditor::componentTooltip(bool ou, bool arithmetic) const {
+    if (ou) {
+        return tr("<b>Ornstein-Uhlenbeck component</b><br>"
+                   "θ (long-run mean): the <i>Initial Price</i> field above — the level the "
+                   "price reverts toward.<br>"
+                   "κ (reversion speed, this row's <i>Weight</i>): how fast the price is pulled "
+                   "back to θ. Roughly, the price halves its distance from θ every "
+                   "ln(2)/κ updates — κ = 1 reverts almost immediately (tight, \"stuck\"-looking "
+                   "band); κ = 0.02–0.05 wanders visibly before reverting.<br>"
+                   "σ (volatility, this row's <i>σ</i>): the size of each random nudge, before "
+                   "reversion pulls it back. The band the price settles into is roughly "
+                   "σ/√(2κ) wide — small κ and larger σ together give a wider, more visible "
+                   "range.<br>"
+                   "μ (Drift) is unused by this engine.");
+    }
+    if (arithmetic) {
+        return tr("<b>Arithmetic component</b><br>"
+                   "μ (Drift): average absolute price change per update.<br>"
+                   "σ (Volatility): standard deviation of the absolute price change per "
+                   "update.<br>"
+                   "Weight: this component's relative share when blending with other "
+                   "components (normalised to sum to 1 on save).<br>"
+                   "Unlike Geometric, these are absolute price units, not %/log-returns — the "
+                   "price can go negative.");
+    }
+    return tr("<b>Geometric component</b><br>"
+               "μ (Drift): average log-return per update (%) — the trend.<br>"
+               "σ (Volatility): standard deviation of the log-return per update (%) — the "
+               "noise.<br>"
+               "Weight: this component's relative share when blending with other components "
+               "(normalised to sum to 1 on save); e.g. a small-weight, high-σ component "
+               "approximates a jump regime.");
 }
 
 void FxSpotRateEditor::onAddComponentRow() {
     addTableRow(ModelComponent{{}, "Process", 0.0, v0 * 2, 1.0});
     rebuildModelFromAdvanced();
     updateRemoveButtonsEnabled();
+    updateEngineUi(); // stamp the new row's cells with the current engine's tooltip
     refreshCharts();
 }
 
@@ -1390,14 +1499,11 @@ void FxSpotRateEditor::onSaveClicked() {
         if (!fxResp->success)
             return {false, QString::fromStdString(fxResp->message)};
 
-        for (const auto& c : comps) {
-            auto cResp = cm->process_authenticated_request(m::save_gmm_component_request::from(c));
-            if (!cResp)
-                return {false, QString::fromStdString(cResp.error())};
-            if (!cResp->success)
-                return {false, QString::fromStdString(cResp->message)};
-        }
-
+        // Delete stale components *before* writing new ones: the unique index on
+        // (party_id, fx_spot_config_id, component_index) only covers still-active
+        // rows, so a fresh component reusing an index still held by a to-be-deleted
+        // row (e.g. collapsing to a single-regime engine) would otherwise hit that
+        // constraint on INSERT.
         if (!toDelete.empty()) {
             auto dResp =
                 cm->process_authenticated_request(m::delete_gmm_component_request{.ids = toDelete});
@@ -1405,6 +1511,14 @@ void FxSpotRateEditor::onSaveClicked() {
                 return {false, QString::fromStdString(dResp.error())};
             if (!dResp->success)
                 return {false, QString::fromStdString(dResp->message)};
+        }
+
+        for (const auto& c : comps) {
+            auto cResp = cm->process_authenticated_request(m::save_gmm_component_request::from(c));
+            if (!cResp)
+                return {false, QString::fromStdString(cResp.error())};
+            if (!cResp->success)
+                return {false, QString::fromStdString(cResp->message)};
         }
 
         return {true, {}};

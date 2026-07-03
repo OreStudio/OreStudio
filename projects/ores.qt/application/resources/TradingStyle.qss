@@ -36,6 +36,17 @@ QWidget {
     color: #F0F0F0;
 }
 
+QToolTip {
+    /* The blanket QWidget rule above has no border/padding, which is nearly
+     * invisible for a short plain-text tip but renders as a large borderless
+     * dark block for a multi-line rich-text (HTML) tooltip — give tooltips
+     * their own readable, bordered style. */
+    background-color: #282828;
+    color: #F0F0F0;
+    border: 1px solid #007ACC;
+    padding: 6px 8px;
+}
+
 QTableView {
     /* Base style for the data area */
     background-color: #1A1A1A; /* Primary Background */

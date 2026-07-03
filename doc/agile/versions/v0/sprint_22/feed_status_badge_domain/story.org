@@ -45,9 +45,11 @@ that UX question first; only then build the chosen implementation.
 
 - UX direction (badge vs. compact status dot/icon vs. other) decided
   and recorded in =* Decisions=, with rationale.
-- =FxSpotGridWindow= no longer applies hardcoded per-status CSS —
-  colours/labels come from configurable state (badge domain or
-  equivalent), matching the decided direction.
+- =FxSpotGridWindow= no longer applies hardcoded-CSS pill styling —
+  status renders as icon+text per the decided direction (see
+  =* Decisions=; tenant-configurable colours were explicitly traded
+  away in favour of this lighter approach, not carried over from
+  the original badge-domain proposal).
 - The four states (PENDING/LIVE/STALE/DISCONNECTED) render
   correctly in the grid.
 

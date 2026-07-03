@@ -97,31 +97,30 @@ namespace {
 // background. The icon *shape* differs per state (not just its color),
 // so status doesn't rely on color alone.
 struct StatusIndicator {
-    QLabel* iconLabel = nullptr;
-    QLabel* textLabel = nullptr;
+    QLabel* icon_label = nullptr;
+    QLabel* text_label = nullptr;
 };
 
 }
 
 static StatusIndicator make_status_indicator(QWidget* parent) {
     StatusIndicator ind;
-    ind.iconLabel = new QLabel(parent);
-    ind.iconLabel->setFixedSize(16, 16);
-    ind.textLabel = new QLabel(parent);
-    QFont f = ind.textLabel->font();
+    ind.icon_label = new QLabel(parent);
+    ind.icon_label->setFixedSize(16, 16);
+    ind.text_label = new QLabel(parent);
+    QFont f = ind.text_label->font();
     f.setPointSizeF(f.pointSizeF() - 1);
-    ind.textLabel->setFont(f);
+    ind.text_label->setFont(f);
     return ind;
 }
 
-static void apply_status_indicator(const StatusIndicator& ind,
-                                   FxSpotGridWindow::FeedStatus s,
-                                   std::chrono::system_clock::time_point last_tick) {
+// Text only — cheap enough to call on every stale-poll tick (every
+// k_stale_poll_ms) to refresh the "STALE: Ns" counter without re-rendering
+// the (unchanged) icon/colour.
+static void update_status_text(const StatusIndicator& ind,
+                               FxSpotGridWindow::FeedStatus s,
+                               std::chrono::system_clock::time_point last_tick) {
     using namespace std::chrono;
-
-    const QColor color = status_color(s);
-    const QIcon icon = IconUtils::createRecoloredIcon(status_icon(s), color);
-    ind.iconLabel->setPixmap(icon.pixmap(16, 16));
 
     QString text;
     switch (s) {
@@ -140,8 +139,21 @@ static void apply_status_indicator(const StatusIndicator& ind,
             text = QStringLiteral("DISCONNECTED");
             break;
     }
-    ind.textLabel->setText(text);
-    ind.textLabel->setStyleSheet(QStringLiteral("color: %1; font-weight: 600;").arg(color.name()));
+    ind.text_label->setText(text);
+}
+
+// Full repaint (icon + colour + text) — call only on a status transition.
+// IconUtils::createRecoloredIcon rasterizes the SVG at six sizes, so this
+// is too expensive to run on every stale-poll tick for rows that stay in
+// the same status between polls.
+static void apply_status_indicator(const StatusIndicator& ind,
+                                   FxSpotGridWindow::FeedStatus s,
+                                   std::chrono::system_clock::time_point last_tick) {
+    const QColor color = status_color(s);
+    const QIcon icon = IconUtils::createRecoloredIcon(status_icon(s), color);
+    ind.icon_label->setPixmap(icon.pixmap(16, 16));
+    ind.text_label->setStyleSheet(QStringLiteral("color: %1; font-weight: 600;").arg(color.name()));
+    update_status_text(ind, s, last_tick);
 }
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -280,16 +292,16 @@ void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_bind
         cl->setSpacing(6);
         auto indicator = make_status_indicator(container);
         apply_status_indicator(indicator, FeedStatus::Pending, {});
-        cl->addWidget(indicator.iconLabel);
-        cl->addWidget(indicator.textLabel);
+        cl->addWidget(indicator.icon_label);
+        cl->addWidget(indicator.text_label);
         cl->addStretch();
         table_->setCellWidget(row, ColStatus, container);
 
         RowState rs;
         rs.row = row;
         rs.ore_key = ore_key;
-        rs.statusIcon = indicator.iconLabel;
-        rs.statusText = indicator.textLabel;
+        rs.status_icon_label = indicator.icon_label;
+        rs.status_text_label = indicator.text_label;
         rows_.emplace(ore_key, std::move(rs));
         ++row;
     }
@@ -358,7 +370,7 @@ void FxSpotGridWindow::applyTick(const std::string& ore_key,
 
     if (rs.last_status != FeedStatus::Live) {
         rs.last_status = FeedStatus::Live;
-        apply_status_indicator({rs.statusIcon, rs.statusText}, FeedStatus::Live, when);
+        apply_status_indicator({rs.status_icon_label, rs.status_text_label}, FeedStatus::Live, when);
     }
 }
 
@@ -367,13 +379,17 @@ void FxSpotGridWindow::onStaleCheck() {
         if (!rs.ever_ticked)
             continue;
         const auto status = deriveStatus(rs);
-        // Always repaint STALE so the elapsed seconds counter updates.
-        // For other statuses, only repaint on transition.
-        if (status == FeedStatus::Stale || status != rs.last_status) {
+        const StatusIndicator indicator{rs.status_icon_label, rs.status_text_label};
+        if (status != rs.last_status) {
+            // Transition: icon/colour actually changed, full repaint.
             rs.last_status = status;
-            apply_status_indicator({rs.statusIcon, rs.statusText}, status, rs.last_tick);
+            apply_status_indicator(indicator, status, rs.last_tick);
             if (auto* p = table_->item(rs.row, ColPair))
                 p->setForeground(pair_color_for_status(status));
+        } else if (status == FeedStatus::Stale) {
+            // Same status, still stale: only the elapsed-seconds text
+            // changes — skip re-rendering the (unchanged) icon.
+            update_status_text(indicator, status, rs.last_tick);
         }
     }
 }

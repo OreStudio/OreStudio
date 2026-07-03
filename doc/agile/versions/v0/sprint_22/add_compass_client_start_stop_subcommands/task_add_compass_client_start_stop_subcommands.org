@@ -8,7 +8,7 @@
 #+filetags: :compass:cli:devx:sprint_22:v0:add_compass_client_start_stop_subcommands:
 #+owner: marco
 #+branch: feature/add-compass-client-start-stop-subcommands
-#+pr:
+#+pr: 1416
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -69,7 +69,7 @@ PID file name.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1416][#1416]] | [compass] Add client start/stop subcommands |
 
 * Review
 

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :synthetic-data-collections:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: story/synthetic-data-collections
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -34,11 +34,11 @@ found — do not rebuild import functionality that already exists.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Not yet started.                       |
+| Now          | Reviewing ores.marketdata import_service/import_protocol.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Document gap analysis.                 |
 | Last touched | 2026-07-03                               |
 
 * Acceptance

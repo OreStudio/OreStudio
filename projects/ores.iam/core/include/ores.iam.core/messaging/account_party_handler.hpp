@@ -44,19 +44,35 @@ inline auto& account_party_handler_lg() {
 }
 
 /**
- * @brief Stamps server-authoritative bookkeeping fields on an
- * account_party, deliberately NOT using the generic
- * ores::service::messaging::stamp() helper.
+ * @brief DELIBERATE, NARROW REPLACEMENT for
+ * ores::service::messaging::stamp() — read this before touching
+ * either function.
  *
- * account_party::party_id has a different meaning from every other
- * domain type's party_id: elsewhere party_id names the party a row
- * belongs to (a security boundary always overwritten from the
- * caller's own JWT context), but here it names the *target* party
- * being associated with the account — an arbitrary value the client
- * is meant to supply. The generic stamp() matches on the field name
- * alone and would clobber it with the caller's own current party,
- * silently associating every request with the caller's party instead
- * of the one actually requested.
+ * @warning Do NOT "simplify" this by switching back to the generic
+ * stamp(ap, ctx). That generic helper treats any field named
+ * party_id as a security boundary and unconditionally overwrites it
+ * with the caller's own current party from the JWT context — correct
+ * for every other domain type, where party_id means "the party this
+ * row belongs to." account_party is the one exception in the
+ * codebase: its party_id means "the party being targeted by this
+ * association," an arbitrary value the *client* is supposed to
+ * supply (e.g. associating an admin with some other party). Because
+ * the field happens to share the name, the generic stamp() matched
+ * on it by reflection and silently clobbered every requested
+ * association with the caller's own party instead — this is exactly
+ * the bug that caused provision_tenant's Phase 3 to associate the
+ * tenant admin only with their own System Party, no matter which
+ * Operational parties were actually requested (see the account_party
+ * capture doc in doc/agile/product_backlog/inbox/ for the full story).
+ *
+ * If you ever add another field to account_party that collides in
+ * name with a field stamp() treats as a security boundary (tenant_id,
+ * party_id, and anything added to stamp() in future), you must extend
+ * *this* function to handle it explicitly rather than reaching for
+ * the generic helper. Any other handler considering a client-supplied
+ * "target party/tenant/etc. that is not this row's own scope" field
+ * should follow the same pattern: a small, explicit, per-type stamp
+ * function, not the generic reflection-based one.
  */
 inline void stamp_account_party(domain::account_party& ap, const ores::database::context& ctx) {
     ap.tenant_id = ctx.tenant_id().to_string();

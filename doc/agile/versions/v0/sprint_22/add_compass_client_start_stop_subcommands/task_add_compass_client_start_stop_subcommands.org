@@ -75,7 +75,11 @@ PID file name.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bare compass client bearings hint now errors (subcommand required) | compass.py:4915 | Accepted | Flagged by all 3 review passes; fixed to `compass client start` |
+| 2 | Stale start-client.sh migration comment still says "compass client" | compass_services.py:10 | Accepted | Fixed |
+| 3 | client missing from top-level --help epilog | compass.py:5912 | Accepted | Added `client: start | stop (operate)` line |
+| 4 | Duplicated "unknown colour" error string across start/stop | compass_services.py | Declined | Minor DRY nit, not worth the indirection for a 2-line string |
+| 5 | No `client status` subcommand | (n/a) | Declined | Out of scope — task's acceptance criteria only called for start/stop |
 
 * Result
 

@@ -8,7 +8,7 @@
 #+filetags: :compass:infra:nats:bugfix:sprint_22:v0:fix_nats_port_collision_and_label_consistency:
 #+owner: marco
 #+branch: feature/fix-nats-port-collision-and-label-consistency
-#+pr:
+#+pr: 1415
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -38,9 +38,9 @@ memory-safety bug in our own code.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:05243CFE-F838-4759-9956-9400D6C90FDC][Fix NATS port collision with legacy env and label inconsistency]] |
-| Now          | Done. Full service fleet (24 services) verified running clean.       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | N/A.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
@@ -91,7 +91,7 @@ next time someone runs =compass env configure= on them.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1415][#1415]] | [compass] Fix NATS port collision with legacy env; unify config label |
 
 * Review
 

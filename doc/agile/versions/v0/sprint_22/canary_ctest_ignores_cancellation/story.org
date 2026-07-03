@@ -1,0 +1,194 @@
+:PROPERTIES:
+:ID: 3545641D-96DD-41DA-B4FF-B5FE43D56CA2
+:END:
+#+title: Story: Canary CI: near-zero sccache hit rate makes every build a cold rebuild
+#+description: canary-linux.yml's sccache hit rate is 1.36% (33/2433 compile requests) on a PR touching ~20 files, making every canary run effectively a full ~3h cold rebuild. Investigate and fix the cache-invalidation mechanism.
+#+type: story
+#+level: s2
+#+filetags: :sprint_22:v0:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Diagnose and fix why =canary-linux.yml= (=linux-gcc-debug-ninja=) gets
+almost no benefit from its sccache cache, so canary stops taking
+~3h/run for small PRs.
+
+** How this was first noticed (corrected)
+
+Originally filed as "the CTest step doesn't respond to GitHub Actions
+cancellation" — PR #1410's canary job appeared stuck =in_progress=
+for 45+ minutes after two =gh run cancel= calls. That framing was
+*wrong*: the job wasn't stuck. It eventually finished on its own with
+=conclusion: success= after a genuine ~3h1m59s runtime — GitHub
+Actions doesn't preempt a running job mid-step; a long single-step
+job (=Run CTest workflow=) simply keeps running to completion
+regardless of a cancellation request against a superseded run. There
+is no bug in cancellation handling to fix.
+
+The real question the incident surfaced: *why does a PR touching
+~20 files take 3 hours to build at all* when sccache is configured
+and a full cache was restored? That's this story.
+
+** Evidence: sccache stats from PR #1410's canary run
+
+From the completed run's =sccache --show-stats= step
+(=gh run view --log --job=84963313660=):
+
+#+begin_example
+Compile requests                   2433
+Compile requests executed          2433
+Cache hits                           33
+Cache misses                       2400
+Cache hits rate                    1.36 %
+Non-cacheable compilations            0
+Cache size                            2 GiB
+Max cache size                        2 GiB
+#+end_example
+
+A full 2018 MB sccache archive *was* successfully restored at the
+start of the job (~15s download over the Actions cache), and every
+single compile was cache-eligible (=Non-cacheable compilations: 0=).
+Yet 2400/2433 files were recompiled from scratch, despite the PR
+diff touching only ~20 files. Ruled out:
+
+- *Precompiled headers*: this GCC canary preset doesn't use PCH at
+  all (0 matches for =include-pch=/=cmake_pch= in the full job log —
+  that pattern only exists in a different, local clang preset).
+- *Cache eviction from being at the size cap*: plausible contributor
+  (2 GiB for a ~5,300-translation-unit monorepo is tight), but doesn't
+  by itself explain why *unchanged* files miss — sccache keys are
+  content hashes, not identity, so an unrelated PR's build shouldn't
+  evict entries this PR needs unless the working set genuinely
+  exceeds 2 GiB.
+- *"PRs overwrite each other's cache" as the direct cause*: initially
+  suspected (three PRs' canary jobs were running concurrently,
+  #1408/#1409/#1410, all reading/writing the same static key
+  =sccache-linux-gcc-debug-ninja=), but overwriting alone doesn't
+  explain a low hit rate — sccache hits are keyed on preprocessed
+  content, not on which run wrote the cache. Concurrent writes could
+  matter only via GitHub Actions cache's own eviction/immutability
+  semantics (see workflow notes below), not directly.
+
+** Working hypothesis: dependency/toolchain drift invalidates hashes broadly
+
+sccache's cache key for a =.cpp= file is derived from its
+*preprocessed* content, which pulls in every transitively-included
+header. In a Boost-heavy codebase almost every translation unit
+includes at least one vcpkg-provided header. If the installed vcpkg
+package set differs even slightly between when the cache was last
+populated and a given run, effectively *every* TU that includes the
+affected headers gets a new hash simultaneously — which looks exactly
+like "near-total miss despite touching only ~20 files."
+
+*The user's sensible prior*: the vcpkg *submodule* (port
+recipes/build baseline) should not move mid-sprint — it's only
+supposed to bump once, at end-of-sprint. Checked and confirmed true:
+
+#+begin_example
+$ git submodule status vcpkg
+ 44819aa2a6c10e56065e2b0330e7d6c89d1d2574 vcpkg (2026.06.01-163-g44819aa2a6)
+
+$ git log -3 --format="%h %ai %s" -- vcpkg
+0f96a1e30 2026-06-14 09:41:55 +0100 [vcpkg] Update to 2026.06.01-163-g44819aa2a6
+fd91ce1b2 2026-06-12 13:03:56 +0100 [build] Update vcpkg submodule to latest master (b216ddff25)
+9f36c3118 2026-06-07 14:54:20 +0100 [compass] Add timeline command: generate and show
+#+end_example
+
+The submodule pointer has been stable since 2026-06-14 — ~19 days
+before this PR's build, and unchanged for the whole of sprint 22 so
+far. *So the submodule itself is not the cause.*
+
+But =vcpkg.json= (the manifest — dependency list + version-string,
+separate from the submodule pointer) *did* change twice this week,
+both times inside this very session's work:
+
+#+begin_example
+$ git log -5 --format="%h %ai %s" -- vcpkg.json
+ec78e347f 2026-07-02 14:10:16 +0100 [build] Bump version to 0.0.22
+dab2ec522 2026-07-02 03:24:26 +0100 Fix: add missing boost-circular-buffer dependency
+9f3cfadd9 2026-06-12 13:21:49 +0100 [build] Bump version to 0.0.21
+#+end_example
+
+- =dab2ec522= added a real new port (=boost-circular-buffer=) to the
+  dependency list — a genuine vcpkg-install-cache-relevant change
+  (=vcpkg-cache= is keyed on =hashFiles('vcpkg.json')=, with a
+  =restore-keys= prefix fallback so it should still partially reuse
+  the prior cache, needing to build/cache just the one new port).
+- =ec78e347f= (the routine sprint-22 version bump, done as part of
+  this same session's work) only changed the =version-string= field
+  — no dependency change at all — but *still* changes the file's
+  content hash, producing a new exact-match =vcpkg-cache= key on
+  every version bump, purely from a metadata field.
+
+Both commits landed on 2026-07-02, the day before PR #1410's canary
+run (2026-07-03 08:46). This is concrete, provable evidence that
+=vcpkg.json= — unlike the submodule — genuinely does change within a
+sprint, and did so twice in the 24h before the slow build. What isn't
+yet proven is the *causal link* to the 1.36% sccache hit rate
+specifically (vcpkg-cache and sccache are two separate Actions
+caches; a vcpkg-cache miss/rebuild for one new port doesn't
+automatically explain ~2400 *sccache* misses across the whole
+codebase). That link needs to be established with a live comparison,
+not log archaeology after the fact — see Tasks.
+
+** Also noted, not yet actioned
+
+- =vcpkg install= itself took ~20 minutes
+  (=08:51:40=→=09:12:18=) inside the =Run CTest workflow= step, even
+  with the =vcpkg-cache= (package binary cache) restoring ~1.9 GB
+  successfully — worth understanding once the sccache question is
+  settled, may be a related or separate cost.
+- The =sccache-linux-gcc-debug-ninja= and
+  =cmake-build-linux-gcc-debug-ninja= caches both use a *single
+  static key* (no content hash, no branch scoping) with an explicit
+  delete-then-save step (=gh api --method DELETE= immediately before
+  =actions/cache/save=) — this is a deliberate "always refresh"
+  pattern, not neglect, but means whichever job's =Delete=+=Save=
+  pair runs last "wins" when multiple canary jobs finish close
+  together; worth confirming this doesn't cause its own thrashing
+  independent of the vcpkg.json question.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Evidence gathered from PR #1410's canary run; vcpkg.json churn identified as the leading hypothesis, not yet proven causal. |
+| Waiting on    | Nothing.                               |
+| Next          | Run the live sccache debug-log comparison (see task).            |
+| Last touched  | 2026-07-03                               |
+
+* Acceptance
+
+- Root cause of the near-zero sccache hit rate is identified with
+  direct evidence (not inference) — e.g. a diff of sccache's actual
+  hash inputs (=SCCACHE_LOG=debug=) between two back-to-back canary
+  runs, showing exactly which input changed for a file that should
+  have hit.
+- Either a fix lands (workflow/cache config change) and a subsequent
+  canary run shows a meaningfully improved hit rate for an
+  unrelated-file-only PR, or the story concludes with a documented
+  reason why no fix is warranted right now (e.g. "confirmed
+  vcpkg.json churn is the cause and it's expected to settle once
+  sprint-22's remaining vcpkg-touching work lands").
+- No changes made to the vcpkg *submodule* pointer as part of this
+  story — that only moves at end-of-sprint per existing convention.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6D484655-F44F-4088-AA56-AF7359C3E2DF][Prove/disprove sccache cache-invalidation cause with live evidence]] | STARTED | 2026-07-03 | | Run two back-to-back canary builds (or local equivalents) with SCCACHE_LOG=debug and diff the actual hash inputs for a handful of unchanged files to determine exactly what's invalidating the cache — vcpkg.json churn, runner image drift, or something else. Confirm or rule out the vcpkg.json findings already documented in the story. Do not touch the vcpkg submodule pointer. |
+
+* Decisions
+
+* Out of scope
+
+-

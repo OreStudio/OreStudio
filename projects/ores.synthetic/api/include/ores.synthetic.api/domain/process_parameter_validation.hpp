@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_API_DOMAIN_PROCESS_PARAMETER_VALIDATION_HPP
 #define ORES_SYNTHETIC_API_DOMAIN_PROCESS_PARAMETER_VALIDATION_HPP
 
+#include "ores.synthetic.api/export.hpp"
 #include <string>
 #include <vector>
 
@@ -58,7 +59,7 @@ struct process_parameter_validation_result final {
  *
  * initial_price must be strictly positive for every engine.
  */
-process_parameter_validation_result validate_process_parameters(
+ORES_SYNTHETIC_API_EXPORT process_parameter_validation_result validate_process_parameters(
     const std::string& process_type,
     const std::vector<double>& means,
     const std::vector<double>& stdevs,

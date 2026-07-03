@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch: feature/verify-qt-party-type
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: D48BEA76-F879-4C16-8310-933B7EAEBCDF
+#+blocked_since: 2026-07-03
 #+created: 2026-06-25
-#+updated: 2026-06-25
+#+updated: 2026-07-03
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -29,12 +29,12 @@ regressions found.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-25                               |
+| Now          | Blocked: ores.controller.service crashes on startup before the Qt client can reach live services. |
+| Waiting on   | [[id:D48BEA76-F879-4C16-8310-933B7EAEBCDF][Bug capture: ores.controller.service crashes with corrupted UTF-8 byte]] |
+| Next         | Resume once the controller crash is fixed; retry compass services start. |
+| Last touched | 2026-07-03                               |
 
 * Acceptance
 
@@ -51,6 +51,19 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+Attempted to start the service fleet twice (=compass services start=,
+after =compass db recreate -y -k= against a freshly rebuilt
+=linux-clang-debug-make= preset) to drive the Qt client against live
+services. Both attempts: NATS starts fine, controller starts, launches
+=ores.wt.service[0]=, then crashes moments later writing the phase
+update — =ERROR: invalid byte sequence for encoding "UTF8": 0x99= on
+the first attempt, =0x8f= on the second (different byte, same call
+site) — see [[id:D48BEA76-F879-4C16-8310-933B7EAEBCDF][bug capture]] for
+full analysis. Filed as a separate bug rather than debugged in-line
+since it looks like memory corruption (ASAN/valgrind territory), not a
+party_type-related regression. Blocking further progress on this task
+until fixed.
 
 * PRs
 

@@ -471,6 +471,20 @@ party_repository::read_descendants(context ctx, const boost::uuids::uuid& root_i
 }
 #+end_src
 
+** Custom NATS subscriptions
+
+Hand-crafted subjects wired into the generated =party_registrar.cpp= via the
+=nats-sub-registrar= facet's custom-subscription paste point. =party= exposes
+=read_parties_for_cache=, a bulk read used to warm client-side caches; its
+request/response structs live in =party_protocol.hpp= (a custom protocol not
+modelled by codegen) and =read_for_cache= is a hand-written handler method.
+
+#+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
+    subs.push_back(nats.queue_subscribe(
+        read_parties_for_cache_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->read_for_cache(std::move(msg)); }));
+#+end_src
+
 * See also
 
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

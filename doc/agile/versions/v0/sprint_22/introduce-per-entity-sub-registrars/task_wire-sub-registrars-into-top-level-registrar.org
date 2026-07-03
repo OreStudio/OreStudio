@@ -7,41 +7,62 @@
 #+level: s1
 #+filetags: :introduce-per-entity-sub-registrars:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/wire-sub-registrars-into-top-level-registrar
+#+pr: 1421
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
 #+updated: 2026-06-27
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Replace the monolithic =registrar.cpp= body with delegating calls to each
+per-entity sub-registrar, so the top-level registrar holds no entity-specific
+wiring. Entities without a valid sub-registrar stay inline.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] |
-| Now          | Not yet started.                       |
+| Now          | Wired and building; subject sets verified identical. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-27                               |
+| Next         | Commit, PR, merge.                     |
+| Last touched | 2026-07-03                               |
 
 * Acceptance
 
--
+- =registrar.cpp= delegates to =register_<entity>_handlers()= for every
+  entity that has a valid sub-registrar (26 entities).
+- Entities without a valid sub-registrar stay inline, each with a comment
+  explaining why (no codegen model, table model, handler-name mismatch, or
+  bespoke multi-subject handler).
+- The set of subscribed NATS subjects is unchanged (no regressions, no
+  additions) — verified by diffing subjects against the previous registrar.
+- Custom, non-codegen subscriptions/includes are wired via the sub-registrar
+  paste-block mechanism, not hand-edited into generated files.
+- ores.refdata.core builds.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Map the entities wired in =registrar.cpp= against the generated
+   sub-registrars; identify which can delegate and which must stay inline.
+2. Extend the =nats-sub-registrar= implementation archetype with two paste
+   points: =custom_subscriptions= (extra subjects) and =custom_includes=
+   (extra headers), driven by =:implements= blocks in the entity model.
+3. Wire =party='s =read_parties_for_cache= subject via a =custom_subscriptions=
+   block so =party= fully delegates.
+4. Fix =currency=: remove the incorrect =no_history= flag (its history request
+   lives in a split =currency_history_protocol.hpp=) and add a
+   =custom_includes= block for that header so history is wired correctly.
+5. Re-tangle, regenerate, and rewrite =registrar.cpp= to delegate 26 entities
+   and keep 7 inline.
+6. Verify subject-set parity and build.
 
 * Notes
 
@@ -49,7 +70,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1421][#1421]] | [refdata] Wire per-entity sub-registrars into the top-level registrar |
 
 * Review
 

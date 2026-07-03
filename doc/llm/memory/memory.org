@@ -82,6 +82,9 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:C6735DF2-B905-4A85-BAAA-B7F5CBBEC92D][Prefer compass over Unix tools for repo navigation]] — use compass
   search/list/show/where/story/task/capture before =find= / =grep= / =ls=;
   gaps in compass are captures, not workarounds.
+- [[id:FD7BDD44-8451-43AC-8601-957E719A9866][Act on a compass command's 'Run:' instruction before anything else]] —
+  when compass prints =Run: <cmd>= / =FIX FIRST= / =NEXT=, run it and retry;
+  never route around a stale index with =find= / =grep=.
 - [[id:68829E75-34A4-4A7F-915D-AED6285FFD9B][PR review runbook does not include merging]] — runbook ends at resolve
   threads; never call =gh pr merge= after review steps; user merges.
 - [[id:426D228A-CCA8-4AC7-AE78-942E03A06497][Never cross worktree boundaries]] — all work stays in the active

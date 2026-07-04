@@ -160,9 +160,9 @@ not log archaeology after the fact — see Tasks.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Nothing.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Nothing — a follow-up story to move sccache to an external cache backend is recommended but out of this story's scope.            |
+| Next          | Nothing. |
 | Last touched  | 2026-07-03                               |
 
 * Acceptance
@@ -187,7 +187,7 @@ not log archaeology after the fact — see Tasks.
 |------+-------+-------+-----+-------------|
 | [[id:6D484655-F44F-4088-AA56-AF7359C3E2DF][Prove/disprove sccache cache-invalidation cause with live evidence]] | DONE | 2026-07-03 | 2026-07-03 | Landed quota cleanup, max-size bump, and SCCACHE_LOG=debug telemetry; the access-scoping/quota finding is real but doesn't explain this run's full magnitude — analysis of the live experiment split into a follow-up task. |
 | [[id:6ABEFC56-BB37-4237-A448-F8503AC63DCD][Analyze sccache zero-source-diff experiment results]] | DONE | 2026-07-03 | 2026-07-03 | Decisive result obtained without needing the planned rerun: 0.00% hit rate, cache not found at all — evicted by cross-platform quota contention on GitHub's fixed 10 GB per-repo cache limit. Reverted the counterproductive max-size bump and removed the unhelpful debug instrumentation. |
-| [[id:DEDCB1A0-EDF1-496A-A5D2-39ED5C24335F][Make canary read-only for sccache/cmake-build caches]] | BACKLOG | | | Confirmed root cause via GitHub's cache API: canary-linux.yml's Delete+Save steps mean every PR branch writes its own full-size scoped cache copy under the same key text (GitHub Actions caches are scoped per-ref even with identical keys). Found two live sccache-linux-gcc-debug-ninja entries (~2.1GB each) belonging to two different open PRs, and zero entries scoped to main — canary only runs on pull_request, so main never populates a baseline. With several PRs open concurrently, redundant per-branch copies fill the shared 10GB quota and starve everyone. Removed canary's Delete/Save steps for both caches, leaving only the existing Restore steps; continuous-linux.yml already reads+writes and will build the shared baseline canary reads from. |
+| [[id:DEDCB1A0-EDF1-496A-A5D2-39ED5C24335F][Make canary read-only for sccache/cmake-build caches]] | DONE | | 2026-07-04 | Confirmed root cause via GitHub's cache API: canary-linux.yml's Delete+Save steps mean every PR branch writes its own full-size scoped cache copy under the same key text (GitHub Actions caches are scoped per-ref even with identical keys). Found two live sccache-linux-gcc-debug-ninja entries (~2.1GB each) belonging to two different open PRs, and zero entries scoped to main — canary only runs on pull_request, so main never populates a baseline. With several PRs open concurrently, redundant per-branch copies fill the shared 10GB quota and starve everyone. Removed canary's Delete/Save steps for both caches, leaving only the existing Restore steps; continuous-linux.yml already reads+writes and will build the shared baseline canary reads from. |
 
 * Decisions
 
@@ -294,6 +294,24 @@ comparison was scoped but deferred — it needs two full ~3h canary
 runs and isn't proportionate to "quick"; the mechanism above is
 well-evidenced via the GitHub cache API directly, not inferred from
 job-log archaeology.
+
+*Closing fix*: canary-linux.yml's own Delete+Save steps were a direct
+contributor to the quota contention diagnosed above — every PR branch
+wrote its own full-size scoped copy under the same key text (GitHub
+Actions caches are scoped per-ref even when the key string is
+identical), so N concurrently open PRs meant N redundant ~2GB+ copies
+competing for the same fixed 10GB quota. Confirmed live via the cache
+API: two =sccache-linux-gcc-debug-ninja= entries existed
+simultaneously, one per open PR, and zero existed scoped to =main=
+(canary only triggers on =pull_request=, so main never got a chance to
+seed a shared baseline). Made canary read-only (removed its Delete/
+Save steps for both the sccache and cmake-build caches), leaving
+=continuous-linux.yml= — which already reads and writes under the
+identical key and runs on =main= via its cron schedule — as the sole
+writer. GitHub Actions caches created on the default branch are
+readable from any other branch, so canary's restore step will now pick
+up a single shared, continuously-warmed baseline instead of every PR
+cold-building and hoarding its own copy.
 
 * Out of scope
 

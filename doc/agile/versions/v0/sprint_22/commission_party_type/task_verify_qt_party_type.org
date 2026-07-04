@@ -8,7 +8,7 @@
 #+filetags: :commission_party_type:sprint_22:v0:
 #+owner: marco
 #+branch: feature/verify-qt-party-type
-#+pr:
+#+pr: 1428
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -129,7 +129,7 @@ list/detail/save/eventing all work correctly.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1428][#1428]] | [refdata,qt] Fix party_type eventing: NATS registration + Qt controller dedup |
 
 * Review
 

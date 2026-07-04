@@ -63,6 +63,7 @@ class IborIndexConventionController;
 class OvernightIndexConventionController;
 class FxConventionController;
 class CdsConventionController;
+class PartyTypeController;
 
 /**
  * @brief Reference data plugin: currencies, countries, dimensions, coding
@@ -122,6 +123,7 @@ private:
     std::unique_ptr<MonetaryNatureController> monetaryNatureController_;
     std::unique_ptr<RoundingTypeController> roundingTypeController_;
     std::unique_ptr<PurposeTypeController> purposeTypeController_;
+    std::unique_ptr<PartyTypeController> partyTypeController_;
     std::unique_ptr<ZeroConventionController> zeroConventionController_;
     std::unique_ptr<DepositConventionController> depositConventionController_;
     std::unique_ptr<SwapConventionController> swapConventionController_;

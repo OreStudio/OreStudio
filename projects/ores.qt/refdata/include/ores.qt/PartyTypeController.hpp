@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class PartyTypeMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing party type windows and operations.
@@ -55,6 +56,7 @@ public:
     PartyTypeController(QMainWindow* mainWindow,
                         QMdiArea* mdiArea,
                         ClientManager* clientManager,
+                        ChangeReasonCache* changeReasonCache,
                         const QString& username,
                         QObject* parent = nullptr);
 
@@ -83,6 +85,7 @@ private:
 
     PartyTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
+    ChangeReasonCache* changeReasonCache_;
 };
 
 }

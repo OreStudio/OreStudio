@@ -502,6 +502,13 @@ MainWindow::MainWindow(QWidget* parent)
     // returns it from create_menus() so it appears in plugin load_order.
     auto* dataManagementMenu = new QMenu(tr("&Data Management"), this);
 
+    // Pre-create Organisation Codes submenu (NOT inserted directly;
+    // RefdataPlugin appends it to the Reference Data menu). Shared because
+    // party-domain aux types are migrating from ores.qt.party to
+    // ores.qt.refdata entity-by-entity; both plugins may contribute here
+    // during the transition.
+    auto* organisationCodesMenu = new QMenu(tr("Organisation &Codes"), this);
+
     // Phase 1 — let plugins contribute to shared menus.
     // Phase 2 — collect standalone menus returned by create_menus().
     // Phase 3 — wire signals and collect toolbar actions.
@@ -519,6 +526,7 @@ MainWindow::MainWindow(QWidget* parent)
     smc.analytics_menu = analyticsMenu;
     smc.analytics_codes_menu = analyticsCodesMenu;
     smc.operations_menu = operationsMenu;
+    smc.organisation_codes_menu = organisationCodesMenu;
 
     BOOST_LOG_SEV(lg(), debug) << "Distributing shared menu handles to plugins.";
     for (auto* plugin : plugins) {

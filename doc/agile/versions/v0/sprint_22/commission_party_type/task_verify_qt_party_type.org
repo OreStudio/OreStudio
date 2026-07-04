@@ -95,6 +95,36 @@ clean. Added a line item to the
 checklist]] naming this exact mechanism so future commissioning work
 catches it without needing two live Qt clients open.
 
+*Second, unrelated bug found on the Qt side:* even after the backend
+fix, the Qt client itself never subscribed to party_type's NATS event.
+=PartyTypeController= existed as two full duplicates:
+=ores.qt/party/src/PartyTypeController.cpp= (hand-written, still
+wired up by =PartyPlugin=, but constructed with an empty event name —
+so it silently never subscribed to anything) and
+=ores.qt/refdata/src/PartyTypeController.cpp= (correctly
+codegen-generated after party_type's earlier Qt sync task, but never
+actually compiled into any running plugin). The old copy also lacked
+the =ChangeReasonCache= parameter present on its sibling
+=PartyStatusController= — a real feature regression from that earlier,
+incomplete migration.
+
+Root-caused further: every entity in =ores.qt.party= has backend
+component=refdata; there is no =ores.party= C++ component. The plugin
+is a UI-only grouping with zero backend justification — this mismatch
+is what let the duplication go unnoticed. Fixed by regenerating
+party_type's Qt profile (lands under =ores.qt/refdata=, matching its
+component, with no codegen change needed), deleting the stale
+=ores.qt/party= copy, and moving its instantiation from =PartyPlugin=
+to =RefdataPlugin=. Added =shared_menus_context::organisation_codes_menu=
+(host-owned in =MainWindow.cpp=) so both plugins can contribute to the
+same physical "Organisation Codes" submenu without a cross-plugin
+library dependency, since the remaining =ores.qt.party= entities
+migrate one at a time as each is (re-)commissioned — see
+[[id:98D6A549-01D5-4E99-A530-9AFB9CFFD858][capture]]. Verified: full
+=ores.qt.exe= builds clean; live end-to-end retest (fresh Barclays Plc
+tenant, full 24-service fleet, Qt client login) confirms party_type
+list/detail/save/eventing all work correctly.
+
 * PRs
 
 | PR | Title |

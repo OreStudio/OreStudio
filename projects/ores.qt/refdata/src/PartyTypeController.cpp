@@ -19,6 +19,7 @@
  */
 #include "ores.qt/PartyTypeController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PartyTypeDetailDialog.hpp"
@@ -42,9 +43,11 @@ constexpr std::string_view type_event_name =
 PartyTypeController::PartyTypeController(QMainWindow* mainWindow,
                                          QMdiArea* mdiArea,
                                          ClientManager* clientManager,
+                                         ChangeReasonCache* changeReasonCache,
                                          const QString& username,
                                          QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -155,6 +158,8 @@ void PartyTypeController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new party type";
 
     auto* detailDialog = new PartyTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -203,6 +208,8 @@ void PartyTypeController::showDetailWindow(const refdata::domain::party_type& ty
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new PartyTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -339,6 +346,8 @@ void PartyTypeController::onOpenVersion(const refdata::domain::party_type& type,
     }
 
     auto* detailDialog = new PartyTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(type);
@@ -388,6 +397,8 @@ void PartyTypeController::onRevertVersion(const refdata::domain::party_type& typ
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PartyTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_type = type;

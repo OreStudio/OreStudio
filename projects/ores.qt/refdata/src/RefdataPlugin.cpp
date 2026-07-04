@@ -48,6 +48,7 @@
 #include "ores.qt/OisConventionController.hpp"
 #include "ores.qt/OriginDimensionController.hpp"
 #include "ores.qt/OvernightIndexConventionController.hpp"
+#include "ores.qt/PartyTypeController.hpp"
 #include "ores.qt/PaymentFrequencyTypeController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
 #include "ores.qt/RoundingTypeController.hpp"
@@ -225,6 +226,14 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                      ctx_.username,
                                                                      this);
     connectControllerSignals(purposeTypeController_.get());
+
+    partyTypeController_ = std::make_unique<PartyTypeController>(ctx_.main_window,
+                                                                 ctx_.mdi_area,
+                                                                 ctx_.client_manager,
+                                                                 ctx_.change_reason_cache,
+                                                                 ctx_.username,
+                                                                 this);
+    connectControllerSignals(partyTypeController_.get());
 
     zeroConventionController_ = std::make_unique<ZeroConventionController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
@@ -495,6 +504,21 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
                 currencyMarketTierController_->showListWindow();
         });
 
+        // Organisation Codes submenu: shared with ores.qt.party (host-owned,
+        // see shared_menus_context::organisation_codes_menu), since
+        // party-domain aux types migrate from ores.qt.party to
+        // ores.qt.refdata entity-by-entity as each is (re-)commissioned;
+        // see Commission: party_type story.
+        if (smc.organisation_codes_menu) {
+            ref->addMenu(smc.organisation_codes_menu);
+            auto* actPartyTypes =
+                smc.organisation_codes_menu->addAction(ico(Icon::Tag), tr("Party &Types"));
+            connect(actPartyTypes, &QAction::triggered, this, [this]() {
+                if (partyTypeController_)
+                    partyTypeController_->showListWindow();
+            });
+        }
+
         ref->addSeparator();
 
         // Audit Trail submenu (Change Reason Categories + Change Reasons)
@@ -658,6 +682,7 @@ void RefdataPlugin::on_logout() {
     dataDomainController_.reset();
 
     zeroConventionController_.reset();
+    partyTypeController_.reset();
     purposeTypeController_.reset();
     currencyMarketTierController_.reset();
     monetaryNatureController_.reset();

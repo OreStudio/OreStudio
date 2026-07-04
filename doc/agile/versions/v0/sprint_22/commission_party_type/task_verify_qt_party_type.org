@@ -135,7 +135,9 @@ list/detail/save/eventing all work correctly.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dead #include "ores.qt/PartyTypeController.hpp" left over from deleted controller | PartyPlugin.cpp:31 | Accepted | Removed; flagged independently by both review passes |
+| 2 | -Wreorder: header declares listWindow_/listMdiSubWindow_ before changeReasonCache_, .cpp init-list initializes in opposite order | cpp_qt_controller.hpp.mustache | Accepted | Fixed at the template level (not the generated file) and regenerated party_type only |
+| 3 | ores.qt.party.puml still shows PartyTypeController owned by PartyPlugin | ores.qt.party.puml | Declined (out of scope) | Reviewer flagged as non-blocking; multiple class blocks/relationships to remove properly, better done alongside the dissolve_ores_qt_party_plugin capture |
 
 * Result
 

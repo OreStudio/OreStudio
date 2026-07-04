@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :reconcile_currency_qt_features:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/triage-currency-qt-custom-features
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,11 +33,11 @@ it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Piloted; builds clean. Generic combo helper landed, currency's 3 fields wired to it. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Feed into the qt-sync regenerate plan (next task).  |
 | Last touched | 2026-07-04                               |
 
 * Acceptance
@@ -50,11 +50,49 @@ it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Rather than extend the qt-profile mustache templates directly (the
+5 new flags/branches — fetch, reentrancy guard, sort, tooltip,
+placeholder — would have meant significant new templated C++), wrote
+one hand-crafted generic helper and kept codegen's job small:
+
+- =ores::qt::populateDynamicCombo<Entity>(...)= in the new
+  =ores.qt/api/include/ores.qt/DynamicComboSetup.hpp= (header-only
+  template): owns the async fetch dispatch, re-entrancy guard (keyed
+  off a watcher object name), sort-by-key, per-item tooltip, "Loading…"
+  placeholder, and selection restore/tooltip-sync — everything
+  previously duplicated three times in =CurrencyDetailDialog.cpp=.
+- Three new synchronous fetchers in the existing
+  =ores.qt/api/{include,src}/LookupFetcher.{hpp,cpp}= (matching that
+  file's established convention): =fetch_rounding_types=,
+  =fetch_monetary_natures=, =fetch_currency_market_tiers=. These do the
+  actual =process_authenticated_request= call and are meant to run
+  inside =QtConcurrent::run=, same as every other =LookupFetcher=
+  function.
+- Currency's =populateRoundingTypeCombo=/=populateMonetaryNatureCombo=/
+  =populateMarketTierCombo= in =CurrencyDetailDialog.cpp= now reduce to
+  ~10-line calls into =populateDynamicCombo<Entity>=, passing the
+  fetcher and small code/tooltip/sort-key lambdas.
+
+Verified by building =ores.qt= — clean.
 
 * Notes
+
+- The old hand-rolled code additionally emitted =errorMessage= on
+  fetch failure (distinguishing "fetch failed" from "legitimately
+  empty result"); the new generic helper does not surface that
+  distinction — a failed fetch and an empty table both render an empty
+  combo with no user-visible error. Flagging this as a known gap for
+  the codegen template design (task 3): the template call should
+  likely take an optional error callback, or the helper should return
+  a =std::expected<std::vector<Entity>, std::string>= instead of a bare
+  vector.
+- Codegen implication for the next task: rather than generate the 5
+  behaviours inline, the qt profile only needs to emit, per
+  =is_dynamic_combo= field, (a) one =fetch_<entity_plural>= function in
+  =LookupFetcher= (small, mechanical, matches existing pattern) and (b)
+  a short =populateDynamicCombo<Entity>(...)= call in the detail
+  dialog — much smaller codegen footprint than templating the full
+  async/sort/tooltip logic per field.
 
 * PRs
 
@@ -69,3 +107,11 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Piloted successfully. A new generic =populateDynamicCombo<Entity>=
+helper (=ores.qt/api/include/ores.qt/DynamicComboSetup.hpp=) plus 3
+small =LookupFetcher= fetchers replace ~300 lines of triplicated
+hand-rolled async/sort/tooltip/placeholder logic in
+=CurrencyDetailDialog.cpp= with ~10-line calls each. Build verified
+clean. One gap flagged for the codegen plan: fetch-failure signalling
+needs a documented decision (silent empty combo vs. surfaced error).

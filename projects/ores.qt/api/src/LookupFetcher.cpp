@@ -23,10 +23,13 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata.api/messaging/party_status_protocol.hpp"
 #include "ores.refdata.api/messaging/party_type_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
+#include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -179,6 +182,42 @@ std::vector<business_unit_entry> fetch_business_unit_entries(ClientManager* cm) 
         }
     }
     return entries;
+}
+
+std::vector<refdata::domain::rounding_type> fetch_rounding_types(ClientManager* cm) {
+    std::vector<refdata::domain::rounding_type> types;
+    if (!cm)
+        return types;
+
+    refdata::messaging::get_rounding_types_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response)
+        types = std::move(response->rounding_types);
+    return types;
+}
+
+std::vector<refdata::domain::monetary_nature> fetch_monetary_natures(ClientManager* cm) {
+    std::vector<refdata::domain::monetary_nature> natures;
+    if (!cm)
+        return natures;
+
+    refdata::messaging::get_monetary_natures_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response)
+        natures = std::move(response->monetary_natures);
+    return natures;
+}
+
+std::vector<refdata::domain::currency_market_tier> fetch_currency_market_tiers(ClientManager* cm) {
+    std::vector<refdata::domain::currency_market_tier> tiers;
+    if (!cm)
+        return tiers;
+
+    refdata::messaging::get_currency_market_tiers_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response)
+        tiers = std::move(response->currency_market_tiers);
+    return tiers;
 }
 
 }

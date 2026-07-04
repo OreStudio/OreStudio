@@ -20,17 +20,16 @@
 #include "ores.qt/CurrencyDetailDialog.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/FlagSelectorDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MdiUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/generators/currency_generator.hpp"
-#include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
-#include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
-#include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.variability.api/eventing/system_setting_changed_event.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
@@ -1055,297 +1054,45 @@ void CurrencyDetailDialog::onConnectionEstablished() {
 }
 
 void CurrencyDetailDialog::populateRoundingTypeCombo() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        return;
-    }
-
-    if (findChild<QFutureWatcherBase*>("roundingTypeWatcher"))
-        return;
-
     BOOST_LOG_SEV(lg(), debug) << "Populating rounding type combo";
-
-    const QString previousSelection = ui_->roundingTypeCombo->currentText();
-    ui_->roundingTypeCombo->blockSignals(true);
-    ui_->roundingTypeCombo->clear();
-    ui_->roundingTypeCombo->addItem(tr("Loading…"));
-    ui_->roundingTypeCombo->blockSignals(false);
-
-    QPointer<CurrencyDetailDialog> self = this;
-
-    struct FetchResult {
-        bool success;
-        std::vector<refdata::domain::rounding_type> types;
-    };
-
-    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        if (!self || !self->clientManager_) {
-            return {false, {}};
-        }
-
-        refdata::messaging::get_rounding_types_request request;
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) {
-            return {false, {}};
-        }
-
-        return {true, std::move(response_result->rounding_types)};
-    });
-
-    auto* watcher = new QFutureWatcher<FetchResult>(self);
-    watcher->setObjectName("roundingTypeWatcher");
-    connect(watcher,
-            &QFutureWatcher<FetchResult>::finished,
-            self,
-            [self, watcher, previousSelection]() {
-                auto result = watcher->result();
-                watcher->deleteLater();
-
-                if (!self)
-                    return;
-
-                if (!result.success) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch rounding types for combo box.";
-                    emit self->errorMessage(tr("Could not load rounding types."));
-                    return;
-                }
-
-                self->ui_->roundingTypeCombo->blockSignals(true);
-                self->ui_->roundingTypeCombo->clear();
-
-                // Sort by display_order
-                auto& types = result.types;
-                std::sort(types.begin(), types.end(), [](const auto& a, const auto& b) {
-                    return a.display_order < b.display_order;
-                });
-
-                for (const auto& type : types) {
-                    QString code = QString::fromStdString(type.code);
-                    self->ui_->roundingTypeCombo->addItem(code);
-                    int idx = self->ui_->roundingTypeCombo->count() - 1;
-                    self->ui_->roundingTypeCombo->setItemData(
-                        idx, QString::fromStdString(type.description), Qt::ToolTipRole);
-                }
-
-                {
-                    const QString toSelect =
-                        !previousSelection.isEmpty() ?
-                            previousSelection :
-                            QString::fromStdString(self->currentCurrency_.rounding_type);
-                    if (!toSelect.isEmpty())
-                        self->ui_->roundingTypeCombo->setCurrentText(toSelect);
-                }
-
-                self->ui_->roundingTypeCombo->blockSignals(false);
-
-                // Sync the combo widget tooltip with the current selection
-                const int cur = self->ui_->roundingTypeCombo->currentIndex();
-                if (cur >= 0) {
-                    const auto tip =
-                        self->ui_->roundingTypeCombo->itemData(cur, Qt::ToolTipRole).toString();
-                    self->ui_->roundingTypeCombo->setToolTip(tip);
-                }
-
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Rounding type combo populated with " << result.types.size() << " entries";
-            });
-
-    watcher->setFuture(future);
+    populateDynamicCombo<refdata::domain::rounding_type>(
+        ui_->roundingTypeCombo,
+        this,
+        clientManager_,
+        &fetch_rounding_types,
+        "roundingTypeWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        QString::fromStdString(currentCurrency_.rounding_type));
 }
 
 void CurrencyDetailDialog::populateMonetaryNatureCombo() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        return;
-    }
-
-    if (findChild<QFutureWatcherBase*>("monetaryNatureWatcher"))
-        return;
-
     BOOST_LOG_SEV(lg(), debug) << "Populating monetary nature combo";
-
-    const QString previousSelection = ui_->monetaryNatureCombo->currentText();
-    ui_->monetaryNatureCombo->blockSignals(true);
-    ui_->monetaryNatureCombo->clear();
-    ui_->monetaryNatureCombo->addItem(tr("Loading…"));
-    ui_->monetaryNatureCombo->blockSignals(false);
-
-    QPointer<CurrencyDetailDialog> self = this;
-
-    struct FetchResult {
-        bool success;
-        std::vector<refdata::domain::monetary_nature> types;
-    };
-
-    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        if (!self || !self->clientManager_) {
-            return {false, {}};
-        }
-
-        refdata::messaging::get_monetary_natures_request request;
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) {
-            return {false, {}};
-        }
-
-        return {true, std::move(response_result->monetary_natures)};
-    });
-
-    auto* watcher = new QFutureWatcher<FetchResult>(self);
-    watcher->setObjectName("monetaryNatureWatcher");
-    connect(watcher,
-            &QFutureWatcher<FetchResult>::finished,
-            self,
-            [self, watcher, previousSelection]() {
-                auto result = watcher->result();
-                watcher->deleteLater();
-
-                if (!self)
-                    return;
-
-                if (!result.success) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch monetary natures for combo box.";
-                    emit self->errorMessage(tr("Could not load monetary natures."));
-                    return;
-                }
-
-                self->ui_->monetaryNatureCombo->blockSignals(true);
-                self->ui_->monetaryNatureCombo->clear();
-
-                auto& types = result.types;
-                std::sort(types.begin(), types.end(), [](const auto& a, const auto& b) {
-                    return a.display_order < b.display_order;
-                });
-
-                for (const auto& type : types) {
-                    QString code = QString::fromStdString(type.code);
-                    self->ui_->monetaryNatureCombo->addItem(code);
-                    int idx = self->ui_->monetaryNatureCombo->count() - 1;
-                    self->ui_->monetaryNatureCombo->setItemData(
-                        idx, QString::fromStdString(type.description), Qt::ToolTipRole);
-                }
-
-                {
-                    const QString toSelect =
-                        !previousSelection.isEmpty() ?
-                            previousSelection :
-                            QString::fromStdString(self->currentCurrency_.monetary_nature);
-                    if (!toSelect.isEmpty())
-                        self->ui_->monetaryNatureCombo->setCurrentText(toSelect);
-                }
-
-                self->ui_->monetaryNatureCombo->blockSignals(false);
-
-                const int cur = self->ui_->monetaryNatureCombo->currentIndex();
-                if (cur >= 0) {
-                    const auto tip =
-                        self->ui_->monetaryNatureCombo->itemData(cur, Qt::ToolTipRole).toString();
-                    self->ui_->monetaryNatureCombo->setToolTip(tip);
-                }
-
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Monetary nature combo populated with " << result.types.size() << " entries";
-            });
-
-    watcher->setFuture(future);
+    populateDynamicCombo<refdata::domain::monetary_nature>(
+        ui_->monetaryNatureCombo,
+        this,
+        clientManager_,
+        &fetch_monetary_natures,
+        "monetaryNatureWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        QString::fromStdString(currentCurrency_.monetary_nature));
 }
 
 void CurrencyDetailDialog::populateMarketTierCombo() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        return;
-    }
-
-    if (findChild<QFutureWatcherBase*>("marketTierWatcher"))
-        return;
-
     BOOST_LOG_SEV(lg(), debug) << "Populating market tier combo";
-
-    const QString previousSelection = ui_->marketTierCombo->currentText();
-    ui_->marketTierCombo->blockSignals(true);
-    ui_->marketTierCombo->clear();
-    ui_->marketTierCombo->addItem(tr("Loading…"));
-    ui_->marketTierCombo->blockSignals(false);
-
-    QPointer<CurrencyDetailDialog> self = this;
-
-    struct FetchResult {
-        bool success;
-        std::vector<refdata::domain::currency_market_tier> types;
-    };
-
-    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        if (!self || !self->clientManager_) {
-            return {false, {}};
-        }
-
-        refdata::messaging::get_currency_market_tiers_request request;
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) {
-            return {false, {}};
-        }
-
-        return {true, std::move(response_result->currency_market_tiers)};
-    });
-
-    auto* watcher = new QFutureWatcher<FetchResult>(self);
-    watcher->setObjectName("marketTierWatcher");
-    connect(watcher,
-            &QFutureWatcher<FetchResult>::finished,
-            self,
-            [self, watcher, previousSelection]() {
-                auto result = watcher->result();
-                watcher->deleteLater();
-
-                if (!self)
-                    return;
-
-                if (!result.success) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to fetch currency market tiers for combo box.";
-                    emit self->errorMessage(tr("Could not load currency market tiers."));
-                    return;
-                }
-
-                self->ui_->marketTierCombo->blockSignals(true);
-                self->ui_->marketTierCombo->clear();
-
-                auto& types = result.types;
-                std::sort(types.begin(), types.end(), [](const auto& a, const auto& b) {
-                    return a.display_order < b.display_order;
-                });
-
-                for (const auto& type : types) {
-                    QString code = QString::fromStdString(type.code);
-                    self->ui_->marketTierCombo->addItem(code);
-                    int idx = self->ui_->marketTierCombo->count() - 1;
-                    self->ui_->marketTierCombo->setItemData(
-                        idx, QString::fromStdString(type.description), Qt::ToolTipRole);
-                }
-
-                {
-                    const QString toSelect =
-                        !previousSelection.isEmpty() ?
-                            previousSelection :
-                            QString::fromStdString(self->currentCurrency_.market_tier);
-                    if (!toSelect.isEmpty())
-                        self->ui_->marketTierCombo->setCurrentText(toSelect);
-                }
-
-                self->ui_->marketTierCombo->blockSignals(false);
-
-                const int cur = self->ui_->marketTierCombo->currentIndex();
-                if (cur >= 0) {
-                    const auto tip =
-                        self->ui_->marketTierCombo->itemData(cur, Qt::ToolTipRole).toString();
-                    self->ui_->marketTierCombo->setToolTip(tip);
-                }
-
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Market tier combo populated with " << result.types.size() << " entries";
-            });
-
-    watcher->setFuture(future);
+    populateDynamicCombo<refdata::domain::currency_market_tier>(
+        ui_->marketTierCombo,
+        this,
+        clientManager_,
+        &fetch_currency_market_tiers,
+        "marketTierWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        QString::fromStdString(currentCurrency_.market_tier));
 }
 
 }

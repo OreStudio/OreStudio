@@ -60,6 +60,7 @@ box. It stays open across all of that — it is not a design-only story.
 | [[id:155FA378-9953-4EA0-8495-7C61E40BE81C][Add librarian support for currency pairs]] | BACKLOG | | | Extend the DQ librarian so creating a party yields a usable set of currency pairs out of the box, following the same publish-from-dq bundle pattern used for the synthetic FX foundation. |
 | [[id:C73E0414-9154-417F-B069-7055BB58AA4C][Reconcile currency_pair design with fx_convention]] | DONE | | 2026-07-04 | fx_convention already covers most of currency_pair's ground (spot days, points factor, calendar, business day convention). Fold its extra fields into the currency_pair design and decide the pip_factor vs points_factor representation, ahead of migrating consumers off fx_convention. |
 | [[id:ED053F15-513A-4E3A-908A-7AE11A2B3316][Migrate fx_convention consumers to currency_pair and retire it]] | BACKLOG | | | Point ores.ore's conventions_mapper, the Qt CRUD screens, and the CLI registration at currency_pair instead of fx_convention, then drop fx_convention's SQL table, repository, service, Qt files, and CLI wiring. |
+| [[id:9D58E37B-797C-430D-8724-EE50737C6DE1][Split currency_pair into identity and convention entities; finalize field model]] | DONE | | 2026-07-04 | Split the single currency_pair design into a lean currency_pair identity entity and a currency_pair_convention entity for the fx_convention-derived quoting/date-convention fields, mirroring how ORE conceptually separates a pair from its conventions. Produce the final, settled field-by-field model for both, ready for ores.codegen.entity. |
 
 * Decisions
 
@@ -102,6 +103,17 @@ box. It stays open across all of that — it is not a design-only story.
   [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] — =currency_pair=
   keeps a raw-text calendar field only as an interim measure until that
   story lands and it can be migrated onto a real FK.
+- *Split into two entities*: =currency_pair= (identity) and
+  =currency_pair_convention= (1:1, the =fx_convention=-derived quoting/
+  date fields), matching the codebase's existing =*_convention= entity
+  family rather than bundling both concerns into one entity. See the
+  fourth task's =* Plan= for the finalized field lists.
+- *Split off* (cut code): =default_cut_code= has no domain model
+  anywhere in ORE Studio — same free-text-pointing-at-nothing problem as
+  calendars. Split off into its own backlog story,
+  [[id:4B4ED152-1670-4E81-895A-24D747382D4C][Model market data cuts as proper ORE Studio reference data]] —
+  =currency_pair= keeps =default_cut_code= as interim raw text until
+  that story lands.
 
 * Out of scope
 
@@ -109,3 +121,5 @@ box. It stays open across all of that — it is not a design-only story.
   questions in the second task.
 - Proper calendar modelling — split off to
   [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]].
+- Proper cut modelling — split off to
+  [[id:4B4ED152-1670-4E81-895A-24D747382D4C][Model market data cuts as proper ORE Studio reference data]].

@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 4B4ED152-1670-4E81-895A-24D747382D4C
+:END:
+#+title: Story: Model market data cuts as proper ORE Studio reference data
+#+description: currency_pair.default_cut_code (and any other cut-code reference) is currently unvalidated free text pointing at a concept — the market data snapshot time used for official valuation — that has no domain model anywhere in ORE Studio. Model cuts as a first-class, FK-referenceable lookup entity (code, name, description, cut time, timezone) so pairs, trades, and valuation config can reference a validated cut rather than a raw string.
+#+type: story
+#+level: s2
+#+filetags: :refdata:market_data:pricing:next:product_backlog:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A "cut" identifies which time-of-day market data snapshot is used for
+official valuation (e.g. "NY 10am", "London 4pm"). It's referenced
+conceptually across the codebase (see
+[[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]]) but has no domain model anywhere — no entity,
+no table, no FK target. [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] needs a
+=default_cut_code= on its =currency_pair= entity and, rather than leave
+it as unvalidated free text, splits proper cut modelling off into this
+story: a small lookup entity (code, name, description, cut time,
+timezone) that =currency_pair= and anything else needing a cut can
+soft-FK against.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-04                               |
+
+* Acceptance
+
+- [ ] A =market_data_cut= (or similarly named) lookup entity exists —
+  same shape as =business_day_convention_type=/=currency_pair_classification=
+  (code, name, description, display_order), plus cut-specific attributes
+  (cut time, timezone).
+- [ ] =currency_pair.default_cut_code= (and any other cut-code field
+  discovered along the way) is migrated onto a soft or hard FK against
+  the new entity instead of free text.
+- [ ] Qt CRUD screens exist for the new entity, following the standard
+  aux-type pattern.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

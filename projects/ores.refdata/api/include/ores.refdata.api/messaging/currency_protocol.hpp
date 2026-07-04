@@ -21,6 +21,7 @@
 #define ORES_REFDATA_API_MESSAGING_CURRENCY_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/currency.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -29,13 +30,15 @@ namespace ores::refdata::messaging {
 struct get_currencies_request {
     using response_type = struct get_currencies_response;
     static constexpr std::string_view nats_subject = "refdata.v1.currencies.list";
-    int offset = 0;
-    int limit = 100;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_currencies_response {
     std::vector<ores::refdata::domain::currency> currencies;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_currency_request {
@@ -43,8 +46,8 @@ struct save_currency_request {
     static constexpr std::string_view nats_subject = "refdata.v1.currencies.save";
     ores::refdata::domain::currency data;
 
-    static save_currency_request from(ores::refdata::domain::currency c) {
-        return {.data = std::move(c)};
+    static save_currency_request from(ores::refdata::domain::currency v) {
+        return {.data = std::move(v)};
     }
 };
 

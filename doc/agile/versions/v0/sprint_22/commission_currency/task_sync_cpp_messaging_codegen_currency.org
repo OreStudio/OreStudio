@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/sync-cpp-messaging-codegen-currency
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
-#+updated: 2026-06-26
-#+environment:
+#+updated: 2026-07-04
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Ensure the C++ messaging codegen profiles (protocol, nats-eventing, nats-handler
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
+| Now          | All four messaging profiles reconciled; build clean; currency tests green. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-26                               |
+| Next         | Raise PR.                              |
+| Last touched | 2026-07-04                               |
 
 * Acceptance
 
@@ -42,6 +42,49 @@ Ensure the C++ messaging codegen profiles (protocol, nats-eventing, nats-handler
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Diffed all four messaging-related codegen addresses for currency:
+=ores.cpp.protocol=, =ores.cpp.nats-eventing=, =ores.cpp.nats-handler=,
+=ores.cpp.nats-sub-registrar= (the registrar was already clean, having
+just been synced by the "wire sub-registrars" work merged to main
+during this task).
+
+- =ores.cpp.nats-eventing= (=currency_changed_event.hpp=): cosmetic
+  only (year bump, trimmed doc comments). Applied as-is.
+- =ores.cpp.protocol= (=currency_protocol.hpp=): applied the mechanical
+  drift — =offset=/=limit= widened =int -> std::uint32_t=,
+  =get_currencies_response= gained =success=/=message=, =from()='s
+  parameter renamed =c -> v= — matching the pattern already synced for
+  =country_protocol.hpp=. *Did not* apply the template's proposed
+  addition of =get_currency_history_request=/=response= to this file:
+  currency already has a =get_currency_history_request=/=response= pair
+  in a separate =currency_history_protocol.hpp=, documented in =**
+  Custom NATS subscriptions= as intentional (its =history= field is a
+  =currency_version_history= carrying per-version diffs, not the plain
+  =std::vector<currency>= the template generates). Adding the
+  template's version to =currency_protocol.hpp= would have redefined
+  the same struct names with an incompatible shape — a redefinition
+  error, not a drift to fix.
+- =ores.cpp.nats-handler= (=currency_handler.hpp=): brought =list=,
+  =save=, =remove= fully in line with the current template style
+  (=req_ctx= naming, decode-in-=if=, =error_reply= on bad decode,
+  =resp.success= set explicitly) — verified byte-for-byte against
+  =country_handler.hpp=, which is already synced. Left =history()=
+  hand-maintained (same reasoning as the protocol split) but updated
+  its control-flow to match the new style; added a comment linking it
+  to the Qt reconciliation story
+  ([[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][story]]) for the related
+  UI feature.
+
+Extended the =** Custom NATS subscriptions= note in the modeling org to
+cover the handler split, not just the registrar include.
+
+Verified: =ores.refdata.api.lib=, =ores.refdata.core.lib=,
+=ores.refdata.service.lib= build clean; downstream consumers
+(=ores.qt.refdata.lib=, =ores.shell.exe=, =ores.cli.exe=,
+=ores.http.core.lib=) build clean against the widened =offset=/=limit=
+type. =ores.refdata.api.tests= full suite green (412/71); currency-scoped
+tests in both api and core suites green.
 
 * Notes
 

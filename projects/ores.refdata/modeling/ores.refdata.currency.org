@@ -233,6 +233,23 @@ lives in a split =currency_history_protocol.hpp= (not the standard
 via the sub-registrar's custom-includes paste point so the generated
 =currency_registrar.cpp= can wire the standard history subscription.
 
+The same split extends to =currency_handler::history()=: its response
+carries per-version field diffs (=currency_version_history=, built via
+=currency_field_mapper::build_versions=) rather than the plain
+=std::vector<domain::currency> history= the =ores.cpp.protocol= /
+=ores.cpp.nats-handler= templates generate for a synced entity (compare
+=country_protocol.hpp='s =get_country_history_response=). No template
+equivalent for a diff-annotated history view exists yet, so
+=currency_protocol.hpp= deliberately omits
+=get_currency_history_request=/=response= (they stay in
+=currency_history_protocol.hpp= only) and =currency_handler::history()=
+is hand-maintained rather than regenerated — everything else in the
+handler (control flow, =req_ctx= naming, =error_reply= on bad decode)
+was brought in line with the current template output. See the Qt
+reconciliation story
+([[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][story]]) for the related
+version-navigation UI that consumes this richer shape.
+
 #+begin_src cpp :name custom_includes :implements 068323E2-D722-46F1-8B86-46BD32426003
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #+end_src

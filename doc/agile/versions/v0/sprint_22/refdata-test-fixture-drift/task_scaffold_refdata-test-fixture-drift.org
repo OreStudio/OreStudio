@@ -8,7 +8,7 @@
 #+filetags: :refdata-test-fixture-drift:sprint_22:v0:
 #+owner: marco
 #+branch: hotfix/refdata-test-fixture-drift
-#+pr:
+#+pr: 1438
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -50,7 +50,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1438][#1438]] | [refdata] Hotfix: fix counterparty codegen drift breaking CI |
 
 * Review
 

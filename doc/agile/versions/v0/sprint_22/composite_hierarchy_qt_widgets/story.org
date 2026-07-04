@@ -57,7 +57,7 @@ Sequenced in three tasks:
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
 | Now           | HierarchyModelBuilder/HierarchyTreeWidget landed, with paste-block seam. |
 | Waiting on    | Nothing.                               |
-| Next          | Bind against party and counterparty (task 3). |
+| Next          | Generalize hierarchy into a codegen facet (task 4) -- task 3 (binding) depends on the NATS hierarchy message this produces. |
 | Last touched  | 2026-07-04                               |
 
 * Acceptance
@@ -82,6 +82,7 @@ Sequenced in three tasks:
 | [[id:C15BB82D-5A1F-4C19-A638-94A230B90F27][Design child-entity Qt facet for embeddable tables]] | DONE | 2026-07-04 | 2026-07-04 | Determine whether counterparty_identifier/counterparty_contact_information/party_identifier/party_contact_information need a new codegen Qt facet for embeddable child tables, or a handcrafted base widget with a thin generated binding, fetched via the existing foreign_keys/list_by paged backend query. |
 | [[id:667ED39E-6427-4E5E-8027-59AE507B2F24][Build standalone HierarchyTreeWidget and hierarchy-model-builder]] | DONE | 2026-07-04 | 2026-07-04 | Build two 100%-handcrafted, reusable Qt classes: a generic self-referencing HierarchyTreeWidget, and a hierarchy-model-builder producing a ready-to-plug-in tree model given a party or counterparty. Add minimal paste-block seams to the Qt detail-dialog codegen templates to bind them. |
 | [[id:2AC41A6E-3F18-48FF-B389-D5CC0E1AAC8F][Bind composite child-entity and hierarchy widgets to party and counterparty]] | BACKLOG | | | Once the child-entity facet and hierarchy widget are proven, design and execute binding both against party and counterparty, verify feature parity against EntityDetailDialog, and retire the hand-maintained abstraction. |
+| [[id:54C76A81-AA42-4404-B02D-C3AB5D934A50][Generalize self-referential hierarchy into a codegen facet (SQL, CTE, NATS)]] | BACKLOG | | | Add a has_parent_id-style codegen facet generating the parent soft-FK column, insert-trigger validation, a recursive-CTE hierarchy query (from-root or from-self), and a generic get_<entity>_hierarchy NATS message returning {id, parent_id, label} nodes for display. Apply to party and counterparty (migrating their hand-written equivalents) and to book (net-new hierarchy support, no existing parent_book_id). |
 
 * Decisions
 

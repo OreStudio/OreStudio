@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 54C76A81-AA42-4404-B02D-C3AB5D934A50
+:END:
+#+title: Task: Generalize self-referential hierarchy into a codegen facet (SQL, CTE, NATS)
+#+description: Add a has_parent_id-style codegen facet generating the parent soft-FK column, insert-trigger validation, a recursive-CTE hierarchy query (from-root or from-self), and a generic get_<entity>_hierarchy NATS message returning {id, parent_id, label} nodes for display. Apply to party and counterparty (migrating their hand-written equivalents) and to book (net-new hierarchy support, no existing parent_book_id).
+#+type: task
+#+level: s1
+#+filetags: :codegen:refdata:hierarchy:qt:sprint_22:v0:composite_hierarchy_qt_widgets:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give any entity with a self-referencing parent hierarchy (party,
+counterparty, and net-new for book) a single generated mechanism to
+fetch its whole hierarchy in one server-side round trip: a
+=has_parent_id: true= codegen facet producing the parent soft-FK
+column + insert-trigger validation (SQL), a recursive-CTE query
+supporting two starting points (from the tenant root, or from a given
+node's own subtree), and a generic =get_<entity>_hierarchy= NATS
+message returning a flat list of =\{id, parent_id, label\}= nodes ready
+for =HierarchyModelBuilder=. This replaces the naive alternative of
+fetching a paginated flat entity list client-side and merging pages
+(which fragments the tree at page boundaries if a child's parent
+lands on a different page — the CTE avoids this by computing the
+whole subtree in one query).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- =has_parent_id= facet generates the parent column + insert-trigger validation from a single template, consumed by party, counterparty, and book.
+- Recursive-CTE hierarchy query supports both from-root and from-self starting points.
+- Generic =get_<entity>_hierarchy_request/response= NATS message and handler generated per entity, returning flat =\{id, parent_id, label\}= nodes.
+- Party and counterparty's hand-written parent-id validation and =read_descendants=-style logic are migrated onto the facet, not left duplicated alongside it.
+- Book gains hierarchy support net-new (currently has no =parent_book_id= at all).
+- Verified end-to-end against a live environment for at least one entity before declaring done.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

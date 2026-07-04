@@ -36,6 +36,15 @@ disposable one-off. Generalizing it into a facet would let both
 entities (and future ones) migrate to unified codegen cleanly instead
 of each carrying a hand-maintained divergence.
 
+* Superseded
+
+Promoted to a task on the =Composite child-entity and hierarchy Qt
+widgets for codegen= story: [[id:54C76A81-AA42-4404-B02D-C3AB5D934A50][Generalize self-referential hierarchy into a
+codegen facet (SQL, CTE, NATS)]]. That task widens the scope beyond
+this capture's SQL-only framing to also cover the recursive-CTE
+hierarchy query and generic NATS message, and extends coverage to
+=book= (net-new hierarchy support) in addition to party/counterparty.
+
 * Decisions
 
 Prefer a proper template facet over a generic =:implements= paste

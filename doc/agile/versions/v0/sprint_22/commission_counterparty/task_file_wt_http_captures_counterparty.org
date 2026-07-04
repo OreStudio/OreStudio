@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 383D7613-DA93-4289-9E5D-882C14080118
+:END:
+#+title: Task: File Wt and HTTP gap captures for counterparty
+#+description: File backlog captures for counterparty Wt UI and HTTP endpoint gaps, tracked by the dedicated top-level commissioning stories.
+#+type: task
+#+level: s1
+#+filetags: :commission_counterparty:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Identify counterparty's Wt UI and HTTP endpoint gaps and file them as
+product-backlog captures, to be picked up by the dedicated top-level
+Wt entity UI and HTTP entity endpoints commissioning stories (this
+story's scope excludes implementing them directly).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- Capture filed for counterparty Wt UI gap, linked to the top-level
+  Wt entity UI commissioning story.
+- Capture filed for counterparty HTTP endpoint gap, linked to the
+  top-level HTTP entity endpoints commissioning story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

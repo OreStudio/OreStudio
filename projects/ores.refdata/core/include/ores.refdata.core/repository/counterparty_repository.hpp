@@ -75,6 +75,7 @@ public:
      */
     std::vector<domain::counterparty> read_all(context ctx, const std::string& id);
 
+
     /**
      * @brief Reads latest counterparties with pagination support.
      * @param ctx Repository context with database connection

@@ -81,8 +81,8 @@ struct get_counterparty_history_response {
 };
 
 /**
- * @brief Reads the counterparty hierarchy rooted at, or containing, a given
- * counterparty.
+ * @brief Reads the counterparty hierarchy rooted at, or containing,
+ * a given counterparty.
  */
 struct get_counterparty_hierarchy_request {
     using response_type = struct get_counterparty_hierarchy_response;

@@ -18,10 +18,13 @@ organisation itself.
 
 * Flags
 :PROPERTIES:
-:schema:        public
-:product:       ores
-:component:     refdata
-:has_tenant_id: true
+:schema:               public
+:product:              ores
+:component:             refdata
+:has_tenant_id:         true
+:has_parent_id:         true
+:parent_id_column:      parent_party_id
+:hierarchy_name_field:  full_name
 :END:
 
 Cross-cutting properties. Consumed by *both* C++ and SQL codegen.
@@ -193,10 +196,7 @@ Everything below is consumed by the SQL codegen pipeline only.
 
 ** Flags
 :PROPERTIES:
-:tablename:            ores_refdata_parties_tbl
-:has_parent_id:        true
-:parent_id_column:     parent_party_id
-:hierarchy_name_field: full_name
+:tablename: ores_refdata_parties_tbl
 :END:
 
 Note: party's SQL file cannot yet be safely regenerated wholesale from
@@ -204,9 +204,14 @@ this model -- its insert trigger has hand-written codename generation
 and per-party queue provisioning with no codegen facet/paste-block
 coverage yet (see the =Bring party under codegen= task, BLOCKED). The
 =ores_refdata_parties_hierarchy_fn= function was hand-added to
-=refdata_parties_create.sql= to match exactly what this flag would
-generate, so it becomes correct ground truth once party's SQL is
-migrated onto the unified template.
+=refdata_parties_create.sql= to match exactly what the top-level
+=has_parent_id= flag would generate, so it becomes correct ground
+truth once party's SQL is migrated onto the unified template. The
+same applies to party's messaging layer (=party_protocol.hpp= and
+friends) -- it also has pre-existing, unrelated drift from the
+codegen template (see the =Party messaging layer has drifted from
+codegen= capture), so the hand-written =get_party_hierarchy_*=
+structs/methods are correct ground truth but not yet regenerable.
 
 * C++
 

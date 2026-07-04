@@ -96,6 +96,7 @@ std::vector<domain::counterparty> counterparty_repository::read_all(context ctx,
         "Reading all counterparty versions by id.");
 }
 
+
 void counterparty_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -153,10 +154,8 @@ void counterparty_repository::remove(context ctx, const std::vector<std::string>
     execute_delete_query(ctx, query, lg(), "Batch removing counterparties.");
 }
 
-std::vector<ores::utility::domain::hierarchy_flat_row>
-counterparty_repository::get_hierarchy(context ctx,
-                                       const boost::uuids::uuid& root_id,
-                                       bool from_root) {
+std::vector<ores::utility::domain::hierarchy_flat_row> counterparty_repository::get_hierarchy(
+    context ctx, const boost::uuids::uuid& root_id, bool from_root) {
     BOOST_LOG_SEV(lg(), debug) << "Reading counterparty hierarchy. Root: " << root_id
                                << " from_root: " << from_root;
 
@@ -186,5 +185,6 @@ counterparty_repository::get_hierarchy(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " counterparty hierarchy rows.";
     return result;
 }
+
 
 }

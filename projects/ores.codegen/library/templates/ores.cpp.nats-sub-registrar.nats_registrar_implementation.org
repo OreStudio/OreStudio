@@ -97,6 +97,12 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
         get_{{entity_plural}}_{{name_suffix}}_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->list_{{name_suffix}}(std::move(msg)); }));
 {{/extra_list_requests}}
+{{#has_parent_id}}
+    subs.push_back(nats.queue_subscribe(
+        get_{{entity_singular}}_hierarchy_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->hierarchy(std::move(msg));
+        }));
+{{/has_parent_id}}
 <<paste:FB267332-79AB-4873-AFDA-CEEE68A0F398>>
     return subs;
 }

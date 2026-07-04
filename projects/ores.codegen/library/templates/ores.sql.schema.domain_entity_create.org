@@ -674,7 +674,7 @@ end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 {{/domain_entity.validation_fn}}
 {{/domain_entity.has_tenant_id}}
-{{#domain_entity.sql.has_parent_id}}
+{{#domain_entity.has_parent_id}}
 
 -- =============================================================================
 -- Hierarchy traversal for {{domain_entity.entity_plural}}.
@@ -695,13 +695,13 @@ begin
 
     if p_from_root then
         with recursive ancestors as (
-            select t.id, t.{{domain_entity.sql.parent_id_column}} as parent_id
+            select t.id, t.{{domain_entity.parent_id_column}} as parent_id
             from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" t
             where t.tenant_id = p_tenant_id
               and t.id = p_root_id
               and t.valid_to = ores_utility_infinity_timestamp_fn()
             union all
-            select t.id, t.{{domain_entity.sql.parent_id_column}} as parent_id
+            select t.id, t.{{domain_entity.parent_id_column}} as parent_id
             from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" t
             join ancestors a on t.id = a.parent_id
             where t.tenant_id = p_tenant_id
@@ -719,24 +719,24 @@ begin
 
     return query
     with recursive descendants as (
-        select t.id, t.{{domain_entity.sql.parent_id_column}} as parent_id,
-               t.{{domain_entity.sql.hierarchy_name_field}}::text as name
+        select t.id, t.{{domain_entity.parent_id_column}} as parent_id,
+               t.{{domain_entity.hierarchy_name_field}}::text as name
         from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" t
         where t.tenant_id = p_tenant_id
           and t.id = v_root_id
           and t.valid_to = ores_utility_infinity_timestamp_fn()
         union all
-        select t.id, t.{{domain_entity.sql.parent_id_column}} as parent_id,
-               t.{{domain_entity.sql.hierarchy_name_field}}::text as name
+        select t.id, t.{{domain_entity.parent_id_column}} as parent_id,
+               t.{{domain_entity.hierarchy_name_field}}::text as name
         from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" t
-        join descendants d on t.{{domain_entity.sql.parent_id_column}} = d.id
+        join descendants d on t.{{domain_entity.parent_id_column}} = d.id
         where t.tenant_id = p_tenant_id
           and t.valid_to = ores_utility_infinity_timestamp_fn()
     )
     select d.id, d.parent_id, d.name from descendants d;
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
-{{/domain_entity.sql.has_parent_id}}
+{{/domain_entity.has_parent_id}}
 {{#domain_entity.sql.hypertable}}
 do $$
 declare

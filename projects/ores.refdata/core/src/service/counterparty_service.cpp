@@ -42,6 +42,7 @@ std::uint32_t counterparty_service::count_counterparties() {
     return repo_.get_total_counterparty_count(ctx_);
 }
 
+
 std::optional<domain::counterparty> counterparty_service::get_counterparty(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting counterparty: " << id;
     auto results = repo_.read_latest(ctx_, id);

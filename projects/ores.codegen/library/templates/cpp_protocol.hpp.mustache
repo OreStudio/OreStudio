@@ -8,6 +8,9 @@
 #include <string>
 #include <vector>
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+{{#has_parent_id}}
+#include "ores.utility/domain/hierarchy.hpp"
+{{/has_parent_id}}
 
 namespace ores::{{component}}::messaging {
 
@@ -98,6 +101,26 @@ struct get_{{entity_plural}}_{{name_suffix}}_response {
 };
 
 {{/extra_list_requests}}
+{{#has_parent_id}}
+/**
+ * @brief Reads the {{entity_singular}} hierarchy rooted at, or containing,
+ * a given {{entity_singular}}.
+ */
+struct get_{{entity_singular}}_hierarchy_request {
+    using response_type = struct get_{{entity_singular}}_hierarchy_response;
+    static constexpr std::string_view nats_subject =
+        "{{component}}.v1.{{entity_plural}}.hierarchy";
+    std::string root_id;
+    bool from_root = false;
+};
+
+struct get_{{entity_singular}}_hierarchy_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::utility::domain::hierarchy_node> roots;
+};
+
+{{/has_parent_id}}
 }
 
 #endif

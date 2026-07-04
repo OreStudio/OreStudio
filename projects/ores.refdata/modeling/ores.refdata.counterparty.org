@@ -19,10 +19,13 @@ parent_counterparty_id for group structures.
 
 * Flags
 :PROPERTIES:
-:schema:        public
-:product:       ores
-:component:     refdata
-:has_tenant_id: true
+:schema:               public
+:product:              ores
+:component:             refdata
+:has_tenant_id:         true
+:has_parent_id:         true
+:parent_id_column:      parent_counterparty_id
+:hierarchy_name_field:  full_name
 :END:
 
 * Primary key
@@ -151,10 +154,7 @@ std::string("Active")
 
 ** Flags
 :PROPERTIES:
-:tablename:            ores_refdata_counterparties_tbl
-:has_parent_id:        true
-:parent_id_column:     parent_counterparty_id
-:hierarchy_name_field: full_name
+:tablename: ores_refdata_counterparties_tbl
 :END:
 
 ** Indexes

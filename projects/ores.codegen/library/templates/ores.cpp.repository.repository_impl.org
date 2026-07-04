@@ -34,6 +34,10 @@ The full template source. Edit here and re-tangle with
 #include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
 #include "ores.{{component_core}}/repository/{{entity_singular}}_entity.hpp"
 #include "ores.{{component_core}}/repository/{{entity_singular}}_mapper.hpp"
+{{#has_parent_id}}
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+{{/has_parent_id}}
 <<paste:6141050C-0ED4-4680-B387-7DDDA3A69806>>
 
 namespace ores::{{component}}::repository {
@@ -446,7 +450,42 @@ void {{entity_singular}}_repository::remove(
     execute_delete_query(ctx, query, lg(), "Batch removing {{entity_plural_words}}.");
 }
 
+{{#has_parent_id}}
+std::vector<ores::utility::domain::hierarchy_flat_row>
+{{entity_singular}}_repository::get_hierarchy(context ctx,
+                                       const boost::uuids::uuid& root_id,
+                                       bool from_root) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_singular}} hierarchy. Root: " << root_id
+                               << " from_root: " << from_root;
 
+    const auto tenant_str = boost::uuids::to_string(ctx.tenant_id().to_uuid());
+    const auto root_str = boost::uuids::to_string(root_id);
+    const std::string sql = "SELECT * FROM {{product}}_{{component}}_{{entity_plural}}_hierarchy_fn('" +
+                            tenant_str + "'::uuid, '" + root_str + "'::uuid, " +
+                            (from_root ? "true" : "false") + ")";
+
+    const auto rows =
+        execute_raw_multi_column_query(ctx, sql, lg(), "Reading {{entity_singular}} hierarchy");
+
+    std::vector<ores::utility::domain::hierarchy_flat_row> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() >= 3 && row[0]) {
+            ores::utility::domain::hierarchy_flat_row r;
+            r.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+            if (row[1])
+                r.parent_id = boost::lexical_cast<boost::uuids::uuid>(*row[1]);
+            if (row[2])
+                r.name = *row[2];
+            result.push_back(std::move(r));
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " {{entity_singular}} hierarchy rows.";
+    return result;
+}
+
+{{/has_parent_id}}
 
 <<paste:F2EB1914-5E94-42CA-9C77-46BDB364BF9E>>
 

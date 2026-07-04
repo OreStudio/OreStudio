@@ -77,6 +77,7 @@ public:
      */
     std::uint32_t count_counterparties();
 
+
     /**
      * @brief Retrieves a single counterparty by its id.
      *

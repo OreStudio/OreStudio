@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F3D9E216-DCB2-4621-899D-DF86727FC736][Hotfix: MacOS CI relevance-guard skips matrix build silently]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                                |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-07-04                               |
 
 * Acceptance

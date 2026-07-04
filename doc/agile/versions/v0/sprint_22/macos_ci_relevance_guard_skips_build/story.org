@@ -23,11 +23,11 @@ was skipped.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Diagnosed root cause in relevance-guard job. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Implement and verify the fix.          |
+| Next          | Nothing.                               |
 | Last touched  | 2026-07-04                               |
 
 * Acceptance
@@ -40,10 +40,14 @@ was skipped.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:449DCB86-7319-439F-B24F-6CCD09469AC4][Scaffold story: Hotfix: MacOS CI relevance-guard skips matrix build silently]] | STARTED | 2026-07-04 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:9EA36BBF-28FB-477C-AA24-98AEB7250341][Implement Hotfix: MacOS CI relevance-guard skips matrix build silently]] | BACKLOG | | | Initial task for: Hotfix: MacOS CI relevance-guard skips matrix build silently |
+| [[id:449DCB86-7319-439F-B24F-6CCD09469AC4][Scaffold story: Hotfix: MacOS CI relevance-guard skips matrix build silently]] | DONE | 2026-07-04 | 2026-07-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. |
+| [[id:9EA36BBF-28FB-477C-AA24-98AEB7250341][Implement Hotfix: MacOS CI relevance-guard skips matrix build silently]] | DONE | 2026-07-04 | 2026-07-04 | Annotate the relevance-guard's skip in the job summary so it's not read as a verified build pass. |
 
 * Decisions
+
+- The relevance-guard's skip logic is not a bug and is identical to
+  =continuous-linux.yml=; the fix is to surface the skip clearly rather
+  than to change when it skips.
 
 * Out of scope
 

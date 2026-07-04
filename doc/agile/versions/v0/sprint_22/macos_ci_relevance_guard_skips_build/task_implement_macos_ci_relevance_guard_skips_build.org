@@ -30,11 +30,11 @@ was actually verified.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F3D9E216-DCB2-4621-899D-DF86727FC736][Hotfix: MacOS CI relevance-guard skips matrix build silently]] |
-| Now          | Diagnosing.                            |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Decide on fix approach and implement.  |
+| Next         | Nothing.                               |
 | Last touched | 2026-07-04                               |
 
 * Acceptance
@@ -72,11 +72,26 @@ Diagnosis (from screenshot of run #1781 and reading
 
 * Notes
 
+Compared against =continuous-linux.yml=: the =relevance-guard= job and the
+=if: needs.guard.outputs.should_build == 'true'= gate are byte-for-byte
+identical between the two workflows, so this is not a macOS-specific
+scripting bug. Run #1781 skipped legitimately — its head SHA matched the
+prior run's, i.e. no new commits landed on =main= in that 3-hour window —
+the guard did exactly what it was designed to do.
+
+The actual problem is presentation, not logic: a skipped build matrix
+still yields an overall workflow **Success**, and the skipped matrix job
+renders with its unexpanded =${{ matrix.family }}-...= name in the GitHub
+UI, which reads as broken/confusing at a glance. Fixed by adding a guard
+step that writes a clear warning to the job summary whenever
+=should_build=false=, so a quiet-period skip is visually distinguishable
+from a verified build pass.
+
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1431][#1431]] | [agile] Scaffold hotfix: MacOS CI relevance-guard skips matrix build |
 
 * Review
 
@@ -85,3 +100,9 @@ Diagnosis (from screenshot of run #1781 and reading
 |   |                 |      |          |       |
 
 * Result
+
+Added a step to =continuous-macos.yml='s =relevance-guard= job that writes
+a warning to =$GITHUB_STEP_SUMMARY= whenever =should_build=false=, making a
+guard-skip visually distinct from a genuine build pass in the GitHub
+Actions UI. No change to the skip logic itself — it was already correct
+and matches =continuous-linux.yml=.

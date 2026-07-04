@@ -104,7 +104,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 21.
 | [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model — Phase 1: Qt derivation]] | BACKLOG | | | Derive Qt fields from conventions; drop explicit NATS protocol class names from models. |
 | [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal templates]] | BACKLOG | | | Merge temporal and non-temporal C++ template families into single model-controlled templates. |
 | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] | BACKLOG | | | Fix spurious ERRORs in --component mode; add --entity filter; add entity group / tag system for domain-scoped generation. |
-| [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] | BACKLOG | | | Replace monolithic registrar.cpp with generated per-entity sub-registrars; isolate handler compilation; unblock incremental service API migration. |
+| [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] | DONE | | 2026-07-04 | Replace monolithic registrar.cpp with generated per-entity sub-registrars; isolate handler compilation; unblock incremental service API migration. |
 | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] | BACKLOG | | | Carried from sprint 21. |
 
 *** Epic: Compass

@@ -8,7 +8,7 @@
 #+filetags: :introduce-per-entity-sub-registrars:sprint_22:v0:
 #+owner: marco
 #+branch: feature/wire-sub-registrars-into-top-level-registrar
-#+pr: 1421
+#+pr: 1426
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
@@ -28,11 +28,11 @@ wiring. Entities without a valid sub-registrar stay inline.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] |
-| Now          | Wired and building; subject sets verified identical. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit, PR, merge.                     |
+| Next         | Nothing. |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
@@ -70,12 +70,32 @@ wiring. Entities without a valid sub-registrar stay inline.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1426][#1426]] | [agile] Close per-entity sub-registrars story |
 | [[https://github.com/OreStudio/OreStudio/pull/1421][#1421]] | [refdata] Wire per-entity sub-registrars into the top-level registrar |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Include block sorted by filename, call block by function name — couple of entities differ in relative order | registrar.cpp | Declined | Cosmetic; reviewer said not worth a follow-up. Both lists exhaustive, each entity once. |
+| 2 | ctx/verifier copied by value per handler | registrar.cpp | Declined | Pre-existing pattern, unchanged by this refactor. |
 
 * Result
+
+Rewrote =registrar.cpp= (856 -> 283 lines) to delegate to each
+=register_<entity>_handlers()=: 26 entities delegate, 7 stay inline with a
+documented reason (=asset_class=/=business_centre=/=business_unit_type= have no
+codegen model, =purpose_type= is a table, =party_contact=/=counterparty_contact=
+have a handler-vs-protocol name mismatch, =publish_from_dq= is a bespoke
+multi-subject handler).
+
+Extended the =nats-sub-registrar= implementation archetype with two paste
+points so non-codegen wiring lives in the entity model, not hand-edits to
+generated files: =custom_subscriptions= (extra subjects) and =custom_includes=
+(extra headers). Used them to let =party= fully delegate its
+=read_parties_for_cache= subject, and to fix =currency= (dropped an incorrect
+=no_history= flag and pulled in its split =currency_history_protocol.hpp=).
+
+The set of subscribed NATS subjects is unchanged — 144 before and after,
+verified by diff and independently re-confirmed by three PR reviewers.
+=ores.refdata.core= builds. Merged in PR #1421. This closes the story.

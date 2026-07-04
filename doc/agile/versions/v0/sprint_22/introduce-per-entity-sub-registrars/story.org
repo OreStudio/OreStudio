@@ -36,12 +36,12 @@ all 20+ entities to be correct simultaneously.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing — all three tasks DONE.        |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-06-27                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-04                               |
 
 * Acceptance
 
@@ -63,7 +63,7 @@ all 20+ entities to be correct simultaneously.
 |------+-------+-------+-----+-------------|
 | [[id:B1A68C26-970D-41ED-BCF9-B7187C703218][Introduce nats-sub-registrar codegen templates]] | DONE | 2026-06-27 | 2026-07-02 | nats-sub-registrar facet + archetypes in the physical-space graph. |
 | [[id:818E9AC0-DF64-4480-BB7C-6132D8CA8B0F][Generate sub-registrars for all refdata entities]] | DONE | 2026-06-27 | 2026-07-02 | 26 per-entity registrar pairs regenerated; no_history flags; 2 handler-less entities excluded. |
-| [[id:E704B5A9-9BD4-451F-8DDD-E12A4FA4E9C2][Wire sub-registrars into top-level registrar]] | STARTED | 2026-07-02 |  | Top-level registrar delegates to each register_<entity>_handlers(). |
+| [[id:E704B5A9-9BD4-451F-8DDD-E12A4FA4E9C2][Wire sub-registrars into top-level registrar]] | DONE | 2026-07-02 | 2026-07-03 | Top-level registrar delegates to each register_<entity>_handlers(). |
 
 * Decisions
 

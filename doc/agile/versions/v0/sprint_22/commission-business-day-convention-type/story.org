@@ -55,7 +55,7 @@ every other refdata soft-FK.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:F7C39C66-DFA0-4A10-B473-F3827B8A7187][Move business_day_convention_type to ores.refdata and commission fully]] | BACKLOG | | | Model business_day_convention_type as ores.codegen.entity in ores.refdata, generate SQL/domain/repository/service/messaging/Qt via codegen, wire CMake and menus, then remove the ores.trading original. |
 
 * Decisions
 

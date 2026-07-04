@@ -117,7 +117,12 @@ to persist the result.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Shell script drift: import_legacy_example_56.ores stale vs. its .org | projects/ores.shell/scripts/library/marketdata/import_legacy_example_56.ores | Fixed | Regenerated via tangle_shell_scripts; drift check now passes. |
+| 2 | Partial-import: success=false but a clean section (fixings) is still persisted; callers only print errors, dropping the persisted counts | import_service.cpp, marketdata_commands.cpp, ImportTradeDialog.cpp | Fixed | Both callers now print/log counts alongside errors on failure. |
+| 3 | No test coverage for import_service.cpp | projects/ores.marketdata/core/tests/service_import_service_tests.cpp | Fixed | Added 2 tests: warn-mode dedup+counts, error-mode mixed-section behavior. |
+| 4 | dedupe_by_date_and_key constructs the (date,key) composite twice per item | market_data_parser.cpp | Fixed | Composites now computed once, reused for both passes. |
+| 5 | sys_days conversion for map key is unnecessary (year_month_day has comparison operators) | market_data_parser.cpp | Declined | Intentional — clearer date-arithmetic intent. |
+| 6 | Prefer std::format over +/to_string concatenation | market_data_parser.cpp | Declined | Matches this file's existing style (exception-message concatenation above it), not a new deviation. |
 
 * Result
 

@@ -45,6 +45,10 @@ std::vector<ores::nats::service::subscription> register_counterparty_identifier_
         nats.queue_subscribe(delete_counterparty_identifier_request::nats_subject,
                              queue_group,
                              [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_counterparty_identifiers_by_counterparty_id_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_by_counterparty_id(std::move(msg)); }));
     return subs;
 }
 

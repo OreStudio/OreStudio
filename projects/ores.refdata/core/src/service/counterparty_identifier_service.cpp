@@ -43,6 +43,21 @@ std::uint32_t counterparty_identifier_service::count_counterparty_identifiers() 
     return repo_.get_total_counterparty_identifier_count(ctx_);
 }
 
+std::vector<domain::counterparty_identifier>
+counterparty_identifier_service::list_counterparty_identifiers_by_counterparty_id(
+    const std::string& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing counterparty identifiers by counterparty_id: "
+                               << counterparty_id;
+    return repo_.read_latest_by_counterparty_id(ctx_, counterparty_id, offset, limit);
+}
+
+std::uint32_t counterparty_identifier_service::count_counterparty_identifiers_by_counterparty_id(
+    const std::string& counterparty_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Getting total counterparty identifiers count by counterparty_id: " << counterparty_id;
+    return repo_.get_total_counterparty_identifier_count_by_counterparty_id(ctx_, counterparty_id);
+}
+
 std::optional<domain::counterparty_identifier>
 counterparty_identifier_service::get_counterparty_identifier(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting counterparty identifier: " << id;

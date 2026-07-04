@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: BC0B5701-A8FE-4E1D-907C-DB7675D3F423
+:END:
+#+title: Task: Implement and verify counterparty shell and CLI commands
+#+description: Implement/verify shell and CLI commands (list, add, remove) for counterparty.
+#+type: task
+#+level: s1
+#+filetags: :commission_counterparty:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement or verify =ores.shell= and =ores.cli= commands for
+counterparty: list, add, remove (and history where applicable),
+matching the conventions used by other commissioned entities
+(e.g. =party_type=).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- Shell =list=, =add=, and =remove= commands work correctly for
+  counterparty.
+- CLI equivalents (import/export/list/delete/add per the CLI recipe
+  conventions) work correctly for counterparty.
+- Any gaps vs. the =party_type= baseline are closed or filed as
+  follow-up captures.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

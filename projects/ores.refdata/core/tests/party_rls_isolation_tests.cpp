@@ -105,7 +105,7 @@ TEST_CASE("system_party_sees_all_assignments", tags) {
     const auto tid = h.tenant_id();
 
     party_repository party_repo(ctx);
-    counterparty_repository cp_repo(ctx);
+    counterparty_repository cp_repo;
 
     // Find system party
     const auto system_party_id = find_system_party_id(party_repo, tid);
@@ -126,15 +126,15 @@ TEST_CASE("system_party_sees_all_assignments", tags) {
     // Create counterparties
     auto cp1 = generate_synthetic_counterparty(gen_ctx);
     cp1.change_reason_code = "system.test";
-    cp_repo.write(cp1);
+    cp_repo.write(ctx, cp1);
 
     auto cp2 = generate_synthetic_counterparty(gen_ctx);
     cp2.change_reason_code = "system.test";
-    cp_repo.write(cp2);
+    cp_repo.write(ctx, cp2);
 
     auto cp3 = generate_synthetic_counterparty(gen_ctx);
     cp3.change_reason_code = "system.test";
-    cp_repo.write(cp3);
+    cp_repo.write(ctx, cp3);
 
     // Write assignments: cp1->A, cp2->B, cp3->both
     party_counterparty_repository repo(ctx);
@@ -166,7 +166,7 @@ TEST_CASE("party_a_sees_only_own_assignments", tags) {
     const auto tid = h.tenant_id();
 
     party_repository party_repo(ctx);
-    counterparty_repository cp_repo(ctx);
+    counterparty_repository cp_repo;
 
     const auto system_party_id = find_system_party_id(party_repo, tid);
 
@@ -186,15 +186,15 @@ TEST_CASE("party_a_sees_only_own_assignments", tags) {
     // Create counterparties
     auto cp1 = generate_synthetic_counterparty(gen_ctx);
     cp1.change_reason_code = "system.test";
-    cp_repo.write(cp1);
+    cp_repo.write(ctx, cp1);
 
     auto cp2 = generate_synthetic_counterparty(gen_ctx);
     cp2.change_reason_code = "system.test";
-    cp_repo.write(cp2);
+    cp_repo.write(ctx, cp2);
 
     auto cp3 = generate_synthetic_counterparty(gen_ctx);
     cp3.change_reason_code = "system.test";
-    cp_repo.write(cp3);
+    cp_repo.write(ctx, cp3);
 
     // Assign: cp1->A, cp2->B, cp3->both
     party_counterparty_repository repo(ctx);
@@ -225,7 +225,7 @@ TEST_CASE("party_b_sees_only_own_assignments", tags) {
     const auto tid = h.tenant_id();
 
     party_repository party_repo(ctx);
-    counterparty_repository cp_repo(ctx);
+    counterparty_repository cp_repo;
 
     const auto system_party_id = find_system_party_id(party_repo, tid);
 
@@ -243,15 +243,15 @@ TEST_CASE("party_b_sees_only_own_assignments", tags) {
 
     auto cp1 = generate_synthetic_counterparty(gen_ctx);
     cp1.change_reason_code = "system.test";
-    cp_repo.write(cp1);
+    cp_repo.write(ctx, cp1);
 
     auto cp2 = generate_synthetic_counterparty(gen_ctx);
     cp2.change_reason_code = "system.test";
-    cp_repo.write(cp2);
+    cp_repo.write(ctx, cp2);
 
     auto cp3 = generate_synthetic_counterparty(gen_ctx);
     cp3.change_reason_code = "system.test";
-    cp_repo.write(cp3);
+    cp_repo.write(ctx, cp3);
 
     party_counterparty_repository repo(ctx);
     repo.write(make_pc(h, party_a.id, cp1.id));
@@ -281,7 +281,7 @@ TEST_CASE("nested_party_hierarchy_visibility", tags) {
     const auto tid = h.tenant_id();
 
     party_repository party_repo(ctx);
-    counterparty_repository cp_repo(ctx);
+    counterparty_repository cp_repo;
 
     const auto system_party_id = find_system_party_id(party_repo, tid);
 
@@ -301,7 +301,7 @@ TEST_CASE("nested_party_hierarchy_visibility", tags) {
     // Create a counterparty and assign to child
     auto cp = generate_synthetic_counterparty(gen_ctx);
     cp.change_reason_code = "system.test";
-    cp_repo.write(cp);
+    cp_repo.write(ctx, cp);
 
     party_counterparty_repository repo(ctx);
     repo.write(make_pc(h, child.id, cp.id));

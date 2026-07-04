@@ -29,6 +29,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -67,8 +68,8 @@ TEST_CASE("write_single_party_identifier", tags) {
     pi.party_id = party.id;
     BOOST_LOG_SEV(lg, debug) << "Party identifier: " << pi;
 
-    party_identifier_repository repo(h.context());
-    CHECK_NOTHROW(repo.write(pi));
+    party_identifier_repository repo;
+    CHECK_NOTHROW(repo.write(h.context(), pi));
 }
 
 TEST_CASE("write_multiple_party_identifiers", tags) {
@@ -95,8 +96,8 @@ TEST_CASE("write_multiple_party_identifiers", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Party identifiers: " << party_identifiers;
 
-    party_identifier_repository repo(h.context());
-    CHECK_NOTHROW(repo.write(party_identifiers));
+    party_identifier_repository repo;
+    CHECK_NOTHROW(repo.write(h.context(), party_identifiers));
 }
 
 TEST_CASE("read_latest_party_identifiers", tags) {
@@ -124,10 +125,10 @@ TEST_CASE("read_latest_party_identifiers", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Written party identifiers: " << written_party_identifiers;
 
-    party_identifier_repository repo(h.context());
-    repo.write(written_party_identifiers);
+    party_identifier_repository repo;
+    repo.write(h.context(), written_party_identifiers);
 
-    auto read_party_identifiers = repo.read_latest();
+    auto read_party_identifiers = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read party identifiers: " << read_party_identifiers;
 
     CHECK(read_party_identifiers.size() >= written_party_identifiers.size());
@@ -157,13 +158,13 @@ TEST_CASE("read_latest_party_identifier_by_id", tags) {
     const auto original_id_value = pi.id_value;
     BOOST_LOG_SEV(lg, debug) << "Party identifier: " << pi;
 
-    party_identifier_repository repo(h.context());
-    repo.write(pi);
+    party_identifier_repository repo;
+    repo.write(h.context(), pi);
 
     pi.id_value = original_id_value + "_v2";
-    repo.write(pi);
+    repo.write(h.context(), pi);
 
-    auto read_party_identifiers = repo.read_latest(pi.id);
+    auto read_party_identifiers = repo.read_latest(h.context(), boost::uuids::to_string(pi.id));
     BOOST_LOG_SEV(lg, debug) << "Read party identifiers: " << read_party_identifiers;
 
     REQUIRE(read_party_identifiers.size() == 1);
@@ -175,12 +176,13 @@ TEST_CASE("read_nonexistent_party_identifier_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    party_identifier_repository repo(h.context());
+    party_identifier_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_party_identifiers = repo.read_latest(nonexistent_id);
+    auto read_party_identifiers =
+        repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read party identifiers: " << read_party_identifiers;
 
     CHECK(read_party_identifiers.size() == 0);

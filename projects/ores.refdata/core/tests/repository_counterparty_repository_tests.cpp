@@ -27,6 +27,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -51,8 +52,8 @@ TEST_CASE("write_single_counterparty", tags) {
     cp.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Counterparty: " << cp;
 
-    counterparty_repository repo(h.context());
-    CHECK_NOTHROW(repo.write(cp));
+    counterparty_repository repo;
+    CHECK_NOTHROW(repo.write(h.context(), cp));
 }
 
 TEST_CASE("write_multiple_counterparties", tags) {
@@ -66,8 +67,8 @@ TEST_CASE("write_multiple_counterparties", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Counterparties: " << counterparties;
 
-    counterparty_repository repo(h.context());
-    CHECK_NOTHROW(repo.write(counterparties));
+    counterparty_repository repo;
+    CHECK_NOTHROW(repo.write(h.context(), counterparties));
 }
 
 TEST_CASE("read_latest_counterparties", tags) {
@@ -81,10 +82,10 @@ TEST_CASE("read_latest_counterparties", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Written counterparties: " << written_counterparties;
 
-    counterparty_repository repo(h.context());
-    repo.write(written_counterparties);
+    counterparty_repository repo;
+    repo.write(h.context(), written_counterparties);
 
-    auto read_counterparties = repo.read_latest();
+    auto read_counterparties = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
 
     CHECK(read_counterparties.size() >= written_counterparties.size());
@@ -100,13 +101,13 @@ TEST_CASE("read_latest_counterparty_by_id", tags) {
     const auto original_full_name = cp.full_name;
     BOOST_LOG_SEV(lg, debug) << "Counterparty: " << cp;
 
-    counterparty_repository repo(h.context());
-    repo.write(cp);
+    counterparty_repository repo;
+    repo.write(h.context(), cp);
 
     cp.full_name = original_full_name + " v2";
-    repo.write(cp);
+    repo.write(h.context(), cp);
 
-    auto read_counterparties = repo.read_latest(cp.id);
+    auto read_counterparties = repo.read_latest(h.context(), boost::uuids::to_string(cp.id));
     BOOST_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
 
     REQUIRE(read_counterparties.size() == 1);
@@ -118,12 +119,13 @@ TEST_CASE("read_nonexistent_counterparty_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    counterparty_repository repo(h.context());
+    counterparty_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_counterparties = repo.read_latest(nonexistent_id);
+    auto read_counterparties =
+        repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
 
     CHECK(read_counterparties.size() == 0);

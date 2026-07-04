@@ -241,7 +241,10 @@ public:
         get_{{entity_plural}}_{{name_suffix}}_response resp;
         try {
             if (auto req = decode<get_{{entity_plural}}_{{name_suffix}}_request>(msg)) {
-                resp.{{entity_plural_short}} = svc.{{service_method}}(req->{{filter_column}});
+                resp.{{entity_plural_short}} =
+                    svc.{{service_method}}(req->{{filter_column}}, req->offset, req->limit);
+                resp.total_available_count =
+                    static_cast<int>(svc.{{count_service_method}}(req->{{filter_column}}));
                 resp.success = true;
             }
         } catch (const std::exception& e) {

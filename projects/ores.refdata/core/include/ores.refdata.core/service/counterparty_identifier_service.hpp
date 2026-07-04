@@ -77,6 +77,26 @@ public:
     std::uint32_t count_counterparty_identifiers();
 
     /**
+     * @brief Lists counterparty identifiers filtered by counterparty_id, with pagination.
+     *
+     * @param counterparty_id The counterparty_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching counterparty identifiers for the requested page.
+     */
+    std::vector<domain::counterparty_identifier> list_counterparty_identifiers_by_counterparty_id(
+        const std::string& counterparty_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active counterparty identifiers filtered by counterparty_id.
+     *
+     * @param counterparty_id The counterparty_id to filter by.
+     * @return Total number of matching counterparty identifiers.
+     */
+    std::uint32_t
+    count_counterparty_identifiers_by_counterparty_id(const std::string& counterparty_id);
+
+    /**
      * @brief Retrieves a single counterparty identifier by its id.
      *
      * @param id The id of the counterparty identifier.

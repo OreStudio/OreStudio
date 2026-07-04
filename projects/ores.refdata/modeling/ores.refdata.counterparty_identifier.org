@@ -107,13 +107,14 @@ std::string("Test identifier")
 :tablename: ores_refdata_counterparty_identifiers_tbl
 :END:
 
-** Soft FK validations
+* Foreign keys
 
-*** counterparty_id
+** counterparty_id
 :PROPERTIES:
 :table:         ores_refdata_counterparties_tbl
 :nullable:      false
 :error_message: Invalid counterparty_id: %. No active counterparty found with this id.
+:list_by:       true
 :END:
 
 * Insert trigger

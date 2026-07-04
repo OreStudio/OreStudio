@@ -95,6 +95,49 @@ std::vector<domain::party_identifier> party_identifier_repository::read_all(cont
         "Reading all party identifier versions by id.");
 }
 
+std::vector<domain::party_identifier> party_identifier_repository::read_latest_by_party_id(
+    context ctx, const std::string& party_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party identifiers. party_id: " << party_id
+                               << " offset: " << offset << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<party_identifier_entity>> |
+        where("tenant_id"_c == tid && "party_id"_c == party_id && "valid_to"_c == max.value()) |
+        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<party_identifier_entity, domain::party_identifier>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_identifier_mapper::map(entities); },
+        lg(),
+        "Reading latest party identifiers by party_id.");
+}
+
+std::uint32_t party_identifier_repository::get_total_party_identifier_count_by_party_id(
+    context ctx, const std::string& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party identifiers count. party_id: "
+                               << party_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<party_identifier_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "party_id"_c == party_id && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active party identifiers count by party_id: " << count;
+    return count;
+}
+
 void party_identifier_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party identifier: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));

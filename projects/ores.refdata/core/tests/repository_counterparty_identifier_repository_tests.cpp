@@ -29,6 +29,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -52,16 +53,16 @@ TEST_CASE("write_single_counterparty_identifier", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    counterparty_repository cp_repo(h.context());
-    cp_repo.write(cp);
+    counterparty_repository cp_repo;
+    cp_repo.write(h.context(), cp);
 
     auto ci = generate_synthetic_counterparty_identifier(ctx);
     ci.change_reason_code = "system.test";
     ci.counterparty_id = cp.id;
     BOOST_LOG_SEV(lg, debug) << "Counterparty identifier: " << ci;
 
-    counterparty_identifier_repository repo(h.context());
-    CHECK_NOTHROW(repo.write(ci));
+    counterparty_identifier_repository repo;
+    CHECK_NOTHROW(repo.write(h.context(), ci));
 }
 
 TEST_CASE("write_multiple_counterparty_identifiers", tags) {
@@ -71,8 +72,8 @@ TEST_CASE("write_multiple_counterparty_identifiers", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    counterparty_repository cp_repo(h.context());
-    cp_repo.write(cp);
+    counterparty_repository cp_repo;
+    cp_repo.write(h.context(), cp);
 
     auto counterparty_identifiers = generate_synthetic_counterparty_identifiers(3, ctx);
     for (auto& ci : counterparty_identifiers) {
@@ -81,8 +82,8 @@ TEST_CASE("write_multiple_counterparty_identifiers", tags) {
     }
     BOOST_LOG_SEV(lg, debug) << "Counterparty identifiers: " << counterparty_identifiers;
 
-    counterparty_identifier_repository repo(h.context());
-    CHECK_NOTHROW(repo.write(counterparty_identifiers));
+    counterparty_identifier_repository repo;
+    CHECK_NOTHROW(repo.write(h.context(), counterparty_identifiers));
 }
 
 TEST_CASE("read_latest_counterparty_identifiers", tags) {
@@ -92,8 +93,8 @@ TEST_CASE("read_latest_counterparty_identifiers", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    counterparty_repository cp_repo(h.context());
-    cp_repo.write(cp);
+    counterparty_repository cp_repo;
+    cp_repo.write(h.context(), cp);
 
     auto written_counterparty_identifiers = generate_synthetic_counterparty_identifiers(3, ctx);
     for (auto& ci : written_counterparty_identifiers) {
@@ -103,10 +104,10 @@ TEST_CASE("read_latest_counterparty_identifiers", tags) {
     BOOST_LOG_SEV(lg, debug) << "Written counterparty identifiers: "
                              << written_counterparty_identifiers;
 
-    counterparty_identifier_repository repo(h.context());
-    repo.write(written_counterparty_identifiers);
+    counterparty_identifier_repository repo;
+    repo.write(h.context(), written_counterparty_identifiers);
 
-    auto read_counterparty_identifiers = repo.read_latest();
+    auto read_counterparty_identifiers = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read counterparty identifiers: " << read_counterparty_identifiers;
 
     CHECK(read_counterparty_identifiers.size() >= written_counterparty_identifiers.size());
@@ -119,8 +120,8 @@ TEST_CASE("read_latest_counterparty_identifier_by_id", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    counterparty_repository cp_repo(h.context());
-    cp_repo.write(cp);
+    counterparty_repository cp_repo;
+    cp_repo.write(h.context(), cp);
 
     auto ci = generate_synthetic_counterparty_identifier(ctx);
     ci.change_reason_code = "system.test";
@@ -128,13 +129,14 @@ TEST_CASE("read_latest_counterparty_identifier_by_id", tags) {
     const auto original_id_value = ci.id_value;
     BOOST_LOG_SEV(lg, debug) << "Counterparty identifier: " << ci;
 
-    counterparty_identifier_repository repo(h.context());
-    repo.write(ci);
+    counterparty_identifier_repository repo;
+    repo.write(h.context(), ci);
 
     ci.id_value = original_id_value + "_v2";
-    repo.write(ci);
+    repo.write(h.context(), ci);
 
-    auto read_counterparty_identifiers = repo.read_latest(ci.id);
+    auto read_counterparty_identifiers =
+        repo.read_latest(h.context(), boost::uuids::to_string(ci.id));
     BOOST_LOG_SEV(lg, debug) << "Read counterparty identifiers: " << read_counterparty_identifiers;
 
     REQUIRE(read_counterparty_identifiers.size() == 1);
@@ -146,12 +148,13 @@ TEST_CASE("read_nonexistent_counterparty_identifier_id", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    counterparty_identifier_repository repo(h.context());
+    counterparty_identifier_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_counterparty_identifiers = repo.read_latest(nonexistent_id);
+    auto read_counterparty_identifiers =
+        repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read counterparty identifiers: " << read_counterparty_identifiers;
 
     CHECK(read_counterparty_identifiers.size() == 0);

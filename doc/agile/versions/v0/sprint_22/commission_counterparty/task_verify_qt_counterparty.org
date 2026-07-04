@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: C0A09BCE-F9AF-4AE0-92E4-DC93B216CCDB
+:END:
+#+title: Task: Verify counterparty Qt UI end-to-end post-NATS
+#+description: Verify the counterparty Qt UI (list window, detail window, history, delete, eventing) works end-to-end post-NATS migration.
+#+type: task
+#+level: s1
+#+filetags: :commission_counterparty:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Verify the =counterparty= Qt UI end-to-end against live services
+post-NATS: list window (MDI), detail dialog (fields and validation),
+history dialog, delete, and eventing. Fix any regressions found,
+including in the two child entities (=counterparty_identifier= and its
+cardinality-limit validation).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- List window (MDI) loads and displays counterparty records correctly.
+- Detail dialog create/edit validates fields and saves correctly.
+- History dialog shows temporal versions correctly.
+- Delete works and reflects across the UI.
+- Eventing (NATS) updates the UI live on create/update/delete from
+  another client.
+- Any regressions found are fixed or filed as follow-up captures.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

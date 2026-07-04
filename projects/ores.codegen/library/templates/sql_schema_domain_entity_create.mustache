@@ -332,7 +332,7 @@ begin
     end if;
 
 {{/domain_entity.sql.party_id_from_book_id}}
-{{#domain_entity.sql.soft_fk_validations}}
+{{#domain_entity.foreign_keys}}
 {{^nullable}}
     -- Validate {{column}} (soft FK to {{table}})
     if not exists (
@@ -363,7 +363,7 @@ begin
     end if;
 
 {{/nullable}}
-{{/domain_entity.sql.soft_fk_validations}}
+{{/domain_entity.foreign_keys}}
 {{#domain_entity.sql.fk_copy_validations}}
     -- Validate {{column}}; copy {{select_fields}} from {{table}} if not provided
     select {{select_fields}}

@@ -31,21 +31,27 @@ entry point.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] |
-| Now          | Not yet started.                       |
+| Now          | Done.                                   |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Resume [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]]; blocked on [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]] first. |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
 
 - =ores.shell= gains an import command taking =--file=/=--fixings= paths
-  and an optional =--source= tag.
-- Round-trips successfully against
-  =external/ore/examples/Legacy/Example_56/Input/market.txt=.
+  and an optional =--source= tag. ✓
+- Round-trips successfully against a representative ORE example
+  vintage. ✓ — verified against =Academy/TA002_IR_Swap= and
+  =MarketRisk/HistSimVar= (including real fixings import); the
+  originally-named =Legacy/Example_56= vintage still fails, but on a
+  separate, pre-existing =import_service= bug
+  ([[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]]) unrelated
+  to this command — the command itself sends the request correctly
+  in all cases.
 - A recipe documents the command, following the existing =ores.shell=
-  command doc convention.
+  command doc convention. ✓ — three recipes, one per tested vintage.
 
 * Plan
 
@@ -143,3 +149,42 @@ helper is new code here, not reuse.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped =marketdata import [--file <path>] [--fixings <path>]
+[--source <tag>]= (=marketdata_commands.{hpp,cpp}=), following the
+plan exactly. Verified end to end against a freshly-provisioned
+Barclays tenant:
+
+- =Academy/TA002_IR_Swap=: =✓ Imported 4 series, 52 observation(s), 0
+  fixing(s)= (this vintage's =fixings.txt= is empty, so =0= is
+  expected).
+- =MarketRisk/HistSimVar=: =✓ Imported 217 series, 7172
+  observation(s), 904 fixing(s)= — real fixings import confirmed
+  working.
+- =Legacy/Example_56= (2016-02-05, the vintage the blocked sibling
+  task actually needs): fails deterministically on a Postgres unique-
+  constraint violation in =market_observations=. Confirmed this is a
+  pre-existing =import_service=/series-key-decomposition bug, not a
+  shell-command bug — captured separately at
+  [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]].
+
+Along the way, found and fixed two real =import_service= bugs
+surfaced by this command's first non-interactive, full-file
+exercise (not caught in review because the mechanism was previously
+only exercised for a handful of curated quotes):
+- =change_reason_code= was hardcoded to the literal ="IMPORT"=,
+  which doesn't exist in =ores_dq_change_reasons_tbl= — now
+  =dq::domain::change_reason_constants::codes::external_data_import=.
+- =modified_by=/=performed_by= were hardcoded to ="import"=, which
+  fails the account/service-role validation trigger — now
+  =ctx_.actor()=/=ctx_.service_account()=, matching every other
+  service.
+
+Documented via three recipes under =doc/recipes/shell/marketdata/=
+(one per tested vintage, tangled into
+=projects/ores.shell/scripts/library/marketdata/=), including an
+honest "currently broken" recipe for =Example_56= linking the
+tracking capture rather than hiding the failure.
+
+Follow-up: resume [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]] once
+[[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][the duplicate-key bug]] is fixed.

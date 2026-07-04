@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: DEDCB1A0-EDF1-496A-A5D2-39ED5C24335F
+:END:
+#+title: Task: Make canary read-only for sccache/cmake-build caches
+#+description: Confirmed root cause via GitHub's cache API: canary-linux.yml's Delete+Save steps mean every PR branch writes its own full-size scoped cache copy under the same key text (GitHub Actions caches are scoped per-ref even with identical keys). Found two live sccache-linux-gcc-debug-ninja entries (~2.1GB each) belonging to two different open PRs, and zero entries scoped to main — canary only runs on pull_request, so main never populates a baseline. With several PRs open concurrently, redundant per-branch copies fill the shared 10GB quota and starve everyone. Removed canary's Delete/Save steps for both caches, leaving only the existing Restore steps; continuous-linux.yml already reads+writes and will build the shared baseline canary reads from.
+#+type: task
+#+level: s1
+#+filetags: :ci:infra:cache:sprint_22:v0:canary_ctest_ignores_cancellation:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

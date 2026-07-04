@@ -201,38 +201,6 @@ jobs:
           export cmake_args="build_group=Canary,preset=${preset},code_coverage=1"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
-      - name: Delete cmake cache entry
-        if: ${{ !cancelled() }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api --method DELETE \
-            "/repos/${{ github.repository }}/actions/caches?key=cmake-build-linux-gcc-debug-ninja" \
-            || true
-
-      - name: Save cmake build cache
-        if: ${{ !cancelled() }}
-        uses: actions/cache/save@v6
-        with:
-          path: build/output/linux-gcc-debug-ninja/projects
-          key: cmake-build-linux-gcc-debug-ninja
-
-      - name: Delete sccache entry
-        if: ${{ !cancelled() }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api --method DELETE \
-            "/repos/${{ github.repository }}/actions/caches?key=sccache-linux-gcc-debug-ninja" \
-            || true
-
-      - name: Save sccache
-        if: ${{ !cancelled() }}
-        uses: actions/cache/save@v6
-        with:
-          path: ${{ env.SCCACHE_DIR }}
-          key: sccache-linux-gcc-debug-ninja
-
       - name: Show sccache statistics
         if: always()
         run: sccache --show-stats

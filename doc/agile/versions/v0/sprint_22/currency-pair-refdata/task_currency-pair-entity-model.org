@@ -165,3 +165,9 @@ representation, aux-type model type (=entity= not legacy =table=), and
 fixing-source as free text vs. a future reference entity. No codegen
 model files were written yet — this is the design the follow-on
 implementation task will turn into =ores.codegen.entity= sources.
+
+*Correction*: =is_g11= as designed here was replaced by a proper
+many-to-many currency-group model in a follow-on task,
+[[id:8B45AB22-FD56-41DB-A74B-750E460188D2][Replace is_g11 flag with an extensible currency-group model]] — see
+that task for the corrected design. Left as-is here per the "plan is a
+historical record" convention.

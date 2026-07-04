@@ -25,6 +25,7 @@
 ;;
 ;;; Code:
 (require 'package)
+(require 'seq)
 (require 'org)
 (require 'org-id)
 (require 'ob-shell)
@@ -48,7 +49,9 @@
 (setq org-id-locations-file (expand-file-name "./.org-id-locations-file"))
 (setq org-publish-timestamp-directory (expand-file-name "./build/output/org-timestamps/"))
 (make-directory org-publish-timestamp-directory t)
-(org-id-update-id-locations (directory-files-recursively "." "\\.org$"))
+(org-id-update-id-locations
+ (seq-remove (lambda (f) (string-match-p "/\\.claude/worktrees/" f))
+             (directory-files-recursively "." "\\.org$")))
 
 ;; Ensure the site's package dependencies are present. A no-op when the cache
 ;; is already warm (the CI pre-warm step, or a developer's local .packages).

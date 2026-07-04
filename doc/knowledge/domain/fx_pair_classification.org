@@ -20,8 +20,9 @@ majors with no USD leg; an *exotic* pairs a major/G10 currency with a
 developing-economy currency. The two taxonomies diverge for the
 Scandinavian G11 currencies (DKK, NOK, SEK): retail guides often call
 =USD/DKK= etc. exotic on volume grounds, but institutionally they are G11
-and should be classified as *minor*, not exotic — the =classification=
-field on the pair entity is independent of the =is_g11= flag.
+and should be classified as *minor*, not exotic — the pair's
+=classification= is independent of G11 membership, which itself is a
+[[id:ABEC5C46-05CA-42D7-9D20-3B4DC06BBED5][currency group]], not a fixed flag.
 
 * Detail
 
@@ -74,8 +75,8 @@ because trading volume is lower than the seven majors. That is wrong for
 an institutional system: the Scandinavian currencies, together with CHF,
 *are G11* — deep continuous liquidity, tight spreads, full independent
 data coverage, managed by the G11 desk. In the system these should be
-classified as *minor* (USD paired with a non-major G11 currency), with
-the =classification= field independent of the =is_g11= flag.
+classified as *minor* (USD paired with a non-major G11 currency); G11
+membership and pair =classification= are tracked independently.
 
 ** G11 vs Emerging Markets (the other taxonomy)
 
@@ -84,12 +85,16 @@ covered in full in [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conven
 GBP, JPY, AUD, CAD, CHF, DKK, NOK, NZD, SEK=, managed by G11 desks with
 tight spreads and continuous liquidity; everything else is EM, managed by
 separate desks, sourced more from broker quotes, and more prone to
-onshore/offshore bifurcation.
+onshore/offshore bifurcation. G11 is one [[id:ABEC5C46-05CA-42D7-9D20-3B4DC06BBED5][currency group]] among several a
+desk might use (Scandies, Antipodeans, Asians, Latams, commodity
+currencies) — not a special fixed flag.
 
 * See also
 
 - [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the hub.
 - [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] — the G11/EM taxonomy and base/quote precedence.
+- [[id:ABEC5C46-05CA-42D7-9D20-3B4DC06BBED5][Currency groups (desk groupings)]] — the extensible, many-to-many
+  grouping model this taxonomy is an instance of.
 - [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][Triangulation and cross rates]] — how minor/cross rates are derived.
 - [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] — why many exotics need
   NDF structures.

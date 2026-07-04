@@ -37,14 +37,20 @@ rather than re-deriving it from prose each time.
 | =deliverable=              | Whether the pair settles physically or cash-only (NDF flag)             |
 | =settlement_currency=      | For ND pairs: the currency in which cash settlement is made             |
 | =default_cut_code=         | Default market data cut for this pair                                   |
-| =is_g11=                   | Flag: both currencies are G11                                           |
-| =classification=           | Pair category: =major=, =minor=, or =exotic=; independent of =is_g11=   |
+| =classification=           | Pair category: =major=, =minor=, or =exotic=                            |
 | =fixing_source=            | Default fixing source for cash-settled / NDF trades on this pair        |
+
+There is deliberately *no* =is_g11= (or similar) field here: G11
+membership, and any other desk grouping (Scandies, Antipodeans,
+commodity currencies, ...), is a *currency*-level, many-to-many
+[[id:ABEC5C46-05CA-42D7-9D20-3B4DC06BBED5][currency group]] membership, not a flag on the pair. A pair's "is this a
+G11 pair" question is answered by checking both legs' group memberships
+at query time.
 
 See [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] for =deliverable= /
 =settlement_currency=, [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]] for =pip_factor= /
 =tick_size= / =decimal_places=, and
-[[id:4F93228E-C638-429C-993A-360EE88BD86A][Currency pair classification]] for =classification= / =is_g11=.
+[[id:4F93228E-C638-429C-993A-360EE88BD86A][Currency pair classification]] for =classification=.
 
 ** Currency fields
 
@@ -61,6 +67,10 @@ construction:
 | =day_basis=          | Day-count convention for money market (ACT/360, ACT/365) |
 | =base_precedence=    | Ordinal rank in the base-currency precedence table        |
 
+Currency group memberships (G11, Scandies, ...) live in a separate
+many-to-many [[id:ABEC5C46-05CA-42D7-9D20-3B4DC06BBED5][currency group]] junction, not as a field on the currency
+itself — a currency can belong to several groups at once.
+
 ** Cut code
 
 Each currency pair has an associated *cut code* determining which market
@@ -76,4 +86,6 @@ pair's default, since it changes which rates feed official valuation.
 - [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — the =spot_days= max-of-two rule.
 - [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]] — the pip-related fields.
 - [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] — the deliverability fields.
-- [[id:4F93228E-C638-429C-993A-360EE88BD86A][Currency pair classification]] — =classification= and =is_g11=.
+- [[id:4F93228E-C638-429C-993A-360EE88BD86A][Currency pair classification]] — the =classification= field.
+- [[id:ABEC5C46-05CA-42D7-9D20-3B4DC06BBED5][Currency groups (desk groupings)]] — where G11 and other desk groupings
+  actually live.

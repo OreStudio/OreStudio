@@ -38,6 +38,9 @@ graph structure rather than the pair entity itself.
 - *Quoting granularity* → [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]].
 - *Classification* → [[id:4F93228E-C638-429C-993A-360EE88BD86A][Currency pair classification: major, minor, exotic]]
   (and how it differs from the G11/EM taxonomy).
+- *Desk groupings* → [[id:ABEC5C46-05CA-42D7-9D20-3B4DC06BBED5][Currency groups (desk groupings)]] (extensible,
+  many-to-many groups like G11, Scandies, Antipodeans — a currency-level
+  concept, not a pair one).
 - *Data model* → [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]] (the field-by-field
   reference, including cut code).
 - *Valuation dates* → [[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date and overnight]] (reval date,

@@ -54,6 +54,7 @@ follows in later tasks.
 |------+-------+-------+-----+-------------|
 | [[id:141A6CD3-60BA-42E6-BEC4-14122F70451A][Build knowledge documents for currency pairs]] | DONE | | 2026-07-04 | Turn freeform notes on currency pairs into a set of small, self-contained zettelkasten-style knowledge documents, cross-linked via org-roam links (including to existing docs like the cross rates matrix), with an index document tying them together. |
 | [[id:1689B6B1-129F-44F0-A3FF-7E069BF9E394][Model the currency pair entity for codegen]] | DONE | | 2026-07-04 | Model the currency pair (and supporting currency) entities with all fields identified in the knowledge cluster (base/quote, spot days, deliverability/NDF, pip factor/tick size, classification, cut code, fixing source, etc.), ready to drive ores.codegen. |
+| [[id:8B45AB22-FD56-41DB-A74B-750E460188D2][Replace is_g11 flag with an extensible currency-group model]] | DONE | | 2026-07-04 | Correct the currency_pair design: is_g11 is a fixed boolean that can't express overlapping desk groupings (Scandies, Antipodeans, commodity currencies, etc.), and G11 membership belongs on the currency, not the pair. Replace it with a many-to-many currency_group lookup + junction, mirroring the existing party_currencies junction pattern. |
 
 * Decisions
 
@@ -61,16 +62,25 @@ follows in later tasks.
   extending the existing CRM cluster rather than duplicating it (see the
   first task's =* Plan=).
 - Currency pair modelled as its own entity (=currency_pair=), not folded
-  into =currency=: =spot_days=, calendars, and =is_g11= are *derived* at
-  read time from the two constituent currencies rather than stored
-  redundantly on the pair, to avoid the two copies drifting apart. Five
-  new columns land on =currency= itself (=spot_days=, =deliverable=,
-  =day_basis=, =base_precedence=, =holiday_calendar=); a new
+  into =currency=: =spot_days= and calendars are *derived* at read time
+  from the two constituent currencies rather than stored redundantly on
+  the pair, to avoid the two copies drifting apart. Five new columns
+  land on =currency= itself (=spot_days=, =deliverable=, =day_basis=,
+  =base_precedence=, =holiday_calendar=); a new
   =currency_pair_classification= auxiliary type reuses the existing
   =rounding_type=/=monetary_nature=/=market_tier= soft-FK pattern. Full
   field-by-field design lives in the second task's =* Plan=; three open
   questions (calendar/day-count representation, aux-type model type,
   fixing-source reference) are deferred to the implementation task.
+- *Corrected* (third task): the initial design put G11 membership on the
+  pair as a boolean =is_g11= flag. That's wrong — it's a currency-level
+  property, and desks need overlapping groupings beyond G11 (Scandies,
+  Antipodeans, commodity currencies, ...) that a boolean can't express.
+  Replaced with a =currency_group= auxiliary type plus a many-to-many
+  =currency_currency_group_junction=, mirroring the existing
+  =party_currencies= junction pattern. =currency.market_tier= is
+  unaffected and coexists as the single-valued primary tier alongside
+  the new multi-valued group system.
 
 * Out of scope
 

@@ -28,6 +28,16 @@ runnable script library (=projects/ores.shell/scripts/library/=).
 - [[id:723F21AD-30F6-4D99-849F-7A44B368E4A1][How do I provision a tenant?]]
 - [[id:463F1441-0A6B-4F7D-B85C-985001B67A3B][How do I provision a party?]]
 
+* Market data
+
+Non-interactive market data import via =marketdata import=, reusing
+=ores.marketdata.core= 's =import_service= as-is. Each is tangled into
+the runnable script library (=projects/ores.shell/scripts/library/marketdata/=).
+
+- [[id:438BECB1-0DF8-4350-9ABF-65F232CBB046][How do I import the TA002 IR Swap example market data?]]
+- [[id:9BF3F080-6692-4676-884B-D10DF859D096][How do I import the MarketRisk HistSimVar example market data and fixings?]]
+- [[id:DD527011-4F5E-4716-97A2-6AA8C70F3BB6][How do I import the 2016-02-05 ORE reference vintage market data?]] (currently broken — see recipe)
+
 * Accounts
 
 - [[id:1FBC2C1E-1BB2-44EA-AC40-26A9F9750636][Help Menu]]

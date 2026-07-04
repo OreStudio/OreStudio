@@ -72,3 +72,4 @@ full-file import of the 2016-02-05 ORE reference vintage.
 
 - [[id:32D9596A-ADB6-4ECE-9307-025B58C4C82A][Review and extend ores.marketdata import for ORE reference vintages]]
 - [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]]
+- [[id:DD527011-4F5E-4716-97A2-6AA8C70F3BB6][How do I import the 2016-02-05 ORE reference vintage market data?]] — the recipe blocked on this bug.

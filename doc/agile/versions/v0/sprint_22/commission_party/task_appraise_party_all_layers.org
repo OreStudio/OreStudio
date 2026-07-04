@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: D9B0D885-D824-4F8E-8575-EF0814D69025
+:END:
+#+title: Task: Appraise party across all layers and produce evaluation checklist
+#+description: Walk party across SQL, codegen, Qt, shell, CLI and score each layer against the commissioning checklist; note gaps against the pattern established by prior commission stories (party_type, counterparty).
+#+type: task
+#+level: s1
+#+filetags: :commission_party:sprint_22:v0:
+#+owner: marco
+#+branch: feature/appraise-party-all-layers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Apply the domain entity evaluation checklist to =party= across every
+access layer, recording what exists, what works post-NATS, and what is
+missing or broken. Findings drive the story's remaining task breakdown.
+Shell, CLI, HTTP, and Wt are tracked by separate top-level commissioning
+stories, not by this story — their layer status is recorded here for
+completeness but does not spawn follow-up tasks on this story.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                       |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- Every checklist layer has a recorded verdict for party.
+- Gaps are either tasks on this story, or explicitly assigned to
+  another story (shell, CLI, HTTP, Wt are out of scope for this
+  story's task breakdown).
+- The story's task breakdown reflects the findings.
+
+* Plan
+
+Appraisal performed against the domain entity evaluation checklist on
+2026-07-04, using fresh origin/main.
+
+* Notes
+
+Appraisal against the checklist, 2026-07-04:
+
+| Layer          | Verdict     | Notes                                                                     |
+|----------------+-------------+----------------------------------------------------------------------------|
+| DB             | ⚠ issues    | Table/trigger fine, valid_to guard already correct; =refdata_party_functions_create.sql= missing =set search_path= on 3 security-definer functions. |
+| Codegen        | ⚠ unmanaged | Org model exists; no JSON driver, not in =generate_workspace_entities.sh=. |
+| Domain (C++)   | ✅ complete  | All files present in =ores.refdata/api/=.                                 |
+| Repository/Svc | ✅ complete  | Present in =ores.refdata/core/=, incl. RLS isolation tests.                |
+| Messaging/NATS | ✅ present   | Handlers wired in =registrar.cpp=; needs live verification.               |
+| Qt             | ✅ present   | =ores.qt/party/= complete, shared detail-dialog pattern; needs live post-NATS verification. |
+| Shell          | ⚠ issues    | Only =list= implemented; =add=/=remove= missing — separate story owns this. |
+| CLI            | ❌ missing   | Nothing implemented — separate story owns this.                          |
+| HTTP           | ❌ missing   | Separate story owns this.                                                |
+| Wt             | ❌ missing   | Separate story owns this.                                                |
+| Manual         | ❌ missing   | No dedicated chapter — passing mentions only.                            |
+
+Follow-up tasks (shell/CLI/HTTP/Wt excluded — separate stories):
+
+1. Bring party under codegen; verify zero-diff regen. Codegen's SQL
+   templates already emit =security definer set search_path=
+   correctly (verified against party_type's generated SQL), so
+   regen is expected to fix the security-definer gap in
+   =refdata_party_functions_create.sql= as a side effect — no
+   separate manual SQL patch task.
+2. Verify Qt UI end-to-end post-NATS; fix regressions found.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

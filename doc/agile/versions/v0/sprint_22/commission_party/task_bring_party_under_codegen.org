@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: A9B7279E-4DD5-408E-9164-8F9DD3FC10B7
+:END:
+#+title: Task: Bring party under codegen; verify zero-diff regen
+#+description: Add a JSON driver for party and register it in generate_workspace_entities.sh; regenerate SQL/C++/messaging/Qt and verify zero-diff. Expected to also fix the security-definer/search_path gap in refdata_party_functions_create.sql as a side effect, since codegen's SQL templates already emit the fix correctly (verified against party_type). Flag risk: party's hand-written specialisation (RLS functions, hierarchy fields) may not fit the generic template cleanly.
+#+type: task
+#+level: s1
+#+filetags: :commission_party:sprint_22:v0:codegen:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

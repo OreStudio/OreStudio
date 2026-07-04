@@ -8,7 +8,7 @@
 #+filetags: :market_data:sprint_22:v0:full_market_txt_import_duplicate_key:
 #+owner: marco
 #+branch: feature/fix-series-key-collision
-#+pr:
+#+pr: 1437
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -111,7 +111,7 @@ to persist the result.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1437][#1437]] | [ore,marketdata,shell,qt] Fix duplicate-key import failure with a warn/error policy |
 
 * Review
 

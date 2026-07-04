@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 3402B369-FFC1-4B46-9EA0-528973D88618
+:END:
+#+title: Generalize self-referential hierarchy validation into a codegen facet
+#+description: Add a has_parent_id-style codegen facet for the parent_<entity>_id soft-FK hierarchy pattern duplicated by hand across party and counterparty (and likely others).
+#+type: capture
+#+level: cross
+#+filetags: :codegen:refdata:hierarchy:template:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a codegen facet (e.g. =has_parent_id: true= in the entity's org
+model) for the self-referential hierarchy pattern currently hand-rolled
+in both =refdata_parties_create.sql= (=parent_party_id=) and
+=refdata_counterparties_create.sql= (=parent_counterparty_id=): a
+nullable soft-FK to the entity's own table, validated in the insert
+trigger against active rows, forming a group/org hierarchy. The facet
+should generate the column, the trigger validation block, and any
+recursive-CTE helper (party already has one traversing the hierarchy
+from a root id) from a single template.
+
+* Why
+
+Found while appraising =party= for commissioning: its insert trigger
+has a =parent_party_id= validation block with no codegen facet, which
+initially looked like one-off hand-written specialisation blocking
+=party='s migration to unified codegen. Checking =counterparty=
+confirmed the identical pattern exists there too (independently
+hand-written) — this is a real, recurring architectural feature
+across at least two entities (likely more, e.g. =book=), not a
+disposable one-off. Generalizing it into a facet would let both
+entities (and future ones) migrate to unified codegen cleanly instead
+of each carrying a hand-maintained divergence.
+
+* References
+
+- =projects/ores.sql/create/refdata/refdata_parties_create.sql= (parent_party_id, lines ~28, 42, 93, 129-137)
+- =projects/ores.sql/create/refdata/refdata_counterparties_create.sql= (parent_counterparty_id, lines ~28-29, 40, 89-97)
+- =projects/ores.refdata/modeling/ores.refdata.party.org= (recursive CTE hierarchy traversal, lines ~436-460)
+
+* See also
+
+-

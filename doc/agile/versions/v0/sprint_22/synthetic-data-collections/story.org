@@ -16,8 +16,10 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-[[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] gave every party a
-single synthetic FX collection (the =ore_analytics= dataset bundle).
+"Synthetic data librarian support: FX foundation" (PR #1408, still
+open at the time of writing — not yet an org-roam link since it isn't
+merged into main yet) gave every party a single synthetic FX
+collection (the =ore_analytics= dataset bundle).
 This story adds a second sample collection so parties can pick between
 two archetypes, and closes the gaps that surfaced while designing it:
 

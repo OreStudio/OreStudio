@@ -20,10 +20,13 @@
 #include "ores.qt/FxSpotGridWindow.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
 #include <QMetaObject>
+#include <QPainter>
+#include <QPixmap>
 #include <QPointer>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -175,11 +178,35 @@ static QString pair_from_ore_key(const std::string& ore_key) {
     return qualifier.empty() ? QString::fromStdString(ore_key) : QString::fromStdString(qualifier);
 }
 
+// Two 16x16 flags side by side — same composited-icon idea used for the FX
+// pair tree items in MarketSimulatorWindow, sized for a table cell here.
+static QIcon pair_flags_icon(ImageCache& imageCache, const QString& pairText) {
+    const QStringList parts = pairText.split(QLatin1Char('/'));
+    if (parts.size() != 2)
+        return {};
+    constexpr int flagSize = 16;
+    constexpr int overlap = 5;
+    const QPixmap basePm =
+        imageCache.getCurrencyFlagIcon(parts[0].toStdString()).pixmap(flagSize, flagSize);
+    const QPixmap quotePm =
+        imageCache.getCurrencyFlagIcon(parts[1].toStdString()).pixmap(flagSize, flagSize);
+    QPixmap combined(flagSize * 2 - overlap, flagSize);
+    combined.fill(Qt::transparent);
+    QPainter painter(&combined);
+    painter.drawPixmap(0, 0, basePm);
+    painter.drawPixmap(flagSize - overlap, 0, quotePm);
+    painter.end();
+    return QIcon(combined);
+}
+
 // ── FxSpotGridWindow ───────────────────────────────────────────────────────
 
-FxSpotGridWindow::FxSpotGridWindow(ClientManager* clientManager, QWidget* parent)
+FxSpotGridWindow::FxSpotGridWindow(ClientManager* clientManager,
+                                   ImageCache* imageCache,
+                                   QWidget* parent)
     : QWidget(parent)
     , clientManager_(clientManager)
+    , imageCache_(imageCache)
     , table_(new QTableWidget(0, ColumnCount, this))
     , staleTimer_(new QTimer(this))
     , loadWatcher_(new QFutureWatcher<LoadResult>(this)) {
@@ -191,6 +218,23 @@ FxSpotGridWindow::FxSpotGridWindow(ClientManager* clientManager, QWidget* parent
             &FxSpotGridWindow::onLoadFinished);
     connect(staleTimer_, &QTimer::timeout, this, &FxSpotGridWindow::onStaleCheck);
     staleTimer_->start(k_stale_poll_ms);
+
+    // Flags may still be loading (async) when a row is first built — re-apply
+    // once ImageCache actually has them rather than leaving rows stuck with
+    // whatever placeholder was available at buildRows() time.
+    if (imageCache_) {
+        const auto refreshFlags = [this]() {
+            if (!imageCache_)
+                return;
+            for (const auto& [ore_key, rs] : rows_) {
+                if (auto* item = table_->item(rs.row, ColPair))
+                    item->setIcon(pair_flags_icon(*imageCache_, item->text()));
+            }
+        };
+        connect(imageCache_, &ImageCache::imagesLoaded, this, refreshFlags);
+        connect(imageCache_, &ImageCache::allLoaded, this, refreshFlags);
+    }
+
     reload();
 }
 
@@ -266,11 +310,14 @@ void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_bind
         table_->insertRow(row);
 
         // Pair
-        auto* pairItem = new QTableWidgetItem(pair_from_ore_key(ore_key));
+        const QString pairText = pair_from_ore_key(ore_key);
+        auto* pairItem = new QTableWidgetItem(pairText);
         QFont pf = pairItem->font();
         pf.setBold(true);
         pairItem->setFont(pf);
         pairItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        if (imageCache_)
+            pairItem->setIcon(pair_flags_icon(*imageCache_, pairText));
         table_->setItem(row, ColPair, pairItem);
 
         // Mid

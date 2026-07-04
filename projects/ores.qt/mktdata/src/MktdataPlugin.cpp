@@ -51,7 +51,7 @@ void MktdataPlugin::on_login(const plugin_context& ctx) {
     ctx_ = ctx;
 
     marketDataController_ = std::make_unique<MarketDataController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache, ctx_.username);
     connect(marketDataController_.get(),
             &MarketDataController::statusMessage,
             this,

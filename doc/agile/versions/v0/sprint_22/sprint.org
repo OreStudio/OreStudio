@@ -57,7 +57,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | BACKLOG | | | 7/8 tasks done; Qt verification carried from sprint 20. |
+| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | STARTED | | | 7/8 tasks done; Qt verification carried from sprint 20. |
 | [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] | BACKLOG | | | Triage currency's custom Qt functionality (CSV/XML import-export, synthetic data generation, version-nav UI) vs. the qt codegen profile before the Qt sync task can proceed. |
 | [[id:8D0431A9-8894-4686-9BB6-3EAC7331084C][Commission: rounding_type]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
 | [[id:26E93F97-D7CB-4963-9DA7-5798AEE4F9BE][Commission: monetary_nature]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
@@ -67,7 +67,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Commission: party_id_scheme]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] | STARTED | | | 3/3 codegen-hardening tasks done; Qt/shell/CLI/manual scope still open. |
 | [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
@@ -170,7 +170,9 @@ health review (promote to a story, move to =next=, or discard).
 
 * Health Review
 
-(Run =sprint-reviewer= to generate this section.)
+| # | Date       | Day   | Overall | Task                          |
+|---+------------+-------+---------+-------------------------------|
+| 1 | 2026-07-04 | day 3 | RED     | [[id:FE18CB49-C6D0-4F1B-9B56-04E5738032D9][Health review 1 — sprint 22 analysis]] |
 
 * Charts
 

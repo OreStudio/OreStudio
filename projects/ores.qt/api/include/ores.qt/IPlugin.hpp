@@ -47,6 +47,7 @@ struct shared_menus_context {
     QMenu* analytics_menu = nullptr;
     QMenu* analytics_codes_menu = nullptr;
     QMenu* operations_menu = nullptr;
+    QMenu* organisation_codes_menu = nullptr;
 };
 
 /**

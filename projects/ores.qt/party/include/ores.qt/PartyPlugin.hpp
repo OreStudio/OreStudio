@@ -27,7 +27,6 @@ class QAction;
 
 namespace ores::qt {
 
-class PartyTypeController;
 class PartyStatusController;
 class PartyIdSchemeController;
 class ContactTypeController;
@@ -74,7 +73,6 @@ private:
     QAction* act_counterparties_{nullptr};
     QAction* act_business_units_{nullptr};
 
-    std::unique_ptr<PartyTypeController> partyTypeController_;
     std::unique_ptr<PartyStatusController> partyStatusController_;
     std::unique_ptr<PartyIdSchemeController> partyIdSchemeController_;
     std::unique_ptr<ContactTypeController> contactTypeController_;

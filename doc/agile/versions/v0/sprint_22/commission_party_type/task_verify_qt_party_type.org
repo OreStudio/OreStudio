@@ -8,12 +8,12 @@
 #+filetags: :commission_party_type:sprint_22:v0:
 #+owner: marco
 #+branch: feature/verify-qt-party-type
-#+pr:
+#+pr: 1428
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
-#+updated: 2026-06-25
-#+environment:
+#+updated: 2026-07-03
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,12 +29,12 @@ regressions found.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-04                               |
 
 * Acceptance
 
@@ -52,16 +52,104 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+Attempted to start the service fleet twice (=compass services start=,
+after =compass db recreate -y -k= against a freshly rebuilt
+=linux-clang-debug-make= preset) to drive the Qt client against live
+services. Both attempts: NATS starts fine, controller starts, launches
+=ores.wt.service[0]=, then crashes moments later writing the phase
+update — =ERROR: invalid byte sequence for encoding "UTF8": 0x99= on
+the first attempt, =0x8f= on the second (different byte, same call
+site) — see [[id:D48BEA76-F879-4C16-8310-933B7EAEBCDF][bug capture]] for
+full analysis. Filed as a separate bug rather than debugged in-line
+since it looks like memory corruption (ASAN/valgrind territory), not a
+party_type-related regression. Blocking further progress on this task
+until fixed.
+
+*Update:* not memory corruption. A legacy, untracked =nats-server= from
+the deleted =OreStudio.local2= checkout was squatting on solid_dirac's
+NATS ports (42222/8222); solid_dirac's own NATS fatal-crashed on the
+port conflict every time, but =compass services start='s readiness
+probe was fooled because something was answering on 42222. Controller
+and wt.service connected to the wrong broker, producing the corrupted
+reads. Fixed in [[id:05243CFE-F838-4759-9956-9400D6C90FDC][a separate
+infra story]] (PR #1415): killed the stray process and migrated NATS
+ports to derive from =ORES_BASE_PORT=. Full 24-service fleet now starts
+clean.
+
+*Eventing was genuinely broken, separately:* provisioned a fresh
+Barclays Plc tenant and found real eventing did not fire for
+=party_type=. Root cause:
+=projects/ores.refdata/service/src/app/application.cpp= (the
+hand-maintained Postgres LISTEN/NOTIFY → NATS relay) never had
+=party_type= registered — the SQL trigger and
+=party_type_changed_event.hpp= were both correctly generated, but
+nothing wired them into the relay. Confirmed this is a known, already
+captured class of bug
+([[id:1FEE0D30-0466-41F0-9137-97864DA6DA3E][capture]], originally found
+for =ores.synthetic=); at least 14 other =ores.refdata= entities have
+the same gap and are presumably still broken. Fixed =party_type='s
+registration inline (include + =register_mapping<>= +
+=event_bus.subscribe<>=), verified it builds and the service restarts
+clean. Added a line item to the
+[[id:897A7156-504D-4581-AD4C-026D643C0838][domain entity evaluation
+checklist]] naming this exact mechanism so future commissioning work
+catches it without needing two live Qt clients open.
+
+*Second, unrelated bug found on the Qt side:* even after the backend
+fix, the Qt client itself never subscribed to party_type's NATS event.
+=PartyTypeController= existed as two full duplicates:
+=ores.qt/party/src/PartyTypeController.cpp= (hand-written, still
+wired up by =PartyPlugin=, but constructed with an empty event name —
+so it silently never subscribed to anything) and
+=ores.qt/refdata/src/PartyTypeController.cpp= (correctly
+codegen-generated after party_type's earlier Qt sync task, but never
+actually compiled into any running plugin). The old copy also lacked
+the =ChangeReasonCache= parameter present on its sibling
+=PartyStatusController= — a real feature regression from that earlier,
+incomplete migration.
+
+Root-caused further: every entity in =ores.qt.party= has backend
+component=refdata; there is no =ores.party= C++ component. The plugin
+is a UI-only grouping with zero backend justification — this mismatch
+is what let the duplication go unnoticed. Fixed by regenerating
+party_type's Qt profile (lands under =ores.qt/refdata=, matching its
+component, with no codegen change needed), deleting the stale
+=ores.qt/party= copy, and moving its instantiation from =PartyPlugin=
+to =RefdataPlugin=. Added =shared_menus_context::organisation_codes_menu=
+(host-owned in =MainWindow.cpp=) so both plugins can contribute to the
+same physical "Organisation Codes" submenu without a cross-plugin
+library dependency, since the remaining =ores.qt.party= entities
+migrate one at a time as each is (re-)commissioned — see
+[[id:98D6A549-01D5-4E99-A530-9AFB9CFFD858][capture]]. Verified: full
+=ores.qt.exe= builds clean; live end-to-end retest (fresh Barclays Plc
+tenant, full 24-service fleet, Qt client login) confirms party_type
+list/detail/save/eventing all work correctly.
+
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1428][#1428]] | [refdata,qt] Fix party_type eventing: NATS registration + Qt controller dedup |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dead #include "ores.qt/PartyTypeController.hpp" left over from deleted controller | PartyPlugin.cpp:31 | Accepted | Removed; flagged independently by both review passes |
+| 2 | -Wreorder: header declares listWindow_/listMdiSubWindow_ before changeReasonCache_, .cpp init-list initializes in opposite order | cpp_qt_controller.hpp.mustache | Accepted | Fixed at the template level (not the generated file) and regenerated party_type only |
+| 3 | ores.qt.party.puml still shows PartyTypeController owned by PartyPlugin | ores.qt.party.puml | Declined (out of scope) | Reviewer flagged as non-blocking; multiple class blocks/relationships to remove properly, better done alongside the dissolve_ores_qt_party_plugin capture |
+| 4 | CI drift check: templates match their org sources | ores.cpp.qt.controller_header.org | Self-caught | Fix #2 edited the tangled .mustache directly instead of its literate .org source; CI's own drift check caught it. Fixed the .org source and re-tangled. |
 
 * Result
+
+End-to-end verification passed on a fresh Barclays Plc tenant with the
+full 24-service fleet up: list window loads party types, detail dialog
+edit/save round-trips correctly, and NATS eventing fires (user
+confirmed live in the Qt client, "looks great" after the plugin
+dedup/eventing fix — see Notes). This closes the story's Qt UI
+acceptance criteria for party_type; along the way this task also fixed
+two unrelated real bugs (NATS port collision infra fix, PR #1415; and
+party_type's eventing/plugin-duplication fix in this PR) and filed two
+follow-up backlog items (the =application.cpp= eventing-registration
+gap affecting ~14 other entities, and dissolving =ores.qt.party= into
+=ores.qt.refdata=).

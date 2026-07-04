@@ -91,14 +91,14 @@ private:
     void showHistoryWindow(const QString& code);
 {{/domain_entity.qt.has_uuid_primary_key}}
 
-    {{domain_entity.entity_pascal}}MdiWindow* listWindow_;
-    DetachableMdiSubWindow* listMdiSubWindow_;
-{{#domain_entity.qt.has_badge_columns}}
-    BadgeCache* badgeCache_;
-{{/domain_entity.qt.has_badge_columns}}
 {{#domain_entity.qt.has_change_reason_cache}}
     ChangeReasonCache* changeReasonCache_;
 {{/domain_entity.qt.has_change_reason_cache}}
+{{#domain_entity.qt.has_badge_columns}}
+    BadgeCache* badgeCache_;
+{{/domain_entity.qt.has_badge_columns}}
+    {{domain_entity.entity_pascal}}MdiWindow* listWindow_;
+    DetachableMdiSubWindow* listMdiSubWindow_;
 };
 
 }

@@ -38,8 +38,6 @@ The branch is stale relative to origin/main — rebase before doing anything els
 
 * Reference
 
-- [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Set SSH_AUTH_SOCK for git operations]] — source [[proj:build/scripts/set_ssh_agent.sh][=build/scripts/set_ssh_agent.sh=]] before pushing.
-
 * Artefacts                                                        :noexport:
 
 ** Licence

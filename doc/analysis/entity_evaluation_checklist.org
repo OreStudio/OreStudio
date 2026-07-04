@@ -109,6 +109,7 @@ Use alongside the [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Mat
 | list_for_party | Party-scoped list | If applicable | N/A | Domain only |
 | Authorization checks | Caller permission validated | Always | Always | Authorization call before data access |
 | NATS event firing on mutation | Events published on save and delete | Always | Always | NATS publish calls in save and delete implementations |
+| Registered in the LISTEN/NOTIFY→NATS relay | Entity's DB notify channel is republished to NATS | Always | Always | =grep <entity> projects/ores.<component>/service/src/app/application.cpp= — expect an =include=, a =register_mapping<...>=, and a =subscribe<...>= block; this file is hand-maintained (no AUTO-GENERATED marker) and is easy to miss when commissioning a new entity. See [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] — party_type (and ~14 other entities) had a generated =_changed_event.hpp= but was never wired into this file, so eventing silently never fired despite the SQL trigger and service-layer publish call both being correct. |
 
 ** Messaging / JSON IO layer (C++)
 

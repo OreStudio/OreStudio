@@ -28,7 +28,6 @@
 #include "ores.qt/PartyController.hpp"
 #include "ores.qt/PartyIdSchemeController.hpp"
 #include "ores.qt/PartyStatusController.hpp"
-#include "ores.qt/PartyTypeController.hpp"
 #include <QAction>
 #include <QMenu>
 
@@ -58,14 +57,6 @@ PartyPlugin::~PartyPlugin() {
 void PartyPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
-
-    partyTypeController_ = std::make_unique<PartyTypeController>(ctx_.main_window,
-                                                                 ctx_.mdi_area,
-                                                                 ctx_.client_manager,
-                                                                 ctx_.change_reason_cache,
-                                                                 ctx_.username,
-                                                                 this);
-    connectControllerSignals(partyTypeController_.get());
 
     partyStatusController_ = std::make_unique<PartyStatusController>(ctx_.main_window,
                                                                      ctx_.mdi_area,
@@ -183,12 +174,15 @@ void PartyPlugin::setup_menus(const shared_menus_context& smc) {
 
     ref->addSeparator();
 
-    auto* menuOrgCodes = ref->addMenu(tr("Organisation &Codes"));
-    auto* actPartyTypes = menuOrgCodes->addAction(ico(Icon::Tag), tr("Party &Types"));
-    connect(actPartyTypes, &QAction::triggered, this, [this]() {
-        if (partyTypeController_)
-            partyTypeController_->showListWindow();
-    });
+    // Organisation Codes submenu is host-owned and shared with
+    // RefdataPlugin (see shared_menus_context::organisation_codes_menu):
+    // party_type migrated there already (see Commission: party_type
+    // story); the entries below migrate as each is (re-)commissioned.
+    // RefdataPlugin inserts the submenu into Reference Data; do not
+    // insert it a second time here.
+    auto* menuOrgCodes = smc.organisation_codes_menu;
+    if (!menuOrgCodes)
+        return;
     auto* actPartyStatuses = menuOrgCodes->addAction(ico(Icon::Flag), tr("Party &Statuses"));
     connect(actPartyStatuses, &QAction::triggered, this, [this]() {
         if (partyStatusController_)
@@ -240,7 +234,6 @@ void PartyPlugin::on_logout() {
     contactTypeController_.reset();
     partyIdSchemeController_.reset();
     partyStatusController_.reset();
-    partyTypeController_.reset();
 
     ctx_ = {};
 }

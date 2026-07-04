@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: BC9416AC-4452-4B63-B844-B0E1EBC8934B
+:END:
+#+title: Move compass sql under the db command
+#+description: compass sql is a top-level alias for compass db sql, inconsistent with every other pillar where related operations nest under one subcommand (e.g. compass db {status,recreate,sql,...}).
+#+type: capture
+#+level: cross
+#+filetags: :compass:cli:devx:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.compass/src/compass.py:5827-5829= special-cases
+=compass sql= as a top-level command that just forwards to
+=compass_db.run(["sql"] + argv, ...)= — the same handler as
+=compass db sql=. Fold this into a proper alias/subcommand of
+=db= (or document it explicitly as a documented top-level shortcut) so
+=compass --help= and =compass db --help= don't disagree about where
+=sql= lives.
+
+* Why
+
+Every other pillar in compass groups its operations under one
+subcommand namespace (=compass db {status,recreate,setup,drop,sql,
+reset-system,reset-tenant}=, =compass services {start,stop,status,
+clear-logs}=, =compass client {start,stop}=). =compass sql= breaks that
+pattern by existing as a bare top-level command that isn't listed in
+=compass db --help='s subcommand list, even though it's really
+=db sql= under the hood. Noticed while running =compass sql -- -c
+"..."= directly during party_type Qt verification and being surprised
+it wasn't discoverable via =compass db --help=.
+
+* References
+
+- =projects/ores.compass/src/compass.py:5827-5829=
+- =projects/ores.compass/src/compass_db.py= (the actual =sql= subcommand handler)
+
+* See also
+
+-

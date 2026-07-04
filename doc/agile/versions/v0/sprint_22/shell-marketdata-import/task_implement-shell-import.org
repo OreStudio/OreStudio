@@ -146,7 +146,10 @@ helper is new code here, not reuse.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Consider a service-level test for modified_by/performed_by/change_reason_code | import_service.cpp | Declined | No other *_commands.cpp/import_service.cpp has unit tests today; noted as low-priority follow-up. |
+| 2 | Usage-check runs before is_logged_in() check, ordering inconsistency | marketdata_commands.cpp | Declined | Cosmetic; other commands vary on this ordering too. |
+| 3 | 5-minute import timeout is more generous than ImportTradeDialog's actual (unspecified/30s) default | marketdata_commands.cpp | Declined | Longer server-side wait is strictly safer for large files; GUI's 30s default being under-provisioned is a separate, pre-existing concern. |
+| 4 | --file= (empty value) indistinguishable from omitting --file | marketdata_commands.cpp | Declined | Cosmetic; same ambiguity exists in other commands' flag parsing. |
 
 * Result
 

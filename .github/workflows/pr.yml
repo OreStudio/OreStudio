@@ -65,6 +65,10 @@ jobs:
               projects/ores.compass/*)
                 # Compass CLI (Python): no C++ impact.
                 docs=true ;;
+              external/*)
+                # Vendored reference data/assets (schemas, examples, test
+                # images): no C++ impact.
+                docs=true ;;
               projects/modeling/*|projects/*/modeling/*|projects/*/*/modeling/*)
                 # Modeling docs (org/puml/png): no C++ impact, site renders them.
                 docs=true ;;

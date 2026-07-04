@@ -2,7 +2,7 @@
 :ID: 8010834F-9179-4ECD-999D-5D017D393D36
 :END:
 #+title: How do I generate a codegen entity?
-#+description: Use compass codegen entity generate to regenerate all applicable profiles for an entity. Supports --profile to restrict to one facet and --dry-run to preview paths.
+#+description: Use compass codegen entity generate to regenerate all applicable profiles for an entity. Supports --address to restrict to one facet (per-layer commands table included) and --dry-run to preview paths.
 #+type: recipe
 #+level: cross
 #+filetags: :codegen:compass:entity:recipe:
@@ -34,12 +34,45 @@ Generating country (domain_entity, refdata) — 12 profile(s): domain, generator
   non-temporal-sql, protocol, qt, repository, service, sql
 #+end_example
 
-*Restrict to one facet* with =--profile=:
+*Restrict to one facet* with =--address= (the current, non-deprecated flag;
+=--profile= still accepts the same address strings but prints a deprecation
+warning and will be removed — see =projects/ores.compass/src/compass_codegen_entity.py=):
 
 #+begin_src sh
-./compass.sh codegen entity generate country --profile sql
-./compass.sh codegen entity generate country --profile domain
-./compass.sh codegen entity generate country --profile qt
+./compass.sh codegen entity generate country --address ores.sql.schema
+./compass.sh codegen entity generate country --address ores.cpp.domain
+./compass.sh codegen entity generate country --address ores.cpp.qt
+#+end_src
+
+*One command per layer* — the facet addresses you'll reach for most often
+when regenerating a single layer (e.g. during a commissioning task):
+
+| Layer                    | Facet address                 | What it writes                             |
+|--------------------------+--------------------------------+---------------------------------------------|
+| SQL schema               | =ores.sql.schema=              | table DDL, insert/update triggers, indexes |
+| SQL populate             | =ores.sql.populate=            | seed-data DML                              |
+| C++ domain struct        | =ores.cpp.domain=              | domain struct + JSON I/O                   |
+| C++ repository           | =ores.cpp.repository=          | repository class (sqlgen queries)          |
+| C++ service              | =ores.cpp.service=             | service class wrapping the repository      |
+| C++ NATS protocol        | =ores.cpp.protocol=            | request/response message structs           |
+| C++ NATS handler         | =ores.cpp.nats-handler=        | message handler class                      |
+| C++ NATS sub-registrar   | =ores.cpp.nats-sub-registrar=  | per-entity subject registration            |
+| C++ NATS eventing        | =ores.cpp.nats-eventing=       | domain-changed event struct                |
+| C++ generator (synthetic)| =ores.cpp.generator=           | synthetic-data generator function          |
+| C++ Qt UI                | =ores.cpp.qt=                  | Qt list/detail/history windows and models  |
+| C++ enum                 | =ores.cpp.enum=                | enum type + string conversion              |
+| CMake component wiring   | =ores.cmake.component=         | component CMakeLists.txt entries           |
+
+=--address= (like =--profile=) accepts only one facet per invocation — there is
+no accumulating flag. To touch several layers without regenerating the whole
+entity, run the command once per address:
+
+#+begin_src sh
+./compass.sh codegen entity generate counterparty_identifier --address ores.cpp.repository
+./compass.sh codegen entity generate counterparty_identifier --address ores.cpp.service
+./compass.sh codegen entity generate counterparty_identifier --address ores.cpp.protocol
+./compass.sh codegen entity generate counterparty_identifier --address ores.cpp.nats-handler
+./compass.sh codegen entity generate counterparty_identifier --address ores.cpp.nats-sub-registrar
 #+end_src
 
 *Preview paths without writing* with =--dry-run=:
@@ -52,7 +85,7 @@ Generating country (domain_entity, refdata) — 12 profile(s): domain, generator
 
 #+begin_src sh
 ./compass.sh codegen entity generate country --diff
-./compass.sh codegen entity generate country --profile sql --diff
+./compass.sh codegen entity generate country --address ores.sql.schema --diff
 #+end_src
 
 =--dry-run= and =--diff= are mutually exclusive.

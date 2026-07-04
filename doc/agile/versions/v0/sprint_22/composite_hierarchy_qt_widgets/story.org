@@ -55,7 +55,7 @@ Sequenced in three tasks:
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Designing the child-entity Qt facet (task 1). |
+| Now           | Child-entity design decided: handcrafted widget, not a facet. |
 | Waiting on    | Nothing.                               |
 | Next          | Build the standalone HierarchyTreeWidget (task 2). |
 | Last touched  | 2026-07-04                               |
@@ -79,11 +79,20 @@ Sequenced in three tasks:
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C15BB82D-5A1F-4C19-A638-94A230B90F27][Design child-entity Qt facet for embeddable tables]] | STARTED | 2026-07-04 | | Determine whether counterparty_identifier/counterparty_contact_information/party_identifier/party_contact_information need a new codegen Qt facet for embeddable child tables, or a handcrafted base widget with a thin generated binding, fetched via the existing foreign_keys/list_by paged backend query. |
+| [[id:C15BB82D-5A1F-4C19-A638-94A230B90F27][Design child-entity Qt facet for embeddable tables]] | DONE | 2026-07-04 | 2026-07-04 | Determine whether counterparty_identifier/counterparty_contact_information/party_identifier/party_contact_information need a new codegen Qt facet for embeddable child tables, or a handcrafted base widget with a thin generated binding, fetched via the existing foreign_keys/list_by paged backend query. |
 | [[id:667ED39E-6427-4E5E-8027-59AE507B2F24][Build standalone HierarchyTreeWidget and hierarchy-model-builder]] | BACKLOG | | | Build two 100%-handcrafted, reusable Qt classes: a generic self-referencing HierarchyTreeWidget, and a hierarchy-model-builder producing a ready-to-plug-in tree model given a party or counterparty. Add minimal paste-block seams to the Qt detail-dialog codegen templates to bind them. |
 | [[id:2AC41A6E-3F18-48FF-B389-D5CC0E1AAC8F][Bind composite child-entity and hierarchy widgets to party and counterparty]] | BACKLOG | | | Once the child-entity facet and hierarchy widget are proven, design and execute binding both against party and counterparty, verify feature parity against EntityDetailDialog, and retire the hand-maintained abstraction. |
 
 * Decisions
+
+Child-entity tables (identifiers, contacts) will use a handcrafted,
+reusable widget (=EmbeddedChildTableWidget=, parameterized by column
+defs + fetch/save/remove callbacks) plus a thin generated binding —
+not a new codegen Qt facet — mirroring the hierarchy-widget decision.
+Only two distinct column shapes exist across all 4 child entities
+(identifier shape, contact shape), and the backend paged fetch-by-parent-id
+query is already fully generated. See task 1's =* Notes= for the full
+evidence trail.
 
 * Out of scope
 

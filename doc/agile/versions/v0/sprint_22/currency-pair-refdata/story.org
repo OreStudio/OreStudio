@@ -2,7 +2,7 @@
 :ID: 04A121FA-00D6-43EB-9B21-04EDC1FA493D
 :END:
 #+title: Story: Currency pair support in reference data
-#+description: Add first-class currency pair support to reference data, starting with a knowledge-base foundation covering conventions, cross rates, and quoting, then extending domain/db/codegen support.
+#+description: Add first-class currency pair support to reference data: knowledge-base foundation, domain model, codegen implementation, and librarian support. Umbrella story for the full feature, not just the design.
 #+type: story
 #+level: s2
 #+filetags: :currency:currency_pair:refdata:market_data:v0:sprint_22:
@@ -17,22 +17,21 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 ORE Studio treats currencies as first-class reference data, but currency
 *pairs* (conventions, quoting, cross rates) are not yet modelled as
-such. This story builds first-class currency pair support in reference
-data. It starts with a knowledge-base foundation — a set of
-zettelkasten-style documents capturing currency pair conventions,
-quoting rules, and cross rate mechanics — that both documents the
-domain for contributors and grounds the domain/db/codegen work that
-follows in later tasks.
+such. This story is the umbrella for the full currency pair feature:
+knowledge-base foundation (done), domain model design (done), the
+=ores.codegen.entity= implementation of that model, and librarian
+support so a new party gets a usable set of currency pairs out of the
+box. It stays open across all of that — it is not a design-only story.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Nothing.                       |
+| Now           | Design done; more implementation tasks (codegen, librarian, ...) still to come. |
 | Waiting on    | Nothing.                               |
-| Next          | Implement the design via ores.codegen (follow-on story). |
+| Next          | Scaffold the codegen implementation task(s), then librarian support ([[id:155FA378-9953-4EA0-8495-7C61E40BE81C][task]]). |
 | Last touched  | 2026-07-04                               |
 
 * Acceptance
@@ -47,6 +46,9 @@ follows in later tasks.
 - [X] The currency pair entity (and supporting currency fields) is
   modelled with all fields identified in the knowledge cluster, ready
   to drive =ores.codegen=.
+- [ ] Creating a party (via librarian) results in a usable set of
+  currency pairs being available for it, following the same
+  publish-from-dq pattern used by the synthetic FX foundation.
 
 * Tasks
 
@@ -55,6 +57,7 @@ follows in later tasks.
 | [[id:141A6CD3-60BA-42E6-BEC4-14122F70451A][Build knowledge documents for currency pairs]] | DONE | | 2026-07-04 | Turn freeform notes on currency pairs into a set of small, self-contained zettelkasten-style knowledge documents, cross-linked via org-roam links (including to existing docs like the cross rates matrix), with an index document tying them together. |
 | [[id:1689B6B1-129F-44F0-A3FF-7E069BF9E394][Model the currency pair entity for codegen]] | DONE | | 2026-07-04 | Model the currency pair (and supporting currency) entities with all fields identified in the knowledge cluster (base/quote, spot days, deliverability/NDF, pip factor/tick size, classification, cut code, fixing source, etc.), ready to drive ores.codegen. |
 | [[id:8B45AB22-FD56-41DB-A74B-750E460188D2][Replace is_g11 flag with an extensible currency-group model]] | DONE | | 2026-07-04 | Correct the currency_pair design: is_g11 is a fixed boolean that can't express overlapping desk groupings (Scandies, Antipodeans, commodity currencies, etc.), and G11 membership belongs on the currency, not the pair. Replace it with a many-to-many currency_group lookup + junction, mirroring the existing party_currencies junction pattern. |
+| [[id:155FA378-9953-4EA0-8495-7C61E40BE81C][Add librarian support for currency pairs]] | BACKLOG | | | Extend the DQ librarian so creating a party yields a usable set of currency pairs out of the box, following the same publish-from-dq bundle pattern used for the synthetic FX foundation. |
 
 * Decisions
 
@@ -84,8 +87,5 @@ follows in later tasks.
 
 * Out of scope
 
-- Actual =ores.codegen.entity= model files and generated code — this
-  story only produced the design; implementation is a follow-on piece of
-  work.
 - The calendar/day-count and fixing-source reference entities flagged as
   open questions in the second task.

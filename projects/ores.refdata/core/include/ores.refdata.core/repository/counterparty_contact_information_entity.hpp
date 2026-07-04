@@ -22,8 +22,6 @@
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
-#include <optional>
-#include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
@@ -41,19 +39,16 @@ struct counterparty_contact_information_entity {
     std::string tenant_id;
     int version = 0;
     std::string counterparty_id;
-
-
     std::string contact_type;
-
-    std::optional<std::string> street_line_1;
-    std::optional<std::string> street_line_2;
-    std::optional<std::string> city;
-    std::optional<std::string> state;
-    std::optional<std::string> country_code;
-    std::optional<std::string> postal_code;
-    std::optional<std::string> phone;
-    std::optional<std::string> email;
-    std::optional<std::string> web_page;
+    std::string street_line_1;
+    std::string street_line_2;
+    std::string city;
+    std::string state;
+    std::string country_code;
+    std::string postal_code;
+    std::string phone;
+    std::string email;
+    std::string web_page;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

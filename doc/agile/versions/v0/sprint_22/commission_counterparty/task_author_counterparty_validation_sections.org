@@ -194,3 +194,40 @@ counterparty-specific model-content gap. Verified the fix against
 =currency= (zero regression) before landing. Also fixed one unrelated
 pre-existing compile bug (wrong faker-cxx function name) discovered
 while verifying the C++ compiles.
+
+*Addendum: canary caught a real gap the isolated compiles missed.*
+=--profile all= doesn't cover the nats-handler layer
+(messaging/*_handler.hpp), so it went stale relative to the newly
+regenerated protocol/service shapes — never caught because verification
+only ever compiled individual =.cpp= files in isolation, never the
+aggregating =registrar.cpp= that actually links everything together.
+Fixed for =counterparty=, =counterparty_identifier=, and
+=party_identifier= (regenerated the =nats-handler= profile too, all
+compile clean including the full =registrar.cpp=).
+
+=counterparty_contact_information= turned out to be a deeper problem:
+regenerating its repository/service/domain layers migrates it to the
+tenant-scoped context-per-call architecture other entities have already
+adopted via their own dedicated "Sync C++ core codegen" PRs — but this
+entity has a hand-written NATS handler
+(=messaging/counterparty_contact_handler.hpp=, a deliberately
+shortened/mismatched name per main's own =registrar.cpp= comment) with
+custom business logic (filter by =counterparty_id=, individual-ID
+removal loop) built against the *old* API shape, and that logic isn't
+captured anywhere in the =.org= model. This existed from this task's
+very first commit — never caught until a full library build (only
+possible after rebasing onto a concurrent sub-registrar-wiring PR that
+made the gap visible via a real compile error). Rather than blindly
+reimplementing hand-written, tenant-sensitive business logic under time
+pressure, reverted all of =counterparty_contact_information='s C++
+files back to =origin/main= byte-for-byte, keeping only its =.org=
+model and generated SQL changes (which have zero C++ impact). Migrating
+its C++ layer alongside the hand-written handler is properly a separate
+"Sync C++ core codegen for counterparty_contact_information" task,
+matching the established per-entity pattern — not filed as a new task
+here since it's out of this story's immediate scope, but worth picking
+up whenever that broader migration effort reaches this entity.
+
+Verified: full =ores.refdata.core.lib= and =ores.refdata.api.lib=
+targets both build clean, including =registrar.cpp=, after rebasing
+onto the latest =main=.

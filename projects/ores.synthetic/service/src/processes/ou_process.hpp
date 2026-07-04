@@ -41,11 +41,8 @@ namespace ores::synthetic::service {
  */
 class ou_process final : public ores::marketdata::domain::IStochasticProcess {
 public:
-    ou_process(double kappa,
-              double theta,
-              double sigma,
-              double initial_price,
-              std::uint32_t seed = 42);
+    ou_process(
+        double kappa, double theta, double sigma, double initial_price, std::uint32_t seed = 42);
 
     double next() override;
     double current() const override;

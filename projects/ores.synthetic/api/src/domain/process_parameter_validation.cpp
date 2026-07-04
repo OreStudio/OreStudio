@@ -28,8 +28,8 @@ process_parameter_validation_result invalid(std::string message) {
 }
 
 process_parameter_validation_result validate_mixing(const std::vector<double>& means,
-                                                     const std::vector<double>& stdevs,
-                                                     const std::vector<double>& weights) {
+                                                    const std::vector<double>& stdevs,
+                                                    const std::vector<double>& weights) {
     if (means.empty() || stdevs.empty() || weights.empty())
         return invalid("At least one component is required.");
     if (means.size() != stdevs.size() || means.size() != weights.size())
@@ -48,7 +48,7 @@ process_parameter_validation_result validate_mixing(const std::vector<double>& m
 }
 
 process_parameter_validation_result validate_ou(const std::vector<double>& stdevs,
-                                                 const std::vector<double>& weights) {
+                                                const std::vector<double>& weights) {
     if (stdevs.empty() || weights.empty())
         return invalid("Ornstein-Uhlenbeck requires κ (Weight) and σ (Volatility).");
     if (stdevs.front() < 0.0)
@@ -58,12 +58,11 @@ process_parameter_validation_result validate_ou(const std::vector<double>& stdev
 
 }
 
-process_parameter_validation_result validate_process_parameters(
-    const std::string& process_type,
-    const std::vector<double>& means,
-    const std::vector<double>& stdevs,
-    const std::vector<double>& weights,
-    double initial_price) {
+process_parameter_validation_result validate_process_parameters(const std::string& process_type,
+                                                                const std::vector<double>& means,
+                                                                const std::vector<double>& stdevs,
+                                                                const std::vector<double>& weights,
+                                                                double initial_price) {
 
     if (initial_price <= 0.0)
         return invalid("Initial price must be positive.");

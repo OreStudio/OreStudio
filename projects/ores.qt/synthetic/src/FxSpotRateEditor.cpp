@@ -774,9 +774,8 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     // Distribution Preview chart (ReturnDistributionChart::componentColor()).
     auto* colorSwatch = new QLabel(componentTable_);
     colorSwatch->setFixedSize(16, 16);
-    colorSwatch->setStyleSheet(
-        QStringLiteral("background-color: %1; border-radius: 3px;")
-            .arg(ReturnDistributionChart::componentColor(row).name()));
+    colorSwatch->setStyleSheet(QStringLiteral("background-color: %1; border-radius: 3px;")
+                                   .arg(ReturnDistributionChart::componentColor(row).name()));
     auto* colorCell = new QWidget(componentTable_);
     auto* colorLayout = new QHBoxLayout(colorCell);
     colorLayout->setContentsMargins(4, 2, 4, 2);
@@ -1006,13 +1005,13 @@ void FxSpotRateEditor::updateEngineUi() {
 
     if (componentTable_) {
         if (auto* meanHdr = componentTable_->horizontalHeaderItem(ColMean))
-            meanHdr->setToolTip(ou ? tr("Unused by Ornstein-Uhlenbeck.") :
-                                     tr("Drift (μ) — average %1 per update (%).")
-                                         .arg(incrementNoun()));
+            meanHdr->setToolTip(
+                ou ? tr("Unused by Ornstein-Uhlenbeck.") :
+                     tr("Drift (μ) — average %1 per update (%).").arg(incrementNoun()));
         if (auto* stdevHdr = componentTable_->horizontalHeaderItem(ColStdev))
-            stdevHdr->setToolTip(ou ? tr("σ — Ornstein-Uhlenbeck volatility.") :
-                                      tr("Volatility (σ) of the %1 per update (%).")
-                                          .arg(incrementNoun()));
+            stdevHdr->setToolTip(
+                ou ? tr("σ — Ornstein-Uhlenbeck volatility.") :
+                     tr("Volatility (σ) of the %1 per update (%).").arg(incrementNoun()));
         if (auto* weightHdr = componentTable_->horizontalHeaderItem(ColWeight))
             weightHdr->setToolTip(
                 ou ? tr("κ — Ornstein-Uhlenbeck reversion speed (0 = driftless random walk).") :
@@ -1043,7 +1042,7 @@ void FxSpotRateEditor::updateComponentColors() {
         if (auto* cell = componentTable_->cellWidget(r, ColColor)) {
             if (auto* swatch = cell->findChild<QLabel*>())
                 swatch->setStyleSheet(QStringLiteral("background-color: %1; border-radius: 3px;")
-                                           .arg(ReturnDistributionChart::componentColor(r).name()));
+                                          .arg(ReturnDistributionChart::componentColor(r).name()));
         }
     }
 }

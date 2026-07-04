@@ -23,11 +23,8 @@
 
 namespace ores::synthetic::service {
 
-ou_process::ou_process(double kappa,
-                       double theta,
-                       double sigma,
-                       double initial_price,
-                       std::uint32_t seed)
+ou_process::ou_process(
+    double kappa, double theta, double sigma, double initial_price, std::uint32_t seed)
     : kappa_(kappa)
     , theta_(theta)
     , sigma_(sigma)

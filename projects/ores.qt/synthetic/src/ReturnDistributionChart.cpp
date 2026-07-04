@@ -153,8 +153,8 @@ void ReturnDistributionChart::setComponents(const std::vector<Component>& compon
     // distribution and read confusingly as a probability > 1).
     std::vector<std::pair<double, double>> pts;
     pts.reserve(samples + 1);
-    std::vector<std::vector<double>> componentYs(
-        components.size(), std::vector<double>(samples + 1, 0.0));
+    std::vector<std::vector<double>> componentYs(components.size(),
+                                                 std::vector<double>(samples + 1, 0.0));
     double yMax = 0.0;
     for (int i = 0; i <= samples; ++i) {
         const double x = xMin + (xMax - xMin) * i / samples;

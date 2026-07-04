@@ -44,9 +44,8 @@ process_factory::make_process(const std::string& process_type,
     // Single source of truth for "are these parameters good?" — shared with the
     // Qt client (ores.synthetic.api::domain::validate_process_parameters), so
     // both surfaces enforce identical rules without duplicating them.
-    const auto validation =
-        ores::synthetic::domain::validate_process_parameters(
-            process_type, means, stdevs, weights, initial_price);
+    const auto validation = ores::synthetic::domain::validate_process_parameters(
+        process_type, means, stdevs, weights, initial_price);
     if (!validation.valid)
         throw std::invalid_argument(validation.message);
 

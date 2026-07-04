@@ -22,6 +22,7 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::marketdata::messaging {
 
@@ -62,6 +63,21 @@ struct import_market_data_request {
      * default) preserves the pre-existing untagged behaviour.
      */
     std::string source;
+
+    /**
+     * @brief How a (date, key) pair repeated within market_data_content or
+     * fixings_content is handled.
+     *
+     * false (default): the later occurrence wins (last-line-wins), each
+     * repeat is reported in @c warnings, and the import proceeds — matches
+     * real ORE example data, which does contain such repeats.
+     *
+     * true: same de-duplication, but each repeat is reported in @c errors
+     * instead, and the affected content (market data and/or fixings,
+     * whichever contained repeats) is not persisted — a strict mode for
+     * callers that want repeats treated as a hard failure.
+     */
+    bool duplicates_are_errors = false;
 };
 
 struct import_market_data_response {
@@ -70,6 +86,22 @@ struct import_market_data_response {
     int series_count = 0;
     int observation_count = 0;
     int fixing_count = 0;
+
+    /**
+     * @brief Non-fatal issues from de-duplicating repeated (date, key)
+     * pairs, one string per repeat, e.g. "market data line 12: duplicate
+     * key '...' — superseded by line 34". Populated regardless of
+     * duplicates_are_errors; which of warnings/errors they land in depends
+     * on it.
+     */
+    std::vector<std::string> warnings;
+
+    /**
+     * @brief Same shape as warnings, populated only when
+     * duplicates_are_errors is true. A non-empty errors means the content
+     * with repeats (market data and/or fixings) was not persisted.
+     */
+    std::vector<std::string> errors;
 };
 
 }

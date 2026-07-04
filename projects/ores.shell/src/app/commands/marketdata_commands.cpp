@@ -147,15 +147,23 @@ void marketdata_commands::process_import(std::ostream& out,
 
     if (!result->success) {
         fail(out) << "Failed to import market data: " << result->message << std::endl;
+        for (const auto& error : result->errors)
+            out << "  ✗ " << error << std::endl;
         return;
     }
 
     out << "✓ Imported " << result->series_count << " series, " << result->observation_count
         << " observation(s), " << result->fixing_count << " fixing(s): " << result->message
         << std::endl;
+    if (!result->warnings.empty()) {
+        out << "⚠ " << result->warnings.size() << " warning(s):" << std::endl;
+        for (const auto& warning : result->warnings)
+            out << "  ⚠ " << warning << std::endl;
+    }
     BOOST_LOG_SEV(lg(), info) << "Import succeeded: " << result->series_count << " series, "
                               << result->observation_count << " observations, "
-                              << result->fixing_count << " fixings.";
+                              << result->fixing_count << " fixings, " << result->warnings.size()
+                              << " warning(s).";
 }
 
 }

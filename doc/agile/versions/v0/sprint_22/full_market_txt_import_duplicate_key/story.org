@@ -58,36 +58,58 @@ narrows this to =market.txt='s larger/denser quote sets specifically:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Done — all tasks closed.               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                                |
 | Last touched  | 2026-07-04                               |
 
 * Acceptance
 
-- Root cause identified: which =series_type=/qualifier combination(s)
-  in =series_key_registry.cpp= decompose distinct source quotes to
-  the same =(series_id, point_id)= pair for
-  =external/ore/examples/Legacy/Example_56/Input/market.txt=.
+- Root cause identified. ✓ — corrected from the original hypothesis:
+  not a =series_key_registry.cpp= decomposition bug at all.
+  =Legacy/Example_56/Input/market.txt= genuinely repeats ~100 raw
+  =(date, key)= pairs with a different value later in the file
+  (confirmed via =sort market.txt | uniq -d=).
 - =marketdata import --file
   external/ore/examples/Legacy/Example_56/Input/market.txt --source
   ore.reference= succeeds cleanly against a freshly recreated,
-  Barclays-provisioned database — no unique-constraint violation.
+  Barclays-provisioned database — no unique-constraint violation. ✓
 - The two already-passing vintages (TA002 IR Swap, MarketRisk
-  HistSimVar) still import cleanly — no regression.
+  HistSimVar) still import cleanly — no regression. ✓
 - [[id:DD527011-4F5E-4716-97A2-6AA8C70F3BB6][How do I import the 2016-02-05 ORE reference vintage market data?]]'s
-  recipe updated to show a passing =#+RESULTS:= instead of the
-  documented failure.
+  recipe updated to show a passing =#+RESULTS:=. ✓
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:3AB326D6-F7CC-41A9-B69E-BF8804C1E182][Fix series key decomposition collision causing duplicate observation key]] | STARTED | 2026-07-04 | | Investigate ores.ore.core's series_key_registry.cpp qualifier_depth table to find which series_type(s) decompose distinct Example_56 quotes to the same (series_id, point_id) pair; fix the decomposition and verify a clean full-file import. |
+| [[id:3AB326D6-F7CC-41A9-B69E-BF8804C1E182][Fix series key decomposition collision causing duplicate observation key]] | DONE | 2026-07-04 | 2026-07-04 | Investigate ores.ore.core's series_key_registry.cpp qualifier_depth table to find which series_type(s) decompose distinct Example_56 quotes to the same (series_id, point_id) pair; fix the decomposition and verify a clean full-file import. |
 
 * Decisions
+
+- Corrected the original hypothesis: this was never a
+  =series_key_registry= decomposition collision — the file itself
+  contains genuine raw duplicate =(date, key)= pairs with differing
+  values. Recording this here so the capture's original "suspect
+  qualifier_depth" framing isn't mistaken for what actually happened.
+- Fix lives in the importer (=ores.ore.core::market::parse_market_data=/
+  =parse_fixings=), not =import_service=, per explicit steer:
+  duplicate handling is a parsing concern, reusable by any caller —
+  not something specific to how the service happens to persist the
+  result.
+- Duplicate handling is a policy (=duplicate_policy::warn= / =error=),
+  not a hardcoded behaviour: last-line-wins de-duplication always
+  happens (matches how a sequential loader would naturally behave),
+  but the caller decides whether repeats are reported as warnings
+  (import proceeds) or errors (affected content is not persisted).
+  Default is =warn=, since real ORE example data contains repeats and
+  a strict default would make this vintage permanently unimportable.
+- Exposing =duplicates_are_errors= as an =ores.shell= flag is
+  deliberately out of scope here — the request field exists and
+  works over NATS, but wiring a =--strict= flag through the shell
+  command is left as follow-up since nothing currently needs it.
 
 * Out of scope
 

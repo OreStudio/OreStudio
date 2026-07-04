@@ -21,6 +21,7 @@
 #include "ores.ore.core/market/series_key_registry.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include <istream>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -29,6 +30,50 @@
 namespace ores::ore::market {
 
 namespace {
+
+/**
+ * @brief Drops all but the last occurrence of each (date, key) pair,
+ *        preserving the file-order position of the surviving occurrence,
+ *        and records each dropped occurrence in *report per on_duplicate.
+ *
+ * @tparam T     Element type (market_datum or fixing).
+ * @tparam KeyOf Callable: const T& -> the second key field (raw key string
+ *               or index_name).
+ */
+template <typename T, typename KeyOf>
+std::vector<T> dedupe_by_date_and_key(std::vector<T> items,
+                                      const std::vector<int>& line_numbers,
+                                      duplicate_policy on_duplicate,
+                                      parse_report* report,
+                                      KeyOf key_of) {
+    // Map (date, key) -> index of its LAST occurrence in `items`.
+    std::map<std::pair<std::chrono::sys_days, std::string>, std::size_t> last_index;
+    for (std::size_t i = 0; i < items.size(); ++i) {
+        const auto composite = std::make_pair(std::chrono::sys_days{items[i].date}, key_of(items[i]));
+        last_index[composite] = i;
+    }
+
+    std::vector<T> result;
+    result.reserve(items.size());
+    for (std::size_t i = 0; i < items.size(); ++i) {
+        const auto composite = std::make_pair(std::chrono::sys_days{items[i].date}, key_of(items[i]));
+        const auto winner = last_index.at(composite);
+        if (winner != i) {
+            // This occurrence is superseded by a later one at index `winner`.
+            if (report) {
+                auto& bucket =
+                    on_duplicate == duplicate_policy::warn ? report->warnings : report->errors;
+                bucket.push_back(
+                    {line_numbers[i],
+                     "duplicate key '" + key_of(items[i]) + "' — superseded by line " +
+                         std::to_string(line_numbers[winner])});
+            }
+            continue;
+        }
+        result.push_back(std::move(items[i]));
+    }
+    return result;
+}
 
 /**
  * @brief Tokenizes a data line into exactly three fields.
@@ -94,8 +139,10 @@ line_tokens tokenize(std::string_view line) {
 
 } // namespace
 
-std::vector<market_datum> parse_market_data(std::istream& in) {
+std::vector<market_datum>
+parse_market_data(std::istream& in, duplicate_policy on_duplicate, parse_report* report) {
     std::vector<market_datum> result;
+    std::vector<int> line_numbers;
     std::string line;
     int line_no = 0;
 
@@ -128,16 +175,21 @@ std::vector<market_datum> parse_market_data(std::istream& in) {
             datum.qualifier = dk.qualifier;
             datum.point_id = dk.point_id;
             result.push_back(std::move(datum));
+            line_numbers.push_back(line_no);
         } catch (const std::invalid_argument& ex) {
             throw std::invalid_argument("line " + std::to_string(line_no) + ": " + ex.what());
         }
     }
 
-    return result;
+    return dedupe_by_date_and_key(
+        std::move(result), line_numbers, on_duplicate, report,
+        [](const market_datum& d) { return d.key; });
 }
 
-std::vector<fixing> parse_fixings(std::istream& in) {
+std::vector<fixing>
+parse_fixings(std::istream& in, duplicate_policy on_duplicate, parse_report* report) {
     std::vector<fixing> result;
+    std::vector<int> line_numbers;
     std::string line;
     int line_no = 0;
 
@@ -163,12 +215,15 @@ std::vector<fixing> parse_fixings(std::istream& in) {
             f.qualifier = f.index_name;
             f.value = std::string(val_str);
             result.push_back(std::move(f));
+            line_numbers.push_back(line_no);
         } catch (const std::invalid_argument& ex) {
             throw std::invalid_argument("line " + std::to_string(line_no) + ": " + ex.what());
         }
     }
 
-    return result;
+    return dedupe_by_date_and_key(
+        std::move(result), line_numbers, on_duplicate, report,
+        [](const fixing& f) { return f.index_name; });
 }
 
 } // namespace ores::ore::market

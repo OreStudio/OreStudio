@@ -605,6 +605,17 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     if repo:
         de["repository"] = {k.lower(): _parse_typed(v) for k, v in repo.properties.items()}
 
+    # Foreign keys: a domain-level concept (references to another entity's
+    # row) shared by the SQL facet (existence-check trigger) and C++ facets
+    # (repository/service/protocol/handler list-by-FK queries, opted into
+    # per column via :list_by:). Top-level on domain_entity, not nested
+    # under any one facet's namespace.
+    fk_section = _section(doc.root, "Foreign keys")
+    if fk_section and fk_section.children:
+        de["foreign_keys"] = [
+            _soft_fk_validation_node_to_dict(c) for c in fk_section.children
+        ]
+
     # SQL section: SQL-specific flags + structured sub-sections.
     sql_section = _section(doc.root, "SQL")
     if sql_section:
@@ -613,11 +624,6 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             de["sql"] = {
                 k.lower(): _parse_typed(v) for k, v in sql_flags.properties.items()
             }
-        soft_fk_section = _section(sql_section, "Soft FK validations")
-        if soft_fk_section and soft_fk_section.children:
-            de.setdefault("sql", {})["soft_fk_validations"] = [
-                _soft_fk_validation_node_to_dict(c) for c in soft_fk_section.children
-            ]
         checks_section = _section(sql_section, "Checks")
         if checks_section and checks_section.tables:
             rows = _parse_org_table_rows(checks_section)

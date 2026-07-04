@@ -154,20 +154,20 @@ std::string("Active")
 :tablename: ores_refdata_counterparties_tbl
 :END:
 
-** Soft FK validations
-
-*** parent_counterparty_id
-:PROPERTIES:
-:table:         ores_refdata_counterparties_tbl
-:nullable:      true
-:error_message: Invalid parent_counterparty_id: %. No active counterparty found with this id.
-:END:
-
 ** Indexes
 
 | name      | columns             | unique | current_only | where_extra |
 |-----------+----------------------+--------+--------------+-------------|
 | full_name | tenant_id, full_name | false  | true         |             |
+
+* Foreign keys
+
+** parent_counterparty_id
+:PROPERTIES:
+:table:         ores_refdata_counterparties_tbl
+:nullable:      true
+:error_message: Invalid parent_counterparty_id: %. No active counterparty found with this id.
+:END:
 
 * Insert trigger
 

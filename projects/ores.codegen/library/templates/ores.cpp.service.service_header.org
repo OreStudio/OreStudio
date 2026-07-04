@@ -86,6 +86,30 @@ public:
      */
     std::uint32_t count_{{entity_plural_short}}();
 
+{{#foreign_keys}}
+{{#list_by}}
+    /**
+     * @brief Lists {{entity_plural_words}} filtered by {{column}}, with pagination.
+     *
+     * @param {{column}} The {{column}} to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching {{entity_plural_words}} for the requested page.
+     */
+    std::vector<domain::{{entity_singular}}>
+    list_{{entity_plural_short}}_by_{{column}}(const std::string& {{column}},
+                                              std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active {{entity_plural_words}} filtered by {{column}}.
+     *
+     * @param {{column}} The {{column}} to filter by.
+     * @return Total number of matching {{entity_plural_words}}.
+     */
+    std::uint32_t count_{{entity_plural_short}}_by_{{column}}(const std::string& {{column}});
+{{/list_by}}
+{{/foreign_keys}}
+
     /**
      * @brief Retrieves a single {{entity_singular_words}} by its {{primary_key.column}}.
      *

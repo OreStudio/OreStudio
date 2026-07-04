@@ -28,6 +28,22 @@ std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}() {
     return repo_.get_total_{{entity_singular_short}}_count(ctx_);
 }
 
+{{#foreign_keys}}
+{{#list_by}}
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_service::list_{{entity_plural_short}}_by_{{column}}(const std::string& {{column}},
+                                                                       std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} by {{column}}: " << {{column}};
+    return repo_.read_latest_by_{{column}}(ctx_, {{column}}, offset, limit);
+}
+
+std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}_by_{{column}}(const std::string& {{column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total {{entity_plural_words}} count by {{column}}: " << {{column}};
+    return repo_.get_total_{{entity_singular_short}}_count_by_{{column}}(ctx_, {{column}});
+}
+{{/list_by}}
+{{/foreign_keys}}
+
 std::optional<domain::{{entity_singular}}>
 {{entity_singular}}_service::get_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {
     BOOST_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}}: " << {{primary_key.column}};

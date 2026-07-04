@@ -80,14 +80,14 @@ TEST_CASE("write_single_party_counterparty", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     party_repository party_repo(h.context());
-    counterparty_repository cp_repo(h.context());
+    counterparty_repository cp_repo;
     party_counterparty_repository repo(h.context());
 
     const auto party_id = find_system_party_id(party_repo, h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    cp_repo.write(cp);
+    cp_repo.write(h.context(), cp);
 
     auto pc = make_party_counterparty(h, party_id, cp.id);
     BOOST_LOG_SEV(lg, debug) << "Party counterparty: " << pc;
@@ -101,7 +101,7 @@ TEST_CASE("write_multiple_party_counterparties", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     party_repository party_repo(h.context());
-    counterparty_repository cp_repo(h.context());
+    counterparty_repository cp_repo;
     party_counterparty_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
@@ -110,7 +110,7 @@ TEST_CASE("write_multiple_party_counterparties", tags) {
     for (int i = 0; i < 3; ++i) {
         auto cp = generate_synthetic_counterparty(ctx);
         cp.change_reason_code = "system.test";
-        cp_repo.write(cp);
+        cp_repo.write(h.context(), cp);
 
         pcs.push_back(make_party_counterparty(h, system_party_id, cp.id));
     }
@@ -126,14 +126,14 @@ TEST_CASE("read_latest_party_counterparties_by_party", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     party_repository party_repo(h.context());
-    counterparty_repository cp_repo(h.context());
+    counterparty_repository cp_repo;
     party_counterparty_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    cp_repo.write(cp);
+    cp_repo.write(h.context(), cp);
 
     auto pc = make_party_counterparty(h, system_party_id, cp.id);
     repo.write(pc);
@@ -159,14 +159,14 @@ TEST_CASE("read_latest_party_counterparties_by_counterparty", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     party_repository party_repo(h.context());
-    counterparty_repository cp_repo(h.context());
+    counterparty_repository cp_repo;
     party_counterparty_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    cp_repo.write(cp);
+    cp_repo.write(h.context(), cp);
 
     auto pc = make_party_counterparty(h, system_party_id, cp.id);
     repo.write(pc);
@@ -185,14 +185,14 @@ TEST_CASE("remove_party_counterparty", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     party_repository party_repo(h.context());
-    counterparty_repository cp_repo(h.context());
+    counterparty_repository cp_repo;
     party_counterparty_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    cp_repo.write(cp);
+    cp_repo.write(h.context(), cp);
 
     auto pc = make_party_counterparty(h, system_party_id, cp.id);
     repo.write(pc);

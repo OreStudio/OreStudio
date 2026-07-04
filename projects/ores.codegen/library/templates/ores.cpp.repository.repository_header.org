@@ -89,6 +89,27 @@ public:
     std::vector<domain::{{entity_singular}}>
     read_all(context ctx, const std::string& {{primary_key.column}});
 
+{{#foreign_keys}}
+{{#list_by}}
+    /**
+     * @brief Reads latest {{entity_plural_words}} filtered by {{column}}, with pagination.
+     * @param ctx Repository context with database connection
+     * @param {{column}} The {{column}} to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::{{entity_singular}}>
+    read_latest_by_{{column}}(context ctx, const std::string& {{column}},
+                             std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active {{entity_plural_words}} filtered by {{column}}.
+     */
+    std::uint32_t get_total_{{entity_singular_short}}_count_by_{{column}}(context ctx,
+                                                                         const std::string& {{column}});
+{{/list_by}}
+{{/foreign_keys}}
+
     /**
      * @brief Reads latest {{entity_plural_words}} with pagination support.
      * @param ctx Repository context with database connection

@@ -52,8 +52,8 @@ TEST_CASE("write_single_counterparty_identifier", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    counterparty_repository cp_repo(h.context());
-    cp_repo.write(cp);
+    counterparty_repository cp_repo;
+    cp_repo.write(h.context(), cp);
 
     auto ci = generate_synthetic_counterparty_identifier(ctx);
     ci.change_reason_code = "system.test";
@@ -71,8 +71,8 @@ TEST_CASE("write_multiple_counterparty_identifiers", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    counterparty_repository cp_repo(h.context());
-    cp_repo.write(cp);
+    counterparty_repository cp_repo;
+    cp_repo.write(h.context(), cp);
 
     auto counterparty_identifiers = generate_synthetic_counterparty_identifiers(3, ctx);
     for (auto& ci : counterparty_identifiers) {
@@ -92,8 +92,8 @@ TEST_CASE("read_latest_counterparty_identifiers", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    counterparty_repository cp_repo(h.context());
-    cp_repo.write(cp);
+    counterparty_repository cp_repo;
+    cp_repo.write(h.context(), cp);
 
     auto written_counterparty_identifiers = generate_synthetic_counterparty_identifiers(3, ctx);
     for (auto& ci : written_counterparty_identifiers) {
@@ -119,8 +119,8 @@ TEST_CASE("read_latest_counterparty_identifier_by_id", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    counterparty_repository cp_repo(h.context());
-    cp_repo.write(cp);
+    counterparty_repository cp_repo;
+    cp_repo.write(h.context(), cp);
 
     auto ci = generate_synthetic_counterparty_identifier(ctx);
     ci.change_reason_code = "system.test";

@@ -106,9 +106,9 @@ std::string("Test identifier")
 :tablename: ores_refdata_party_identifiers_tbl
 :END:
 
-** Soft FK validations
+* Foreign keys
 
-*** party_id
+** party_id
 :PROPERTIES:
 :table:         ores_refdata_parties_tbl
 :nullable:      false

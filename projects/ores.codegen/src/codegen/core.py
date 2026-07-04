@@ -1904,6 +1904,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             pk_col + 's' if pk_type == 'text' else 'ids')
         domain_entity.setdefault('history_request_id_field', pk_col)
         domain_entity.setdefault('single_delete', False)
+        # Derive paged list-by-foreign-key NATS operations (protocol/handler/
+        # registrar) from any foreign key opted in via :list_by: true. The
+        # repository/service methods themselves are generated directly off
+        # domain_entity['foreign_keys'] (see repository/service archetypes).
+        entity_plural_short = domain_entity.get('entity_plural_short', domain_entity.get('entity_plural'))
+        domain_entity['extra_list_requests'] = [
+            {
+                'name_suffix': f"by_{fk['column']}",
+                'nats_suffix': f"list_by_{fk['column']}",
+                'filter_column': fk['column'],
+                'service_method': f"list_{entity_plural_short}_by_{fk['column']}",
+                'count_service_method': f"count_{entity_plural_short}_by_{fk['column']}",
+            }
+            for fk in domain_entity.get('foreign_keys', [])
+            if fk.get('list_by')
+        ]
         # Compute index_name_prefix: use sql.index_prefix when set, else entity_plural
         sql_section = domain_entity.get('sql', {})
         domain_entity['index_name_prefix'] = sql_section.get(
@@ -1941,8 +1957,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     _mark_last_item(fkc['declare_vars'])
                 if 'copy_empty' in fkc:
                     _mark_last_item(fkc['copy_empty'])
-        if 'soft_fk_validations' in sql_section:
-            _mark_last_item(sql_section['soft_fk_validations'])
+        if 'foreign_keys' in domain_entity:
+            _mark_last_item(domain_entity['foreign_keys'])
         if 'text_code_validations' in sql_section:
             _mark_last_item(sql_section['text_code_validations'])
         if 'extra_delete_sets' in sql_section:

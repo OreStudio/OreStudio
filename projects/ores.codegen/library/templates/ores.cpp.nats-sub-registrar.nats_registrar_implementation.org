@@ -92,6 +92,11 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
         [h](ores::nats::message msg) { h->history(std::move(msg)); }));
 {{/no_history}}
 {{/list_only}}
+{{#extra_list_requests}}
+    subs.push_back(nats.queue_subscribe(
+        get_{{entity_plural}}_{{name_suffix}}_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->list_{{name_suffix}}(std::move(msg)); }));
+{{/extra_list_requests}}
 <<paste:FB267332-79AB-4873-AFDA-CEEE68A0F398>>
     return subs;
 }
@@ -138,6 +143,11 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
         [h](ores::nats::message msg) { h->history(std::move(msg)); }));
 {{/no_history}}
 {{/list_only}}
+{{#extra_list_requests}}
+    subs.push_back(nats.queue_subscribe(
+        get_{{entity_plural}}_{{name_suffix}}_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->list_{{name_suffix}}(std::move(msg)); }));
+{{/extra_list_requests}}
 <<paste:FB267332-79AB-4873-AFDA-CEEE68A0F398>>
     return subs;
 }

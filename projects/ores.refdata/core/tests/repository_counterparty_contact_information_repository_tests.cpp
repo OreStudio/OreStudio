@@ -52,8 +52,8 @@ TEST_CASE("write_single_counterparty_contact_information", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    counterparty_repository cp_repo(h.context());
-    cp_repo.write(cp);
+    counterparty_repository cp_repo;
+    cp_repo.write(h.context(), cp);
 
     auto cci = generate_synthetic_counterparty_contact_information(ctx);
     cci.change_reason_code = "system.test";
@@ -71,8 +71,8 @@ TEST_CASE("write_multiple_counterparty_contact_informations", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    counterparty_repository cp_repo(h.context());
-    cp_repo.write(cp);
+    counterparty_repository cp_repo;
+    cp_repo.write(h.context(), cp);
 
     auto counterparty_contact_informations =
         generate_synthetic_counterparty_contact_informations(3, ctx);
@@ -94,8 +94,8 @@ TEST_CASE("read_latest_counterparty_contact_informations", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    counterparty_repository cp_repo(h.context());
-    cp_repo.write(cp);
+    counterparty_repository cp_repo;
+    cp_repo.write(h.context(), cp);
 
     auto written_counterparty_contact_informations =
         generate_synthetic_counterparty_contact_informations(3, ctx);
@@ -124,8 +124,8 @@ TEST_CASE("read_latest_counterparty_contact_information_by_id", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    counterparty_repository cp_repo(h.context());
-    cp_repo.write(cp);
+    counterparty_repository cp_repo;
+    cp_repo.write(h.context(), cp);
 
     auto cci = generate_synthetic_counterparty_contact_information(ctx);
     cci.change_reason_code = "system.test";

@@ -145,9 +145,9 @@ faker::number::decimal(0.0, 1.0)
 | "stdev" >= 0   |
 | "weight" >= 0  |
 
-** Soft FK validations
+* Foreign keys
 
-*** fx_spot_config_id
+** fx_spot_config_id
 :PROPERTIES:
 :table:         ores_synthetic_fx_spot_generation_configs_tbl
 :error_message: Invalid fx_spot_config_id: %. No active fx_spot_generation_config found with this id.

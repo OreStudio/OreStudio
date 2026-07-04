@@ -101,6 +101,54 @@ counterparty_identifier_repository::read_all(context ctx, const std::string& id)
         "Reading all counterparty identifier versions by id.");
 }
 
+std::vector<domain::counterparty_identifier>
+counterparty_identifier_repository::read_latest_by_counterparty_id(
+    context ctx, const std::string& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifiers. counterparty_id: "
+                               << counterparty_id << " offset: " << offset << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<counterparty_identifier_entity>> |
+                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
+                             "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<counterparty_identifier_entity, domain::counterparty_identifier>(
+        ctx,
+        query,
+        [](const auto& entities) { return counterparty_identifier_mapper::map(entities); },
+        lg(),
+        "Reading latest counterparty identifiers by counterparty_id.");
+}
+
+std::uint32_t
+counterparty_identifier_repository::get_total_counterparty_identifier_count_by_counterparty_id(
+    context ctx, const std::string& counterparty_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Retrieving total active counterparty identifiers count. counterparty_id: "
+        << counterparty_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<counterparty_identifier_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
+              "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active counterparty identifiers count by counterparty_id: "
+                               << count;
+    return count;
+}
+
 void counterparty_identifier_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty identifier: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));

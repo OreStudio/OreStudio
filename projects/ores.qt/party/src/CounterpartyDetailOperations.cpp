@@ -102,15 +102,17 @@ load_identifiers_result
 counterparty_detail_operations::load_identifiers(ClientManager* cm,
                                                  const boost::uuids::uuid& entity_id) const {
 
-    refdata::messaging::get_counterparty_identifiers_request request;
+    refdata::messaging::get_counterparty_identifiers_by_counterparty_id_request request;
     request.counterparty_id = boost::uuids::to_string(entity_id);
+    request.offset = 0;
+    request.limit = 1000;
     auto response_result = cm->process_authenticated_request(std::move(request));
     if (!response_result)
         return {{}, false};
 
     std::vector<identifier_entry> entries;
-    entries.reserve(response_result->identifiers.size());
-    for (const auto& ident : response_result->identifiers) {
+    entries.reserve(response_result->counterparty_identifiers.size());
+    for (const auto& ident : response_result->counterparty_identifiers) {
         entries.push_back({ident.id,
                            ident.counterparty_id,
                            ident.id_scheme,

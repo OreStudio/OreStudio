@@ -111,10 +111,13 @@ struct get_{{entity_plural}}_{{name_suffix}}_request {
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.{{nats_suffix}}";
     std::string {{filter_column}};
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_{{entity_plural}}_{{name_suffix}}_response {
     std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
+    int total_available_count = 0;
     bool success = false;
     std::string message;
 };

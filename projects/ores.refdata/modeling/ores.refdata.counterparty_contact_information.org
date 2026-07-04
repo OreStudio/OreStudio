@@ -229,9 +229,9 @@ std::string("https://example.com")
 :tablename: ores_refdata_counterparty_contact_informations_tbl
 :END:
 
-** Soft FK validations
+* Foreign keys
 
-*** counterparty_id
+** counterparty_id
 :PROPERTIES:
 :table:         ores_refdata_counterparties_tbl
 :nullable:      false

@@ -75,6 +75,23 @@ public:
     std::vector<domain::counterparty_identifier> read_all(context ctx, const std::string& id);
 
     /**
+     * @brief Reads latest counterparty identifiers filtered by counterparty_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param counterparty_id The counterparty_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::counterparty_identifier> read_latest_by_counterparty_id(
+        context ctx, const std::string& counterparty_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active counterparty identifiers filtered by counterparty_id.
+     */
+    std::uint32_t
+    get_total_counterparty_identifier_count_by_counterparty_id(context ctx,
+                                                               const std::string& counterparty_id);
+
+    /**
      * @brief Reads latest counterparty identifiers with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip

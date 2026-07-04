@@ -191,6 +191,35 @@ public:
         }
     }
 
+    void list_by_counterparty_id(ores::nats::message msg) {
+        BOOST_LOG_SEV(counterparty_identifier_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::counterparty_identifier_service svc(req_ctx);
+        get_counterparty_identifiers_by_counterparty_id_response resp;
+        try {
+            if (auto req = decode<get_counterparty_identifiers_by_counterparty_id_request>(msg)) {
+                resp.counterparty_identifiers =
+                    svc.list_counterparty_identifiers_by_counterparty_id(
+                        req->counterparty_id, req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(
+                    svc.count_counterparty_identifiers_by_counterparty_id(req->counterparty_id));
+                resp.success = true;
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(counterparty_identifier_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
+        BOOST_LOG_SEV(counterparty_identifier_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

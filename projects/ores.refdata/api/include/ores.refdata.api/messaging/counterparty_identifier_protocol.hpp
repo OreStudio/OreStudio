@@ -80,6 +80,22 @@ struct get_counterparty_identifier_history_response {
     std::string message;
 };
 
+struct get_counterparty_identifiers_by_counterparty_id_request {
+    using response_type = struct get_counterparty_identifiers_by_counterparty_id_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.counterparty_identifiers.list_by_counterparty_id";
+    std::string counterparty_id;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+};
+
+struct get_counterparty_identifiers_by_counterparty_id_response {
+    std::vector<ores::refdata::domain::counterparty_identifier> counterparty_identifiers;
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
+};
+
 }
 
 #endif

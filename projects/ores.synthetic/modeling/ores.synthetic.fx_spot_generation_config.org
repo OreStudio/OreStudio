@@ -191,9 +191,9 @@ faker::datatype::boolean()
 | "ticks_per_hour" > 0                                  |
 | "process_type" in ('geometric', 'arithmetic', 'ou')   |
 
-** Soft FK validations
+* Foreign keys
 
-*** config_id
+** config_id
 :PROPERTIES:
 :table:         ores_synthetic_market_data_generation_configs_tbl
 :error_message: Invalid config_id: %. No active market_data_generation_config found with this id.

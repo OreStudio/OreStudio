@@ -88,4 +88,11 @@ counterparty_service::get_counterparty_history(const std::string& id) {
     return repo_.read_all(ctx_, id);
 }
 
+std::vector<ores::utility::domain::hierarchy_node>
+counterparty_service::get_hierarchy(const boost::uuids::uuid& root_id, bool from_root) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting hierarchy for counterparty root: " << root_id;
+    auto rows = repo_.get_hierarchy(ctx_, root_id, from_root);
+    return ores::utility::domain::build_tree(rows);
+}
+
 }

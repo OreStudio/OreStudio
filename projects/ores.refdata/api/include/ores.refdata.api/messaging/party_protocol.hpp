@@ -21,6 +21,7 @@
 #define ORES_REFDATA_API_MESSAGING_PARTY_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/party.hpp"
+#include "ores.utility/domain/hierarchy.hpp"
 #include <string>
 #include <vector>
 
@@ -88,6 +89,22 @@ struct read_parties_for_cache_response {
     bool success = false;
     std::string message;
     std::vector<ores::refdata::domain::party> parties;
+};
+
+/**
+ * @brief Reads the party hierarchy rooted at, or containing, a given party.
+ */
+struct get_party_hierarchy_request {
+    using response_type = struct get_party_hierarchy_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.parties.hierarchy";
+    std::string root_id;
+    bool from_root = false;
+};
+
+struct get_party_hierarchy_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::utility::domain::hierarchy_node> roots;
 };
 
 }

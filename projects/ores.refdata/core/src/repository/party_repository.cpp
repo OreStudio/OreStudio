@@ -212,6 +212,39 @@ party_repository::read_descendants(const boost::uuids::uuid& root_id) {
     return result;
 }
 
+std::vector<ores::utility::domain::hierarchy_flat_row>
+party_repository::get_hierarchy(const boost::uuids::uuid& tenant_id,
+                                const boost::uuids::uuid& root_id,
+                                bool from_root) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading party hierarchy. Root: " << root_id
+                               << " from_root: " << from_root;
+
+    const auto tenant_str = boost::uuids::to_string(tenant_id);
+    const auto root_str = boost::uuids::to_string(root_id);
+    const std::string sql = "SELECT * FROM ores_refdata_parties_hierarchy_fn('" + tenant_str +
+                            "'::uuid, '" + root_str + "'::uuid, " +
+                            (from_root ? "true" : "false") + ")";
+
+    const auto rows = execute_raw_multi_column_query(ctx_, sql, lg(), "Reading party hierarchy");
+
+    std::vector<ores::utility::domain::hierarchy_flat_row> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() >= 3 && row[0]) {
+            ores::utility::domain::hierarchy_flat_row r;
+            r.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+            if (row[1])
+                r.parent_id = boost::lexical_cast<boost::uuids::uuid>(*row[1]);
+            if (row[2])
+                r.name = *row[2];
+            result.push_back(std::move(r));
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " party hierarchy rows.";
+    return result;
+}
+
 std::vector<domain::party> party_repository::read_all(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all party versions. Id: " << id;
 

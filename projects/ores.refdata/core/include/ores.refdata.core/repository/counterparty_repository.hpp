@@ -24,6 +24,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.utility/domain/hierarchy.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <sqlgen/postgres.hpp>
 #include <string>
@@ -98,6 +100,21 @@ public:
      * @brief Deletes counterparties by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& ids);
+
+    /**
+     * @brief Reads the counterparty hierarchy as a flat set of {id,
+     * parent_id, name} rows, via ores_refdata_counterparties_hierarchy_fn.
+     *
+     * @param ctx Repository context with database connection (tenant is
+     * derived from ctx.tenant_id()).
+     * @param root_id The counterparty to start from.
+     * @param from_root If true, first walks up to the ultimate ancestor and
+     * returns the whole tree the given node belongs to, instead of just its
+     * subtree.
+     * @return Flat hierarchy rows, ready for ores::utility::domain::build_tree.
+     */
+    std::vector<ores::utility::domain::hierarchy_flat_row>
+    get_hierarchy(context ctx, const boost::uuids::uuid& root_id, bool from_root);
 };
 
 }

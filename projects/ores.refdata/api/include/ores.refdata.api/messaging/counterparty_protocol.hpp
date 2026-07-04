@@ -21,6 +21,7 @@
 #define ORES_REFDATA_API_MESSAGING_COUNTERPARTY_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/counterparty.hpp"
+#include "ores.utility/domain/hierarchy.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -77,6 +78,23 @@ struct get_counterparty_history_response {
     std::vector<ores::refdata::domain::counterparty> history;
     bool success = false;
     std::string message;
+};
+
+/**
+ * @brief Reads the counterparty hierarchy rooted at, or containing, a given
+ * counterparty.
+ */
+struct get_counterparty_hierarchy_request {
+    using response_type = struct get_counterparty_hierarchy_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparties.hierarchy";
+    std::string root_id;
+    bool from_root = false;
+};
+
+struct get_counterparty_hierarchy_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::utility::domain::hierarchy_node> roots;
 };
 
 }

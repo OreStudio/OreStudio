@@ -260,6 +260,37 @@ public:
         }
     }
 
+    void hierarchy(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(party_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        service::party_service svc(ctx);
+        auto req = decode<get_party_hierarchy_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_party_hierarchy_response{.success = false,
+                                               .message = "Failed to decode request"});
+            return;
+        }
+        try {
+            boost::uuids::string_generator gen;
+            auto roots = svc.get_hierarchy(gen(req->root_id), req->from_root);
+            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_party_hierarchy_response{.success = true, .roots = std::move(roots)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_party_hierarchy_response{.success = false, .message = e.what()});
+        }
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

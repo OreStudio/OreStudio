@@ -647,6 +647,69 @@ end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 {{/domain_entity.validation_fn}}
 {{/domain_entity.has_tenant_id}}
+{{#domain_entity.sql.has_parent_id}}
+
+-- =============================================================================
+-- Hierarchy traversal for {{domain_entity.entity_plural}}.
+-- Returns a flat set of {id, parent_id, name} nodes for the subtree rooted
+-- at p_root_id. When p_from_root is true, first walks up parent_id to the
+-- ultimate ancestor (parent_id is null) and recurses down from there instead,
+-- returning the whole tenant tree the given node belongs to.
+-- =============================================================================
+create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_hierarchy_fn(
+    p_tenant_id uuid,
+    p_root_id uuid,
+    p_from_root boolean default false
+) returns table(id uuid, parent_id uuid, name text) as $$
+declare
+    v_root_id uuid;
+begin
+    v_root_id := p_root_id;
+
+    if p_from_root then
+        with recursive ancestors as (
+            select t.id, t.{{domain_entity.sql.parent_id_column}} as parent_id
+            from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" t
+            where t.tenant_id = p_tenant_id
+              and t.id = p_root_id
+              and t.valid_to = ores_utility_infinity_timestamp_fn()
+            union all
+            select t.id, t.{{domain_entity.sql.parent_id_column}} as parent_id
+            from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" t
+            join ancestors a on t.id = a.parent_id
+            where t.tenant_id = p_tenant_id
+              and t.valid_to = ores_utility_infinity_timestamp_fn()
+        )
+        select a.id into v_root_id
+        from ancestors a
+        where a.parent_id is null
+        limit 1;
+
+        if v_root_id is null then
+            v_root_id := p_root_id;
+        end if;
+    end if;
+
+    return query
+    with recursive descendants as (
+        select t.id, t.{{domain_entity.sql.parent_id_column}} as parent_id,
+               t.{{domain_entity.sql.hierarchy_name_field}}::text as name
+        from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" t
+        where t.tenant_id = p_tenant_id
+          and t.id = v_root_id
+          and t.valid_to = ores_utility_infinity_timestamp_fn()
+        union all
+        select t.id, t.{{domain_entity.sql.parent_id_column}} as parent_id,
+               t.{{domain_entity.sql.hierarchy_name_field}}::text as name
+        from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" t
+        join descendants d on t.{{domain_entity.sql.parent_id_column}} = d.id
+        where t.tenant_id = p_tenant_id
+          and t.valid_to = ores_utility_infinity_timestamp_fn()
+    )
+    select d.id, d.parent_id, d.name from descendants d;
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
+{{/domain_entity.sql.has_parent_id}}
 {{#domain_entity.sql.hypertable}}
 do $$
 declare

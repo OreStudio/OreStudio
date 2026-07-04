@@ -151,7 +151,10 @@ std::string("Active")
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_refdata_counterparties_tbl
+:tablename:            ores_refdata_counterparties_tbl
+:has_parent_id:        true
+:parent_id_column:     parent_counterparty_id
+:hierarchy_name_field: full_name
 :END:
 
 ** Indexes

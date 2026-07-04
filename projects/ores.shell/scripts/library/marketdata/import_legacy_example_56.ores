@@ -1,0 +1,8 @@
+# How do I import the 2016-02-05 ORE reference vintage market data?
+# Import the 2016-02-05 ORE reference vintage market data via ores.shell's marketdata import command; currently fails on a known duplicate-key bug.
+#
+# GENERATED from doc/recipes/shell/marketdata/import_legacy_example_56.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+marketdata import --file external/ore/examples/Legacy/Example_56/Input/market.txt --source ore.reference
+logout

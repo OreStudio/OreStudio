@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 438BECB1-0DF8-4350-9ABF-65F232CBB046
+:END:
+#+title: How do I import the TA002 IR Swap example market data?
+#+description: Import the small TA002 IR Swap ORE example's market data and fixings via ores.shell's marketdata import command.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:marketdata:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+
+Reproduce, from the command line, a small end-to-end market data
+import against the =Academy/TA002_IR_Swap= ORE example — a good
+quickstart since its =market.txt= is tiny (58 lines) and imports
+cleanly. The =ores-shell= block below is tangled into the runnable
+script library as =import_ta002_ir_swap.ores=.
+
+* Question
+
+How do I import the TA002 IR Swap example's market data (and any
+fixings) from the shell?
+
+* Answer
+
+The =marketdata import= command
+(=projects/ores.shell/src/app/commands/marketdata_commands.cpp=)
+sends the file content(s) as a single =import_market_data_request=
+over NATS (subject =marketdata.v1.import=), the same request the Qt
+=ImportTradeDialog= sends — reusing =import_service= as-is, no
+server-side code specific to the shell.
+
+Expectations: the services are up (=compass services start=), a
+tenant/party is provisioned and logged in (e.g. via the Barclays
+provisioning recipe), and =--source= tags every imported
+=market_observation= row so it can be queried back out separately
+from other imports.
+
+#+name: import-ta002-ir-swap
+#+begin_src ores-shell :exports none
+marketdata import --file external/ore/examples/Academy/TA002_IR_Swap/Input/market.txt --fixings external/ore/examples/Academy/TA002_IR_Swap/Input/fixings.txt --source ore.reference
+logout
+#+end_src
+
+Run it from a connected, logged-in shell, or load the generated
+script. File paths are relative to the repo root — =compass shell -f
+<script>= always runs =ores.shell= with the repo root as its working
+directory, so no absolute path or project-root environment variable
+is needed:
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<import-ta002-ir-swap>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+> marketdata import --file external/ore/examples/Academy/TA002_IR_Swap/Input/market.txt --fixings external/ore/examples/Academy/TA002_IR_Swap/Input/fixings.txt --source ore.reference
+Importing market data...
+✓ Imported 4 series, 52 observation(s), 0 fixing(s):
+> logout
+✓ Logged out successfully.
+#+end_example
+
+Note: this example's =fixings.txt= exists but is empty, so
+=fixing_count = 0= is expected here, not a sign that fixings import
+is broken — see
+[[id:9BF3F080-6692-4676-884B-D10DF859D096][How do I import the MarketRisk HistSimVar example market data and fixings?]]
+for a vintage with real fixings.
+
+* Script
+
+=projects/ores.shell/scripts/library/marketdata/import_ta002_ir_swap.ores=
+— generated from this recipe's =ores-shell= block by =compass build
+--direct tangle_shell_scripts= (do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: run against a freshly recreated, Barclays-provisioned
+database (=compass db recreate -y -k= then the Barclays provisioning
+recipe), then =compass shell -u <user> -p <password> -f
+import_ta002_ir_swap.ores=.
+
+* See also
+
+- [[id:9BF3F080-6692-4676-884B-D10DF859D096][How do I import the MarketRisk HistSimVar example market data and fixings?]]
+- [[id:DD527011-4F5E-4716-97A2-6AA8C70F3BB6][How do I import the 2016-02-05 ORE reference vintage market data?]]
+- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]

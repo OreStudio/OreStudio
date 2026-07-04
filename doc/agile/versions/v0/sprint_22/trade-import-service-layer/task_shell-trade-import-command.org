@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 84795F3B-1761-44EA-A410-F2C8F1E4D3A9
+:END:
+#+title: Task: Add ores.shell trade import command
+#+description: Add a 'trade import --file <portfolio.xml path>' command to ores.shell (mirroring the marketdata_commands pattern), sending import_trades_request and printing trade_count/instrument_count/errors. Blocked on 'Add import_trades_request/response protocol and trade_import_service'; ideally also after the Qt dialog refactor, though both consume the same server API so order between them is flexible.
+#+type: task
+#+level: s1
+#+filetags: :shell:cli:trading:sprint_22:v0:trade-import-service-layer:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:57DB2B98-0013-4AED-BA7A-315DC8BD8623][Move trade import orchestration to service layer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:57DB2B98-0013-4AED-BA7A-315DC8BD8623][Move trade import orchestration to service layer]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

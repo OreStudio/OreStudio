@@ -1,0 +1,8 @@
+# How do I import the MarketRisk HistSimVar example market data and fixings?
+# Import the MarketRisk HistSimVar ORE example's market data and real fixings via ores.shell's marketdata import command.
+#
+# GENERATED from doc/recipes/shell/marketdata/import_marketrisk_histsimvar.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+marketdata import --file external/ore/examples/MarketRisk/Input/HistSimVar/market.txt --fixings external/ore/examples/MarketRisk/Input/HistSimVar/fixings.txt --source ore.reference
+logout

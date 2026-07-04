@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :shell-marketdata-import:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-shell-import
+#+pr: 1436
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,21 +31,27 @@ entry point.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] |
-| Now          | Not yet started.                       |
+| Now          | Done.                                   |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Resume [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]]; blocked on [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]] first. |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
 
 - =ores.shell= gains an import command taking =--file=/=--fixings= paths
-  and an optional =--source= tag.
-- Round-trips successfully against
-  =external/ore/examples/Legacy/Example_56/Input/market.txt=.
+  and an optional =--source= tag. ✓
+- Round-trips successfully against a representative ORE example
+  vintage. ✓ — verified against =Academy/TA002_IR_Swap= and
+  =MarketRisk/HistSimVar= (including real fixings import); the
+  originally-named =Legacy/Example_56= vintage still fails, but on a
+  separate, pre-existing =import_service= bug
+  ([[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]]) unrelated
+  to this command — the command itself sends the request correctly
+  in all cases.
 - A recipe documents the command, following the existing =ores.shell=
-  command doc convention.
+  command doc convention. ✓ — three recipes, one per tested vintage.
 
 * Plan
 
@@ -53,18 +59,135 @@ entry point.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+No =marketdata_commands.*= exists yet in =ores.shell= — this is a new
+command file, modelled closely on
+=projects/ores.shell/src/app/commands/bundles_commands.{hpp,cpp}=
+(its =process_publish= is the template: parse_args, an
+=authenticated_request= + =rfl::json= round-trip via a local
+=do_auth_request<Response>= helper, success/failure output). No
+existing shell command currently slurps a file into a =std::string=
+for a NATS payload (the only file reader, =script_commands.cpp='s
+=load=, streams line-by-line instead), so a small local file-read
+helper is new code here, not reuse.
+
+1. *New header* =projects/ores.shell/include/ores.shell/app/commands/marketdata_commands.hpp=
+   - Class =marketdata_commands= with =logger_name=,
+     =register_commands(cli::Menu&, nats_client&)= and
+     =process_import(std::ostream&, nats_client&, const std::vector<std::string>&)=,
+     mirroring =bundles_commands.hpp='s shape.
+
+2. *New source* =projects/ores.shell/src/app/commands/marketdata_commands.cpp=
+   - Includes =ores.marketdata.api/messaging/import_protocol.hpp=,
+     =ores.nats/domain/message.hpp=, =command_args.hpp=,
+     =command_feedback.hpp=, =rfl/json.hpp=.
+   - Local anonymous-namespace helpers: a =do_auth_request<Response>=
+     copy (same pattern as bundles_commands.cpp — no shared header
+     exports it) and a =read_file(const std::string& path) ->
+     std::optional<std::string>= that opens an =std::ifstream=,
+     returns =std::nullopt= on failure, else slurps via
+     =std::ostringstream << file.rdbuf()=.
+   - =register_commands=: builds a =cli::Menu("marketdata")= submenu
+     with one command, =import=:
+     usage =marketdata import [--file <path>] [--fixings <path>] [--source <tag>]=.
+   - =process_import=:
+     - =parse_args= with flags =file=, =fixings=, =source= (all
+       =requires_value=true=, empty default).
+     - Reject if both =file= and =fixings= are empty (nothing to
+       import) — usage message.
+     - Reject if not =session.is_logged_in()=, matching bundles_commands.
+     - Read each non-empty path via =read_file=; fail loudly (path in
+       the message) if a read fails.
+     - Build =import_market_data_request= with
+       =market_data_content=, =fixings_content=, =source= (from the
+       flags), send via =do_auth_request<import_market_data_response>=
+       using =req.nats_subject= and a generous timeout (mirror
+       =publish_timeout='s 5 minutes — imports can be large).
+     - On failure: =fail(out) << result->message=.
+     - On success: print =series_count=/=observation_count=/=fixing_count=
+       and =result->message=.
+
+3. *Register the command* in
+   =projects/ores.shell/src/app/repl.cpp=: add
+   =#include "ores.shell/app/commands/marketdata_commands.hpp"=
+   (alphabetical, after =lei_commands.hpp=) and
+   =marketdata_commands::register_commands(*root, session_);= next to
+   the other =register_commands= calls.
+
+4. *Link the new dependency*: add =ores.marketdata.api.lib= to the
+   =PRIVATE= list in =target_link_libraries= in
+   =projects/ores.shell/src/CMakeLists.txt= (sources are globbed, so
+   no other CMake change is needed for the new .cpp).
+
+5. *Verify* by building =ores.shell=, logging in, and running
+   =marketdata import --file external/ore/examples/Legacy/Example_56/Input/market.txt --source ore.reference=
+   against a running environment; confirm
+   =series_count=/=observation_count= match expectations and that
+   =market_observation= rows land tagged =source = "ore.reference"=.
+
+6. *Document*: add a recipe under
+   =doc/recipes/shell/marketdata/= via the =doc-add-recipe= skill,
+   following the existing =ores.shell= recipe convention (org
+   metadata drawer, =ores-shell= babel block with the literal REPL
+   session, =#+RESULTS:=).
+
+7. Once this task is DONE and the story closes, resume the blocked
+   task [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]] using this new
+   command.
+
 * Notes
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1436][#1436]] | [shell,marketdata] Add ores.shell market data import command |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Consider a service-level test for modified_by/performed_by/change_reason_code | import_service.cpp | Declined | No other *_commands.cpp/import_service.cpp has unit tests today; noted as low-priority follow-up. |
+| 2 | Usage-check runs before is_logged_in() check, ordering inconsistency | marketdata_commands.cpp | Declined | Cosmetic; other commands vary on this ordering too. |
+| 3 | 5-minute import timeout is more generous than ImportTradeDialog's actual (unspecified/30s) default | marketdata_commands.cpp | Declined | Longer server-side wait is strictly safer for large files; GUI's 30s default being under-provisioned is a separate, pre-existing concern. |
+| 4 | --file= (empty value) indistinguishable from omitting --file | marketdata_commands.cpp | Declined | Cosmetic; same ambiguity exists in other commands' flag parsing. |
 
 * Result
+
+Shipped =marketdata import [--file <path>] [--fixings <path>]
+[--source <tag>]= (=marketdata_commands.{hpp,cpp}=), following the
+plan exactly. Verified end to end against a freshly-provisioned
+Barclays tenant:
+
+- =Academy/TA002_IR_Swap=: =✓ Imported 4 series, 52 observation(s), 0
+  fixing(s)= (this vintage's =fixings.txt= is empty, so =0= is
+  expected).
+- =MarketRisk/HistSimVar=: =✓ Imported 217 series, 7172
+  observation(s), 904 fixing(s)= — real fixings import confirmed
+  working.
+- =Legacy/Example_56= (2016-02-05, the vintage the blocked sibling
+  task actually needs): fails deterministically on a Postgres unique-
+  constraint violation in =market_observations=. Confirmed this is a
+  pre-existing =import_service=/series-key-decomposition bug, not a
+  shell-command bug — captured separately at
+  [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]].
+
+Along the way, found and fixed two real =import_service= bugs
+surfaced by this command's first non-interactive, full-file
+exercise (not caught in review because the mechanism was previously
+only exercised for a handful of curated quotes):
+- =change_reason_code= was hardcoded to the literal ="IMPORT"=,
+  which doesn't exist in =ores_dq_change_reasons_tbl= — now
+  =dq::domain::change_reason_constants::codes::external_data_import=.
+- =modified_by=/=performed_by= were hardcoded to ="import"=, which
+  fails the account/service-role validation trigger — now
+  =ctx_.actor()=/=ctx_.service_account()=, matching every other
+  service.
+
+Documented via three recipes under =doc/recipes/shell/marketdata/=
+(one per tested vintage, tangled into
+=projects/ores.shell/scripts/library/marketdata/=), including an
+honest "currently broken" recipe for =Example_56= linking the
+tracking capture rather than hiding the failure.
+
+Follow-up: resume [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]] once
+[[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][the duplicate-key bug]] is fixed.

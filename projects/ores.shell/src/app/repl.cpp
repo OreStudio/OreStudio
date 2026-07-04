@@ -29,6 +29,7 @@
 #include "ores.shell/app/commands/countries_commands.hpp"
 #include "ores.shell/app/commands/currencies_commands.hpp"
 #include "ores.shell/app/commands/lei_commands.hpp"
+#include "ores.shell/app/commands/marketdata_commands.hpp"
 #include "ores.shell/app/commands/navigation_commands.hpp"
 #include "ores.shell/app/commands/parties_commands.hpp"
 #include "ores.shell/app/commands/provision_commands.hpp"
@@ -94,6 +95,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     bundles_commands::register_commands(*root, session_);
     workflow_commands::register_commands(*root, session_);
     lei_commands::register_commands(*root, session_);
+    marketdata_commands::register_commands(*root, session_);
     synthetic_commands::register_commands(*root, session_);
     parties_commands::register_commands(*root, session_);
     account_parties_commands::register_commands(*root, session_);

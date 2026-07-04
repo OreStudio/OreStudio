@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 499FF163-F6D3-421E-A45B-913588844FAE
+:END:
+#+title: Task: Add import_trades_request/response protocol and trade_import_service
+#+description: Define import_trades_request/import_trades_response in ores.trading.api (mirroring import_market_data_request's shape: raw portfolio XML content in, trade_count/instrument_count/error info out), implement ores.trading.core::service::trade_import_service parsing via ores.ore.core::xml::importer, saving each trade and dispatching per-instrument-type saves (the ~300 lines currently in ImportTradeDialog.cpp:744-1045), and register the NATS handler mirroring ores.marketdata.core's import_service registration.
+#+type: task
+#+level: s1
+#+filetags: :market_data:trading:sprint_22:v0:trade-import-service-layer:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:57DB2B98-0013-4AED-BA7A-315DC8BD8623][Move trade import orchestration to service layer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:57DB2B98-0013-4AED-BA7A-315DC8BD8623][Move trade import orchestration to service layer]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

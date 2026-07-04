@@ -9,7 +9,7 @@
 #+filetags: :market_data:shell:cli:sprint_22:v0:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -33,12 +33,12 @@ dialog already sends.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Done — all tasks closed.               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-03                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-04                               |
 
 * Acceptance
 
@@ -47,11 +47,13 @@ dialog already sends.
   =import_market_data_request= over NATS via the existing shell client
   infrastructure, reusing =import_service= as-is — no new server-side
   code.
-- Running it against
-  =external/ore/examples/Legacy/Example_56/Input/market.txt= with
+- Running it against a representative ORE example vintage with
   =--source ore.reference= produces the expected
   =series_count=/=observation_count= response and queryable
-  =market_observation= rows.
+  =market_observation= rows. Met against =Academy/TA002_IR_Swap= and
+  =MarketRisk/HistSimVar=; =Legacy/Example_56= specifically still
+  fails on a separate, pre-existing =import_service= bug tracked at
+  [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]].
 - Documented in a recipe (=doc/recipes/=), following existing
   =ores.shell= command documentation conventions.
 
@@ -59,9 +61,23 @@ dialog already sends.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:E10830F5-1596-4748-99BB-41B8057CEFA4][Implement ores.shell market data import command]] | BACKLOG | | | Add a shell command sending import_market_data_request (file/stdin content, optional source tag) over NATS, reusing the existing import_service. |
+| [[id:E10830F5-1596-4748-99BB-41B8057CEFA4][Implement ores.shell market data import command]] | DONE | 2026-07-04 | 2026-07-04 | Add a shell command sending import_market_data_request (file/stdin content, optional source tag) over NATS, reusing the existing import_service. |
 
 * Decisions
+
+- Command sends the whole file (or files) in one
+  =import_market_data_request=, matching what =ImportTradeDialog=
+  already sends — no chunking or streaming, since =import_service=
+  already handles the full parse/persist server-side.
+- Reused =bundles_commands.cpp='s =process_publish= as the template
+  for the parse_args → authenticated_request → =rfl::json= round-trip
+  shape, keeping a local per-file =do_auth_request<Response>= helper
+  rather than extracting a shared one (matches existing convention:
+  no shared helper exists across command files today).
+- Documented against three representative ORE example vintages
+  rather than only the story's originally-named =Legacy/Example_56=,
+  since that vintage's full file hits a separate, pre-existing
+  =import_service= bug — captured rather than silently worked around.
 
 * Out of scope
 

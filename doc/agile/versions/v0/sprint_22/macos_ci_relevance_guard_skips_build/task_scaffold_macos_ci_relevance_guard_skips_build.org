@@ -8,7 +8,7 @@
 #+filetags: :macos_ci_relevance_guard_skips_build:sprint_22:v0:
 #+owner: marco
 #+branch: hotfix/macos-ci-relevance-guard-skips-build
-#+pr:
+#+pr: 1431
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1431][#1431]] | [agile] Scaffold hotfix: MacOS CI relevance-guard skips matrix build |
 
 * Review
 

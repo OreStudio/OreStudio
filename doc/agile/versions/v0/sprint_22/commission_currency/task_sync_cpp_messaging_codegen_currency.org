@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
 #+branch: feature/sync-cpp-messaging-codegen-currency
-#+pr:
+#+pr: 1427
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
@@ -92,7 +92,7 @@ tests in both api and core suites green.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1427][#1427]] | [refdata] Sync C++ messaging codegen for currency |
 
 * Review
 

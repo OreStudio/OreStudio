@@ -69,7 +69,9 @@ struct counterparty_identifier final {
     /**
      * @brief The identifier value.
      *
-     * The actual identifier string within the scheme.
+     * The actual identifier string within the scheme. Part of the natural key alongside
+     * counterparty_id and id_scheme — a counterparty can hold more than one identifier under the
+     * same scheme as long as the value differs.
      */
     std::string id_value;
 

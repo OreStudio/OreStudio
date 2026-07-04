@@ -23,8 +23,9 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_repository.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -34,10 +35,10 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing counterparty identifiers.
  *
- * This service provides functionality for:
- * - Managing counterparty identifiers (CRUD operations)
+ * Provides a higher-level interface for counterparty identifier operations,
+ * wrapping the underlying repository.
  */
-class counterparty_identifier_service {
+class ORES_REFDATA_CORE_EXPORT counterparty_identifier_service {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.service.counterparty_identifier_service";
@@ -52,66 +53,74 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a counterparty_identifier_service with required repositories.
+     * @brief Constructs a counterparty_identifier_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit counterparty_identifier_service(context ctx);
 
     /**
-     * @brief Lists all counterparty identifiers.
+     * @brief Lists counterparty identifiers with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of counterparty identifiers for the requested page.
      */
-    std::vector<domain::counterparty_identifier> list_counterparty_identifiers();
+    std::vector<domain::counterparty_identifier> list_counterparty_identifiers(std::uint32_t offset,
+                                                                               std::uint32_t limit);
 
     /**
-     * @brief Lists counterparty identifiers for a specific counterparty.
+     * @brief Gets the total count of active counterparty identifiers.
+     *
+     * @return Total number of active counterparty identifiers.
      */
-    std::vector<domain::counterparty_identifier>
-    list_counterparty_identifiers_by_counterparty(const boost::uuids::uuid& counterparty_id);
+    std::uint32_t count_counterparty_identifiers();
 
     /**
-     * @brief Finds a counterparty identifier by its ID.
+     * @brief Retrieves a single counterparty identifier by its id.
+     *
+     * @param id The id of the counterparty identifier.
+     * @return The counterparty identifier if found, std::nullopt otherwise.
      */
     std::optional<domain::counterparty_identifier>
-    find_counterparty_identifier(const boost::uuids::uuid& id);
-
-    /**
-     * @brief Finds a counterparty identifier by its code.
-     */
-    std::optional<domain::counterparty_identifier>
-    find_counterparty_identifier_by_code(const std::string& code);
+    get_counterparty_identifier(const std::string& id);
 
     /**
      * @brief Saves a counterparty identifier (creates or updates).
      *
-     * @param counterparty_identifier The counterparty identifier to save
+     * @param counterparty_identifier The counterparty identifier to save.
+     * @throws std::exception on failure.
      */
     void
     save_counterparty_identifier(const domain::counterparty_identifier& counterparty_identifier);
 
     /**
-     * @brief Saves multiple counterparty identifiers (creates or updates).
+     * @brief Saves a batch of counterparty identifiers.
      *
-     * @param counterparty_identifiers The counterparty identifiers to save
+     * @param counterparty_identifiers The counterparty identifiers to save.
+     * @throws std::exception on failure.
      */
     void save_counterparty_identifiers(
         const std::vector<domain::counterparty_identifier>& counterparty_identifiers);
 
     /**
-     * @brief Removes a counterparty identifier.
+     * @brief Deletes a counterparty identifier by its id.
      *
-     * @param id The ID of the counterparty identifier to remove
+     * @param id The id of the counterparty identifier to delete.
+     * @throws std::exception on failure.
      */
-    void remove_counterparty_identifier(const boost::uuids::uuid& id);
+    void delete_counterparty_identifier(const std::string& id);
 
     /**
-     * @brief Gets the version history for a counterparty identifier.
-     *
-     * @param id The counterparty identifier ID
-     * @return Vector of all versions, newest first
+     * @brief Deletes counterparty identifiers by their ids.
+     */
+    void delete_counterparty_identifiers(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a counterparty identifier.
      */
     std::vector<domain::counterparty_identifier>
-    get_counterparty_identifier_history(const boost::uuids::uuid& id);
+    get_counterparty_identifier_history(const std::string& id);
 
 private:
     context ctx_;

@@ -1673,6 +1673,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         sql_table = domain_entity_to_table_context(domain_entity)['table']
         normalise_sql_table_context(sql_table)
         data['table'] = sql_table
+        if any(
+            v.get('cardinality_limit_table')
+            for v in domain_entity.get('insert_trigger', {}).get('validations', [])
+        ):
+            domain_entity.setdefault('sql', {})['has_cardinality_limit_validations'] = True
         # Get iterator_var from cpp section for column processing
         iter_var = domain_entity.get('cpp', {}).get('iterator_var', 'e')
         if 'columns' in domain_entity:

@@ -23,6 +23,7 @@
 
 namespace ores::refdata::domain {
 
+
 std::string convert_to_table(const std::vector<party_identifier>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
@@ -31,8 +32,8 @@ std::string convert_to_table(const std::vector<party_identifier>& v) {
           << "Version" << fort::endr;
 
     for (const auto& pi : v) {
-        table << pi.party_id << pi.id_scheme << pi.id_value << pi.description << pi.modified_by
-              << pi.version << fort::endr;
+        table << boost::uuids::to_string(pi.party_id) << pi.id_scheme << pi.id_value
+              << pi.description << pi.modified_by << pi.version << fort::endr;
     }
     return table.to_string();
 }

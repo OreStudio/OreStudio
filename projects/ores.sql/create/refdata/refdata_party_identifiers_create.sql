@@ -22,7 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Party Identifier Table
  *
  * External identifiers for parties, such as LEI codes, BIC/SWIFT codes,
  * national registration numbers, and tax identifiers. Each party can have
@@ -53,6 +53,11 @@ create table if not exists "ores_refdata_party_identifiers_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
+-- Composite natural key: unique combination for active records
+create unique index if not exists party_identifiers_party_id_id_scheme_id_value_uniq_idx
+on "ores_refdata_party_identifiers_tbl" (tenant_id, party_id, id_scheme, id_value)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists party_identifiers_version_uniq_idx
 on "ores_refdata_party_identifiers_tbl" (tenant_id, id, version)
@@ -66,10 +71,6 @@ create index if not exists party_identifiers_tenant_idx
 on "ores_refdata_party_identifiers_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists party_identifiers_party_scheme_value_uniq_idx
-on "ores_refdata_party_identifiers_tbl" (tenant_id, party_id, id_scheme, id_value)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 create or replace function ores_refdata_party_identifiers_insert_fn()
 returns trigger as $$
 declare
@@ -80,21 +81,21 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate id_scheme
-    NEW.id_scheme := ores_refdata_validate_party_id_scheme_fn(NEW.tenant_id, NEW.id_scheme);
-
-    -- Validate party_id (soft FK)
+    -- Validate party_id (soft FK to ores_refdata_parties_tbl)
     if not exists (
         select 1 from ores_refdata_parties_tbl
-        where tenant_id = NEW.tenant_id and id = NEW.party_id
+        where tenant_id = NEW.tenant_id
+          and id = NEW.party_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid party_id: %. No active party found with this id.',
-            NEW.party_id
+        raise exception 'Invalid party_id: %. No active party found with this id.', NEW.party_id
             using errcode = '23503';
     end if;
 
-    -- Validate max_cardinality for this scheme
+    -- Validate id_scheme
+    NEW.id_scheme := ores_refdata_validate_party_id_scheme_fn(NEW.tenant_id, NEW.id_scheme);
+
+    -- Validate cardinality limit for this id_scheme
     select max_cardinality into v_max_cardinality
     from ores_refdata_party_id_schemes_tbl
     where tenant_id = NEW.tenant_id
@@ -103,7 +104,7 @@ begin
 
     if v_max_cardinality is not null then
         select count(*) into v_current_count
-        from ores_refdata_party_identifiers_tbl
+        from "ores_refdata_party_identifiers_tbl"
         where tenant_id = NEW.tenant_id
           and party_id = NEW.party_id
           and id_scheme = NEW.id_scheme
@@ -111,11 +112,14 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn();
 
         if v_current_count >= v_max_cardinality then
-            raise exception 'Cardinality violation for scheme %: party % already has % identifier(s) (max %).',
+            raise exception 'Cardinality violation for id_scheme %: % already has % identifier(s) (max %).',
                 NEW.id_scheme, NEW.party_id, v_current_count, v_max_cardinality
                 using errcode = '23514';
         end if;
     end if;
+
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
@@ -145,15 +149,12 @@ begin
 
     NEW.valid_from = current_timestamp;
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
-
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_party_identifiers_insert_trg
 before insert on "ores_refdata_party_identifiers_tbl"

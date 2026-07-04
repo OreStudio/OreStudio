@@ -54,13 +54,6 @@ struct counterparty final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Full legal name of the counterparty.
-     *
-     * The official registered name of the external entity.
-     */
-    std::string full_name;
-
-    /**
      * @brief Short code for quick reference.
      *
      * A brief mnemonic code used in trading systems.
@@ -68,10 +61,17 @@ struct counterparty final {
     std::string short_code;
 
     /**
-     * @brief ASCII transliteration of the entity name.
+     * @brief Full legal name of the counterparty.
      *
-     * Populated from GLEIF data for entities with non-Latin names
-     * (CJK, Cyrillic, Arabic, etc.). Null for entities already in Latin script.
+     * The official registered name of the external entity. Not unique (e.g. the same legal name can
+     * recur across branches with distinct short codes) — see the non-unique search index declared
+     * under the SQL Indexes section below.
+     */
+    std::string full_name;
+
+    /**
+     * @brief Transliterated (e.g. Latin-script) rendering of the full legal name, for
+     * counterparties whose registered name uses a non-Latin script.
      */
     std::optional<std::string> transliterated_name;
 

@@ -23,6 +23,7 @@
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
@@ -39,8 +40,10 @@ struct counterparty_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
-    std::string full_name;
+
     std::string short_code;
+
+    std::string full_name;
     std::optional<std::string> transliterated_name;
     std::string party_type;
     std::optional<std::string> parent_counterparty_id;

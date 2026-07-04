@@ -19,7 +19,7 @@
  */
 #include "ores.refdata.core/service/counterparty_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/uuid/uuid_io.hpp>
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -29,75 +29,63 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 counterparty_service::counterparty_service(context ctx)
-    : ctx_(ctx)
-    , repo_(ctx) {}
+    : ctx_(std::move(ctx)) {}
 
 std::vector<domain::counterparty> counterparty_service::list_counterparties(std::uint32_t offset,
                                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing counterparties with offset: " << offset
-                               << ", limit: " << limit;
-    return repo_.read_latest(offset, limit);
+    BOOST_LOG_SEV(lg(), debug) << "Listing all counterparties";
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t counterparty_service::count_counterparties() {
-    BOOST_LOG_SEV(lg(), debug) << "Counting counterparties";
-    return repo_.get_total_count();
+    BOOST_LOG_SEV(lg(), debug) << "Getting total counterparties count";
+    return repo_.get_total_counterparty_count(ctx_);
 }
 
-std::optional<domain::counterparty>
-counterparty_service::find_counterparty(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding counterparty: " << id;
-    auto results = repo_.read_latest(id);
-    if (results.empty()) {
+std::optional<domain::counterparty> counterparty_service::get_counterparty(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty: " << id;
+    auto results = repo_.read_latest(ctx_, id);
+    if (results.empty())
         return std::nullopt;
-    }
     return results.front();
 }
 
-std::optional<domain::counterparty>
-counterparty_service::find_counterparty_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding counterparty by code: " << code;
-    auto results = repo_.read_latest_by_code(code);
-    if (results.empty()) {
-        return std::nullopt;
-    }
-    return results.front();
-}
-
-void counterparty_service::save_counterparty(const domain::counterparty& counterparty) {
-    if (counterparty.id.is_nil()) {
-        throw std::invalid_argument("Counterparty ID cannot be nil.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving counterparty: " << counterparty.id;
-    auto c = counterparty;
-    stamp(c, ctx_);
-    repo_.write(c);
-    BOOST_LOG_SEV(lg(), info) << "Saved counterparty: " << counterparty.id;
+void counterparty_service::save_counterparty(const domain::counterparty& v) {
+    if (v.id.is_nil())
+        throw std::invalid_argument("Counterparty id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving counterparty: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved counterparty: " << v.id;
 }
 
 void counterparty_service::save_counterparties(
     const std::vector<domain::counterparty>& counterparties) {
-    for (const auto& c : counterparties) {
-        if (c.id.is_nil())
-            throw std::invalid_argument("Counterparty ID cannot be nil.");
-    }
+    for (const auto& e : counterparties)
+        if (e.id.is_nil())
+            throw std::invalid_argument("Counterparty id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparties.size() << " counterparties";
-    auto stamped = counterparties;
-    for (auto& c : stamped)
-        stamp(c, ctx_);
-    repo_.write(stamped);
+    auto ts = counterparties;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
-void counterparty_service::remove_counterparty(const boost::uuids::uuid& id) {
+void counterparty_service::delete_counterparty(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty: " << id;
-    repo_.remove(id);
+    repo_.remove(ctx_, id);
     BOOST_LOG_SEV(lg(), info) << "Removed counterparty: " << id;
 }
 
+void counterparty_service::delete_counterparties(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
+}
+
 std::vector<domain::counterparty>
-counterparty_service::get_counterparty_history(const boost::uuids::uuid& id) {
+counterparty_service::get_counterparty_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty: " << id;
-    return repo_.read_all(id);
+    return repo_.read_all(ctx_, id);
 }
 
 }

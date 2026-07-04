@@ -22,7 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Counterparty Table
  *
  * External trading partners and counterparties that participate in financial
  * transactions with the organisation. Counterparties form a hierarchy through
@@ -33,8 +33,8 @@ create table if not exists "ores_refdata_counterparties_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "full_name" text not null,
     "short_code" text not null,
+    "full_name" text not null,
     "transliterated_name" text null,
     "party_type" text not null,
     "parent_counterparty_id" uuid null,
@@ -56,13 +56,6 @@ create table if not exists "ores_refdata_counterparties_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
--- Non-unique full_name index for search. Full names are not unique in
--- real-world data (e.g. "CAISSE LOCALE CREDIT AGRICOLE" appears for
--- multiple branches, each with a distinct LEI).
-create index if not exists counterparties_full_name_idx
-on "ores_refdata_counterparties_tbl" (tenant_id, full_name)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 -- Unique short_code for active records
 create unique index if not exists counterparties_short_code_uniq_idx
 on "ores_refdata_counterparties_tbl" (tenant_id, short_code)
@@ -81,6 +74,10 @@ create index if not exists counterparties_tenant_idx
 on "ores_refdata_counterparties_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create index if not exists counterparties_full_name_idx
+on "ores_refdata_counterparties_tbl" (tenant_id, full_name)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 create or replace function ores_refdata_counterparties_insert_fn()
 returns trigger as $$
 declare
@@ -89,32 +86,30 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate parent_counterparty_id (optional soft FK to ores_refdata_counterparties_tbl)
+    if NEW.parent_counterparty_id is not null then
+        if not exists (
+            select 1 from ores_refdata_counterparties_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.parent_counterparty_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid parent_counterparty_id: %. No active counterparty found with this id.', NEW.parent_counterparty_id
+                using errcode = '23503';
+        end if;
+    end if;
+
     -- Validate party_type
     NEW.party_type := ores_refdata_validate_party_type_fn(NEW.tenant_id, NEW.party_type);
 
     -- Validate status
     NEW.status := ores_refdata_validate_party_status_fn(NEW.tenant_id, NEW.status);
 
-    -- Validate parent_counterparty_id (soft FK)
-    if NEW.parent_counterparty_id is not null then
-        if not exists (
-            select 1 from ores_refdata_counterparties_tbl
-            where tenant_id = NEW.tenant_id and id = NEW.parent_counterparty_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
-            raise exception 'Invalid parent_counterparty_id: %. No active counterparty found with this id.',
-                NEW.parent_counterparty_id
-                using errcode = '23503';
-        end if;
-    end if;
+    -- Validate business_center_code
+    NEW.business_center_code := ores_refdata_validate_business_centre_fn(NEW.tenant_id, NEW.business_center_code);
 
-    -- Validate business_center_code (mandatory)
-    if NEW.business_center_code is null or NEW.business_center_code = '' then
-        raise exception 'business_center_code is required for counterparties'
-            using errcode = '23502';
-    end if;
-    NEW.business_center_code := ores_refdata_validate_business_centre_fn(
-        NEW.tenant_id, NEW.business_center_code);
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
@@ -144,15 +139,12 @@ begin
 
     NEW.valid_from = current_timestamp;
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
-
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_counterparties_insert_trg
 before insert on "ores_refdata_counterparties_tbl"

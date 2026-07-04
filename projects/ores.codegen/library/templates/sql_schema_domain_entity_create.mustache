@@ -249,6 +249,10 @@ declare
     {{name}} {{type}};
 {{/declare_vars}}
 {{/domain_entity.sql.fk_copy_validations}}
+{{#domain_entity.sql.has_cardinality_limit_validations}}
+    v_max_cardinality integer;
+    v_current_count integer;
+{{/domain_entity.sql.has_cardinality_limit_validations}}
 begin
 {{#domain_entity.has_tenant_in_pk}}
     -- Validate tenant_id
@@ -398,7 +402,7 @@ begin
     end if;
 
 {{/domain_entity.sql.text_code_validations}}
-{{#domain_entity.validations}}
+{{#domain_entity.insert_trigger.validations}}
 {{#nullable}}
     -- Validate {{column}} (optional field -- skip validation when null)
     if NEW.{{column}} is not null then
@@ -411,7 +415,33 @@ begin
     NEW.{{column}} := {{validation_function}}({{#domain_entity.has_tenant_id}}NEW.tenant_id, {{/domain_entity.has_tenant_id}}NEW.{{column}});
 
 {{/nullable}}
-{{/domain_entity.validations}}
+{{#cardinality_limit_table}}
+    -- Validate cardinality limit for this {{column}}
+    select {{cardinality_limit_column}} into v_max_cardinality
+    from {{cardinality_limit_table}}
+    where {{#domain_entity.has_tenant_id}}tenant_id = NEW.tenant_id
+      and {{/domain_entity.has_tenant_id}}code = NEW.{{column}}
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_max_cardinality is not null then
+        select count(*) into v_current_count
+        from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+        where {{#domain_entity.has_tenant_id}}tenant_id = NEW.tenant_id
+          and {{/domain_entity.has_tenant_id}}{{cardinality_scope_column}} = NEW.{{cardinality_scope_column}}
+          and {{column}} = NEW.{{column}}
+          and {{domain_entity.primary_key.column}} != NEW.{{domain_entity.primary_key.column}}
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        if v_current_count >= v_max_cardinality then
+            raise exception 'Cardinality violation for {{column}} %: % already has % {{cardinality_noun}}(s) (max %).',
+                NEW.{{column}}, NEW.{{cardinality_scope_column}}, v_current_count, v_max_cardinality
+                using errcode = '23514';
+        end if;
+    end if;
+
+{{/cardinality_limit_table}}
+{{/domain_entity.insert_trigger.validations}}
+<<paste:d4e8e136-828d-440a-ba59-82ba2b9d3e2e>>
 {{#domain_entity.has_audit_columns}}
 {{#domain_entity.has_tenant_in_pk}}
     -- Validate change_reason_code

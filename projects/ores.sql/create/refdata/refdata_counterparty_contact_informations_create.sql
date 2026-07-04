@@ -22,7 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Counterparty Contact Information Table
  *
  * Contact details for counterparties organised by purpose (Legal, Operations,
  * Settlement, Billing). Each counterparty can have one contact record per type.
@@ -59,6 +59,11 @@ create table if not exists "ores_refdata_counterparty_contact_informations_tbl" 
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
+-- Composite natural key: unique combination for active records
+create unique index if not exists counterparty_contact_informations_counterparty_id_contact_type_uniq_idx
+on "ores_refdata_counterparty_contact_informations_tbl" (tenant_id, counterparty_id, contact_type)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists counterparty_contact_informations_version_uniq_idx
 on "ores_refdata_counterparty_contact_informations_tbl" (tenant_id, id, version)
@@ -72,10 +77,6 @@ create index if not exists counterparty_contact_informations_tenant_idx
 on "ores_refdata_counterparty_contact_informations_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists counterparty_contact_info_cpty_contact_type_uniq_idx
-on "ores_refdata_counterparty_contact_informations_tbl" (tenant_id, counterparty_id, contact_type)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 create or replace function ores_refdata_counterparty_contact_informations_insert_fn()
 returns trigger as $$
 declare
@@ -84,20 +85,24 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate contact_type
-    NEW.contact_type := ores_refdata_validate_contact_type_fn(NEW.tenant_id, NEW.contact_type);
-
-    -- Validate counterparty_id (soft FK)
+    -- Validate counterparty_id (soft FK to ores_refdata_counterparties_tbl)
     if not exists (
         select 1 from ores_refdata_counterparties_tbl
-        where tenant_id = NEW.tenant_id and id = NEW.counterparty_id
+        where tenant_id = NEW.tenant_id
+          and id = NEW.counterparty_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid counterparty_id: %. No active counterparty found with this id.',
-            NEW.counterparty_id
+        raise exception 'Invalid counterparty_id: %. No active counterparty found with this id.', NEW.counterparty_id
             using errcode = '23503';
     end if;
 
+    -- Validate contact_type
+    NEW.contact_type := ores_refdata_validate_contact_type_fn(NEW.tenant_id, NEW.contact_type);
+
+    -- Paste block: doesn't fit soft_fk_validations (joins on id, not
+    -- an alpha-2 code column) or the Validations table
+    -- (ores_refdata_validate_country_fn only checks non-null/empty,
+    -- not existence).
     -- Validate country_code (nullable, inline check against countries table)
     if NEW.country_code is not null and NEW.country_code != '' then
         if not exists (
@@ -111,6 +116,8 @@ begin
                 using errcode = '23503';
         end if;
     end if;
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
@@ -140,15 +147,12 @@ begin
 
     NEW.valid_from = current_timestamp;
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
-
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_counterparty_contact_informations_insert_trg
 before insert on "ores_refdata_counterparty_contact_informations_tbl"

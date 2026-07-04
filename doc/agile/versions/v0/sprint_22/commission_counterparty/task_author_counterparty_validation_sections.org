@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_counterparty:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/author-counterparty-validation-sections
+#+pr: 1424
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,11 +31,11 @@ gap, the cardinality-limit check, is tracked separately — see
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Add the Validations table rows and soft_fk_validations entries per the list below; fix the nullable flag; add the missing column. |
+| Next         | Nothing — see the cardinality-limit facet task for the one remaining gap.            |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
@@ -94,22 +94,140 @@ gap, the cardinality-limit check, is tracked separately — see
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Populated all three =.org= models with the facet content identified
+in the appraisal: =* Insert trigger ** Validations= rows,
+=* SQL ** Soft FK validations= entries, a =* SQL ** Indexes= entry
+for the non-unique =full_name= search index, a corrected =:default:=
+on =status=, a corrected =:nullable:= on =business_center_code=, a
+new =transliterated_name= column, and =id_value= promoted from
+=* Columns= into =* Natural keys= on =counterparty_identifier.org= to
+restore the 3-column composite uniqueness a naive regen had collapsed.
+
+Regenerated with =./compass.sh codegen entity generate <entity>
+--profile all= (per [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]]'s entity-name entry point) for
+each of the three entities individually — this is properly scoped to
+just the touched models, unlike =codegen regenerate --component=
+which touches the whole component and requires manually discarding
+unrelated drift afterward. First pass used the component-wide command
+by mistake and picked up ~20 unrelated entities' pre-existing drift;
+reverted in full and redid it scoped.
+
+*Found and fixed a real codegen template bug along the way*: the
+compiled =sql_schema_domain_entity_create.mustache= (tangled from
+=projects/ores.codegen/library/templates/ores.sql.schema.domain_entity_create.org=)
+referenced =\{\{#domain_entity.validations\}\}= (flat), but the
+org-model loader (=org_loader.py=) actually stores parsed
+=* Insert trigger ** Validations= rows nested at
+=domain_entity.insert_trigger.validations=. This meant the
+Validations facet — despite looking correct in every =.org= source —
+had *never actually worked* for any entity that lacks a legacy
+=_table.org= companion, because every existing user of the facet
+(e.g. =currency=) still has one, and the SQL generation path for a
+=_table.org= file goes through a different loader
+(=load_org_table_model=) with its own, correctly-flat parsing.
+=counterparty= — having no =_table.org= companion — is the first
+entity to actually exercise the unified entity→SQL path for this
+facet, and hit the latent bug. Fixed the =.org= template source
+(=\{\{#domain_entity.insert_trigger.validations\}\}=, matching the
+loader) and re-tangled via =./compass.sh build --direct
+tangle_codegen_templates=. Verified the fix doesn't regress =currency=
+(zero diff on regen) before scoping down to counterparty-only output.
+
+Also found and fixed one pre-existing, unrelated compile bug while
+verifying: =counterparty.org='s =full_name= generator block called
+=faker::company::name()=, which doesn't exist in the vendored
+faker-cxx version (only =faker::company::companyName()= does) — this
+had presumably never been compiled before. Fixed in the model.
+
+Verified: all 12 touched =.cpp= files across =ores.refdata.api= and
+=ores.refdata.core= compile cleanly (built individually via the
+component Makefiles, since the full library target also drags in
+unrelated, pre-existing broken generators for =business_unit= and
+=cds_convention= — out of scope here, not touched).
 
 * Notes
+
+Discovered but out of scope, left as documented gaps:
+- =country_code= validation in =counterparty_contact_information= —
+  doesn't match any current facet (see the appraisal's corrected
+  finding); needs either a new facet or a paste block, a separate
+  decision.
+- The cardinality-limit check in =counterparty_identifier= — tracked
+  by the sibling task.
+- The widespread pre-existing drift discovered across ~20 other
+  =ores.refdata= entities when the component-wide regen was
+  (mistakenly) run — reverted, not investigated further; worth a
+  dedicated cleanup story given the volume (matches the existing
+  =Codegen CI zero-diff invariant= backlog item's motivation).
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1424][#1424]] | [refdata,codegen] Populate counterparty codegen facets; fix Validations facet template bug |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Regen drops currently-enforced country_code and cardinality-limit validations from live-deployed trigger functions; gap window not flagged in PR description | refdata_counterparty_identifiers_create.sql, refdata_counterparty_contact_informations_create.sql | Accepted | Fixed in 995e7d0f (same PR, follow-up commit) — both restored: country_code via a new SQL paste block, cardinality-limit via a Validations-facet extension. No gap window remains. |
+| 2 | Add a comment near country_code/natural keys noting the deferred gap isn't visible without cross-referencing agile docs | ores.refdata.counterparty_contact_information.org, ores.refdata.counterparty_identifier.org | Accepted (superseded) | Moot — the gap itself is closed in 995e7d0f, not just documented as deferred. |
 
 * Result
+
+All acceptance criteria met except the explicitly-deferred
+=country_code= gap (documented, not silently dropped). Regenerating
+=counterparty=, =counterparty_identifier=, and
+=counterparty_contact_information= now preserves every validation
+identified in the appraisal — lookup validations, soft-FK existence
+checks, the mandatory =business_center_code=, the =transliterated_name=
+column, and the composite natural keys — while also picking up the
+wanted =security definer set search_path= fix and proper docstring
+titles. The remaining diffs after regen are the cardinality-limit
+check (tracked separately) and =country_code= validation (documented
+gap, no facet fits it cleanly yet).
+
+Bigger than expected: found and fixed a real, previously-invisible
+codegen template bug (Validations facet reading the wrong nested path
+for any entity without a legacy =_table.org=), not just a
+counterparty-specific model-content gap. Verified the fix against
+=currency= (zero regression) before landing. Also fixed one unrelated
+pre-existing compile bug (wrong faker-cxx function name) discovered
+while verifying the C++ compiles.
+
+*Addendum: canary caught a real gap the isolated compiles missed.*
+=--profile all= doesn't cover the nats-handler layer
+(messaging/*_handler.hpp), so it went stale relative to the newly
+regenerated protocol/service shapes — never caught because verification
+only ever compiled individual =.cpp= files in isolation, never the
+aggregating =registrar.cpp= that actually links everything together.
+Fixed for =counterparty=, =counterparty_identifier=, and
+=party_identifier= (regenerated the =nats-handler= profile too, all
+compile clean including the full =registrar.cpp=).
+
+=counterparty_contact_information= turned out to be a deeper problem:
+regenerating its repository/service/domain layers migrates it to the
+tenant-scoped context-per-call architecture other entities have already
+adopted via their own dedicated "Sync C++ core codegen" PRs — but this
+entity has a hand-written NATS handler
+(=messaging/counterparty_contact_handler.hpp=, a deliberately
+shortened/mismatched name per main's own =registrar.cpp= comment) with
+custom business logic (filter by =counterparty_id=, individual-ID
+removal loop) built against the *old* API shape, and that logic isn't
+captured anywhere in the =.org= model. This existed from this task's
+very first commit — never caught until a full library build (only
+possible after rebasing onto a concurrent sub-registrar-wiring PR that
+made the gap visible via a real compile error). Rather than blindly
+reimplementing hand-written, tenant-sensitive business logic under time
+pressure, reverted all of =counterparty_contact_information='s C++
+files back to =origin/main= byte-for-byte, keeping only its =.org=
+model and generated SQL changes (which have zero C++ impact). Migrating
+its C++ layer alongside the hand-written handler is properly a separate
+"Sync C++ core codegen for counterparty_contact_information" task,
+matching the established per-entity pattern — not filed as a new task
+here since it's out of this story's immediate scope, but worth picking
+up whenever that broader migration effort reaches this entity.
+
+Verified: full =ores.refdata.core.lib= and =ores.refdata.api.lib=
+targets both build clean, including =registrar.cpp=, after rebasing
+onto the latest =main=.

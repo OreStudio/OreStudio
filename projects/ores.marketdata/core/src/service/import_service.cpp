@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.core/service/import_service.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
@@ -147,9 +148,10 @@ import_service::import(const messaging::import_market_data_request& req) {
         s.series_subclass =
             rfl::string_to_enum<domain::series_subclass>(cl.series_subclass).value();
         s.is_scalar = cl.is_scalar;
-        s.modified_by = "import";
-        s.performed_by = "import";
-        s.change_reason_code = "IMPORT";
+        s.modified_by = ctx_.actor();
+        s.performed_by = ctx_.service_account();
+        s.change_reason_code =
+            std::string(dq::domain::change_reason_constants::codes::external_data_import);
         s.change_commentary = "Imported from ORE market data file";
         series_repo.write(ctx_, s);
 

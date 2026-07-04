@@ -31,9 +31,9 @@ regressions found.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
-| Now          | Done. User confirmed live: list, detail edit/save, and eventing work correctly end-to-end. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | N/A.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-04                               |
 
 * Acceptance

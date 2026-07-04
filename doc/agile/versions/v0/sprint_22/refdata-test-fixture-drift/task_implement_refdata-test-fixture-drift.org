@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: C514E819-ABD2-4450-9A3C-DF2565D46C10
+:END:
+#+title: Task: Implement Hotfix: refdata generator/repository test fixtures out of sync with DB constraints
+#+description: Initial task for: Hotfix: refdata generator/repository test fixtures out of sync with DB constraints
+#+type: task
+#+level: s1
+#+filetags: :refdata-test-fixture-drift:sprint_22:v0:
+#+owner: marco
+#+branch: hotfix/refdata-test-fixture-drift
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B91141E-1785-4090-892C-52B8438DAD86][Hotfix: refdata generator/repository test fixtures out of sync with DB constraints]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Diagnose and fix the 25 failing ores.refdata unit/repository tests on
+main so CI goes green again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2B91141E-1785-4090-892C-52B8438DAD86][Hotfix: refdata generator/repository test fixtures out of sync with DB constraints]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-05                               |
+
+* Acceptance
+
+- Previously-failing generator/repository tests pass.
+- Fix traced to root-cause commits, not papered over.
+- Build (=ores.refdata.api.lib=) verified clean.
+
+* Plan
+
+Diagnosed via an Explore-style investigation cross-referencing the
+failing assertions/DB errors against recent git history for
+=projects/ores.refdata=:
+
+1. =generators_tests.cpp:94/251/283= assert =business_center_code ==
+   \"WRLD\"= and =change_reason_code == \"system.new\"=, but
+   =counterparty_generator.cpp= emitted =\"USNY\"=/=\"system.test\"=
+   after commit =5ef46554b=.
+2. Repository tests failed with Postgres exceptions —
+   =Invalid business_centre: USNY. Must be one of: WRLD= (only
+   =WRLD= is ever seeded) and =Invalid party_id_scheme: LEI-0= etc.
+   (only 10 fixed scheme codes are valid, not a per-record numeric
+   suffix) — traced to =party_identifier_generator.cpp= and
+   =counterparty_identifier_generator.cpp= after commit =d5762d746=.
+3. Fixed by reverting the 3 generators' values to match their sibling
+   =party_generator.cpp= (untouched by those commits, still correct),
+   plus the =.org= codegen source for =business_center_code=
+   (=id_scheme=/=change_reason_code= have no per-entity =.org= facet —
+   hand-written in the =.cpp=, so no separate source-of-truth edit
+   needed there).
+4. Per user request, migrated the touched =change_reason_code=
+   literals onto new constants in the existing shared
+   =ores.dq.api/domain/change_reason_constants.hpp=
+   (=codes::synthetic_new=, =codes::synthetic_test_data=) instead of
+   leaving magic strings — required adding =ores.dq.api.lib= as a new
+   PRIVATE link dependency of =ores.refdata.api.lib=.
+5. Filed a backlog capture for migrating the remaining ~30 generators
+   onto the same constants (out of scope here).
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Root cause: two "Commission: counterparty" codegen-facet commits
+(=5ef46554b=, =d5762d746=) introduced generator values violating DB
+check constraints (=business_center_code=, =id_scheme=) and diverging
+from existing test expectations (=change_reason_code=). Fixed all 3
+generators, migrated the touched change-reason literals to a shared
+constants header, wired the new library dependency, and filed a
+backlog capture for the remaining generators. Build verified clean.

@@ -47,6 +47,7 @@ target_link_libraries(${lib_target_name}
         ores.platform.lib
         ores.workflow.api.lib
     PRIVATE
+        ores.dq.api.lib
         ores.utility.lib
         faker-cxx::faker-cxx
         libfort::fort)

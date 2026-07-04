@@ -54,6 +54,7 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
+        PairFlags, // Qt::DecorationRole only — base+quote flags composited side by side
         BaseCurrencyCode,
         QuoteCurrencyCode,
         SourceName,

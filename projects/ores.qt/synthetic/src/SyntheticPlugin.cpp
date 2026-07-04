@@ -83,6 +83,7 @@ void SyntheticPlugin::on_login(const plugin_context& ctx) {
         std::make_unique<FxSpotGenerationConfigController>(ctx_.main_window,
                                                            ctx_.mdi_area,
                                                            ctx_.client_manager,
+                                                           ctx_.image_cache,
                                                            ctx_.change_reason_cache,
                                                            ctx_.username);
     connect(fxSpotConfigController_.get(),

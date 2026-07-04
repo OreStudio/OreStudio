@@ -44,6 +44,7 @@ FxSpotGenerationConfigController::FxSpotGenerationConfigController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ImageCache* imageCache,
     ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
@@ -53,9 +54,10 @@ FxSpotGenerationConfigController::FxSpotGenerationConfigController(
                        username,
                        fx_spot_generation_config_event_name,
                        parent)
-    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
-    , listMdiSubWindow_(nullptr) {
+    , listMdiSubWindow_(nullptr)
+    , imageCache_(imageCache)
+    , changeReasonCache_(changeReasonCache) {
 
     BOOST_LOG_SEV(lg(), debug) << "FxSpotGenerationConfigController created";
 }
@@ -70,7 +72,7 @@ void FxSpotGenerationConfigController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new FxSpotGenerationConfigMdiWindow(clientManager_, username_);
+    listWindow_ = new FxSpotGenerationConfigMdiWindow(clientManager_, imageCache_, username_);
 
     // Connect signals
     connect(listWindow_,

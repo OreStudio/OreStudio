@@ -20,9 +20,12 @@
 #include "ores.qt/ClientFxSpotGenerationConfigModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/ProcessTypeLabel.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
+#include <QPainter>
+#include <QPixmap>
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -34,6 +37,23 @@ namespace {
 std::string
 fx_spot_generation_config_key_extractor(const synthetic::domain::fx_spot_generation_config& e) {
     return boost::uuids::to_string(e.id);
+}
+
+// Two 18x18 flags side by side, matching the combined pair icon already used
+// for the FX pair tree items in MarketSimulatorWindow (kept independent here:
+// a table cell has less room than that tree row, so a smaller fixed size).
+QIcon pair_flags_icon(ImageCache& imageCache, const std::string& base, const std::string& quote) {
+    constexpr int flagSize = 18;
+    constexpr int overlap = 6; // quote flag overlaps the base flag slightly
+    const QPixmap basePm = imageCache.getCurrencyFlagIcon(base).pixmap(flagSize, flagSize);
+    const QPixmap quotePm = imageCache.getCurrencyFlagIcon(quote).pixmap(flagSize, flagSize);
+    QPixmap combined(flagSize * 2 - overlap, flagSize);
+    combined.fill(Qt::transparent);
+    QPainter painter(&combined);
+    painter.drawPixmap(0, 0, basePm);
+    painter.drawPixmap(flagSize - overlap, 0, quotePm);
+    painter.end();
+    return QIcon(combined);
 }
 }
 
@@ -111,6 +131,14 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
         }
     }
 
+    if (role == Qt::DecorationRole && index.column() == PairFlags) {
+        if (imageCache_)
+            return pair_flags_icon(*imageCache_,
+                                   fx_spot_generation_config.base_currency_code,
+                                   fx_spot_generation_config.quote_currency_code);
+        return {};
+    }
+
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color(boost::uuids::to_string(fx_spot_generation_config.id));
     }
@@ -125,6 +153,8 @@ QVariant ClientFxSpotGenerationConfigModel::headerData(int section,
         return {};
 
     switch (section) {
+        case PairFlags:
+            return tr(""); // icon-only column
         case BaseCurrencyCode:
             return tr("Base Currency");
         case QuoteCurrencyCode:

@@ -34,10 +34,12 @@ namespace ores::qt {
 using namespace ores::logging;
 
 FxSpotGenerationConfigMdiWindow::FxSpotGenerationConfigMdiWindow(ClientManager* clientManager,
+                                                                 ImageCache* imageCache,
                                                                  const QString& username,
                                                                  QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
+    , imageCache_(imageCache)
     , username_(username)
     , toolbar_(nullptr)
     , tableView_(nullptr)
@@ -114,6 +116,7 @@ void FxSpotGenerationConfigMdiWindow::setupToolbar() {
 
 void FxSpotGenerationConfigMdiWindow::setupTable() {
     model_ = new ClientFxSpotGenerationConfigModel(clientManager_, this);
+    model_->setImageCache(imageCache_);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -125,10 +128,13 @@ void FxSpotGenerationConfigMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
+    tableView_->verticalHeader()->setDefaultSectionSize(24); // room for the 18px flag icons
 
-
+    // Bumped to 2: the new leading PairFlags column shifts every other
+    // column's index, which would otherwise conflict with previously saved
+    // header state (column order/widths) from version 1.
     initializeTableSettings(
-        tableView_, model_, "FxSpotGenerationConfigListWindow", {}, {900, 400}, 1);
+        tableView_, model_, "FxSpotGenerationConfigListWindow", {}, {900, 400}, 2);
 }
 
 void FxSpotGenerationConfigMdiWindow::setupConnections() {

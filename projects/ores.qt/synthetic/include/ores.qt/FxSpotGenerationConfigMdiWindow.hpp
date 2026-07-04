@@ -32,6 +32,7 @@
 
 namespace ores::qt {
 
+class ImageCache;
 
 /**
  * @brief MDI window for displaying and managing FX spot generation configs.
@@ -53,6 +54,7 @@ private:
 
 public:
     explicit FxSpotGenerationConfigMdiWindow(ClientManager* clientManager,
+                                             ImageCache* imageCache,
                                              const QString& username,
                                              QWidget* parent = nullptr);
     ~FxSpotGenerationConfigMdiWindow() override = default;
@@ -95,6 +97,7 @@ private:
     void updateActionStates();
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     QString username_;
 
     QToolBar* toolbar_;

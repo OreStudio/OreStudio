@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 9EA36BBF-28FB-477C-AA24-98AEB7250341
+:END:
+#+title: Task: Implement Hotfix: MacOS CI relevance-guard skips matrix build silently
+#+description: Initial task for: Hotfix: MacOS CI relevance-guard skips matrix build silently
+#+type: task
+#+level: s1
+#+filetags: :macos_ci_relevance_guard_skips_build:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F3D9E216-DCB2-4621-899D-DF86727FC736][Hotfix: MacOS CI relevance-guard skips matrix build silently]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix `.github/workflows/continuous-macos.yml` so a scheduled run that
+skips the build matrix (via `relevance-guard`) cannot be reported as
+an overall "Success" — either the guard's skip should be surfaced
+distinctly, or the workflow conclusion should reflect that no build
+was actually verified.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:F3D9E216-DCB2-4621-899D-DF86727FC736][Hotfix: MacOS CI relevance-guard skips matrix build silently]] |
+| Now          | Diagnosing.                            |
+| Waiting on   | Nothing.                               |
+| Next         | Decide on fix approach and implement.  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- A scheduled run where `relevance-guard` sets `should_build=false`
+  no longer reads as an unqualified green "Success" masking an
+  unverified macOS build.
+
+* Plan
+
+Diagnosis (from screenshot of run #1781 and reading
+`.github/workflows/continuous-macos.yml`):
+
+- The `guard` job (`relevance-guard`) computes `should_build` by
+  diffing against the last successful scheduled run's SHA, skipping
+  the build when only doc/codegen-model changes are detected since
+  then.
+- The `build` job has `if: needs.guard.outputs.should_build == 'true'`.
+  When the condition is false, GitHub Actions marks the `build` job
+  (and its whole matrix) as *skipped*, not failed — and a workflow
+  with only skipped/successful jobs is reported as overall
+  **Success**.
+- This is a legitimate "no code changed" optimization for normal
+  scheduled ticks, but it silently hides two real failure modes:
+  (1) the relevance-guard logic itself has a bug and is skipping runs
+  that should build, or (2) stakeholders reading the green check
+  assume macOS was actually built/tested when it wasn't.
+- Options to consider: emit a distinct workflow summary/annotation
+  when skipped so it's visually distinguishable from an actual build
+  pass; and/or verify the guard's diff logic against last-known-good
+  SHA is correctly finding recent code changes (needs checking why it
+  decided to skip on this particular run — confirm whether there
+  actually were no relevant commits since the last successful run, or
+  whether the guard misfired).
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: F3D9E216-DCB2-4621-899D-DF86727FC736
+:END:
+#+title: Story: Hotfix: MacOS CI relevance-guard skips matrix build silently
+#+description: Continuous MacOS workflow reports overall Success while the scheduled relevance-guard skips the build matrix, so macOS builds are not actually being verified.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:sprint_22:v0:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore real signal from the "Continuous MacOS" scheduled workflow: it
+must not report overall Success when the actual build/test matrix job
+was skipped.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Diagnosed root cause in relevance-guard job. |
+| Waiting on    | Nothing.                               |
+| Next          | Implement and verify the fix.          |
+| Last touched  | 2026-07-04                               |
+
+* Acceptance
+
+- Continuous MacOS run #1781 (and future scheduled runs) either
+  actually run the build matrix, or the workflow's overall status
+  reflects that the matrix was skipped (not a blanket "Success").
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:449DCB86-7319-439F-B24F-6CCD09469AC4][Scaffold story: Hotfix: MacOS CI relevance-guard skips matrix build silently]] | STARTED | 2026-07-04 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9EA36BBF-28FB-477C-AA24-98AEB7250341][Implement Hotfix: MacOS CI relevance-guard skips matrix build silently]] | BACKLOG | | | Initial task for: Hotfix: MacOS CI relevance-guard skips matrix build silently |
+
+* Decisions
+
+* Out of scope
+
+-

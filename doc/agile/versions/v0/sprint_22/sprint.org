@@ -141,7 +141,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 21.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-|       |       |       |     |             |
+| [[id:F3D9E216-DCB2-4621-899D-DF86727FC736][Hotfix: MacOS CI relevance-guard skips matrix build silently]] | BACKLOG | | | Continuous MacOS workflow reports overall Success while the scheduled relevance-guard skips the build matrix, so macOS builds are not actually being verified. |
 
 * Achievements
 

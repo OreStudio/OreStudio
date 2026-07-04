@@ -461,10 +461,38 @@ def _qt_columns(node: OrgNode) -> list[dict[str, Any]]:
                     entry["is_string"] = True
                 elif low == "int":
                     entry["is_int"] = True
+                elif low in ("bool", "boolean"):
+                    entry["is_bool"] = True
+                elif low == "double":
+                    entry["is_double"] = True
                 elif low == "timestamp":
                     entry["is_timestamp"] = True
+                elif low == "uuid":
+                    entry["is_uuid"] = True
                 continue
             entry[k] = _parse_typed(v)
+        out.append(entry)
+    return out
+
+
+def _qt_icon_columns(node: OrgNode) -> list[dict[str, Any]]:
+    """Convert the Qt 'Icon columns (Qt model)' table into the dict list shape.
+
+    Each row is one Qt::DecorationRole column: `column` (the Column enum
+    value), `accessor` (a function taking ImageCache& then 1-2 row fields,
+    e.g. currency_flag_icon), `field1` (always), `field2` (optional — a
+    second row field for a composited two-field icon, e.g. a currency pair).
+    `has_field2` is computed so the template can conditionally emit the
+    second argument without any templating logic beyond section presence.
+    """
+    if not node.tables:
+        return []
+    out: list[dict[str, Any]] = []
+    for row in node.tables[0]:
+        entry: dict[str, Any] = {}
+        for k, v in row.items():
+            entry[k] = _parse_typed(v)
+        entry["has_field2"] = bool(entry.get("field2"))
         out.append(entry)
     return out
 
@@ -708,6 +736,26 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             qc = _section(qt, "Columns (Qt model)")
             if qc:
                 qt_out["columns"] = _qt_columns(qc)
+            ic = _section(qt, "Icon columns (Qt model)")
+            if ic:
+                qt_out["icon_columns"] = _qt_icon_columns(ic)
+                qt_out["has_icon_columns"] = bool(qt_out["icon_columns"])
+            # has_flag_icon is derived, not a separately-authored property:
+            # an entity has the single-column image_id-keyed flag mechanism
+            # iff it declared which column shows it. Any manually-set
+            # :has_flag_icon: in the .org file is ignored/overwritten here —
+            # it was always redundant with :flag_icon_column: being present.
+            qt_out["has_flag_icon"] = bool(qt_out.get("flag_icon_column"))
+            # Whether an ImageCache reference needs threading through the
+            # controller/window/detail-dialog layers at all — true for either
+            # icon mechanism. Kept distinct from has_flag_icon (which also
+            # still gates the single-column iconColumn()/flagDecoration()
+            # code in the client model itself) so that a model using only
+            # the newer multi-column mechanism still gets ImageCache wired
+            # through everywhere it's needed.
+            qt_out["needs_image_cache"] = qt_out["has_flag_icon"] or qt_out.get(
+                "has_icon_columns", False
+            )
             de["qt"] = qt_out
 
         # Custom repository methods (the literate fragment mechanism).

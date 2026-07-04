@@ -28,6 +28,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -66,22 +67,28 @@ public:
     /**
      * @brief Inject the shared image cache for flag/icon decoration.
      *
-     * Controllers call this on models whose entity carries an image_id (flag).
-     * Once set, the model refreshes its icon column whenever the cache loads,
-     * and derived classes can call flagDecoration() from data() for the
-     * Qt::DecorationRole on iconColumn(). Models without a flag never call
-     * this and iconColumn() stays -1, so there is no icon behaviour.
+     * Controllers call this on models with one or more icon-bearing columns.
+     * Once set, the model refreshes every such column whenever the cache
+     * loads. Derived classes declare their icon column(s) via iconColumn()
+     * (single, image_id-keyed — flagDecoration()) and/or iconColumns()
+     * (any number, any accessor — e.g. a currency-code-keyed flag lookup with
+     * no image_id involved). Models with neither leave both at their
+     * defaults (-1 / empty), so there is no icon behaviour.
      */
     void setImageCache(ImageCache* cache) {
         imageCache_ = cache;
         if (!imageCache_)
             return;
         const auto refresh = [this]() {
-            const int col = iconColumn();
-            if (col < 0)
+            std::vector<int> cols = iconColumns();
+            if (const int col = iconColumn(); col >= 0)
+                cols.push_back(col);
+            if (cols.empty())
                 return;
             const int rows = rowCount();
-            if (rows > 0)
+            if (rows == 0)
+                return;
+            for (int col : cols)
                 emit dataChanged(index(0, col), index(rows - 1, col), {Qt::DecorationRole});
         };
         connect(imageCache_, &ImageCache::imagesLoaded, this, refresh);
@@ -103,6 +110,17 @@ protected:
      */
     virtual int iconColumn() const {
         return -1;
+    }
+
+    /**
+     * @brief Columns that render an icon decoration via any accessor, not
+     * just the single image_id-keyed one iconColumn()/flagDecoration()
+     * cover — e.g. a currency-code-keyed flag (ImageCache::
+     * getCurrencyFlagIcon()) or a composited two-field icon
+     * (currency_flag_icon()). Default empty = no such columns.
+     */
+    virtual std::vector<int> iconColumns() const {
+        return {};
     }
 
     /**

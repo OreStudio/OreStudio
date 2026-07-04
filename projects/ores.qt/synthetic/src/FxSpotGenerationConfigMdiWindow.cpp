@@ -34,13 +34,13 @@ namespace ores::qt {
 using namespace ores::logging;
 
 FxSpotGenerationConfigMdiWindow::FxSpotGenerationConfigMdiWindow(ClientManager* clientManager,
-                                                                 ImageCache* imageCache,
                                                                  const QString& username,
+                                                                 ImageCache* imageCache,
                                                                  QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
-    , imageCache_(imageCache)
     , username_(username)
+    , imageCache_(imageCache)
     , toolbar_(nullptr)
     , tableView_(nullptr)
     , model_(nullptr)
@@ -129,12 +129,9 @@ void FxSpotGenerationConfigMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    // Bumped to 3: column count/order changed twice now (a leading PairFlags
-    // column was added, then removed again in favour of a flag icon directly
-    // on BaseCurrencyCode/QuoteCurrencyCode, matching ClientCurrencyModel) —
-    // either change invalidates previously saved header state.
+
     initializeTableSettings(
-        tableView_, model_, "FxSpotGenerationConfigListWindow", {}, {900, 400}, 3);
+        tableView_, model_, "FxSpotGenerationConfigListWindow", {}, {900, 400}, 1);
 }
 
 void FxSpotGenerationConfigMdiWindow::setupConnections() {

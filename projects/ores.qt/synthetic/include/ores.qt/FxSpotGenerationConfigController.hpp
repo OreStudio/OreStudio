@@ -94,7 +94,6 @@ private:
 
     FxSpotGenerationConfigMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
-    ImageCache* imageCache_;
     ChangeReasonCache* changeReasonCache_;
 };
 

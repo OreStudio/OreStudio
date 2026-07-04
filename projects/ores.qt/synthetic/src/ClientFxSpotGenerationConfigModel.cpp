@@ -21,7 +21,6 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/ProcessTypeLabel.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
@@ -101,7 +100,7 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
             case ProcessType:
                 return processTypeLabel(fx_spot_generation_config.process_type);
             case Enabled:
-                return fx_spot_generation_config.enabled ? tr("Yes") : tr("No");
+                return fx_spot_generation_config.enabled ? tr("true") : tr("false");
             case Version:
                 return static_cast<qlonglong>(fx_spot_generation_config.version);
             case ModifiedBy:
@@ -114,13 +113,9 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
     }
 
     if (role == Qt::DecorationRole && imageCache_) {
-        // Same currency_flag_icon() single-code path ClientCurrencyModel's
-        // IsoCode column and every other flag-bearing cell go through — one
-        // flag per currency-code cell, no compositing needed since base and
-        // quote each have their own column.
-        if (index.column() == BaseCurrencyCode)
+        if (index.column() == Column::BaseCurrencyCode)
             return currency_flag_icon(*imageCache_, fx_spot_generation_config.base_currency_code);
-        if (index.column() == QuoteCurrencyCode)
+        if (index.column() == Column::QuoteCurrencyCode)
             return currency_flag_icon(*imageCache_, fx_spot_generation_config.quote_currency_code);
     }
 

@@ -54,10 +54,10 @@ FxSpotGenerationConfigController::FxSpotGenerationConfigController(
                        username,
                        fx_spot_generation_config_event_name,
                        parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
-    , listMdiSubWindow_(nullptr)
-    , imageCache_(imageCache)
-    , changeReasonCache_(changeReasonCache) {
+    , listMdiSubWindow_(nullptr) {
+    setImageCache(imageCache);
 
     BOOST_LOG_SEV(lg(), debug) << "FxSpotGenerationConfigController created";
 }
@@ -72,7 +72,7 @@ void FxSpotGenerationConfigController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new FxSpotGenerationConfigMdiWindow(clientManager_, imageCache_, username_);
+    listWindow_ = new FxSpotGenerationConfigMdiWindow(clientManager_, username_, imageCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -176,6 +176,7 @@ void FxSpotGenerationConfigController::showAddWindow() {
     auto* detailDialog = new FxSpotGenerationConfigDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -230,6 +231,7 @@ void FxSpotGenerationConfigController::showDetailWindow(
     auto* detailDialog = new FxSpotGenerationConfigDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -380,6 +382,7 @@ void FxSpotGenerationConfigController::onOpenVersion(
     auto* detailDialog = new FxSpotGenerationConfigDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setConfig(fx_spot_generation_config);
@@ -433,6 +436,7 @@ void FxSpotGenerationConfigController::onRevertVersion(
     auto* detailDialog = new FxSpotGenerationConfigDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_fx_spot_generation_config = fx_spot_generation_config;

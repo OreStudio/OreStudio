@@ -54,8 +54,8 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
-        BaseCurrencyCode, // also carries a Qt::DecorationRole flag icon
-        QuoteCurrencyCode, // also carries a Qt::DecorationRole flag icon
+        BaseCurrencyCode,
+        QuoteCurrencyCode,
         SourceName,
         OreKey,
         GmmInitialPrice,
@@ -79,6 +79,16 @@ public:
     QVariant
     headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
+protected:
+    /** @brief Columns whose Qt::DecorationRole shows an icon (flag, etc.). */
+    std::vector<int> iconColumns() const override {
+        return {
+            Column::BaseCurrencyCode,
+            Column::QuoteCurrencyCode,
+        };
+    }
+
+public:
     /**
      * @brief Refresh FX spot generation config data from server asynchronously.
      */
@@ -120,16 +130,6 @@ private slots:
     void onConfigsLoaded();
     void onPulseStateChanged(bool isOn);
     void onPulsingComplete();
-
-protected:
-    // AbstractClientModel::setImageCache() only auto-refreshes a single icon
-    // column on async load; BaseCurrencyCode and QuoteCurrencyCode both carry
-    // flags here, so this only covers one of them. In practice ImageCache's
-    // currency mapping is loaded once at app startup, well before this window
-    // is ever opened, so both columns are correct from the first paint anyway.
-    int iconColumn() const override {
-        return BaseCurrencyCode;
-    }
 
 private:
     QVariant recency_foreground_color(const std::string& code) const;

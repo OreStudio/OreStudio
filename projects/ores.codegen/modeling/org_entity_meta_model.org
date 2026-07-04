@@ -174,6 +174,44 @@ property drawer.
 Future SQL sub-sections (custom triggers, indices) will live alongside the
 =Flags= sub-heading.
 
+*** =has_parent_id=
+
+| Property                | Required | Notes                                                    |
+|--------------------------+----------+-----------------------------------------------------------|
+| =:has_parent_id:=        | no       | Entity has a self-referencing parent soft-FK (a tree).    |
+| =:parent_id_column:=     | if set   | Column name, e.g. =parent_party_id=.                      |
+| =:hierarchy_name_field:= | if set   | Existing column used as the display label in the tree.    |
+
+When set, generates a
+=<product>_<component>_<entity_plural>_hierarchy_fn(p_tenant_id, p_root_id,
+p_from_root)= recursive-CTE function returning flat =(id, parent_id, name)=
+rows: the subtree rooted at =p_root_id= when =p_from_root= is false, or
+(resolving up to the real root first) the whole tenant tree when true.
+Does *not* generate the =parent_<entity>_id= column or its insert-trigger
+validation — those stay hand-written until an entity's SQL file is fully
+migrated onto the unified template (see =Commission: party='s "Bring party
+under codegen" task for why this can't always be done safely yet: hand-written
+logic like codename generation has no paste-block coverage). The generated
+function composes independently of that column either way.
+
+Consumers turn the flat rows into a tree client-side via the shared,
+handwritten =ores::utility::domain::hierarchy_node=/=build_tree()= (not
+codegen'd — entity-agnostic tree assembly is generic logic, not per-entity
+template output).
+
+Example:
+
+#+begin_src org
+,* SQL
+,** Flags
+,:PROPERTIES:
+,:tablename:            ores_refdata_counterparties_tbl
+,:has_parent_id:        true
+,:parent_id_column:     parent_counterparty_id
+,:hierarchy_name_field: full_name
+,:END:
+#+end_src
+
 ** C++
 
 C++-specific knobs. Sub-sections:

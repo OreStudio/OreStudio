@@ -46,18 +46,23 @@ std::vector<T> dedupe_by_date_and_key(std::vector<T> items,
                                       duplicate_policy on_duplicate,
                                       parse_report* report,
                                       KeyOf key_of) {
+    using composite_key = std::pair<std::chrono::sys_days, std::string>;
+
+    // Composite (date, key) per item, computed once and reused for both passes.
+    std::vector<composite_key> composites;
+    composites.reserve(items.size());
+    for (const auto& item : items)
+        composites.emplace_back(std::chrono::sys_days{item.date}, key_of(item));
+
     // Map (date, key) -> index of its LAST occurrence in `items`.
-    std::map<std::pair<std::chrono::sys_days, std::string>, std::size_t> last_index;
-    for (std::size_t i = 0; i < items.size(); ++i) {
-        const auto composite = std::make_pair(std::chrono::sys_days{items[i].date}, key_of(items[i]));
-        last_index[composite] = i;
-    }
+    std::map<composite_key, std::size_t> last_index;
+    for (std::size_t i = 0; i < items.size(); ++i)
+        last_index[composites[i]] = i;
 
     std::vector<T> result;
     result.reserve(items.size());
     for (std::size_t i = 0; i < items.size(); ++i) {
-        const auto composite = std::make_pair(std::chrono::sys_days{items[i].date}, key_of(items[i]));
-        const auto winner = last_index.at(composite);
+        const auto winner = last_index.at(composites[i]);
         if (winner != i) {
             // This occurrence is superseded by a later one at index `winner`.
             if (report) {

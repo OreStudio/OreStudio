@@ -740,6 +740,14 @@ void ImportTradeDialog::onImportClicked() {
                         const std::string msg = md_resp ? md_resp->message : "no response";
                         BOOST_LOG_SEV(lg(), warn) << "Market data import failed: " << msg;
                         if (md_resp) {
+                            // Sections without duplicate errors are still persisted (see
+                            // import_service::import) — log their counts too, so a partial
+                            // import doesn't read as "nothing happened".
+                            BOOST_LOG_SEV(lg(), warn)
+                                << "Counts for content that had no duplicate errors: "
+                                << md_resp->series_count << " series, "
+                                << md_resp->observation_count << " observations, "
+                                << md_resp->fixing_count << " fixings";
                             for (const auto& error : md_resp->errors)
                                 BOOST_LOG_SEV(lg(), warn) << "Market data import error: " << error;
                         }

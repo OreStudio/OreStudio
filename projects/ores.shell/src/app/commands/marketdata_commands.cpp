@@ -146,7 +146,13 @@ void marketdata_commands::process_import(std::ostream& out,
         return;
 
     if (!result->success) {
+        // Sections without duplicate errors are still persisted (see
+        // import_service::import) — report their counts too, so a partial
+        // import doesn't read as "nothing happened".
         fail(out) << "Failed to import market data: " << result->message << std::endl;
+        out << "  (series: " << result->series_count << ", observations: "
+            << result->observation_count << ", fixings: " << result->fixing_count
+            << " — counts reflect content that had no duplicate errors)" << std::endl;
         for (const auto& error : result->errors)
             out << "  ✗ " << error << std::endl;
         return;

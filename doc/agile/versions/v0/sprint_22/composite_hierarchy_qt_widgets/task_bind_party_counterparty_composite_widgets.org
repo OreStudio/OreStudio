@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on: Needs the get_<entity>_hierarchy NATS message from "Generalize self-referential hierarchy into a codegen facet" (task 54C76A81-AA42-4404-B02D-C3AB5D934A50) -- the hierarchy tree should be fetched via one server-side recursive-CTE query, not built from a paginated flat list.
-#+blocked_since: 2026-07-04
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
 #+environment:

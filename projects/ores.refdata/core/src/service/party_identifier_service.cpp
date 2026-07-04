@@ -42,6 +42,18 @@ std::uint32_t party_identifier_service::count_party_identifiers() {
     return repo_.get_total_party_identifier_count(ctx_);
 }
 
+std::vector<domain::party_identifier> party_identifier_service::list_party_identifiers_by_party_id(
+    const std::string& party_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing party identifiers by party_id: " << party_id;
+    return repo_.read_latest_by_party_id(ctx_, party_id, offset, limit);
+}
+
+std::uint32_t
+party_identifier_service::count_party_identifiers_by_party_id(const std::string& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total party identifiers count by party_id: " << party_id;
+    return repo_.get_total_party_identifier_count_by_party_id(ctx_, party_id);
+}
+
 std::optional<domain::party_identifier>
 party_identifier_service::get_party_identifier(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting party identifier: " << id;

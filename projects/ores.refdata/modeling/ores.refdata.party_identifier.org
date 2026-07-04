@@ -113,6 +113,7 @@ std::string("Test identifier")
 :table:         ores_refdata_parties_tbl
 :nullable:      false
 :error_message: Invalid party_id: %. No active party found with this id.
+:list_by:       true
 :END:
 
 * Insert trigger

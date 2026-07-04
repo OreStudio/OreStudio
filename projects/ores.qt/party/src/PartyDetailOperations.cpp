@@ -102,15 +102,17 @@ load_identifiers_result
 party_detail_operations::load_identifiers(ClientManager* cm,
                                           const boost::uuids::uuid& entity_id) const {
 
-    refdata::messaging::get_party_identifiers_request request;
+    refdata::messaging::get_party_identifiers_by_party_id_request request;
     request.party_id = boost::uuids::to_string(entity_id);
+    request.offset = 0;
+    request.limit = 1000;
     auto response_result = cm->process_authenticated_request(std::move(request));
     if (!response_result)
         return {{}, false};
 
     std::vector<identifier_entry> entries;
-    entries.reserve(response_result->identifiers.size());
-    for (const auto& ident : response_result->identifiers) {
+    entries.reserve(response_result->party_identifiers.size());
+    for (const auto& ident : response_result->party_identifiers) {
         entries.push_back({ident.id,
                            ident.party_id,
                            ident.id_scheme,

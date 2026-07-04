@@ -76,6 +76,25 @@ public:
     std::uint32_t count_party_identifiers();
 
     /**
+     * @brief Lists party identifiers filtered by party_id, with pagination.
+     *
+     * @param party_id The party_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching party identifiers for the requested page.
+     */
+    std::vector<domain::party_identifier> list_party_identifiers_by_party_id(
+        const std::string& party_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active party identifiers filtered by party_id.
+     *
+     * @param party_id The party_id to filter by.
+     * @return Total number of matching party identifiers.
+     */
+    std::uint32_t count_party_identifiers_by_party_id(const std::string& party_id);
+
+    /**
      * @brief Retrieves a single party identifier by its id.
      *
      * @param id The id of the party identifier.

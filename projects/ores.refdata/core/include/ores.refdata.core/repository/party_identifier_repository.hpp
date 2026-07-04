@@ -75,6 +75,24 @@ public:
     std::vector<domain::party_identifier> read_all(context ctx, const std::string& id);
 
     /**
+     * @brief Reads latest party identifiers filtered by party_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param party_id The party_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::party_identifier> read_latest_by_party_id(context ctx,
+                                                                  const std::string& party_id,
+                                                                  std::uint32_t offset,
+                                                                  std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active party identifiers filtered by party_id.
+     */
+    std::uint32_t get_total_party_identifier_count_by_party_id(context ctx,
+                                                               const std::string& party_id);
+
+    /**
      * @brief Reads latest party identifiers with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip

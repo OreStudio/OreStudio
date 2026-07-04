@@ -111,9 +111,11 @@ box. It stays open across all of that — it is not a design-only story.
 - *Split off* (cut code): =default_cut_code= has no domain model
   anywhere in ORE Studio — same free-text-pointing-at-nothing problem as
   calendars. Split off into its own backlog story,
-  [[id:4B4ED152-1670-4E81-895A-24D747382D4C][Model market data cuts as proper ORE Studio reference data]] —
-  =currency_pair= keeps =default_cut_code= as interim raw text until
-  that story lands.
+  [[id:4B4ED152-1670-4E81-895A-24D747382D4C][Model market data cuts as proper ORE Studio reference data]].
+  *Unlike* the calendar field, =default_cut_code= is *dropped from
+  =currency_pair= entirely* rather than kept as interim text — no
+  current consumer needs it, so there's nothing to regress by adding it
+  back as a proper FK once that story lands.
 
 * Out of scope
 

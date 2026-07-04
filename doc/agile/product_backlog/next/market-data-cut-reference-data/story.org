@@ -43,9 +43,13 @@ soft-FK against.
   same shape as =business_day_convention_type=/=currency_pair_classification=
   (code, name, description, display_order), plus cut-specific attributes
   (cut time, timezone).
-- [ ] =currency_pair.default_cut_code= (and any other cut-code field
-  discovered along the way) is migrated onto a soft or hard FK against
-  the new entity instead of free text.
+- [ ] =currency_pair= gets a =default_cut_code= field (soft or hard FK
+  to the new entity) added *by this story* — it does not exist on
+  =currency_pair= today. It was dropped entirely from that entity's
+  design rather than kept as interim free text, since nothing currently
+  consumes it; add it back here once there's something to FK against.
+- [ ] Any other cut-code field discovered along the way is migrated onto
+  the same FK.
 - [ ] Qt CRUD screens exist for the new entity, following the standard
   aux-type pattern.
 

@@ -76,7 +76,6 @@ order).
 | =quote_currency=       | text    | false    | Soft FK → =currency.iso_code=.                                    |
 | =deliverable=          | boolean | false    | Whether the pair settles physically or cash-only (NDF flag).      |
 | =settlement_currency=  | text    | true     | Soft FK → =currency.iso_code=; set only for non-deliverable pairs.|
-| =default_cut_code=     | text    | true     | Default market data cut for this pair.                            |
 | =classification=       | text    | false    | Soft FK → =currency_pair_classification= (unchanged from before). |
 | =fixing_source=        | text    | true     | Default fixing source for cash-settled / NDF trades on this pair. |
 
@@ -141,3 +140,10 @@ plus a computed =points_factor()= helper), matching the codebase's
 existing =*_convention= entity family. No fields lost in the split;
 =currency= extensions and the two auxiliary types (classification,
 currency_group) are unchanged.
+
+*Correction*: =default_cut_code= was subsequently *dropped* from
+=currency_pair= entirely (not kept as interim text) — see
+[[id:4B4ED152-1670-4E81-895A-24D747382D4C][Model market data cuts as proper ORE Studio reference data]]'s note.
+The field-by-field table above is left as historical record; the actual
+=currency_pair= entity has no cut-code field until that story adds one
+back as a proper FK.

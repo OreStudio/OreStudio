@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :synthetic-data-collections:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/import-2016-vintage
 #+pr:
-#+blocked_on: 47DEAA57-C548-45BF-9D42-33207D4587CB
-#+blocked_since: 2026-07-03
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-03
-#+updated: 2026-07-03
-#+environment:
+#+updated: 2026-07-05
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,12 +35,12 @@ straightforward.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Blocked.                                |
-| Waiting on   | [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] — no non-interactive way to trigger =import_market_data_request= exists yet. |
-| Next         | Resume once the shell import command lands. |
-| Last touched | 2026-07-03                               |
+| Now          | Unblocked — [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] and [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][the duplicate-key fix]] are both merged; =marketdata import= against =Legacy/Example_56= now works cleanly. |
+| Waiting on   | Nothing.                               |
+| Next         | Run the import against a real environment and verify acceptance. |
+| Last touched | 2026-07-05                               |
 
 * Acceptance
 
@@ -55,6 +55,38 @@ straightforward.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Both blockers are now merged: =ores.shell='s =marketdata import=
+command (=47DEAA57=) and the duplicate-key fix for
+=Legacy/Example_56/Input/market.txt= (=C1BE59FA=) — verified live
+during that work: =✓ Imported 176 series, 7777 observation(s), 0
+fixing(s)= with 103 duplicate warnings, no errors.
+
+1. Recreate the DB fresh (=compass db recreate -y -k=), provision a
+   tenant/party (e.g. via the Barclays GLEIF recipe, or whatever the
+   synthetic collections story's environment actually needs — check
+   sibling tasks/decisions for the expected tenant setup), start
+   services.
+2. Run =marketdata import --file
+   external/ore/examples/Legacy/Example_56/Input/market.txt --source
+   ore.reference= (recipe:
+   [[id:DD527011-4F5E-4716-97A2-6AA8C70F3BB6][How do I import the 2016-02-05 ORE reference vintage market data?]]).
+3. Verify acceptance directly via SQL: =market_observation= rows exist
+   for EURUSD (=1.132337=) and GBPUSD (derived via EUR/GBP,
+   ≈=1.3946=) dated =2016-02-05=, =source = 'ore.reference'=. Check
+   EURCHF/USDCHF/EURJPY too if straightforward — note the story's
+   Decisions section already flags a known FX key-order bug in some
+   vendored =market.txt= files (=FX/RATE/USD/GBP= etc. storing
+   EUR-cross values, not USD-in-GBP as the key implies) — verify
+   against that context rather than assuming raw values are correct
+   as-is.
+4. Confirm re-runnability: running the same import twice should not
+   error or duplicate rows (import_service upserts market_series and
+   the observation dedup logic within one call; check what happens
+   across two separate calls with the same source/date/point_id —
+   probably fine since the unique constraint means a second identical
+   call would need its own duplicate-handling check, verify this
+   empirically rather than assuming).
 
 * Notes
 

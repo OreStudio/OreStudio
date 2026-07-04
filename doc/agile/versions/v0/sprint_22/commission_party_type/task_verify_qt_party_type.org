@@ -138,6 +138,7 @@ list/detail/save/eventing all work correctly.
 | 1 | Dead #include "ores.qt/PartyTypeController.hpp" left over from deleted controller | PartyPlugin.cpp:31 | Accepted | Removed; flagged independently by both review passes |
 | 2 | -Wreorder: header declares listWindow_/listMdiSubWindow_ before changeReasonCache_, .cpp init-list initializes in opposite order | cpp_qt_controller.hpp.mustache | Accepted | Fixed at the template level (not the generated file) and regenerated party_type only |
 | 3 | ores.qt.party.puml still shows PartyTypeController owned by PartyPlugin | ores.qt.party.puml | Declined (out of scope) | Reviewer flagged as non-blocking; multiple class blocks/relationships to remove properly, better done alongside the dissolve_ores_qt_party_plugin capture |
+| 4 | CI drift check: templates match their org sources | ores.cpp.qt.controller_header.org | Self-caught | Fix #2 edited the tangled .mustache directly instead of its literate .org source; CI's own drift check caught it. Fixed the .org source and re-tangled. |
 
 * Result
 

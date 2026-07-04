@@ -30,6 +30,28 @@ investigation into which =series_type= entries collide and whether
 =qualifier_depth= is wrong for one of them, or whether the file
 genuinely contains a duplicate quote.
 
+Confirmed reproducible on a freshly recreated database (not an
+artefact of earlier partial/failed import attempts): re-running
+=marketdata import --file
+external/ore/examples/Legacy/Example_56/Input/market.txt --source
+ore.reference= against a clean Barclays-provisioned tenant hits the
+exact same error, same key shape.
+
+By contrast, =market.txt=/=fixings.txt= import against two smaller
+ORE example vintages succeeds cleanly, including real fixings
+import, which rules out fixings import itself as a suspect and
+narrows this to =market.txt='s larger/denser quote sets specifically:
+- =external/ore/examples/Academy/TA002_IR_Swap= (market + fixings):
+  =✓ Imported 4 series, 52 observation(s), 0 fixing(s)= — this
+  vintage's =fixings.txt= is present but empty, so the =0= is
+  expected, not a fixings bug.
+- =external/ore/examples/MarketRisk/Input/HistSimVar= (market +
+  fixings): =✓ Imported 217 series, 7172 observation(s), 904
+  fixing(s)= — real, non-empty fixings imported correctly. This is
+  good evidence fixing import itself works; the collision is
+  specific to =market.txt='s series/observation decomposition, not to
+  fixings handling.
+
 * Why
 
 Surfaced while testing the new =ores.shell= =marketdata import=

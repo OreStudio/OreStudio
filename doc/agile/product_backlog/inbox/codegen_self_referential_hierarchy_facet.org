@@ -36,6 +36,18 @@ disposable one-off. Generalizing it into a facet would let both
 entities (and future ones) migrate to unified codegen cleanly instead
 of each carrying a hand-maintained divergence.
 
+* Decisions
+
+Prefer a proper template facet over a generic =:implements= paste
+block (=<<paste:d4e8e136-...>>=, landed in PR #1424 for a different,
+genuinely one-off validation) precisely because this pattern is
+shared by 2+ entities — paste blocks are the right tool for one-off
+hand-written logic, not for recurring structure. By contrast, party's
+codename-generation and per-party queue-provisioning logic (also
+found during the same appraisal) are confirmed party-only — no other
+entity has an equivalent — so those should stay hand-maintained
+(paste block or excluded from regen scope), not generalized.
+
 * References
 
 - =projects/ores.sql/create/refdata/refdata_parties_create.sql= (parent_party_id, lines ~28, 42, 93, 129-137)

@@ -73,6 +73,18 @@ jobs:
             echo "should_build=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Annotate when the build matrix is skipped
+        if: steps.check.outputs.should_build == 'false'
+        run: |
+          {
+            echo "### :warning: macOS build matrix skipped"
+            echo
+            echo "No relevant code changes since the last build — the"
+            echo "\`build\` job did not run. This workflow's overall"
+            echo "**Success** reflects the guard's decision to skip, not"
+            echo "a verified macOS build."
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
   build:
     needs: guard
     if: needs.guard.outputs.should_build == 'true'

@@ -47,9 +47,11 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
-using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
+/**
+ * @brief NATS message handler for currency operations.
+ */
 class currency_handler {
 public:
     currency_handler(ores::nats::service::client& nats,
@@ -60,113 +62,126 @@ public:
         , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(currency_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(currency_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        service::currency_service svc(ctx);
+        const auto& req_ctx = *req_ctx_expected;
+        service::currency_service svc(req_ctx);
         get_currencies_response resp;
-        auto req = decode<get_currencies_request>(msg);
-        if (!req) {
+        if (auto req = decode<get_currencies_request>(msg)) {
+            try {
+                resp.currencies = svc.list_currencies(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_currencies());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(currency_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
             BOOST_LOG_SEV(currency_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(nats_, msg, resp);
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        try {
-            resp.currencies = svc.list_currencies(static_cast<std::uint32_t>(req->offset),
-                                                  static_cast<std::uint32_t>(req->limit));
-            resp.total_available_count = static_cast<int>(svc.count_currencies());
-            BOOST_LOG_SEV(currency_handler_lg(), debug) << "Completed " << msg.subject;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(currency_handler_lg(), error) << msg.subject << " failed: " << e.what();
-        }
+        BOOST_LOG_SEV(currency_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(currency_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(currency_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "refdata::currencies:write")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currencies:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::currency_service svc(ctx);
-        auto req = decode<save_currency_request>(msg);
-        if (!req) {
+        service::currency_service svc(req_ctx);
+        if (auto req = decode<save_currency_request>(msg)) {
+            try {
+                svc.save_currency(req->data);
+                BOOST_LOG_SEV(currency_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, save_currency_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(currency_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, save_currency_response{.success = false, .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(currency_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
-        try {
-            svc.save_currency(req->data);
-            BOOST_LOG_SEV(currency_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, save_currency_response{.success = true});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(currency_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_currency_response{.success = false, .message = e.what()});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
     void remove(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(currency_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(currency_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "refdata::currencies:delete")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currencies:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::currency_service svc(ctx);
-        auto req = decode<delete_currency_request>(msg);
-        if (!req) {
+        service::currency_service svc(req_ctx);
+        if (auto req = decode<delete_currency_request>(msg)) {
+            try {
+                svc.delete_currencies(req->iso_codes);
+                BOOST_LOG_SEV(currency_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_currency_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(currency_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, delete_currency_response{.success = false, .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(currency_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
-        try {
-            svc.delete_currencies(req->iso_codes);
-            BOOST_LOG_SEV(currency_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, delete_currency_response{.success = true});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(currency_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_currency_response{.success = false, .message = e.what()});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
+    // Custom: currency's history response carries per-version field diffs
+    // (currency_version_history via currency_field_mapper), richer than the
+    // plain-history shape the qt/nats-handler templates generate. No
+    // template equivalent exists yet — see the Qt reconciliation story
+    // (395AAFAD-9013-4DF8-BD60-E5B50ADA6385) for the related UI feature.
     void history(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(currency_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(currency_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        service::currency_service svc(ctx);
-        auto req = decode<get_currency_history_request>(msg);
-        if (!req) {
+        const auto& req_ctx = *req_ctx_expected;
+        service::currency_service svc(req_ctx);
+        if (auto req = decode<get_currency_history_request>(msg)) {
+            try {
+                auto h = svc.get_currency_history(req->iso_code);
+                currency_version_history cvh;
+                cvh.versions = presentation::currency_field_mapper::build_versions(h);
+                BOOST_LOG_SEV(currency_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_currency_history_response{.success = true, .history = std::move(cvh)});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(currency_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      get_currency_history_response{.success = false, .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(currency_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
-        try {
-            auto h = svc.get_currency_history(req->iso_code);
-            currency_version_history cvh;
-            cvh.versions = presentation::currency_field_mapper::build_versions(h);
-            BOOST_LOG_SEV(currency_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_,
-                  msg,
-                  get_currency_history_response{.success = true, .history = std::move(cvh)});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(currency_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_currency_history_response{.success = false, .message = e.what()});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
@@ -177,4 +192,5 @@ private:
 };
 
 } // namespace ores::refdata::messaging
+
 #endif

@@ -33,11 +33,11 @@ it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] |
-| Now          | Piloted; builds clean. Generic combo helper landed, currency's 3 fields wired to it. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Feed into the qt-sync regenerate plan (next task).  |
+| Next         | Nothing. |
 | Last touched | 2026-07-04                               |
 
 * Acceptance

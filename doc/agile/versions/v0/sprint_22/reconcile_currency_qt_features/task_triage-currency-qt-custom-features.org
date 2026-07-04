@@ -36,11 +36,11 @@ rather than templated in place.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] |
-| Now          | Triage complete; 8 features decided, 2 business-logic spots flagged. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Feed decisions into the combo-field pilot and the regenerate plan. |
+| Next         | Nothing. |
 | Last touched | 2026-07-04                               |
 
 * Acceptance

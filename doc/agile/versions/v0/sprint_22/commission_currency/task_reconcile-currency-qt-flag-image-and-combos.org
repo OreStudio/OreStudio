@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 318EE3EB-E15E-4F10-BCF7-154658A4AFE8
+:END:
+#+title: Task: Reconcile currency's flag image handling and wire the piloted combo-field mechanism
+#+description: Migrate currency's hand-rolled flag image handling onto the template's existing has_flag_icon mechanism (no new template work, just a call-site migration). Wire currency's 3 soft-FK combo fields (rounding_type, monetary_nature, market_tier) to the already-piloted populateDynamicCombo<Entity> helper via the small per-field codegen emit. Decide and land the fetch-failure-signalling gap flagged during the combo-field pilot before finalizing the emit.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Three reconciliation items grouped together (steps 6-8 of the
+regenerate plan, task 6E0CD16E), none requiring new template
+mechanisms: (1) migrate currency's flag image handling onto the
+template's existing =has_flag_icon= mechanism; (2) wire currency's 3
+soft-FK combo fields to the already-piloted
+=populateDynamicCombo<Entity>= helper via the small per-field codegen
+emit; (3) decide and land the fetch-failure-signalling gap flagged
+during the combo-field pilot (task 8AA363F8) before finalizing the
+emit.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- Currency's flag image handling calls the template's
+  =has_flag_icon= mechanism instead of hand-rolled code.
+- Currency's 3 combo fields are wired through the per-field codegen
+  emit calling =populateDynamicCombo<Entity>=.
+- Fetch-failure signalling has an explicit, documented decision
+  (surfaced error vs. silent empty combo) reflected in the emit.
+- Build passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

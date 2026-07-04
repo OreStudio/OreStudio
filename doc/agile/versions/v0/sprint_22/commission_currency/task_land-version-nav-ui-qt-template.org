@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: DBDECEFC-7154-4A40-A554-C897AA51BEEE
+:END:
+#+title: Task: Land version-navigation UI as a qt-profile detail_dialog template capability
+#+description: Currency's CurrencyDetailDialog has a full version-navigation UI (first/prev/next/last/revert) 100% absent from the template and the synced peer. Generalise it as a detail_dialog template capability, with currency as the first real consumer.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Generalise currency's full version-navigation UI
+(first/prev/next/last/revert, currently 100% hand-written in
+=CurrencyDetailDialog=) into a detail_dialog qt-profile template
+capability, with currency as the first real consumer. Step 4 of the
+regenerate plan (task 6E0CD16E).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- Version-navigation UI (first/prev/next/last/revert) is an opt-in
+  detail_dialog template capability.
+- Regenerating currency's detail_dialog reproduces equivalent
+  navigation behaviour to the current hand-written code.
+- Build passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

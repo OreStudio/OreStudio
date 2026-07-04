@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 78BF95FE-1513-4556-BCBC-8A4A1AF48907
+:END:
+#+title: Task: Relocate random-pick generator logic out of currency Qt UI
+#+description: CurrencyDetailDialog::onGenerateClicked() and CurrencyMdiWindow::generateSynthetic() do inline std::uniform_int_distribution random-pick selection over generated currencies; this belongs in the generator/service layer, not the Qt UI. Relocate it before the Qt sync task touches these files, so regeneration wires to the relocated call rather than re-embedding the logic.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Move the inline random-pick selection logic out of
+=CurrencyDetailDialog::onGenerateClicked()= and
+=CurrencyMdiWindow::generateSynthetic()= into the generator/service
+layer, so the Qt UI only orchestrates a call rather than embedding
+=std::uniform_int_distribution= selection logic. Step 1 of the
+regenerate plan (task 6E0CD16E) — must land before the Qt sync task
+touches these two files.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- The random-pick selection logic no longer lives in
+  =CurrencyDetailDialog= or =CurrencyMdiWindow=; it's callable from the
+  generator/service layer.
+- Both call sites are reduced to orchestration (invoke the relocated
+  call), behaviour unchanged from the user's perspective.
+- Build passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

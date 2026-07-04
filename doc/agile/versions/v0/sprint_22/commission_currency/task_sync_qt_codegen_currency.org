@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on: [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]]
+#+blocked_on: [[id:318EE3EB-E15E-4F10-BCF7-154658A4AFE8][Reconcile currency's flag image handling and wire the piloted combo-field mechanism]]
 #+blocked_since: 2026-07-04
 #+created: 2026-06-26
 #+updated: 2026-07-04
@@ -28,9 +28,9 @@ Ensure the Qt codegen profile produces output matching the repository for curren
 |--------------+----------------------------------------|
 | State        | BLOCKED                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Scoping inventory found currency's Qt layer carries substantial custom functionality (CSV/XML import-export, feature-flagged synthetic data generation, full version-nav UI) not covered by the qt profile; a blind regenerate risks losing it. |
-| Waiting on   | [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] |
-| Next         | Resume once the reconciliation story triages each custom feature. |
+| Now          | Reconciliation story done (see [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][decisions]] and regenerate plan). This task is now scoped as step 9 of that plan: the final mechanical regenerate + diff + reconcile, once 5 new template-capability tasks and 1 reconciliation task land. |
+| Waiting on   | [[id:78BF95FE-1513-4556-BCBC-8A4A1AF48907][Relocate generator logic]], [[id:2EAF2F99-B71F-410D-985A-7A616E40CB88][CSV/XML export capability]], [[id:D9CB6853-797A-4144-BED0-AEBDDBBC173C][setting-gated visibility capability]], [[id:DBDECEFC-7154-4A40-A554-C897AA51BEEE][version-nav UI capability]], [[id:D613BDFD-FE12-4945-8878-5C92FA109E40][NATS notification-wiring capability]], and [[id:318EE3EB-E15E-4F10-BCF7-154658A4AFE8][flag image/combo reconciliation]] — in that order. |
+| Next         | Work the 6 prerequisite tasks in sequence, then resume this one. |
 | Last touched | 2026-07-04                               |
 
 * Acceptance

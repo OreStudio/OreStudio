@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 57DB2B98-0013-4AED-BA7A-315DC8BD8623
+:END:
+#+title: Story: Move trade import orchestration to service layer
+#+description: Move the trade-import orchestration currently embedded in ImportTradeDialog.cpp (portfolio XML parsing, per-trade save, and per-instrument-type dispatch) into a new server-side trade_import_service, backed by an import_trades_request/response NATS message pair mirroring ores.marketdata.core's import_service.
+#+type: story
+#+level: s2
+#+category: enabler
+#+filetags: :market_data:trading:shell:cli:sprint_22:v0:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Trade import today diverges from market data import's architecture:
+=import_market_data_request= (=ores.marketdata.core::service::import_service=)
+is fully server-side — the client just forwards raw file bytes — but
+trade import's ~300 lines of orchestration (portfolio XML parsing via
+=ores.ore.core::xml::importer=, per-trade =save_trade_request=, and a
+30-way per-instrument-type =save_<type>_instrument_request= dispatch)
+live entirely inside =projects/ores.qt/trading/src/ImportTradeDialog.cpp=
+(lines ~744-1045), with no service-layer backing. Move that orchestration into a new
+=ores.trading.core::service::trade_import_service=, backed by a new
+=import_trades_request=/=import_trades_response= NATS message pair
+mirroring =import_market_data_request=. This lets Qt shrink back to
+progress/cancel UI only, and lets
+[[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]]'s planned =trade import=
+shell command be a thin wrapper around the same service instead of
+duplicating the 30-way instrument dispatch a second time.
+
+This story is an enabler with no direct blocker relationship to
+[[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]], but both it and
+the sibling shell story exist to give that story's imports a
+non-interactive path.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-04                               |
+
+* Acceptance
+
+- =import_trades_request=/=import_trades_response= exist in
+  =ores.trading.api=, and =ores.trading.core::service::trade_import_service=
+  parses portfolio XML, saves trades, and dispatches per-instrument-type
+  saves server-side, registered as a NATS handler.
+- =ImportTradeDialog= sends a single =import_trades_request= instead of
+  building 31 requests inline; only progress/cancel UI remains in the
+  client.
+- =ores.shell= gains a =trade import --file <portfolio.xml>= command
+  that is a thin wrapper around the same request.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:499FF163-F6D3-421E-A45B-913588844FAE][Add import_trades_request/response protocol and trade_import_service]] | BACKLOG | | | Define import_trades_request/import_trades_response in ores.trading.api (mirroring import_market_data_request's shape: raw portfolio XML content in, trade_count/instrument_count/error info out), implement ores.trading.core::service::trade_import_service parsing via ores.ore.core::xml::importer, saving each trade and dispatching per-instrument-type saves (the ~300 lines currently in ImportTradeDialog.cpp:744-1045), and register the NATS handler mirroring ores.marketdata.core's import_service registration. |
+| [[id:51A5899E-4F3A-4255-B19C-5F8D4B1986B5][Refactor ImportTradeDialog to use trade_import_service]] | BACKLOG | | | Replace ImportTradeDialog's inline per-trade/per-instrument-type request loop (~744-1045) with a single call to the new import_trades_request, keeping only the ~75 lines of legitimate UI concerns (progress updates, liveness guard, cancellation handling). |
+| [[id:84795F3B-1761-44EA-A410-F2C8F1E4D3A9][Add ores.shell trade import command]] | BACKLOG | | | Add a 'trade import --file <portfolio.xml path>' command to ores.shell (mirroring the marketdata_commands pattern), sending import_trades_request and printing trade_count/instrument_count/errors. Blocked on 'Add import_trades_request/response protocol and trade_import_service'; ideally also after the Qt dialog refactor, though both consume the same server API so order between them is flexible. |
+
+* Decisions
+
+* Out of scope
+
+-

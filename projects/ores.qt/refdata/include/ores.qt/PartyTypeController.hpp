@@ -83,9 +83,9 @@ private:
     void showDetailWindow(const refdata::domain::party_type& type);
     void showHistoryWindow(const QString& code);
 
+    ChangeReasonCache* changeReasonCache_;
     PartyTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
-    ChangeReasonCache* changeReasonCache_;
 };
 
 }

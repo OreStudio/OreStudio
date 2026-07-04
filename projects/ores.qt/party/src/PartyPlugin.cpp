@@ -28,7 +28,6 @@
 #include "ores.qt/PartyController.hpp"
 #include "ores.qt/PartyIdSchemeController.hpp"
 #include "ores.qt/PartyStatusController.hpp"
-#include "ores.qt/PartyTypeController.hpp"
 #include <QAction>
 #include <QMenu>
 

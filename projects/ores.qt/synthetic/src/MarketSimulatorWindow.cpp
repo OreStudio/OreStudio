@@ -38,6 +38,7 @@
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QColor>
+#include <QEvent>
 #include <QFont>
 #include <QFontDatabase>
 #include <QFutureWatcher>
@@ -439,6 +440,9 @@ void MarketSimulatorWindow::setupRightPanel() {
         tickChartPlaceholder_->setAttribute(Qt::WA_TransparentForMouseEvents);
         tickChartPlaceholder_->setGeometry(tickChartView_->rect());
         tickChartPlaceholder_->raise();
+        // tickChartView_->rect() above is whatever size it has *before* the MDI
+        // window lays it out (tiny) — re-sync on every real resize instead.
+        tickChartView_->installEventFilter(this);
 
         summaryLayout->addWidget(tickChartContainer_, 1);
         tickChartContainer_->setVisible(false);
@@ -1674,6 +1678,12 @@ void MarketSimulatorWindow::onTickChartFlash() {
         return;
     tickFlashBig_ = !tickFlashBig_;
     tickPosMarker_->setMarkerSize(tickFlashBig_ ? 15.0 : 9.0);
+}
+
+bool MarketSimulatorWindow::eventFilter(QObject* watched, QEvent* event) {
+    if (watched == tickChartView_ && event->type() == QEvent::Resize && tickChartPlaceholder_)
+        tickChartPlaceholder_->setGeometry(tickChartView_->rect());
+    return QWidget::eventFilter(watched, event);
 }
 
 }

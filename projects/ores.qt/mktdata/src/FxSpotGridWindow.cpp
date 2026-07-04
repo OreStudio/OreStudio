@@ -179,12 +179,12 @@ static QString pair_from_ore_key(const std::string& ore_key) {
 
 // This window has no separate base/quote columns to put one flag each on
 // (just a single "GBP/USD"-style cell), so it needs the composited pair icon
-// (see pair_flag_icon() in FlagIconHelper) rather than a single flag.
+// (see currency_flag_icon() in FlagIconHelper) rather than a single flag.
 static QIcon pair_icon_for(ImageCache& imageCache, const QString& pairText) {
     const QStringList parts = pairText.split(QLatin1Char('/'));
     if (parts.size() != 2)
         return {};
-    return pair_flag_icon(imageCache, parts[0].toStdString(), parts[1].toStdString());
+    return currency_flag_icon(imageCache, parts[0].toStdString(), parts[1].toStdString());
 }
 
 // ── FxSpotGridWindow ───────────────────────────────────────────────────────
@@ -243,9 +243,10 @@ void FxSpotGridWindow::setupUi() {
     table_->setShowGrid(false);
     table_->setAlternatingRowColors(true);
     table_->verticalHeader()->setDefaultSectionSize(36);
-    // Qt's default view iconSize (~16-24px) would otherwise downscale the
-    // composited flag pixmap regardless of its actual size.
-    table_->setIconSize(pair_flag_icon_size());
+    // No explicit iconSize: currency_flag_icon()'s pair result carries the
+    // same multi-size ladder a single flag icon does, so Qt auto-picks a
+    // rung sized the same way it would for a single-currency cell (matches
+    // Currency's own table, which also leaves iconSize at its default).
 }
 
 void FxSpotGridWindow::reload() {

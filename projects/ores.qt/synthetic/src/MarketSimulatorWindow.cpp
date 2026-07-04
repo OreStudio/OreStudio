@@ -673,7 +673,7 @@ void MarketSimulatorWindow::buildTree() {
             fxItem->setData(QString::fromStdString(fxId), NodeIdRole);
             if (imageCache_) {
                 fxItem->setIcon(
-                    pair_flag_icon(*imageCache_, fx.base_currency_code, fx.quote_currency_code));
+                    currency_flag_icon(*imageCache_, fx.base_currency_code, fx.quote_currency_code));
             } else {
                 fxItem->setIcon(
                     IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));

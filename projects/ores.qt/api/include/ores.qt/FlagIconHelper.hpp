@@ -39,34 +39,26 @@ class ImageCache;
 enum class FlagSource { Currency, Country, BusinessCentre };
 
 /**
- * @brief Standard flag size (device-independent pixels) for a single flag in
- * a list/grid cell — the one place to change it for every such view at once.
- */
-constexpr int kStandardFlagSize = 22;
-
-/**
- * @brief Composited side-by-side icon for a currency pair (e.g. "GBP/USD"),
- * for a single cell/item with no separate base/quote slots to put one flag
- * each on (contrast: a table with distinct base- and quote-currency columns
- * should put one flag on each via ImageCache::getCurrencyFlagIcon() directly,
- * same as any other single-flag cell — no compositing needed there).
+ * @brief Flag icon for one currency, or a composited pair icon for two — the
+ * one function every currency/currency-pair flag in the app should go
+ * through, so a single cell (e.g. a "GBP/USD" cell with no separate base/
+ * quote columns) and a single-currency cell (e.g. Currency's own code
+ * column, or FX Spot Configs' Base/Quote Currency columns) render
+ * identically sized and via the same pipeline.
+ *
+ * Both the single- and two-code cases build on the exact same
+ * ImageCache::getCurrencyFlagIcon() call combo boxes and single-currency
+ * cells already use — the pair case just composites two of that call's
+ * result side by side, rather than using a different rendering path.
  *
  * @param imageCache   Shared image cache (currency ISO -> image_id mapping).
- * @param baseIsoCode  Base currency ISO code.
- * @param quoteIsoCode Quote currency ISO code.
- * @param flagSize     Height/width of each flag, in device-independent pixels.
+ * @param isoCode      Currency ISO code (or the base code, for a pair).
+ * @param quoteIsoCode Quote currency ISO code; empty (default) for a single
+ * flag.
  */
-ORES_QT_API QIcon pair_flag_icon(ImageCache& imageCache,
-                                const std::string& baseIsoCode,
-                                const std::string& quoteIsoCode,
-                                int flagSize = kStandardFlagSize);
-
-/**
- * @brief The QSize a pair_flag_icon() actually renders at — pass to
- * QAbstractItemView::setIconSize() so the view doesn't downscale it back
- * down to its own (small) default icon size.
- */
-ORES_QT_API QSize pair_flag_icon_size(int flagSize = kStandardFlagSize);
+ORES_QT_API QIcon currency_flag_icon(ImageCache& imageCache,
+                                     const std::string& isoCode,
+                                     const std::string& quoteIsoCode = {});
 
 /**
  * @brief Apply flag icons to a combo box using the given image cache.

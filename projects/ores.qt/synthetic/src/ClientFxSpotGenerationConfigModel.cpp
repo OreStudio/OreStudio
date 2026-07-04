@@ -20,6 +20,7 @@
 #include "ores.qt/ClientFxSpotGenerationConfigModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/ProcessTypeLabel.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -113,13 +114,14 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
     }
 
     if (role == Qt::DecorationRole && imageCache_) {
-        // Same single-flag lookup as ClientCurrencyModel's IsoCode column —
-        // one flag per currency-code cell, no compositing needed here since
-        // base and quote each have their own column.
+        // Same currency_flag_icon() single-code path ClientCurrencyModel's
+        // IsoCode column and every other flag-bearing cell go through — one
+        // flag per currency-code cell, no compositing needed since base and
+        // quote each have their own column.
         if (index.column() == BaseCurrencyCode)
-            return imageCache_->getCurrencyFlagIcon(fx_spot_generation_config.base_currency_code);
+            return currency_flag_icon(*imageCache_, fx_spot_generation_config.base_currency_code);
         if (index.column() == QuoteCurrencyCode)
-            return imageCache_->getCurrencyFlagIcon(fx_spot_generation_config.quote_currency_code);
+            return currency_flag_icon(*imageCache_, fx_spot_generation_config.quote_currency_code);
     }
 
     if (role == Qt::ForegroundRole) {

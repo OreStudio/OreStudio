@@ -21,7 +21,6 @@
 #define ORES_CLI_CONFIG_ADD_OPTIONS_HPP
 
 #include "ores.cli/config/add_account_options.hpp"
-#include "ores.cli/config/add_business_day_convention_type_options.hpp"
 #include "ores.cli/config/add_change_reason_category_options.hpp"
 #include "ores.cli/config/add_change_reason_options.hpp"
 #include "ores.cli/config/add_compute_app_options.hpp"
@@ -67,7 +66,6 @@ using add_options = std::variant<add_currency_options,
                                  add_compute_batch_options,
                                  add_compute_workunit_options,
                                  add_day_count_fraction_type_options,
-                                 add_business_day_convention_type_options,
                                  add_floating_index_type_options,
                                  add_payment_frequency_type_options,
                                  add_leg_type_options>;

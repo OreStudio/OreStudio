@@ -21,7 +21,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.trading.api/messaging/business_day_convention_type_protocol.hpp"
+#include "ores.refdata.api/messaging/business_day_convention_type_protocol.hpp"
 #include <QtConcurrent>
 
 namespace ores::qt {
@@ -30,7 +30,7 @@ using namespace ores::logging;
 
 namespace {
 std::string
-business_day_convention_type_key_extractor(const trading::domain::business_day_convention_type& e) {
+business_day_convention_type_key_extractor(const refdata::domain::business_day_convention_type& e) {
     return e.code;
 }
 }
@@ -84,8 +84,12 @@ QVariant ClientBusinessDayConventionTypeModel::data(const QModelIndex& index, in
         switch (index.column()) {
             case Code:
                 return QString::fromStdString(type.code);
+            case Name:
+                return QString::fromStdString(type.name);
             case Description:
                 return QString::fromStdString(type.description);
+            case DisplayOrder:
+                return static_cast<qlonglong>(type.display_order);
             case Version:
                 return static_cast<qlonglong>(type.version);
             case ModifiedBy:
@@ -113,8 +117,12 @@ QVariant ClientBusinessDayConventionTypeModel::headerData(int section,
     switch (section) {
         case Code:
             return tr("Code");
+        case Name:
+            return tr("Name");
         case Description:
             return tr("Description");
+        case DisplayOrder:
+            return tr("Display Order");
         case Version:
             return tr("Version");
         case ModifiedBy:
@@ -195,19 +203,17 @@ void ClientBusinessDayConventionTypeModel::fetch_types(std::uint32_t offset, std
                             .error_details = {}};
                 }
 
-                trading::messaging::get_business_day_convention_types_request request;
+                refdata::messaging::get_business_day_convention_types_request request;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to fetch business day convention types: " << result.error();
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .types = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch business day convention types: " + result.error()),
+                            .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
@@ -272,7 +278,7 @@ void ClientBusinessDayConventionTypeModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const trading::domain::business_day_convention_type*
+const refdata::domain::business_day_convention_type*
 ClientBusinessDayConventionTypeModel::getType(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= types_.size())

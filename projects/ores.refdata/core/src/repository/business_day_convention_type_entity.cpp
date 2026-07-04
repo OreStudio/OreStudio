@@ -17,28 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ADD_BUSINESS_DAY_CONVENTION_TYPE_OPTIONS_HPP
-#define ORES_CLI_CONFIG_ADD_BUSINESS_DAY_CONVENTION_TYPE_OPTIONS_HPP
+#include "ores.refdata.core/repository/business_day_convention_type_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
-#include "ores.cli/export.hpp"
-#include <iosfwd>
-#include <optional>
-#include <string>
+namespace ores::refdata::repository {
 
-namespace ores::cli::config {
-
-/**
- * @brief Configuration for adding a business day convention type via command-line arguments.
- */
-struct add_business_day_convention_type_options final {
-    std::string code;
-    std::string modified_by;
-    std::optional<std::string> description;
-};
-
-ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s,
-                                         const add_business_day_convention_type_options& v);
-
+std::ostream& operator<<(std::ostream& s, const business_day_convention_type_entity& v) {
+    rfl::json::write(v, s);
+    return s;
 }
 
-#endif
+}

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_ENTITY_HPP
-#define ORES_TRADING_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_ENTITY_HPP
+#ifndef ORES_REFDATA_CORE_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_ENTITY_HPP
+#define ORES_REFDATA_CORE_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -26,7 +26,7 @@
 #include <ostream>
 #include <string>
 
-namespace ores::trading::repository {
+namespace ores::refdata::repository {
 
 using db_timestamp = ores::database::repository::db_timestamp;
 
@@ -35,12 +35,14 @@ using db_timestamp = ores::database::repository::db_timestamp;
  */
 struct business_day_convention_type_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_trading_business_day_convention_types_tbl";
+    constexpr static const char* tablename = "ores_refdata_business_day_convention_types_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
     std::string tenant_id;
     int version = 0;
-    std::optional<std::string> description;
+    std::string name;
+    std::string description;
+    int display_order = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

@@ -17,22 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_TABLE_HPP
-#define ORES_TRADING_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_TABLE_HPP
+#ifndef ORES_REFDATA_CORE_MESSAGING_BUSINESS_DAY_CONVENTION_TYPE_REGISTRAR_HPP
+#define ORES_REFDATA_CORE_MESSAGING_BUSINESS_DAY_CONVENTION_TYPE_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/business_day_convention_type.hpp"
-#include "ores.trading.api/export.hpp"
-#include <string>
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
 #include <vector>
 
-namespace ores::trading::domain {
+namespace ores::refdata::messaging {
 
-/**
- * @brief Converts business_day_convention_types to the table format.
- */
-ORES_TRADING_API_EXPORT std::string
-convert_to_table(const std::vector<business_day_convention_type>& v);
+std::vector<ores::nats::service::subscription> register_business_day_convention_type_handlers(
+    ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-}
+} // namespace ores::refdata::messaging
 
 #endif

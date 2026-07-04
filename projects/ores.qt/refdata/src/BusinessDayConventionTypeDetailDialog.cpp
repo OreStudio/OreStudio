@@ -18,13 +18,13 @@
  *
  */
 #include "ores.qt/BusinessDayConventionTypeDetailDialog.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.trading.api/messaging/business_day_convention_type_protocol.hpp"
+#include "ores.refdata.api/messaging/business_day_convention_type_protocol.hpp"
 #include "ui_BusinessDayConventionTypeDetailDialog.h"
 #include <QFutureWatcher>
 #include <QMessageBox>
-#include <QPlainTextEdit>
 #include <QtConcurrent>
 
 namespace ores::qt {
@@ -87,8 +87,12 @@ void BusinessDayConventionTypeDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &BusinessDayConventionTypeDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit,
+            &QLineEdit::textChanged,
+            this,
+            &BusinessDayConventionTypeDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit,
-            &QPlainTextEdit::textChanged,
+            &QLineEdit::textChanged,
             this,
             &BusinessDayConventionTypeDetailDialog::onFieldChanged);
 }
@@ -102,7 +106,7 @@ void BusinessDayConventionTypeDetailDialog::setUsername(const std::string& usern
 }
 
 void BusinessDayConventionTypeDetailDialog::setType(
-    const trading::domain::business_day_convention_type& type) {
+    const refdata::domain::business_day_convention_type& type) {
     type_ = type;
     updateUiFromType();
 }
@@ -116,9 +120,15 @@ void BusinessDayConventionTypeDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
+void BusinessDayConventionTypeDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void BusinessDayConventionTypeDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
+    ui_->nameEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
@@ -126,7 +136,9 @@ void BusinessDayConventionTypeDetailDialog::setReadOnly(bool readOnly) {
 
 void BusinessDayConventionTypeDetailDialog::updateUiFromType() {
     ui_->codeEdit->setText(QString::fromStdString(type_.code));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(type_.description));
+    ui_->nameEdit->setText(QString::fromStdString(type_.name));
+    ui_->descriptionEdit->setText(QString::fromStdString(type_.description));
+    ui_->displayOrderEdit->setValue(type_.display_order);
 
     populateProvenance(type_.version,
                        type_.modified_by,
@@ -143,9 +155,10 @@ void BusinessDayConventionTypeDetailDialog::updateTypeFromUi() {
     if (createMode_) {
         type_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
-    type_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    type_.name = ui_->nameEdit->text().trimmed().toStdString();
+    type_.description = ui_->descriptionEdit->text().trimmed().toStdString();
+    type_.display_order = ui_->displayOrderEdit->value();
     type_.modified_by = username_;
-    type_.performed_by = username_;
 }
 
 void BusinessDayConventionTypeDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -165,7 +178,9 @@ void BusinessDayConventionTypeDetailDialog::updateSaveButtonState() {
 
 bool BusinessDayConventionTypeDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
-    return !code_val.isEmpty();
+    const QString name_val = ui_->nameEdit->text().trimmed();
+
+    return true && !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void BusinessDayConventionTypeDetailDialog::onSaveClicked() {
@@ -181,6 +196,14 @@ void BusinessDayConventionTypeDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    type_.change_reason_code = crSel->reason_code;
+    type_.change_commentary = crSel->commentary;
 
     updateTypeFromUi();
 
@@ -198,7 +221,7 @@ void BusinessDayConventionTypeDetailDialog::onSaveClicked() {
             return {false, "Dialog closed"};
         }
 
-        trading::messaging::save_business_day_convention_type_request request;
+        refdata::messaging::save_business_day_convention_type_request request;
         request.data = type;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -254,6 +277,10 @@ void BusinessDayConventionTypeDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel)
+        return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting business day convention type: " << type_.code;
 
     QPointer<BusinessDayConventionTypeDetailDialog> self = this;
@@ -268,7 +295,7 @@ void BusinessDayConventionTypeDetailDialog::onDeleteClicked() {
             return {false, "Dialog closed"};
         }
 
-        trading::messaging::delete_business_day_convention_type_request request;
+        refdata::messaging::delete_business_day_convention_type_request request;
         request.codes = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));

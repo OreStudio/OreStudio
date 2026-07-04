@@ -22,17 +22,24 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Business Day Convention Type Table
  *
- * Reference data table defining valid business day conventions used in
- * instrument leg definitions. Values are sourced from ORE ore_types.xsd.
+ * Reference data table defining valid business day conventions used to
+ * adjust dates that fall on a non-business day (e.g. for coupon/settlement
+ * dates on instrument legs and currency pair conventions). Values are
+ * sourced from ORE's ore_types.xsd. Moved here from ores.trading
+ * (see [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]]) since every consumer of
+ * this type — the *_convention entities and now
+ * [[id:C73E0414-9154-417F-B069-7055BB58AA4C][currency_pair_convention]] — lives in ores.refdata, not ores.trading.
  */
 
-create table if not exists "ores_trading_business_day_convention_types_tbl" (
+create table if not exists "ores_refdata_business_day_convention_types_tbl" (
     "code" text not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "description" text null,
+    "name" text not null,
+    "description" text not null,
+    "display_order" integer not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -51,18 +58,18 @@ create table if not exists "ores_trading_business_day_convention_types_tbl" (
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists business_day_convention_types_version_uniq_idx
-on "ores_trading_business_day_convention_types_tbl" (tenant_id, code, version)
+on "ores_refdata_business_day_convention_types_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists business_day_convention_types_code_uniq_idx
-on "ores_trading_business_day_convention_types_tbl" (tenant_id, code)
+on "ores_refdata_business_day_convention_types_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists business_day_convention_types_tenant_idx
-on "ores_trading_business_day_convention_types_tbl" (tenant_id)
+on "ores_refdata_business_day_convention_types_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function ores_trading_business_day_convention_types_insert_fn()
+create or replace function ores_refdata_business_day_convention_types_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -73,9 +80,12 @@ begin
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
     -- Version management
     select version into current_version
-    from "ores_trading_business_day_convention_types_tbl"
+    from "ores_refdata_business_day_convention_types_tbl"
     where tenant_id = NEW.tenant_id
       and code = NEW.code
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -89,7 +99,7 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores_trading_business_day_convention_types_tbl"
+        update "ores_refdata_business_day_convention_types_tbl"
         set valid_to = current_timestamp
         where tenant_id = NEW.tenant_id
           and code = NEW.code
@@ -106,16 +116,37 @@ begin
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger ores_trading_business_day_convention_types_insert_trg
-before insert on "ores_trading_business_day_convention_types_tbl"
-for each row execute function ores_trading_business_day_convention_types_insert_fn();
+create or replace trigger ores_refdata_business_day_convention_types_insert_trg
+before insert on "ores_refdata_business_day_convention_types_tbl"
+for each row execute function ores_refdata_business_day_convention_types_insert_fn();
 
-create or replace rule ores_trading_business_day_convention_types_delete_rule as
-on delete to "ores_trading_business_day_convention_types_tbl" do instead
-    update "ores_trading_business_day_convention_types_tbl"
+create or replace rule ores_refdata_business_day_convention_types_delete_rule as
+on delete to "ores_refdata_business_day_convention_types_tbl" do instead
+    update "ores_refdata_business_day_convention_types_tbl"
     set valid_to = current_timestamp
     where tenant_id = OLD.tenant_id
       and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
+
+-- =============================================================================
+-- Validation function for business_day_convention_type
+-- Validates that a code exists in the business_day_convention_types table.
+-- Returns the validated value, or default if null/empty.
+-- =============================================================================
+create or replace function ores_refdata_validate_business_day_convention_type_fn(
+    p_tenant_id uuid,
+    p_value text
+) returns text as $$
+begin
+    -- Return default if null or empty
+    if p_value is null or p_value = '' then
+        raise exception 'Invalid business_day_convention_type: value cannot be null or empty'
+            using errcode = '23502';
+    end if;
+
+
+    return p_value;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;

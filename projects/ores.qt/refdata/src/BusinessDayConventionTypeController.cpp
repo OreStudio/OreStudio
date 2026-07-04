@@ -18,11 +18,14 @@
  *
  */
 #include "ores.qt/BusinessDayConventionTypeController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/BusinessDayConventionTypeDetailDialog.hpp"
 #include "ores.qt/BusinessDayConventionTypeHistoryDialog.hpp"
 #include "ores.qt/BusinessDayConventionTypeMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/eventing/business_day_convention_type_changed_event.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -31,13 +34,18 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view type_event_name = eventing::domain::event_traits<
+    refdata::eventing::business_day_convention_type_changed_event>::name;
+}
+
 BusinessDayConventionTypeController::BusinessDayConventionTypeController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -83,7 +91,7 @@ void BusinessDayConventionTypeController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Business Day Convention Types");
     listMdiSubWindow_->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::CalendarClock, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -93,6 +101,8 @@ void BusinessDayConventionTypeController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -132,7 +142,7 @@ void BusinessDayConventionTypeController::reloadListWindow() {
 }
 
 void BusinessDayConventionTypeController::onShowDetails(
-    const trading::domain::business_day_convention_type& type) {
+    const refdata::domain::business_day_convention_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << type.code;
     showDetailWindow(type);
 }
@@ -143,7 +153,7 @@ void BusinessDayConventionTypeController::onAddNewRequested() {
 }
 
 void BusinessDayConventionTypeController::onShowHistory(
-    const trading::domain::business_day_convention_type& type) {
+    const refdata::domain::business_day_convention_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
     showHistoryWindow(QString::fromStdString(type.code));
 }
@@ -180,7 +190,7 @@ void BusinessDayConventionTypeController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Business Day Convention Type");
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::CalendarClock, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -189,7 +199,7 @@ void BusinessDayConventionTypeController::showAddWindow() {
 }
 
 void BusinessDayConventionTypeController::showDetailWindow(
-    const trading::domain::business_day_convention_type& type) {
+    const refdata::domain::business_day_convention_type& type) {
 
     const QString identifier = QString::fromStdString(type.code);
     const QString key = build_window_key("details", identifier);
@@ -241,11 +251,12 @@ void BusinessDayConventionTypeController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Business Day Convention Type: %1").arg(identifier));
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::CalendarClock, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<BusinessDayConventionTypeController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -313,6 +324,7 @@ void BusinessDayConventionTypeController::showHistoryWindow(const QString& code)
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<BusinessDayConventionTypeController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -325,7 +337,7 @@ void BusinessDayConventionTypeController::showHistoryWindow(const QString& code)
 }
 
 void BusinessDayConventionTypeController::onOpenVersion(
-    const trading::domain::business_day_convention_type& type, int versionNumber) {
+    const refdata::domain::business_day_convention_type& type, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for business day convention type: " << type.code;
 
@@ -385,7 +397,7 @@ void BusinessDayConventionTypeController::onOpenVersion(
 }
 
 void BusinessDayConventionTypeController::onRevertVersion(
-    const trading::domain::business_day_convention_type& type) {
+    const refdata::domain::business_day_convention_type& type) {
     BOOST_LOG_SEV(lg(), info) << "Reverting business day convention type to version: "
                               << type.version;
 
@@ -393,8 +405,11 @@ void BusinessDayConventionTypeController::onRevertVersion(
     auto* detailDialog = new BusinessDayConventionTypeDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setType(type);
+    auto reverted_type = type;
+    reverted_type.version = 0;
+    detailDialog->setType(reverted_type);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog,
             &BusinessDayConventionTypeDetailDialog::statusMessage,

@@ -17,12 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/generators/business_day_convention_type_generator.hpp"
+#include "ores.refdata.api/generators/business_day_convention_type_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
 
-namespace ores::trading::generator {
+namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
@@ -30,11 +32,19 @@ domain::business_day_convention_type
 generate_synthetic_business_day_convention_type(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::business_day_convention_type r;
     r.version = 1;
-    r.code = std::string(faker::word::noun()) + "_bdc_" + std::to_string(++counter);
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.code = std::string(faker::word::noun()) + "_bdc_" + std::to_string(++counter) + "-" +
+             std::to_string(idx);
+    r.name = "Test Business Day Convention " + std::to_string(faker::number::integer(1000, 9999));
     r.description = std::string(faker::lorem::sentence());
+    r.display_order = 0;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

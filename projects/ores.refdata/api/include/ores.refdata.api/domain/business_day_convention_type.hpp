@@ -17,20 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_HPP
-#define ORES_TRADING_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_HPP
+#ifndef ORES_REFDATA_API_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_HPP
+#define ORES_REFDATA_API_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
 
-namespace ores::trading::domain {
+namespace ores::refdata::domain {
 
 /**
- * @brief ORE business day convention code (e.g. Following, ModifiedFollowing).
+ * @brief ORE business day convention code (e.g. Following, ModifiedFollowing, Unadjusted).
  *
- * Reference data table defining valid business day adjustment conventions used
- * in instrument leg schedule definitions. Values are sourced from ORE ore_types.xsd.
+ * Reference data table defining valid business day conventions used to
+ * adjust dates that fall on a non-business day (e.g. for coupon/settlement
+ * dates on instrument legs and currency pair conventions). Values are
+ * sourced from ORE's ore_types.xsd. Moved here from ores.trading
+ * (see [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]]) since
+ * every consumer of this type — the *_convention entities and now
+ * [[id:C73E0414-9154-417F-B069-7055BB58AA4C][currency_pair_convention]] — lives in ores.refdata,
+ * not ores.trading.
  */
 struct business_day_convention_type final {
     /**
@@ -44,11 +50,16 @@ struct business_day_convention_type final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique business day convention code.
+     * @brief Unique business day convention type code.
      *
      * Examples: 'Following', 'ModifiedFollowing', 'Preceding', 'Unadjusted'.
      */
     std::string code;
+
+    /**
+     * @brief Human-readable name of the business day convention (e.g. "Modified Following").
+     */
+    std::string name;
 
     /**
      * @brief Human-readable description of the business day convention.
@@ -56,7 +67,12 @@ struct business_day_convention_type final {
     std::string description;
 
     /**
-     * @brief Username of the person who last modified this record.
+     * @brief Ordinal position for dropdown/list display.
+     */
+    int display_order = 0;
+
+    /**
+     * @brief Username of the person who last modified this business day convention type.
      */
     std::string modified_by;
 

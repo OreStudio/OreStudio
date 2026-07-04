@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,21 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_JSON_IO_HPP
-#define ORES_TRADING_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_JSON_IO_HPP
 
-#include "ores.trading.api/domain/business_day_convention_type.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
-
-namespace ores::trading::domain {
-
-/**
- * @brief Dumps the business_day_convention_type to a stream in JSON format.
- */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const business_day_convention_type& v);
-
-}
-
-#endif
+drop trigger if exists ores_refdata_business_day_convention_types_notify_trg on "ores_refdata_business_day_convention_types_tbl";
+drop function if exists ores_refdata_business_day_convention_types_notify_fn;

@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/repository/business_day_convention_type_repository.hpp"
+#include "ores.refdata.core/repository/business_day_convention_type_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.trading.api/domain/business_day_convention_type_json_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.core/repository/business_day_convention_type_entity.hpp"
-#include "ores.trading.core/repository/business_day_convention_type_mapper.hpp"
+#include "ores.refdata.api/domain/business_day_convention_type_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/business_day_convention_type_entity.hpp"
+#include "ores.refdata.core/repository/business_day_convention_type_mapper.hpp"
 #include <sqlgen/postgres.hpp>
 
-namespace ores::trading::repository {
+namespace ores::refdata::repository {
 
 using namespace sqlgen;
 using namespace sqlgen::literals;
@@ -56,7 +56,7 @@ void business_day_convention_type_repository::write(
 
 std::vector<domain::business_day_convention_type>
 business_day_convention_type_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<business_day_convention_type_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -74,7 +74,7 @@ business_day_convention_type_repository::read_latest(context ctx) {
 std::vector<domain::business_day_convention_type>
 business_day_convention_type_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business day convention type. code: " << code;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<business_day_convention_type_entity>> |
@@ -107,9 +107,10 @@ business_day_convention_type_repository::read_all(context ctx, const std::string
         "Reading all business day convention type versions by code.");
 }
 
+
 void business_day_convention_type_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing business day convention type: " << code;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::delete_from<business_day_convention_type_entity> |
@@ -117,15 +118,58 @@ void business_day_convention_type_repository::remove(context ctx, const std::str
 
     execute_delete_query(ctx, query, lg(), "Removing business day convention type from database.");
 }
+
+std::vector<domain::business_day_convention_type>
+business_day_convention_type_repository::read_latest(context ctx,
+                                                     std::uint32_t offset,
+                                                     std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest business day convention types with offset: "
+                               << offset << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<business_day_convention_type_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<business_day_convention_type_entity,
+                              domain::business_day_convention_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return business_day_convention_type_mapper::map(entities); },
+        lg(),
+        "Reading latest business day convention types with pagination.");
+}
+
+std::uint32_t business_day_convention_type_repository::get_total_type_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active business day convention type count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<business_day_convention_type_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active business day convention type count: " << count;
+    return count;
+}
+
 void business_day_convention_type_repository::remove(context ctx,
                                                      const std::vector<std::string>& codes) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::delete_from<business_day_convention_type_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-
-    execute_delete_query(ctx, query, lg(), "batch removing business day convention types");
+    execute_delete_query(ctx, query, lg(), "Batch removing business day convention types.");
 }
+
 
 }

@@ -25,8 +25,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.trading.api/domain/business_day_convention_type.hpp"
-#include <QAbstractTableModel>
+#include "ores.refdata.api/domain/business_day_convention_type.hpp"
 #include <QFutureWatcher>
 #include <vector>
 
@@ -55,7 +54,16 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column { Code, Description, Version, ModifiedBy, RecordedAt, ColumnCount };
+    enum Column {
+        Code,
+        Name,
+        Description,
+        DisplayOrder,
+        Version,
+        ModifiedBy,
+        RecordedAt,
+        ColumnCount
+    };
 
     explicit ClientBusinessDayConventionTypeModel(ClientManager* clientManager,
                                                   QObject* parent = nullptr);
@@ -79,7 +87,7 @@ public:
      * @param row The row index.
      * @return The business day convention type, or nullptr if row is invalid.
      */
-    const trading::domain::business_day_convention_type* getType(int row) const;
+    const refdata::domain::business_day_convention_type* getType(int row) const;
 
     /**
      * @brief Load a specific page of data.
@@ -115,7 +123,7 @@ private:
 
     struct FetchResult {
         bool success;
-        std::vector<trading::domain::business_day_convention_type> types;
+        std::vector<refdata::domain::business_day_convention_type> types;
         std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
@@ -124,15 +132,15 @@ private:
     void fetch_types(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    std::vector<trading::domain::business_day_convention_type> types_;
+    std::vector<refdata::domain::business_day_convention_type> types_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
     using BusinessDayConventionTypeKeyExtractor =
-        std::string (*)(const trading::domain::business_day_convention_type&);
-    RecencyTracker<trading::domain::business_day_convention_type,
+        std::string (*)(const refdata::domain::business_day_convention_type&);
+    RecencyTracker<refdata::domain::business_day_convention_type,
                    BusinessDayConventionTypeKeyExtractor>
         recencyTracker_;
     RecencyPulseManager* pulseManager_;

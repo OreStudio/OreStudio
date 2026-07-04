@@ -18,7 +18,6 @@
  *
  */
 #include "ores.cli/config/domain_parsers/trading_parser.hpp"
-#include "ores.cli/config/entity_parsers/business_day_convention_types_parser.hpp"
 #include "ores.cli/config/entity_parsers/day_count_fraction_types_parser.hpp"
 #include "ores.cli/config/entity_parsers/floating_index_types_parser.hpp"
 #include "ores.cli/config/entity_parsers/leg_types_parser.hpp"
@@ -47,10 +46,6 @@ const std::string day_count_fraction_types_name("day-count-fraction-types");
 const std::string
     day_count_fraction_types_desc("Manage day count fraction types (list, delete, add).");
 
-const std::string business_day_convention_types_name("business-day-convention-types");
-const std::string
-    business_day_convention_types_desc("Manage business day convention types (list, delete, add).");
-
 const std::string floating_index_types_name("floating-index-types");
 const std::string floating_index_types_desc("Manage floating index types (list, delete, add).");
 
@@ -74,7 +69,6 @@ void print_domain_help(std::ostream& info) {
     });
 
     row(day_count_fraction_types_name, day_count_fraction_types_desc);
-    row(business_day_convention_types_name, business_day_convention_types_desc);
     row(floating_index_types_name, floating_index_types_desc);
     row(payment_frequency_types_name, payment_frequency_types_desc);
     row(leg_types_name, leg_types_desc);
@@ -85,7 +79,6 @@ void print_domain_help(std::ostream& info) {
 
 void validate_entity_name(const std::string& entity_name) {
     const bool is_valid(entity_name == day_count_fraction_types_name ||
-                        entity_name == business_day_convention_types_name ||
                         entity_name == floating_index_types_name ||
                         entity_name == payment_frequency_types_name ||
                         entity_name == leg_types_name);
@@ -94,7 +87,7 @@ void validate_entity_name(const std::string& entity_name) {
         BOOST_THROW_EXCEPTION(
             parser_exception(std::format("Invalid or unsupported entity: {}. "
                                          "Available entities: day-count-fraction-types, "
-                                         "business-day-convention-types, floating-index-types, "
+                                         "floating-index-types, "
                                          "payment-frequency-types, leg-types",
                                          entity_name)));
     }
@@ -149,9 +142,6 @@ std::optional<options> handle_trading_command(bool has_help,
 
     if (entity_name == day_count_fraction_types_name) {
         return entity_parsers::handle_day_count_fraction_types_command(has_help, new_po, info, vm);
-    } else if (entity_name == business_day_convention_types_name) {
-        return entity_parsers::handle_business_day_convention_types_command(
-            has_help, new_po, info, vm);
     } else if (entity_name == floating_index_types_name) {
         return entity_parsers::handle_floating_index_types_command(has_help, new_po, info, vm);
     } else if (entity_name == payment_frequency_types_name) {

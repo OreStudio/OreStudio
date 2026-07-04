@@ -17,23 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_MAPPER_HPP
-#define ORES_TRADING_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_MAPPER_HPP
+#ifndef ORES_REFDATA_CORE_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_MAPPER_HPP
+#define ORES_REFDATA_CORE_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/business_day_convention_type.hpp"
-#include "ores.trading.core/export.hpp"
-#include "ores.trading.core/repository/business_day_convention_type_entity.hpp"
+#include "ores.refdata.api/domain/business_day_convention_type.hpp"
+#include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/business_day_convention_type_entity.hpp"
 
-namespace ores::trading::repository {
+namespace ores::refdata::repository {
 
 /**
  * @brief Maps business_day_convention_type domain entities to data storage layer and vice-versa.
  */
-class ORES_TRADING_CORE_EXPORT business_day_convention_type_mapper {
+class ORES_REFDATA_CORE_EXPORT business_day_convention_type_mapper {
 private:
     inline static std::string_view logger_name =
-        "ores.trading.repository.business_day_convention_type_mapper";
+        "ores.refdata.repository.business_day_convention_type_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

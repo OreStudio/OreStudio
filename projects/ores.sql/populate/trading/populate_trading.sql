@@ -36,7 +36,6 @@
 
 -- Instrument reference data
 \ir ./trading_day_count_fraction_types_populate.sql
-\ir ./trading_business_day_convention_types_populate.sql
 \ir ./trading_floating_index_types_populate.sql
 \ir ./trading_payment_frequency_types_populate.sql
 \ir ./trading_leg_types_populate.sql

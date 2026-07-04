@@ -17,22 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_TABLE_IO_HPP
-#define ORES_TRADING_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_TABLE_IO_HPP
+#include "ores.refdata.api/domain/business_day_convention_type_table_io.hpp"
+#include "ores.refdata.api/domain/business_day_convention_type_table.hpp"
+#include <ostream>
 
-#include "ores.trading.api/domain/business_day_convention_type.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
-#include <vector>
+namespace ores::refdata::domain {
 
-namespace ores::trading::domain {
+namespace {
 
-/**
- * @brief Dumps the business_day_convention_type objects to a stream in table format.
- */
-ORES_TRADING_API_EXPORT std::ostream&
-operator<<(std::ostream& s, const std::vector<business_day_convention_type>& v);
+void print_business_day_convention_type_table(std::ostream& s,
+                                              const std::vector<business_day_convention_type>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
 
 }
 
-#endif
+std::ostream& operator<<(std::ostream& s, const std::vector<business_day_convention_type>& v) {
+    print_business_day_convention_type_table(s, v);
+    return s;
+}
+
+}

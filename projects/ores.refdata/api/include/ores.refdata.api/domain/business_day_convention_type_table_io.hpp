@@ -17,17 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/domain/business_day_convention_type_json_io.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_REFDATA_API_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_TABLE_IO_HPP
+#define ORES_REFDATA_API_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_TABLE_IO_HPP
 
-namespace ores::trading::domain {
+#include "ores.refdata.api/domain/business_day_convention_type.hpp"
+#include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const business_day_convention_type& v) {
-    rfl::json::write(v, s);
-    return s;
+namespace ores::refdata::domain {
+
+/**
+ * @brief Dumps the business_day_convention_type objects to a stream in table format.
+ */
+ORES_REFDATA_API_EXPORT std::ostream&
+operator<<(std::ostream& s, const std::vector<business_day_convention_type>& v);
+
 }
 
-}
+#endif

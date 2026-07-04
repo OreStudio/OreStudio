@@ -25,12 +25,13 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.trading.api/domain/business_day_convention_type.hpp"
+#include "ores.refdata.api/domain/business_day_convention_type.hpp"
 #include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolBar>
 
 namespace ores::qt {
+
 
 /**
  * @brief MDI window for displaying and managing business day convention types.
@@ -56,22 +57,22 @@ public:
                                                 QWidget* parent = nullptr);
     ~BusinessDayConventionTypeMdiWindow() override = default;
 
-public slots:
-    void doReload() override;
-
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showTypeDetails(const trading::domain::business_day_convention_type& type);
+    void showTypeDetails(const refdata::domain::business_day_convention_type& type);
     void addNewRequested();
     void typeDeleted(const QString& code);
-    void showTypeHistory(const trading::domain::business_day_convention_type& type);
+    void showTypeHistory(const refdata::domain::business_day_convention_type& type);
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();

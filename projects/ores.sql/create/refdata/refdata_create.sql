@@ -19,6 +19,8 @@
  */
 
 -- Lookup tables (no bitemporal support - static configuration)
+\ir ./refdata_business_day_convention_types_create.sql
+\ir ./refdata_business_day_convention_types_notify_trigger_create.sql
 \ir ./refdata_rounding_types_create.sql
 \ir ./refdata_monetary_natures_create.sql
 \ir ./refdata_monetary_natures_notify_trigger_create.sql

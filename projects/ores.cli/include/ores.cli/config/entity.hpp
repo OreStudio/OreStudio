@@ -50,7 +50,6 @@ enum class entity {
     compute_results,
     // trading
     day_count_fraction_types,
-    business_day_convention_types,
     floating_index_types,
     payment_frequency_types,
     leg_types

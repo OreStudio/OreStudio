@@ -17,33 +17,41 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_MESSAGING_BUSINESS_DAY_CONVENTION_TYPE_PROTOCOL_HPP
-#define ORES_TRADING_MESSAGING_BUSINESS_DAY_CONVENTION_TYPE_PROTOCOL_HPP
+#ifndef ORES_REFDATA_API_MESSAGING_BUSINESS_DAY_CONVENTION_TYPE_PROTOCOL_HPP
+#define ORES_REFDATA_API_MESSAGING_BUSINESS_DAY_CONVENTION_TYPE_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/business_day_convention_type.hpp"
+#include "ores.refdata.api/domain/business_day_convention_type.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
-namespace ores::trading::messaging {
+namespace ores::refdata::messaging {
 
 struct get_business_day_convention_types_request {
     using response_type = struct get_business_day_convention_types_response;
     static constexpr std::string_view nats_subject =
-        "trading.v1.business-day-convention-types.list";
-    int offset = 0;
-    int limit = 100;
+        "refdata.v1.business_day_convention_types.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_business_day_convention_types_response {
-    std::vector<ores::trading::domain::business_day_convention_type> types;
+    std::vector<ores::refdata::domain::business_day_convention_type> types;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_business_day_convention_type_request {
     using response_type = struct save_business_day_convention_type_response;
     static constexpr std::string_view nats_subject =
-        "trading.v1.business-day-convention-types.save";
-    ores::trading::domain::business_day_convention_type data;
+        "refdata.v1.business_day_convention_types.save";
+    ores::refdata::domain::business_day_convention_type data;
+
+    static save_business_day_convention_type_request
+    from(ores::refdata::domain::business_day_convention_type v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_business_day_convention_type_response {
@@ -54,7 +62,7 @@ struct save_business_day_convention_type_response {
 struct delete_business_day_convention_type_request {
     using response_type = struct delete_business_day_convention_type_response;
     static constexpr std::string_view nats_subject =
-        "trading.v1.business-day-convention-types.delete";
+        "refdata.v1.business_day_convention_types.delete";
     std::vector<std::string> codes;
 };
 
@@ -66,14 +74,14 @@ struct delete_business_day_convention_type_response {
 struct get_business_day_convention_type_history_request {
     using response_type = struct get_business_day_convention_type_history_response;
     static constexpr std::string_view nats_subject =
-        "trading.v1.business-day-convention-types.history";
+        "refdata.v1.business_day_convention_types.history";
     std::string code;
 };
 
 struct get_business_day_convention_type_history_response {
+    std::vector<ores::refdata::domain::business_day_convention_type> history;
     bool success = false;
     std::string message;
-    std::vector<ores::trading::domain::business_day_convention_type> history;
 };
 
 }

@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/repository/business_day_convention_type_mapper.hpp"
+#include "ores.refdata.core/repository/business_day_convention_type_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.trading.api/domain/business_day_convention_type_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/business_day_convention_type_json_io.hpp" // IWYU pragma: keep.
 
-namespace ores::trading::repository {
+namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -34,7 +34,9 @@ business_day_convention_type_mapper::map(const business_day_convention_type_enti
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
-    r.description = v.description.value_or("");
+    r.name = v.name;
+    r.description = v.description;
+    r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -53,7 +55,9 @@ business_day_convention_type_mapper::map(const domain::business_day_convention_t
     r.code = v.code;
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.name = v.name;
+    r.description = v.description;
+    r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

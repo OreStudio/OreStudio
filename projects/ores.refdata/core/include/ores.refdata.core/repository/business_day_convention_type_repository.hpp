@@ -17,26 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_REPOSITORY_HPP
-#define ORES_TRADING_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_REPOSITORY_HPP
+#ifndef ORES_REFDATA_CORE_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_REPOSITORY_HPP
+#define ORES_REFDATA_CORE_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/business_day_convention_type.hpp"
-#include "ores.trading.core/export.hpp"
+#include "ores.refdata.api/domain/business_day_convention_type.hpp"
+#include "ores.refdata.core/export.hpp"
+#include <cstdint>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
 
-namespace ores::trading::repository {
+namespace ores::refdata::repository {
 
 /**
  * @brief Reads and writes business day convention types to data storage.
  */
-class ORES_TRADING_CORE_EXPORT business_day_convention_type_repository {
+class ORES_REFDATA_CORE_EXPORT business_day_convention_type_repository {
 private:
     inline static std::string_view logger_name =
-        "ores.trading.repository.business_day_convention_type_repository";
+        "ores.refdata.repository.business_day_convention_type_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -47,17 +48,54 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
+    /**
+     * @brief Writes business day convention types to database.
+     */
+    /**@{*/
     void write(context ctx, const domain::business_day_convention_type& v);
     void write(context ctx, const std::vector<domain::business_day_convention_type>& v);
+    /**@}*/
 
+    /**
+     * @brief Reads latest business day convention types, possibly filtered by code.
+     */
+    /**@{*/
     std::vector<domain::business_day_convention_type> read_latest(context ctx);
     std::vector<domain::business_day_convention_type> read_latest(context ctx,
                                                                   const std::string& code);
+    /**@}*/
+
+    /**
+     * @brief Reads all business day convention types, possibly filtered by code.
+     */
     std::vector<domain::business_day_convention_type> read_all(context ctx,
                                                                const std::string& code);
 
+
+    /**
+     * @brief Reads latest business day convention types with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::business_day_convention_type>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active business day convention types.
+     * @param ctx Repository context with database connection
+     * @return Total number of active business day convention types
+     */
+    std::uint32_t get_total_type_count(context ctx);
+
+    /**
+     * @brief Deletes a business day convention type by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& code);
 
     /**

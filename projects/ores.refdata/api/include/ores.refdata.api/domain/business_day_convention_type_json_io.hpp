@@ -17,19 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.cli/config/add_business_day_convention_type_options.hpp"
-#include <ostream>
+#ifndef ORES_REFDATA_API_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_JSON_IO_HPP
+#define ORES_REFDATA_API_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_JSON_IO_HPP
 
-namespace ores::cli::config {
+#include "ores.refdata.api/domain/business_day_convention_type.hpp"
+#include "ores.refdata.api/export.hpp"
+#include <iosfwd>
 
-std::ostream& operator<<(std::ostream& s, const add_business_day_convention_type_options& v) {
-    s << "{ code: " << v.code << ", modified_by: " << v.modified_by;
+namespace ores::refdata::domain {
 
-    if (v.description)
-        s << ", description: " << *v.description;
+/**
+ * @brief Dumps the business_day_convention_type to a stream in JSON format.
+ */
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const business_day_convention_type& v);
 
-    s << " }";
-    return s;
 }
 
-}
+#endif

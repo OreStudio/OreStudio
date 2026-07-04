@@ -121,39 +121,6 @@ register_trade_handlers(ores::nats::service::client& nats,
                                  h.history_day_count_fraction_type(std::move(msg));
                              }));
 
-    // Instrument reference data — business day convention types
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_business_day_convention_types_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 instrument_ref_handler h(nats, ctx, verifier);
-                                 h.list_business_day_convention_types(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(save_business_day_convention_type_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 instrument_ref_handler h(nats, ctx, verifier);
-                                 h.save_business_day_convention_type(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(delete_business_day_convention_type_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 instrument_ref_handler h(nats, ctx, verifier);
-                                 h.delete_business_day_convention_type(std::move(msg));
-                             }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_business_day_convention_type_history_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            instrument_ref_handler h(nats, ctx, verifier);
-            h.history_business_day_convention_type(std::move(msg));
-        }));
-
     // Instrument reference data — floating index types
     subs.push_back(nats.queue_subscribe(std::string(get_floating_index_types_request::nats_subject),
                                         queue,

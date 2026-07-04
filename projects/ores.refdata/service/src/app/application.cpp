@@ -26,6 +26,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/eventing/book_changed_event.hpp"
 #include "ores.refdata.api/eventing/business_centre_changed_event.hpp"
+#include "ores.refdata.api/eventing/business_day_convention_type_changed_event.hpp"
 #include "ores.refdata.api/eventing/business_unit_changed_event.hpp"
 #include "ores.refdata.api/eventing/counterparty_changed_event.hpp"
 #include "ores.refdata.api/eventing/counterparty_contact_information_changed_event.hpp"
@@ -119,6 +120,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         event_source, "ores.refdata.book", "ores_refdata_books");
     ev::service::registrar::register_mapping<rdev::business_centre_changed_event>(
         event_source, "ores.refdata.business_centre", "ores_refdata_business_centres");
+    ev::service::registrar::register_mapping<rdev::business_day_convention_type_changed_event>(
+        event_source,
+        "ores.refdata.business_day_convention_type",
+        "ores_refdata_business_day_convention_types");
     ev::service::registrar::register_mapping<rdev::business_unit_changed_event>(
         event_source, "ores.refdata.business_unit", "ores_refdata_business_units");
     ev::service::registrar::register_mapping<rdev::counterparty_changed_event>(
@@ -173,6 +178,21 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                 .entity_ids = e.codes,
                                                 .tenant_id = e.tenant_id});
         });
+
+    auto business_day_convention_type_sub =
+        event_bus.subscribe<rdev::business_day_convention_type_changed_event>(
+            [&nats](const rdev::business_day_convention_type_changed_event& e) {
+                publish_entity_event(
+                    nats,
+                    std::string(
+                        ev::domain::event_traits<rdev::business_day_convention_type_changed_event>::
+                            name),
+                    ev::domain::entity_change_event{
+                        .entity = "ores.refdata.business_day_convention_type",
+                        .timestamp = e.timestamp,
+                        .entity_ids = e.codes,
+                        .tenant_id = e.tenant_id});
+            });
 
     auto business_unit_sub = event_bus.subscribe<rdev::business_unit_changed_event>(
         [&nats](const rdev::business_unit_changed_event& e) {

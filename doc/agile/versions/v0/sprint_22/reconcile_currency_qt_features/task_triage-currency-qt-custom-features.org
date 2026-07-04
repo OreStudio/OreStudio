@@ -8,7 +8,7 @@
 #+filetags: :reconcile_currency_qt_features:sprint_22:v0:
 #+owner: marco
 #+branch: feature/triage-currency-qt-custom-features
-#+pr:
+#+pr: 1435
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -93,7 +93,7 @@ decision per feature.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1435][#1435]] | [qt] Reconcile currency Qt custom features with codegen |
 
 * Review
 

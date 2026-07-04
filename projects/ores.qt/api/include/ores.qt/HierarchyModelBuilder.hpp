@@ -21,9 +21,7 @@
 #define ORES_QT_HIERARCHY_MODEL_BUILDER_HPP
 
 #include "ores.qt/export.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <optional>
-#include <string>
+#include "ores.utility/domain/hierarchy.hpp"
 #include <vector>
 
 class QStandardItemModel;
@@ -31,28 +29,13 @@ class QStandardItemModel;
 namespace ores::qt {
 
 /**
- * @brief A single node in a generic parent-child hierarchy.
+ * @brief Builds a QStandardItemModel representing a tree out of a forest of
+ * ores::utility::domain::hierarchy_node values.
  *
- * Entity-agnostic: carries only the id/parent-id/label triple needed to
- * build a tree. Callers are responsible for mapping their domain entity
- * (e.g. party, counterparty) into a list of these before handing it to
- * hierarchy_model_builder.
- */
-struct hierarchy_node final {
-    boost::uuids::uuid id{};
-    std::optional<boost::uuids::uuid> parent_id;
-    std::string label;
-};
-
-/**
- * @brief Builds a QStandardItemModel representing a tree out of a flat list
- * of hierarchy_node values.
- *
- * Root items are nodes with no parent_id, or nodes whose parent_id does not
- * refer to any other node in the input list (orphans). Orphans are attached
- * as additional roots rather than being dropped or causing a crash, since
- * badly-seeded data can violate the "one root per tenant" convention that
- * party/counterparty hierarchies otherwise follow.
+ * The nesting (parent-linking, orphan/multi-root handling, duplicate-id
+ * resolution) is already resolved by ores::utility::domain::build_tree();
+ * this class only walks the given nesting and materialises the matching
+ * QStandardItem tree.
  *
  * This class has no knowledge of party, counterparty, or any other domain
  * entity; it operates purely on hierarchy_node values.
@@ -60,18 +43,15 @@ struct hierarchy_node final {
 class ORES_QT_API HierarchyModelBuilder final {
 public:
     /**
-     * @brief Build a tree model from a flat list of hierarchy nodes.
+     * @brief Build a tree model from a forest of nested hierarchy nodes.
      *
-     * The returned model has a single column (the node label) and no
+     * The returned model has a single column (the node name) and no
      * parent; ownership passes to the caller, which typically hands it
      * straight to HierarchyTreeWidget::setModel() or otherwise takes
      * ownership (e.g. by setting a QObject parent) to avoid leaking it.
-     *
-     * Nodes whose id appears more than once in the input are, as with any
-     * malformed input, handled on a best-effort basis: the first occurrence
-     * wins and later duplicates are treated as orphan roots.
      */
-    static QStandardItemModel* build(const std::vector<hierarchy_node>& nodes);
+    static QStandardItemModel*
+    build(const std::vector<ores::utility::domain::hierarchy_node>& roots);
 };
 
 }

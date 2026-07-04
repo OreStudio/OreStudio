@@ -21,62 +21,32 @@
 #include <QStandardItem>
 #include <QStandardItemModel>
 #include <QString>
-#include <boost/functional/hash.hpp>
-#include <boost/uuid/uuid_hash.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <unordered_map>
-#include <unordered_set>
 
 namespace ores::qt {
 
 namespace {
 
-QStandardItem* make_item(const hierarchy_node& node) {
-    auto* item = new QStandardItem(QString::fromStdString(node.label));
+QStandardItem* make_item(const ores::utility::domain::hierarchy_node& node) {
+    auto* item = new QStandardItem(QString::fromStdString(node.name));
     item->setData(QString::fromStdString(boost::uuids::to_string(node.id)), Qt::UserRole);
     item->setEditable(false);
+
+    for (const auto& child : node.children)
+        item->appendRow(make_item(child));
+
     return item;
 }
 
 } // namespace
 
-QStandardItemModel* HierarchyModelBuilder::build(const std::vector<hierarchy_node>& nodes) {
+QStandardItemModel*
+HierarchyModelBuilder::build(const std::vector<ores::utility::domain::hierarchy_node>& roots) {
     auto* model = new QStandardItemModel();
     model->setHorizontalHeaderLabels({QStringLiteral("Name")});
 
-    // Build a lookup from id -> item, taking the first occurrence of any
-    // duplicated id (malformed input handled on a best-effort basis).
-    std::unordered_map<boost::uuids::uuid, QStandardItem*, boost::hash<boost::uuids::uuid>>
-        itemsById;
-    std::unordered_set<boost::uuids::uuid, boost::hash<boost::uuids::uuid>> seenIds;
-
-    for (const auto& node : nodes) {
-        if (seenIds.contains(node.id))
-            continue;
-        seenIds.insert(node.id);
-        itemsById.emplace(node.id, make_item(node));
-    }
-
-    // Attach each item to its parent's item if the parent exists in the
-    // input, otherwise treat it as an additional root (orphan handling).
-    for (const auto& node : nodes) {
-        auto itemIt = itemsById.find(node.id);
-        if (itemIt == itemsById.end())
-            continue; // duplicate id, item already consumed by first occurrence
-
-        QStandardItem* item = itemIt->second;
-        QStandardItem* parentItem = nullptr;
-        if (node.parent_id) {
-            auto parentIt = itemsById.find(*node.parent_id);
-            if (parentIt != itemsById.end())
-                parentItem = parentIt->second;
-        }
-
-        if (parentItem != nullptr)
-            parentItem->appendRow(item);
-        else
-            model->appendRow(item);
-    }
+    for (const auto& root : roots)
+        model->appendRow(make_item(root));
 
     return model;
 }

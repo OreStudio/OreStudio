@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 4F93228E-C638-429C-993A-360EE88BD86A
+:END:
+#+title: Currency pair classification: major, minor, exotic
+#+description: The major/minor/exotic taxonomy vs the independent G11/EM taxonomy, and why Scandinavian G11 currencies are minors, not exotics.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:domain:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+
+* Summary
+
+FX pairs carry two overlapping but *independent* classifications: the
+market-wide *major/minor/exotic* taxonomy, and the internal *G11 vs
+Emerging Markets* taxonomy used for desk allocation, market-data sourcing,
+and IPV (see [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]]). A *major* pairs USD with one of
+the other six dominant currencies; a *minor* (cross) pairs two non-USD
+majors with no USD leg; an *exotic* pairs a major/G10 currency with a
+developing-economy currency. The two taxonomies diverge for the
+Scandinavian G11 currencies (DKK, NOK, SEK): retail guides often call
+=USD/DKK= etc. exotic on volume grounds, but institutionally they are G11
+and should be classified as *minor*, not exotic — the =classification=
+field on the pair entity is independent of the =is_g11= flag.
+
+* Detail
+
+** Major pairs
+
+Any pair with USD as either base or quote, combined with one of the other
+dominant currencies. The seven universally recognised majors:
+
+| Pair      | Direction |
+|-----------+-----------|
+| =EUR/USD= | EUR base  |
+| =USD/JPY= | USD base  |
+| =GBP/USD= | GBP base  |
+| =USD/CHF= | USD base  |
+| =AUD/USD= | AUD base  |
+| =USD/CAD= | USD base  |
+| =NZD/USD= | NZD base  |
+
+Highest global volume, tightest spreads, deep 24h liquidity, widest
+independent-vendor coverage (Reuters, Bloomberg, Totem consensus).
+
+** Minor pairs (crosses)
+
+Two of the major non-USD currencies, no USD leg. Because USD is absent,
+the rate is *derived by triangulation* through USD — a cross rate in the
+CRM sense (see [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][Triangulation and cross rates]]).
+
+Examples: =EUR/GBP=, =EUR/JPY=, =GBP/JPY=, =GBP/CHF=, =GBP/AUD=,
+=AUD/CAD=. Good liquidity but generally wider spreads than majors; more
+sensitive to regional news; a move in =EUR/USD= or =USD/JPY= ripples into
+=EUR/JPY= via the no-arbitrage constraint.
+
+** Exotic pairs
+
+A major or G10 currency paired with a developing/smaller-economy
+currency (the EM leg can be either base or quote). Examples: =USD/ZAR=,
+=USD/MXN=, =USD/THB=, =USD/SGD=, =USD/HKD= (peg), =USD/INR=, =GBP/INR=.
+
+Wider spreads, lower liquidity, higher volatility around domestic
+political/economic events; many are non-deliverable offshore, requiring
+NDF structures (see
+[[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]]); sparser
+independent-data tenor coverage, IPV leans more on broker quotes; higher
+country-specific-risk sensitivity.
+
+** DKK, NOK, SEK are minors, not exotics
+
+Some retail FX guides classify =USD/DKK=, =USD/NOK=, =USD/SEK= as exotic
+because trading volume is lower than the seven majors. That is wrong for
+an institutional system: the Scandinavian currencies, together with CHF,
+*are G11* — deep continuous liquidity, tight spreads, full independent
+data coverage, managed by the G11 desk. In the system these should be
+classified as *minor* (USD paired with a non-major G11 currency), with
+the =classification= field independent of the =is_g11= flag.
+
+** G11 vs Emerging Markets (the other taxonomy)
+
+This is the internal system taxonomy, orthogonal to major/minor/exotic;
+covered in full in [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]]. In short: G11 = =EUR, USD,
+GBP, JPY, AUD, CAD, CHF, DKK, NOK, NZD, SEK=, managed by G11 desks with
+tight spreads and continuous liquidity; everything else is EM, managed by
+separate desks, sourced more from broker quotes, and more prone to
+onshore/offshore bifurcation.
+
+* See also
+
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the hub.
+- [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] — the G11/EM taxonomy and base/quote precedence.
+- [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][Triangulation and cross rates]] — how minor/cross rates are derived.
+- [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] — why many exotics need
+  NDF structures.

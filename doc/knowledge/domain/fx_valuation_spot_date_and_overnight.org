@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 85526DCE-31B2-4D46-BA3F-564876397BE2
+:END:
+#+title: Valuation spot date and overnight
+#+description: Reval date vs spot date vs valuation spot date vs overnight, and the O/N and T/N outright formulas that underpin theta on settled cash.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:domain:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+
+* Summary
+
+Valuation needs several distinct date concepts beyond the plain
+[[id:267DD5E8-F095-47C1-B42B-733565306776][spot date]]: the *reval date* the valuation runs for, the pair's own
+*spot date*, a *valuation spot date* that normalises multiple pairs to the
+same number of spot days for cross-currency settled-cash valuation, and
+the *overnight* rate desks use intraday in preference to spot. The
+short end of the forward curve — the O/N (overnight) and T/N
+(tomorrow-next) points — determines the *outright* value of spot today or
+tomorrow, which is what drives theta on settled cash positions.
+
+* Detail
+
+** The date concepts
+
+- *Reval date*: the date the valuation is performed for; not necessarily
+  today.
+- *Spot date*: today (or the reval date) plus the pair's spot days,
+  counting only business days (see
+  [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]]).
+- *Valuation spot date* (also /adjusted/ or /normalised/ spot date): a
+  spot date normalised across multiple pairs to the same number of spot
+  days, used when valuing settled cash across currencies with different
+  spot conventions.
+- *Overnight*: a rate quoted from today to the next business day. Trading
+  desks prefer overnight rates for intraday positions; Finance prefers
+  spot rates for official end-of-day valuation.
+
+** Outright formulas
+
+For a currency with T+1 settlement (e.g. USD):
+
+$$\text{Outright today} = \text{Spot} - \text{O/N points} \times \text{pip factor}$$
+
+For a currency pair with T+2 settlement (most pairs):
+
+$$\text{Outright today} = \text{Spot} - \text{T/N points} \times \text{pip factor} - \text{O/N points} \times \text{pip factor}$$
+$$\text{Outright tomorrow} = \text{Spot} - \text{T/N points} \times \text{pip factor}$$
+
+These formulas tie the short end of the forward curve to spot and are the
+basis for theta calculations on settled cash positions; the pip factor is
+covered in [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]].
+
+* See also
+
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the hub.
+- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — the plain spot date this normalises.
+- [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]] — the pip factor used in the outright
+  formulas.

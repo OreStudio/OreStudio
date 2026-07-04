@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: F40E2871-BF6C-4552-B936-09427688EBE8
+:END:
+#+title: Pip, tick size, and pip factor
+#+description: Pip conventions (4dp vs JPY 2dp), tick size, the pip factor that scales pips to absolute rate moves, and the forward-points sanity check.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:domain:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+
+* Summary
+
+A *pip* is the standard unit of rate change for a currency pair, and it is
+pair-specific: most G11 non-JPY pairs quote to 4 decimal places (1 pip =
+0.0001), JPY crosses to 2 (1 pip = 0.01). *Tick size* is the smallest
+quoting increment, stated in pips, and can vary by pair, venue, and
+instrument. The *pip factor* converts a pip count into an absolute rate
+move (=absolute move = pips × pip factor=); it must be stored as an
+explicit attribute of the pair because using the wrong pip factor inverts
+the direction of a forward premium/discount by orders of magnitude.
+
+* Detail
+
+** Pip conventions
+
+| Pair type          | Convention       | 1 Pip  | Example                  |
+|---------------------+------------------+--------+--------------------------|
+| Most G11 (non-JPY)  | 4 decimal places | 0.0001 | =EUR/USD=: 1.0850→1.0851 |
+| JPY crosses         | 2 decimal places | 0.01   | =USD/JPY=: 149.50→149.51 |
+
+Pip decimal conventions were designed by traders to quote with minimal
+redundancy and avoid misreads, not chosen arbitrarily.
+
+** Tick size
+
+The tick size is the smallest unit of change in a quotation, stated in
+units of pip (e.g. ½ pip, 5 pips). It can vary by pair, by trading venue,
+and by instrument type (spot vs forward vs option) — it is a market/venue
+attribute layered on top of the pip convention, not a substitute for it.
+
+** Pip factor
+
+- Converts pips into absolute rate values: =absolute move = pips × pip
+  factor=.
+- 4dp pair: =pip factor = 0.0001=. 2dp (JPY) pair: =pip factor = 0.01=.
+- Used everywhere forward points are quoted; applying the wrong pip factor
+  inverts the direction of the forward premium/discount by orders of
+  magnitude.
+- Sanity check: if =Spot ± (forward points × pip factor)= produces a
+  negative number, the pip factor is wrong.
+- Must be stored as an explicit attribute of the currency pair (see
+  [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]]), not derived implicitly from
+  decimal_places at use time.
+
+* See also
+
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the hub.
+- [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]] — where =pip_factor=,
+  =tick_size=, =decimal_places= live on the entity.
+- [[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date and overnight]] — the O/N and T/N outright formulas
+  that consume the pip factor.

@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: CC6D86D8-33FC-41D6-AC27-F35FA942F436
+:END:
+#+title: Currency pair and currency entity fields
+#+description: Field-by-field reference for the currency pair and currency entities: pair code, spot days, pip factor, deliverability, classification, cut code, and the underlying currency attributes.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:domain:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+
+* Summary
+
+This is the data-model reference for currency pairs as a first-class
+reference-data entity: the fields a =currency_pair= record needs to carry
+the conventions described elsewhere in this cluster (base/quote, spot
+days, pip factor, deliverability, classification, cut code), plus the
+currency-level attributes that feed into pair construction. It exists to
+ground the later domain/db/codegen task in a single concrete field list
+rather than re-deriving it from prose each time.
+
+* Detail
+
+** Currency pair fields
+
+| Field                    | Description                                                              |
+|---------------------------+---------------------------------------------------------------------------|
+| =pair_code=               | Canonical code (e.g. =EUR/USD=, =USD/JPY=), always in base/quote order   |
+| =base_currency=           | ISO 4217 code of the base (CCY1)                                         |
+| =quote_currency=          | ISO 4217 code of the quote (CCY2)                                        |
+| =spot_days=                | =max(spot_days(base), spot_days(quote))=; used to compute the spot date |
+| =pip_factor=               | Pip scaling factor; converts pips to absolute rate moves                |
+| =tick_size=                | Minimum rate increment, in pips                                         |
+| =decimal_places=           | Number of decimal places for rate display                               |
+| =business_day_calendar=    | Union of base and quote holiday calendars                               |
+| =settlement_calendar=      | Holiday calendar of the settlement currency (often USD)                 |
+| =deliverable=              | Whether the pair settles physically or cash-only (NDF flag)             |
+| =settlement_currency=      | For ND pairs: the currency in which cash settlement is made             |
+| =default_cut_code=         | Default market data cut for this pair                                   |
+| =is_g11=                   | Flag: both currencies are G11                                           |
+| =classification=           | Pair category: =major=, =minor=, or =exotic=; independent of =is_g11=   |
+| =fixing_source=            | Default fixing source for cash-settled / NDF trades on this pair        |
+
+See [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] for =deliverable= /
+=settlement_currency=, [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]] for =pip_factor= /
+=tick_size= / =decimal_places=, and
+[[id:4F93228E-C638-429C-993A-360EE88BD86A][Currency pair classification]] for =classification= / =is_g11=.
+
+** Currency fields
+
+Individual currencies carry their own attributes that feed into pair
+construction:
+
+| Field              | Description                                              |
+|---------------------+-----------------------------------------------------------|
+| =currency_code=      | ISO 4217 three-letter code (e.g. =EUR=, =USD=)           |
+| =numeric_code=       | ISO 4217 numeric code (e.g. 978 for EUR, 840 for USD)    |
+| =spot_days=          | Number of business days to settlement                    |
+| =holiday_calendar=   | Named calendar of public holidays                         |
+| =deliverable=        | Whether cash in this currency can be delivered offshore  |
+| =day_basis=          | Day-count convention for money market (ACT/360, ACT/365) |
+| =base_precedence=    | Ordinal rank in the base-currency precedence table        |
+
+** Cut code
+
+Each currency pair has an associated *cut code* determining which market
+data cut (time-of-day snapshot) is used for valuation. It defaults from
+the currency pair but can be overridden at the trade or book level. The
+system should visually flag when a trade's cut code differs from the
+pair's default, since it changes which rates feed official valuation.
+
+* See also
+
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the hub.
+- [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] — base/quote precedence and reciprocals.
+- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — the =spot_days= max-of-two rule.
+- [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]] — the pip-related fields.
+- [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] — the deliverability fields.
+- [[id:4F93228E-C638-429C-993A-360EE88BD86A][Currency pair classification]] — =classification= and =is_g11=.

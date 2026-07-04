@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 141A6CD3-60BA-42E6-BEC4-14122F70451A
+:END:
+#+title: Task: Build knowledge documents for currency pairs
+#+description: Turn freeform notes on currency pairs into a set of small, self-contained zettelkasten-style knowledge documents, cross-linked via org-roam links (including to existing docs like the cross rates matrix), with an index document tying them together.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Take Marco's freeform notes on currency pairs and turn them into
+properly-fitted ORE Studio knowledge documents: broken up into small,
+self-contained zettelkasten units (not one monolith), each tagged and
+indexed per the =doc-add-knowledge= convention, and cross-linked via
+org-roam =[[id:...]]= links — both amongst themselves and to existing
+related documents (e.g. the cross rates matrix). Produce an index
+document that ties the set together.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- [ ] Marco's notes are decomposed into multiple small, self-contained
+  knowledge documents (one topic per document), scaffolded via
+  =compass add knowledge=.
+- [ ] Each document is tagged appropriately and linked from an index
+  document.
+- [ ] Documents are cross-linked to each other and to existing related
+  documents (e.g. the cross rates matrix) via org-roam =[[id:...]]=
+  links, not plain text references.
+- [ ] =compass index= is re-run so the new documents are searchable.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

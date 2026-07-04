@@ -22,24 +22,24 @@ documentation see [[id:914738C6-7C77-41CD-A949-55DBBE0B6908][ORE Studio Manuals]
 
 * Domain
 
-Finance concepts the codebase relies on.
+Finance concepts the codebase relies on, grouped by topic.
 
-- [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data quality]] — the standard DQ-6 dimensions as we apply them
-  inside [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq.core]].
-- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]] — how ORE Studio configures the
-  pricing / risk models we hand to [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]].
-- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — day-count conventions, discount factors,
-  bootstrapping, and interpolation methods for rate curves.
-- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — scalar/tenor/term-structure
-  concepts, settlement conventions, tenor labels, date rolling,
-  IMM dates, and broken dates.
+** FX and market data conventions
+
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — hub note for currency pairs as reference data: naming,
+  deliverability, quoting, classification, and entity fields.
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — hub note for the FX cross-rates matrix: the
+  no-arbitrage spanning-tree of driver/derived spot rates that lives in
+  =ores.marketdata=. Companion to the Currency pairs hub above.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — pillar quoting (ATM/RR/STR), delta
   conventions, smile models (SABR, BS, spline), and cross-time
   interpolation.
-- [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P (real-world) and Q (risk-neutral)]] — what
-  each measure is, why both exist, which one QuantLib and ORE use in
-  which context, and why GMM synthetic data lives in P while option
-  pricers require Q.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — how market data series are identified across
+  external schemes (RIC, Bloomberg) and internally: the ORE canonical key
+  format (=FX/RATE/EUR/USD=), its decomposition into =series_type/metric/qualifier=,
+  the two-level subscription model (generation config vs client subscription),
+  and the mapping from ORE key to NATS tick subject (lowercase, =/= → =.=,
+  e.g. =marketdata.v1.tick.fx.rate.eur.usd=).
 - [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest Parity and FX Forward Pricing]] — why FX forward
   rates are fully determined by the spot rate and IR curves, the
   arbitrage argument, the QuantLib discount-factor formula, and why
@@ -51,68 +51,23 @@ Finance concepts the codebase relies on.
 - [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] — what vol clustering is,
   GARCH(1,1) as a recurrence relation, GJR-GARCH's leverage effect,
   and how this family relates to QuantLib's Heston model.
-- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — definitive approach for
-  generating a consistent, arbitrage-free, evolvable synthetic market data
-  environment covering all ORE-supported asset classes: chosen method per
-  asset class, cross-asset constraint equations, P/Q-measure bridge, time
-  evolution strategy, UI requirements, phased implementation roadmap.
-- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — how market data series are identified across
-  external schemes (RIC, Bloomberg) and internally: the ORE canonical key
-  format (=FX/RATE/EUR/USD=), its decomposition into =series_type/metric/qualifier=,
-  the two-level subscription model (generation config vs client subscription),
-  and the mapping from ORE key to NATS tick subject (lowercase, =/= → =.=,
-  e.g. =marketdata.v1.tick.fx.rate.eur.usd=).
-- [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — inventory of the existing
-  market data stack across all tiers: DB schema and entities (=market_series=,
-  =market_observation=, =market_fixing=), FX spot encoding, tenant/workspace
-  scoping, NATS request-reply subjects, Qt list windows, =QueueChartWindow=
-  chart pattern, ORE CSV format, service registry entry, and CMake build
-  conventions. Reference for the FX spot synthetic data PoC.
-- [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — architecture design for the FX
-  spot PoC vertical slice: gap analysis against the existing stack, new
-  =ores.synthetic= service and =ores.marketdata.client= library designs, =IFxSpotFeed=
-  interface, per-tick data flow, new NATS subjects, chart window and config dialog
-  designs, 8 open design questions, and recommended 8-step implementation order.
-  Gates implementation.
-- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — hub note for the FX cross-rates matrix: the
-  no-arbitrage spanning-tree of driver/derived spot rates that lives in
-  =ores.marketdata=. Links the focused notes below.
-  - [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — spot days, T+2, the max-of-two rule.
-  - [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][CRM graph topology and spanning tree]] — vertices/edges, acyclic, $n-1$ edges,
-    adjacency/weighting, slicing, directed-vs-undirected.
-  - [[id:A1BA9EE6-313E-4802-8F63-FEE6BFB63A69][Driver and derived rates]] — directly-quoted vs triangulated (proxy) rates and
-    the never-set-both-sides / no-cycle invariant.
-  - [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][Triangulation and cross rates]] — direct vs cross via a pivot, one-way/two-way
-    matrices, sanity checks.
-  - [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] — majors/minors, base/quote precedence, reciprocals,
-    Product-vs-Valuation split.
-  - [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]] — star-shaping on the aggregation
-    currency, spot-date-mismatch artefacts, theta, risk routing.
-  - [[id:6F7DFFDF-9E22-4870-916C-7680DE1EB065][Spot rate derivation mechanics]] — covered interest parity, forward points,
-    discount factors, pips/mfactor.
-  - [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] — local/global, spot verification, finance approval.
-  - [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] — combining multiple source feeds into the official spot;
-    why the practice is limited and situational.
-  - [[id:0AABF2DE-8A65-4EF6-A9AD-FBE4AFDF2B46][FX spot rate blending methods]] — simple/weighted average, median/trimmed mean,
-    waterfall selection; a governed methodology.
-  - [[id:936BE1EE-89F0-4F82-9064-9AB53E886299][Why FX spot rates are observable Level 1 inputs]] — IFRS 13 Level 1; why spot
-    needs lighter verification than vols and curves.
-  - [[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][Volatility surface driving]] — the driver/derived pattern applied to vol
-    surfaces (correlation vs basis proxying).
-  - [[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][Correlation management]] — discrete per-tenor correlations that drive cross
-    ATM vol, managed in =ores.marketdata=.
-- [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — architecture and specification of the generator
-  library: =IStochasticProcess= / =IFxSpotFeed= separation, all 12 process types
-  (5 deterministic + 7 stochastic) with mathematical specifications, per-process RNG
-  design, ring-buffer pre-generation, QuantLib vs standalone analysis, and performance
-  design for 50–100 concurrent high-frequency FX feeds.
-- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — how to transport inheritance-like data
-  structures (instrument variants, feed config params) over NATS using RFL: the
-  type-specific subject pattern, discriminator-on-containing-entity convention,
-  two-phase dispatch for read paths that cannot know the type upfront, the RFL
-  =std::variant= index fragility pitfall, and the wrapper struct idiom. Canonical
-  example from =ores.trading= instruments; applied example from =ores.marketdata=
-  feed config parameters.
+- [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P (real-world) and Q (risk-neutral)]] — what
+  each measure is, why both exist, which one QuantLib and ORE use in
+  which context, and why GMM synthetic data lives in P while option
+  pricers require Q.
+
+** Rates and curves
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — day-count conventions, discount factors,
+  bootstrapping, and interpolation methods for rate curves.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — scalar/tenor/term-structure
+  concepts, settlement conventions, tenor labels, date rolling,
+  IMM dates, and broken dates.
+
+** Risk, valuation and reporting
+
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]] — how ORE Studio configures the
+  pricing / risk models we hand to [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]].
 - [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — named, versioned bundles of valuation
   settings: model mapping, smile surfaces, Greeks, layered
   overrides.
@@ -122,12 +77,28 @@ Finance concepts the codebase relies on.
 - [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]] — attribution identity, Bump and Reset/Run,
   trade activity categories, market data bucketing, time
   component, and EOD sign-off.
-- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — primary front-office screen: deal grid,
-  deal actions, entry form, STP panel, dynamic books, and
-  cross-screen navigation.
 - [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] — distributed computation for valuation and
   reporting: run configurations, compute jobs, orchestration,
   chunking, environments, and lifecycle.
+
+** Trading and front office
+
+- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — primary front-office screen: deal grid,
+  deal actions, entry form, STP panel, dynamic books, and
+  cross-screen navigation.
+
+** Data quality
+
+- [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data quality]] — the standard DQ-6 dimensions as we apply them
+  inside [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq.core]].
+
+** Synthetic data generation (methodology)
+
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — definitive approach for
+  generating a consistent, arbitrage-free, evolvable synthetic market data
+  environment covering all ORE-supported asset classes: chosen method per
+  asset class, cross-asset constraint equations, P/Q-measure bridge, time
+  evolution strategy, UI requirements, phased implementation roadmap.
 
 * Architecture
 
@@ -142,6 +113,30 @@ How the codebase is put together.
   instance section (NATS, HTTP) linking to the codegen archetypes.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — producers, the marketdata authority
   (subscribe → persist → remap), feed configs, and source-independent consumers.
+- [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — inventory of the existing
+  market data stack across all tiers: DB schema and entities (=market_series=,
+  =market_observation=, =market_fixing=), FX spot encoding, tenant/workspace
+  scoping, NATS request-reply subjects, Qt list windows, =QueueChartWindow=
+  chart pattern, ORE CSV format, service registry entry, and CMake build
+  conventions. Reference for the FX spot synthetic data PoC.
+- [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — architecture design for the FX
+  spot PoC vertical slice: gap analysis against the existing stack, new
+  =ores.synthetic= service and =ores.marketdata.client= library designs, =IFxSpotFeed=
+  interface, per-tick data flow, new NATS subjects, chart window and config dialog
+  designs, 8 open design questions, and recommended 8-step implementation order.
+  Gates implementation.
+- [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — architecture and specification of the generator
+  library: =IStochasticProcess= / =IFxSpotFeed= separation, all 12 process types
+  (5 deterministic + 7 stochastic) with mathematical specifications, per-process RNG
+  design, ring-buffer pre-generation, QuantLib vs standalone analysis, and performance
+  design for 50–100 concurrent high-frequency FX feeds.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — how to transport inheritance-like data
+  structures (instrument variants, feed config params) over NATS using RFL: the
+  type-specific subject pattern, discriminator-on-containing-entity convention,
+  two-phase dispatch for read paths that cannot know the type upfront, the RFL
+  =std::variant= index fragility pitfall, and the wrapper struct idiom. Canonical
+  example from =ores.trading= instruments; applied example from =ores.marketdata=
+  feed config parameters.
 - [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset menu, output directory layout, the
   conventions every component build follows.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering, type mappings, and service

@@ -51,8 +51,25 @@ bounded-context split between exact (Product) and normalised (Valuation) handlin
 
 The pair itself is identified canonically by its [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][ORE key]].
 
+** Fixing sources and inversion
+
+When a trade has a fixing source (e.g. NDFs, cash-settled options), the
+fixing record must capture: the currency pair, the quote type, whether
+the rate is inverted, the fixing zone/time, bid/ask/offer, and the result
+rounding applied by that source. This lets confirmations and settlement
+amounts be computed from the correct reciprocal, with the correct
+rounding, regardless of which direction the fixing source publishes.
+
+If a structured product (e.g. a barrier option) is booked on an inverted
+pair, the barrier direction must be inverted too — a barrier that is "Up"
+on =USD/JPY= becomes "Down" on =JPY/USD=. The system must apply this
+transformation consistently, not just invert the rate.
+
 * See also
 
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
 - [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — canonical ORE-key identity for pairs.
 - [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]] — desk split / risk routing.
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the pair-as-entity companion hub.
+- [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] — where fixing sources
+  matter most (NDFs).

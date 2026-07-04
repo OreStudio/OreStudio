@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E
+:END:
+#+title: Currency pairs
+#+description: Hub note for currency pairs as reference data: naming, conventions, deliverability, quoting, classification, and entity fields; companion to the cross-rates matrix cluster.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:domain:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+
+This is the hub note for currency pairs as reference data. Each linked
+note is a single focused concept; start here and follow the links.
+
+* Summary
+
+A *currency pair* is the fundamental unit of FX trading: it defines the
+exchange relationship between two currencies and carries all the
+conventions needed to quote, settle, and value a transaction. Almost
+every FX concept — spot rates, forward curves, vol surfaces, fixings — is
+anchored to a pair rather than to a currency in isolation. This cluster
+covers what a currency pair *is* as a data entity: how it is named, which
+currency is base, deliverability, quoting/pip conventions, and
+classification. It is a companion to the
+[[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][cross-rates matrix]] cluster, which covers spot-rate derivation and
+graph structure rather than the pair entity itself.
+
+* Detail
+
+** Concept map
+
+- *Naming and quoting convention* → [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] (base/quote,
+  G11/EM, reciprocals, Product-vs-Valuation split).
+- *Settlement timing* → [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] (spot days, T+2,
+  business vs settlement day, holiday calendars).
+- *Deliverability* → [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] (NDFs,
+  NDOs, onshore/offshore bifurcation, pseudo currency codes).
+- *Quoting granularity* → [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]].
+- *Classification* → [[id:4F93228E-C638-429C-993A-360EE88BD86A][Currency pair classification: major, minor, exotic]]
+  (and how it differs from the G11/EM taxonomy).
+- *Data model* → [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]] (the field-by-field
+  reference, including cut code).
+- *Valuation dates* → [[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date and overnight]] (reval date,
+  valuation spot date, O/N and T/N outrights).
+- *Cross-rate derivation* (companion cluster) →
+  [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]], [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][Triangulation and cross rates]].
+
+* See also
+
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the companion hub for spot-rate derivation.

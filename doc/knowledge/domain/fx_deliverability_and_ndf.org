@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC
+:END:
+#+title: Deliverability and non-deliverable instruments
+#+description: Deliverable vs non-deliverable currencies, NDFs and NDOs, onshore/offshore bifurcation (KRW, CNY/CNH), and pseudo currency codes.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:domain:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+
+* Summary
+
+A currency is *deliverable* if cash in it can be physically transferred
+across borders, and *non-deliverable (ND)* when government restriction
+prevents that export. Deliverability status decides whether a forward or
+option settles physically or must cash-settle: an ND pair trades as a
+*Non-Deliverable Forward (NDF)* or *Non-Deliverable Option (NDO)*, settling
+in a deliverable currency (usually USD or EUR) at a *fixing date* ahead of
+delivery. Some EM currencies bifurcate into onshore/offshore markets with
+distinct rates (KRW, CNY/CNH); where a single ISO code cannot represent
+both, the system assigns a *pseudo currency code*, with consequences for
+IPV, P&L attribution, and market-data cleanliness that must stay visible
+to Finance.
+
+* Detail
+
+** Deliverable vs non-deliverable
+
+- *Deliverable*: cash in the currency can be transferred out of the
+  country.
+- *Non-deliverable (ND)*: export is restricted by government policy; the
+  currency trades onshore but cannot be delivered internationally.
+- Deliverability drives: physical vs cash settlement of forwards/options,
+  the settlement currency used for ND instruments, and whether funding/cash
+  balances are permitted in that currency at all.
+
+** Non-Deliverable Forwards (NDFs)
+
+- Settlement is in a deliverable currency (usually USD or EUR), not the ND
+  currency itself.
+- A *fixing date* precedes the *delivery date* by enough time to book and
+  settle the fixing trade.
+- On the fixing date, a deliverable fixing forward is generated so the
+  non-deliverable amount nets to zero by the delivery date.
+- Constraints the system must enforce: never hold a cash balance in an ND
+  currency; the fixing date must respect the holiday calendars of both the
+  fixing source and the settlement currency (see
+  [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]]); and reporting must distinguish
+  fixed, not-yet-fixed, and unfixed positions.
+
+** Non-Deliverable Options (NDOs)
+
+- The premium is normally paid in the deliverable currency.
+- If *both* currencies are non-deliverable (unusual), even the premium
+  needs an NDF to convert it to a deliverable currency via an internal
+  counterparty.
+
+** Onshore vs offshore markets
+
+- Some currencies are deliverable onshore but non-deliverable offshore,
+  creating two markets with different rates. Canonical example: the Korean
+  Won (KRW) — deliverable within Korea, non-deliverable internationally.
+- The Chinese Renminbi has three distinct forms, each with its own rate
+  and rate structure:
+  - *CNY onshore*: mainland China, regulated by the PBoC; CNY rate derived
+    from the Shanghai Interbank Offered Rate, USD rate derived onshore.
+  - *CNY offshore (ND)*: the NDF market outside China; USD LIBOR, CNY
+    derived from =USD/CNY= forwards.
+  - *CNH*: Chinese Yuan offshore deliverable in Hong Kong; USD LIBOR, CNY
+    derived from =USD/CNH= forwards; its own rate structure.
+
+** Pseudo currency codes
+
+When an EM currency has onshore and offshore forms that carry different
+market data (spot, vol surfaces, curves), a single ISO code cannot
+represent both. The system assigns a *pseudo currency code* instead:
+
+- Constructed from the country code plus a numeric suffix (e.g. =KRW= →
+  =KR1=, =KR2=).
+- Not an ISO 4217 code — it *cannot reach settlement* directly; used only
+  for market-data association (NDFs, vol surfaces).
+
+Consequences that must stay visible downstream:
+
+1. *No independent data*: IPV cannot source consensus data for a fake
+   code; Finance must be told explicitly that valuations using it rely on
+   "unclean" market data.
+2. *No published spot*: a proxy must be configured (e.g. the real =KRW=
+   spot for =KR1=, plus a spread).
+3. *P&L attribution*: pseudo codes must be tracked separately from real
+   codes to avoid contaminating P&L.
+4. *Visibility*: trades valued with pseudo-code market data should be
+   highlighted in relevant reports.
+
+* See also
+
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
+- [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] — base/quote, reciprocals, bounded-context split.
+- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — holiday calendars behind the fixing-date
+  constraint.
+- [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]] — where =deliverable= and
+  =settlement_currency= live on the entity.

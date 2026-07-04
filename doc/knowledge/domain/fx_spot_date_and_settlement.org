@@ -31,8 +31,41 @@ max-of-two rule is load-bearing for the [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A605
   [[id:6F7DFFDF-9E22-4870-916C-7680DE1EB065][spot rate derivation mechanics]]), and spot-day mismatches along a derivation
   path are the root of subtle risk artefacts (see [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk]]).
 
+** Business day vs settlement day
+
+These two terms are often conflated:
+
+- *Business day*: a day that is not a holiday in *either* currency of the
+  pair. Used for tenor calculations (e.g. =1W= from spot = spot + 5
+  business days in both currencies).
+- *Settlement day*: a business day that is *also* not a holiday in the
+  settlement currency (typically USD for most pairs). Settlement days are
+  a subset of business days.
+
+The distinction bites when a pair's business-day calendar and the USD
+holiday calendar disagree — a day can be a valid business day for
+=EUR/GBP= but not a valid settlement day if it falls on a US federal
+holiday.
+
+** Holiday calendars
+
+- A pair's *business-day calendar* is the *union* of its two currencies'
+  holiday calendars — a day is a business day only if it is a holiday in
+  neither.
+- The pair's *fixing-date* calendar must be consistent with the holiday
+  calendar of the fixing source.
+- The pair's *settlement-date* calendar must be consistent with the
+  holiday calendar of the settlement currency.
+- For NDFs and cash-settled options, the fixing date and settlement date
+  can have *different* calendar requirements; both must be validated at
+  trade creation (see
+  [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]]).
+
 * See also
 
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the structure that depends on this convention.
 - [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — settlement conventions, tenors, date rolling.
 - [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and timestamps]] — the system-wide date/time conventions.
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the pair-as-entity companion hub.
+- [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] — NDF fixing-date
+  calendar constraints.

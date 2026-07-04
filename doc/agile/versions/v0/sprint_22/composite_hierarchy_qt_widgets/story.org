@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 131C2E23-F41F-4F7A-B9EC-378710AF055B
+:END:
+#+title: Story: Composite child-entity and hierarchy Qt widgets for codegen
+#+description: Design and land two 100%-handcrafted, reusable Qt classes (a generic HierarchyTreeWidget and a hierarchy-model-builder producing a ready-to-plug-in tree model given a party or counterparty), then extend the Qt detail-dialog codegen templates with minimal paste-block seams to bind them and, separately, embeddable child-entity tables (identifiers, contacts) so party/counterparty's hand-maintained EntityDetailDialog/EntityDetailOperations abstraction can eventually be retired in favour of codegen.
+#+type: story
+#+level: s2
+#+filetags: :codegen:qt:party:counterparty:sprint_22:v0:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Discovered while verifying counterparty's Qt UI (=Commission:
+counterparty=): =party= and =counterparty= share a hand-maintained
+=EntityDetailDialog=/=EntityDetailOperations= abstraction (~2,300 lines)
+implementing capabilities the current Qt codegen profile has no facet
+for at all — embedded, editable identifier and contact child tables,
+and a self-referencing parent-hierarchy tree view. Naively running
+=--address ores.cpp.qt= on these entities would regress functionality,
+not migrate it. This story adds the missing capabilities to codegen
+properly, so =party= and =counterparty= (and future org-hierarchy
+entities) can eventually retire the hand-maintained abstraction.
+
+Sequenced in three tasks:
+1. Design the child-entity Qt facet: =counterparty_identifier=,
+   =counterparty_contact_information=, =party_identifier=, and
+   =party_contact_information= are already full codegen entities with
+   no =* Qt= facet of their own (they're not independently navigable).
+   Determine whether an embeddable child-table widget, fetched via the
+   =foreign_keys=/=list_by= paged backend query already added this
+   sprint, is generatable as a facet — or whether it needs its own
+   handcrafted base widget with a thin generated binding, mirroring
+   the hierarchy approach below.
+2. Build two 100%-handcrafted, reusable classes: a generic
+   =HierarchyTreeWidget= (self-referencing id/parent-id/label tree,
+   no entity knowledge), and a hierarchy-model-builder that, given a
+   =party= or =counterparty= entity list, produces a tree model ready
+   to hand to the widget. Add minimal paste-block seams to the Qt
+   detail-dialog codegen templates so a generated dialog can
+   construct the model builder and plug it into the widget with as
+   little pasted code as possible.
+3. Once 1 and 2 are proven, design and execute binding both against
+   =party= and =counterparty= specifically, verify feature parity
+   against the current hand-maintained dialog, and retire
+   =EntityDetailDialog=/=EntityDetailOperations= once confirmed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-04                               |
+
+* Acceptance
+
+- Written design decision on whether identifier/contact child entities
+  need a new codegen Qt facet, or a handcrafted base widget +
+  generated binding, for embeddable child tables.
+- =HierarchyTreeWidget= and its hierarchy-model-builder exist,
+  100% handcrafted, entity-agnostic, unit-testable independent of
+  =party=/=counterparty=.
+- Qt detail-dialog codegen templates (header/impl/ui) have paste-block
+  extension points, following the existing repository/service
+  =:implements <UUID>= convention.
+- =party= and =counterparty= regenerate through the new facets with
+  verified feature parity (identifiers, contacts, hierarchy) against
+  the current hand-maintained dialog before the old code is removed.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C15BB82D-5A1F-4C19-A638-94A230B90F27][Design child-entity Qt facet for embeddable tables]] | BACKLOG | | | Determine whether counterparty_identifier/counterparty_contact_information/party_identifier/party_contact_information need a new codegen Qt facet for embeddable child tables, or a handcrafted base widget with a thin generated binding, fetched via the existing foreign_keys/list_by paged backend query. |
+| [[id:667ED39E-6427-4E5E-8027-59AE507B2F24][Build standalone HierarchyTreeWidget and hierarchy-model-builder]] | BACKLOG | | | Build two 100%-handcrafted, reusable Qt classes: a generic self-referencing HierarchyTreeWidget, and a hierarchy-model-builder producing a ready-to-plug-in tree model given a party or counterparty. Add minimal paste-block seams to the Qt detail-dialog codegen templates to bind them. |
+| [[id:2AC41A6E-3F18-48FF-B389-D5CC0E1AAC8F][Bind composite child-entity and hierarchy widgets to party and counterparty]] | BACKLOG | | | Once the child-entity facet and hierarchy widget are proven, design and execute binding both against party and counterparty, verify feature parity against EntityDetailDialog, and retire the hand-maintained abstraction. |
+
+* Decisions
+
+* Out of scope
+
+-

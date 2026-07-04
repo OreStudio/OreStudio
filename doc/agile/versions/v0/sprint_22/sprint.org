@@ -74,6 +74,8 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]] | BACKLOG | | | Move from ores.trading to ores.refdata (zero current consumers), then commission fully to Qt; spun off from the currency pair story. |
+| [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]] | BACKLOG | | | Move from ores.trading to ores.refdata (update trading_swap_legs' one reference), then commission fully to Qt; spun off from the currency pair story. |
 
 *** Epic: Market data generation
 

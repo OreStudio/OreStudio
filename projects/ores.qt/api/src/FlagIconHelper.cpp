@@ -61,6 +61,10 @@ QIcon currency_flag_icon(ImageCache& imageCache,
     return combined;
 }
 
+QSize currency_pair_icon_size(int flagHeight) {
+    return {flagHeight * 2 + flag_spacing, flagHeight};
+}
+
 void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source) {
     if (!combo || !cache)
         return;

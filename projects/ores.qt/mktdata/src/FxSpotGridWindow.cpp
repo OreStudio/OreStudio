@@ -243,10 +243,13 @@ void FxSpotGridWindow::setupUi() {
     table_->setShowGrid(false);
     table_->setAlternatingRowColors(true);
     table_->verticalHeader()->setDefaultSectionSize(36);
-    // No explicit iconSize: currency_flag_icon()'s pair result carries the
-    // same multi-size ladder a single flag icon does, so Qt auto-picks a
-    // rung sized the same way it would for a single-currency cell (matches
-    // Currency's own table, which also leaves iconSize at its default).
+    // Unlike a single flag (close enough to square that Qt's default square
+    // iconSize looks fine), a pair icon is ~2x as wide as tall — without an
+    // explicit iconSize it gets squeezed into that square box and looks
+    // squished. currency_pair_icon_size()'s default height (16) matches
+    // Qt's typical single-icon default, so this reads at the same scale as
+    // Currency's single-flag columns, just correctly proportioned for two.
+    table_->setIconSize(currency_pair_icon_size());
 }
 
 void FxSpotGridWindow::reload() {

@@ -90,9 +90,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // subscriptions, which we take ownership of here.
     // ----------------------------------------------------------------
     const auto append = [&subs](std::vector<ores::nats::service::subscription> s) {
-        subs.insert(subs.end(),
-                    std::make_move_iterator(s.begin()),
-                    std::make_move_iterator(s.end()));
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
     };
 
     append(register_book_handlers(nats, ctx, verifier));

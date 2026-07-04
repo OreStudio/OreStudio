@@ -59,12 +59,12 @@ struct process_parameter_validation_result final {
  *
  * initial_price must be strictly positive for every engine.
  */
-ORES_SYNTHETIC_API_EXPORT process_parameter_validation_result validate_process_parameters(
-    const std::string& process_type,
-    const std::vector<double>& means,
-    const std::vector<double>& stdevs,
-    const std::vector<double>& weights,
-    double initial_price);
+ORES_SYNTHETIC_API_EXPORT process_parameter_validation_result
+validate_process_parameters(const std::string& process_type,
+                            const std::vector<double>& means,
+                            const std::vector<double>& stdevs,
+                            const std::vector<double>& weights,
+                            double initial_price);
 
 }
 

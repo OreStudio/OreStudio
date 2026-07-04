@@ -165,7 +165,7 @@ private:
     void updateEngineUi(); // relabel headers/tooltips/warning and gate Add for "ou"
     [[nodiscard]] std::string currentEngine() const; // "geometric" / "arithmetic" / "ou"
     [[nodiscard]] bool currentEngineSupportsMixing() const;
-    [[nodiscard]] QString incrementNoun() const;     // label noun for the active engine
+    [[nodiscard]] QString incrementNoun() const; // label noun for the active engine
 
     [[nodiscard]] QString defaultSourceName() const;
     [[nodiscard]] std::vector<ModelComponent> currentComponents() const;

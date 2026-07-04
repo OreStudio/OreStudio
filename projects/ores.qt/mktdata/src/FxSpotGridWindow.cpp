@@ -370,7 +370,8 @@ void FxSpotGridWindow::applyTick(const std::string& ore_key,
 
     if (rs.last_status != FeedStatus::Live) {
         rs.last_status = FeedStatus::Live;
-        apply_status_indicator({rs.status_icon_label, rs.status_text_label}, FeedStatus::Live, when);
+        apply_status_indicator(
+            {rs.status_icon_label, rs.status_text_label}, FeedStatus::Live, when);
     }
 }
 

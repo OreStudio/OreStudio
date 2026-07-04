@@ -28,31 +28,54 @@ follows in later tasks.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Implement the design via ores.codegen (follow-on story). |
 | Last touched  | 2026-07-04                               |
 
 * Acceptance
 
-- [ ] A currency pair knowledge document set exists under
+- [X] A currency pair knowledge document set exists under
   =doc/knowledge/=, broken into small self-contained documents
   (conventions, quoting, cross rates, etc.) rather than one monolith.
-- [ ] The knowledge documents are cross-linked via org-roam =[[id:...]]=
+- [X] The knowledge documents are cross-linked via org-roam =[[id:...]]=
   links, including to existing relevant documents (e.g. the cross
   rates matrix).
-- [ ] An index document ties the set together for discoverability.
+- [X] An index document ties the set together for discoverability.
+- [X] The currency pair entity (and supporting currency fields) is
+  modelled with all fields identified in the knowledge cluster, ready
+  to drive =ores.codegen=.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:141A6CD3-60BA-42E6-BEC4-14122F70451A][Build knowledge documents for currency pairs]] | BACKLOG | | | Turn freeform notes on currency pairs into a set of small, self-contained zettelkasten-style knowledge documents, cross-linked via org-roam links (including to existing docs like the cross rates matrix), with an index document tying them together. |
+| [[id:141A6CD3-60BA-42E6-BEC4-14122F70451A][Build knowledge documents for currency pairs]] | DONE | | 2026-07-04 | Turn freeform notes on currency pairs into a set of small, self-contained zettelkasten-style knowledge documents, cross-linked via org-roam links (including to existing docs like the cross rates matrix), with an index document tying them together. |
+| [[id:1689B6B1-129F-44F0-A3FF-7E069BF9E394][Model the currency pair entity for codegen]] | DONE | | 2026-07-04 | Model the currency pair (and supporting currency) entities with all fields identified in the knowledge cluster (base/quote, spot days, deliverability/NDF, pip factor/tick size, classification, cut code, fixing source, etc.), ready to drive ores.codegen. |
 
 * Decisions
 
+- Knowledge-base foundation shipped as six zettels plus a hub note,
+  extending the existing CRM cluster rather than duplicating it (see the
+  first task's =* Plan=).
+- Currency pair modelled as its own entity (=currency_pair=), not folded
+  into =currency=: =spot_days=, calendars, and =is_g11= are *derived* at
+  read time from the two constituent currencies rather than stored
+  redundantly on the pair, to avoid the two copies drifting apart. Five
+  new columns land on =currency= itself (=spot_days=, =deliverable=,
+  =day_basis=, =base_precedence=, =holiday_calendar=); a new
+  =currency_pair_classification= auxiliary type reuses the existing
+  =rounding_type=/=monetary_nature=/=market_tier= soft-FK pattern. Full
+  field-by-field design lives in the second task's =* Plan=; three open
+  questions (calendar/day-count representation, aux-type model type,
+  fixing-source reference) are deferred to the implementation task.
+
 * Out of scope
 
--
+- Actual =ores.codegen.entity= model files and generated code — this
+  story only produced the design; implementation is a follow-on piece of
+  work.
+- The calendar/day-count and fixing-source reference entities flagged as
+  open questions in the second task.

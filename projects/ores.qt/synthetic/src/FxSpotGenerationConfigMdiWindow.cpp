@@ -135,6 +135,11 @@ void FxSpotGenerationConfigMdiWindow::setupTable() {
     // header state (column order/widths) from version 1.
     initializeTableSettings(
         tableView_, model_, "FxSpotGenerationConfigListWindow", {}, {900, 400}, 2);
+
+    // PairFlags has no header text to size itself against (icon-only column),
+    // so give it an explicit width rather than leaving it to whatever Qt's
+    // default happens to be for a freshly-shown, content-less column.
+    tableView_->setColumnWidth(ClientFxSpotGenerationConfigModel::PairFlags, 50);
 }
 
 void FxSpotGenerationConfigMdiWindow::setupConnections() {

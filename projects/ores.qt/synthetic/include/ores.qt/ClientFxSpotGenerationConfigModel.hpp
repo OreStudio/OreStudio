@@ -122,6 +122,15 @@ private slots:
     void onPulseStateChanged(bool isOn);
     void onPulsingComplete();
 
+protected:
+    // Tells AbstractClientModel::setImageCache() which column to repaint once
+    // flags finish loading asynchronously — without this override it stays -1
+    // and the PairFlags column never refreshes after the initial (pre-load)
+    // paint, so flags never actually appear.
+    int iconColumn() const override {
+        return PairFlags;
+    }
+
 private:
     QVariant recency_foreground_color(const std::string& code) const;
 

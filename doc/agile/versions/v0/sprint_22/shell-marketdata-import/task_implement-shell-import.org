@@ -8,7 +8,7 @@
 #+filetags: :shell-marketdata-import:sprint_22:v0:
 #+owner: marco
 #+branch: feature/implement-shell-import
-#+pr:
+#+pr: 1436
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -140,7 +140,7 @@ helper is new code here, not reuse.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1436][#1436]] | [shell,marketdata] Add ores.shell market data import command |
 
 * Review
 

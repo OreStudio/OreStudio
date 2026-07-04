@@ -30,24 +30,62 @@ codegen templates so a generated dialog can bind them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                  |
 | Parent story | [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] |
-| Now          | Surveying existing Qt widget/model conventions before writing the classes. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Implement HierarchyTreeWidget + model builder, add paste-block seams. |
+| Next         | Nothing.                               |
 | Last touched | 2026-07-04                               |
 
 * Acceptance
 
--
+- HierarchyModelBuilder and HierarchyTreeWidget exist, 100% handcrafted, entity-agnostic.
+- Unit tests cover HierarchyModelBuilder's tree-building logic (multi-level, multi-root, orphan cases).
+- Qt detail-dialog codegen templates have a paste-block seam for binding the widget.
+- Full ores.qt.api.lib and ores.qt.api.tests build cleanly; tests pass.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Surveyed existing conventions first: =ores.qt/api= layout (headers
+under =include/ores.qt/=, sources under =src/=, CMakeLists globs
+recursively), the =EntityDetailDialog=/=EntityDetailOperations=
+Doxygen/license-header style, and the existing =:implements <UUID>=
+paste-block convention (=d4e8e136-...= in the SQL templates) as the
+model for the new Qt seam.
+
+Implemented =hierarchy_node= (id/parent_id/label POD, no party or
+counterparty knowledge) + =HierarchyModelBuilder::build()= producing a
+=QStandardItemModel*=, and =HierarchyTreeWidget= (a =QTreeView=-based
+=QWidget= taking any model via =setModel()=). Added one new paste-block
+seam (=9B165431-2921-4CAC-A2E8-2C186741E523=) to the generated
+=<Entity>DetailDialog.cpp= constructor, right after
+=setupConnections()=, documented in =org_entity_meta_model.org=
+alongside the existing seams. No entity implements the seam yet —
+binding party/counterparty is task 3.
 
 * Notes
+
+Files added: =ores.qt/api/include/ores.qt/HierarchyModelBuilder.hpp=,
+=ores.qt/api/src/HierarchyModelBuilder.cpp=,
+=ores.qt/api/include/ores.qt/HierarchyTreeWidget.hpp=,
+=ores.qt/api/src/HierarchyTreeWidget.cpp=,
+=ores.qt/api/tests/hierarchy_model_builder_tests.cpp= (4 cases: 2-level
+tree, multi-root, orphan-as-root, empty input — 15 assertions, all
+pass). =ores.qt/api/tests/CMakeLists.txt= compiles
+=HierarchyModelBuilder.cpp= directly into the test binary (mirrors the
+existing =parse_trade_instrument.cpp= pattern) since =QStandardItemModel=
+(Qt6::Gui) needs no display/QApplication, keeping the test headless.
+=HierarchyTreeWidget= itself has no unit tests — no existing pattern
+for widget-level Qt tests in this repo; noted rather than inventing one.
+
+Templates edited: =ores.cpp.qt.detail_dialog_impl.org= (tangle
+source) and its tangled =cpp_qt_detail_dialog.cpp.mustache= output —
+verified identical via =./compass.sh build --direct
+tangle_codegen_templates=.
+
+Verified: =ores.qt.api.lib= builds clean (MOC ran correctly for
+=HierarchyTreeWidget='s =Q_OBJECT=); =ores.qt.api.tests= builds and
+=[hierarchy_model_builder]= filter passes (15 assertions, 4 cases).
 
 * PRs
 

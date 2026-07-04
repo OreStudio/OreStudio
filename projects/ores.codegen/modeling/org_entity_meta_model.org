@@ -525,6 +525,35 @@ that the generic template does not generate.
 
 Templates reference: =<<paste:A1C3E5F7-8B2D-4A6E-9F1C-3D7B5E2A8C4D>>=.
 
+** Qt detail dialog: hierarchy tree seam
+:PROPERTIES:
+:ID: 9B165431-2921-4CAC-A2E8-2C186741E523
+:END:
+
+Placeholder inserted into the generated =<Entity>DetailDialog.cpp=
+constructor, immediately after =setupConnections()=.
+
+A future implementing block is expected to construct a
+=HierarchyModelBuilder=-derived model for the entity, wrap it in a
+=HierarchyTreeWidget=, and insert that widget into the dialog's layout
+(e.g. as a dedicated tab). No entity implements this kind yet — it is a
+seam only, added ahead of wiring party/counterparty hierarchy trees into
+their detail dialogs.
+
+Templates reference: =<<paste:9B165431-2921-4CAC-A2E8-2C186741E523>>=.
+
+Entity attachment (future example):
+
+#+begin_src org
+,** Custom hierarchy tree wiring
+
+,#+begin_src cpp :name hierarchy_tree :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+,    auto* model = new PartyHierarchyModelBuilder(...);
+,    auto* tree = new HierarchyTreeWidget(model, this);
+,    ui_->hierarchyTab->layout()->addWidget(tree);
+,#+end_src
+#+end_src
+
 * Notes
 
 ** Why two levels of UUID

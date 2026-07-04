@@ -51,6 +51,12 @@ using namespace ores::logging;
     setupCombos();
 {{/domain_entity.qt.has_combo_fields}}
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+<<paste:9B165431-2921-4CAC-A2E8-2C186741E523>>
 }
 
 {{domain_entity.entity_pascal}}DetailDialog::~{{domain_entity.entity_pascal}}DetailDialog() {

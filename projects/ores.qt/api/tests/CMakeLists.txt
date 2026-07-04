@@ -41,7 +41,15 @@ set(parse_src
     "${ORES_QT_API_DIR}/src/parse_trade_instrument.cpp"
     "${ORES_QT_API_DIR}/src/parse_swap_instruments.cpp")
 
-add_executable(${tests_target_name} ${files} ${parse_src})
+# HierarchyModelBuilder.cpp is compiled directly into the test target for the
+# same reason as parse_trade_instrument.cpp above: it only needs QStandardItemModel
+# (Qt6::Gui), not the full ores.qt.api.lib (which pulls in Widgets and requires a
+# display environment). Qt6::Gui-level classes such as QStandardItemModel do not
+# need a QApplication/display to construct and populate, so this can run headless.
+set(hierarchy_src
+    "${ORES_QT_API_DIR}/src/HierarchyModelBuilder.cpp")
+
+add_executable(${tests_target_name} ${files} ${parse_src} ${hierarchy_src})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 
@@ -55,6 +63,7 @@ target_link_libraries(${tests_target_name}
         ores.utility.lib
         ores.testing.lib
         Catch2::Catch2
+        Qt6::Gui
         ${CMAKE_THREAD_LIBS_INIT})
 
 add_custom_target(test_${tests_target_name}

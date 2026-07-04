@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_22:sprint_22:v0:
 #+owner: marco
 #+branch: feature/sprint-22-health-review-1
-#+pr:
+#+pr: 1432
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -55,7 +55,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1432][#1432]] | [agile] Sprint 22 health review 1 + state drift fixes |
 
 * Review
 

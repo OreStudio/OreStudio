@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :shell-marketdata-import:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-shell-import
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,7 +31,7 @@ entry point.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -52,6 +52,81 @@ entry point.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+No =marketdata_commands.*= exists yet in =ores.shell= — this is a new
+command file, modelled closely on
+=projects/ores.shell/src/app/commands/bundles_commands.{hpp,cpp}=
+(its =process_publish= is the template: parse_args, an
+=authenticated_request= + =rfl::json= round-trip via a local
+=do_auth_request<Response>= helper, success/failure output). No
+existing shell command currently slurps a file into a =std::string=
+for a NATS payload (the only file reader, =script_commands.cpp='s
+=load=, streams line-by-line instead), so a small local file-read
+helper is new code here, not reuse.
+
+1. *New header* =projects/ores.shell/include/ores.shell/app/commands/marketdata_commands.hpp=
+   - Class =marketdata_commands= with =logger_name=,
+     =register_commands(cli::Menu&, nats_client&)= and
+     =process_import(std::ostream&, nats_client&, const std::vector<std::string>&)=,
+     mirroring =bundles_commands.hpp='s shape.
+
+2. *New source* =projects/ores.shell/src/app/commands/marketdata_commands.cpp=
+   - Includes =ores.marketdata.api/messaging/import_protocol.hpp=,
+     =ores.nats/domain/message.hpp=, =command_args.hpp=,
+     =command_feedback.hpp=, =rfl/json.hpp=.
+   - Local anonymous-namespace helpers: a =do_auth_request<Response>=
+     copy (same pattern as bundles_commands.cpp — no shared header
+     exports it) and a =read_file(const std::string& path) ->
+     std::optional<std::string>= that opens an =std::ifstream=,
+     returns =std::nullopt= on failure, else slurps via
+     =std::ostringstream << file.rdbuf()=.
+   - =register_commands=: builds a =cli::Menu("marketdata")= submenu
+     with one command, =import=:
+     usage =marketdata import [--file <path>] [--fixings <path>] [--source <tag>]=.
+   - =process_import=:
+     - =parse_args= with flags =file=, =fixings=, =source= (all
+       =requires_value=true=, empty default).
+     - Reject if both =file= and =fixings= are empty (nothing to
+       import) — usage message.
+     - Reject if not =session.is_logged_in()=, matching bundles_commands.
+     - Read each non-empty path via =read_file=; fail loudly (path in
+       the message) if a read fails.
+     - Build =import_market_data_request= with
+       =market_data_content=, =fixings_content=, =source= (from the
+       flags), send via =do_auth_request<import_market_data_response>=
+       using =req.nats_subject= and a generous timeout (mirror
+       =publish_timeout='s 5 minutes — imports can be large).
+     - On failure: =fail(out) << result->message=.
+     - On success: print =series_count=/=observation_count=/=fixing_count=
+       and =result->message=.
+
+3. *Register the command* in
+   =projects/ores.shell/src/app/repl.cpp=: add
+   =#include "ores.shell/app/commands/marketdata_commands.hpp"=
+   (alphabetical, after =lei_commands.hpp=) and
+   =marketdata_commands::register_commands(*root, session_);= next to
+   the other =register_commands= calls.
+
+4. *Link the new dependency*: add =ores.marketdata.api.lib= to the
+   =PRIVATE= list in =target_link_libraries= in
+   =projects/ores.shell/src/CMakeLists.txt= (sources are globbed, so
+   no other CMake change is needed for the new .cpp).
+
+5. *Verify* by building =ores.shell=, logging in, and running
+   =marketdata import --file external/ore/examples/Legacy/Example_56/Input/market.txt --source ore.reference=
+   against a running environment; confirm
+   =series_count=/=observation_count= match expectations and that
+   =market_observation= rows land tagged =source = "ore.reference"=.
+
+6. *Document*: add a recipe under
+   =doc/recipes/shell/marketdata/= via the =doc-add-recipe= skill,
+   following the existing =ores.shell= recipe convention (org
+   metadata drawer, =ores-shell= babel block with the literal REPL
+   session, =#+RESULTS:=).
+
+7. Once this task is DONE and the story closes, resume the blocked
+   task [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]] using this new
+   command.
 
 * Notes
 

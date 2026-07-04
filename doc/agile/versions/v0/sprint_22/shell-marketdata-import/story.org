@@ -9,7 +9,7 @@
 #+filetags: :market_data:shell:cli:sprint_22:v0:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -33,7 +33,7 @@ dialog already sends.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -59,7 +59,7 @@ dialog already sends.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:E10830F5-1596-4748-99BB-41B8057CEFA4][Implement ores.shell market data import command]] | BACKLOG | | | Add a shell command sending import_market_data_request (file/stdin content, optional source tag) over NATS, reusing the existing import_service. |
+| [[id:E10830F5-1596-4748-99BB-41B8057CEFA4][Implement ores.shell market data import command]] | STARTED | 2026-07-04 | | Add a shell command sending import_market_data_request (file/stdin content, optional source tag) over NATS, reusing the existing import_service. |
 
 * Decisions
 

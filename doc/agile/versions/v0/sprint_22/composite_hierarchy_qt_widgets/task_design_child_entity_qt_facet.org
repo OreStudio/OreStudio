@@ -7,30 +7,33 @@
 #+level: s1
 #+filetags: :composite_hierarchy_qt_widgets:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/appraise-party-all-layers
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Determine whether counterparty_identifier/counterparty_contact_information/
+party_identifier/party_contact_information need a new codegen Qt facet
+for embeddable child tables, or a handcrafted base widget with a thin
+generated binding.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Investigating existing foreign_keys/list_by paged query support. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Write up the design decision.          |
 | Last touched | 2026-07-04                               |
 
 * Acceptance

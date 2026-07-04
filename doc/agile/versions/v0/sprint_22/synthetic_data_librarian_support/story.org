@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: E5EC80BB-789B-4BD6-B6E5-DC7AA790692A
+:END:
+#+title: Story: Synthetic data librarian support: FX foundation
+#+description: Add librarian support for synthetic data so that creating a party yields a usable synthetic data configuration across asset classes. Scope the working implementation to FX only, but build the infrastructure generically (db tables, publishing, etc.) via codegen so other asset classes can be added later.
+#+type: story
+#+level: s2
+#+filetags: :market_data:synthetic:librarian:fx:codegen:v0:sprint_22:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+When a party is created, the librarian gives it a usable synthetic data
+configuration out of the box, so downstream generation, publishing, and
+consumption work without manual setup per party. The configuration model
+must span asset classes generically, but the only asset class wired up
+end-to-end in this story is FX (spot). The db tables (e.g.
+=ores.synthetic.market_data_generation_config= and its sub-configs) and
+the entity's own publishing/NATS eventing are generated via
+=ores.codegen= as usual. The DQ publish-from-dq wiring specifically
+(artefact-type row, publish function, handler, registrar) is
+hand-written for this story, following the existing =report_definitions=
+instance as the template — generalising it into a reusable codegen
+facet is deferred to
+[[id:53116563-2667-48CD-941E-8521D3E42CBC][a dedicated backlog story]].
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. Follow-on work tracked in the two spun-off backlog stories. |
+| Last touched  | 2026-07-03                               |
+
+* Acceptance
+
+- [X] Creating a party (via librarian) results in a usable synthetic data
+  configuration being available for it, covering at least FX spot.
+  Verified: provisioning BARCLAYS PLC via the standard =ores.shell=
+  recipe yields two enabled, ticking FX configs with zero manual steps.
+- [X] The synthetic data configuration db schema and generated code
+  (entity, repository, NATS publishing) are asset-class-generic —
+  adding a new asset class means adding a sub-configuration, not
+  reworking the container/infrastructure. Unchanged from the existing
+  =ores.synthetic= codegen models; this story only added the DQ
+  publish-from-dq wiring around them.
+- [X] The synthetic FX config entity itself (domain, repository, NATS
+  eventing) is produced via =ores.codegen=, as usual for any entity.
+  The DQ publish-from-dq function/handler/registrar are hand-written
+  for now (see Decisions) — that gap is tracked separately
+  ([[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]]), not a
+  blocker for this story.
+- [X] FX synthetic data generation, once configured, publishes observations
+  through the existing =ores.marketdata= NATS eventing path. Confirmed
+  via live =ores.synthetic.service= logs: both feeds auto-start and
+  continuously publish on =synthetic.v1.tick.synthetic.{eurusd,gbpusd}=.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F1B52238-B6FF-4B2E-B982-D9022483A34B][Scaffold story: Synthetic data librarian support: FX foundation]] | DONE | | 2026-07-02 | Break the story down into the full set of implementation tasks: db schema/codegen models for the synthetic data configuration container and FX sub-config, librarian defaulting logic on party creation, publishing/NATS eventing, and verification. Docs-only planning task. |
+| [[id:1AA74B93-B0F4-4B30-8AEA-5EB7C1A8940B][Design the publish_from_dq codegen facet]] | ABANDONED | | 2026-07-02 | Split off to a dedicated backlog story ([[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]]) — too substantial to embed in this story. |
+| [[id:60DC5E3A-ADB4-4A9F-8841-56B080330A10][Implement the publish_from_dq codegen facet]] | ABANDONED | | 2026-07-02 | Split off alongside the design task, same backlog story. |
+| [[id:44030333-A650-4EBF-9674-5819B8496114][Model synthetic FX spot config as a DQ artefact type]] | DONE | 2026-07-02 | 2026-07-02 | Hand-write the DQ artefact-type wiring for the synthetic FX config (artefact-type row, shadow table, publish function, handler, registrar), following report_definitions as the template — no codegen facet, that work is deferred to the backlog story above. |
+| [[id:15400ED3-A433-45E5-A0A2-4BF8B3A9459C][Seed FX spot synthetic config data and register the bundle]] | DONE | 2026-07-02 | 2026-07-02 | Seed the synthetic FX artefact table (EUR/USD, GBP/USD) and add the dataset as a member of the existing ore_analytics bundle (display_order 20, right after ore.report_definitions at 10) — corrected from an earlier, unnecessary separate bundle. |
+| [[id:CF7A91A8-5921-4211-90B0-0203D9B4A517][Decide the party-creation defaulting mechanism]] | DONE | 2026-07-02 | 2026-07-02 | Corrected: no new trigger or wizard phase needed — riding the ore_analytics bundle means every existing "publish reports" call site (CLI provisioning script, Qt wizard) already picks up the FX configs for free. The earlier separate-bundle + new-wizard-phase approach was reverted. |
+| [[id:6D767C51-AD61-4687-AD6F-1F3D273DCCE9][End-to-end verification: party to published FX ticks]] | DONE | 2026-07-03 | 2026-07-03 | Create a party, apply the ore_analytics bundle per the existing provisioning flow, and confirm a usable synthetic FX spot config is created and ores.synthetic.service picks it up and publishes ticks over the existing ores.marketdata NATS eventing path. |
+| [[id:A8A3E98A-CC26-460A-8BE9-744D175692B0][Wire synthetic FX bundle publish into Party Setup wizard (after Reports)]] | ABANDONED | 2026-07-02 | 2026-07-02 | Reverted: unnecessary. Adding the dataset as an ore_analytics bundle member (previous task) means the existing "publish reports" call sites already cover it — no new wizard phase or separate bundle needed. |
+
+* Decisions
+
+- The DQ Librarian bundle-publish pipeline
+  ([[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]]) is the mechanism this story builds
+  on, not a new concept — synthetic FX config becomes one more
+  publishable artefact type in that pipeline.
+- Most of the pipeline's schema layer is already codegen-generated
+  (bundle, junction, artefact-type, shadow artefact table); the actual
+  codegen gap is the publish-from-dq SQL function + NATS handler +
+  registrar wiring, hand-written 25 times today. A generic codegen
+  facet to close that gap was judged too substantial to build inside
+  this story — it's deferred to
+  [[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]] in the
+  product backlog. This story hand-writes its publish-from-dq
+  artefacts (a 26th copy, using =report_definitions= as the template)
+  so it isn't blocked on that larger effort.
+- There is no existing mechanism to trigger anything automatically on
+  party creation (=party_service::save_party= is a plain upsert); "the
+  librarian gives it a usable config" in the Goal will be satisfied
+  via the Librarian's existing manual bundle-Apply action unless the
+  defaulting-decision task concludes an automatic trigger is required.
+- Defaulting mechanism decided, corrected twice: the synthetic FX
+  dataset (=synthetic.fx_spot_configs=) is a *member of the existing
+  =ore_analytics= bundle*, at =display_order 20= right after
+  =ore.report_definitions= (10) — not a separate bundle. An earlier
+  attempt built a separate =synthetic_market_data= bundle plus a new
+  automatic Phase 3.5 in =PartyProvisioningWizard=; both were reverted
+  once it became clear a real test-provisioning run (via =ores.shell=)
+  never touched either.
+- That test run surfaced a deeper problem: *neither* party-provisioning
+  call site (Qt =PartyExecutePage::startReportInstall= or =ores.shell='s
+  =provision_commands::process_party= "reports" phase) actually
+  publishes the =ore_analytics= bundle at all — both bypass
+  =dq.v1.bundles.publish= entirely with a bespoke
+  list-templates-then-create-per-record RPC path, predating (and never
+  migrated onto) the publish-from-dq infrastructure that
+  =report_definitions= is otherwise fully wired into. Riding bundle
+  membership alone therefore has *no effect* on either provisioning
+  path as things stand. Filed as a separate story,
+  [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Unify report definitions provisioning onto the standard publish-from-dq path]],
+  since fixing it properly (in both places, without regressing the
+  CLI's per-report-name =--reports= selection) is bigger than this
+  story's scope.
+- Pragmatic interim fix for *this* story: added a one-off, hand-written
+  step to =ores.shell='s =provision_commands.cpp= (=[4/5] Publishing
+  synthetic FX spot configs=) that calls =dq.v1.bundles.publish= with
+  =bundle_code = "ore_analytics"= and
+  =opted_in_datasets = ["synthetic.fx_spot_configs"]= only — this is
+  explicitly acknowledged as *not* data-driven (it's dataset-specific
+  C++, the same class of problem as the bundle above), kept narrow and
+  temporary until the unification story above replaces it with a
+  single generic bundle-publish call covering all =ore_analytics=
+  members. The Qt wizard path is not yet fixed at all (see Out of
+  scope) — only =ores.shell= provisioning was exercised in this
+  story's testing.
+
+* Out of scope
+
+- Asset classes other than FX (spot) — infrastructure is generic, but
+  only FX is wired end-to-end.
+- New generation methodologies beyond what the sprint 21 approach
+  analysis and FX spot PoC already established.
+- Fixing the Qt =PartyProvisioningWizard= path to also publish the FX
+  config — only =ores.shell='s CLI provisioning was wired and tested
+  in this story. Both call sites get fixed properly together in
+  [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Unify report definitions provisioning onto the standard publish-from-dq path]].

@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 6D767C51-AD61-4687-AD6F-1F3D273DCCE9
+:END:
+#+title: Task: End-to-end verification: party to published FX ticks
+#+description: Create a party, apply the synthetic FX bundle per the decided mechanism, and confirm a usable synthetic FX spot config is created and ores.synthetic.service picks it up and publishes ticks over the existing ores.marketdata NATS eventing path.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_librarian_support:sprint_22:v0:
+#+owner: marco
+#+branch: feature/synthetic-data-librarian-support
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Prove the whole story end-to-end: following the mechanism decided in
+the defaulting-decision task, create a party, get a usable synthetic
+FX spot config applied to it, and confirm =ores.synthetic.service=
+picks up the enabled config and publishes ticks through the existing
+=ores.marketdata= NATS eventing path — closing the loop from "party
+created" to "synthetic FX ticks flowing."
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- A new party ends up with an enabled synthetic FX spot config after
+  following the decided mechanism, with no other manual DB/CLI steps.
+- =ores.shell='s =events listen= (or equivalent) shows ticks arriving
+  on the =synthetic.v1.tick.<key>= subject for that config after
+  Apply.
+- All of the story's =* Acceptance= criteria are re-checked and ticked
+  off before the story closes.
+
+* Plan
+
+Ran the full =barclays_system_provision.ores= flow (=provision system=
+→ =provision tenant --source gleif ...= → =provision party "BARCLAYS PLC" ...=)
+against a freshly recreated dev DB, on top of all the fixes landed
+during this story: =synthetic.fx_spot_configs= riding the
+=ore_analytics= bundle, the =stamp()=/=account_party= fix, and the
+default GMM component seeding. No manual DB/CLI steps beyond the
+standard recipe.
+
+* Notes
+
+Confirmed via live logs and DB queries, not just a clean exit code:
+- =tenant_admin= is now associated with all 81 =Operational= parties
+  under the tenant (including BARCLAYS PLC), not just the System
+  Party — the =account_party= fix verified in production conditions.
+- Both seeded FX configs (EUR/USD, GBP/USD) exist for BARCLAYS PLC
+  with exactly one GMM component each (no duplicates across repeated
+  publishes).
+- =ores.synthetic.service.0.log= shows both feeds auto-starting
+  (=SYNTHETIC START= for =synthetic.eurusd=/=synthetic.gbpusd=) and
+  continuously publishing realistic mid-price ticks on
+  =synthetic.v1.tick.synthetic.{eurusd,gbpusd}= (e.g. 119 ticks
+  published within ~2 minutes at the seeded 3600 ticks/hour rate).
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Verified end-to-end: creating and provisioning a party via the
+standard recipe now yields usable, ticking synthetic FX spot configs
+with zero extra manual steps. Along the way this task's testing
+surfaced and led to fixing two real bugs outside this story's
+original scope: the missing GMM component on publish, and the
+long-standing =account_party= stamping bug that silently broke party
+association for every tenant provisioned via this flow. Story
+acceptance criteria re-checked below and all met.

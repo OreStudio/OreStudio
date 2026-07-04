@@ -19,7 +19,9 @@
  */
 #include "ores.qt/FxSpotGridWindow.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
@@ -175,11 +177,24 @@ static QString pair_from_ore_key(const std::string& ore_key) {
     return qualifier.empty() ? QString::fromStdString(ore_key) : QString::fromStdString(qualifier);
 }
 
+// This window has no separate base/quote columns to put one flag each on
+// (just a single "GBP/USD"-style cell), so it needs the composited pair icon
+// (see currency_flag_icon() in FlagIconHelper) rather than a single flag.
+static QIcon pair_icon_for(ImageCache& imageCache, const QString& pairText) {
+    const QStringList parts = pairText.split(QLatin1Char('/'));
+    if (parts.size() != 2)
+        return {};
+    return currency_flag_icon(imageCache, parts[0].toStdString(), parts[1].toStdString());
+}
+
 // ── FxSpotGridWindow ───────────────────────────────────────────────────────
 
-FxSpotGridWindow::FxSpotGridWindow(ClientManager* clientManager, QWidget* parent)
+FxSpotGridWindow::FxSpotGridWindow(ClientManager* clientManager,
+                                   ImageCache* imageCache,
+                                   QWidget* parent)
     : QWidget(parent)
     , clientManager_(clientManager)
+    , imageCache_(imageCache)
     , table_(new QTableWidget(0, ColumnCount, this))
     , staleTimer_(new QTimer(this))
     , loadWatcher_(new QFutureWatcher<LoadResult>(this)) {
@@ -191,6 +206,23 @@ FxSpotGridWindow::FxSpotGridWindow(ClientManager* clientManager, QWidget* parent
             &FxSpotGridWindow::onLoadFinished);
     connect(staleTimer_, &QTimer::timeout, this, &FxSpotGridWindow::onStaleCheck);
     staleTimer_->start(k_stale_poll_ms);
+
+    // Flags may still be loading (async) when a row is first built — re-apply
+    // once ImageCache actually has them rather than leaving rows stuck with
+    // whatever placeholder was available at buildRows() time.
+    if (imageCache_) {
+        const auto refreshFlags = [this]() {
+            if (!imageCache_)
+                return;
+            for (const auto& [ore_key, rs] : rows_) {
+                if (auto* item = table_->item(rs.row, ColPair))
+                    item->setIcon(pair_icon_for(*imageCache_, item->text()));
+            }
+        };
+        connect(imageCache_, &ImageCache::imagesLoaded, this, refreshFlags);
+        connect(imageCache_, &ImageCache::allLoaded, this, refreshFlags);
+    }
+
     reload();
 }
 
@@ -211,6 +243,13 @@ void FxSpotGridWindow::setupUi() {
     table_->setShowGrid(false);
     table_->setAlternatingRowColors(true);
     table_->verticalHeader()->setDefaultSectionSize(36);
+    // Unlike a single flag (close enough to square that Qt's default square
+    // iconSize looks fine), a pair icon is ~2x as wide as tall — without an
+    // explicit iconSize it gets squeezed into that square box and looks
+    // squished. currency_pair_icon_size()'s default height (16) matches
+    // Qt's typical single-icon default, so this reads at the same scale as
+    // Currency's single-flag columns, just correctly proportioned for two.
+    table_->setIconSize(currency_pair_icon_size());
 }
 
 void FxSpotGridWindow::reload() {
@@ -266,11 +305,14 @@ void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_bind
         table_->insertRow(row);
 
         // Pair
-        auto* pairItem = new QTableWidgetItem(pair_from_ore_key(ore_key));
+        const QString pairText = pair_from_ore_key(ore_key);
+        auto* pairItem = new QTableWidgetItem(pairText);
         QFont pf = pairItem->font();
         pf.setBold(true);
         pairItem->setFont(pf);
         pairItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        if (imageCache_)
+            pairItem->setIcon(pair_icon_for(*imageCache_, pairText));
         table_->setItem(row, ColPair, pairItem);
 
         // Mid

@@ -35,6 +35,7 @@ using namespace ores::logging;
 MarketDataController::MarketDataController(QMainWindow* mainWindow,
                                            QMdiArea* mdiArea,
                                            ClientManager* clientManager,
+                                           ImageCache* imageCache,
                                            const QString& username,
                                            QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent)
@@ -43,7 +44,8 @@ MarketDataController::MarketDataController(QMainWindow* mainWindow,
     , fixingsListWindow_(nullptr)
     , fixingsListMdiSubWindow_(nullptr)
     , fxSpotGridWindow_(nullptr)
-    , fxSpotGridMdiSubWindow_(nullptr) {
+    , fxSpotGridMdiSubWindow_(nullptr)
+    , imageCache_(imageCache) {
 
     BOOST_LOG_SEV(lg(), debug) << "MarketDataController created";
 }
@@ -297,7 +299,7 @@ void MarketDataController::showFxSpotGridWindow() {
         return;
     }
 
-    fxSpotGridWindow_ = new FxSpotGridWindow(clientManager_);
+    fxSpotGridWindow_ = new FxSpotGridWindow(clientManager_, imageCache_);
 
     connect(fxSpotGridWindow_,
             &FxSpotGridWindow::statusChanged,

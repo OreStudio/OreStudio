@@ -61,7 +61,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ore_analytics',
         'ORE Analytics',
-        'Default ORE analytics report definitions. Seeds the standard set of risk reports (NPV, VaR, CVA, XVA, etc.) for use during party provisioning.'
+        'Default ORE analytics report definitions and synthetic market data generation configs. Seeds the standard set of risk reports (NPV, VaR, CVA, XVA, etc.) plus a starter FX spot generator for use during party provisioning.'
     );
 END $$;
 

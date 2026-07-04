@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 53116563-2667-48CD-941E-8521D3E42CBC
+:END:
+#+title: Story: Codegen facet: generate the DQ publish-from-dq pattern
+#+description: Add an ores.codegen facet (publish_from_dq) that generates the artefact-type registration row, a shadow-table model derived from the target entity's own model, the SECURITY DEFINER publish-from-dq SQL function, its NATS handler, and registrar wiring from a single declaration on an entity's codegen model, replacing the 25 hand-written copies of this pattern across ores.refdata/ores.assets/ores.reporting.
+#+type: story
+#+level: s2
+#+filetags: :codegen:dq:publish:librarian:next:product_backlog:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Add a new =ores.codegen= facet (provisionally =publish_from_dq=) that,
+from a single declaration on an entity's existing codegen model,
+generates the mechanical parts of the DQ "publish-from-dq" pattern:
+the artefact-type registration row, a shadow-table model *derived*
+from the entity's own model (removing today's hand-duplicated
+=ores.codegen.lookup_entity= file), the =SECURITY DEFINER=
+=ores_<service>_publish_<entity>_from_dq_fn= SQL function, the NATS
+=publish_from_dq_handler=, and its registrar wiring. See
+[[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]] — specifically its worked example
+(=report_definitions= in the =ore_analytics= bundle) and codegen-value-
+assessment table — for the concrete pattern to generalise from and the
+full rationale for why this is the one part of the bundle-publish
+pipeline with no codegen support today, hand-written 25 times across
+=ores.refdata=, =ores.assets=, and =ores.reporting=.
+
+This story was split out of
+[[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] (sprint 22), which
+needed exactly this facet but, on reflection, the codegen work is
+substantial enough to deserve its own dedicated story rather than
+blocking that story's delivery. The FX story hand-writes its
+publish-from-dq function for now, using =report_definitions= as the
+template to copy.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-02                               |
+
+* Acceptance
+
+- Enabling the facet on an entity's codegen model generates a working
+  artefact-type row, shadow table, publish function, handler, and
+  registrar entry — no hand-written SQL/C++ beyond the declaration.
+- Facet correctly parameterises =mode= (upsert/insert_only/replace_all)
+  and natural-key matching, since these vary slightly across the 25
+  existing hand-written functions.
+- Regenerating at least one existing hand-written instance (e.g.
+  =report_definitions=, and ideally the FX publish function
+  hand-written in the meantime) with the facet produces a semantic
+  zero-diff against the hand-written version, which can then be
+  retired.
+- The hand-authored =ores.codegen.lookup_entity= shadow-table models
+  are retired in favour of the facet deriving shape from the target
+  entity's own model.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+- Pre-existing bug found while hand-writing the FX story's shadow
+  artefact table: =ores.codegen='s enrichment step that populates the
+  mustache =entity= context (needed to render
+  =sql_schema_artefact_create.mustache=) is gated on
+  =model_type == 'schema'=, but =ores.codegen.lookup_entity= models map
+  to internal model_type =enum=. So =sql_schema_artefact_create= cannot
+  render from *any* =lookup_entity= model today, including the
+  pre-existing =ores.dq.report_definition_lookup_entity.org= — this
+  isn't new breakage from this story, it means the shadow-table
+  generation path has been silently broken/unused. Fix this as part of
+  (or as a prerequisite to) this facet's implementation.
+
+* Out of scope
+
+-

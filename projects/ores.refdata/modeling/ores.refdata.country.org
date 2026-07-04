@@ -220,7 +220,6 @@ drop function if exists ores_refdata_validate_country_fn;
 :has_uuid_primary_key:        false
 :has_pagination:              true
 :has_change_reason_cache:     true
-:has_flag_icon:               true
 :flag_icon_column:            Alpha2Code
 :flag_inline_widget:          codeEdit
 :flag_accessor:               getCountryFlagIcon

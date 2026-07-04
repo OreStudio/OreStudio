@@ -110,6 +110,19 @@ ReturnDistributionChart::ReturnDistributionChart(QWidget* parent)
     layout->addWidget(view_);
 }
 
+void ReturnDistributionChart::setDomain(Domain domain) {
+    domain_ = domain;
+    if (domain_ == Domain::Price) {
+        chart_->setTitle(tr("Steady-State Price Distribution"));
+        axisX_->setTitleText(tr("Price"));
+        axisX_->setLabelFormat(QStringLiteral("%.4f")); // FX-rate precision, not %
+    } else {
+        chart_->setTitle(tr("Live Return Distribution (GMM)"));
+        axisX_->setTitleText(tr("Return per Update (%)"));
+        axisX_->setLabelFormat(QString()); // back to Qt's default numeric format
+    }
+}
+
 void ReturnDistributionChart::setComponents(const std::vector<Component>& components) {
     chart_->removeAllSeries();
 
@@ -119,14 +132,17 @@ void ReturnDistributionChart::setComponents(const std::vector<Component>& compon
         return;
     }
 
-    // Display in percent: multiply means/stdevs by 100.
+    // Return domain displays in percent (×100); Price domain plots raw values
+    // (a price level, not a return, so no rescaling applies).
+    const double scale = domain_ == Domain::Price ? 1.0 : 100.0;
+
     double maxStdev = 0.0;
     double minMean = 0.0;
     double maxMean = 0.0;
     bool first = true;
     for (const auto& c : components) {
-        const double m = c.mean * 100.0;
-        const double s = c.stdev * 100.0;
+        const double m = c.mean * scale;
+        const double s = c.stdev * scale;
         maxStdev = std::max(maxStdev, s);
         if (first) {
             minMean = maxMean = m;
@@ -161,7 +177,7 @@ void ReturnDistributionChart::setComponents(const std::vector<Component>& compon
         double y = 0.0;
         for (std::size_t ci = 0; ci < components.size(); ++ci) {
             const auto& c = components[ci];
-            const double yi = c.weight * gaussian(x, c.mean * 100.0, c.stdev * 100.0);
+            const double yi = c.weight * gaussian(x, c.mean * scale, c.stdev * scale);
             componentYs[ci][i] = yi;
             y += yi;
         }

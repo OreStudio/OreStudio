@@ -19,8 +19,51 @@
  */
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/ImageCache.hpp"
+#include <QPainter>
+#include <QPixmap>
 
 namespace ores::qt {
+
+namespace {
+constexpr int flag_spacing = 2; // small gap so the two flags read as distinct, not overlapping
+}
+
+QIcon currency_flag_icon(ImageCache& imageCache,
+                         const std::string& isoCode,
+                         const std::string& quoteIsoCode) {
+    const QIcon baseIcon = imageCache.getCurrencyFlagIcon(isoCode);
+    if (quoteIsoCode.empty())
+        return baseIcon;
+
+    // Composite at every size the cache already rendered for a single flag
+    // (see IconUtils::svgDataToIcon's {16,20,24,32,48} ladder), reusing those
+    // exact pixmaps — not a separately-chosen size — so the pair icon is
+    // built from the identical per-size images a single flag uses, just two
+    // of them instead of one. Qt then auto-picks the right rung for whatever
+    // iconSize the view asks for, exactly as it would for a single flag.
+    const QIcon quoteIcon = imageCache.getCurrencyFlagIcon(quoteIsoCode);
+    QIcon combined;
+    for (const QSize& baseSize : baseIcon.availableSizes()) {
+        const QPixmap basePm = baseIcon.pixmap(baseSize);
+        // Request by height only (a very wide box) so this picks the quote
+        // icon's own same-height rung rather than rescaling to baseSize's
+        // (possibly different, if the two flags' SVGs differ in aspect
+        // ratio) width.
+        const QPixmap quotePm = quoteIcon.pixmap(QSize(8192, baseSize.height()));
+        QPixmap out(basePm.width() + flag_spacing + quotePm.width(), baseSize.height());
+        out.fill(Qt::transparent);
+        QPainter painter(&out);
+        painter.drawPixmap(0, 0, basePm);
+        painter.drawPixmap(basePm.width() + flag_spacing, 0, quotePm);
+        painter.end();
+        combined.addPixmap(out);
+    }
+    return combined;
+}
+
+QSize currency_pair_icon_size(int flagHeight) {
+    return {flagHeight * 2 + flag_spacing, flagHeight};
+}
 
 void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source) {
     if (!combo || !cache)

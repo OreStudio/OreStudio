@@ -138,7 +138,11 @@ private:
     void buildUi();
     void buildInstrumentTab();
     void buildBehaviourTab();
-    QWidget* buildSimpleControls();   // left pane (Simple): sliders + reset
+    // left pane (Simple): a QStackedWidget switching between the GBM/arithmetic
+    // sliders and "ou"'s dedicated θ/κ/σ controls, per the active engine.
+    QWidget* buildSimpleControls();
+    QWidget* buildGbmSimpleControls();  // Simple page for mixing engines
+    QWidget* buildOuSimpleControls();   // Simple page for "ou"
     QWidget* buildAdvancedControls(); // left pane (Advanced): table + add/reset
     void populateCurrencyCombo(QComboBox* combo);
     void recomputeOreKey();
@@ -152,6 +156,10 @@ private:
     void rebuildModelFromAdvanced(); // table -> model
     void refreshCharts();            // model -> both charts + weight-sum label
     void updateWeightSumLabel();     // weight-sum label text (or κ echo for "ou")
+    // "ou"'s Simple page: θ/κ/σ controls, dispatched from the functions above.
+    void syncOuSimpleFromModel();
+    void rebuildOuModelFromSimple();
+    void onResetOuSimple();
 
     // Advanced table row construction; returns nothing, appends to table.
     void addTableRow(const ModelComponent& c);
@@ -166,6 +174,23 @@ private:
     [[nodiscard]] std::string currentEngine() const; // "geometric" / "arithmetic" / "ou"
     [[nodiscard]] bool currentEngineSupportsMixing() const;
     [[nodiscard]] QString incrementNoun() const; // label noun for the active engine
+    // Detailed hover text for a component row's Name/μ/σ/Weight cells, explaining
+    // what those fields mean for the current engine.
+    [[nodiscard]] QString componentTooltip(bool ou, bool arithmetic) const;
+
+    // Ornstein-Uhlenbeck's κ is a per-tick reversion rate — realistic values span
+    // many orders of magnitude (minutes to months), which is why the Simple
+    // page's κ control is a log-scale slider with a live half-life readout
+    // rather than a plain linear spinbox. Half-life is expressed relative to
+    // the *current* "New price every" tick interval — changing that interval
+    // afterwards does not retroactively rescale an already-entered κ (same as
+    // the interval's effect on any other per-tick parameter).
+    [[nodiscard]] double secondsPerTick() const;
+    [[nodiscard]] double halfLifeMinutesFromKappa(double kappa) const;
+    [[nodiscard]] double kappaFromHalfLifeMinutes(double halfLifeMinutes) const;
+    // "Calculated Half-Life t½: X min (Y.Y days)", or the κ=0 case — shared by
+    // the Simple page's live readout, wherever κ changes.
+    [[nodiscard]] QString ouHalfLifeText(double kappa) const;
 
     [[nodiscard]] QString defaultSourceName() const;
     [[nodiscard]] std::vector<ModelComponent> currentComponents() const;
@@ -211,13 +236,23 @@ private:
     ReturnDistributionChart* distChart_; // compact, top-right
     SamplePricePathsChart* pathsChart_;  // prominent, full-width bottom
 
-    // Behaviour tab — Simple page.
+    // Behaviour tab — Simple page. simpleModeStack_ switches between the GBM/
+    // arithmetic sliders (index 0) and "ou"'s θ/κ/σ controls (index 1).
+    QStackedWidget* simpleModeStack_;
     QSlider* driftSlider_;
     QSlider* volSlider_;
     QSlider* jumpSlider_;
     QLabel* driftValueLabel_;
     QLabel* volValueLabel_;
     QLabel* jumpValueLabel_;
+
+    // Behaviour tab — Simple page, "ou" controls.
+    QLabel* ouThetaLabel_;   // read-only echo of priceSpin_ (θ is edited there)
+    QSlider* kappaSlider_;   // log-mapped, see kappaSliderToValue/kappaValueToSlider
+    QDoubleSpinBox* kappaSpin_;
+    QLabel* ouHalfLifeLabel_;
+    QSlider* ouSigmaSlider_;
+    QDoubleSpinBox* ouSigmaSpin_;
 
     // Behaviour tab — Advanced page.
     QTableWidget* componentTable_;

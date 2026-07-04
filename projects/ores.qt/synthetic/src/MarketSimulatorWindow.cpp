@@ -27,16 +27,19 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FeedDialog.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/FxSpotRateEditor.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/ProcessTypeLabel.hpp"
 #include "ores.qt/WatermarkChartView.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QColor>
+#include <QEvent>
 #include <QFont>
 #include <QFontDatabase>
 #include <QFutureWatcher>
@@ -438,6 +441,9 @@ void MarketSimulatorWindow::setupRightPanel() {
         tickChartPlaceholder_->setAttribute(Qt::WA_TransparentForMouseEvents);
         tickChartPlaceholder_->setGeometry(tickChartView_->rect());
         tickChartPlaceholder_->raise();
+        // tickChartView_->rect() above is whatever size it has *before* the MDI
+        // window lays it out (tiny) — re-sync on every real resize instead.
+        tickChartView_->installEventFilter(this);
 
         summaryLayout->addWidget(tickChartContainer_, 1);
         tickChartContainer_->setVisible(false);
@@ -666,17 +672,8 @@ void MarketSimulatorWindow::buildTree() {
             fxItem->setData(static_cast<int>(NodeType::FxPair), NodeTypeRole);
             fxItem->setData(QString::fromStdString(fxId), NodeIdRole);
             if (imageCache_) {
-                const QPixmap basePm =
-                    imageCache_->getCurrencyFlagIcon(fx.base_currency_code).pixmap(22, 22);
-                const QPixmap quotePm =
-                    imageCache_->getCurrencyFlagIcon(fx.quote_currency_code).pixmap(22, 22);
-                QPixmap combined(48, 22);
-                combined.fill(Qt::transparent);
-                QPainter painter(&combined);
-                painter.drawPixmap(0, 0, basePm);
-                painter.drawPixmap(26, 0, quotePm);
-                painter.end();
-                fxItem->setIcon(QIcon(combined));
+                fxItem->setIcon(
+                    currency_flag_icon(*imageCache_, fx.base_currency_code, fx.quote_currency_code));
             } else {
                 fxItem->setIcon(
                     IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));
@@ -1006,6 +1003,8 @@ void MarketSimulatorWindow::showFxPairSummary(
                                            "color: gray;");
     summaryHero_->setVisible(true);
 
+    summaryForm_->addRow(tr("Process"),
+                         new QLabel(processTypeLabel(fx.process_type), summaryPage_));
     summaryForm_->addRow(tr("Initial price"),
                          new QLabel(QString::number(fx.gmm_initial_price), summaryPage_));
     {
@@ -1671,6 +1670,12 @@ void MarketSimulatorWindow::onTickChartFlash() {
         return;
     tickFlashBig_ = !tickFlashBig_;
     tickPosMarker_->setMarkerSize(tickFlashBig_ ? 15.0 : 9.0);
+}
+
+bool MarketSimulatorWindow::eventFilter(QObject* watched, QEvent* event) {
+    if (watched == tickChartView_ && event->type() == QEvent::Resize && tickChartPlaceholder_)
+        tickChartPlaceholder_->setGeometry(tickChartView_->rect());
+    return QWidget::eventFilter(watched, event);
 }
 
 }

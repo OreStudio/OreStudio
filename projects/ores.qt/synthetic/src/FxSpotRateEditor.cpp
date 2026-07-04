@@ -58,6 +58,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <optional>
 #include <utility>
 
 namespace ores::qt {
@@ -102,7 +103,7 @@ struct EngineInfo {
 constexpr EngineInfo kEngines[] = {
     {"geometric", QT_TR_NOOP("Geometric Brownian Motion"), true},
     {"arithmetic", QT_TR_NOOP("Arithmetic Brownian Motion"), true},
-    {"ou", QT_TR_NOOP("Ornstein-Uhlenbeck (mean-reverting)"), false},
+    {"ou", QT_TR_NOOP("Ornstein-Uhlenbeck"), false},
 };
 
 const EngineInfo* find_engine(const std::string& code) {
@@ -131,6 +132,27 @@ int valueToSlider(double value, double lo, double hi) {
     if (hi <= lo)
         return 0;
     const double t = (value - lo) / (hi - lo);
+    return std::clamp(static_cast<int>(std::lround(t * 100.0)), 0, 100);
+}
+
+// κ realistically spans several orders of magnitude (minutes- to months-long
+// half-lives), so a linear slider is useless — most of its range would map to
+// indistinguishably-fast reversion. Map it log-scale instead; 0 is a special
+// case (no reversion) pinned to the low end rather than -infinity.
+constexpr double kKappaMin = 1e-6;
+constexpr double kKappaMax = 1.0;
+
+double kappaSliderToValue(int slider) {
+    const double t = slider / 100.0;
+    return std::pow(10.0, std::log10(kKappaMin) + t * (std::log10(kKappaMax) - std::log10(kKappaMin)));
+}
+
+int kappaValueToSlider(double kappa) {
+    if (kappa <= kKappaMin)
+        return 0;
+    const double k = std::min(kappa, kKappaMax);
+    const double t = (std::log10(k) - std::log10(kKappaMin)) /
+                     (std::log10(kKappaMax) - std::log10(kKappaMin));
     return std::clamp(static_cast<int>(std::lround(t * 100.0)), 0, 100);
 }
 
@@ -329,6 +351,15 @@ void FxSpotRateEditor::buildInstrumentTab() {
     priceSpin_->setDecimals(4);
     priceSpin_->setValue(fx_.gmm_initial_price > 0 ? fx_.gmm_initial_price : 1.0);
     priceSpin_->setToolTip(tr("The spot rate the simulation starts from."));
+    // "ou" echoes this as θ on its Simple page — keep that (and both charts,
+    // which also read this as the OU level / GBM starting price) live.
+    connect(priceSpin_, &QDoubleSpinBox::valueChanged, this, [this](double) {
+        if (syncing_)
+            return;
+        if (currentEngine() == "ou" && ouThetaLabel_)
+            ouThetaLabel_->setText(tr("%1").arg(priceSpin_->value(), 0, 'f', 5));
+        refreshCharts();
+    });
 
     enabledCheck_ = new QCheckBox(tr("Enabled"), tab);
     enabledCheck_->setChecked(fx_.enabled);
@@ -468,7 +499,10 @@ void FxSpotRateEditor::buildBehaviourTab() {
     modeStack_->addWidget(buildAdvancedControls()); // index 1
     middleRow->addWidget(modeStack_, 1);
 
-    // RIGHT: compact PDF chart group, top-aligned.
+    // RIGHT: compact PDF chart group, top-aligned. For single-regime engines
+    // (e.g. "ou") the increment PDF doesn't apply, but the *steady-state price*
+    // distribution does (closed-form: N(θ, σ/√(2κ))) — updateEngineUi() switches
+    // the chart's domain rather than disabling it.
     auto* distBox = new QGroupBox(tr("Return distribution"), tab);
     distBox->setMinimumWidth(300);
     distBox->setMaximumWidth(380);
@@ -499,6 +533,16 @@ void FxSpotRateEditor::buildBehaviourTab() {
 }
 
 QWidget* FxSpotRateEditor::buildSimpleControls() {
+    // "ou"'s Simple page has nothing in common with the GBM/arithmetic sliders
+    // (single scalar params, not a drift/vol/jump mixture) — switch between two
+    // independent pages rather than trying to make one widget cover both.
+    simpleModeStack_ = new QStackedWidget(this);
+    simpleModeStack_->addWidget(buildGbmSimpleControls()); // index 0
+    simpleModeStack_->addWidget(buildOuSimpleControls());  // index 1
+    return simpleModeStack_;
+}
+
+QWidget* FxSpotRateEditor::buildGbmSimpleControls() {
     auto* paramsBox = new QGroupBox(tr("Parameters"), this);
     paramsBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     auto* paramsLayout = new QVBoxLayout(paramsBox);
@@ -562,6 +606,125 @@ QWidget* FxSpotRateEditor::buildSimpleControls() {
         });
 
     return paramsBox;
+}
+
+QWidget* FxSpotRateEditor::buildOuSimpleControls() {
+    auto* box = new QGroupBox(tr("Stochastic Drivers"), this);
+    box->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    auto* layout = new QVBoxLayout(box);
+    layout->setContentsMargins(12, 12, 12, 12);
+    layout->setSpacing(8);
+
+    // θ — read-only here; edited via the Initial Price field on the Instrument
+    // tab, echoed so it's visible alongside the other two drivers.
+    auto* thetaRow = new QHBoxLayout();
+    auto* thetaTitle = new QLabel(tr("Long-Term Mean (θ)"), box);
+    thetaTitle->setToolTip(tr("The level the price reverts toward. Set via the Initial Price "
+                              "field on the Instrument tab."));
+    thetaRow->addWidget(thetaTitle);
+    thetaRow->addStretch(1);
+    ouThetaLabel_ = new QLabel(box);
+    ouThetaLabel_->setStyleSheet("color: gray;");
+    thetaRow->addWidget(ouThetaLabel_);
+    layout->addLayout(thetaRow);
+
+    // κ — log-scale slider (see kappaSliderToValue/kappaValueToSlider) so one
+    // control spans minutes- to months-long half-lives, paired with a spinbox
+    // for exact entry, and a live half-life readout underneath.
+    const QString kappaTip =
+        tr("Mean reversion speed. Roughly, the price halves its distance from θ every "
+           "ln(2)/κ updates. 0 = no reversion (driftless random walk).");
+    auto* kappaTitle = new QLabel(tr("Mean Reversion Speed (κ)"), box);
+    kappaTitle->setToolTip(kappaTip);
+    layout->addWidget(kappaTitle);
+    auto* kappaRow = new QHBoxLayout();
+    kappaSlider_ = new QSlider(Qt::Horizontal, box);
+    kappaSlider_->setRange(0, 100);
+    kappaSlider_->setToolTip(kappaTip);
+    kappaRow->addWidget(kappaSlider_, 1);
+    kappaSpin_ = new QDoubleSpinBox(box);
+    kappaSpin_->setRange(0.0, 10.0);
+    kappaSpin_->setDecimals(6);
+    kappaSpin_->setFixedWidth(110);
+    kappaSpin_->setToolTip(kappaTip);
+    kappaRow->addWidget(kappaSpin_);
+    layout->addLayout(kappaRow);
+    ouHalfLifeLabel_ = new QLabel(box);
+    ouHalfLifeLabel_->setStyleSheet("color: gray;");
+    layout->addWidget(ouHalfLifeLabel_);
+
+    // σ — same slider+spinbox pattern, same range as the GBM Simple page's
+    // volatility slider (kVolMin/kVolMax): both are a per-tick vol in %.
+    const QString sigmaTip = tr("Size of each random nudge, before reversion pulls the price "
+                                 "back toward θ.");
+    auto* sigmaTitle = new QLabel(tr("Volatility Coefficient (σ)"), box);
+    sigmaTitle->setToolTip(sigmaTip);
+    layout->addWidget(sigmaTitle);
+    auto* sigmaRow = new QHBoxLayout();
+    ouSigmaSlider_ = new QSlider(Qt::Horizontal, box);
+    ouSigmaSlider_->setRange(0, 100);
+    ouSigmaSlider_->setToolTip(sigmaTip);
+    sigmaRow->addWidget(ouSigmaSlider_, 1);
+    ouSigmaSpin_ = new QDoubleSpinBox(box);
+    ouSigmaSpin_->setRange(0.0, 100.0);
+    ouSigmaSpin_->setDecimals(3);
+    ouSigmaSpin_->setSuffix(tr(" %"));
+    ouSigmaSpin_->setFixedWidth(110);
+    ouSigmaSpin_->setToolTip(sigmaTip);
+    sigmaRow->addWidget(ouSigmaSpin_);
+    layout->addLayout(sigmaRow);
+
+    auto* note = new QLabel(
+        tr("Switch to Advanced mode for the raw κ/σ table (e.g. to inspect provenance)."), box);
+    note->setWordWrap(true);
+    note->setStyleSheet("color: gray;");
+    layout->addWidget(note);
+
+    auto* resetRow = new QHBoxLayout();
+    auto* resetBtn = new QPushButton(tr("Reset"), box);
+    resetBtn->setToolTip(tr("Restore default parameters (15 min half-life, Normal volatility)."));
+    connect(resetBtn, &QPushButton::clicked, this, &FxSpotRateEditor::onResetOuSimple);
+    resetRow->addWidget(resetBtn);
+    resetRow->addStretch(1);
+    layout->addLayout(resetRow);
+    layout->addStretch(1);
+
+    // Slider <-> spinbox, kept in sync both ways without feedback loops; either
+    // one changing rebuilds the model and refreshes charts.
+    connect(kappaSlider_, &QSlider::valueChanged, this, [this](int v) {
+        const QSignalBlocker blocker(kappaSpin_);
+        kappaSpin_->setValue(kappaSliderToValue(v));
+        if (syncing_)
+            return;
+        rebuildOuModelFromSimple();
+        refreshCharts();
+    });
+    connect(kappaSpin_, &QDoubleSpinBox::valueChanged, this, [this](double v) {
+        const QSignalBlocker blocker(kappaSlider_);
+        kappaSlider_->setValue(kappaValueToSlider(v));
+        if (syncing_)
+            return;
+        rebuildOuModelFromSimple();
+        refreshCharts();
+    });
+    connect(ouSigmaSlider_, &QSlider::valueChanged, this, [this](int v) {
+        const QSignalBlocker blocker(ouSigmaSpin_);
+        ouSigmaSpin_->setValue(sliderToValue(v, kVolMin, kVolMax) * 100.0);
+        if (syncing_)
+            return;
+        rebuildOuModelFromSimple();
+        refreshCharts();
+    });
+    connect(ouSigmaSpin_, &QDoubleSpinBox::valueChanged, this, [this](double v) {
+        const QSignalBlocker blocker(ouSigmaSlider_);
+        ouSigmaSlider_->setValue(valueToSlider(v / 100.0, kVolMin, kVolMax));
+        if (syncing_)
+            return;
+        rebuildOuModelFromSimple();
+        refreshCharts();
+    });
+
+    return box;
 }
 
 QWidget* FxSpotRateEditor::buildAdvancedControls() {
@@ -938,38 +1101,20 @@ void FxSpotRateEditor::onEngineChanged() {
     if (engineCombo_)
         fx_.process_type = currentEngine();
     updateEngineUi();
-    // Engine also determines whether the Return Distribution PDF chart applies
-    // (it doesn't for "ou", a level process rather than an increment mixture).
+    // Engine also determines which distribution the Return Distribution chart
+    // plots (increment PDF, or "ou"'s steady-state price distribution).
     refreshCharts();
 }
 
 void FxSpotRateEditor::updateEngineUi() {
     // Generic, capability-driven gating (any engine with supportsMixing = false
     // behaves this way, not just "ou" specifically). Called both on every engine
-    // change AND once at the end of buildBehaviourTab() during construction — the
-    // latter matters when opening an *existing* single-regime record, since
-    // engineCombo_->setCurrentIndex() runs before its currentIndexChanged signal
-    // is connected, so onEngineChanged() never fires for the initial value. If
-    // this forcing lived only in onEngineChanged() (as it used to), an existing
-    // "ou" record would silently open on the Simple page; clicking Save without
-    // touching anything would then overwrite its real κ with a Simple-mode-
-    // derived value that has no defined meaning for a single-regime process.
+    // change AND once at the end of buildBehaviourTab() during construction.
     const bool mixing = currentEngineSupportsMixing();
-    if (!mixing) {
-        if (modeGroup_ && modeGroup_->checkedId() != 1) {
-            if (auto* advancedBtn = modeGroup_->button(1))
-                advancedBtn->setChecked(true);
-            onModeChanged();
-        }
-        if (componentTable_ && componentTable_->rowCount() > 1) {
-            // Single-regime process — collapse to the first row so its reused
-            // fields have one unambiguous value.
-            components_.resize(1);
-            syncing_ = true;
-            syncAdvancedFromModel();
-            syncing_ = false;
-            updateComponentColors();
-        }
+    if (!mixing && components_.size() > 1) {
+        // Single-regime process — collapse to the first row so its reused
+        // fields have one unambiguous value.
+        components_.resize(1);
     }
     // The warning banner's wording is inherently engine-specific — a boolean
     // can't express *how* a single-regime engine's fields are repurposed, so
@@ -978,30 +1123,54 @@ void FxSpotRateEditor::updateEngineUi() {
     const bool ou = engine == "ou";
     const bool arithmetic = engine == "arithmetic";
 
-    if (engineWarningLabel_) {
+    // κ = 1.0 is the generic single-row default weight (a full mixture share),
+    // but reused as OU's reversion speed it reverts within ~1 tick — the price
+    // sits in a band so tight it looks "stuck" rather than visibly mean-
+    // reverting. Rescale it to a slower, more legible default the first time a
+    // *new* config switches to "ou", without touching a loaded record's real κ.
+    if (ou && isNew_ && !components_.empty() && components_.front().weight == 1.0)
+        components_.front().weight = kappaFromHalfLifeMinutes(15.0);
+
+    // Always resync both the table and "ou"'s dedicated Simple page from the
+    // model — cheap, and guarantees whichever page becomes visible (either via
+    // this engine change or a later Simple/Advanced click) is never stale.
+    if (componentTable_) {
+        syncing_ = true;
+        syncAdvancedFromModel();
+        syncing_ = false;
+        updateComponentColors();
+    }
+    if (simpleModeStack_) {
+        simpleModeStack_->setCurrentIndex(ou ? 1 : 0);
         if (ou) {
+            syncing_ = true;
+            syncOuSimpleFromModel();
+            syncing_ = false;
+        }
+    }
+
+    // Only arithmetic gets a warning: its negative-price possibility is a real
+    // surprise nothing else in the UI communicates. OU's single-regime nature
+    // is now self-evident from its dedicated Simple page and the Advanced
+    // table's header/row tooltips, so it doesn't need a persistent banner.
+    if (engineWarningLabel_) {
+        if (arithmetic) {
             engineWarningLabel_->setText(
-                tr("⚠ Ornstein-Uhlenbeck engine: a single regime, not a mixture. Simple mode is "
-                   "disabled — Advanced mode's fields are reused as: κ (reversion speed) = "
-                   "Weight, σ (volatility) = Volatility (σ), and θ (long-run mean) = Initial "
-                   "Price. Drift (μ) is unused. \"Add process\" is disabled while this engine is "
-                   "selected."));
-        } else if (arithmetic) {
-            engineWarningLabel_->setText(
-                tr("⚠ Arithmetic engine: μ and σ are absolute price increments (not "
+                tr("⚠ Absolute price increments — may go negative. Hover for details."));
+            engineWarningLabel_->setToolTip(
+                tr("Arithmetic engine: μ and σ are absolute price increments (not "
                    "%/log-returns), and the price can go negative or zero — unrealistic for an "
                    "FX rate. Intended for testing the process abstraction."));
         }
-        engineWarningLabel_->setVisible(ou || arithmetic);
+        engineWarningLabel_->setVisible(arithmetic);
     }
+
+    // The Return Distribution chart's domain (increment PDF vs. steady-state
+    // price) is set from refreshCharts(), which also supplies its components —
+    // no separate handling needed here.
 
     if (addComponentBtn_)
         addComponentBtn_->setEnabled(mixing);
-
-    if (modeGroup_) {
-        if (auto* simpleBtn = modeGroup_->button(0))
-            simpleBtn->setEnabled(mixing);
-    }
 
     if (componentTable_) {
         if (auto* meanHdr = componentTable_->horizontalHeaderItem(ColMean))
@@ -1012,17 +1181,83 @@ void FxSpotRateEditor::updateEngineUi() {
             stdevHdr->setToolTip(
                 ou ? tr("σ — Ornstein-Uhlenbeck volatility.") :
                      tr("Volatility (σ) of the %1 per update (%).").arg(incrementNoun()));
-        if (auto* weightHdr = componentTable_->horizontalHeaderItem(ColWeight))
+        if (auto* weightHdr = componentTable_->horizontalHeaderItem(ColWeight)) {
+            // The header text itself, not just its tooltip: "w" reads as a weight/
+            // share, which is misleading once this column holds κ instead.
+            weightHdr->setText(ou ? tr("κ") : tr("w"));
             weightHdr->setToolTip(
                 ou ? tr("κ — Ornstein-Uhlenbeck reversion speed (0 = driftless random walk).") :
                      tr("Relative share when blending processes (normalised on save)."));
+        }
+
+        // Detailed per-row tooltip on hover, in addition to the column-header ones
+        // above — explains what this specific component's three numbers mean in
+        // the current engine's terms, without having to reach for the headers.
+        const QString rowTip = componentTooltip(ou, arithmetic);
+        for (int r = 0; r < componentTable_->rowCount(); ++r) {
+            for (int col : {ColName, ColMean, ColStdev, ColWeight}) {
+                if (auto* w = componentTable_->cellWidget(r, col))
+                    w->setToolTip(rowTip);
+            }
+        }
     }
+}
+
+double FxSpotRateEditor::secondsPerTick() const {
+    return secondsSpin_ ? std::max(1, secondsSpin_->value()) : 1.0;
+}
+
+double FxSpotRateEditor::halfLifeMinutesFromKappa(double kappa) const {
+    if (kappa <= 0.0)
+        return 0.0; // 0 = driftless random walk, shown as 0 (infinite half-life)
+    return (std::log(2.0) / kappa) * secondsPerTick() / 60.0;
+}
+
+double FxSpotRateEditor::kappaFromHalfLifeMinutes(double halfLifeMinutes) const {
+    if (halfLifeMinutes <= 0.0)
+        return 0.0;
+    return std::log(2.0) / (halfLifeMinutes * 60.0 / secondsPerTick());
+}
+
+QString FxSpotRateEditor::componentTooltip(bool ou, bool arithmetic) const {
+    if (ou) {
+        return tr("<b>Ornstein-Uhlenbeck component</b><br>"
+                   "θ (long-run mean): the <i>Initial Price</i> field above — the level the "
+                   "price reverts toward.<br>"
+                   "κ (reversion speed, this row's <i>Weight</i>): how fast the price is pulled "
+                   "back to θ. Roughly, the price halves its distance from θ every "
+                   "ln(2)/κ updates — κ = 1 reverts almost immediately (tight, \"stuck\"-looking "
+                   "band); κ = 0.02–0.05 wanders visibly before reverting.<br>"
+                   "σ (volatility, this row's <i>σ</i>): the size of each random nudge, before "
+                   "reversion pulls it back. The band the price settles into is roughly "
+                   "σ/√(2κ) wide — small κ and larger σ together give a wider, more visible "
+                   "range.<br>"
+                   "μ (Drift) is unused by this engine.");
+    }
+    if (arithmetic) {
+        return tr("<b>Arithmetic component</b><br>"
+                   "μ (Drift): average absolute price change per update.<br>"
+                   "σ (Volatility): standard deviation of the absolute price change per "
+                   "update.<br>"
+                   "Weight: this component's relative share when blending with other "
+                   "components (normalised to sum to 1 on save).<br>"
+                   "Unlike Geometric, these are absolute price units, not %/log-returns — the "
+                   "price can go negative.");
+    }
+    return tr("<b>Geometric component</b><br>"
+               "μ (Drift): average log-return per update (%) — the trend.<br>"
+               "σ (Volatility): standard deviation of the log-return per update (%) — the "
+               "noise.<br>"
+               "Weight: this component's relative share when blending with other components "
+               "(normalised to sum to 1 on save); e.g. a small-weight, high-σ component "
+               "approximates a jump regime.");
 }
 
 void FxSpotRateEditor::onAddComponentRow() {
     addTableRow(ModelComponent{{}, "Process", 0.0, v0 * 2, 1.0});
     rebuildModelFromAdvanced();
     updateRemoveButtonsEnabled();
+    updateEngineUi(); // stamp the new row's cells with the current engine's tooltip
     refreshCharts();
 }
 
@@ -1054,6 +1289,56 @@ void FxSpotRateEditor::onResetSimple() {
     jumpSlider_->setValue(valueToSlider(0.0, kJumpMin, kJumpMax));    // no jumps
     syncing_ = false;
     rebuildModelFromSimple();
+    refreshCharts();
+}
+
+QString FxSpotRateEditor::ouHalfLifeText(double kappa) const {
+    if (kappa <= 0.0)
+        return tr("κ = 0 — no reversion (driftless random walk)");
+    const double minutes = halfLifeMinutesFromKappa(kappa);
+    return tr("Calculated Half-Life t½: %1 min (%2 days)")
+        .arg(minutes, 0, 'f', 3)
+        .arg(minutes / (24.0 * 60.0), 0, 'f', 1);
+}
+
+void FxSpotRateEditor::syncOuSimpleFromModel() {
+    if (priceSpin_)
+        ouThetaLabel_->setText(tr("%1").arg(priceSpin_->value(), 0, 'f', 5));
+    const double kappa = components_.empty() ? 0.0 : components_.front().weight;
+    const double sigma = components_.empty() ? 0.0 : components_.front().stdev;
+
+    syncing_ = true;
+    kappaSpin_->setValue(kappa);
+    kappaSlider_->setValue(kappaValueToSlider(kappa));
+    ouSigmaSpin_->setValue(sigma * 100.0);
+    ouSigmaSlider_->setValue(valueToSlider(sigma, kVolMin, kVolMax));
+    syncing_ = false;
+
+    ouHalfLifeLabel_->setText(ouHalfLifeText(kappa));
+}
+
+void FxSpotRateEditor::rebuildOuModelFromSimple() {
+    const double kappa = kappaSpin_->value();
+    const double sigma = ouSigmaSpin_->value() / 100.0;
+
+    ouHalfLifeLabel_->setText(ouHalfLifeText(kappa));
+
+    // Preserve the existing single component's id so this updates in place.
+    std::string id;
+    if (!components_.empty())
+        id = components_.front().id;
+    components_ = {ModelComponent{id, "Primary process", 0.0, sigma, kappa}};
+}
+
+void FxSpotRateEditor::onResetOuSimple() {
+    components_ = {ModelComponent{components_.empty() ? std::string() : components_.front().id,
+                                  "Primary process",
+                                  0.0,
+                                  v0 * 2,
+                                  kappaFromHalfLifeMinutes(15.0)}};
+    syncing_ = true;
+    syncOuSimpleFromModel();
+    syncing_ = false;
     refreshCharts();
 }
 
@@ -1115,6 +1400,10 @@ void FxSpotRateEditor::updateWeightSumLabel() {
 }
 
 void FxSpotRateEditor::syncSimpleFromModel() {
+    if (currentEngine() == "ou") {
+        syncOuSimpleFromModel();
+        return;
+    }
     if (components_.empty())
         return;
 
@@ -1151,6 +1440,10 @@ void FxSpotRateEditor::syncSimpleFromModel() {
 }
 
 void FxSpotRateEditor::rebuildModelFromSimple() {
+    if (currentEngine() == "ou") {
+        rebuildOuModelFromSimple();
+        return;
+    }
     const double drift = sliderToValue(driftSlider_->value(), kDriftMin, kDriftMax);
     const double vol = sliderToValue(volSlider_->value(), kVolMin, kVolMax);
     const double jumpFraction = sliderToValue(jumpSlider_->value(), kJumpMin, kJumpMax);
@@ -1196,14 +1489,25 @@ void FxSpotRateEditor::refreshCharts() {
     const std::string engine = currentEngine();
     const double price = priceSpin_ ? priceSpin_->value() : fx_.gmm_initial_price;
 
+    const bool ou = engine == "ou";
+    if (distChart_)
+        distChart_->setDomain(ou ? ReturnDistributionChart::Domain::Price :
+                                   ReturnDistributionChart::Domain::Return);
+
     if (!currentEngineSupportsMixing()) {
         // Single-regime path — wording/remapping below is OU-specific for now (the
         // only such engine); a future second one will need its own case here.
         // Scalar params (κ, σ) reused from Weight/Volatility — not a mixture, so no
-        // normalisation. θ (long-run mean) is the Initial Price, sent separately
-        // below; the increment PDF chart doesn't apply to a level process.
-        if (!components_.empty())
-            pathComps.push_back({0.0, components_.front().stdev, components_.front().weight});
+        // normalisation. θ (long-run mean) is the Initial Price.
+        if (!components_.empty()) {
+            const double kappa = components_.front().weight;
+            const double sigma = components_.front().stdev;
+            pathComps.push_back({0.0, sigma, kappa});
+            // Steady-state price distribution is closed-form for OU:
+            // N(θ, σ/√(2κ)) — undefined (no stationary distribution) at κ = 0.
+            if (ou && kappa > 0.0)
+                distComps.push_back({price, sigma / std::sqrt(2.0 * kappa), 1.0});
+        }
     } else {
         double sum = 0.0;
         for (const auto& c : components_)
@@ -1216,11 +1520,14 @@ void FxSpotRateEditor::refreshCharts() {
     }
 
     if (distChart_)
-        distChart_->setComponents(distComps); // empty for "ou" — PDF n/a to a level process
+        distChart_->setComponents(distComps); // empty for κ=0 "ou" — no stationary distribution
     if (pathsChart_) {
         pathsChart_->setComponents(pathComps);
         pathsChart_->setInitialPrice(price);
         pathsChart_->setProcessType(engine);
+        // Mean reversion isn't obvious from a noisy path alone — draw θ as a
+        // reference line so it's visible what the price is reverting toward.
+        pathsChart_->setReferenceLevel(ou ? std::make_optional(price) : std::nullopt);
         pathsChart_->scheduleRefresh();
     }
 }
@@ -1390,14 +1697,11 @@ void FxSpotRateEditor::onSaveClicked() {
         if (!fxResp->success)
             return {false, QString::fromStdString(fxResp->message)};
 
-        for (const auto& c : comps) {
-            auto cResp = cm->process_authenticated_request(m::save_gmm_component_request::from(c));
-            if (!cResp)
-                return {false, QString::fromStdString(cResp.error())};
-            if (!cResp->success)
-                return {false, QString::fromStdString(cResp->message)};
-        }
-
+        // Delete stale components *before* writing new ones: the unique index on
+        // (party_id, fx_spot_config_id, component_index) only covers still-active
+        // rows, so a fresh component reusing an index still held by a to-be-deleted
+        // row (e.g. collapsing to a single-regime engine) would otherwise hit that
+        // constraint on INSERT.
         if (!toDelete.empty()) {
             auto dResp =
                 cm->process_authenticated_request(m::delete_gmm_component_request{.ids = toDelete});
@@ -1405,6 +1709,14 @@ void FxSpotRateEditor::onSaveClicked() {
                 return {false, QString::fromStdString(dResp.error())};
             if (!dResp->success)
                 return {false, QString::fromStdString(dResp->message)};
+        }
+
+        for (const auto& c : comps) {
+            auto cResp = cm->process_authenticated_request(m::save_gmm_component_request::from(c));
+            if (!cResp)
+                return {false, QString::fromStdString(cResp.error())};
+            if (!cResp->success)
+                return {false, QString::fromStdString(cResp->message)};
         }
 
         return {true, {}};

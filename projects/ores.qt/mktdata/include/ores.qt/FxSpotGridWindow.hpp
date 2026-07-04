@@ -38,6 +38,8 @@
 
 namespace ores::qt {
 
+class ImageCache;
+
 /**
  * @brief Live FX spot grid showing one row per market data series.
  *
@@ -84,7 +86,9 @@ private:
     };
 
 public:
-    explicit FxSpotGridWindow(ClientManager* clientManager, QWidget* parent = nullptr);
+    explicit FxSpotGridWindow(ClientManager* clientManager,
+                              ImageCache* imageCache,
+                              QWidget* parent = nullptr);
     ~FxSpotGridWindow() override = default;
 
     QSize sizeHint() const override {
@@ -110,6 +114,7 @@ private:
     static FeedStatus deriveStatus(const RowState& rs);
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     QTableWidget* table_;
     QTimer* staleTimer_;
     QFutureWatcher<LoadResult>* loadWatcher_;

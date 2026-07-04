@@ -20,11 +20,12 @@ correctly-formatted title and a structured body?
 * Answer
 
 1. /Create the PR/ with =compass pr create=. It validates the title
-   convention, assembles the body (Summary, Changes, the
+   convention, assembles the body (Summary, Changes, and the
    =## Traceability= table derived from the branch's task and story
-   docs, and an =**Environment:**= line), pushes the branch, opens
-   the PR, records it on the task (=#+pr:= and the =* PRs= table),
-   commits and pushes that record, and stamps the session journal:
+   docs, with an =Environment= row alongside Story and Task), pushes
+   the branch, opens the PR, records it on the task (=#+pr:= and the
+   =* PRs= table), commits and pushes that record, and stamps the
+   session journal:
 
    #+begin_src sh :results verbatim
    ./compass.sh pr create --title "[component] One-line description" \
@@ -61,8 +62,10 @@ correctly-formatted title and a structured body?
   it by hand (or via =--summary=/body editing) until it does.
 - /Traceability section/ goes at the end of the body, always. It is a
   Markdown table with three columns — =Artefact=, =Link=, =ID= — and
-  one row per tracked artefact (Story, Task). The =Link= cell contains
-  a markdown hyperlink to the published HTML page; the =ID= cell
+  one row per tracked artefact (Story, Task), plus a final
+  =Environment= row so it's visible at a glance alongside Story and
+  Task rather than buried in prose. The =Link= cell contains a
+  markdown hyperlink to the published HTML page; the =ID= cell
   contains the *full* UUID as read from the =:ID:= property of the
   =.org= file. Never abbreviate the UUID to just the first segment.
 - /Story and task page URLs/ follow the pattern:
@@ -72,12 +75,12 @@ correctly-formatted title and a structured body?
   - Task:  =doc/agile/versions/v0/sprint_<NN>/<STORY_SLUG>/task_<TASK_SLUG>=
 - /Traceability is forward-only/: add it to new PRs; do not back-fill
   old ones.
-- /Environment line/ goes right after Traceability, always:
-  =**Environment:** <name>=. It records which =ores_dev_*= worktree
+- /Environment row/ is the last row of the Traceability table, always:
+  =| Environment | <name> | |=. It records which =ores_dev_*= worktree
   environment the work was done in (read from the task's
   =#+environment:= field), so a reviewer or a later session can tell
-  where to reproduce/continue the work. =(none)= if the task doesn't
-  record one.
+  where to reproduce/continue the work at a glance, without opening
+  the description body. =(none)= if the task doesn't record one.
 
 * Script
 

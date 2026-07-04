@@ -554,7 +554,7 @@ void provision_commands::process_party(std::ostream& out,
     // Phase 1: publish the counterparty dataset, as the wizard's
     // counterparty import does (bundle "base", opted-in GLEIF
     // counterparties dataset of the requested size).
-    out << "[1/4] Importing counterparties (dataset " << dataset_size << ")..." << std::endl;
+    out << "[1/5] Importing counterparties (dataset " << dataset_size << ")..." << std::endl;
     {
         dq::messaging::publish_bundle_request req;
         req.bundle_code = "base";
@@ -584,7 +584,7 @@ void provision_commands::process_party(std::ostream& out,
     }
 
     // Phase 2: publish the organisation bundle for this party.
-    out << "[2/4] Publishing organisation bundle for the party..." << std::endl;
+    out << "[2/5] Publishing organisation bundle for the party..." << std::endl;
     {
         dq::messaging::publish_bundle_request req;
         req.bundle_code = "organisation";
@@ -618,9 +618,9 @@ void provision_commands::process_party(std::ostream& out,
     // selects by exact name. Failures are fatal, as in the wizard.
     const auto& reports = parsed->flag("reports");
     if (reports == "none") {
-        out << "[3/4] Skipping report definitions (--reports none)." << std::endl;
+        out << "[3/5] Skipping report definitions (--reports none)." << std::endl;
     } else {
-        out << "[3/4] Creating report definitions..." << std::endl;
+        out << "[3/5] Creating report definitions..." << std::endl;
         dq::messaging::list_dq_report_definition_templates_request templates_req;
         auto templates = do_request(out, session, templates_req, std::chrono::seconds(30), true);
         if (!templates)
@@ -705,10 +705,44 @@ void provision_commands::process_party(std::ostream& out,
         }
     }
 
-    // Phase 4: activate the party. Hard failure by design — a
+    // Phase 4: publish the synthetic FX spot config dataset — a
+    // member of the ore_analytics bundle (alongside report
+    // definitions), opted in on its own so this doesn't re-trigger
+    // report creation already handled by Phase 3.
+    out << "[4/5] Publishing synthetic FX spot configs for the party..." << std::endl;
+    {
+        dq::messaging::publish_bundle_request req;
+        req.bundle_code = "ore_analytics";
+        req.mode = dq::domain::publication_mode::upsert;
+        req.published_by = username;
+        req.atomic = true;
+        dq::messaging::publish_bundle_params params;
+        params.party_id = boost::uuids::to_string(party->id);
+        params.opted_in_datasets.push_back("synthetic.fx_spot_configs");
+        req.params_json = dq::messaging::build_params_json(params);
+        auto published = do_request(out, session, req, publish_timeout, true);
+        if (!published)
+            return;
+        if (!published->success) {
+            fail(out) << "Failed to publish synthetic FX spot configs: "
+                      << published->error_message << std::endl;
+            return;
+        }
+        out << "  Dispatched " << published->datasets_dispatched
+            << " dataset(s); workflow instance: " << published->instance_id << std::endl;
+        if (!workflow_commands::wait_for_instance(
+                out,
+                session,
+                published->instance_id,
+                *wait_timeout,
+                static_cast<std::size_t>(published->datasets_dispatched)))
+            return;
+    }
+
+    // Phase 5: activate the party. Hard failure by design — a
     // completed run must mean a provisioned party (the wizard merely
     // warns here).
-    out << "[4/4] Activating party '" << party->full_name << "'..." << std::endl;
+    out << "[5/5] Activating party '" << party->full_name << "'..." << std::endl;
     auto fresh = find_party(out);
     if (!fresh)
         return;

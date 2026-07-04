@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: 15400ED3-A433-45E5-A0A2-4BF8B3A9459C
+:END:
+#+title: Task: Seed FX spot synthetic config data and register the bundle
+#+description: Hand-write the populate script seeding the synthetic FX artefact table (reuse the sprint 21 deferred 30-pair library task's reference-date/spot-consistency analysis where useful), and register a new bundle (+ membership row) so it is selectable in the Librarian.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_librarian_support:sprint_22:v0:
+#+owner: marco
+#+branch: feature/synthetic-data-librarian-support
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write the populate script that seeds the synthetic FX spot config
+artefact table with a usable set of configs, and register a bundle
+(+ membership row) so the set is selectable and applyable from the
+Librarian. This is neither the FPML-coding-scheme case (no
+=fpml_parser.py= support applies — starting spots aren't an external
+enumeration) nor a real external-source import: reuse the
+=sql_dataset_refdata=/=sql_populate_refdata= populate-script skeleton
+(idempotent dataset registration + artefact insert) for the SQL
+scaffolding, but the GMM starting-spot values themselves must be
+computed/hand-authored. Reuse the reference-date/internally-consistent-
+spot analysis from the deferred sprint 21 task =Synthetic FX spot
+library: 30 pairs with historically-consistent starting spots=
+(=7B130100-59F1-477D-910A-AF6D2C8D732C=) where useful, rather than
+re-deriving it — that task was blocked on exactly the Librarian/bundle
+infrastructure this story now builds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- At least one FX spot config (single pair is enough to satisfy this
+  story's scope) is seeded and visible as a publishable dataset in the
+  new bundle.
+- A new bundle exists in =ores_dq_dataset_bundles_tbl= containing the
+  synthetic FX dataset, selectable from the Qt Librarian.
+- Populating logic is idempotent (safe to re-run/re-apply).
+
+* Plan
+
+Kept scope to the story's stated MVP: a single EUR/USD synthetic FX
+spot config, not the full 30-pair library (that stays a separate
+deferred task). Added a new =projects/ores.sql/populate/synthetic/=
+tree (mirroring =populate/reporting/=) with a wrapper
+=synthetic_populate.sql= and =synthetic_fx_spot_configs_populate.sql=,
+following =reporting_report_definitions_populate.sql='s exact
+structure: register a new DQ catalog ("Synthetic Market Data"),
+register the =synthetic.fx_spot_configs= dataset via
+=ores_dq_datasets_upsert_fn=, then idempotently insert one artefact row
+into =ores_dq_synthetic_fx_spot_configs_artefact_tbl=. Wired the new
+tree into the master =populate.sql= after the Reporting layer. Added a
+new =synthetic_market_data= bundle (=dq_dataset_bundle_populate.sql=)
+with the new dataset as its sole member
+(=dq_dataset_bundle_member_populate.sql=, display_order 10) —
+confirmed bundle-member registration has no ordering dependency on the
+dataset row existing yet (it's a plain text code, validated at publish
+time, not insert time), so this is safe regardless of populate.sql
+ordering.
+
+* Notes
+
+Ran all three populate scripts inside a rolled-back transaction
+against the live dev DB as the DDL user (=compass sql -u ddl=; the
+default =postgres= role fails =modified_by= account validation) —
+clean apply, correct rows in the bundle/junction/dataset/artefact
+tables. Then called
+=ores_synthetic_publish_fx_spot_configs_from_dq_fn= directly against
+a real party in the dev DB using the seeded dataset: it created both
+the shared =market_data_generation_config= container and the
+=fx_spot_generation_config= row (=FX/RATE/EUR/USD=), end to end from
+seed data to published party rows. =validate_schemas.sh= passes clean.
+
+*Correction (after a real Barclays test-provisioning run via
+=ores.shell=):* the standalone =synthetic_market_data= bundle was
+unnecessary and wrong. A second currency pair (GBP/USD) was added,
+then the bundle registration was corrected: removed the separate
+bundle, and instead added =synthetic.fx_spot_configs= as a member of
+the existing =ore_analytics= bundle at =display_order 20= (right
+after =ore.report_definitions= at 10). This means every existing
+"publish reports" call site — the =ores.shell= provisioning script and
+the Qt =PartyProvisioningWizard= — already covers the FX config with
+no new code, which a separate bundle would not have achieved (proven
+by the CLI script publishing reports but never touching the separate
+bundle). Verified against a freshly recreated dev DB: =ore_analytics=
+bundle members now list both datasets in the right order, with no
+stale =synthetic_market_data= row remaining.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Shipped (corrected): =synthetic.fx_spot_configs= (EUR/USD and GBP/USD,
+both ticking once a second) is a member of the existing
+=ore_analytics= bundle, right after report definitions — not a
+separate bundle. Every existing party-provisioning path picks it up
+automatically with no new code. Verified idempotency and the full
+seed-to-published-party path against a freshly recreated dev DB.

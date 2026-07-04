@@ -43,11 +43,56 @@ inline auto& account_party_handler_lg() {
     return instance;
 }
 
+/**
+ * @brief DELIBERATE, NARROW REPLACEMENT for
+ * ores::service::messaging::stamp() — read this before touching
+ * either function.
+ *
+ * @warning Do NOT "simplify" this by switching back to the generic
+ * stamp(ap, ctx). That generic helper treats any field named
+ * party_id as a security boundary and unconditionally overwrites it
+ * with the caller's own current party from the JWT context — correct
+ * for every other domain type, where party_id means "the party this
+ * row belongs to." account_party is the one exception in the
+ * codebase: its party_id means "the party being targeted by this
+ * association," an arbitrary value the *client* is supposed to
+ * supply (e.g. associating an admin with some other party). Because
+ * the field happens to share the name, the generic stamp() matched
+ * on it by reflection and silently clobbered every requested
+ * association with the caller's own party instead — this is exactly
+ * the bug that caused provision_tenant's Phase 3 to associate the
+ * tenant admin only with their own System Party, no matter which
+ * Operational parties were actually requested (see the account_party
+ * capture doc in doc/agile/product_backlog/inbox/ for the full story).
+ *
+ * If you ever add another field to account_party that collides in
+ * name with a field stamp() treats as a security boundary (tenant_id,
+ * party_id, and anything added to stamp() in future), you must extend
+ * *this* function to handle it explicitly rather than reaching for
+ * the generic helper. Any other handler considering a client-supplied
+ * "target party/tenant/etc. that is not this row's own scope" field
+ * should follow the same pattern: a small, explicit, per-type stamp
+ * function, not the generic reflection-based one.
+ */
+inline void stamp_account_party(domain::account_party& ap, const ores::database::context& ctx) {
+    ap.tenant_id = ctx.tenant_id().to_string();
+    const auto& actor = ctx.actor();
+    const auto& svc = ctx.service_account();
+    if (!actor.empty())
+        ap.modified_by = actor;
+    else if (!svc.empty())
+        ap.modified_by = svc;
+    if (!svc.empty())
+        ap.performed_by = svc;
+    if (ap.change_reason_code.empty())
+        ap.change_reason_code =
+            std::string(ores::service::messaging::change_reasons::new_record);
+}
+
 } // namespace
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using ores::service::messaging::log_handler_entry;
@@ -145,7 +190,7 @@ public:
                 auto wf_ctx = tenant_context::with_tenant(ctx_, tenant_id);
                 service::account_party_service svc(wf_ctx);
                 for (auto ap : req->account_parties) {
-                    stamp(ap, wf_ctx);
+                    stamp_account_party(ap, wf_ctx);
                     svc.save_account_party(ap);
                 }
                 BOOST_LOG_SEV(account_party_handler_lg(), debug)
@@ -191,7 +236,7 @@ public:
             }
             service::account_party_service svc(ctx);
             for (auto ap : req->account_parties) {
-                stamp(ap, ctx);
+                stamp_account_party(ap, ctx);
                 svc.save_account_party(ap);
             }
             BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;

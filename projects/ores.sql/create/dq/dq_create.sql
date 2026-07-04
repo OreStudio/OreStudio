@@ -105,6 +105,9 @@
 -- Analytics artefact tables
 \ir ./dq_report_definitions_artefact_create.sql
 
+-- Synthetic market data artefact tables
+\ir ./dq_synthetic_fx_spot_configs_artefact_create.sql
+
 -- GLEIF LEI artefact tables
 \ir ./dq_lei_entities_artefact_create.sql
 \ir ./dq_lei_relationships_artefact_create.sql

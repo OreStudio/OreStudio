@@ -59,9 +59,9 @@ constexpr std::string_view {{domain_entity.qt.item_var}}_event_name =
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
-{{#domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.needs_image_cache}}
     ImageCache* imageCache,
-{{/domain_entity.qt.has_flag_icon}}
+{{/domain_entity.qt.needs_image_cache}}
 {{#domain_entity.qt.has_change_reason_cache}}
     ChangeReasonCache* changeReasonCache,
 {{/domain_entity.qt.has_change_reason_cache}}
@@ -86,9 +86,9 @@ constexpr std::string_view {{domain_entity.qt.item_var}}_event_name =
 {{/domain_entity.qt.has_badge_columns}}
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
-{{#domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.needs_image_cache}}
     setImageCache(imageCache);
-{{/domain_entity.qt.has_flag_icon}}
+{{/domain_entity.qt.needs_image_cache}}
 
     BOOST_LOG_SEV(lg(), debug) << "{{domain_entity.entity_pascal}}Controller created";
 }
@@ -103,7 +103,7 @@ void {{domain_entity.entity_pascal}}Controller::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new {{domain_entity.entity_pascal}}MdiWindow(clientManager_, username_{{#domain_entity.qt.has_badge_columns}}, badgeCache_{{/domain_entity.qt.has_badge_columns}}{{#domain_entity.qt.has_flag_icon}}, imageCache_{{/domain_entity.qt.has_flag_icon}});
+    listWindow_ = new {{domain_entity.entity_pascal}}MdiWindow(clientManager_, username_{{#domain_entity.qt.has_badge_columns}}, badgeCache_{{/domain_entity.qt.has_badge_columns}}{{#domain_entity.qt.needs_image_cache}}, imageCache_{{/domain_entity.qt.needs_image_cache}});
 
     // Connect signals
     connect(listWindow_, &{{domain_entity.entity_pascal}}MdiWindow::statusChanged,
@@ -202,9 +202,9 @@ void {{domain_entity.entity_pascal}}Controller::showAddWindow() {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
 {{/domain_entity.qt.has_change_reason_cache}}
-{{#domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.needs_image_cache}}
     detailDialog->setImageCache(imageCache_);
-{{/domain_entity.qt.has_flag_icon}}
+{{/domain_entity.qt.needs_image_cache}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -251,9 +251,9 @@ void {{domain_entity.entity_pascal}}Controller::showDetailWindow(
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
 {{/domain_entity.qt.has_change_reason_cache}}
-{{#domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.needs_image_cache}}
     detailDialog->setImageCache(imageCache_);
-{{/domain_entity.qt.has_flag_icon}}
+{{/domain_entity.qt.needs_image_cache}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -403,9 +403,9 @@ void {{domain_entity.entity_pascal}}Controller::onOpenVersion(
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
 {{/domain_entity.qt.has_change_reason_cache}}
-{{#domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.needs_image_cache}}
     detailDialog->setImageCache(imageCache_);
-{{/domain_entity.qt.has_flag_icon}}
+{{/domain_entity.qt.needs_image_cache}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->set{{domain_entity.entity_pascal_short}}({{domain_entity.qt.item_var}});
@@ -496,9 +496,9 @@ void {{domain_entity.entity_pascal}}Controller::onRevertVersion(
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
 {{/domain_entity.qt.has_change_reason_cache}}
-{{#domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.needs_image_cache}}
     detailDialog->setImageCache(imageCache_);
-{{/domain_entity.qt.has_flag_icon}}
+{{/domain_entity.qt.needs_image_cache}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_{{domain_entity.qt.item_var}} = {{domain_entity.qt.item_var}};

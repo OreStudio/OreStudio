@@ -93,6 +93,13 @@ public:
         return QSize(1500, 900);
     }
 
+protected:
+    // Keeps tickChartPlaceholder_ (a manually-positioned overlay, not layout-
+    // managed) sized to match tickChartView_ whenever it resizes — otherwise
+    // it's stuck at whatever size the view had at construction time (before
+    // the MDI window laid it out), showing clipped/misplaced text.
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);

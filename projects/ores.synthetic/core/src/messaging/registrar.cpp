@@ -26,6 +26,7 @@
 #include "ores.synthetic.core/messaging/gmm_component_handler.hpp"
 #include "ores.synthetic.core/messaging/market_data_generation_config_handler.hpp"
 #include "ores.synthetic.core/messaging/organisation_handler.hpp"
+#include "ores.synthetic.core/messaging/publish_from_dq_handler.hpp"
 #include <memory>
 #include <optional>
 
@@ -104,6 +105,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
             nats.queue_subscribe(std::string(delete_gmm_component_request::nats_subject),
                                  queue_group,
                                  [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // Publish-from-DQ workflow step handler
+    // ----------------------------------------------------------------
+    {
+        auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
+        subs.push_back(
+            nats.queue_subscribe("synthetic.v1.fx-spot-configs.publish-from-dq",
+                                 "ores.synthetic.service",
+                                 [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
     }
 
     return subs;

@@ -20,7 +20,9 @@
 #include "ores.qt/SamplePricePathsChart.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
+#include <QFont>
 #include <QFutureWatcher>
+#include <QGraphicsSimpleTextItem>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPointer>
@@ -153,6 +155,10 @@ void SamplePricePathsChart::setProcessType(const std::string& processType) {
     processType_ = processType;
 }
 
+void SamplePricePathsChart::setReferenceLevel(std::optional<double> level) {
+    referenceLevel_ = level;
+}
+
 void SamplePricePathsChart::scheduleRefresh() {
     debounce_->start();
 }
@@ -237,6 +243,8 @@ void SamplePricePathsChart::doRefresh() {
         }
 
         self->chart_->removeAllSeries();
+        delete self->referenceLabelItem_;
+        self->referenceLabelItem_ = nullptr;
 
         double yMin = std::numeric_limits<double>::max();
         double yMax = std::numeric_limits<double>::lowest();
@@ -261,8 +269,49 @@ void SamplePricePathsChart::doRefresh() {
                 yMin = 0.0;
                 yMax = 1.0;
             }
-            const double pad = (yMax - yMin) * 0.05;
-            self->axisY_->setRange(yMin - pad, yMax + pad);
+
+            // The axis range may need to stretch to fit the reference line (e.g.
+            // "ou"'s θ can sit outside the realised path range for a short/calm
+            // run) — done on a separate pair so the status text below still
+            // reports the *realised* range, not one padded out for the line.
+            double axisMin = yMin;
+            double axisMax = yMax;
+            if (self->referenceLevel_) {
+                axisMin = std::min(axisMin, *self->referenceLevel_);
+                axisMax = std::max(axisMax, *self->referenceLevel_);
+            }
+            const double pad = (axisMax - axisMin) * 0.05;
+            self->axisY_->setRange(axisMin - pad, axisMax + pad);
+
+            if (self->referenceLevel_) {
+                auto* refSeries = new QLineSeries(self);
+                refSeries->append(0.0, *self->referenceLevel_);
+                refSeries->append(maxLen - 1, *self->referenceLevel_);
+                // High-contrast white and noticeably thicker than the path lines
+                // (1px default) — amber at 1px was getting lost among a dozen
+                // overlapping coloured paths.
+                QPen refPen(QColor(0xFF, 0xFF, 0xFF));
+                refPen.setWidthF(2.5);
+                refPen.setStyle(Qt::DashLine);
+                refSeries->setPen(refPen);
+                self->chart_->addSeries(refSeries); // added last -> painted on top
+                refSeries->attachAxis(self->axisX_);
+                refSeries->attachAxis(self->axisY_);
+
+                auto* label = new QGraphicsSimpleTextItem(
+                    self->tr("θ = Long-Term Equilibrium Mean"), self->chart_);
+                QFont f = label->font();
+                f.setBold(true);
+                label->setFont(f);
+                label->setBrush(QColor(0xFF, 0xFF, 0xFF));
+                // A touch right of the axis (x=0 clashes with the axis labels) and
+                // just above the line so it doesn't sit on top of a path.
+                const double labelX = std::max(1.0, (maxLen - 1) * 0.03);
+                const QPointF pos =
+                    self->chart_->mapToPosition(QPointF(labelX, *self->referenceLevel_), refSeries);
+                label->setPos(pos.x(), pos.y() - 18);
+                self->referenceLabelItem_ = label;
+            }
 
             // The Y-axis autoscales to each run, so a calmer and a more volatile
             // config look similar in shape. Surface the actual realised range so

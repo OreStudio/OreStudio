@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219
+:END:
+#+title: Story: Unify report definitions provisioning onto the standard publish-from-dq path
+#+description: Party provisioning (both the Qt wizard and the ores.shell CLI script) creates report definitions via a bespoke list-templates-then-create-individually RPC path, bypassing the standard DQ bundle-publish/publish-from-dq infrastructure that report_definitions is already otherwise wired into (dataset, artefact table, ores_reporting_publish_report_definitions_from_dq_fn). Replace both call sites with a generic dq.v1.bundles.publish call so report definitions (and any other ore_analytics bundle member, e.g. synthetic FX configs) provision the same way every other bundle-published entity does.
+#+type: story
+#+level: s2
+#+filetags: :dq:publish:reporting:provisioning:tech_debt:next:product_backlog:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Discovered while implementing
+[[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]]: adding a new
+dataset (=synthetic.fx_spot_configs=) to the =ore_analytics= bundle
+had *no effect* on either party-provisioning path, because neither
+actually publishes that bundle for reports. Both
+=projects/ores.qt/application/src/PartyProvisioningWizard.cpp=
+(=PartyExecutePage::startReportInstall=) and
+=projects/ores.shell/src/app/commands/provision_commands.cpp=
+(=process_party=, the =[3/N]= "Creating report definitions" step)
+call =dq::messaging::list_dq_report_definition_templates_request= to
+list templates, then send one =reporting::messaging::save_report_definition_request=
+per row — a bespoke, per-record RPC path that bypasses
+=dq.v1.bundles.publish= and =ores_reporting_publish_report_definitions_from_dq_fn=
+entirely, even though that publish-from-dq function already exists
+and is correctly wired (per
+[[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]]).
+
+This is a stale halfway-migration: the backlog capture
+[[id:B347A156-5AC1-485B-A637-4E9055C1B698][Source report definitions from DQ instead of hardcoded C++]] already
+flagged the hardcoded-array problem and the DQ *storage* side (dataset,
+artefact table, publish function) was subsequently built — but neither
+consumption call site was ever switched over to use it. Replace both
+with a generic =dq.v1.bundles.publish= call for =bundle_code =
+"ore_analytics"=, mirroring the =organisation= bundle publish that
+already works this way in both places, so report definitions (and any
+future =ore_analytics= member, e.g. synthetic FX configs) provision
+identically with zero new code per dataset.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-02                               |
+
+* Acceptance
+
+- Both =PartyExecutePage::startReportInstall= (Qt) and
+  =provision_commands::process_party='s reports phase (CLI) call
+  =dq.v1.bundles.publish= with =bundle_code = "ore_analytics"=,
+  replacing =list_dq_report_definition_templates_request= +
+  per-record =save_report_definition_request= calls.
+- The =--reports all|none|<name,...>= CLI flag's behaviour is
+  preserved or deliberately simplified with rationale recorded here —
+  bundle-level publish operates per-dataset, not per-row, so exact
+  per-report-name selection may need to become an =opted_in_datasets=-
+  style filter, a post-publish prune step, or be dropped with a
+  documented reason.
+- =reporting::messaging::save_report_definition_request= and
+  =dq::messaging::list_dq_report_definition_templates_request= are
+  either retired or clearly re-scoped to a use they're still needed
+  for (e.g. read-only preview UI), not left as unused dead code.
+- Adding =synthetic.fx_spot_configs= (already a member of
+  =ore_analytics=, see the FX story) to a provisioning run requires no
+  further code changes — proving the fix is genuinely data-driven.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- Any change to how the standard bundle-publish/publish-from-dq
+  pipeline itself works — that's the mechanism being adopted, not
+  changed.
+- The =publish_from_dq= codegen facet
+  ([[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]]) — separate
+  concern, already tracked.

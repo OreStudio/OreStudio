@@ -90,6 +90,20 @@ protected:
 
 public:
 {{/domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.has_icon_columns}}
+
+protected:
+    /** @brief Columns whose Qt::DecorationRole shows an icon (flag, etc.). */
+    std::vector<int> iconColumns() const override {
+        return {
+{{#domain_entity.qt.icon_columns}}
+            Column::{{column}},
+{{/domain_entity.qt.icon_columns}}
+        };
+    }
+
+public:
+{{/domain_entity.qt.has_icon_columns}}
 
     /**
      * @brief Refresh {{domain_entity.entity_singular_words}} data from server asynchronously.

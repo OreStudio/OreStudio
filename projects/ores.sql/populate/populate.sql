@@ -84,6 +84,14 @@
 \ir reporting/reporting_populate.sql
 
 -- =============================================================================
+-- Synthetic Layer
+-- =============================================================================
+
+\echo ''
+\echo '--- Synthetic Layer ---'
+\ir synthetic/synthetic_populate.sql
+
+-- =============================================================================
 -- FSM Layer (must precede Trading — activity types reference FSM transitions)
 -- =============================================================================
 

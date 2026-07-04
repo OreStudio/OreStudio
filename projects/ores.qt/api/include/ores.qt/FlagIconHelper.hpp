@@ -23,8 +23,11 @@
 #include "ores.qt/export.hpp"
 #include <QAction>
 #include <QComboBox>
+#include <QIcon>
 #include <QLineEdit>
 #include <QObject>
+#include <QSize>
+#include <string>
 
 namespace ores::qt {
 
@@ -34,6 +37,46 @@ class ImageCache;
  * @brief The type of flag icons to apply to a combo box.
  */
 enum class FlagSource { Currency, Country, BusinessCentre };
+
+/**
+ * @brief Flag icon for one currency, or a composited pair icon for two — the
+ * one function every currency/currency-pair flag in the app should go
+ * through, so a single cell (e.g. a "GBP/USD" cell with no separate base/
+ * quote columns) and a single-currency cell (e.g. Currency's own code
+ * column, or FX Spot Configs' Base/Quote Currency columns) render
+ * identically sized and via the same pipeline.
+ *
+ * Both the single- and two-code cases build on the exact same
+ * ImageCache::getCurrencyFlagIcon() call combo boxes and single-currency
+ * cells already use — the pair case just composites two of that call's
+ * result side by side, rather than using a different rendering path.
+ *
+ * @param imageCache   Shared image cache (currency ISO -> image_id mapping).
+ * @param isoCode      Currency ISO code (or the base code, for a pair).
+ * @param quoteIsoCode Quote currency ISO code; empty (default) for a single
+ * flag.
+ */
+ORES_QT_API QIcon currency_flag_icon(ImageCache& imageCache,
+                                     const std::string& isoCode,
+                                     const std::string& quoteIsoCode = {});
+
+/**
+ * @brief The iconSize a view should use to display a currency_flag_icon()
+ * pair icon without distortion.
+ *
+ * A view with no explicit iconSize reserves a roughly *square* box (Qt's
+ * default) and scales whatever icon it's given to fit inside it — for a
+ * single flag (already close to square) that looks fine, but a pair icon is
+ * roughly twice as wide as it is tall, so it gets squeezed down to fit the
+ * square box and reads as squished. Pass this to
+ * QAbstractItemView::setIconSize() wherever a pair icon (not a single flag)
+ * is shown, e.g. a "GBP/USD"-style cell with no separate base/quote columns.
+ *
+ * @param flagHeight Height of each flag in device-independent pixels — keep
+ * close to whatever height Qt's own default renders a single flag at (so the
+ * pair icon reads at the same scale as a single-flag column, not bigger).
+ */
+ORES_QT_API QSize currency_pair_icon_size(int flagHeight = 16);
 
 /**
  * @brief Apply flag icons to a combo box using the given image cache.

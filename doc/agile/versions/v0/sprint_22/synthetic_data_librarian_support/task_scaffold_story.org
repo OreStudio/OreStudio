@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: F1B52238-B6FF-4B2E-B982-D9022483A34B
+:END:
+#+title: Task: Scaffold story: Synthetic data librarian support: FX foundation
+#+description: Break the story down into the full set of implementation tasks: db schema/codegen models for the synthetic data configuration container and FX sub-config, librarian defaulting logic on party creation, publishing/NATS eventing, and verification. Docs-only planning task.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_librarian_support:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Break this story into its full set of implementation tasks, so work can
+proceed task-by-task rather than as one undifferentiated blob. Expect
+tasks covering roughly: the codegen entity model(s) for the synthetic
+data configuration container and its FX sub-config; the SQL schema and
+migrations; librarian logic that defaults a configuration on party
+creation; NATS publishing/eventing for generated FX observations; and
+end-to-end verification. Review the existing
+=ores.synthetic.market_data_generation_config= entity model and the
+sprint 21 FX spot PoC/approach-analysis stories before enumerating tasks,
+to reuse what already exists rather than re-deriving it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- All follow-on tasks needed to deliver the story's acceptance criteria
+  are added to the story's =* Tasks= table, each with a clear goal.
+- Task breakdown reuses/references existing synthetic-market-data work
+  from sprint 21 rather than duplicating it.
+
+* Plan
+
+Investigated the existing DQ Librarian/bundle publication pipeline
+before enumerating tasks, since the story's "librarian support" phrase
+turned out to refer to that existing bundle-apply mechanism rather
+than a new concept. Wrote up the pipeline as a durable knowledge doc
+([[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]]) with a worked example
+(=report_definitions= in the =ore_analytics= bundle) tracing every
+file involved, then rated each stage by codegen value. Finding: the
+bundle/junction/artefact-type rows and the per-entity shadow artefact
+table are already codegen-generated (via =ores.codegen.lookup_entity=
+models); the real gap is the =publish_..._from_dq_fn= SQL
+function plus its NATS handler and registrar wiring, which are 100%
+hand-written across all 25 existing instances. Also found that
+=party_service::save_party= has no lifecycle hook and the Librarian's
+bundle Apply is a manual user action — there is no existing mechanism
+to auto-provision anything on party creation, which the story's
+follow-on tasks now need to explicitly resolve rather than assume.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Broke the story into five follow-on tasks: design the
+=publish_from_dq= codegen facet, implement it (proven against
+=report_definitions=), model the synthetic FX config as a DQ artefact
+type using the new facet, seed FX data and register the bundle, decide
+the party-creation defaulting mechanism (no automatic trigger exists
+today — Apply is manual), and end-to-end verification. No code
+written; docs only (this task, the five new tasks, and the
+publication-pipeline knowledge doc).

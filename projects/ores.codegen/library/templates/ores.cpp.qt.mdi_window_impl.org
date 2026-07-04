@@ -42,9 +42,9 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity.qt.has_badge_columns}}
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/BadgeCache.hpp"
-{{#domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.needs_image_cache}}
 #include "ores.qt/ImageCache.hpp"
-{{/domain_entity.qt.has_flag_icon}}
+{{/domain_entity.qt.needs_image_cache}}
 {{/domain_entity.qt.has_badge_columns}}
 #include "{{domain_entity.qt.protocol_include}}"
 
@@ -58,9 +58,9 @@ using namespace ores::logging;
 {{#domain_entity.qt.has_badge_columns}}
     BadgeCache* badgeCache,
 {{/domain_entity.qt.has_badge_columns}}
-{{#domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.needs_image_cache}}
     ImageCache* imageCache,
-{{/domain_entity.qt.has_flag_icon}}
+{{/domain_entity.qt.needs_image_cache}}
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
@@ -68,9 +68,9 @@ using namespace ores::logging;
 {{#domain_entity.qt.has_badge_columns}}
       badgeCache_(badgeCache),
 {{/domain_entity.qt.has_badge_columns}}
-{{#domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.needs_image_cache}}
       imageCache_(imageCache),
-{{/domain_entity.qt.has_flag_icon}}
+{{/domain_entity.qt.needs_image_cache}}
       toolbar_(nullptr),
       tableView_(nullptr),
       model_(nullptr),
@@ -156,9 +156,9 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
 
 void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
     model_ = new Client{{domain_entity.entity_pascal}}Model(clientManager_, this);
-{{#domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.needs_image_cache}}
     model_->setImageCache(imageCache_);
-{{/domain_entity.qt.has_flag_icon}}
+{{/domain_entity.qt.needs_image_cache}}
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);

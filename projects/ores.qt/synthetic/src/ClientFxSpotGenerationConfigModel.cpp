@@ -20,6 +20,8 @@
 #include "ores.qt/ClientFxSpotGenerationConfigModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/ProcessTypeLabel.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include <QtConcurrent>
@@ -92,11 +94,13 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
             case OreKey:
                 return QString::fromStdString(fx_spot_generation_config.ore_key);
             case GmmInitialPrice:
+                return fx_spot_generation_config.gmm_initial_price;
             case TicksPerHour:
                 return static_cast<qlonglong>(fx_spot_generation_config.ticks_per_hour);
             case ProcessType:
-                return QString::fromStdString(fx_spot_generation_config.process_type);
+                return processTypeLabel(fx_spot_generation_config.process_type);
             case Enabled:
+                return fx_spot_generation_config.enabled ? tr("true") : tr("false");
             case Version:
                 return static_cast<qlonglong>(fx_spot_generation_config.version);
             case ModifiedBy:
@@ -106,6 +110,13 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
             default:
                 return {};
         }
+    }
+
+    if (role == Qt::DecorationRole && imageCache_) {
+        if (index.column() == Column::BaseCurrencyCode)
+            return currency_flag_icon(*imageCache_, fx_spot_generation_config.base_currency_code);
+        if (index.column() == Column::QuoteCurrencyCode)
+            return currency_flag_icon(*imageCache_, fx_spot_generation_config.quote_currency_code);
     }
 
     if (role == Qt::ForegroundRole) {

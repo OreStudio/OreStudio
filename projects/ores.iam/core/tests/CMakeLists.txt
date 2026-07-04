@@ -34,6 +34,7 @@ target_link_libraries(${tests_target_name}
         ${lib_target_name}
         ores.refdata.core.lib
         ores.telemetry.core.lib
+        ores.service.lib
         ores.utility.lib
         ores.testing.lib
         Catch2::Catch2

@@ -33,6 +33,7 @@ namespace ores::qt {
 class FxSpotGenerationConfigMdiWindow;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
+class ImageCache;
 
 /**
  * @brief Controller for managing FX spot generation config windows and operations.
@@ -56,6 +57,7 @@ public:
     FxSpotGenerationConfigController(QMainWindow* mainWindow,
                                      QMdiArea* mdiArea,
                                      ClientManager* clientManager,
+                                     ImageCache* imageCache,
                                      ChangeReasonCache* changeReasonCache,
                                      const QString& username,
                                      QObject* parent = nullptr);

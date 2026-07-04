@@ -245,6 +245,7 @@ end $$;
 select _ores_grant_execute_fn('ores_refdata_publish_', :'refdata_service_user');
 select _ores_grant_execute_fn('ores_assets_publish_', :'assets_service_user');
 select _ores_grant_execute_fn('ores_reporting_publish_', :'reporting_service_user');
+select _ores_grant_execute_fn('ores_synthetic_publish_', :'synthetic_service_user');
 
 -- ---------------------------------------------------------------------------
 -- Clean up helper functions

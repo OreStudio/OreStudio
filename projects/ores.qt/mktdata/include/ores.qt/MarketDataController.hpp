@@ -33,6 +33,7 @@ class MarketSeriesMdiWindow;
 class MarketFixingsMdiWindow;
 class FxSpotGridWindow;
 class DetachableMdiSubWindow;
+class ImageCache;
 
 /**
  * @brief Controller managing the market data MDI windows.
@@ -59,6 +60,7 @@ public:
     MarketDataController(QMainWindow* mainWindow,
                          QMdiArea* mdiArea,
                          ClientManager* clientManager,
+                         ImageCache* imageCache,
                          const QString& username,
                          QObject* parent = nullptr);
 
@@ -89,6 +91,7 @@ private:
 
     QPointer<FxSpotGridWindow> fxSpotGridWindow_;
     QPointer<DetachableMdiSubWindow> fxSpotGridMdiSubWindow_;
+    ImageCache* imageCache_;
 };
 
 }

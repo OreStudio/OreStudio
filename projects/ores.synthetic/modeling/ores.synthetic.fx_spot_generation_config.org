@@ -284,16 +284,39 @@ faker::datatype::boolean()
 
 *** Columns (Qt model)
 
-| enum_name          | field               | header              | type      | width |
-|--------------------+---------------------+---------------------+-----------+-------|
-| BaseCurrencyCode   | base_currency_code  | Base Currency       | string    | 100   |
-| QuoteCurrencyCode  | quote_currency_code | Quote Currency      | string    | 100   |
-| SourceName         | source_name         | Source Name         | string    | 180   |
-| OreKey             | ore_key             | ORE Key             | string    | 180   |
-| GmmInitialPrice    | gmm_initial_price   | Initial Price       | double    | 100   |
-| TicksPerHour       | ticks_per_hour      | Ticks/Hr            | int       | 80    |
-| ProcessType        | process_type        | Process Type        | string    | 100   |
-| Enabled            | enabled             | Enabled             | bool      | 70    |
-| Version            | version             | Version             | int       | 70    |
-| ModifiedBy         | modified_by         | Modified By         | string    | 120   |
-| RecordedAt         | recorded_at         | Recorded At         | timestamp | 150   |
+=formatter= is optional: a free function =formatter(field) -> QString=
+called instead of the type's built-in renderer — for a column whose raw
+value needs a friendly label (e.g. ProcessType's "geometric"/"ou" code
+becoming "Geometric Brownian Motion"/"Ornstein-Uhlenbeck"). Leave blank
+to use the plain type renderer. =formatter_include= names the header
+the formatter function needs, if any.
+
+| enum_name          | field               | header              | type      | width | formatter        | formatter_include             |
+|--------------------+---------------------+---------------------+-----------+-------+-------------------+--------------------------------|
+| BaseCurrencyCode   | base_currency_code  | Base Currency       | string    | 100   |                   |                                |
+| QuoteCurrencyCode  | quote_currency_code | Quote Currency      | string    | 100   |                   |                                |
+| SourceName         | source_name         | Source Name         | string    | 180   |                   |                                |
+| OreKey             | ore_key             | ORE Key             | string    | 180   |                   |                                |
+| GmmInitialPrice    | gmm_initial_price   | Initial Price       | double    | 100   |                   |                                |
+| TicksPerHour       | ticks_per_hour      | Ticks/Hr            | int       | 80    |                   |                                |
+| ProcessType        | process_type        | Process Type        | string    | 100   | processTypeLabel  | ores.qt/ProcessTypeLabel.hpp   |
+| Enabled            | enabled             | Enabled             | bool      | 70    |                   |                                |
+| Version            | version             | Version             | int       | 70    |                   |                                |
+| ModifiedBy         | modified_by         | Modified By         | string    | 120   |                   |                                |
+| RecordedAt         | recorded_at         | Recorded At         | timestamp | 150   |                   |                                |
+
+*** Icon columns (Qt model)
+
+Base and quote currency each get their own flag icon, same as any other
+single-currency cell (e.g. Currency's own code column) — no compositing
+needed since they're separate columns.
+
+| column            | accessor            | field1              | field2 |
+|-------------------+----------------------+----------------------+--------|
+| BaseCurrencyCode  | currency_flag_icon  | base_currency_code  |        |
+| QuoteCurrencyCode | currency_flag_icon  | quote_currency_code |        |
+
+#+begin_src cpp :name display_role :implements 3DE1C3EC-8BBC-48F8-80A5-DD6CC0295A67
+    if (index.column() == ProcessType)
+        return processTypeLabel(fx_spot_generation_config.process_type);
+#+end_src

@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 44030333-A650-4EBF-9674-5819B8496114
+:END:
+#+title: Task: Model synthetic FX spot config as a DQ artefact type
+#+description: Hand-write the DQ artefact-type wiring for ores.synthetic.market_data_generation_config / its FX spot sub-config: the artefact-type row, shadow table (via ores.codegen.lookup_entity, as report_definitions does today), publish function, handler, and registrar wiring, following the report_definitions instance as the template — no codegen facet, that work is deferred.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_librarian_support:sprint_22:v0:
+#+owner: marco
+#+branch: feature/synthetic-data-librarian-support
+#+pr: 1408
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Wire =ores.synthetic.market_data_generation_config= and its FX spot
+sub-config into the DQ publish-from-dq pattern so a synthetic FX
+config becomes publishable from a DQ bundle: the artefact-type row,
+shadow table (an =ores.codegen.lookup_entity= model, same mechanism
+=report_definitions= uses today), the publish function
+(=ores_synthetic_publish_fx_spot_config_from_dq_fn= or equivalent),
+NATS handler, and registrar wiring. Deferred per
+[[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]]: this task
+hand-writes the publish function/handler/registrar using the
+=report_definitions= instance
+(=projects/ores.sql/create/reporting/reporting_publish_from_dq_create.sql=,
+=publish_from_dq_handler.{hpp,cpp}=,
+=projects/ores.reporting/core/src/messaging/registrar.cpp=) as the
+copy-and-adapt template, rather than waiting on the codegen facet.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- Artefact-type row, shadow table (codegen'd lookup_entity model),
+  publish function, handler, and registrar entry all exist and are
+  wired for the synthetic FX config.
+- The publish function writes only into =ores.synthetic='s own
+  tables, per the strict service-table isolation exception documented
+  in [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern]].
+- The hand-written function/handler/registrar are written so they can
+  be dropped in favour of generated equivalents once
+  [[id:53116563-2667-48CD-941E-8521D3E42CBC][the codegen facet story]] lands, with no other rework required.
+
+* Plan
+
+Modeled the artefact as one denormalized DQ artefact type
+(=synthetic_fx_spot_configs=) combining the parent
+=market_data_generation_config= fields (name, description, enabled)
+with the =fx_spot_generation_config= fields (currency pair, initial
+price, tick cadence, process type) in a single shadow row, since the
+publish path needs to create both a shared container and one or more
+FX sub-configs per party. Added an =ores.codegen.lookup_entity= model
+and a hand-written shadow table (codegen's lookup_entity path turned
+out to be broken — see Notes), a =SECURITY DEFINER= publish function
+that resolves/creates the shared container per (tenant, party) then
+upserts FX rows keyed by currency pair, a NATS handler mirroring
+=report_definitions='s file-for-file, registrar wiring, and the IAM
+execute grant. Verified end-to-end against the live dev DB (container
+reuse, version bump on upsert, insert_only skip behaviour) and built
+=ores.synthetic.core.lib= successfully. Ran
+=projects/ores.sql/utility/validate_schemas.sh= and fixed a missing
+drop script it flagged for the new artefact table.
+
+* Notes
+
+Found a pre-existing =ores.codegen= bug while trying to generate the
+shadow table: the enrichment step that populates the mustache
+=entity= context is gated on =model_type == 'schema'=, but
+=ores.codegen.lookup_entity= models map to internal model_type
+=enum=, so =sql_schema_artefact_create.mustache= cannot render from
+*any* lookup_entity model today — confirmed the same failure against
+the pre-existing =ores.dq.report_definition_lookup_entity.org=. Hand-
+wrote the shadow table to match the template's expected output
+column-for-column instead. Recorded on
+[[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]] as a
+prerequisite fix.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1408][#1408]] | [synthetic] Synthetic data librarian support: FX foundation |
+
+* Review
+
+** Round 1 (PR #1408, 2026-07-03) — 3 bot reviewers, issue-level
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | replace_all orphans GMM components (raised by all 3 reviewers) | synthetic_publish_from_dq_create.sql | Fixed | 53db445c — capture replaced fx-config ids before voiding, void matching GMM rows too |
+| 2 | subject_to_fn has no allow-list before SQL interpolation | publish_from_dq_handler.cpp | Fixed | 53db445c — added is_known_fn() allow-list |
+| 3 | Phase 3.5 comment vs [4/5] printed counter mismatch | provision_commands.cpp | Fixed | 53db445c — renumbered to Phase 4/Phase 5 |
+| 4 | No unit test for stamp_account_party | account_party_handler.hpp | Fixed | Reconsidered after pushback — 715f58b adds a real DB-backed regression test using existing database_helper/set_party() test infra |
+| 5 | Version churn on every GMM publish (unconditional insert) | synthetic_publish_from_dq_create.sql | Declined | Matches existing unconditional-insert pattern immediately above for fx_spot_generation_configs; not a new problem |
+| 6 | Container name picked from alphabetically-first artefact row | synthetic_publish_from_dq_create.sql | Declined | Cosmetic; matches this story's single-pair MVP scope, revisit once more pairs land |
+
+* Result
+
+Shipped: =synthetic_fx_spot_configs= is now a working DQ artefact
+type. New/changed files: the lookup_entity model
+(=projects/ores.dq/modeling/ores.dq.synthetic_fx_spot_config_lookup_entity.org=),
+the shadow artefact table and its drop script, the publish function
+(=projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql=),
+the NATS handler
+(=projects/ores.synthetic/core/{include,src}/.../publish_from_dq_handler.*=),
+registrar wiring, the IAM execute grant, and the artefact-type
+registration row. Zero-diff-able against a future codegen facet by
+design (Acceptance bullet 3). =validate_schemas.sh= passes clean.

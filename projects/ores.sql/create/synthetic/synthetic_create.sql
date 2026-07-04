@@ -24,3 +24,6 @@
 \ir ./synthetic_fx_spot_generation_configs_notify_trigger_create.sql
 \ir ./synthetic_gmm_components_create.sql
 \ir ./synthetic_gmm_components_notify_trigger_create.sql
+
+-- Publish-from-DQ
+\ir ./synthetic_publish_from_dq_create.sql

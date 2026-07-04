@@ -31,3 +31,8 @@ Structured as a composite component with three sub-components.
 | Module | Brief |
 |--------+-------|
 | [[id:E14FB1E5-0352-4C21-8888-7C25B0954307][ores.dq]] | Logical entities for the data-quality namespace. |
+
+* See also
+
+- [[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]] — end-to-end walkthrough of how bundle
+  data gets published into target services via the Librarian.

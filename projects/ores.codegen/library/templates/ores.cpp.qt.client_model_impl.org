@@ -35,6 +35,14 @@ The full template source. Edit here and re-tangle with
 #include "{{domain_entity.qt.protocol_include}}"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+{{#domain_entity.qt.has_icon_columns}}
+#include "ores.qt/FlagIconHelper.hpp"
+{{/domain_entity.qt.has_icon_columns}}
+{{#domain_entity.qt.columns}}
+{{#formatter_include}}
+#include "{{formatter_include}}"
+{{/formatter_include}}
+{{/domain_entity.qt.columns}}
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -92,6 +100,10 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
 {{#domain_entity.qt.columns}}
 {{^is_computed}}
         case {{enum_name}}:
+{{#formatter}}
+            return {{formatter}}({{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
+{{/formatter}}
+{{^formatter}}
 {{#is_string}}
             return QString::fromStdString({{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
 {{/is_string}}
@@ -109,9 +121,13 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
 {{#is_bool}}
             return {{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} ? tr("true") : tr("false");
 {{/is_bool}}
+{{#is_double}}
+            return {{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}};
+{{/is_double}}
 {{#is_timestamp}}
             return relative_time_helper::format({{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
 {{/is_timestamp}}
+{{/formatter}}
 {{/is_computed}}
 {{/domain_entity.qt.columns}}
         default:
@@ -125,6 +141,15 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
     }
 
 {{/domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.has_icon_columns}}
+    if (role == Qt::DecorationRole && imageCache_) {
+{{#domain_entity.qt.icon_columns}}
+        if (index.column() == Column::{{column}})
+            return {{accessor}}(*imageCache_, {{domain_entity.qt.item_var}}.{{field1}}{{#has_field2}}, {{domain_entity.qt.item_var}}.{{field2}}{{/has_field2}});
+{{/domain_entity.qt.icon_columns}}
+    }
+
+{{/domain_entity.qt.has_icon_columns}}
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color({{domain_entity.qt.key_to_string_prefix}}{{domain_entity.qt.item_var}}.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}});
     }

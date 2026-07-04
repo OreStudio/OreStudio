@@ -89,3 +89,19 @@ data, and Qt wizard refactor.
 - [ ] End-to-end test: run party provisioning wizard, confirm report
       definitions created in =ores_reporting_report_definitions_tbl= match the
       selected artefacts, confirm no check constraint violations
+
+*Update 2026-07-02:* the storage side of this capture is now done — the
+DQ Publish Pattern refactor
+([[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern]]) superseded the =ores_dq_report_definitions_publish_fn=/
+=reporting.v1.report-definitions.save= names above with
+=ores_reporting_publish_report_definitions_from_dq_fn= /
+=reporting.v1.report-definitions.publish-from-dq=, and the SQL schema,
+artefact table, seed data, and =ore_analytics= bundle all exist
+(see the worked example in
+[[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]]). What was never done is the
+*consumption* side: neither =PartyExecutePage= (Qt) nor
+=provision_commands::process_party= (=ores.shell=) were ever switched
+to call =dq.v1.bundles.publish= — both still do their own
+list-templates-then-create-individually RPC dance, bypassing the
+publish-from-dq path entirely. The remaining work is now tracked as
+[[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Unify report definitions provisioning onto the standard publish-from-dq path]].

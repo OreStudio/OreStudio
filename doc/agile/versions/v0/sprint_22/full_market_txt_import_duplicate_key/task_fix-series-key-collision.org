@@ -1,0 +1,149 @@
+:PROPERTIES:
+:ID: 3AB326D6-F7CC-41A9-B69E-BF8804C1E182
+:END:
+#+title: Task: Fix series key decomposition collision causing duplicate observation key
+#+description: Investigate ores.ore.core's series_key_registry.cpp qualifier_depth table to find which series_type(s) decompose distinct Example_56 quotes to the same (series_id, point_id) pair; fix the decomposition and verify a clean full-file import.
+#+type: task
+#+level: s1
+#+filetags: :market_data:sprint_22:v0:full_market_txt_import_duplicate_key:
+#+owner: marco
+#+branch: feature/fix-series-key-collision
+#+pr: 1437
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Investigate why importing =Legacy/Example_56/Input/market.txt= hits a
+unique-constraint violation on =market_observations=, and fix it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]] |
+| Now          | Done.                                   |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                                |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- Root cause identified. ✓ — not a =series_key_registry= decomposition
+  bug as originally suspected; the file genuinely repeats ~100
+  =(date, key)= pairs with a different value later in the file.
+- =marketdata import= against =Legacy/Example_56= succeeds cleanly. ✓
+- No regression on =TA002 IR Swap=/=MarketRisk HistSimVar=. ✓
+- Recipe updated with a passing result. ✓
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+Wrote a small standalone Python script simulating
+=series_key_registry.cpp='s decomposition table against the raw
+file, expecting to find a =qualifier_depth= bug. Instead found: the
+"collision" was two IDENTICAL raw =(date, key)= lines with different
+values (e.g. =20160205 FRA/RATE/EUR/1M/6M= appears twice, once as
+=0.02= both times; =CAPFLOOR= strikes repeat with genuinely different
+vol values). =sort market.txt | uniq -d= confirmed 103 such raw
+duplicate =(date, key)= pairs — a data characteristic of this ORE
+example file, not a registry bug. The initial hypothesis (recorded in
+the capture/story goal) was wrong; correcting it here rather than
+force-fitting a "fix" to the wrong cause.
+
+Root cause located, fix implemented in the importer
+(=projects/ores.ore/core/src/market/market_data_parser.cpp=), not the
+service, per explicit steer: duplicate handling is a parsing concern
+reusable by any caller, not specific to how =import_service= happens
+to persist the result.
+
+- Added =duplicate_policy= (=warn=/=error=) and a =parse_report=
+  (=warnings=/=errors=, each a =parse_issue{line_no, message}=) to
+  =market_data_parser.hpp=. Both =parse_market_data= and
+  =parse_fixings= gained =(duplicate_policy on_duplicate =
+  duplicate_policy::warn, parse_report* report = nullptr)= trailing
+  parameters — defaulted so every existing call site keeps compiling
+  unchanged.
+- =dedupe_by_date_and_key<T>= (local template in the parser .cpp):
+  drops all but the LAST occurrence of each =(date, key)= pair,
+  keeping the survivor at its own file-order position, and records
+  every dropped occurrence as a =parse_issue= in the requested bucket.
+  De-duplication always happens; =on_duplicate= only controls which
+  bucket (warnings vs errors) the report lands in.
+- =import_market_data_request= gained =duplicates_are_errors= (bool,
+  default false — permissive, matches real ORE example data).
+  =import_market_data_response= gained =warnings=/=errors=
+  (=vector<string>=). =import_service::import= passes the request's
+  policy through, prefixes each issue with which content it came from
+  ("market data"/"fixings"), and — only in error mode — skips
+  persisting the content that had errors rather than silently
+  importing data the caller asked to be told about.
+- =ores.shell='s =marketdata import= now prints =warnings=/=errors=
+  from the response (previously silently dropped them), so the shell
+  user actually sees what got de-duplicated.
+- Added 6 new Catch2 tests in
+  =market_market_data_parser_tests.cpp= covering: last-value-wins
+  dedup, warning vs error bucket, and same-key-different-date is NOT
+  a duplicate. All existing tests needed no changes (return types
+  unchanged; new parameters are defaulted).
+- Verified live end-to-end: =Legacy/Example_56= now imports
+  cleanly (176 series, 7777 observations = 7880 raw lines − 103
+  de-duplicated, exactly matching the =sort | uniq -d= count), with
+  103 warnings printed. Constructed a synthetic duplicate
+  =fixings.txt= to verify the fixings side too (2 fixings kept from 3
+  lines, later value =0.002= confirmed persisted, not the earlier
+  =0.001=). Re-ran =TA002 IR Swap=/=MarketRisk HistSimVar= to confirm
+  no regression.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1437][#1437]] | [ore,marketdata,shell,qt] Fix duplicate-key import failure with a warn/error policy |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Shell script drift: import_legacy_example_56.ores stale vs. its .org | projects/ores.shell/scripts/library/marketdata/import_legacy_example_56.ores | Fixed | Regenerated via tangle_shell_scripts; drift check now passes. |
+| 2 | Partial-import: success=false but a clean section (fixings) is still persisted; callers only print errors, dropping the persisted counts | import_service.cpp, marketdata_commands.cpp, ImportTradeDialog.cpp | Fixed | Both callers now print/log counts alongside errors on failure. |
+| 3 | No test coverage for import_service.cpp | projects/ores.marketdata/core/tests/service_import_service_tests.cpp | Fixed | Added 2 tests: warn-mode dedup+counts, error-mode mixed-section behavior. |
+| 4 | dedupe_by_date_and_key constructs the (date,key) composite twice per item | market_data_parser.cpp | Fixed | Composites now computed once, reused for both passes. |
+| 5 | sys_days conversion for map key is unnecessary (year_month_day has comparison operators) | market_data_parser.cpp | Declined | Intentional — clearer date-arithmetic intent. |
+| 6 | Prefer std::format over +/to_string concatenation | market_data_parser.cpp | Declined | Matches this file's existing style (exception-message concatenation above it), not a new deviation. |
+
+* Result
+
+Fixed. The failure was never a =series_key_registry= decomposition
+bug — =Legacy/Example_56/Input/market.txt= genuinely contains 103
+repeated =(date, key)= pairs with a different value later in the
+file. Added last-line-wins de-duplication to the importer itself
+(=ores.ore.core::market::parse_market_data=/=parse_fixings=), with a
+=duplicate_policy= (warn/error) and a =parse_report= so callers know
+what was de-duplicated instead of it happening silently.
+=import_market_data_request=/=response= carry this through
+(=duplicates_are_errors=, =warnings=, =errors=), and =ores.shell='s
+=marketdata import= now prints them.
+
+Verified live: =Legacy/Example_56= imports cleanly (176 series, 7777
+observations, 103 warnings — exact match against a raw =sort | uniq
+-d= count), a synthetic duplicate =fixings.txt= confirmed the
+fixings-side fix keeps the later value, and =TA002 IR Swap=/=MarketRisk
+HistSimVar= still import with no regression. 6 new unit tests added;
+all existing =market_data_parser= tests pass unchanged.
+
+Follow-up (not done here, out of scope): expose
+=duplicates_are_errors= as a shell flag (currently only reachable via
+the raw NATS request); the recipe notes this.

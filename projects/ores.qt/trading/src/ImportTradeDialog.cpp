@@ -718,10 +718,39 @@ void ImportTradeDialog::onImportClicked() {
                         BOOST_LOG_SEV(lg(), info)
                             << "Market data import succeeded: " << md_resp->series_count
                             << " series, " << md_resp->observation_count << " observations, "
-                            << md_resp->fixing_count << " fixings";
+                            << md_resp->fixing_count << " fixings, " << md_resp->warnings.size()
+                            << " warning(s)";
+                        for (const auto& warning : md_resp->warnings)
+                            BOOST_LOG_SEV(lg(), warn) << "Market data import warning: " << warning;
+
+                        if (self && !md_resp->warnings.empty()) {
+                            const auto count = static_cast<int>(md_resp->warnings.size());
+                            QMetaObject::invokeMethod(
+                                self,
+                                [self, count]() {
+                                    if (self)
+                                        self->statusLabel_->setText(
+                                            self->tr("Market data imported with %n duplicate "
+                                                     "warning(s) — see log for details.",
+                                                     "", count));
+                                },
+                                Qt::QueuedConnection);
+                        }
                     } else {
                         const std::string msg = md_resp ? md_resp->message : "no response";
                         BOOST_LOG_SEV(lg(), warn) << "Market data import failed: " << msg;
+                        if (md_resp) {
+                            // Sections without duplicate errors are still persisted (see
+                            // import_service::import) — log their counts too, so a partial
+                            // import doesn't read as "nothing happened".
+                            BOOST_LOG_SEV(lg(), warn)
+                                << "Counts for content that had no duplicate errors: "
+                                << md_resp->series_count << " series, "
+                                << md_resp->observation_count << " observations, "
+                                << md_resp->fixing_count << " fixings";
+                            for (const auto& error : md_resp->errors)
+                                BOOST_LOG_SEV(lg(), warn) << "Market data import error: " << error;
+                        }
                         if (self) {
                             const QString err = QString::fromStdString(msg);
                             QMetaObject::invokeMethod(

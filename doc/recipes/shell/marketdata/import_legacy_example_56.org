@@ -2,7 +2,7 @@
 :ID: DD527011-4F5E-4716-97A2-6AA8C70F3BB6
 :END:
 #+title: How do I import the 2016-02-05 ORE reference vintage market data?
-#+description: Import the 2016-02-05 ORE reference vintage market data via ores.shell's marketdata import command; currently fails on a known duplicate-key bug.
+#+description: Import the 2016-02-05 ORE reference vintage market data via ores.shell's marketdata import command.
 #+type: recipe
 #+level: cross
 #+filetags: :recipe:shell:marketdata:
@@ -15,27 +15,14 @@ anchor date, sourced from =Legacy/Example_56=. The =ores-shell= block
 below is tangled into the runnable script library as
 =import_legacy_example_56.ores=.
 
-*⚠ Currently broken.* Running this command against the full
-=market.txt= fails deterministically — confirmed on a freshly
-recreated database, not an artefact of a prior partial import — with:
-
-#+begin_example
-✗ Failed to import market data: Repository error: Executing INSERT failed: ERROR:  duplicate key value violates unique constraint "_hyper_15_9_chunk_market_observations_observations_current_uniq"
-DETAIL:  Key (tenant_id, party_id, series_id, observation_datetime, COALESCE(point_id, ''::text))=(<tenant>, 00000000-0000-0000-0000-000000000000, <series>, 2016-02-05 00:00:00+00, 6M) already exists.
-#+end_example
-
-Some distinct quotes in this file's full quote set appear to
-decompose to the same =(series_id, point_id)= pair in
-=ores.ore.core='s series key registry
-(=projects/ores.ore/core/src/market/series_key_registry.cpp=), which
-=market_observations='s uniqueness constraint then rejects. Smaller
-vintages (see
-[[id:438BECB1-0DF8-4350-9ABF-65F232CBB046][How do I import the TA002 IR Swap example market data?]] and
-[[id:9BF3F080-6692-4676-884B-D10DF859D096][How do I import the MarketRisk HistSimVar example market data and fixings?]])
-import cleanly, so this is specific to this file's quote set, not a
-general fixings/import bug. Tracked at
-[[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]] — check
-there before retrying this recipe.
+This vintage's =market.txt= genuinely repeats ~100 =(date, key)= pairs
+with a different value later in the file (real ORE example data, not
+a decomposition bug — see
+[[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]] for the
+investigation). =parse_market_data=/=parse_fixings=
+(=projects/ores.ore/core/src/market/market_data_parser.cpp=) now
+de-duplicate such repeats — the later line wins — and report each one
+via =import_market_data_response.warnings=, which the shell prints.
 
 * Question
 
@@ -80,19 +67,21 @@ EOF
 #+begin_example
 > marketdata import --file external/ore/examples/Legacy/Example_56/Input/market.txt --source ore.reference
 Importing market data...
-✗ Failed to import market data: Repository error: Executing INSERT failed: ERROR:  duplicate key value violates unique constraint "_hyper_15_9_chunk_market_observations_observations_current_uniq"
-DETAIL:  Key (tenant_id, party_id, series_id, observation_datetime, COALESCE(point_id, ''::text))=(<tenant>, 00000000-0000-0000-0000-000000000000, <series>, 2016-02-05 00:00:00+00, 6M) already exists.
-
-✗ Script aborted at line 1: marketdata import --file external/ore/examples/Legacy/Example_56/Input/market.txt --source ore.reference
+✓ Imported 176 series, 7777 observation(s), 0 fixing(s):
+⚠ 103 warning(s):
+  ⚠ market data line 296: duplicate key 'FRA/RATE/EUR/1M/6M' — superseded by line 272
+  ⚠ market data line 3294: duplicate key 'CAPFLOOR/RATE_LNVOL/USD/20Y/3M/0/0/0.06' — superseded by line 6564
+  ... (103 total — one per repeated key, each superseded by its later occurrence)
 > logout
 ✓ Logged out successfully.
 #+end_example
 
-Once [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]] is fixed,
-this command's expected shape is a success line similar to the other
-two vintages' recipes: =✓ Imported <N> series, <M> observation(s), 0
-fixing(s):= (no fixings for this vintage) — update this recipe's
-=#+RESULTS:= once that's true.
+7880 raw lines minus 103 de-duplicated repeats = 7777 observations,
+confirmed exactly. Pass =--duplicates-are-errors= semantics via the
+request's =duplicates_are_errors= field (not yet exposed as a shell
+flag) to treat these as hard failures instead — see
+=import_market_data_request= in
+=projects/ores.marketdata/api/include/ores.marketdata.api/messaging/import_protocol.hpp=.
 
 * Script
 
@@ -105,13 +94,12 @@ fixing(s):= (no fixings for this vintage) — update this recipe's
 Manual: run against a freshly recreated, Barclays-provisioned
 database (=compass db recreate -y -k= then the Barclays provisioning
 recipe), then =compass shell -u <user> -p <password> -f
-import_legacy_example_56.ores= — currently reproduces the failure
-above every time.
+import_legacy_example_56.ores=.
 
 * See also
 
-- [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]] — the tracking capture for this bug.
-- [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]] — the task this recipe unblocks once fixed.
+- [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]] — the story that fixed this.
+- [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]] — the task this recipe unblocks.
 - [[id:438BECB1-0DF8-4350-9ABF-65F232CBB046][How do I import the TA002 IR Swap example market data?]]
 - [[id:9BF3F080-6692-4676-884B-D10DF859D096][How do I import the MarketRisk HistSimVar example market data and fixings?]]
 - [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]

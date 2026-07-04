@@ -1,0 +1,183 @@
+:PROPERTIES:
+:ID: C1BE59FA-F9B6-4482-A5C0-868D37D47504
+:END:
+#+title: Story: Full market.txt import hits duplicate observation key
+#+description: Importing the full ORE reference market.txt via import_service hits a unique-constraint violation on market_observations, likely a series_key_registry decomposition collision.
+#+type: story
+#+level: s2
+#+filetags: :sprint_22:v0:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Importing the full ORE reference vintage file
+=external/ore/examples/Legacy/Example_56/Input/market.txt= via
+=ores.marketdata.core::service::import_service= (subject
+=marketdata.v1.import=) hits a Postgres unique-constraint violation
+on =_hyper_*_market_observations_observations_current_uniq=:
+duplicate key =(tenant_id, party_id, series_id, observation_datetime,
+point_id)=, e.g. =point_id = '6M'= at =2016-02-05=. Suspect the root
+cause is in =ores.ore.core='s series key decomposition
+(=projects/ores.ore/core/src/market/series_key_registry.cpp=,
+=qualifier_depth= table): some distinct source quote keys are being
+decomposed to the same =(series_id, point_id)= pair when they
+shouldn't be — e.g. two different =series_type=/qualifier
+combinations both ending up with =point_id = "6M"=. Needs
+investigation into which =series_type= entries collide and whether
+=qualifier_depth= is wrong for one of them, or whether the file
+genuinely contains a duplicate quote.
+
+Confirmed reproducible on a freshly recreated database (not an
+artefact of earlier partial/failed import attempts): re-running
+=marketdata import --file
+external/ore/examples/Legacy/Example_56/Input/market.txt --source
+ore.reference= against a clean Barclays-provisioned tenant hits the
+exact same error, same key shape.
+
+By contrast, =market.txt=/=fixings.txt= import against two smaller
+ORE example vintages succeeds cleanly, including real fixings
+import, which rules out fixings import itself as a suspect and
+narrows this to =market.txt='s larger/denser quote sets specifically:
+- =external/ore/examples/Academy/TA002_IR_Swap= (market + fixings):
+  =✓ Imported 4 series, 52 observation(s), 0 fixing(s)= — this
+  vintage's =fixings.txt= is present but empty, so the =0= is
+  expected, not a fixings bug.
+- =external/ore/examples/MarketRisk/Input/HistSimVar= (market +
+  fixings): =✓ Imported 217 series, 7172 observation(s), 904
+  fixing(s)= — real, non-empty fixings imported correctly. This is
+  good evidence fixing import itself works; the collision is
+  specific to =market.txt='s series/observation decomposition, not to
+  fixings handling.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Done — all tasks closed.               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                                |
+| Last touched  | 2026-07-04                               |
+
+* Acceptance
+
+- Root cause identified. ✓ — corrected from the original hypothesis:
+  not a =series_key_registry.cpp= decomposition bug at all.
+  =Legacy/Example_56/Input/market.txt= genuinely repeats ~100 raw
+  =(date, key)= pairs with a different value later in the file
+  (confirmed via =sort market.txt | uniq -d=).
+- =marketdata import --file
+  external/ore/examples/Legacy/Example_56/Input/market.txt --source
+  ore.reference= succeeds cleanly against a freshly recreated,
+  Barclays-provisioned database — no unique-constraint violation. ✓
+- The two already-passing vintages (TA002 IR Swap, MarketRisk
+  HistSimVar) still import cleanly — no regression. ✓
+- [[id:DD527011-4F5E-4716-97A2-6AA8C70F3BB6][How do I import the 2016-02-05 ORE reference vintage market data?]]'s
+  recipe updated to show a passing =#+RESULTS:=. ✓
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3AB326D6-F7CC-41A9-B69E-BF8804C1E182][Fix series key decomposition collision causing duplicate observation key]] | DONE | 2026-07-04 | 2026-07-04 | Investigate ores.ore.core's series_key_registry.cpp qualifier_depth table to find which series_type(s) decompose distinct Example_56 quotes to the same (series_id, point_id) pair; fix the decomposition and verify a clean full-file import. |
+
+* Decisions
+
+- Corrected the original hypothesis: this was never a
+  =series_key_registry= decomposition collision — the file itself
+  contains genuine raw duplicate =(date, key)= pairs with differing
+  values. Recording this here so the capture's original "suspect
+  qualifier_depth" framing isn't mistaken for what actually happened.
+- Fix lives in the importer (=ores.ore.core::market::parse_market_data=/
+  =parse_fixings=), not =import_service=, per explicit steer:
+  duplicate handling is a parsing concern, reusable by any caller —
+  not something specific to how the service happens to persist the
+  result.
+- Duplicate handling is a policy (=duplicate_policy::warn= / =error=),
+  not a hardcoded behaviour: last-line-wins de-duplication always
+  happens (matches how a sequential loader would naturally behave),
+  but the caller decides whether repeats are reported as warnings
+  (import proceeds) or errors (affected content is not persisted).
+  Default is =warn=, since real ORE example data contains repeats and
+  a strict default would make this vintage permanently unimportable.
+- Exposing =duplicates_are_errors= as an =ores.shell= flag is
+  deliberately out of scope here — the request field exists and
+  works over NATS, but wiring a =--strict= flag through the shell
+  command is left as follow-up since nothing currently needs it.
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-07-04 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Importing the full ORE reference vintage file
+=external/ore/examples/Legacy/Example_56/Input/market.txt= via
+=ores.marketdata.core::service::import_service= (subject
+=marketdata.v1.import=) hits a Postgres unique-constraint violation
+on =_hyper_*_market_observations_observations_current_uniq=:
+duplicate key =(tenant_id, party_id, series_id, observation_datetime,
+point_id)=, e.g. =point_id = '6M'= at =2016-02-05=. Suspect the root
+cause is in =ores.ore.core='s series key decomposition
+(=projects/ores.ore/core/src/market/series_key_registry.cpp=,
+=qualifier_depth= table): some distinct source quote keys are being
+decomposed to the same =(series_id, point_id)= pair when they
+shouldn't be — e.g. two different =series_type=/qualifier
+combinations both ending up with =point_id = "6M"=. Needs
+investigation into which =series_type= entries collide and whether
+=qualifier_depth= is wrong for one of them, or whether the file
+genuinely contains a duplicate quote.
+
+Confirmed reproducible on a freshly recreated database (not an
+artefact of earlier partial/failed import attempts): re-running
+=marketdata import --file
+external/ore/examples/Legacy/Example_56/Input/market.txt --source
+ore.reference= against a clean Barclays-provisioned tenant hits the
+exact same error, same key shape.
+
+By contrast, =market.txt=/=fixings.txt= import against two smaller
+ORE example vintages succeeds cleanly, including real fixings
+import, which rules out fixings import itself as a suspect and
+narrows this to =market.txt='s larger/denser quote sets specifically:
+- =external/ore/examples/Academy/TA002_IR_Swap= (market + fixings):
+  =✓ Imported 4 series, 52 observation(s), 0 fixing(s)= — this
+  vintage's =fixings.txt= is present but empty, so the =0= is
+  expected, not a fixings bug.
+- =external/ore/examples/MarketRisk/Input/HistSimVar= (market +
+  fixings): =✓ Imported 217 series, 7172 observation(s), 904
+  fixing(s)= — real, non-empty fixings imported correctly. This is
+  good evidence fixing import itself works; the collision is
+  specific to =market.txt='s series/observation decomposition, not to
+  fixings handling.
+
+** Why
+
+Surfaced while testing the new =ores.shell= =marketdata import=
+command (task E10830F5-1596-4748-99BB-41B8057CEFA4) against the full
+file rather than a curated subset. Prior testing of the import
+mechanism ([[id:32D9596A-ADB6-4ECE-9307-025B58C4C82A][Review and extend ores.marketdata import for ORE reference vintages]])
+likely only exercised a handful of curated quotes (EURUSD/GBPUSD
+spot), not the full file, so this gap went unnoticed. Blocks a clean
+full-file import of the 2016-02-05 ORE reference vintage.
+
+** References
+
+- =projects/ores.marketdata/core/src/service/import_service.cpp=
+- =projects/ores.ore/core/src/market/series_key_registry.cpp=
+- =external/ore/examples/Legacy/Example_56/Input/market.txt=
+
+** See also
+
+- [[id:32D9596A-ADB6-4ECE-9307-025B58C4C82A][Review and extend ores.marketdata import for ORE reference vintages]]
+- [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]]
+- [[id:DD527011-4F5E-4716-97A2-6AA8C70F3BB6][How do I import the 2016-02-05 ORE reference vintage market data?]] — the recipe blocked on this bug.

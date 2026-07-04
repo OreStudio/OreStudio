@@ -160,61 +160,88 @@ import_service::import(const messaging::import_market_data_request& req) {
         return s.id;
     };
 
+    const auto on_duplicate = req.duplicates_are_errors ? ores::ore::market::duplicate_policy::error
+                                                        : ores::ore::market::duplicate_policy::warn;
+
+    auto append_issues = [](std::vector<std::string>& dest,
+                            const std::vector<ores::ore::market::parse_issue>& issues,
+                            const std::string& section) {
+        for (const auto& issue : issues)
+            dest.push_back(section + " line " + std::to_string(issue.line_no) + ": " +
+                           issue.message);
+    };
+
     // ── Import market observations ────────────────────────────────────────────
     if (!req.market_data_content.empty()) {
         std::istringstream in(req.market_data_content);
-        const auto data = ores::ore::market::parse_market_data(in);
+        ores::ore::market::parse_report report;
+        const auto data = ores::ore::market::parse_market_data(in, on_duplicate, &report);
+        append_issues(resp.warnings, report.warnings, "market data");
+        append_issues(resp.errors, report.errors, "market data");
 
-        std::vector<domain::market_observation> observations;
-        observations.reserve(data.size());
+        // parse_market_data already de-duplicated repeated (date, key)
+        // pairs (last-line-wins) — see duplicate_policy. In error mode,
+        // skip persisting this content rather than silently importing
+        // data the caller asked to be told about instead.
+        if (report.errors.empty()) {
+            std::vector<domain::market_observation> observations;
+            observations.reserve(data.size());
+            for (const auto& d : data) {
+                const auto sid = find_or_create_series(d.series_type, d.metric, d.qualifier);
 
-        for (const auto& d : data) {
-            const auto sid = find_or_create_series(d.series_type, d.metric, d.qualifier);
+                domain::market_observation obs;
+                obs.id = gen();
+                obs.tenant_id = ctx_.tenant_id();
+                obs.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
+                obs.series_id = sid;
+                obs.observation_datetime = std::chrono::sys_days{d.date};
+                obs.point_id = d.point_id.value_or("");
+                obs.source = req.source;
+                obs.value = d.value;
+                observations.push_back(std::move(obs));
+            }
 
-            domain::market_observation obs;
-            obs.id = gen();
-            obs.tenant_id = ctx_.tenant_id();
-            obs.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
-            obs.series_id = sid;
-            obs.observation_datetime = std::chrono::sys_days{d.date};
-            obs.point_id = d.point_id.value_or("");
-            obs.source = req.source;
-            obs.value = d.value;
-            observations.push_back(std::move(obs));
+            obs_repo.write(ctx_, observations);
+            resp.observation_count = static_cast<int>(observations.size());
         }
-
-        obs_repo.write(ctx_, observations);
-        resp.observation_count = static_cast<int>(observations.size());
     }
 
     // ── Import fixings ────────────────────────────────────────────────────────
     if (!req.fixings_content.empty()) {
         std::istringstream in(req.fixings_content);
-        const auto data = ores::ore::market::parse_fixings(in);
+        ores::ore::market::parse_report report;
+        const auto data = ores::ore::market::parse_fixings(in, on_duplicate, &report);
+        append_issues(resp.warnings, report.warnings, "fixings");
+        append_issues(resp.errors, report.errors, "fixings");
 
-        std::vector<domain::market_fixing> fixings;
-        fixings.reserve(data.size());
+        if (report.errors.empty()) {
+            std::vector<domain::market_fixing> fixings;
+            fixings.reserve(data.size());
+            for (const auto& f : data) {
+                // Fixing series: series_type=FIXING, metric=RATE, qualifier=index_name
+                const auto sid = find_or_create_series("FIXING", "RATE", f.qualifier);
 
-        for (const auto& f : data) {
-            // Fixing series: series_type=FIXING, metric=RATE, qualifier=index_name
-            const auto sid = find_or_create_series("FIXING", "RATE", f.qualifier);
+                domain::market_fixing fix;
+                fix.id = gen();
+                fix.tenant_id = ctx_.tenant_id();
+                fix.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
+                fix.series_id = sid;
+                fix.fixing_date = f.date;
+                fix.source = req.source;
+                fix.value = f.value;
+                fixings.push_back(std::move(fix));
+            }
 
-            domain::market_fixing fix;
-            fix.id = gen();
-            fix.tenant_id = ctx_.tenant_id();
-            fix.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
-            fix.series_id = sid;
-            fix.fixing_date = f.date;
-            fix.source = req.source;
-            fix.value = f.value;
-            fixings.push_back(std::move(fix));
+            fixings_repo.write(ctx_, fixings);
+            resp.fixing_count = static_cast<int>(fixings.size());
         }
-
-        fixings_repo.write(ctx_, fixings);
-        resp.fixing_count = static_cast<int>(fixings.size());
     }
 
-    resp.success = true;
+    resp.success = resp.errors.empty();
+    if (!resp.success) {
+        resp.message = std::to_string(resp.errors.size()) +
+                      " duplicate error(s) found; affected content was not imported.";
+    }
     return resp;
 }
 

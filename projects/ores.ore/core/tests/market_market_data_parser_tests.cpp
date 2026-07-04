@@ -206,6 +206,61 @@ TEST_CASE("parse_market_data_parses_multiple_entries_in_order", tags) {
 }
 
 // =============================================================================
+// parse_market_data — duplicate (date, key) handling
+// =============================================================================
+
+TEST_CASE("parse_market_data_dedupes_repeated_key_keeping_last_value", tags) {
+    using ores::ore::market::duplicate_policy;
+    std::istringstream in("20160205 FX/RATE/EUR/CHF 1.0\n"
+                          "20160205 EQUITY/PRICE/SP5/USD 2023.81\n"
+                          "20160205 FX/RATE/EUR/CHF 1.5\n");
+    const auto result = parse_market_data(in, duplicate_policy::warn);
+
+    REQUIRE(result.size() == 2);
+    CHECK(result[0].key == "EQUITY/PRICE/SP5/USD");
+    CHECK(result[1].key == "FX/RATE/EUR/CHF");
+    CHECK(result[1].value == "1.5");
+}
+
+TEST_CASE("parse_market_data_reports_duplicate_as_warning_by_default", tags) {
+    using ores::ore::market::parse_report;
+    std::istringstream in("20160205 FX/RATE/EUR/CHF 1.0\n"
+                          "20160205 FX/RATE/EUR/CHF 1.5\n");
+    parse_report report;
+    const auto result = parse_market_data(in, ores::ore::market::duplicate_policy::warn, &report);
+
+    CHECK(result.size() == 1);
+    REQUIRE(report.warnings.size() == 1);
+    CHECK(report.errors.empty());
+    CHECK(report.warnings[0].line_no == 1);
+    CHECK(report.warnings[0].message.find("FX/RATE/EUR/CHF") != std::string::npos);
+    CHECK(report.warnings[0].message.find("line 2") != std::string::npos);
+}
+
+TEST_CASE("parse_market_data_reports_duplicate_as_error_when_requested", tags) {
+    using ores::ore::market::parse_report;
+    std::istringstream in("20160205 FX/RATE/EUR/CHF 1.0\n"
+                          "20160205 FX/RATE/EUR/CHF 1.5\n");
+    parse_report report;
+    const auto result = parse_market_data(in, ores::ore::market::duplicate_policy::error, &report);
+
+    CHECK(result.size() == 1);
+    CHECK(report.warnings.empty());
+    REQUIRE(report.errors.size() == 1);
+    CHECK(report.errors[0].line_no == 1);
+}
+
+TEST_CASE("parse_market_data_same_key_different_date_is_not_a_duplicate", tags) {
+    std::istringstream in("20160205 FX/RATE/EUR/CHF 1.0\n"
+                          "20160206 FX/RATE/EUR/CHF 1.5\n");
+    ores::ore::market::parse_report report;
+    const auto result = parse_market_data(in, ores::ore::market::duplicate_policy::warn, &report);
+
+    CHECK(result.size() == 2);
+    CHECK(report.warnings.empty());
+}
+
+// =============================================================================
 // parse_fixings — date formats
 // =============================================================================
 
@@ -227,6 +282,23 @@ TEST_CASE("parse_fixings_accepts_yyyymmdd_date", tags) {
     CHECK(result[0].date == ymd(2016, 2, 5));
     CHECK(result[0].index_name == "EUR-EONIA");
     CHECK(result[0].value == "-0.003560");
+}
+
+// =============================================================================
+// parse_fixings — duplicate (date, index_name) handling
+// =============================================================================
+
+TEST_CASE("parse_fixings_dedupes_repeated_index_keeping_last_value", tags) {
+    std::istringstream in("2016-01-28 EUR-EONIA 0.001\n"
+                          "2016-01-28 EUR-EONIA 0.002\n");
+    ores::ore::market::parse_report report;
+    const auto result =
+        parse_fixings(in, ores::ore::market::duplicate_policy::warn, &report);
+
+    REQUIRE(result.size() == 1);
+    CHECK(result[0].value == "0.002");
+    REQUIRE(report.warnings.size() == 1);
+    CHECK(report.errors.empty());
 }
 
 // =============================================================================

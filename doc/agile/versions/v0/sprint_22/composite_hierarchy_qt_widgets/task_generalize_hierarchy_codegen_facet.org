@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:refdata:hierarchy:qt:sprint_22:v0:composite_hierarchy_qt_widgets:
 #+owner: marco
-#+branch:
+#+branch: feature/appraise-party-all-layers
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -38,11 +38,11 @@ whole subtree in one query).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Surveying codegen facet mechanics before designing the has_parent_id facet. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Implement facet, apply to party first (has an existing hand-written equivalent to migrate). |
 | Last touched | 2026-07-04                               |
 
 * Acceptance

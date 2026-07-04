@@ -29,12 +29,12 @@ regressions found.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
-| Now          | Unblocked: root cause was a legacy env's NATS server squatting on solid_dirac's ports, not a controller bug (see PR #1415). Service fleet is up clean (24/24). Resuming Qt UI verification. |
+| Now          | Done. User confirmed live: list, detail edit/save, and eventing work correctly end-to-end. |
 | Waiting on   | Nothing.                               |
-| Next         | Launch the Qt client and drive party_type list/detail/history/delete/eventing. |
-| Last touched | 2026-07-03                               |
+| Next         | N/A.                  |
+| Last touched | 2026-07-04                               |
 
 * Acceptance
 
@@ -138,3 +138,15 @@ list/detail/save/eventing all work correctly.
 |   |                 |      |          |       |
 
 * Result
+
+End-to-end verification passed on a fresh Barclays Plc tenant with the
+full 24-service fleet up: list window loads party types, detail dialog
+edit/save round-trips correctly, and NATS eventing fires (user
+confirmed live in the Qt client, "looks great" after the plugin
+dedup/eventing fix — see Notes). This closes the story's Qt UI
+acceptance criteria for party_type; along the way this task also fixed
+two unrelated real bugs (NATS port collision infra fix, PR #1415; and
+party_type's eventing/plugin-duplication fix in this PR) and filed two
+follow-up backlog items (the =application.cpp= eventing-registration
+gap affecting ~14 other entities, and dissolving =ores.qt.party= into
+=ores.qt.refdata=).

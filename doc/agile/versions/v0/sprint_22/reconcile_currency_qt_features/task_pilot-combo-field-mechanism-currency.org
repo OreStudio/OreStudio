@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 8AA363F8-2C83-4A96-99A0-B76A7D1BF65C
+:END:
+#+title: Task: Pilot the combo-field template mechanism for currency's 3 soft-FK fields
+#+description: Currency's monetary_nature, market_tier, and rounding_type detail-dialog fields are soft-FK combo boxes backed by reference tables, and the qt codegen profile has a combo-field mechanism that no entity currently exercises. Pilot it end-to-end for currency's 3 fields (first real consumer), or explicitly defer with a documented reason if the mechanism is not yet fit for this shape of data.
+#+type: task
+#+level: s1
+#+filetags: :reconcile_currency_qt_features:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Exercise the qt codegen profile's combo-field mechanism for the first
+time, end-to-end, using currency's 3 soft-FK detail-dialog fields
+(=monetary_nature=, =market_tier=, =rounding_type=). Confirm the
+mechanism can drive real reference-table-backed dropdowns as currently
+implemented in =CurrencyDetailDialog=, or find its gaps. If it is not
+yet fit for this shape of data, defer piloting it and document the
+concrete reason so the parent story's regenerate plan can account for
+it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- Combo-field mechanism piloted end-to-end for all 3 currency fields,
+  with the generated dropdowns behaving equivalently to the current
+  hand-written ones — OR explicitly deferred with a documented reason.
+- Any gaps found in the mechanism itself are recorded, not silently
+  worked around.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

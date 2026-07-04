@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 6E0CD16E-1E74-4E2A-BB0E-776F69EF80CB
+:END:
+#+title: Task: Produce concrete regenerate/reconcile plan for Sync Qt codegen for currency
+#+description: Turn the triage and combo-field piloting output into a concrete, reviewed plan for the blocked 'Sync Qt codegen for currency' task: which of the 12 output files change, which template capabilities need to land first, and which currency-specific code must be preserved across regeneration. Once this plan exists, the Qt sync task can proceed as a reviewed mechanical regenerate + reconcile pass rather than a speculative rewrite.
+#+type: task
+#+level: s1
+#+filetags: :reconcile_currency_qt_features:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Turn the triage decisions and combo-field piloting outcome into a
+concrete, reviewed plan for the blocked "Sync Qt codegen for currency"
+task: for each of the 12 generated output files, what changes; which
+template capabilities (e.g. generalised import/export knobs,
+version-navigation UI) need to land in the qt profile first; and which
+currency-specific code must be explicitly preserved across
+regeneration rather than overwritten.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- Plan covers every one of the 12 qt-profile output files for currency.
+- Plan states, per file, what template work (if any) must land before
+  regeneration, and what custom code must be preserved.
+- Plan is reviewed before "Sync Qt codegen for currency" resumes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

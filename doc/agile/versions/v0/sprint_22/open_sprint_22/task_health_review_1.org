@@ -1,0 +1,234 @@
+:PROPERTIES:
+:ID: FE18CB49-C6D0-4F1B-9B56-04E5738032D9
+:END:
+#+title: Task: Health review 1 — sprint 22 mid-sprint analysis
+#+description: System 2 health review 1 of sprint 22.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_22:sprint_22:v0:
+#+owner: marco
+#+branch: feature/sprint-22-health-review-1
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a System 2 mid-sprint health check for Sprint 22: assess goal
+alignment, sprint load, PR velocity, story/task balance, and focus,
+then record a critical, evidence-based verdict so drift is caught
+before sprint close.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] |
+| Now          | Complete.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None — see Result for follow-ups.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- Six-dimension System 2 analysis performed against sprint.org, story/task
+  files, git log, and PR data.
+- A critical, non-reassuring overall verdict recorded with named concerns.
+- Summary row appended to sprint.org's =* Health Review= table.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** Review on 2026-07-04 (day 3 of 7)
+
+*** Goal alignment
+
+The mission states two goals: (A) continue commissioning =ores.refdata=
+entities, and (B) correct codegen C++ generation drift, carrying postponed
+sprint 21 stories. Of the 49 stories in sprint.org's tables, 17 map cleanly
+to Goal A (the per-entity commissioning stories: currency and its aux types,
+party and its aux types, book/book_status, business_unit/centre, portfolio,
+purpose_type, contact_type, counterparty, plus the currency/Qt reconciliation
+story). 12 map to Goal B (the Codegen epic stories plus the two explicitly
+"carried from sprint 21" stories — Resolve codegen model unification
+blockers, Compass quality of life). The remaining 20 stories (41% of the
+sprint) — the entire Market data generation epic (8), most of Compass (4),
+all of Infrastructure (5), Documentation (1), Hotfixes (1), and sprint-admin
+(1) — do not serve either stated goal. None of this is wasted work, but it
+means the mission statement undersells what the sprint is actually doing;
+calling this "a commissioning + codegen-drift sprint" is a wishful
+simplification of a sprint that is really running four workstreams at once.
+Neither goal is uncovered — both have substantial, active work — but Goal A
+in particular is thin on completions relative to its size (see below).
+
+| Goal                          | Coverage         | Stories (DONE/STARTED/BACKLOG) | Verdict |
+|--------------------------------+-------------------+----------------------------------+---------|
+| A — refdata commissioning      | 17 stories        | 1 / 2 / 14                      | AMBER   |
+| B — codegen drift + carried    | 12 stories        | 5 / 0 / 7                       | GREEN   |
+| Other (market data/compass/infra/doc/hotfix/admin) | 20 stories | 6 / 3 / 11        | (unmapped) |
+
+*** Sprint load
+
+193 commits landed by mid-day-3 (37 on 07-02, 114 on 07-03, 42 partial on
+07-04) against a 7-day, ≤300-commit target. The day-2 spike of 114 is more
+than half the entire sprint budget in a single day — either a burst of
+genuinely productive parallel work (36 PRs merged in the same window
+supports this) or a sign that review depth is being sacrificed for
+throughput. Projecting from the two complete days (75.5 commits/day average)
+across the remaining ~4.5 days gives a projected total in the 520-580 range
+— well past the 400-commit RED line, even allowing for the pace to cool.
+Even a conservative reading (193 commits in under 3 days, needing to hold
+under ~27/day for the remaining 4 days to land at 300) requires a sharp,
+unobserved slowdown that hasn't shown up yet.
+
+| Metric                     | Value       | Target    | Status |
+|-----------------------------+-------------+-----------+--------|
+| Commits so far (day 3)      | 193         | —         | —      |
+| Elapsed days                | 2.x (day 3 partial) | 7 | —      |
+| Commits/day (full days)     | 75.5        | —         | —      |
+| Projected total at close    | ~520-580    | ≤300      | RED    |
+
+*** PR velocity
+
+36 PRs merged since sprint start against 0 currently open — by the
+mechanical PR metric this is excellent: roughly 14 PRs/day, no long-open
+review bottleneck, and no visible WIP pileup. But the =gh pr= view is
+misleadingly clean: the fleet shows 8 active worktrees with in-progress
+branches that haven't yet become PRs, and three of them are already
+dangerously stale — 35, 51, and 117 commits behind main respectively. That
+is WIP accumulation the PR metric cannot see: those branches will face
+brutal rebases (or silent abandonment) the longer they sit, and the
+117-behind branch (commission_purpose_type) is functionally orphaned at this
+point. The mechanical PR-velocity verdict is GREEN, but it is hiding a real
+integration-debt problem outside its own field of view.
+
+| Metric                          | Value | Notes                                    |
+|-----------------------------------+-------+-------------------------------------------|
+| PRs merged since sprint start     | 36    | ~14/day                                  |
+| PRs currently open                | 0     | —                                         |
+| Stale non-PR branches (>30 behind)| 2     | 51 behind (book), 117 behind (purpose_type) |
+| Stale non-PR branches (>1 day WIP)| 1     | 35 behind (currency)                     |
+
+*** Story and task balance
+
+175 tasks exist across the sprint's 49 stories: 96 DONE, 69 BACKLOG, 7
+ABANDONED, 2 BLOCKED, 1 STARTED. At the story level, 12 stories are DONE
+against 37 BACKLOG+STARTED, a DONE ratio of 0.324 — inside the skill's
+0.3-0.5 AMBER band, not the failing zone, but close to the floor for day 3
+of 7. Fifteen stories (31% of the sprint) have zero tasks filed at all —
+entirely undecomposed. Encouragingly, none of the five currently-STARTED
+stories are among them (each STARTED story has at least 2 tasks), so there
+is no active black-box story right now. But undecomposed BACKLOG is still a
+planning risk: with 4 days left, several zero-task commission_* stories
+(book, business_centre, business_unit, contact_type, party,
+party_id_scheme, portfolio, purpose_type) will need decomposition before any
+visible progress can be tracked on them, and that hasn't started.
+
+Separately: =commission_counterparty='s own story.org shows =State: STARTED=
+with all three of its tasks DONE — the story was never closed even though
+the work is finished. Worse, sprint.org's Stories table for this same story
+still shows =BACKLOG=, a state that matches neither the story file nor
+reality. This is a live example of the paperwork drifting behind actual
+work, not a one-off: two other fleet-active stories (commission_book,
+commission_purpose_type, commission_party) show BACKLOG/zero-tasks in the
+docs while their worktrees have accumulated dozens to well over a hundred
+commits of in-progress work.
+
+| Story                  | State (story.org) | State (sprint.org) | Tasks | Notes                              |
+|-------------------------+--------------------+----------------------+-------+-------------------------------------|
+| commission_counterparty | STARTED            | BACKLOG              | 3 (3 DONE) | Work finished, story never closed; sprint.org also stale |
+| commission_currency     | STARTED            | BACKLOG              | 18    | Active (brave_hopper), 35 commits behind main |
+| commission_book         | BACKLOG            | BACKLOG              | 0     | Fleet shows active work (clever_dijkstra), 51 behind — docs blind to it |
+| commission_purpose_type | BACKLOG            | BACKLOG              | 0     | Fleet shows active work (eager_maxwell), 117 behind — near-abandoned |
+| commission_party        | BACKLOG            | BACKLOG              | 0     | Fleet shows active work (solid_dirac), 5 behind |
+
+*** Focus signal
+
+sprint.org tracks 5 STARTED stories: commission_counterparty,
+commission_currency, compass_github_actions_support, open_sprint_22, and
+synthetic-data-collections — spanning three themes (refdata commissioning,
+Compass tooling, market data) plus sprint admin. That alone lands in the
+4-5-stories / mixed-themes AMBER band. But the paperwork undercounts actual
+concurrency: the fleet shows 8 worktrees with active branches, three of
+which (commission_book, commission_purpose_type, macos_ci relevance-guard
+hotfix — the last already closed as DONE) are not reflected as STARTED in
+the docs at all. Real concurrent work in flight is closer to 6-8 threads
+across commissioning, codegen/hotfix, market data, and Compass — squarely in
+the "6+ or wildly divergent themes" RED band once fleet reality is counted
+instead of the docs. =open_sprint_22= itself is also still STARTED on day 3
+despite its own tasks being effectively wrapped up (2 of 3 DONE), which
+should have been closed already and is itself a small focus/paperwork leak.
+
+| Metric                                    | Value | Verdict |
+|---------------------------------------------+-------+---------|
+| STARTED stories (per sprint.org)            | 5     | AMBER   |
+| Active branches (per fleet)                 | 8     | RED     |
+| Distinct themes in flight (fleet-adjusted)  | 4+    | RED     |
+
+*** Velocity
+
+| Metric                        | Value      | Notes                                            |
+|---------------------------------+------------+---------------------------------------------------|
+| Stories DONE so far             | 12 / 49    | 24% of sprint scope closed by day 3               |
+| Tasks DONE so far                | 96 / 175   | 55% — high because several fully-scoped stories (currency, party_type, compass QoL) closed out task-by-task |
+| Days elapsed / remaining        | ~3 / 4     | Roughly half the calendar, under a quarter of story scope closed |
+
+The task-completion rate looks strong in isolation, but it is concentrated
+in a handful of stories that were already well-decomposed and largely
+finished before the sprint's stated commissioning goal (17 stories, 1 DONE)
+made real progress. Goal A specifically is behind pace for the calendar
+elapsed.
+
+*** Overall verdict
+
+| Dimension               | Verdict |
+|--------------------------+---------|
+| Goal alignment           | AMBER   |
+| Sprint load              | RED     |
+| PR velocity              | GREEN (with hidden WIP risk) |
+| Story and task balance   | AMBER   |
+| Focus signal             | RED     |
+
+*Overall: RED.* Two dimensions land RED — sprint load (commit pace projects
+to nearly double the 300-commit target even on a conservative reading) and
+focus (five stories are tracked as STARTED, but the real fleet picture shows
+6-8 concurrent threads spanning four unrelated themes, with two branches
+(51 and 117 commits behind main) at real risk of becoming unmergeable or
+abandoned). The single most important concern is that the paperwork is
+actively lying about the sprint's true state: commission_counterparty is
+finished but still shows STARTED/BACKLOG in two different places,
+commission_book and commission_purpose_type show zero tasks and BACKLOG
+while their worktrees have been running for dozens to well over a hundred
+commits. If sprint.org and story.org are not trusted as ground truth, every
+other metric in this review is built on sand. The one fix that would most
+improve sprint health: stop new work, spend an hour reconciling every
+fleet-active branch against its story.org state (closing commission_counterparty,
+correcting book/purpose_type/party to STARTED with real task breakdowns),
+and force a decision on the two most-stale branches (51 and 117 commits
+behind) — rebase now or abandon, before they get further from main.

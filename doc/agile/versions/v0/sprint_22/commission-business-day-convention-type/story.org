@@ -8,7 +8,7 @@
 #+filetags: :product:refdata:commissioning:business_day_convention_type:sprint_22:v0:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -32,7 +32,7 @@ every other refdata soft-FK.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -55,7 +55,7 @@ every other refdata soft-FK.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:F7C39C66-DFA0-4A10-B473-F3827B8A7187][Move business_day_convention_type to ores.refdata and commission fully]] | BACKLOG | | | Model business_day_convention_type as ores.codegen.entity in ores.refdata, generate SQL/domain/repository/service/messaging/Qt via codegen, wire CMake and menus, then remove the ores.trading original. |
+| [[id:F7C39C66-DFA0-4A10-B473-F3827B8A7187][Move business_day_convention_type to ores.refdata and commission fully]] | STARTED | 2026-07-04 | | Model business_day_convention_type as ores.codegen.entity in ores.refdata, generate SQL/domain/repository/service/messaging/Qt via codegen, wire CMake and menus, then remove the ores.trading original. |
 
 * Decisions
 

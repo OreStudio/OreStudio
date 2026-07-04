@@ -60,9 +60,9 @@ and the risk of silently dropping a working feature is high.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Triage and combo-field pilot done (see Decisions). Regenerate plan remains. |
+| Now           | All 3 tasks done. Regenerate plan written (per-file table + 9-step sequence); recommends splitting "Sync Qt codegen for currency" into per-step sub-tasks. |
 | Waiting on    | Nothing.                               |
-| Next          | Produce the concrete regenerate/reconcile plan for "Sync Qt codegen for currency". |
+| Next          | Close this story; split "Sync Qt codegen for currency" per the plan and unblock it. |
 | Last touched  | 2026-07-04                               |
 
 * Acceptance
@@ -84,7 +84,7 @@ and the risk of silently dropping a working feature is high.
 |------+-------+-------+-----+-------------|
 | [[id:78FB4E23-9FC7-4BBB-B0D5-4194084A2662][Triage currency Qt custom features against codegen templates]] | STARTED | 2026-07-04 | | For each custom feature in currency's Qt layer (CSV/XML import-export, feature-flagged synthetic data generation, full version-navigation UI, flag image handling, NATS notification wiring, handler naming drift), decide feature-by-feature whether it becomes a generalised qt-profile template capability (a variability knob other entities can opt into, e.g. import/export as a configurable capability rather than currency-specific code) or stays currency-specific custom code. As part of the triage, flag and separately note any business logic currently embedded in the Qt UI layer that belongs elsewhere (domain/service/repository) and should be relocated rather than templated in place. Produce a written decision doc covering every discovered feature. |
 | [[id:8AA363F8-2C83-4A96-99A0-B76A7D1BF65C][Pilot the combo-field template mechanism for currency's 3 soft-FK fields]] | STARTED | 2026-07-04 | | Currency's monetary_nature, market_tier, and rounding_type detail-dialog fields are soft-FK combo boxes backed by reference tables, and the qt codegen profile has a combo-field mechanism that no entity currently exercises. Pilot it end-to-end for currency's 3 fields (first real consumer), or explicitly defer with a documented reason if the mechanism is not yet fit for this shape of data. |
-| [[id:6E0CD16E-1E74-4E2A-BB0E-776F69EF80CB][Produce concrete regenerate/reconcile plan for Sync Qt codegen for currency]] | BACKLOG | | | Turn the triage and combo-field piloting output into a concrete, reviewed plan for the blocked 'Sync Qt codegen for currency' task: which of the 12 output files change, which template capabilities need to land first, and which currency-specific code must be preserved across regeneration. Once this plan exists, the Qt sync task can proceed as a reviewed mechanical regenerate + reconcile pass rather than a speculative rewrite. |
+| [[id:6E0CD16E-1E74-4E2A-BB0E-776F69EF80CB][Produce concrete regenerate/reconcile plan for Sync Qt codegen for currency]] | STARTED | 2026-07-04 | | Turn the triage and combo-field piloting output into a concrete, reviewed plan for the blocked 'Sync Qt codegen for currency' task: which of the 12 output files change, which template capabilities need to land first, and which currency-specific code must be preserved across regeneration. Once this plan exists, the Qt sync task can proceed as a reviewed mechanical regenerate + reconcile pass rather than a speculative rewrite. |
 
 * Decisions
 
@@ -114,6 +114,15 @@ and the risk of silently dropping a working feature is high.
   =CurrencyMdiWindow::generateSynthetic()= belongs in the
   generator/service layer, not the Qt UI — relocate during the
   eventual Qt sync.
+- Regenerate plan: "Sync Qt codegen for currency" is really 7-8
+  sub-tasks (relocate business logic; land CSV/XML export, setting-
+  gated visibility, version-navigation UI, and NATS notification-
+  wiring as template capabilities; reconcile flag image and combo
+  fields onto existing/piloted mechanisms; decide fetch-failure
+  signalling; only then the final mechanical regenerate+diff). Split
+  it into per-step sub-tasks rather than attempting one task. Full
+  per-file table and sequence in
+  [[id:6E0CD16E-1E74-4E2A-BB0E-776F69EF80CB][task]].
 
 * Out of scope
 

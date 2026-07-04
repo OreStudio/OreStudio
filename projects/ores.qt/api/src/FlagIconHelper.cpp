@@ -19,8 +19,37 @@
  */
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/ImageCache.hpp"
+#include <QPainter>
+#include <QPixmap>
 
 namespace ores::qt {
+
+namespace {
+constexpr int flag_spacing = 2; // small gap so the two flags read as distinct, not overlapping
+}
+
+QIcon pair_flag_icon(ImageCache& imageCache,
+                     const std::string& baseIsoCode,
+                     const std::string& quoteIsoCode,
+                     int flagSize) {
+    // getCurrencyFlagPixmap renders from the cached SVG at the exact requested
+    // size (crisp), falling back to the icon ladder + async load if the SVG
+    // isn't cached yet — see its doc comment.
+    const QPixmap basePm = imageCache.getCurrencyFlagPixmap(baseIsoCode, flagSize);
+    const QPixmap quotePm = imageCache.getCurrencyFlagPixmap(quoteIsoCode, flagSize);
+    const QSize size = pair_flag_icon_size(flagSize);
+    QPixmap combined(size);
+    combined.fill(Qt::transparent);
+    QPainter painter(&combined);
+    painter.drawPixmap(0, 0, basePm);
+    painter.drawPixmap(flagSize + flag_spacing, 0, quotePm);
+    painter.end();
+    return QIcon(combined);
+}
+
+QSize pair_flag_icon_size(int flagSize) {
+    return {flagSize * 2 + flag_spacing, flagSize};
+}
 
 void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source) {
     if (!combo || !cache)

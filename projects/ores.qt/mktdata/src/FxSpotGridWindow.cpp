@@ -19,14 +19,13 @@
  */
 #include "ores.qt/FxSpotGridWindow.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
 #include <QMetaObject>
-#include <QPainter>
-#include <QPixmap>
 #include <QPointer>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -178,25 +177,14 @@ static QString pair_from_ore_key(const std::string& ore_key) {
     return qualifier.empty() ? QString::fromStdString(ore_key) : QString::fromStdString(qualifier);
 }
 
-// Two 16x16 flags side by side — same composited-icon idea used for the FX
-// pair tree items in MarketSimulatorWindow, sized for a table cell here.
-static QIcon pair_flags_icon(ImageCache& imageCache, const QString& pairText) {
+// This window has no separate base/quote columns to put one flag each on
+// (just a single "GBP/USD"-style cell), so it needs the composited pair icon
+// (see pair_flag_icon() in FlagIconHelper) rather than a single flag.
+static QIcon pair_icon_for(ImageCache& imageCache, const QString& pairText) {
     const QStringList parts = pairText.split(QLatin1Char('/'));
     if (parts.size() != 2)
         return {};
-    constexpr int flagSize = 20;
-    constexpr int spacing = 2; // small gap so the two flags read as distinct, not overlapping
-    const QPixmap basePm =
-        imageCache.getCurrencyFlagIcon(parts[0].toStdString()).pixmap(flagSize, flagSize);
-    const QPixmap quotePm =
-        imageCache.getCurrencyFlagIcon(parts[1].toStdString()).pixmap(flagSize, flagSize);
-    QPixmap combined(flagSize * 2 + spacing, flagSize);
-    combined.fill(Qt::transparent);
-    QPainter painter(&combined);
-    painter.drawPixmap(0, 0, basePm);
-    painter.drawPixmap(flagSize + spacing, 0, quotePm);
-    painter.end();
-    return QIcon(combined);
+    return pair_flag_icon(imageCache, parts[0].toStdString(), parts[1].toStdString());
 }
 
 // ── FxSpotGridWindow ───────────────────────────────────────────────────────
@@ -228,7 +216,7 @@ FxSpotGridWindow::FxSpotGridWindow(ClientManager* clientManager,
                 return;
             for (const auto& [ore_key, rs] : rows_) {
                 if (auto* item = table_->item(rs.row, ColPair))
-                    item->setIcon(pair_flags_icon(*imageCache_, item->text()));
+                    item->setIcon(pair_icon_for(*imageCache_, item->text()));
             }
         };
         connect(imageCache_, &ImageCache::imagesLoaded, this, refreshFlags);
@@ -257,7 +245,7 @@ void FxSpotGridWindow::setupUi() {
     table_->verticalHeader()->setDefaultSectionSize(36);
     // Qt's default view iconSize (~16-24px) would otherwise downscale the
     // composited flag pixmap regardless of its actual size.
-    table_->setIconSize(QSize(42, 20));
+    table_->setIconSize(pair_flag_icon_size());
 }
 
 void FxSpotGridWindow::reload() {
@@ -320,7 +308,7 @@ void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_bind
         pairItem->setFont(pf);
         pairItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         if (imageCache_)
-            pairItem->setIcon(pair_flags_icon(*imageCache_, pairText));
+            pairItem->setIcon(pair_icon_for(*imageCache_, pairText));
         table_->setItem(row, ColPair, pairItem);
 
         // Mid

@@ -54,9 +54,8 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
-        PairFlags, // Qt::DecorationRole only — base+quote flags composited side by side
-        BaseCurrencyCode,
-        QuoteCurrencyCode,
+        BaseCurrencyCode, // also carries a Qt::DecorationRole flag icon
+        QuoteCurrencyCode, // also carries a Qt::DecorationRole flag icon
         SourceName,
         OreKey,
         GmmInitialPrice,
@@ -123,12 +122,13 @@ private slots:
     void onPulsingComplete();
 
 protected:
-    // Tells AbstractClientModel::setImageCache() which column to repaint once
-    // flags finish loading asynchronously — without this override it stays -1
-    // and the PairFlags column never refreshes after the initial (pre-load)
-    // paint, so flags never actually appear.
+    // AbstractClientModel::setImageCache() only auto-refreshes a single icon
+    // column on async load; BaseCurrencyCode and QuoteCurrencyCode both carry
+    // flags here, so this only covers one of them. In practice ImageCache's
+    // currency mapping is loaded once at app startup, well before this window
+    // is ever opened, so both columns are correct from the first paint anyway.
     int iconColumn() const override {
-        return PairFlags;
+        return BaseCurrencyCode;
     }
 
 private:

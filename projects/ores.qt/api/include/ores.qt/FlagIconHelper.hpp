@@ -23,8 +23,11 @@
 #include "ores.qt/export.hpp"
 #include <QAction>
 #include <QComboBox>
+#include <QIcon>
 #include <QLineEdit>
 #include <QObject>
+#include <QSize>
+#include <string>
 
 namespace ores::qt {
 
@@ -34,6 +37,36 @@ class ImageCache;
  * @brief The type of flag icons to apply to a combo box.
  */
 enum class FlagSource { Currency, Country, BusinessCentre };
+
+/**
+ * @brief Standard flag size (device-independent pixels) for a single flag in
+ * a list/grid cell — the one place to change it for every such view at once.
+ */
+constexpr int kStandardFlagSize = 22;
+
+/**
+ * @brief Composited side-by-side icon for a currency pair (e.g. "GBP/USD"),
+ * for a single cell/item with no separate base/quote slots to put one flag
+ * each on (contrast: a table with distinct base- and quote-currency columns
+ * should put one flag on each via ImageCache::getCurrencyFlagIcon() directly,
+ * same as any other single-flag cell — no compositing needed there).
+ *
+ * @param imageCache   Shared image cache (currency ISO -> image_id mapping).
+ * @param baseIsoCode  Base currency ISO code.
+ * @param quoteIsoCode Quote currency ISO code.
+ * @param flagSize     Height/width of each flag, in device-independent pixels.
+ */
+ORES_QT_API QIcon pair_flag_icon(ImageCache& imageCache,
+                                const std::string& baseIsoCode,
+                                const std::string& quoteIsoCode,
+                                int flagSize = kStandardFlagSize);
+
+/**
+ * @brief The QSize a pair_flag_icon() actually renders at — pass to
+ * QAbstractItemView::setIconSize() so the view doesn't downscale it back
+ * down to its own (small) default icon size.
+ */
+ORES_QT_API QSize pair_flag_icon_size(int flagSize = kStandardFlagSize);
 
 /**
  * @brief Apply flag icons to a combo box using the given image cache.

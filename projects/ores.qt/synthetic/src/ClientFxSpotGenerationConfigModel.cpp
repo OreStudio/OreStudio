@@ -24,8 +24,6 @@
 #include "ores.qt/ProcessTypeLabel.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
-#include <QPainter>
-#include <QPixmap>
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -37,23 +35,6 @@ namespace {
 std::string
 fx_spot_generation_config_key_extractor(const synthetic::domain::fx_spot_generation_config& e) {
     return boost::uuids::to_string(e.id);
-}
-
-// Two 18x18 flags side by side, matching the combined pair icon already used
-// for the FX pair tree items in MarketSimulatorWindow (kept independent here:
-// a table cell has less room than that tree row, so a smaller fixed size).
-QIcon pair_flags_icon(ImageCache& imageCache, const std::string& base, const std::string& quote) {
-    constexpr int flagSize = 22;
-    constexpr int spacing = 2; // small gap so the two flags read as distinct, not overlapping
-    const QPixmap basePm = imageCache.getCurrencyFlagIcon(base).pixmap(flagSize, flagSize);
-    const QPixmap quotePm = imageCache.getCurrencyFlagIcon(quote).pixmap(flagSize, flagSize);
-    QPixmap combined(flagSize * 2 + spacing, flagSize);
-    combined.fill(Qt::transparent);
-    QPainter painter(&combined);
-    painter.drawPixmap(0, 0, basePm);
-    painter.drawPixmap(flagSize + spacing, 0, quotePm);
-    painter.end();
-    return QIcon(combined);
 }
 }
 
@@ -131,12 +112,14 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
         }
     }
 
-    if (role == Qt::DecorationRole && index.column() == PairFlags) {
-        if (imageCache_)
-            return pair_flags_icon(*imageCache_,
-                                   fx_spot_generation_config.base_currency_code,
-                                   fx_spot_generation_config.quote_currency_code);
-        return {};
+    if (role == Qt::DecorationRole && imageCache_) {
+        // Same single-flag lookup as ClientCurrencyModel's IsoCode column —
+        // one flag per currency-code cell, no compositing needed here since
+        // base and quote each have their own column.
+        if (index.column() == BaseCurrencyCode)
+            return imageCache_->getCurrencyFlagIcon(fx_spot_generation_config.base_currency_code);
+        if (index.column() == QuoteCurrencyCode)
+            return imageCache_->getCurrencyFlagIcon(fx_spot_generation_config.quote_currency_code);
     }
 
     if (role == Qt::ForegroundRole) {
@@ -153,8 +136,6 @@ QVariant ClientFxSpotGenerationConfigModel::headerData(int section,
         return {};
 
     switch (section) {
-        case PairFlags:
-            return tr(""); // icon-only column
         case BaseCurrencyCode:
             return tr("Base Currency");
         case QuoteCurrencyCode:

@@ -27,6 +27,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FeedDialog.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/FxSpotRateEditor.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
@@ -671,17 +672,8 @@ void MarketSimulatorWindow::buildTree() {
             fxItem->setData(static_cast<int>(NodeType::FxPair), NodeTypeRole);
             fxItem->setData(QString::fromStdString(fxId), NodeIdRole);
             if (imageCache_) {
-                const QPixmap basePm =
-                    imageCache_->getCurrencyFlagIcon(fx.base_currency_code).pixmap(22, 22);
-                const QPixmap quotePm =
-                    imageCache_->getCurrencyFlagIcon(fx.quote_currency_code).pixmap(22, 22);
-                QPixmap combined(48, 22);
-                combined.fill(Qt::transparent);
-                QPainter painter(&combined);
-                painter.drawPixmap(0, 0, basePm);
-                painter.drawPixmap(26, 0, quotePm);
-                painter.end();
-                fxItem->setIcon(QIcon(combined));
+                fxItem->setIcon(
+                    pair_flag_icon(*imageCache_, fx.base_currency_code, fx.quote_currency_code));
             } else {
                 fxItem->setIcon(
                     IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));

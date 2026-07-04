@@ -26,11 +26,11 @@ Ensure the C++ messaging codegen profiles (protocol, nats-eventing, nats-handler
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | All four messaging profiles reconciled; build clean; currency tests green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise PR.                              |
+| Next         | Nothing. |
 | Last touched | 2026-07-04                               |
 
 * Acceptance
@@ -101,3 +101,18 @@ tests in both api and core suites green.
 |   |                 |      |          |       |
 
 * Result
+
+All four messaging-related codegen addresses reconciled for currency:
+protocol, nats-eventing, nats-handler, nats-sub-registrar (already clean).
+Mechanical drift (widened =offset=/=limit=, =success=/=message= fields,
+=req_ctx=/=error_reply= handler style) applied to match the synced
+=country= pattern. The hand-maintained =currency_history_protocol.hpp=
+pair and =history()= handler were deliberately left custom (documented
+in =** Custom NATS subscriptions=) since they carry per-version diffs
+that the template's generated shape cannot express.
+
+Acceptance met: all profiles produce zero diff or every delta is
+classified with a recorded decision; build is clean across
+=ores.refdata.api/core/service.lib= and downstream consumers; full
+=ores.refdata.api.tests= suite green (412/71), currency-scoped tests
+green in both api and core suites.

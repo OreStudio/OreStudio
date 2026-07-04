@@ -117,3 +117,16 @@ message/handler once the hand-written pattern is proven in task 3
 |   |                 |      |          |       |
 
 * Result
+
+Follow-up, done same day rather than deferred: the hand-written NATS
+layer was itself generalized into the codegen templates
+(protocol/repository/service/nats-handler/nats-sub-registrar), each
+verified zero-diff for =counterparty= before applying for real.
+=has_parent_id=/=parent_id_column=/=hierarchy_name_field= relocated
+from the SQL-only Flags section to the top-level Flags section so the
+same flag drives both SQL and C++ generation (matching
+=has_tenant_id='s precedent). =party= confirmed to have the same kind
+of pre-existing C++-layer drift already found in its SQL/protocol
+layers, so it stays hand-written. See the
+=codegen_generate_hierarchy_nats_layer= capture (now marked resolved)
+for the full account.

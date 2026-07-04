@@ -5,11 +5,24 @@
 #+description: Once the hand-written get_<entity>_hierarchy pattern is proven end-to-end (party/counterparty, task 3 Qt binding), extend the protocol/service/handler codegen templates to generate it per has_parent_id entity instead of hand-writing.
 #+type: capture
 #+level: cross
-#+filetags: :codegen:refdata:messaging:hierarchy:
+#+filetags: :codegen:refdata:messaging:hierarchy:resolved:
 #+created: 2026-07-05
 #+updated: 2026-07-05
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* Resolved
+
+Done, sooner than planned (didn't wait for task 3's Qt binding to prove
+the pattern first — build/unit verification was judged sufficient
+given the pattern already had a full live NATS round-trip for party).
+=has_parent_id=-gated blocks added to the protocol, repository,
+service, nats-handler, and nats-sub-registrar codegen templates;
+=counterparty= regenerated for real across all five addresses, each
+verified zero-diff (or diff-only-in-clang-format-reflow) against the
+hand-written version first. =party= intentionally left hand-written —
+its repository/entity/mapper layer has the same pre-existing,
+unrelated drift already found in its SQL/protocol layers.
 
 * What
 

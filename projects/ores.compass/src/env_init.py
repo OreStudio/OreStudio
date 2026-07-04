@@ -88,13 +88,28 @@ def _read_env(env_file: Path) -> dict:
     return values
 
 
+# All ports for an environment derive from a single base_port (spaced
+# BASE_PORT_STEP apart), so every port an environment owns is identifiable at a
+# glance from its base. These offsets are the single source of truth for that
+# layout; keep them in sync with the services and the Qt client.
+BASE_PORT_START = 50000
+BASE_PORT_STEP = 1000
+HTTP_PORT_OFFSET_DEBUG = 0
+HTTP_PORT_OFFSET_RELEASE = 1
+WT_PORT_OFFSET_DEBUG = 2
+WT_PORT_OFFSET_RELEASE = 3
+SITE_PORT_OFFSET = 4
+NATS_PORT_OFFSET = 5
+NATS_MONITOR_PORT_OFFSET = 6
+
+
 def _scan_ports(parent_dir: Path) -> tuple[int, int, int]:
     """Scan sibling worktrees for used base ports; return (base_port, nats_port, nats_monitor_port).
 
-    All ports for an environment derive from a single base_port (spaced 1000
-    apart) so every port owned by an environment is identifiable at a glance:
-    base_port+0/1 (http), +2/3 (wt), +4 (site), +5 (NATS client), +6 (NATS
-    monitor). Scans both ores_dev_* and legacy OreStudio.* directories for
+    All ports for an environment derive from a single base_port (spaced
+    BASE_PORT_STEP apart) so every port owned by an environment is identifiable
+    at a glance via the *_PORT_OFFSET constants: http, wt, site, NATS client,
+    NATS monitor. Scans both ores_dev_* and legacy OreStudio.* directories for
     ORES_BASE_PORT so a stray legacy checkout can't collide silently.
     """
     used_base: set = set()
@@ -106,11 +121,11 @@ def _scan_ports(parent_dir: Path) -> tuple[int, int, int]:
                     used_base.add(int(d["ORES_BASE_PORT"]))
                 except ValueError:
                     pass
-    base_port = 50000
+    base_port = BASE_PORT_START
     while base_port in used_base:
-        base_port += 1000
-    nats_port = base_port + 5
-    nats_monitor_port = base_port + 6
+        base_port += BASE_PORT_STEP
+    nats_port = base_port + NATS_PORT_OFFSET
+    nats_monitor_port = base_port + NATS_MONITOR_PORT_OFFSET
     return base_port, nats_port, nats_monitor_port
 
 
@@ -412,16 +427,16 @@ def run(argv, project_root: Path) -> int:
             base_port = int(existing["ORES_BASE_PORT"])
         except ValueError:
             print("Warning: invalid ORES_BASE_PORT in .env, using scanned value.")
-    nats_port = base_port + 5
-    nats_monitor_port = base_port + 6
+    nats_port = base_port + NATS_PORT_OFFSET
+    nats_monitor_port = base_port + NATS_MONITOR_PORT_OFFSET
 
     if "release" in preset:
-        http_port = base_port + 1
-        wt_port = base_port + 3
+        http_port = base_port + HTTP_PORT_OFFSET_RELEASE
+        wt_port = base_port + WT_PORT_OFFSET_RELEASE
     else:
-        http_port = base_port + 0
-        wt_port = base_port + 2
-    site_port = base_port + 4
+        http_port = base_port + HTTP_PORT_OFFSET_DEBUG
+        wt_port = base_port + WT_PORT_OFFSET_DEBUG
+    site_port = base_port + SITE_PORT_OFFSET
 
     nats_url = f"nats://localhost:{nats_port}"
     nats_monitor_url = f"http://localhost:{nats_monitor_port}"

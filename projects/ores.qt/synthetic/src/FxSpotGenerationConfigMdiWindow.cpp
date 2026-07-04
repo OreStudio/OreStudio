@@ -128,10 +128,10 @@ void FxSpotGenerationConfigMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
-    tableView_->verticalHeader()->setDefaultSectionSize(34); // room for the 28px flag icons
+    tableView_->verticalHeader()->setDefaultSectionSize(30); // room for the 22px flag icons
     // Qt's default view iconSize (~16-24px) would otherwise downscale the
     // composited flag pixmap regardless of its actual size.
-    tableView_->setIconSize(QSize(47, 28));
+    tableView_->setIconSize(QSize(46, 22));
 
     // Bumped to 2: the new leading PairFlags column shifts every other
     // column's index, which would otherwise conflict with previously saved
@@ -142,7 +142,7 @@ void FxSpotGenerationConfigMdiWindow::setupTable() {
     // PairFlags has no header text to size itself against (icon-only column),
     // so give it an explicit width rather than leaving it to whatever Qt's
     // default happens to be for a freshly-shown, content-less column.
-    tableView_->setColumnWidth(ClientFxSpotGenerationConfigModel::PairFlags, 68);
+    tableView_->setColumnWidth(ClientFxSpotGenerationConfigModel::PairFlags, 56);
 }
 
 void FxSpotGenerationConfigMdiWindow::setupConnections() {

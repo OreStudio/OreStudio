@@ -184,17 +184,17 @@ static QIcon pair_flags_icon(ImageCache& imageCache, const QString& pairText) {
     const QStringList parts = pairText.split(QLatin1Char('/'));
     if (parts.size() != 2)
         return {};
-    constexpr int flagSize = 26;
-    constexpr int overlap = 8;
+    constexpr int flagSize = 20;
+    constexpr int spacing = 2; // small gap so the two flags read as distinct, not overlapping
     const QPixmap basePm =
         imageCache.getCurrencyFlagIcon(parts[0].toStdString()).pixmap(flagSize, flagSize);
     const QPixmap quotePm =
         imageCache.getCurrencyFlagIcon(parts[1].toStdString()).pixmap(flagSize, flagSize);
-    QPixmap combined(flagSize * 2 - overlap, flagSize);
+    QPixmap combined(flagSize * 2 + spacing, flagSize);
     combined.fill(Qt::transparent);
     QPainter painter(&combined);
     painter.drawPixmap(0, 0, basePm);
-    painter.drawPixmap(flagSize - overlap, 0, quotePm);
+    painter.drawPixmap(flagSize + spacing, 0, quotePm);
     painter.end();
     return QIcon(combined);
 }
@@ -257,7 +257,7 @@ void FxSpotGridWindow::setupUi() {
     table_->verticalHeader()->setDefaultSectionSize(36);
     // Qt's default view iconSize (~16-24px) would otherwise downscale the
     // composited flag pixmap regardless of its actual size.
-    table_->setIconSize(QSize(44, 26));
+    table_->setIconSize(QSize(42, 20));
 }
 
 void FxSpotGridWindow::reload() {

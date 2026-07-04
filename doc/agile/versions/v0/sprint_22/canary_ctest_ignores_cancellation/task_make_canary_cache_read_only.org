@@ -8,7 +8,7 @@
 #+filetags: :ci:infra:cache:sprint_22:v0:canary_ctest_ignores_cancellation:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1430
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -49,6 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1430][#1430]] | [agile] Close story: Canary CI near-zero sccache hit rate |
 | [[https://github.com/OreStudio/OreStudio/pull/1428][#1428]] | [refdata,qt] Fix party_type eventing: NATS registration + Qt controller dedup |
 
 * Review

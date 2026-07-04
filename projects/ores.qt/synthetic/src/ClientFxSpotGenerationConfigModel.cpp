@@ -43,8 +43,8 @@ fx_spot_generation_config_key_extractor(const synthetic::domain::fx_spot_generat
 // for the FX pair tree items in MarketSimulatorWindow (kept independent here:
 // a table cell has less room than that tree row, so a smaller fixed size).
 QIcon pair_flags_icon(ImageCache& imageCache, const std::string& base, const std::string& quote) {
-    constexpr int flagSize = 18;
-    constexpr int overlap = 6; // quote flag overlaps the base flag slightly
+    constexpr int flagSize = 28;
+    constexpr int overlap = 9; // quote flag overlaps the base flag slightly
     const QPixmap basePm = imageCache.getCurrencyFlagIcon(base).pixmap(flagSize, flagSize);
     const QPixmap quotePm = imageCache.getCurrencyFlagIcon(quote).pixmap(flagSize, flagSize);
     QPixmap combined(flagSize * 2 - overlap, flagSize);

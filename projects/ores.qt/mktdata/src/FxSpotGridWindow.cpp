@@ -184,8 +184,8 @@ static QIcon pair_flags_icon(ImageCache& imageCache, const QString& pairText) {
     const QStringList parts = pairText.split(QLatin1Char('/'));
     if (parts.size() != 2)
         return {};
-    constexpr int flagSize = 16;
-    constexpr int overlap = 5;
+    constexpr int flagSize = 26;
+    constexpr int overlap = 8;
     const QPixmap basePm =
         imageCache.getCurrencyFlagIcon(parts[0].toStdString()).pixmap(flagSize, flagSize);
     const QPixmap quotePm =
@@ -255,6 +255,9 @@ void FxSpotGridWindow::setupUi() {
     table_->setShowGrid(false);
     table_->setAlternatingRowColors(true);
     table_->verticalHeader()->setDefaultSectionSize(36);
+    // Qt's default view iconSize (~16-24px) would otherwise downscale the
+    // composited flag pixmap regardless of its actual size.
+    table_->setIconSize(QSize(44, 26));
 }
 
 void FxSpotGridWindow::reload() {

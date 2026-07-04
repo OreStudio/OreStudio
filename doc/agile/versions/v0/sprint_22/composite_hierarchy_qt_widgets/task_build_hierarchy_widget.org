@@ -7,30 +7,34 @@
 #+level: s1
 #+filetags: :composite_hierarchy_qt_widgets:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/appraise-party-all-layers
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Build two 100%-handcrafted, reusable Qt classes: a generic
+self-referencing HierarchyTreeWidget, and a hierarchy-model-builder
+producing a ready-to-plug-in tree model given a party or counterparty
+entity list. Add minimal paste-block seams to the Qt detail-dialog
+codegen templates so a generated dialog can bind them.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Surveying existing Qt widget/model conventions before writing the classes. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Implement HierarchyTreeWidget + model builder, add paste-block seams. |
 | Last touched | 2026-07-04                               |
 
 * Acceptance

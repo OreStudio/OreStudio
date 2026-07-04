@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: E1196536-38E8-4365-B0E6-A269F7CA3923
+:END:
+#+title: Story: Model calendars as proper ORE Studio reference data
+#+description: Currency and currency_pair currently reference holiday calendars by free-text name (ORE's own comma-joined calendar-name convention), with no validation and no proper domain model. Model calendars as a first-class ORE Studio entity with FK-referenceable relationships (including a currency-to-calendar relationship, since one currency can need more than one calendar), plus Qt screens to manage them; map to ORE's comma-joined string convention only at the XML export boundary.
+#+type: story
+#+level: s2
+#+filetags: :refdata:calendar:market_data:next:product_backlog:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Today, every place in ORE Studio that needs a holiday calendar
+(=fx_convention.advance_calendar=, and the =currency.holiday_calendar= /
+=currency_pair= calendar fields proposed by
+[[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]) stores it as unvalidated free
+text — a name ORE/QuantLib resolves internally at pricing time (e.g.
+=TARGET=, =UnitedStates=; ORE itself already supports comma-joining
+several such names into a union calendar, so "one currency needs more
+than one calendar" is an ORE-side concern, not something we need to
+reimplement). ORE Studio itself has no domain model for calendars: no
+entity, no FK, no screens, nothing stopping a typo from silently
+breaking a pricing run instead of failing at data entry.
+
+This story gives ORE Studio its own clean =calendar= domain model —
+enumerating valid calendar codes, screens to manage them, and a proper
+FK-referenceable relationship from currency (and anything else that
+needs one) to its calendar(s) — with the mapping to ORE's own
+comma-joined string convention happening only at the XML export
+boundary in =ores.ore='s mappers. Split off from the currency pair story
+so calendar modelling can be scoped and built independently, with
+currency pair consuming it once it exists rather than embedding a
+placeholder text field.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-04                               |
+
+* Acceptance
+
+- [ ] A =calendar= entity exists in =ores.refdata= (or wherever it best
+  fits), enumerating valid ORE/QuantLib calendar codes with a proper
+  primary key, not free text.
+- [ ] Currencies reference their calendar(s) via a real FK relationship
+  (soft or hard), supporting a currency needing more than one calendar
+  (e.g. a country calendar and a financial-centre calendar).
+- [ ] Qt screens exist to list/add/edit calendars, following the usual
+  entity CRUD pattern.
+- [ ] =ores.ore='s conventions_mapper (or successor) builds ORE's
+  comma-joined calendar-name string only at the XML export boundary,
+  from the FK relationship(s) — the domain model itself never stores
+  the joined string.
+- [ ] =fx_convention.advance_calendar= (or its =currency_pair=
+  successor) is migrated onto the new model.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

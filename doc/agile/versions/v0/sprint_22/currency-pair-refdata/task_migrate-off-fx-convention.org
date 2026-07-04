@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: ED053F15-513A-4E3A-908A-7AE11A2B3316
+:END:
+#+title: Task: Migrate fx_convention consumers to currency_pair and retire it
+#+description: Point ores.ore's conventions_mapper, the Qt CRUD screens, and the CLI registration at currency_pair instead of fx_convention, then drop fx_convention's SQL table, repository, service, Qt files, and CLI wiring.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Point every real consumer of =ores.refdata.fx_convention= — =ores.ore='s
+=conventions_mapper::map_fx=/=reverse_fx=, the Qt CRUD screens
+(=FxConventionController=/=DetailDialog=/=MdiWindow=/etc.), and the CLI
+registration in =ores.cli/src/app/application.cpp= — at =currency_pair=
+instead, per the field mapping settled in
+[[id:C73E0414-9154-417F-B069-7055BB58AA4C][Reconcile currency_pair design with fx_convention]]. Then delete
+=fx_convention='s SQL table/triggers, repository, service, messaging,
+Qt files, and generator — it has no other reason to exist once nothing
+references it.
+
+Depends on the =currency_pair= =ores.codegen.entity= implementation
+existing first (not yet a task in this story — needs scaffolding).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | The =currency_pair= codegen implementation landing first. |
+| Next         | Scaffold the codegen implementation task, then begin this one. |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- [ ] =ores.ore='s =conventions_mapper= reads/writes =currency_pair=
+  (via its =points_factor()= helper for the divisor form) instead of
+  =fx_convention=; the exported/imported ORE XML is unchanged
+  byte-for-byte for the fields that carry over.
+- [ ] =fx_convention='s Qt CRUD screens and CLI registration are
+  removed, not just left dangling; any equivalent CRUD need is served by
+  =currency_pair='s own generated Qt/CLI surface.
+- [ ] =fx_convention='s SQL table, triggers, repository, service, and
+  messaging are deleted from the codebase, not merely deprecated.
+- [ ] No dangling references to =fx_convention= remain (grep clean).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -58,6 +58,8 @@ box. It stays open across all of that — it is not a design-only story.
 | [[id:1689B6B1-129F-44F0-A3FF-7E069BF9E394][Model the currency pair entity for codegen]] | DONE | | 2026-07-04 | Model the currency pair (and supporting currency) entities with all fields identified in the knowledge cluster (base/quote, spot days, deliverability/NDF, pip factor/tick size, classification, cut code, fixing source, etc.), ready to drive ores.codegen. |
 | [[id:8B45AB22-FD56-41DB-A74B-750E460188D2][Replace is_g11 flag with an extensible currency-group model]] | DONE | | 2026-07-04 | Correct the currency_pair design: is_g11 is a fixed boolean that can't express overlapping desk groupings (Scandies, Antipodeans, commodity currencies, etc.), and G11 membership belongs on the currency, not the pair. Replace it with a many-to-many currency_group lookup + junction, mirroring the existing party_currencies junction pattern. |
 | [[id:155FA378-9953-4EA0-8495-7C61E40BE81C][Add librarian support for currency pairs]] | BACKLOG | | | Extend the DQ librarian so creating a party yields a usable set of currency pairs out of the box, following the same publish-from-dq bundle pattern used for the synthetic FX foundation. |
+| [[id:C73E0414-9154-417F-B069-7055BB58AA4C][Reconcile currency_pair design with fx_convention]] | DONE | | 2026-07-04 | fx_convention already covers most of currency_pair's ground (spot days, points factor, calendar, business day convention). Fold its extra fields into the currency_pair design and decide the pip_factor vs points_factor representation, ahead of migrating consumers off fx_convention. |
+| [[id:ED053F15-513A-4E3A-908A-7AE11A2B3316][Migrate fx_convention consumers to currency_pair and retire it]] | BACKLOG | | | Point ores.ore's conventions_mapper, the Qt CRUD screens, and the CLI registration at currency_pair instead of fx_convention, then drop fx_convention's SQL table, repository, service, Qt files, and CLI wiring. |
 
 * Decisions
 
@@ -84,8 +86,26 @@ box. It stays open across all of that — it is not a design-only story.
   =party_currencies= junction pattern. =currency.market_tier= is
   unaffected and coexists as the single-valued primary tier alongside
   the new multi-valued group system.
+- *Discovered*: =ores.refdata.fx_convention= already exists, fully
+  implemented, and covers most of =currency_pair='s ground (spot days,
+  a =points_factor= reciprocal to our =pip_factor=, a calendar field,
+  business day convention, spot-relative/end-of-month flags). It exists
+  only to round-trip ORE's =conventions.xml= =<FX>= element — no other
+  consumer. Decision: retire it in favour of =currency_pair=, folding in
+  its extra fields (see the reconciliation task).
+- *Split off* (calendar): =holiday_calendar= (on =currency=) and
+  =advance_calendar= (folded in from =fx_convention=, on =currency_pair=)
+  are both unvalidated free text pointing at an ORE/QuantLib calendar
+  name. Rather than keep them as raw strings, calendar modelling
+  (validated calendar codes, FK relationships, Qt screens) is split off
+  into its own backlog story,
+  [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] — =currency_pair=
+  keeps a raw-text calendar field only as an interim measure until that
+  story lands and it can be migrated onto a real FK.
 
 * Out of scope
 
-- The calendar/day-count and fixing-source reference entities flagged as
-  open questions in the second task.
+- The day-count and fixing-source reference entities flagged as open
+  questions in the second task.
+- Proper calendar modelling — split off to
+  [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]].

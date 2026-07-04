@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: C73E0414-9154-417F-B069-7055BB58AA4C
+:END:
+#+title: Task: Reconcile currency_pair design with fx_convention
+#+description: fx_convention already covers most of currency_pair's ground (spot days, points factor, calendar, business day convention). Fold its extra fields into the currency_pair design and decide the pip_factor vs points_factor representation, ahead of migrating consumers off fx_convention.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Reconcile the =currency_pair= design with =ores.refdata.fx_convention=
+(discovered to already cover most of the same ground — see
+investigation below) so the follow-on migration task has a single,
+settled target field list rather than two overlapping entities.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- [X] Every field on =fx_convention= is accounted for in the
+  =currency_pair= design — either folded in, superseded by an existing
+  =currency_pair= field, or explicitly deferred with a reason.
+- [X] The =pip_factor= vs =points_factor= reciprocal mismatch is
+  resolved with a concrete decision, not left ambiguous.
+- [X] Calendar handling is decided (kept as interim text vs. blocked on
+  the new calendar story) rather than silently duplicated.
+
+* Plan
+
+Investigated how =fx_convention= is actually used before deciding
+anything (see [[id:31C868B9-306E-4282-BA8C-07E647021B34][ores.refdata]]'s =fx_convention_repository=/=_service=,
+and =ores.ore='s =conventions_mapper::map_fx=/=reverse_fx=): it exists
+solely to round-trip ORE's =conventions.xml= =<FX>= element for engine
+runs. Its Qt CRUD and CLI registration are generic scaffolding with no
+extra logic. No SQL populate script — the table is empty except when an
+ORE =conventions.xml= is imported. This confirmed it's safe to retire
+in favour of =currency_pair= without losing any load-bearing behaviour.
+
+** Fields folded into =currency_pair=
+
+| =fx_convention= field | Resolution                                                                 |
+|------------------------+-----------------------------------------------------------------------------|
+| =id= (=EUR-USD-FX-CONVENTIONS=) | Superseded by =currency_pair.pair_code= (=EUR/USD=); the ORE mapper builds the =CCY1-CCY2-FX-CONVENTIONS= string at export time, not stored. |
+| =spot_days=             | Already derived on =currency_pair= (max of the two currencies') — no change. |
+| =source_currency=/=target_currency= | Already =base_currency=/=quote_currency= on =currency_pair=.       |
+| =points_factor= (divisor, e.g. =10000.0=) | *Not stored as-is* — see pip_factor decision below.               |
+| =advance_calendar=      | Folded in as =currency_pair.advance_calendar= (nullable text) — see calendar decision below. |
+| =spot_relative=         | Folded in as =currency_pair.spot_relative= (nullable bool).                |
+| =end_of_month=          | Folded in as =currency_pair.end_of_month= (nullable bool).                 |
+| =convention=            | Folded in as =currency_pair.business_day_convention= (nullable text), soft-FK to the existing =ores.trading.business_day_convention_type= aux table — an actual improvement over =fx_convention=, which left it unvalidated. |
+| =workspace_id=          | *Not added.* Not workspace-sensitive for now (decision below); revisit if/when =currency_pair= needs multi-workspace scenarios. |
+
+** =pip_factor= vs =points_factor=
+
+=fx_convention.points_factor= is a *divisor* (=10000.0= for 4dp pairs);
+our =pip_factor= is a *multiplier* (=0.0001=) — reciprocal
+representations of the same fact. Decision: keep =pip_factor= as the
+stored, multiplier form (matches the knowledge docs and is the more
+common textbook convention), and add a small computed helper — via a
+codegen paste block on the =currency_pair= entity model, the same
+mechanism =read_latest_all_tenants= uses on =currency= (see
+[[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][Paste blocks: injecting custom code into generated files]]) — e.g.
+=double points_factor() const { return 1.0 / pip_factor; }=, so the ORE
+mapper (and anything else that wants the divisor form) computes it
+rather than storing a second, driftable copy.
+
+** Calendar decision
+
+=advance_calendar= is unvalidated free text pointing at an ORE/QuantLib
+calendar name — same problem as the =holiday_calendar= field already
+proposed for =currency=. Rather than duplicate that gap, proper calendar
+modelling (validated codes, FK relationships, Qt screens) is split off
+into its own backlog story,
+[[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]]. =currency_pair=
+keeps =advance_calendar= as raw text for now — an interim measure, not
+a final decision — to be migrated onto a real FK once that story lands.
+
+** Workspace scoping
+
+=fx_convention= has =workspace_id= (=currency= does not). Decided not to
+add workspace scoping to =currency_pair= for now — deferred, not
+forgotten; revisit if a concrete multi-workspace FX-convention need
+arises.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=currency_pair= design extended with =advance_calendar= (interim raw
+text), =spot_relative=, =end_of_month=, and =business_day_convention=
+(soft-FK to =business_day_convention_type=, an improvement over
+=fx_convention='s unvalidated equivalent). =pip_factor= stays the stored
+multiplier form; a =points_factor()= paste-block helper will compute
+the ORE-mapper-facing divisor on demand rather than storing both.
+Calendar modelling split off entirely to a new backlog story,
+[[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]]. Workspace
+scoping deliberately not added. Ready for the migration task to point
+=ores.ore=, Qt, and CLI at =currency_pair= and retire =fx_convention=.

@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: E468C540-0CE0-4F89-870D-7ED2CFCDF219
+:END:
+#+title: Task: Vintage-availability guard in ores.synthetic
+#+description: Validate required vintage data exists in ores.marketdata before a dependent feed starts, plus a Market Simulator toolbar action to validate every configured entry on demand.
+#+type: task
+#+level: s1
+#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Both collections' feeds seed their initial spot from imported
+reference-vintage data (per the story's Decisions). Before such a feed
+starts,
+=ores.synthetic= should confirm the data actually exists in
+=ores.marketdata= (queryable via =source=/=point_id=/
+=observation_datetime=) and fail with a clear, actionable error — "No
+vintage data found for source=ore.reference, date=2016-02-05 — run the
+reference-data import first" — rather than silently defaulting to a
+wrong value or failing deep inside feed-start logic. Provide this two
+ways: an implicit check at feed-start, and an on-demand "validate all"
+toolbar action in Market Simulator so a user can audit an entire
+collection proactively.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- Starting a feed with missing vintage data (either collection — both
+  seed initial spot from the same vintage, per the story's Decisions)
+  fails with a clear, actionable message naming the missing
+  source/date and pointing at the import step.
+- A Market Simulator toolbar action validates every configured entry's
+  vintage-data availability on demand, surfacing results without
+  requiring each feed to be started individually.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -176,6 +176,7 @@ import_service::import(const messaging::import_market_data_request& req) {
             obs.series_id = sid;
             obs.observation_datetime = std::chrono::sys_days{d.date};
             obs.point_id = d.point_id.value_or("");
+            obs.source = req.source;
             obs.value = d.value;
             observations.push_back(std::move(obs));
         }
@@ -202,6 +203,7 @@ import_service::import(const messaging::import_market_data_request& req) {
             fix.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
             fix.series_id = sid;
             fix.fixing_date = f.date;
+            fix.source = req.source;
             fix.value = f.value;
             fixings.push_back(std::move(fix));
         }

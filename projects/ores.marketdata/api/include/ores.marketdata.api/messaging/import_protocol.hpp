@@ -52,6 +52,16 @@ struct import_market_data_request {
      * Empty string means no fixings to import.
      */
     std::string fixings_content;
+
+    /**
+     * @brief Tag stamped on every imported market_observation's source field.
+     *
+     * Distinguishes where an observation came from (e.g. "ore.reference" for
+     * a named ORE example vintage) so downstream consumers can query for a
+     * specific import rather than an untagged mix. Empty string (the
+     * default) preserves the pre-existing untagged behaviour.
+     */
+    std::string source;
 };
 
 struct import_market_data_response {

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Implement the purpose_type shell commands (list, add, remove) following the shel
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-03                               |
 
 * Acceptance
@@ -58,3 +58,13 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Not implemented here. ores.shell has no codegen profile for entity commands
+(the layer is hand-written per entity), so shell-command commissioning was
+lifted into a top-level story to be templatized once across entities rather
+than hand-coded per commission:
+
+- [[id:8BCD0D1C-AAFB-4FAA-A0E3-022FC6EF93C2][Shell entity commands — top-level commissioning story]]
+
+purpose_type shell commands will be produced by that story's per-entity
+rollout. Closed as superseded; out of scope for this commissioning exercise.

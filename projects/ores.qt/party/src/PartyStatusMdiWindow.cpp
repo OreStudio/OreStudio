@@ -51,8 +51,6 @@ PartyStatusMdiWindow::PartyStatusMdiWindow(ClientManager* clientManager,
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
@@ -123,6 +121,7 @@ void PartyStatusMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+
     initializeTableSettings(tableView_,
                             model_,
                             "PartyStatusListWindow",
@@ -134,7 +133,6 @@ void PartyStatusMdiWindow::setupTable() {
 void PartyStatusMdiWindow::setupConnections() {
     connect(model_, &ClientPartyStatusModel::dataLoaded, this, &PartyStatusMdiWindow::onDataLoaded);
     connect(model_, &ClientPartyStatusModel::loadError, this, &PartyStatusMdiWindow::onLoadError);
-    connectModel(model_);
 
     connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
@@ -161,10 +159,13 @@ void PartyStatusMdiWindow::setupConnections() {
         &PaginationWidget::page_requested,
         this,
         [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
+
+    connectModel(model_);
 }
 
 void PartyStatusMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading party statuses";
+    clearStaleIndicator();
     emit statusChanged(tr("Loading party statuses..."));
     model_->refresh();
 }
@@ -292,20 +293,22 @@ void PartyStatusMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making delete requests for " << codes.size() << " party statuses";
+            << "Making delete request for " << codes.size() << " party statuses";
+
+        refdata::messaging::delete_party_status_request request;
+        request.codes = codes;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            for (const auto& code : codes) {
+                results.push_back({code, {false, "Failed to communicate with server"}});
+            }
+            return results;
+        }
 
         for (const auto& code : codes) {
-            refdata::messaging::delete_party_status_request request;
-            request.status = code;
-            auto response_result =
-                self->clientManager_->process_authenticated_request(std::move(request));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send delete request for " << code;
-                results.push_back({code, {false, "Failed to communicate with server"}});
-                continue;
-            }
-
             results.push_back({code, {response_result->success, response_result->message}});
         }
 

@@ -33,7 +33,9 @@ domain::party_status party_status_mapper::map(const party_status_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
+
     r.name = v.name;
+
     r.description = v.description;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
@@ -53,7 +55,9 @@ party_status_entity party_status_mapper::map(const domain::party_status& v) {
     r.code = v.code;
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.name = v.name;
+
     r.description = v.description;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;

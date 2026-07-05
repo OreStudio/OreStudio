@@ -19,6 +19,7 @@
  */
 #include "ores.refdata.core/service/party_status_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -30,50 +31,54 @@ using namespace ores::logging;
 party_status_service::party_status_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::party_status> party_status_service::list_statuses() {
+std::vector<domain::party_status> party_status_service::list_statuses(std::uint32_t offset,
+                                                                      std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all party statuses";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::optional<domain::party_status> party_status_service::find_status(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding party status: " << code;
+std::uint32_t party_status_service::count_statuses() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total party statuses count";
+    return repo_.get_total_status_count(ctx_);
+}
+
+
+std::optional<domain::party_status> party_status_service::get_status(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting party status: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) {
+    if (results.empty())
         return std::nullopt;
-    }
     return results.front();
 }
 
-void party_status_service::save_status(const domain::party_status& status) {
-    if (status.code.empty()) {
-        throw std::invalid_argument("Party status code cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving party status: " << status.code;
-    auto s = status;
-    stamp(s, ctx_);
-    repo_.write(ctx_, s);
-    BOOST_LOG_SEV(lg(), info) << "Saved party status: " << status.code;
+void party_status_service::save_status(const domain::party_status& v) {
+    if (v.code.empty())
+        throw std::invalid_argument("Party Status code cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving party status: " << v.code;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved party status: " << v.code;
 }
 
 void party_status_service::save_statuses(const std::vector<domain::party_status>& statuses) {
-    for (const auto& s : statuses) {
-        if (s.code.empty())
-            throw std::invalid_argument("Party status code cannot be empty.");
-    }
+    for (const auto& e : statuses)
+        if (e.code.empty())
+            throw std::invalid_argument("Party Status code cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving " << statuses.size() << " party statuses";
-    auto stamped = statuses;
-    for (auto& s : stamped)
-        stamp(s, ctx_);
-    repo_.write(ctx_, stamped);
+    auto ts = statuses;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
-void party_status_service::remove_status(const std::string& code) {
+void party_status_service::delete_status(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party status: " << code;
     repo_.remove(ctx_, code);
     BOOST_LOG_SEV(lg(), info) << "Removed party status: " << code;
 }
 
-void party_status_service::remove_statuses(const std::vector<std::string>& codes) {
+void party_status_service::delete_statuses(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 

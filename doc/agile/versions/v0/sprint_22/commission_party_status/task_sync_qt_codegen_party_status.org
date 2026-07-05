@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_party_status:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/sync-qt-codegen-party-status
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Ensure the Qt codegen templates (qt profile) produce output that matches the rep
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

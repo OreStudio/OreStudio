@@ -23,7 +23,9 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_status.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/party_status_repository.hpp"
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -32,8 +34,11 @@ namespace ores::refdata::service {
 
 /**
  * @brief Service for managing party statuses.
+ *
+ * Provides a higher-level interface for party status operations,
+ * wrapping the underlying repository.
  */
-class party_status_service {
+class ORES_REFDATA_CORE_EXPORT party_status_service {
 private:
     inline static std::string_view logger_name = "ores.refdata.service.party_status_service";
 
@@ -46,20 +51,70 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a party_status_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit party_status_service(context ctx);
 
-    std::vector<domain::party_status> list_statuses();
+    /**
+     * @brief Lists party statuses with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of party statuses for the requested page.
+     */
+    std::vector<domain::party_status> list_statuses(std::uint32_t offset, std::uint32_t limit);
 
-    std::optional<domain::party_status> find_status(const std::string& code);
+    /**
+     * @brief Gets the total count of active party statuses.
+     *
+     * @return Total number of active party statuses.
+     */
+    std::uint32_t count_statuses();
 
+
+    /**
+     * @brief Retrieves a single party status by its code.
+     *
+     * @param code The code of the party status.
+     * @return The party status if found, std::nullopt otherwise.
+     */
+    std::optional<domain::party_status> get_status(const std::string& code);
+
+    /**
+     * @brief Saves a party status (creates or updates).
+     *
+     * @param status The party status to save.
+     * @throws std::exception on failure.
+     */
     void save_status(const domain::party_status& status);
 
+    /**
+     * @brief Saves a batch of party statuses.
+     *
+     * @param statuses The party statuses to save.
+     * @throws std::exception on failure.
+     */
     void save_statuses(const std::vector<domain::party_status>& statuses);
 
-    void remove_status(const std::string& code);
+    /**
+     * @brief Deletes a party status by its code.
+     *
+     * @param code The code of the party status to delete.
+     * @throws std::exception on failure.
+     */
+    void delete_status(const std::string& code);
 
-    void remove_statuses(const std::vector<std::string>& codes);
+    /**
+     * @brief Deletes party statuses by their codes.
+     */
+    void delete_statuses(const std::vector<std::string>& codes);
 
+    /**
+     * @brief Retrieves all historical versions of a party status.
+     */
     std::vector<domain::party_status> get_status_history(const std::string& code);
 
 private:

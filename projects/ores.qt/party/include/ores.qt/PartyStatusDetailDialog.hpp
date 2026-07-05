@@ -24,6 +24,8 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.refdata.api/domain/party_status.hpp"
+#include <vector>
+
 
 namespace Ui {
 class PartyStatusDetailDialog;
@@ -60,6 +62,16 @@ public:
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
+
 signals:
     void statusSaved(const QString& code);
     void statusDeleted(const QString& code);
@@ -85,6 +97,7 @@ private:
     void updateStatusFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
 
     Ui::PartyStatusDetailDialog* ui_;
     ClientManager* clientManager_;

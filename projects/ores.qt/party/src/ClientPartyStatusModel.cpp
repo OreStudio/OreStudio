@@ -44,7 +44,7 @@ ClientPartyStatusModel::ClientPartyStatusModel(ClientManager* clientManager, QOb
     connect(watcher_,
             &QFutureWatcher<FetchResult>::finished,
             this,
-            &ClientPartyStatusModel::onStatussLoaded);
+            &ClientPartyStatusModel::onStatusesLoaded);
 
     connect(pulseManager_,
             &RecencyPulseManager::pulse_state_changed,
@@ -87,9 +87,9 @@ QVariant ClientPartyStatusModel::data(const QModelIndex& index, int role) const 
             case Description:
                 return QString::fromStdString(status.description);
             case DisplayOrder:
-                return status.display_order;
+                return static_cast<qlonglong>(status.display_order);
             case Version:
-                return status.version;
+                return static_cast<qlonglong>(status.version);
             case ModifiedBy:
                 return QString::fromStdString(status.modified_by);
             case RecordedAt:
@@ -204,22 +204,19 @@ void ClientPartyStatusModel::fetch_statuses(std::uint32_t offset, std::uint32_t 
                     self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to fetch party statuses: " << result.error();
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .statuses = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch party statuses: " + result.error()),
+                            .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->party_statuses.size() << " party statuses";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->party_statuses.size());
+                    << "Fetched " << result->statuses.size() << " party statuses";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->statuses.size());
                 return {.success = true,
-                        .statuses = std::move(result->party_statuses),
+                        .statuses = std::move(result->statuses),
                         .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};
@@ -230,7 +227,7 @@ void ClientPartyStatusModel::fetch_statuses(std::uint32_t offset, std::uint32_t 
     watcher_->setFuture(future);
 }
 
-void ClientPartyStatusModel::onStatussLoaded() {
+void ClientPartyStatusModel::onStatusesLoaded() {
     is_fetching_ = false;
 
     const auto result = watcher_->result();

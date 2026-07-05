@@ -5618,6 +5618,8 @@ def cmd_build(argv):
         build_cmd += ["--target", *targets]
     jobs = args.jobs or _read_env_map().get("CMAKE_BUILD_PARALLEL_LEVEL")
     if jobs:
+        source = "--jobs" if args.jobs else "CMAKE_BUILD_PARALLEL_LEVEL (.env)"
+        print(f"⚙️  Parallel build jobs: {jobs} (source: {source})")
         build_cmd += ["-j", str(jobs)]
     commands.append(build_cmd)
 

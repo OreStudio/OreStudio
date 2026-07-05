@@ -112,8 +112,8 @@ parse_market_data(std::istream& in,
  */
 ORES_ORE_CORE_EXPORT std::vector<fixing>
 parse_fixings(std::istream& in,
-             duplicate_policy on_duplicate = duplicate_policy::warn,
-             parse_report* report = nullptr);
+              duplicate_policy on_duplicate = duplicate_policy::warn,
+              parse_report* report = nullptr);
 
 } // namespace ores::ore::market
 

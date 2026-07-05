@@ -136,8 +136,7 @@ void marketdata_commands::process_import(std::ostream& out,
     req.source = parsed->flag("source");
 
     BOOST_LOG_SEV(lg(), info) << "Importing market data (file: " << file_path
-                              << ", fixings: " << fixings_path << ", source: " << req.source
-                              << ")";
+                              << ", fixings: " << fixings_path << ", source: " << req.source << ")";
     out << "Importing market data..." << std::endl;
 
     auto result = do_auth_request<marketdata::messaging::import_market_data_response>(
@@ -150,8 +149,9 @@ void marketdata_commands::process_import(std::ostream& out,
         // import_service::import) — report their counts too, so a partial
         // import doesn't read as "nothing happened".
         fail(out) << "Failed to import market data: " << result->message << std::endl;
-        out << "  (series: " << result->series_count << ", observations: "
-            << result->observation_count << ", fixings: " << result->fixing_count
+        out << "  (series: " << result->series_count
+            << ", observations: " << result->observation_count
+            << ", fixings: " << result->fixing_count
             << " — counts reflect content that had no duplicate errors)" << std::endl;
         for (const auto& error : result->errors)
             out << "  ✗ " << error << std::endl;

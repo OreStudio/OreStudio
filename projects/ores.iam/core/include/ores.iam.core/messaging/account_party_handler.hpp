@@ -85,8 +85,7 @@ inline void stamp_account_party(domain::account_party& ap, const ores::database:
     if (!svc.empty())
         ap.performed_by = svc;
     if (ap.change_reason_code.empty())
-        ap.change_reason_code =
-            std::string(ores::service::messaging::change_reasons::new_record);
+        ap.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
 }
 
 } // namespace

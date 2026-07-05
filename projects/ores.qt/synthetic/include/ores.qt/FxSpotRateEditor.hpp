@@ -141,9 +141,9 @@ private:
     // left pane (Simple): a QStackedWidget switching between the GBM/arithmetic
     // sliders and "ou"'s dedicated θ/κ/σ controls, per the active engine.
     QWidget* buildSimpleControls();
-    QWidget* buildGbmSimpleControls();  // Simple page for mixing engines
-    QWidget* buildOuSimpleControls();   // Simple page for "ou"
-    QWidget* buildAdvancedControls(); // left pane (Advanced): table + add/reset
+    QWidget* buildGbmSimpleControls(); // Simple page for mixing engines
+    QWidget* buildOuSimpleControls();  // Simple page for "ou"
+    QWidget* buildAdvancedControls();  // left pane (Advanced): table + add/reset
     void populateCurrencyCombo(QComboBox* combo);
     void recomputeOreKey();
     void recomputeDefaultSourceName();
@@ -247,8 +247,8 @@ private:
     QLabel* jumpValueLabel_;
 
     // Behaviour tab — Simple page, "ou" controls.
-    QLabel* ouThetaLabel_;   // read-only echo of priceSpin_ (θ is edited there)
-    QSlider* kappaSlider_;   // log-mapped, see kappaSliderToValue/kappaValueToSlider
+    QLabel* ouThetaLabel_; // read-only echo of priceSpin_ (θ is edited there)
+    QSlider* kappaSlider_; // log-mapped, see kappaSliderToValue/kappaValueToSlider
     QDoubleSpinBox* kappaSpin_;
     QLabel* ouHalfLifeLabel_;
     QSlider* ouSigmaSlider_;

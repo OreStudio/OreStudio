@@ -68,10 +68,9 @@ std::vector<T> dedupe_by_date_and_key(std::vector<T> items,
             if (report) {
                 auto& bucket =
                     on_duplicate == duplicate_policy::warn ? report->warnings : report->errors;
-                bucket.push_back(
-                    {line_numbers[i],
-                     "duplicate key '" + key_of(items[i]) + "' — superseded by line " +
-                         std::to_string(line_numbers[winner])});
+                bucket.push_back({line_numbers[i],
+                                  "duplicate key '" + key_of(items[i]) + "' — superseded by line " +
+                                      std::to_string(line_numbers[winner])});
             }
             continue;
         }
@@ -187,8 +186,9 @@ parse_market_data(std::istream& in, duplicate_policy on_duplicate, parse_report*
     }
 
     return dedupe_by_date_and_key(
-        std::move(result), line_numbers, on_duplicate, report,
-        [](const market_datum& d) { return d.key; });
+        std::move(result), line_numbers, on_duplicate, report, [](const market_datum& d) {
+            return d.key;
+        });
 }
 
 std::vector<fixing>
@@ -227,8 +227,9 @@ parse_fixings(std::istream& in, duplicate_policy on_duplicate, parse_report* rep
     }
 
     return dedupe_by_date_and_key(
-        std::move(result), line_numbers, on_duplicate, report,
-        [](const fixing& f) { return f.index_name; });
+        std::move(result), line_numbers, on_duplicate, report, [](const fixing& f) {
+            return f.index_name;
+        });
 }
 
 } // namespace ores::ore::market

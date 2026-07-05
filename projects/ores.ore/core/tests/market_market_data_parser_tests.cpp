@@ -292,8 +292,7 @@ TEST_CASE("parse_fixings_dedupes_repeated_index_keeping_last_value", tags) {
     std::istringstream in("2016-01-28 EUR-EONIA 0.001\n"
                           "2016-01-28 EUR-EONIA 0.002\n");
     ores::ore::market::parse_report report;
-    const auto result =
-        parse_fixings(in, ores::ore::market::duplicate_policy::warn, &report);
+    const auto result = parse_fixings(in, ores::ore::market::duplicate_policy::warn, &report);
 
     REQUIRE(result.size() == 1);
     CHECK(result[0].value == "0.002");

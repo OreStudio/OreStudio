@@ -148,13 +148,16 @@ in batch mode. The =-Q= flag disables user configuration; =--script=
 restricts execution to the named file. Only scripts checked into the
 repository are passed here.
 
-=Bash(sccache *)= covers direct invocations of the sccache compiler
-cache: starting or stopping the daemon (=sccache --start-server=,
-=sccache --stop-server=), querying statistics (=sccache --show-stats=),
-and manual cache management (=sccache --zero-stats=). CMake invokes
-sccache transparently as a compiler wrapper (=CMAKE_CXX_COMPILER_LAUNCHER=);
-those subprocess invocations do not require a separate entry, but
-direct calls from Claude do.
+=Bash(sccache *)= and =Bash(ccache *)= cover direct invocations of
+whichever compiler cache the checkout is configured for (selected via
+=compass env configure --compiler-cache {sccache,ccache}=; see
+=ORES_COMPILER_CACHE= in [[proj:.env][=.env=]]): starting or stopping the sccache
+daemon (=sccache --start-server=, =sccache --stop-server=), querying
+statistics (=sccache --show-stats=, =ccache -s=), and manual cache
+management (=sccache --zero-stats=, =ccache -C=). CMake invokes the
+selected tool transparently as a compiler wrapper
+(=CMAKE_CXX_COMPILER_LAUNCHER=); those subprocess invocations do not
+require a separate entry, but direct calls from Claude do.
 
 Common invocations:
 - =make -C build/output/linux-clang-debug-make -j2 ores.utility=
@@ -165,12 +168,14 @@ Common invocations:
 - =./compass.sh build ores.utility.tests=
 - =sccache --start-server=
 - =sccache --show-stats=
+- =ccache -s=
 
 #+begin_src json :tangle no :noweb-ref perm-build
       "Bash(make *)",
       "Bash(cmake *)",
       "Bash(emacs -Q --script *)",
-      "Bash(sccache *)"
+      "Bash(sccache *)",
+      "Bash(ccache *)"
 #+end_src
 
 ** SQL scripts
@@ -502,23 +507,27 @@ prose; fetching it during documentation tasks must not prompt.
 
 ** Filesystem
 
-Extends the write allowlist to include the =sccache= cache directory.
-The sandbox otherwise blocks writes to =~/.cache/sccache=, causing
-cache misses and forcing builds to recompile from scratch or requiring
+Extends the write allowlist to include the =sccache=/=ccache= cache
+directories, both under the shared SSD checkout disk
+(=/mnt/development/.cache/=; see [[proj:.env][=.env=]]'s =ORES_COMPILER_CACHE=). The
+sandbox otherwise blocks writes there, causing cache misses and
+forcing builds to recompile from scratch or requiring
 =dangerouslyDisableSandbox: true=.
 
-Two entries are required: =~/.cache/sccache= authorises the directory
-itself, and =~/.cache/sccache/**= authorises all files and
-subdirectories within it (object cache shards, the stats file, the
-server log, etc.). Without the =/**= glob, sccache receives =EPERM=
-when writing any cache object because the allowlist matches only the
-directory path, not its contents.
+Two entries are required per tool: the directory path itself, and a
+=/**= glob authorising all files and subdirectories within it (object
+cache shards, the stats file, the server log, etc.). Without the
+=/**= glob, the tool receives =EPERM= when writing any cache object
+because the allowlist matches only the directory path, not its
+contents.
 
 #+begin_src json :tangle no :noweb-ref sandbox-filesystem
     "filesystem": {
       "allowWrite": [
-        "~/.cache/sccache",
-        "~/.cache/sccache/**"
+        "/mnt/development/.cache/sccache",
+        "/mnt/development/.cache/sccache/**",
+        "/mnt/development/.cache/ccache",
+        "/mnt/development/.cache/ccache/**"
       ]
     }
 #+end_src

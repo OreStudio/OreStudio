@@ -4920,6 +4920,20 @@ def cmd_bearings(argv):
         _label = _env.get("ORES_CHECKOUT_LABEL", "?")
         _envver = _env.get("ORES_ENV_VERSION", "?")
         print(f"  Preset   : {_preset}  (label: {_label}, env v{_envver})")
+        try:
+            import env_init as _env_init
+            _required_envver = _env_init.current_version(PROJECT_ROOT)
+            _current_envver = int(_envver) if _envver != "?" else 0
+            if _current_envver < _required_envver:
+                print(f"  {_C_YELLOW}⚠  .env is stale (v{_current_envver}, "
+                      f"need v{_required_envver}) — "
+                      f"{_ycmd('compass env configure --preset ' + _preset + ' -y')}"
+                      f"{_C_RESET}")
+            elif _current_envver > _required_envver:
+                print(f"  {_C_YELLOW}⚠  .env version v{_current_envver} is newer "
+                      f"than required v{_required_envver} — proceeding.{_C_RESET}")
+        except Exception:
+            pass
         _info = _cdb.database_info(_env)
         if _info:
             _delta, _drift_label, _col, _warning = _cdb.schema_drift(PROJECT_ROOT, _info)

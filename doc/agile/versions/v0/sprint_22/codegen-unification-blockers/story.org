@@ -37,12 +37,12 @@ The blockers, in implementation order:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
 | Now           | Scaffolding tasks.                     |
 | Waiting on    | Nothing.                               |
 | Next          | Implement blockers in order B2→B3→B1→B5→B4. |
-| Last touched  | 2026-06-27                               |
+| Last touched  | 2026-07-06                               |
 
 * Acceptance
 

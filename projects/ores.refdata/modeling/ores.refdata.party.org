@@ -164,7 +164,7 @@ std::nullopt
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
 :END:
 
 Business center location code.

@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: AD51D3D6-B3A1-4914-B237-7D9F0A1EF8A3
+:END:
+#+title: Task: Scaffold story: Hotfix: refdata generator/repository test fixtures out of sync with DB constraints
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :refdata-test-fixture-drift:sprint_22:v0:
+#+owner: marco
+#+branch: hotfix/refdata-test-fixture-drift
+#+pr: 1438
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B91141E-1785-4090-892C-52B8438DAD86][Hotfix: refdata generator/repository test fixtures out of sync with DB constraints]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold the hotfix story and its docs so the diagnosis/fix work rides
+a single hotfix PR.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2B91141E-1785-4090-892C-52B8438DAD86][Hotfix: refdata generator/repository test fixtures out of sync with DB constraints]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1438][#1438]] | [refdata] Hotfix: fix counterparty codegen drift breaking CI |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Story and both tasks scaffolded off origin/main on
+=hotfix/refdata-test-fixture-drift=; wired into sprint 22.

@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: C514E819-ABD2-4450-9A3C-DF2565D46C10
+:END:
+#+title: Task: Implement Hotfix: refdata generator/repository test fixtures out of sync with DB constraints
+#+description: Initial task for: Hotfix: refdata generator/repository test fixtures out of sync with DB constraints
+#+type: task
+#+level: s1
+#+filetags: :refdata-test-fixture-drift:sprint_22:v0:
+#+owner: marco
+#+branch: hotfix/refdata-test-fixture-drift
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B91141E-1785-4090-892C-52B8438DAD86][Hotfix: refdata generator/repository test fixtures out of sync with DB constraints]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Diagnose and fix the 25 failing ores.refdata unit/repository tests on
+main so CI goes green again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2B91141E-1785-4090-892C-52B8438DAD86][Hotfix: refdata generator/repository test fixtures out of sync with DB constraints]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-05                               |
+
+* Acceptance
+
+- Previously-failing generator/repository tests pass.
+- Fix traced to root-cause commits, not papered over.
+- Build (=ores.refdata.api.lib=) verified clean.
+
+* Plan
+
+Diagnosed via an Explore-style investigation cross-referencing the
+failing assertions/DB errors against recent git history for
+=projects/ores.refdata=:
+
+1. =generators_tests.cpp:94/251/283= assert =business_center_code ==
+   \"WRLD\"= and =change_reason_code == \"system.new\"=, but
+   =counterparty_generator.cpp= emitted =\"USNY\"=/=\"system.test\"=
+   after commit =5ef46554b=.
+2. Repository tests failed with Postgres exceptions —
+   =Invalid business_centre: USNY. Must be one of: WRLD= (only
+   =WRLD= is ever seeded) and =Invalid party_id_scheme: LEI-0= etc.
+   (only 10 fixed scheme codes are valid, not a per-record numeric
+   suffix) — traced to =party_identifier_generator.cpp= and
+   =counterparty_identifier_generator.cpp= after commit =d5762d746=.
+3. Fixed by reverting the 3 generators' values to match their sibling
+   =party_generator.cpp= (untouched by those commits, still correct),
+   plus the =.org= codegen source for =business_center_code=
+   (=id_scheme=/=change_reason_code= have no per-entity =.org= facet —
+   hand-written in the =.cpp=, so no separate source-of-truth edit
+   needed there).
+4. Per user request, migrated the touched =change_reason_code=
+   literals onto new constants in the existing shared
+   =ores.dq.api/domain/change_reason_constants.hpp=
+   (=codes::synthetic_new=, =codes::synthetic_test_data=) instead of
+   leaving magic strings — required adding =ores.dq.api.lib= as a new
+   PRIVATE link dependency of =ores.refdata.api.lib=.
+5. Filed a backlog capture for migrating the remaining ~30 generators
+   onto the same constants (out of scope here).
+
+* Notes
+
+CI on this PR then failed again for a *different* reason after the
+first fix landed: =ores.refdata.core.tests= (test #25) still failed
+=write_multiple_counterparty_identifiers=/
+=write_multiple_party_identifiers= with =Cardinality violation for
+id_scheme LEI: ... already has 1 identifier(s) (max 1)=. Root cause:
+=generate_synthetic_counterparty_identifier=/
+=generate_synthetic_party_identifier= hardcoded =id_scheme = "LEI"=
+for every generated instance; =LEI= carries =max_cardinality = 1= in
+=refdata_party_id_schemes_populate.sql=, so any batch of 2+
+identifiers generated for the same party/counterparty deterministically
+violated the DB trigger.
+
+While verifying the fix locally also hit an unrelated environment
+issue: a host apt =dist-upgrade= bumped
+=postgresql-18-timescaledb= from 2.27.1 to 2.28.2, and every DB query
+started failing with =could not access file "timescaledb-2.27.1"=.
+Root cause and fix (=ALTER EXTENSION timescaledb UPDATE=) captured as
+a new recipe: =doc/recipes/sql/how_do_i_fix_timescaledb_could_not_access_file_after_upgrade.org=
+— unrelated to the refdata fix itself but needed to run the tests at
+all.
+
+Separately, while investigating CI turnaround time on this PR,
+switched =canary-linux.yml= from a debug build with
+=code_coverage=1= to a release build with no coverage — canary gates
+every PR and coverage instrumentation roughly doubles compile/test
+time while duplicating what =continuous-linux.yml=/=nightly-linux.yml=
+already collect on the same matrix leg. Renamed the job and its cache
+keys from =linux-gcc-debug-ninja= to =linux-gcc-release-ninja=
+throughout; confirmed the release-variant sccache/vcpkg caches were
+already warm (written by continuous's existing release matrix leg),
+so this isn't a cold start. Independent of the refdata fix but landed
+on the same PR/branch rather than opening a second PR.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1438][#1438]] | [refdata] Hotfix: fix counterparty codegen drift breaking CI |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Root cause: two "Commission: counterparty" codegen-facet commits
+(=5ef46554b=, =d5762d746=) introduced generator values violating DB
+check constraints (=business_center_code=, =id_scheme=) and diverging
+from existing test expectations (=change_reason_code=). Fixed all 3
+generators, migrated the touched change-reason literals to a shared
+constants header, wired the new library dependency, and filed a
+backlog capture for the remaining generators. Build verified clean.
+
+Follow-up fix (same PR): the id_scheme cardinality violation above was
+fixed by cycling through all id_scheme codes instead of hardcoding
+=LEI=, now centralised in a new shared
+=ores.refdata.api/domain/party_id_scheme_constants.hpp= (mirroring
+=ores.dq='s =change_reason_constants.hpp= pattern) and reused by
+=party_id_scheme_generator.cpp=, which had its own duplicate list.
+Verified locally: =ores.refdata.core.tests= passes 100%. Also landed,
+on the same PR: a TimescaleDB troubleshooting recipe (unrelated fix
+needed to run tests locally) and a canary CI change (debug+coverage →
+release, no coverage) to cut PR turnaround time.

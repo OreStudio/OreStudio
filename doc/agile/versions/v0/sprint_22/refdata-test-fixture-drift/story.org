@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 2B91141E-1785-4090-892C-52B8438DAD86
+:END:
+#+title: Story: Hotfix: refdata generator/repository test fixtures out of sync with DB constraints
+#+description: ores.refdata generator and repository unit tests are failing on main: generators expect change_reason_code 'system.new' but receive 'system.test'; several counterparty/party repository tests violate DB check constraints for business_centre ('USNY' not in allowed list, only 'WRLD') and party_id_scheme ('LEI-0' etc. not in allowed list). Determine which recent commissioning work desynced fixtures/generators from DB constraints and fix so CI is green.
+#+type: story
+#+level: s2
+#+filetags: :sprint_22:v0:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Get CI green again: 25 failing ores.refdata unit/repository tests on
+main, caused by two "Commission: counterparty" codegen-facet commits
+(=5ef46554b=, =d5762d746=) that introduced generator values violating
+DB check constraints and diverging from existing test expectations.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                  |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Merge #1438.                           |
+| Last touched  | 2026-07-05                               |
+
+* Acceptance
+
+- All previously-failing ores.refdata generator and repository tests
+  pass.
+- Root cause identified and documented per symptom cluster.
+- No new magic-string change-reason literals introduced; existing ones
+  touched by the fix migrated to the shared constants header.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AD51D3D6-B3A1-4914-B237-7D9F0A1EF8A3][Scaffold story: Hotfix: refdata generator/repository test fixtures out of sync with DB constraints]] | DONE | 2026-07-04 | 2026-07-05 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:C514E819-ABD2-4450-9A3C-DF2565D46C10][Implement Hotfix: refdata generator/repository test fixtures out of sync with DB constraints]] | DONE | 2026-07-05 | 2026-07-05 | Initial task for: Hotfix: refdata generator/repository test fixtures out of sync with DB constraints |
+
+* Decisions
+
+- Root cause: commit =5ef46554b= ("Populate counterparty codegen
+  facets...") changed =counterparty_generator.cpp='s
+  =business_center_code= from =\"WRLD\"= (the only seeded business
+  centre) to the invalid =\"USNY\"=, and =change_reason_code= from
+  =\"system.new\"= to =\"system.test\"=, without updating the tests
+  that asserted the old values. Commit =d5762d746= ("Close remaining
+  counterparty gaps...") introduced an invalid =\"LEI-{idx}\"=
+  numeric-suffix pattern for =id_scheme= in
+  =party_identifier_generator.cpp= and
+  =counterparty_identifier_generator.cpp= (DB only accepts 10 fixed
+  scheme codes, not a per-record suffix).
+- Fix: reverted =business_center_code= to =\"WRLD\"= (in both the
+  =.cpp= and its =.org= codegen source), =id_scheme= to plain
+  =\"LEI\"=, and =change_reason_code= back to matching the sibling
+  =party_generator.cpp= convention.
+- Introduced =codes::synthetic_new= and =codes::synthetic_test_data=
+  in the existing shared
+  =ores.dq.api/domain/change_reason_constants.hpp= and migrated the 3
+  touched generators onto them, instead of leaving magic string
+  literals in place — the class of bug that caused this drift in the
+  first place. Wired =ores.dq.api.lib= as a new PRIVATE link
+  dependency of =ores.refdata.api.lib= to make the header available.
+- Filed a backlog capture
+  ([[id:008F2F44-3040-43E1-8A7C-1828FE136C8C][capture]]) to migrate the
+  remaining ~30 =ores.refdata= generators onto the same constants —
+  out of scope for this hotfix.
+- CI failed again after the above landed, with a *different* root
+  cause: =generate_synthetic_counterparty_identifier=/
+  =generate_synthetic_party_identifier= hardcoded =id_scheme = "LEI"=
+  for every generated instance; =LEI= carries =max_cardinality = 1=
+  in =refdata_party_id_schemes_populate.sql=, so any batch of 2+
+  identifiers generated for the same party/counterparty
+  deterministically violated the DB's cardinality trigger
+  (=write_multiple_counterparty_identifiers=/
+  =write_multiple_party_identifiers=). Fixed by cycling through all
+  id_scheme codes instead, centralised in a new shared
+  =ores.refdata.api/domain/party_id_scheme_constants.hpp= (mirroring
+  =ores.dq='s =change_reason_constants.hpp= pattern) and reused by
+  =party_id_scheme_generator.cpp=, which had its own duplicate,
+  unshared list. Verified locally: =ores.refdata.core.tests= passes
+  100%.
+- Also landed on this PR, independent of the refdata fix: a
+  TimescaleDB troubleshooting recipe
+  ([[id:373D40CC-AFDF-49CA-AC93-78759629B3A2][How do I fix a
+  TimescaleDB "could not access file" error after an apt upgrade?]]) —
+  needed locally to even run the tests after a host apt dist-upgrade
+  bumped the timescaledb package — and a canary CI change
+  (=canary-linux.yml=: debug build with =code_coverage=1= → release
+  build with no coverage), to cut PR turnaround time; canary's
+  coverage data duplicated what =continuous-linux.yml=/
+  =nightly-linux.yml= already collect on the same matrix leg.
+
+* Out of scope
+
+- Migrating all remaining ores.refdata generators to the shared
+  change-reason constants (captured separately).

@@ -56,6 +56,16 @@ constexpr std::string_view external_data_import = "system.external_data_import";
  */
 constexpr std::string_view non_material_update = "common.non_material_update";
 
+/**
+ * @brief Used by synthetic-data generators for freshly created test fixtures.
+ */
+constexpr std::string_view synthetic_new = "system.new";
+
+/**
+ * @brief Used by synthetic-data generators for general test-only fixtures.
+ */
+constexpr std::string_view synthetic_test_data = "system.test";
+
 } // namespace codes
 
 /**

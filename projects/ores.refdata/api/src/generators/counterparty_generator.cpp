@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -27,6 +28,7 @@
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
+namespace change_reason_codes = ores::dq::domain::change_reason_constants::codes;
 
 domain::counterparty generate_synthetic_counterparty(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
@@ -45,11 +47,11 @@ domain::counterparty generate_synthetic_counterparty(utility::generation::genera
     r.transliterated_name = std::nullopt;
     r.party_type = std::string("Bank");
     r.parent_counterparty_id = std::nullopt;
-    r.business_center_code = std::string("USNY");
+    r.business_center_code = std::string("WRLD");
     r.status = std::string("Active");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
+    r.change_reason_code = change_reason_codes::synthetic_new;
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

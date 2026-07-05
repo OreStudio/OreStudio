@@ -15,6 +15,7 @@ Recipes related to *SQL recipes*. Each entry below is a single how-do-I question
 
 - [[id:ABFC1EB5-5314-43C6-80B8-E2967254F867][How do I run SQL in the environment?]] — =compass sql=, the entry
   point every recipe below runs through.
+- [[id:373D40CC-AFDF-49CA-AC93-78759629B3A2][How do I fix a TimescaleDB "could not access file" error after an apt upgrade?]]
 - [[id:2BFC42E9-2615-44DA-9E08-52FEB221A826][List All ORES Databases]]
 - [[id:BB9D68F2-F65D-4A65-8E08-81587C16F615][List Test Databases]]
 - [[id:6DEB7FE7-32D2-40A9-A043-CD5C0301FADA][List Instance Databases]]

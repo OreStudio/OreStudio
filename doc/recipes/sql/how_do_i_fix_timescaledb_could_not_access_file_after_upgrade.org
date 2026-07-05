@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 373D40CC-AFDF-49CA-AC93-78759629B3A2
+:END:
+#+title: How do I fix a TimescaleDB "could not access file" error after an apt upgrade?
+#+description: Bump the TimescaleDB extension version recorded in each database after apt upgrades the timescaledb package, without a server restart.
+#+type: recipe
+#+level: cross
+#+filetags: :sql:database:timescaledb:postgresql:recipe:
+#+created: 2026-07-05
+#+updated: 2026-07-05
+
+See [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]]§=timescaledb= for
+how the extension is used and installed in the first place.
+
+* Question
+
+How do I fix a TimescaleDB "could not access file
+\"timescaledb-X.Y.Z\": No such file or directory" error after an apt
+upgrade bumps the =postgresql-NN-timescaledb= package?
+
+* Answer
+
+TimescaleDB uses a version-stub loader: =shared_preload_libraries =
+'timescaledb'= in =postgresql.conf= loads a small, unversioned stub
+(=timescaledb.so=) which then dynamically loads the real,
+version-named library (e.g. =timescaledb-2.27.1.so=) based on the
+version recorded in *each database's* =pg_extension= catalog.
+
+When apt upgrades the =postgresql-NN-timescaledb= package, it replaces
+the old versioned =.so= file with the new one (e.g.
+=timescaledb-2.28.2.so=), but every existing database still has the
+*old* version recorded — so the loader can no longer find the file it
+is looking for, and any query against that database fails.
+
+The fix is a per-database catalog bump, not a package reinstall or a
+server restart:
+
+1. Confirm the mismatch — the installed package version (right) versus
+   what a database still has recorded (left, via a failing query):
+
+   #+begin_src sh :results verbatim
+   ./compass.sh sql -- -c "select version();"
+   dpkg -l | grep timescaledb
+   #+end_src
+
+2. Bump the extension version in the affected database:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh sql -- -c "alter extension timescaledb update;"
+   #+end_src
+
+3. Verify:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh sql -- -c "select extname, extversion from pg_extension where extname='timescaledb';"
+   #+end_src
+
+Repeat step 2 for every database on the cluster that has the extension
+installed (each one tracks its own recorded version independently).
+=shared_preload_libraries= itself is unversioned, so no
+=postgresql.conf= change or cluster restart is required.
+
+* Script
+
+No script — pure SQL via =compass sql=.
+
+* Tested by
+
+Manual — triggered by the =ores.refdata.core.tests= suite failing with
+this exact error after a host apt =dist-upgrade= bumped TimescaleDB
+from 2.27.1 to 2.28.2; fixed by running the =ALTER EXTENSION= above.
+
+* See also
+
+- https://docs.timescale.com/self-hosted/latest/upgrades/

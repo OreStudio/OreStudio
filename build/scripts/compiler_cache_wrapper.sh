@@ -49,6 +49,8 @@ fi
 
 if [ "${TOOL}" = "sccache" ]; then
     export SCCACHE_BASEDIR="${SCCACHE_BASEDIR:-${PROJECT_ROOT}}"
+elif [ "${TOOL}" = "ccache" ]; then
+    export CCACHE_BASEDIR="${CCACHE_BASEDIR:-${PROJECT_ROOT}}"
 fi
 
 exec "${TOOL}" "$@"

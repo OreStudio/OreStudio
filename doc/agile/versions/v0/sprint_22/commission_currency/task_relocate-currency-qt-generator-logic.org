@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
 #+branch: feature/relocate-currency-qt-generator-logic
-#+pr:
+#+pr: 1441
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -64,7 +64,7 @@ generates a batch via count, no random pick), so it needed no change.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1441][#1441]] | [refdata,qt,build] Relocate currency generator logic; fix CI cache waste |
 
 * Review
 

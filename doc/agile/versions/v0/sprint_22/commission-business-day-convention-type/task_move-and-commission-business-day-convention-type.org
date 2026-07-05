@@ -8,7 +8,7 @@
 #+filetags: :commission-business-day-convention-type:sprint_22:v0:
 #+owner: marco
 #+branch: feature/move-and-commission-business-day-convention-type
-#+pr:
+#+pr: 1442
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -115,7 +115,7 @@ Checked every real consumer before touching anything:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1442][#1442]] | [refdata] Move and commission business_day_convention_type |
 
 * Review
 

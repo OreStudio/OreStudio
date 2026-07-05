@@ -24,8 +24,12 @@
 # are not set here — sccache picks them up from its own global config
 # (~/.config/sccache/config).
 #
-# For ccache: cache location and tuning (direct_mode, hard_link, max_size)
-# come from ccache's own global config (~/.config/ccache/ccache.conf).
+# For ccache: cache location and tuning (direct_mode, hash_dir, hard_link,
+# max_size) come from ccache's own global config (~/.config/ccache/ccache.conf).
+# CCACHE_BASEDIR is set here for the same cross-worktree sharing reason as
+# SCCACHE_BASEDIR above; hash_dir is disabled in ccache.conf so that base_dir
+# normalisation actually takes effect (hash_dir would otherwise bake each
+# worktree's absolute build directory into every object's hash).
 #
 # Used as CMAKE_C_COMPILER_LAUNCHER / CMAKE_CXX_COMPILER_LAUNCHER in
 # CMakeLists.txt.  The project root is resolved at runtime from this script's

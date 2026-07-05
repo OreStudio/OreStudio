@@ -28,7 +28,7 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   build:
-    name: linux-gcc-debug-ninja
+    name: linux-gcc-release-ninja
     concurrency:
       group: canary-${{github.ref}}-${{github.job}}
       cancel-in-progress: true
@@ -94,13 +94,13 @@ jobs:
         uses: actions/cache/restore@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
-          key: sccache-linux-gcc-debug-ninja
+          key: sccache-linux-gcc-release-ninja
 
       - name: Ccache for gh actions
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           variant: sccache
-          key: linux-gcc-debug-ninja
+          key: linux-gcc-release-ninja
           max-size: 2000M
           save: false
 
@@ -161,9 +161,9 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/vcpkg-cache
-          key: vcpkg-linux-gcc-debug-ninja-${{ hashFiles('vcpkg.json') }}
+          key: vcpkg-linux-gcc-release-ninja-${{ hashFiles('vcpkg.json') }}
           restore-keys: |
-            vcpkg-linux-gcc-debug-ninja-
+            vcpkg-linux-gcc-release-ninja-
 
       - name: run-vcpkg
         uses: lukka/run-vcpkg@v11
@@ -173,8 +173,8 @@ jobs:
       - name: Restore cmake build cache
         uses: actions/cache/restore@v6
         with:
-          path: build/output/linux-gcc-debug-ninja/projects
-          key: cmake-build-linux-gcc-debug-ninja
+          path: build/output/linux-gcc-release-ninja/projects
+          key: cmake-build-linux-gcc-release-ninja
 
       - name: Ensure modified source files will be rebuilt
         run: |
@@ -182,7 +182,6 @@ jobs:
             | grep -E '\.(cpp|hpp|h)$' \
             | while IFS= read -r f; do
                 [ -f "$f" ] && touch "$f"
-                [[ "$f" == *.cpp ]] && find build/output/linux-gcc-debug-ninja -name "${f##*/}.gcda" -delete 2>/dev/null || true
               done || true
 
       - name: Run CTest workflow
@@ -197,8 +196,8 @@ jobs:
           export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
           # PR URL for the CDash Notes (empty for non-PR invocations).
           export ORES_PR_URL="${{ github.event.pull_request.html_url }}"
-          export preset=linux-gcc-debug-ninja
-          export cmake_args="build_group=Canary,preset=${preset},code_coverage=1"
+          export preset=linux-gcc-release-ninja
+          export cmake_args="build_group=Canary,preset=${preset}"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
       - name: Show sccache statistics

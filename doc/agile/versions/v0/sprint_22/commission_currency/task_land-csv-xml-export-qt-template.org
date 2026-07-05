@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 2EAF2F99-B71F-410D-985A-7A616E40CB88
+:END:
+#+title: Task: Land CSV/XML import-export as a qt-profile template capability
+#+description: Currency's CurrencyMdiWindow has hand-rolled CSV export and XML import/export with no template equivalent. Generalise it into an opt-in qt-profile mdi_window template capability, with currency as the first real consumer, so the Qt sync task doesn't silently drop it on regeneration.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Generalise currency's hand-rolled CSV export and XML import/export
+(=CurrencyMdiWindow::exportToCSV/exportToXML/importFromXML=,
+=ImportCurrencyDialog=) into an opt-in qt-profile mdi_window template
+capability, with currency as the first real consumer. Step 2 of the
+regenerate plan (task 6E0CD16E) — must land before "Sync Qt codegen
+for currency" regenerates =CurrencyMdiWindow=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- CSV export and XML import/export are opt-in mdi_window template
+  capabilities, not currency-specific code.
+- Regenerating currency's mdi_window with the capability enabled
+  reproduces equivalent behaviour to the current hand-written code.
+- Build passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

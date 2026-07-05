@@ -21,6 +21,9 @@
 #define ORES_QT_LOOKUP_FETCHER_HPP
 
 #include "ores.qt/export.hpp"
+#include "ores.refdata.api/domain/currency_market_tier.hpp"
+#include "ores.refdata.api/domain/monetary_nature.hpp"
+#include "ores.refdata.api/domain/rounding_type.hpp"
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -136,6 +139,34 @@ struct business_unit_entry {
  * Returns empty vector on failure.
  */
 ORES_QT_API std::vector<business_unit_entry> fetch_business_unit_entries(ClientManager* cm);
+
+/**
+ * @brief Fetches all rounding types from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by DynamicComboSetup to populate currency's rounding_type combo.
+ * Returns empty vector on failure.
+ */
+ORES_QT_API std::vector<refdata::domain::rounding_type> fetch_rounding_types(ClientManager* cm);
+
+/**
+ * @brief Fetches all monetary natures from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by DynamicComboSetup to populate currency's monetary_nature combo.
+ * Returns empty vector on failure.
+ */
+ORES_QT_API std::vector<refdata::domain::monetary_nature> fetch_monetary_natures(ClientManager* cm);
+
+/**
+ * @brief Fetches all currency market tiers from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by DynamicComboSetup to populate currency's market_tier combo.
+ * Returns empty vector on failure.
+ */
+ORES_QT_API std::vector<refdata::domain::currency_market_tier>
+fetch_currency_market_tiers(ClientManager* cm);
 
 }
 

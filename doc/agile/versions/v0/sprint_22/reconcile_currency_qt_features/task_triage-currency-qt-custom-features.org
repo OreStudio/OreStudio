@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 78FB4E23-9FC7-4BBB-B0D5-4194084A2662
+:END:
+#+title: Task: Triage currency Qt custom features against codegen templates
+#+description: For each custom feature in currency's Qt layer (CSV/XML import-export, feature-flagged synthetic data generation, full version-navigation UI, flag image handling, NATS notification wiring, handler naming drift), decide feature-by-feature whether it becomes a generalised qt-profile template capability (a variability knob other entities can opt into, e.g. import/export as a configurable capability rather than currency-specific code) or stays currency-specific custom code. As part of the triage, flag and separately note any business logic currently embedded in the Qt UI layer that belongs elsewhere (domain/service/repository) and should be relocated rather than templated in place. Produce a written decision doc covering every discovered feature.
+#+type: task
+#+level: s1
+#+filetags: :reconcile_currency_qt_features:sprint_22:v0:
+#+owner: marco
+#+branch: feature/triage-currency-qt-custom-features
+#+pr: 1435
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a written, feature-by-feature triage of everything in currency's
+Qt layer that exceeds the qt codegen template — CSV/XML import-export,
+the feature-flagged synthetic-data-generation button, the full
+version-navigation UI, flag image handling, the extra NATS notification
+wiring, and the handler naming drift (=onOpenCurrencyVersion= vs. the
+template's =onOpenVersion=). For each item, record a decision: promote
+to a generalised qt-profile template capability (a variability knob
+other entities can opt into), or keep as currency-specific custom code.
+Separately flag any business logic embedded in the Qt UI layer that
+belongs in domain/service/repository instead, so it can be relocated
+rather than templated in place.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- Every feature listed in the goal has a recorded decision: promote to
+  template (as a generalised, opt-in capability) or stays custom.
+- Any UI-embedded business logic found is flagged separately, with a
+  note on where it should live instead.
+- Decisions are written down in this task (Notes/Result) so the parent
+  story's =* Decisions= can be filled in and the next task can plan
+  from them.
+
+* Plan
+
+Read currency's hand-written Qt files (=CurrencyMdiWindow=,
+=CurrencyController=, =CurrencyDetailDialog=, =ImportCurrencyDialog=,
+=OreCurrencyComboBox=, =CurrencyHistoryDialog=) against the qt codegen
+mustache templates and against the already-synced peer
+=CurrencyMarketTier*= (same module, same shape, already reconciled),
+citing concrete methods for every claim. Then record a promote/keep
+decision per feature.
+
+* Notes
+
+** Triage results
+
+| # | Feature                                        | Verdict                                                                                      |
+|---+-------------------------------------------------+-----------------------------------------------------------------------------------------------|
+| 1 | CSV export                                     | PROMOTE — generalise as an opt-in export capability.                                          |
+| 2 | XML import/export                              | PROMOTE — generalise as an opt-in capability.                                                 |
+| 3 | Synthetic-data-generation button (setting-gated) | PROMOTE — generalise as a conditional-action-visibility knob (setting-gated action).           |
+| 4 | Version-navigation UI (first/prev/next/last/revert) | PROMOTE — strong candidate, 100% absent from template and peer alike.                     |
+| 5 | Flag image handling                            | RECONCILE (not promote/custom) — template already has a partial generic mechanism (=has_flag_icon= → =initFlagButton=/=entityImageId()=/=keyFlagField()=) that currency bypasses with hand-rolled code. Migrate currency onto it. |
+| 6 | 3 soft-FK combo fields (monetary_nature, market_tier, rounding_type) | NEEDS MECHANISM EXTENSION — template only supports =is_static_combo=/=is_dynamic_combo=; currency's fields use neither (hand-rolled async fetch, =display_order= sort, tooltips, "Loading…" placeholder). =OreCurrencyComboBox= is an unrelated unused =.ui= marker class. Feeds directly into the combo-field pilot task. |
+| 7 | NATS notification wiring (=onNotificationReceived=) | PROMOTE — template partially supports via =changed_event_class= but currently generates no notification-handling/staleness logic; that half is 100% hand-added in currency. Peer wasn't even configured with =changed_event_class=. |
+| 8 | Handler naming drift (=onShowCurrencyDetails=, =onShowCurrencyHistory=, =onOpenCurrencyVersion=, =onRevertCurrency= vs. template's =onShowDetails=/=onShowHistory=/=onOpenVersion=/=onRevertVersion=) | MECHANICAL RENAME on regeneration — not a design decision. |
+
+** Business logic flagged for relocation
+
+- =CurrencyDetailDialog::onGenerateClicked()= and
+  =CurrencyMdiWindow::generateSynthetic()= do inline
+  =std::uniform_int_distribution= random-pick selection over generated
+  currencies. This selection logic belongs in the generator/service
+  layer, not the Qt UI — relocate it out.
+- =ImportCurrencyDialog='s per-row =ore::xml::importer::validate_currency=
+  calls are orchestration only (calling an existing validator), not
+  embedded business logic — no relocation needed.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1435][#1435]] | [qt] Reconcile currency Qt custom features with codegen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Triaged all 8 discovered currency Qt features against the qt codegen
+templates and the already-synced =CurrencyMarketTier= peer. 4 promote
+to generalised template capabilities (CSV export, XML import/export,
+version-navigation UI, NATS notification wiring), 1 is a
+setting-gated-visibility promotion (synthetic-data button), 1 is a
+reconciliation fix onto an existing partial mechanism (flag image), 1
+needs the existing combo-field mechanism extended (3 soft-FK combos —
+feeds the next task), and 1 is a mechanical rename on regeneration
+(handler naming). 2 spots of UI-embedded business logic (random-pick
+selection in generate handlers) flagged for relocation to the
+generator/service layer. Full detail in =* Notes= above.

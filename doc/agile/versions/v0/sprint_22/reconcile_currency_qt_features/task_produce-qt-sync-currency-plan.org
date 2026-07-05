@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 6E0CD16E-1E74-4E2A-BB0E-776F69EF80CB
+:END:
+#+title: Task: Produce concrete regenerate/reconcile plan for Sync Qt codegen for currency
+#+description: Turn the triage and combo-field piloting output into a concrete, reviewed plan for the blocked 'Sync Qt codegen for currency' task: which of the 12 output files change, which template capabilities need to land first, and which currency-specific code must be preserved across regeneration. Once this plan exists, the Qt sync task can proceed as a reviewed mechanical regenerate + reconcile pass rather than a speculative rewrite.
+#+type: task
+#+level: s1
+#+filetags: :reconcile_currency_qt_features:sprint_22:v0:
+#+owner: marco
+#+branch: feature/triage-currency-qt-custom-features
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Turn the triage decisions and combo-field piloting outcome into a
+concrete, reviewed plan for the blocked "Sync Qt codegen for currency"
+task: for each of the 12 generated output files, what changes; which
+template capabilities (e.g. generalised import/export knobs,
+version-navigation UI) need to land in the qt profile first; and which
+currency-specific code must be explicitly preserved across
+regeneration rather than overwritten.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- Plan covers every one of the 12 qt-profile output files for currency.
+- Plan states, per file, what template work (if any) must land before
+  regeneration, and what custom code must be preserved.
+- Plan is reviewed before "Sync Qt codegen for currency" resumes.
+
+* Plan
+
+** Per-file drift/preserve table (the 12 qt-profile output files)
+
+| File                                   | What changes on regenerate                          | What must be preserved / land first |
+|-----------------------------------------+------------------------------------------------------+---------------------------------------|
+| ClientCurrencyModel.hpp/.cpp            | Expected near-zero drift — list model shape already matches template (like the synced peers). | Nothing special.                     |
+| CurrencyController.hpp/.cpp             | Handler renames (=onShowCurrencyDetails=→=onShowDetails= etc.) are mechanical. | NATS notification wiring (=onNotificationReceived=) capability must land in the controller template first, or it's silently dropped — currency has no working peer example since =changed_event_class= was never configured on one. |
+| CurrencyMdiWindow.hpp/.cpp              | Window-glue portion regenerates cleanly.              | CSV export, XML import/export, and the setting-gated synthetic-data-button visibility knob must land as opt-in template capabilities before regenerate, else all three are lost silently. |
+| CurrencyDetailDialog.hpp/.cpp + .ui     | Combo fields: template only needs to emit the already-piloted =populateDynamicCombo<Entity>= call + fetcher per field (small, ready now). | Version-navigation UI (first/prev/next/last/revert) must land as a template capability first. Flag image handling must be migrated onto the existing =has_flag_icon= mechanism (reconciliation, not new template work). Random-pick logic in =onGenerateClicked()= must be relocated to the generator/service layer *before* this file is touched, so the relocated call is what regenerate then wires to. |
+| CurrencyHistoryDialog.hpp/.cpp + .ui   | Expected near-zero drift — history dialogs are structurally simple and already close to template shape in the synced peers. | Nothing special.                     |
+
+** Ordered sequence
+
+1. Relocate the random-pick generator logic out of
+   =CurrencyDetailDialog=/=CurrencyMdiWindow= into the generator/service
+   layer (small, unblocks nothing else but removes UI-embedded logic
+   before regenerating those files).
+2. Land the CSV/XML import-export capability in the =mdi_window=
+   template (opt-in flag), currency as first consumer.
+3. Land the setting-gated action-visibility knob in the =mdi_window=
+   (and =detail_dialog=) templates, currency's synthetic-data button as
+   first consumer.
+4. Land the version-navigation UI capability in the =detail_dialog=
+   template, currency as first consumer.
+5. Land the NATS notification-wiring half of =changed_event_class= in
+   the =controller= template (fetch/guard side already exists via
+   =changed_event_class=; only the handler generation is missing).
+6. Reconcile currency's flag image handling onto the existing
+   =has_flag_icon= mechanism (no new template work, just migrate the
+   call site).
+7. Wire currency's 3 combo fields to the piloted
+   =populateDynamicCombo<Entity>= via the small per-field codegen emit
+   (already unblocked, from task 2).
+8. Decide and land the fetch-failure-signalling gap (flagged in task 2)
+   before finalizing the combo template emit.
+9. Only once 1-8 have landed: re-run the qt profile for currency, diff
+   all 12 files against the repo, and reconcile — the mechanical pass
+   the blocked task originally scoped.
+
+** Recommendation
+
+Steps 2-5 are each non-trivial template/codegen changes in their own
+right (new mustache sections, Python schema flags, at least one worked
+example). "Sync Qt codegen for currency" as currently scoped is really
+7-8 sub-tasks wearing one task's clothes. Recommend splitting it into
+one task per numbered step above (or grouping 1+6+7+8 as "reconcile",
+and 2-5 as one task per template capability) rather than attempting it
+as a single mechanical pass.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Plan complete: a per-file drift/preserve table for all 12 qt-profile
+output files, a 9-step ordered sequence from relocating UI-embedded
+logic through to the final mechanical regenerate, and a recommendation
+to split the blocked "Sync Qt codegen for currency" task into per-step
+sub-tasks rather than one task. Acceptance met — the Qt sync task can
+now proceed from a concrete, reviewed plan instead of a speculative
+rewrite.

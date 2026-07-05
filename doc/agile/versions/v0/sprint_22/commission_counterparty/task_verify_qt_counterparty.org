@@ -8,7 +8,7 @@
 #+filetags: :commission_counterparty:sprint_22:v0:
 #+owner: marco
 #+branch: feature/verify-qt-counterparty
-#+pr:
+#+pr: 1440
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -59,7 +59,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1440][#1440]] | [compass,build] Move sccache cache config to global config |
 
 * Review
 

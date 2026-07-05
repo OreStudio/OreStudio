@@ -1,0 +1,236 @@
+:PROPERTIES:
+:ID: CC2B3D6B-2B92-4606-A3BE-E67FB86B2960
+:END:
+#+title: Task: Health review 2 — sprint 22 mid-sprint analysis
+#+description: System 2 health review 2 of sprint 22.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_22:sprint_22:v0:
+#+owner: marco
+#+branch: feature/verify-qt-counterparty
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-05
+#+updated: 2026-07-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+System 2 health review of sprint 22 at day 4, triggered by an
+observed drift symptom: several worktrees show STARTED task activity
+on stories whose =sprint.org=/=story.org= state is still BACKLOG.
+Assess whether that symptom is isolated or systemic, alongside the
+sprint's other four health dimensions.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] |
+| Now          | Complete.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Fix the state-drift stories flagged below; consider a sprint scope cut. |
+| Last touched | 2026-07-05                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** Review on 2026-07-05 (day 4 of 7)
+
+*** Goal alignment
+
+Mission: "Continue commissioning the ores.refdata entity library and
+correcting codegen C++ generation drift, carrying postponed sprint 21
+stories." Two goals in practice: (1) entity commissioning
+(Qt/shell/CLI/manual per entity), (2) codegen drift correction.
+
+Most active work maps cleanly to goal (1): currency, counterparty,
+party_status, book, purpose_type are all commission-epic stories.
+Goal (2) has one active story (composite hierarchy Qt widgets) but
+its large backlog (refactor_codegen_cpp, codegen-unification-blockers,
+codegen_ci_zero_diff, codegen_safety_guardrails — none STARTED) is
+untouched this sprint despite being called out explicitly in the
+mission. The market-data epic (synthetic data collections) is large
+and active but only tangentially related to either stated goal — it
+is carried sprint-20/21 momentum, not new-to-sprint-22 scope.
+
+The most serious finding here isn't miscoverage of a goal, it's
+*invisible* coverage: Commission: business_day_convention_type
+(bright_faraday worktree, task_state=DONE per fleet) has no story or
+task document reachable from main — =compass show= fails to resolve
+both its story and task UUIDs even after a fresh index rebuild. This
+work legitimately serves goal (1) but is entirely unaccounted for in
+sprint tracking; if that worktree is lost or its branch abandoned,
+the work and the decision trail behind it disappear with it.
+
+| Goal | Coverage | Notable stories | Verdict |
+|------+----------+------------------+---------|
+| Entity commissioning | Broad but shallow | currency (STARTED, 16/18), counterparty (STARTED, 3/7), party_status/book/purpose_type (drifted STARTED, see below), business_day_convention_type (untracked) | AMBER |
+| Codegen drift correction | Named in mission, not worked | refactor_codegen_cpp (19 tasks, 6 done, BACKLOG all sprint), codegen-unification-blockers (15 tasks, 8 done, BACKLOG all sprint) | RED |
+
+*** Sprint load
+
+| Metric | Value | Target | Status |
+|--------+-------+--------+--------|
+| Commits so far | 218 | ≤300 | — |
+| Elapsed days | 4 (day 4 of 7, partial) | — | — |
+| Commits/day (full days 2026-07-02..04) | 69.3 (34, 114, 60) | — | — |
+| Commits/day (today, partial) | 10 so far | — | — |
+| Projected close (3 remaining days × full-day avg) | ~425 | ≤300 GREEN / ≤400 AMBER | RED |
+| Projected close (3 remaining days × overall avg 54.5/day) | ~381 | ≤300 GREEN / ≤400 AMBER | AMBER |
+
+Day 3 (114 commits) was a clear outlier — more than 3x day 1's rate.
+Whichever projection is used, the sprint is trending over its
+300-commit target; the only question is by how much. This is not a
+one-off spike: it lines up with the same period the drifted stories
+below started accumulating undocumented WIP, consistent with a
+sprint that took on more concurrent work than its own paperwork could
+keep up with.
+
+*** PR velocity
+
+45 PRs merged since sprint start (2026-07-02) — 12 on day 1, 15 on
+day 2, 14 on day 3, 4 so far on day 4. That is a strong raw
+throughput, comfortably above the ≥1/day floor.
+
+But raw merge count hides a WIP problem: of the 10 fleet worktrees,
+7 have no open PR at all, and several are carrying large unmerged/
+unsynced deltas — clever_dijkstra (2 ahead, 29 behind), jolly_knuth
+(0 ahead, 27 behind), solid_dirac (17 ahead, 16 behind), eager_maxwell
+(10 ahead, 16 behind). A branch 27-29 commits behind main with no PR
+in flight is not "about to merge" — it is stale WIP that will cost a
+non-trivial rebase whenever it does surface.
+
+| Metric | Value | Notes |
+|--------+-------+-------|
+| PRs merged since sprint start | 45 | ~13/day average |
+| Worktrees with no open PR | 7 / 10 | High — most in-flight work has no PR yet |
+| Worktrees >15 commits behind main | 4 / 10 | clever_dijkstra, jolly_knuth, solid_dirac, eager_maxwell |
+| Verdict | | AMBER — good throughput, but WIP is piling up behind it |
+
+*** Story and task balance
+
+Story-level DONE ratio across all 51 stories in sprint 22:
+14 DONE / 51 total = *0.27* — below the 0.3 RED threshold.
+
+Five stories with real, active branch work show a STARTED task but a
+story-level state of BACKLOG and "Now: Not yet started" — the exact
+symptom that triggered this review:
+
+| Story | Story state (file) | Task state (fleet) | Tasks (done/total) | Notes |
+|-------+---------------------+---------------------+---------------------+-------|
+| Commission: party_status | BACKLOG | STARTED (Sync Qt codegen) | 4/11 | Task file itself still says BACKLOG — even the task doc disagrees with the active worktree |
+| Commission: book | BACKLOG | STARTED (Sync C++ core codegen) | 0/0 (no task docs at all) | Story undecomposed; task UUID unresolvable from main — exists only in clever_dijkstra's local branch |
+| Commission: purpose_type | BACKLOG | STARTED (Verify Qt UI) | 0/0 (no task docs at all) | Same pattern as book — undecomposed, task invisible from main |
+| Composite child-entity/hierarchy Qt widgets | BACKLOG | STARTED (Design child-entity facet) | 0/3 | Task doc exists and is itself still BACKLOG |
+| Commission: business_day_convention_type | *not in sprint.org at all* | DONE (per fleet) | unknown | Entire story/task pair unresolvable from main; only trace is the fleet's live read of bright_faraday's local branch |
+
+Separately, one story drifted the *other* direction: codegen-sql-
+variability-marketdata's own =story.org= says State=DONE, "All four
+tasks complete; PR pending", but =sprint.org= still lists it BACKLOG
+— completed work not yet reflected upward.
+
+| Metric | Value | Target | Status |
+|--------+-------+--------+--------|
+| Stories DONE / total | 14/51 (0.27) | ≥0.5 GREEN / 0.3–0.5 AMBER | RED |
+| Stories with STARTED work but BACKLOG bookkeeping | 5 | 0 | RED |
+| Stories undecomposed (no task docs) despite active work | 2 (book, purpose_type) | 0 | RED |
+
+*** Focus signal
+
+Nominal STARTED count in =sprint.org= is 5 (Open sprint 22, Commission:
+currency, Commission: counterparty, Compass GitHub Actions support,
+Synthetic data collections). But fleet shows *9 distinct stories*
+with live branch activity right now once the drifted ones and the
+untracked business_day_convention_type are counted — nearly double
+the visible number, spanning agile tooling, currency, counterparty,
+party_status, book, purpose_type, composite Qt widgets, synthetic
+data, and an entirely separate commissioning story invisible from
+sprint.org.
+
+This task itself is one more data point: the counterparty Qt
+verification task is now BLOCKED because the composite-hierarchy-
+widgets work (solid_dirac) and the Commission: party work are
+touching the same Qt entity-detail code the counterparty task needs
+to verify — a direct collision between two of those nine concurrent
+threads.
+
+| Metric | Value | Verdict |
+|--------+-------+---------|
+| STARTED per sprint.org | 5 | — |
+| STARTED/active per fleet (incl. drifted + untracked) | 9 | — |
+| Cross-theme spread | agile, currency, counterparty, party_status, book, purpose_type, codegen/Qt widgets, synthetic data, untracked business_day_convention_type | RED |
+| Direct collision observed | counterparty task BLOCKED by composite-widgets + party work touching same code | RED |
+
+*** Velocity
+
+Stories closed this sprint so far: 14 (party_type, compass QoL,
+client start/stop, market_series enum fix, NATS port fix, market.txt
+duplicate-key fix, FX status badge, GMM improvements, sub-registrars,
+SQL variability marketdata (bookkeeping pending), synthetic librarian
+FX, shell market-data import, canary CTest cancellation, macOS
+relevance-guard hotfix). That is a healthy closure rate for 3.5
+elapsed days, but it is concentrated in small, well-scoped stories;
+none of the larger commission-epic stories (currency, counterparty)
+have closed, and the two codegen-epic goal stories named in the
+mission haven't been touched at all.
+
+| Metric | Value | Notes |
+|--------+-------+-------|
+| Stories closed | 14 | Mostly small/well-scoped |
+| Large commission stories closed | 0 | currency and counterparty both still open |
+| Codegen-epic stories touched | 0 of ~8 BACKLOG | Mission-named goal untouched |
+
+*** Overall verdict
+
+| Dimension | Verdict |
+|-----------+---------|
+| Goal alignment | AMBER |
+| Sprint load | RED (trending toward ~380-425 commits vs 300 target) |
+| PR velocity | AMBER (good throughput, growing WIP) |
+| Story and task balance | RED (0.27 DONE ratio; 5 stories with undocumented active work) |
+| Focus signal | RED (9 concurrent story threads vs 5 visible; direct code collision blocking this task) |
+
+*Overall: RED.* Two RED dimensions alone would trigger this, and here
+there are three, plus two AMBER. The single most important concern is
+that sprint bookkeeping has stopped reflecting reality: five stories
+are being actively worked without their state reflecting it, two of
+those have no task documents at all, and one entire story
+(business_day_convention_type) is invisible from main. This isn't
+just a paperwork nuisance — it is the direct cause of the collision
+blocking the counterparty task right now, since nothing in
+=sprint.org= would have surfaced that composite-hierarchy-widgets and
+Commission: party were both actively touching the same Qt code before
+the collision was hit. The one fix that would most improve sprint
+health: stop starting new stories and spend a cycle reconciling every
+worktree's actual state back into its story/task docs — starting with
+the five drifted stories and the untracked business_day_convention_type
+story — before picking up anything else.

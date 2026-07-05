@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/verify-qt-counterparty
 #+pr: 1440
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] and Commission: party (solid_dirac, feature/appraise-party-all-layers)
+#+blocked_since: 2026-07-05
 #+created: 2026-07-04
 #+updated: 2026-07-04
 #+environment: prime_origin
@@ -30,12 +30,12 @@ cardinality-limit validation).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-04                               |
+| Now          | Blocked: solid_dirac's composite child-entity/hierarchy Qt widgets work and Commission: party are both actively touching the same Qt entity-detail code this task needs to verify. |
+| Waiting on   | solid_dirac's composite-hierarchy-widgets design + Commission: party landing, to avoid verifying against code about to change underneath it. |
+| Next         | Resume once composite-hierarchy-widgets/party Qt changes land, or once scope is confirmed not to overlap. |
+| Last touched | 2026-07-05                               |
 
 * Acceptance
 

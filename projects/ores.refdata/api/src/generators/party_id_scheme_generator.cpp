@@ -17,28 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.refdata.api/domain/party_id_scheme_constants.hpp"
 #include "ores.refdata.api/generators/party_id_scheme_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <array>
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
+namespace id_scheme_constants = ores::refdata::domain::party_id_scheme_constants;
 
 domain::party_id_scheme
 generate_synthetic_party_id_scheme(utility::generation::generation_context& ctx) {
-    static constexpr std::array<const char*, 10> coding_schemes = {"LEI",
-                                                                   "BIC",
-                                                                   "MIC",
-                                                                   "NATIONAL_ID",
-                                                                   "CEDB",
-                                                                   "NATURAL_PERSON",
-                                                                   "ACER",
-                                                                   "DTCC_PARTICIPANT_ID",
-                                                                   "MPID",
-                                                                   "INTERNAL"};
     static std::atomic<int> counter{0};
     const auto idx = counter++;
     const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
@@ -48,7 +39,8 @@ generate_synthetic_party_id_scheme(utility::generation::generation_context& ctx)
     r.code = std::string(faker::word::noun()) + "_scheme_" + std::to_string(idx + 1);
     r.name = std::string(faker::word::adjective()) + " Scheme";
     r.description = std::string(faker::lorem::sentence());
-    r.coding_scheme_code = coding_schemes[idx % coding_schemes.size()];
+    r.coding_scheme_code =
+        std::string(id_scheme_constants::all[idx % id_scheme_constants::all.size()]);
     r.display_order = ctx.random_int(1, 100);
     r.modified_by = modified_by;
     r.performed_by = modified_by;

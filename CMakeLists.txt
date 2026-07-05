@@ -108,6 +108,10 @@ option(WITH_WT "Build the Wt web interface (requires Wt library)" ON)
 #
 set(ORES_TEST_ENV "ORES_TEST_PASSWORD_FAST=1")
 
+# Compiler cache selection (sccache/ccache), read from .env below. Empty
+# means "no compiler cache" — CI overrides this to sccache unconditionally.
+set(ORES_COMPILER_CACHE "")
+
 # Load all variables from .env for local development. Skipped in CI
 # environments where variables are already exported into the process env.
 # .env is registered as a configure-time dependency so any change triggers
@@ -127,10 +131,17 @@ if(NOT DEFINED ENV{CI})
             if(_line MATCHES "^ORES_IAM_SERVICE_JWT_PRIVATE_KEY")
                 continue()
             endif()
+            if(_line MATCHES "^ORES_COMPILER_CACHE=(.*)$")
+                set(ORES_COMPILER_CACHE "${CMAKE_MATCH_1}")
+            endif()
             string(APPEND ORES_TEST_ENV ";${_line}")
         endforeach()
         message(STATUS "Loaded .env into test environment")
     endif()
+endif()
+
+if(DEFINED ENV{CI})
+    set(ORES_COMPILER_CACHE "sccache")
 endif()
 
 # Command prefix for add_custom_target test runners: injects the test
@@ -258,34 +269,45 @@ if(NOT ORES_VCPKG_ENABLED)
 endif()
 
 #
-# Setup CCache
+# Setup compiler cache (sccache or ccache)
 #
-find_program(CCACHE_PROGRAM sccache)
-if (CCACHE_PROGRAM)
-    message(STATUS "Found SCCache (${CCACHE_PROGRAM})...")
-    if(WIN32)
-        # .sh scripts are not valid Win32 executables; use sccache directly.
-        # SCCACHE_BASEDIR cross-worktree sharing is not available on Windows.
-        set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}" CACHE STRING "" FORCE)
-        set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}" CACHE STRING "" FORCE)
-    else()
-        # Use a wrapper script rather than sccache directly so that
-        # SCCACHE_BASEDIR is always set to this worktree's root at build time.
-        # sccache normalises any absolute path under BASEDIR to a relative path
-        # before computing the cache key, which means every git worktree of the
-        # same commit shares a single cache entry per translation unit.  Without
-        # this, each worktree compiles every TU from scratch (100% cache misses).
-        # The wrapper resolves the project root from its own location at runtime,
-        # so it works correctly across worktrees and machines without hardcoding.
-        set(_sccache_wrapper "${CMAKE_SOURCE_DIR}/build/scripts/sccache_wrapper.sh")
-        if(NOT EXISTS "${_sccache_wrapper}")
-            message(FATAL_ERROR "sccache wrapper not found: ${_sccache_wrapper}")
+# ORES_COMPILER_CACHE is set above: "sccache" unconditionally in CI, or
+# whatever `compass env configure --compiler-cache` wrote to .env for local
+# dev, or empty (no compiler cache) when neither applies — a checkout that
+# has never been configured must not silently pick up a compiler cache some
+# other tool installed on the machine for unrelated reasons.
+#
+if(ORES_COMPILER_CACHE)
+    find_program(CCACHE_PROGRAM "${ORES_COMPILER_CACHE}")
+    if (CCACHE_PROGRAM)
+        message(STATUS "Found ${ORES_COMPILER_CACHE} (${CCACHE_PROGRAM})...")
+        if(WIN32)
+            # .sh scripts are not valid Win32 executables; use the tool directly.
+            # SCCACHE_BASEDIR cross-worktree sharing is not available on Windows.
+            set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}" CACHE STRING "" FORCE)
+            set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}" CACHE STRING "" FORCE)
+        else()
+            # Use a wrapper script rather than the tool directly so that, for
+            # sccache, SCCACHE_BASEDIR is always set to this worktree's root at
+            # build time. sccache normalises any absolute path under BASEDIR to
+            # a relative path before computing the cache key, which means every
+            # git worktree of the same commit shares a single cache entry per
+            # translation unit. Without this, each worktree compiles every TU
+            # from scratch (100% cache misses). The wrapper resolves the
+            # project root from its own location at runtime, so it works
+            # correctly across worktrees and machines without hardcoding.
+            set(_compiler_cache_wrapper "${CMAKE_SOURCE_DIR}/build/scripts/compiler_cache_wrapper.sh")
+            if(NOT EXISTS "${_compiler_cache_wrapper}")
+                message(FATAL_ERROR "compiler cache wrapper not found: ${_compiler_cache_wrapper}")
+            endif()
+            set(CMAKE_C_COMPILER_LAUNCHER "${_compiler_cache_wrapper}" CACHE STRING "" FORCE)
+            set(CMAKE_CXX_COMPILER_LAUNCHER "${_compiler_cache_wrapper}" CACHE STRING "" FORCE)
         endif()
-        set(CMAKE_C_COMPILER_LAUNCHER "${_sccache_wrapper}" CACHE STRING "" FORCE)
-        set(CMAKE_CXX_COMPILER_LAUNCHER "${_sccache_wrapper}" CACHE STRING "" FORCE)
+    else()
+        message(STATUS "${ORES_COMPILER_CACHE} NOT found.")
     endif()
 else()
-    message(STATUS "SCCache NOT found.")
+    message(STATUS "No compiler cache configured.")
 endif()
 
 # Threads

@@ -5567,8 +5567,8 @@ def cmd_build(argv):
                     help="CMake preset name (default: read ORES_PRESET "
                          "from .env); ignored with --direct")
     ap.add_argument("-j", "--jobs", type=int, default=0,
-                    help="Parallel build jobs (default: cmake's default); "
-                         "ignored with --direct")
+                    help="Parallel build jobs (default: CMAKE_BUILD_PARALLEL_LEVEL "
+                         "from .env, else cmake's default); ignored with --direct")
     ap.add_argument("--dry-run", action="store_true",
                     help="Print the command(s) without running them")
     ap.add_argument("--direct", action="store_true",
@@ -5616,8 +5616,11 @@ def cmd_build(argv):
     build_cmd = ["cmake", "--build", "--preset", preset]
     if targets:
         build_cmd += ["--target", *targets]
-    if args.jobs:
-        build_cmd += ["-j", str(args.jobs)]
+    jobs = args.jobs or _read_env_map().get("CMAKE_BUILD_PARALLEL_LEVEL")
+    if jobs:
+        source = "--jobs" if args.jobs else "CMAKE_BUILD_PARALLEL_LEVEL (.env)"
+        print(f"⚙️  Parallel build jobs: {jobs} (source: {source})")
+        build_cmd += ["-j", str(jobs)]
     commands.append(build_cmd)
 
     for cmd in commands:

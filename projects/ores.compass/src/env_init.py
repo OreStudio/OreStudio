@@ -339,6 +339,10 @@ def run(argv, project_root: Path) -> int:
                         help="Disable test logging")
     parser.add_argument("--with-diff", action="store_true",
                         help="After writing, show the unified diff of .env.old vs .env")
+    parser.add_argument("--compiler-cache", choices=("sccache", "ccache"),
+                        help="Compiler cache to use for local builds (default: sccache, "
+                             "or whatever is already in .env). CI always uses sccache "
+                             "regardless of this setting.")
     pkg_grp = parser.add_mutually_exclusive_group()
     pkg_grp.add_argument("--install-packages", action="store_true",
                          help="Run compass env install-packages without prompting (requires sudo)")
@@ -506,6 +510,18 @@ def run(argv, project_root: Path) -> int:
     ssh_agent_dir = (existing.get("ORES_SSH_AGENT_DIR")
                      or str(Path.home() / ".ssh" / "agent"))
 
+    # Build parallelism: per-machine tuning, not per-checkout, so always
+    # preserve whatever is already in .env; only default it on first write.
+    cmake_build_parallel_level = existing.get("CMAKE_BUILD_PARALLEL_LEVEL") or "2"
+
+    # Compiler cache: local dev choice between sccache/ccache, read by
+    # build/scripts/compiler_cache_wrapper.sh. CI never reads this (it sets
+    # SCCACHE_DIR directly and doesn't run `compass env configure`), so
+    # defaulting to sccache here has no effect on CI behaviour.
+    compiler_cache = (args.compiler_cache
+                       or existing.get("ORES_COMPILER_CACHE")
+                       or "sccache")
+
     print("Resolving passwords...")
     ddl_pw = _get_or_gen(existing, "ORES_DB_DDL_PASSWORD")
     cli_pw = _get_or_gen(existing, "ORES_DB_CLI_PASSWORD")
@@ -566,6 +582,20 @@ ORES_DATABASE_NAME={db_name}
 # a live one (e.g. sandboxed LLM sessions).
 # ---------------------------------------------------------------------------
 ORES_SSH_AGENT_DIR={ssh_agent_dir}
+
+# ---------------------------------------------------------------------------
+# Build parallelism (rotational-disk / sccache contention keeps this low on
+# this machine). Read by `compass build` as the default -j when --jobs is
+# not passed explicitly.
+# ---------------------------------------------------------------------------
+CMAKE_BUILD_PARALLEL_LEVEL={cmake_build_parallel_level}
+
+# ---------------------------------------------------------------------------
+# Compiler cache for local builds (sccache or ccache). Read by
+# build/scripts/compiler_cache_wrapper.sh. Change with:
+#   compass env configure --compiler-cache {{sccache,ccache}}
+# ---------------------------------------------------------------------------
+ORES_COMPILER_CACHE={compiler_cache}
 
 # ---------------------------------------------------------------------------
 # NATS (per-environment: assigned by compass env create; preserved on re-run)

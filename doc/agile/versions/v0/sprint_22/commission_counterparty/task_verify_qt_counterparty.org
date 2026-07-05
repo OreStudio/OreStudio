@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_counterparty:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/verify-qt-counterparty
+#+pr: 1440
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,7 +30,7 @@ cardinality-limit validation).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -59,7 +59,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1440][#1440]] | [compass,build] Move sccache cache config to global config |
 
 * Review
 

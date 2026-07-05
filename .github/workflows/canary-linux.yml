@@ -101,7 +101,7 @@ jobs:
         with:
           variant: sccache
           key: linux-gcc-release-ninja
-          max-size: 2000M
+          max-size: 2500M
           save: false
 
       - name: Install dev packages
@@ -169,20 +169,6 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           doNotCache: false
-
-      - name: Restore cmake build cache
-        uses: actions/cache/restore@v6
-        with:
-          path: build/output/linux-gcc-release-ninja/projects
-          key: cmake-build-linux-gcc-release-ninja
-
-      - name: Ensure modified source files will be rebuilt
-        run: |
-          git diff origin/main...HEAD --name-only 2>/dev/null \
-            | grep -E '\.(cpp|hpp|h)$' \
-            | while IFS= read -r f; do
-                [ -f "$f" ] && touch "$f"
-              done || true
 
       - name: Run CTest workflow
         run: |

@@ -15,9 +15,24 @@
 # sccache is resolved via PATH.  cmake's find_program and the build
 # environment share the same PATH, so this is always consistent.
 # Set SCCACHE_BASEDIR in the environment before the build to override.
+#
+# SCCACHE_DIR/SCCACHE_CACHE_SIZE are not exported by the shell that runs
+# make/cmake --build, so they are read here from .env — the same file
+# `compass env configure` writes them to — rather than duplicating the
+# default elsewhere. An already-exported SCCACHE_DIR/SCCACHE_CACHE_SIZE
+# (set explicitly by the caller) takes precedence over the .env value.
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-export SCCACHE_BASEDIR="${SCCACHE_BASEDIR:-$(cd "${SCRIPT_DIR}/../.." && pwd)}"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+export SCCACHE_BASEDIR="${SCCACHE_BASEDIR:-${PROJECT_ROOT}}"
+
+if [ -f "${PROJECT_ROOT}/.env" ]; then
+    _env_sccache_dir="$(sed -n 's/^SCCACHE_DIR=//p' "${PROJECT_ROOT}/.env" | tail -n1)"
+    _env_sccache_size="$(sed -n 's/^SCCACHE_CACHE_SIZE=//p' "${PROJECT_ROOT}/.env" | tail -n1)"
+    [ -n "${_env_sccache_dir}" ] && export SCCACHE_DIR="${SCCACHE_DIR:-${_env_sccache_dir}}"
+    [ -n "${_env_sccache_size}" ] && export SCCACHE_CACHE_SIZE="${SCCACHE_CACHE_SIZE:-${_env_sccache_size}}"
+fi
+
 exec sccache "$@"

@@ -37,6 +37,7 @@ The table is machine-parsed: each data row is =| <integer> | <date> |
 | 6 |            | Added ORES_SHELL_NATS_* for ores.shell mTLS auto-connect support. |
 | 7 | 2026-06-11 | ORES_SITE_PORT moved to base_port+4 (local1=51004, local2=52004, etc.) |
 | 8 | 2026-07-03 | NATS client/monitor ports now derive from ORES_BASE_PORT (+5/+6) instead of an independent 42221xxx/8221xxx sequence, so all ports for an environment are identifiable from its base port |
+| 9 | 2026-07-05 | Added SCCACHE_DIR, SCCACHE_CACHE_SIZE, and CMAKE_BUILD_PARALLEL_LEVEL for shared SSD sccache cache and tuned build parallelism |
 
 * See also
 

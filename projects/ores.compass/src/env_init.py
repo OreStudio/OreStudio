@@ -506,6 +506,19 @@ def run(argv, project_root: Path) -> int:
     ssh_agent_dir = (existing.get("ORES_SSH_AGENT_DIR")
                      or str(Path.home() / ".ssh" / "agent"))
 
+    # sccache: one shared cache dir for all worktrees, sitting next to the
+    # checkout parent directory rather than inside any single worktree, so it
+    # survives worktree deletion and is reused across checkouts. Placed on
+    # whatever disk holds the checkouts (checkout_root.parent) rather than
+    # $HOME, since $HOME may be on a slower/rotational disk.
+    sccache_dir = (existing.get("SCCACHE_DIR")
+                   or str(checkout_root.parent / ".cache" / "sccache"))
+    sccache_cache_size = existing.get("SCCACHE_CACHE_SIZE") or "15G"
+
+    # Build parallelism: per-machine tuning, not per-checkout, so always
+    # preserve whatever is already in .env; only default it on first write.
+    cmake_build_parallel_level = existing.get("CMAKE_BUILD_PARALLEL_LEVEL") or "2"
+
     print("Resolving passwords...")
     ddl_pw = _get_or_gen(existing, "ORES_DB_DDL_PASSWORD")
     cli_pw = _get_or_gen(existing, "ORES_DB_CLI_PASSWORD")
@@ -566,6 +579,21 @@ ORES_DATABASE_NAME={db_name}
 # a live one (e.g. sandboxed LLM sessions).
 # ---------------------------------------------------------------------------
 ORES_SSH_AGENT_DIR={ssh_agent_dir}
+
+# ---------------------------------------------------------------------------
+# sccache (shared across all worktrees on the SSD checkout disk; a rotational
+# system disk causes heavy I/O contention). Cache size capped at 15G to fit
+# the checkout disk's free space.
+# ---------------------------------------------------------------------------
+SCCACHE_DIR={sccache_dir}
+SCCACHE_CACHE_SIZE={sccache_cache_size}
+
+# ---------------------------------------------------------------------------
+# Build parallelism (rotational-disk / sccache contention keeps this low on
+# this machine). Read by `compass build` as the default -j when --jobs is
+# not passed explicitly.
+# ---------------------------------------------------------------------------
+CMAKE_BUILD_PARALLEL_LEVEL={cmake_build_parallel_level}
 
 # ---------------------------------------------------------------------------
 # NATS (per-environment: assigned by compass env create; preserved on re-run)

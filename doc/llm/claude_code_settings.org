@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :llm:claude_code:settings:permissions:
 #+created: 2026-05-22
-#+updated: 2026-06-25
+#+updated: 2026-07-05
 
 * Summary
 
@@ -68,6 +68,9 @@ last section in each array carries no comma.
 <<perm-gh-pr>>,
 <<perm-web>>,
 <<perm-shell>>
+    ],
+    "deny": [
+<<perm-deny>>
     ]
   },
   "sandbox": {
@@ -398,6 +401,29 @@ the search provider is fixed by the Claude Code runtime.
 #+begin_src json :tangle no :noweb-ref perm-web
       "WebFetch(domain:*)",
       "WebSearch"
+#+end_src
+
+** Denied tools
+
+=Agent= (subagent spawning — Explore, general-purpose, and the other
+built-in agent types) is denied. We have been hitting reliability
+problems with delegated subagents on this project: work that looked
+complete in the agent's summary sometimes wasn't actually done the way
+described, and there is very little visibility into what a subagent
+did while it ran — its intermediate tool calls, reasoning, and any
+missteps are hidden behind the single summary message it returns.
+When something goes wrong inside a subagent, the failure surfaces
+several turns later as a confusing downstream symptom instead of at
+the point it happened, and there is no transcript to inspect to find
+the root cause. Until subagent visibility improves, all substantive
+work should happen in the main session where every tool call is
+visible and reviewable. This blocks every agent type reachable via
+the =Agent= tool (=claude=, =Explore=, =general-purpose=, =Plan=,
+etc.) — none of them are exempt. It does not affect the =Workflow=
+tool, which is gated separately by explicit opt-in.
+
+#+begin_src json :tangle no :noweb-ref perm-deny
+      "Agent"
 #+end_src
 
 ** Shell utilities

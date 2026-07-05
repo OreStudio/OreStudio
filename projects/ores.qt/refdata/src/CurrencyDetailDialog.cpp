@@ -1064,7 +1064,7 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
         [](const auto& t) { return QString::fromStdString(t.code); },
         [](const auto& t) { return QString::fromStdString(t.description); },
         [](const auto& t) { return t.display_order; },
-        QString::fromStdString(currentCurrency_.rounding_type));
+        [this]() { return QString::fromStdString(currentCurrency_.rounding_type); });
 }
 
 void CurrencyDetailDialog::populateMonetaryNatureCombo() {
@@ -1078,7 +1078,7 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
         [](const auto& t) { return QString::fromStdString(t.code); },
         [](const auto& t) { return QString::fromStdString(t.description); },
         [](const auto& t) { return t.display_order; },
-        QString::fromStdString(currentCurrency_.monetary_nature));
+        [this]() { return QString::fromStdString(currentCurrency_.monetary_nature); });
 }
 
 void CurrencyDetailDialog::populateMarketTierCombo() {
@@ -1092,7 +1092,7 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
         [](const auto& t) { return QString::fromStdString(t.code); },
         [](const auto& t) { return QString::fromStdString(t.description); },
         [](const auto& t) { return t.display_order; },
-        QString::fromStdString(currentCurrency_.market_tier));
+        [this]() { return QString::fromStdString(currentCurrency_.market_tier); });
 }
 
 }

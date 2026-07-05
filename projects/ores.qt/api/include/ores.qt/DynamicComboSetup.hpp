@@ -60,9 +60,11 @@ namespace ores::qt {
  * @param tooltip_of Extracts the per-item tooltip text.
  * @param sort_key_of Extracts the sort key (ascending) items are
  * ordered by before insertion.
- * @param fallback_selection Selection to restore if there was no
- * prior selection on the combo (e.g. the current entity's stored
- * value for this field).
+ * @param fallback_selection Evaluated at fetch-completion time (not at
+ * call time) to get the selection to restore if there was no prior
+ * selection on the combo — e.g. the current entity's stored value for
+ * this field, which may not be set yet when populateDynamicCombo is
+ * called (setClientManager runs before setCurrency).
  * @param loading_placeholder Text shown while the fetch is in flight.
  */
 template <typename Entity>
@@ -74,7 +76,7 @@ void populateDynamicCombo(QComboBox* combo,
                           std::function<QString(const Entity&)> code_of,
                           std::function<QString(const Entity&)> tooltip_of,
                           std::function<int(const Entity&)> sort_key_of,
-                          const QString& fallback_selection,
+                          std::function<QString()> fallback_selection,
                           const QString& loading_placeholder = QObject::tr("Loading…")) {
     if (!combo || !owner || !client_manager || !client_manager->isConnected())
         return;
@@ -129,7 +131,7 @@ void populateDynamicCombo(QComboBox* combo,
             }
 
             const QString to_select =
-                !previous_selection.isEmpty() ? previous_selection : fallback_selection;
+                !previous_selection.isEmpty() ? previous_selection : fallback_selection();
             if (!to_select.isEmpty())
                 combo->setCurrentText(to_select);
             combo->blockSignals(false);

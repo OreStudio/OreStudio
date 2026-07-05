@@ -144,15 +144,16 @@ constexpr double kKappaMax = 1.0;
 
 double kappaSliderToValue(int slider) {
     const double t = slider / 100.0;
-    return std::pow(10.0, std::log10(kKappaMin) + t * (std::log10(kKappaMax) - std::log10(kKappaMin)));
+    return std::pow(10.0,
+                    std::log10(kKappaMin) + t * (std::log10(kKappaMax) - std::log10(kKappaMin)));
 }
 
 int kappaValueToSlider(double kappa) {
     if (kappa <= kKappaMin)
         return 0;
     const double k = std::min(kappa, kKappaMax);
-    const double t = (std::log10(k) - std::log10(kKappaMin)) /
-                     (std::log10(kKappaMax) - std::log10(kKappaMin));
+    const double t =
+        (std::log10(k) - std::log10(kKappaMin)) / (std::log10(kKappaMax) - std::log10(kKappaMin));
     return std::clamp(static_cast<int>(std::lround(t * 100.0)), 0, 100);
 }
 
@@ -656,7 +657,7 @@ QWidget* FxSpotRateEditor::buildOuSimpleControls() {
     // σ — same slider+spinbox pattern, same range as the GBM Simple page's
     // volatility slider (kVolMin/kVolMax): both are a per-tick vol in %.
     const QString sigmaTip = tr("Size of each random nudge, before reversion pulls the price "
-                                 "back toward θ.");
+                                "back toward θ.");
     auto* sigmaTitle = new QLabel(tr("Volatility Coefficient (σ)"), box);
     sigmaTitle->setToolTip(sigmaTip);
     layout->addWidget(sigmaTitle);
@@ -1222,35 +1223,35 @@ double FxSpotRateEditor::kappaFromHalfLifeMinutes(double halfLifeMinutes) const 
 QString FxSpotRateEditor::componentTooltip(bool ou, bool arithmetic) const {
     if (ou) {
         return tr("<b>Ornstein-Uhlenbeck component</b><br>"
-                   "θ (long-run mean): the <i>Initial Price</i> field above — the level the "
-                   "price reverts toward.<br>"
-                   "κ (reversion speed, this row's <i>Weight</i>): how fast the price is pulled "
-                   "back to θ. Roughly, the price halves its distance from θ every "
-                   "ln(2)/κ updates — κ = 1 reverts almost immediately (tight, \"stuck\"-looking "
-                   "band); κ = 0.02–0.05 wanders visibly before reverting.<br>"
-                   "σ (volatility, this row's <i>σ</i>): the size of each random nudge, before "
-                   "reversion pulls it back. The band the price settles into is roughly "
-                   "σ/√(2κ) wide — small κ and larger σ together give a wider, more visible "
-                   "range.<br>"
-                   "μ (Drift) is unused by this engine.");
+                  "θ (long-run mean): the <i>Initial Price</i> field above — the level the "
+                  "price reverts toward.<br>"
+                  "κ (reversion speed, this row's <i>Weight</i>): how fast the price is pulled "
+                  "back to θ. Roughly, the price halves its distance from θ every "
+                  "ln(2)/κ updates — κ = 1 reverts almost immediately (tight, \"stuck\"-looking "
+                  "band); κ = 0.02–0.05 wanders visibly before reverting.<br>"
+                  "σ (volatility, this row's <i>σ</i>): the size of each random nudge, before "
+                  "reversion pulls it back. The band the price settles into is roughly "
+                  "σ/√(2κ) wide — small κ and larger σ together give a wider, more visible "
+                  "range.<br>"
+                  "μ (Drift) is unused by this engine.");
     }
     if (arithmetic) {
         return tr("<b>Arithmetic component</b><br>"
-                   "μ (Drift): average absolute price change per update.<br>"
-                   "σ (Volatility): standard deviation of the absolute price change per "
-                   "update.<br>"
-                   "Weight: this component's relative share when blending with other "
-                   "components (normalised to sum to 1 on save).<br>"
-                   "Unlike Geometric, these are absolute price units, not %/log-returns — the "
-                   "price can go negative.");
+                  "μ (Drift): average absolute price change per update.<br>"
+                  "σ (Volatility): standard deviation of the absolute price change per "
+                  "update.<br>"
+                  "Weight: this component's relative share when blending with other "
+                  "components (normalised to sum to 1 on save).<br>"
+                  "Unlike Geometric, these are absolute price units, not %/log-returns — the "
+                  "price can go negative.");
     }
     return tr("<b>Geometric component</b><br>"
-               "μ (Drift): average log-return per update (%) — the trend.<br>"
-               "σ (Volatility): standard deviation of the log-return per update (%) — the "
-               "noise.<br>"
-               "Weight: this component's relative share when blending with other components "
-               "(normalised to sum to 1 on save); e.g. a small-weight, high-σ component "
-               "approximates a jump regime.");
+              "μ (Drift): average log-return per update (%) — the trend.<br>"
+              "σ (Volatility): standard deviation of the log-return per update (%) — the "
+              "noise.<br>"
+              "Weight: this component's relative share when blending with other components "
+              "(normalised to sum to 1 on save); e.g. a small-weight, high-σ component "
+              "approximates a jump regime.");
 }
 
 void FxSpotRateEditor::onAddComponentRow() {

@@ -160,8 +160,9 @@ import_service::import(const messaging::import_market_data_request& req) {
         return s.id;
     };
 
-    const auto on_duplicate = req.duplicates_are_errors ? ores::ore::market::duplicate_policy::error
-                                                        : ores::ore::market::duplicate_policy::warn;
+    const auto on_duplicate = req.duplicates_are_errors ?
+                                  ores::ore::market::duplicate_policy::error :
+                                  ores::ore::market::duplicate_policy::warn;
 
     auto append_issues = [](std::vector<std::string>& dest,
                             const std::vector<ores::ore::market::parse_issue>& issues,
@@ -240,7 +241,7 @@ import_service::import(const messaging::import_market_data_request& req) {
     resp.success = resp.errors.empty();
     if (!resp.success) {
         resp.message = std::to_string(resp.errors.size()) +
-                      " duplicate error(s) found; affected content was not imported.";
+                       " duplicate error(s) found; affected content was not imported.";
     }
     return resp;
 }

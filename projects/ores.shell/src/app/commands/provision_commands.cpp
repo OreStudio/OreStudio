@@ -724,8 +724,8 @@ void provision_commands::process_party(std::ostream& out,
         if (!published)
             return;
         if (!published->success) {
-            fail(out) << "Failed to publish synthetic FX spot configs: "
-                      << published->error_message << std::endl;
+            fail(out) << "Failed to publish synthetic FX spot configs: " << published->error_message
+                      << std::endl;
             return;
         }
         out << "  Dispatched " << published->datasets_dispatched

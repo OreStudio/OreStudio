@@ -732,7 +732,8 @@ void ImportTradeDialog::onImportClicked() {
                                         self->statusLabel_->setText(
                                             self->tr("Market data imported with %n duplicate "
                                                      "warning(s) — see log for details.",
-                                                     "", count));
+                                                     "",
+                                                     count));
                                 },
                                 Qt::QueuedConnection);
                         }

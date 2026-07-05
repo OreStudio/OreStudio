@@ -22,6 +22,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <random>
 #include <string>
 #include <unordered_set>
 
@@ -1000,5 +1001,13 @@ generate_fictional_currencies(std::size_t n, utility::generation::generation_con
         return all;
 
     return std::vector<domain::currency>(all.begin(), all.begin() + n);
+}
+
+domain::currency generate_random_fictional_currency(utility::generation::generation_context& ctx) {
+    auto currencies = generate_fictional_currencies(0, ctx);
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<std::size_t> dist(0, currencies.size() - 1);
+    return currencies[dist(gen)];
 }
 }

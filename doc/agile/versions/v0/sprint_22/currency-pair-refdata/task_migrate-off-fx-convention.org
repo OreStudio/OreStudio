@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/currency-pair-refdata
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: currency_pair ores.codegen.entity implementation (not yet scaffolded as a task in this story)
+#+blocked_since: 2026-07-06
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -37,11 +37,11 @@ existing first (not yet a task in this story — needs scaffolding).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Not yet started.                       |
+| Now          | Blocked: the =currency_pair= ores.codegen.entity implementation doesn't exist yet in the codebase and has no scaffolded task. |
 | Waiting on   | The =currency_pair= codegen implementation landing first. |
-| Next         | Scaffold the codegen implementation task, then begin this one. |
+| Next         | Scaffold the codegen implementation task, then resume this one. |
 | Last touched | 2026-07-04                               |
 
 * Acceptance

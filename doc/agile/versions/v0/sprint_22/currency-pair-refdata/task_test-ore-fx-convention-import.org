@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 2ABA2FD7-6381-481E-B236-FF401D4EFEB2
+:END:
+#+title: Task: Test ORE import/export of FX conventions against currency_pair
+#+description: Verify ORE's conventions.xml <FX> element round-trips correctly through currency_pair after fx_convention is retired: import a real conventions.xml, confirm parsed values match, then export and diff against the original.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=fx_convention= exists solely to round-trip ORE's =conventions.xml=
+=<FX>= element; once [[id:ED053F15-513A-4E3A-908A-7AE11A2B3316][Migrate fx_convention consumers to currency_pair and
+retire it]] repoints =conventions_mapper::map_fx=/=reverse_fx= at
+=currency_pair=, this is the only real regression test that matters —
+prove the actual ORE import/export behaviour is preserved, not just
+that the migration task's unit-level acceptance criteria pass.
+
+Import a real ORE =conventions.xml= (an existing example file with an
+=<FX>= element) end-to-end, confirm every field lands on =currency_pair=/
+=currency_pair_convention= with the expected values (spot days,
+=points_factor=/=pip_factor= conversion, calendar text, business day
+convention, spot-relative/end-of-month flags), then export back to XML
+and diff against the original — it should be byte-for-byte identical
+for every field that carries over.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:ED053F15-513A-4E3A-908A-7AE11A2B3316][Migrate fx_convention consumers to currency_pair and retire it]] to land first. |
+| Next         | Begin implementation once the migration task lands. |
+| Last touched | 2026-07-06                               |
+
+* Acceptance
+
+- [ ] A real ORE example =conventions.xml= with an =<FX>= element is
+  imported; every field lands on =currency_pair=/=currency_pair_convention=
+  with correct values (verified against the source XML by hand).
+- [ ] The imported data is exported back to =conventions.xml= and the
+  =<FX>= element diffs byte-for-byte identical to the original for every
+  carried-over field.
+- [ ] Round-trip is exercised as an automated test (not just a manual
+  check), so a future regression in the mapper is caught by CI.
+- [ ] Any field that does *not* round-trip cleanly (e.g. due to the
+  =pip_factor=/=points_factor= reciprocal conversion) is documented with
+  the reason, not silently accepted.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

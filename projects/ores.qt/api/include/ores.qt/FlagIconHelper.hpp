@@ -26,6 +26,7 @@
 #include <QIcon>
 #include <QLineEdit>
 #include <QObject>
+#include <QSignalBlocker>
 #include <QSize>
 #include <string>
 
@@ -125,6 +126,19 @@ void set_combo_flag_icons(QComboBox* combo, Resolver&& resolver) {
         const std::string code = combo->itemText(i).toStdString();
         combo->setItemIcon(i, resolver(code));
     }
+
+    // QComboBox does not reliably repaint the closed-box icon for the
+    // currently-selected index when its icon changes after the fact (it
+    // only reflects the change once the popup is shown or the index is
+    // reselected). Force it by cycling the current index without
+    // notifying listeners.
+    const int current = combo->currentIndex();
+    if (current >= 0) {
+        const QSignalBlocker blocker(combo);
+        combo->setCurrentIndex(-1);
+        combo->setCurrentIndex(current);
+    }
+
     combo->update();
 }
 

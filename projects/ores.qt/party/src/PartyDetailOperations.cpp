@@ -42,9 +42,13 @@ bool party_detail_operations::has_party_category() const {
 operation_result party_detail_operations::save_entity(ClientManager* cm,
                                                       const entity_data& data) const {
 
+    auto tenant_id = ores::utility::uuid::tenant_id::from_string(data.tenant_id);
+    if (!tenant_id)
+        return {false, "Invalid tenant: " + tenant_id.error()};
+
     refdata::domain::party p;
     p.version = data.version;
-    p.tenant_id = ores::utility::uuid::tenant_id::from_string(data.tenant_id).value();
+    p.tenant_id = *tenant_id;
     p.id = data.id;
     p.full_name = data.full_name;
     p.short_code = data.short_code;

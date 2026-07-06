@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_party:sprint_22:v0:qt:
 #+owner: marco
-#+branch:
+#+branch: feature/appraise-party-all-layers
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -44,6 +44,44 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+- Party identifiers (LEI) and contact information do not yet display in
+  the Qt detail dialog — no identifiers/contact-info widget exists in
+  =projects/ores.qt/party= yet. This is expected: it is tracked by the
+  separate "Bind composite child-entity and hierarchy widgets to party
+  and counterparty" task, not a regression in this one.
+- Confirmed the LEI =max_cardinality: 1= rule works correctly:
+  attempting to add a second LEI via =ores.shell= for a party already
+  carrying one (from GLEIF provisioning) is correctly rejected by
+  =ores_refdata_party_identifiers_insert_fn()=.
+- Found a real regression: the business-centre combo in
+  =EntityDetailDialog= shows the wrong flag on initial load (e.g. GBLO
+  shows the US flag) until the dropdown is opened, which repaints it
+  correctly. Root-causing and fixing separately.
+- Found and fixed a crash: saving a newly-added party (or counterparty)
+  aborted the client. =EntityDetailDialog::setCreateMode(true)= never
+  populated =entity_.tenant_id=, so on save
+  =tenant_id::from_string("").value()= threw inside a =QtConcurrent=
+  task; the uncaught exception rethrown on =.result()= called
+  =std::terminate()=. Fixed by stamping =entity_.tenant_id= from
+  =ClientManager::currentTenantId()= in create mode, and hardened
+  =party_detail_operations::save_entity= /
+  =counterparty_detail_operations::save_entity= to return a failed
+  =operation_result= instead of throwing on an invalid tenant id.
+- Found and fixed the business-centre flag regression: =QComboBox=
+  does not repaint the closed-box icon for the current index when
+  =setItemIcon= changes it after the fact — only the popup or a
+  reselect picks it up. Fixed in =set_combo_flag_icons()= by cycling
+  =setCurrentIndex(-1)= then back (signal-blocked) after applying
+  icons, so every flag combo (business centre, currency, country)
+  repaints immediately.
+- Found and fixed a related bug: new parties/counterparties defaulted
+  their business centre to whatever code happened to be first in the
+  tenant's list (e.g. a US one), not =WRLD= as intended.
+  =updateEntityFromUi()='s =bcc.empty() ? "WRLD" : bcc= fallback was
+  dead code — =QComboBox::currentText()= is never actually empty once
+  populated. Fixed by stamping =entity_.business_center_code = "WRLD"=
+  explicitly for a fresh entity right after the combo is populated.
 
 * PRs
 

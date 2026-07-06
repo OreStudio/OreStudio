@@ -24,12 +24,12 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                                |
+| State         | STARTED                                |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Messaging codegen sync in progress; Qt codegen, verify Qt, shell, CLI, manual, captures pending. |
+| Now           | SQL and C++ core/messaging codegen sync done; Qt codegen sync, verify Qt, shell, CLI, manual, and DDL fix remain. |
 | Waiting on    | Nothing.                               |
-| Next          | Complete messaging codegen sync; then Qt codegen sync. |
-| Last touched  | 2026-06-26                             |
+| Next          | Sync Qt codegen for party_status.      |
+| Last touched  | 2026-07-06                             |
 
 * Acceptance
 

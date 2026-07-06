@@ -28,12 +28,12 @@ wire compass to reject unknown tags at CI time.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Memory catalogue fixed; tag inventory, orphan links, and tag validation remain. |
 | Waiting on    | Nothing.                               |
-| Next          | Start task: fix memory catalogue.      |
-| Last touched  | 2026-06-11                               |
+| Next          | Create tag inventory.                  |
+| Last touched  | 2026-07-06                               |
 
 * Acceptance
 

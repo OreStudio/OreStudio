@@ -115,12 +115,12 @@ trading, iam, dq, and all remaining components.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                                |
+| State         | STARTED                                |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]                              |
 | Now           | Postponed from sprint 20; org-mode migration blocker cleared. 6 audit/analysis tasks done; 13 drift-application tasks remain. |
 | Waiting on    | Nothing.                               |
 | Next          | Pull into sprint 21.                   |
-| Last touched  | 2026-06-12                             |
+| Last touched  | 2026-07-06                             |
 
 * Acceptance
 

@@ -64,12 +64,12 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | [[id:FE0ADB0A-F8F9-4AAF-95F8-020A60191187][Commission: currency_market_tier]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
 | [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | DONE | | 2026-07-04 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | STARTED | 2026-07-06 | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Commission: party_id_scheme]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] | STARTED | | | 3/3 codegen-hardening tasks done; Qt/shell/CLI/manual scope still open. |
 | [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | STARTED | 2026-07-06 | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
@@ -84,7 +84,7 @@ starting from FX and generalising to other asset classes over time.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] | BACKLOG | | | SQL template variability (hypertable, soft-update/soft-delete triggers, GIST exclusion) + .org models for market_series, market_observation, market_fixing; prerequisite for full-stack codegen of ores.marketdata. |
+| [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] | DONE | | | SQL template variability (hypertable, soft-update/soft-delete triggers, GIST exclusion) + .org models for market_series, market_observation, market_fixing; prerequisite for full-stack codegen of ores.marketdata. |
 | [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] | BACKLOG | | | Drop legacy pre-codegen ores_marketdata_series/observations/fixings_tbl (superseded, zero C++ references); remove their stale validation_ignore.txt entries; preserve market_observation's hand-written repository/service overrides against codegen regeneration. |
 | [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]] | DONE | 2026-07-04 | 2026-07-04 | Fixed: the file genuinely repeats ~100 (date, key) pairs, not a series_key_registry bug; import_service now de-duplicates last-line-wins with a warn/error policy; unblocks the 2016-02-05 vintage import. |
 | [[id:6C515A93-C7D9-4B6C-B7B2-7AD433BACE44][Configurable feed status indicator in the FX spot grid]] | DONE | 2026-07-02 | 2026-07-03 | FX spot grid status pips use hardcoded CSS colours; replace with a configurable indicator once the right UX (badge vs. compact status dot) is settled. |
@@ -106,7 +106,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 21.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] | BACKLOG | | | Migrate all remaining _table.org models to ores.codegen.entity; remove the table type from the facet catalogue. |
-| [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | BACKLOG | | | Audit/resolve template-production drift; carried from sprint 21. |
+| [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | STARTED | 2026-07-06 | | Audit/resolve template-production drift; carried from sprint 21. |
 | [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy codegen bash scripts]] | BACKLOG | | | Replace direct bash invocations with compass or Python codegen; remove the scripts. |
 | [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] | BACKLOG | | | CI job regenerating all registered components, failing on any diff vs HEAD. |
 | [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] | BACKLOG | | | Runtime guards for missing component_include/component_core; block dual-template SQL generation. |
@@ -114,7 +114,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 21.
 | [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal templates]] | BACKLOG | | | Merge temporal and non-temporal C++ template families into single model-controlled templates. |
 | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] | BACKLOG | | | Fix spurious ERRORs in --component mode; add --entity filter; add entity group / tag system for domain-scoped generation. |
 | [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] | DONE | | 2026-07-04 | Replace monolithic registrar.cpp with generated per-entity sub-registrars; isolate handler compilation; unblock incremental service API migration. |
-| [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] | BACKLOG | | | Carried from sprint 21. |
+| [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] | STARTED | 2026-07-06 | | Carried from sprint 21. |
 | [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] | BACKLOG | | | Handcrafted HierarchyTreeWidget + child-entity table facet, paste-block-bound, so party/counterparty can retire their hand-maintained EntityDetailDialog. Overlaps with solid_dirac's Commission: party work — compare approaches before implementing. |
 
 *** Epic: Compass
@@ -123,7 +123,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 21.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:3A9DF70D-07F7-46A7-8219-57A024707B64][compass generate catalogue]] | BACKLOG | | | Auto-regenerate catalogue/index org files by scanning tagged org files. |
-| [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and tag taxonomy]] | BACKLOG | | | Fix orphaned docs in org-roam graph; create tag inventory; add compass tag validation. |
+| [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and tag taxonomy]] | STARTED | 2026-07-06 | | Fix orphaned docs in org-roam graph; create tag inventory; add compass tag validation. |
 | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] | DONE | | 2026-07-02 | Carried from sprint 21. |
 | [[id:25A93F0B-FD5C-4EA1-9194-093073B44C44][Add compass client start/stop subcommands]] | DONE | 2026-07-03 | 2026-07-03 | compass client was flat (launch-only); add start/stop matching the services/env/nats subcommand convention. |
 | [[id:B7C756F2-985A-49FA-BE98-D50C4F418B51][Compass GitHub Actions support]] | STARTED | | | Give compass a quick overview of all GitHub Actions runs, highlight which ones are failing, and for failing runs surface the error detail via gh CLI without needing to download full logs. |
@@ -134,7 +134,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 21.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Verify Windows and macOS CI builds]] | BACKLOG | | | Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups. |
-| [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] | BACKLOG | | | Qt 6.8.x references -framework AGL (removed in macOS 15); the latest supported Qt drops that dependency. CI pinned to macos-14 as stopgap. |
+| [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] | STARTED | 2026-07-06 | | Qt 6.8.x references -framework AGL (removed in macOS 15); the latest supported Qt drops that dependency. CI pinned to macos-14 as stopgap. |
 | [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] | DONE | 2026-07-03 | 2026-07-04 | Cache-quota fix applied but doesn't explain the magnitude (32 files changed vs. 98.6% miss rate); running a live zero-source-diff experiment. |
 | [[id:05243CFE-F838-4759-9956-9400D6C90FDC][Fix NATS port collision with legacy env and label inconsistency]] | DONE | 2026-07-03 | 2026-07-03 | solid_dirac's NATS ports collided with a stray legacy env's server; migrate to base-port-derived NATS ports and unify the config label to underscore form. |
 | [[id:83B12C2D-5202-4738-8147-5F28E566D997][Fix uninitialized asset_class/series_subclass in market_series generator]] | DONE | 2026-07-03 | 2026-07-03 | Nightly Valgrind flagged uninitialized-memory defects in market_series_mapper::map(); generate_synthetic_market_series() never set the two enum fields. |
@@ -177,6 +177,7 @@ health review (promote to a story, move to =next=, or discard).
 | # | Date       | Day   | Overall | Task                          |
 |---+------------+-------+---------+-------------------------------|
 | 1 | 2026-07-04 | day 3 | RED     | [[id:FE18CB49-C6D0-4F1B-9B56-04E5738032D9][Health review 1 — sprint 22 analysis]] |
+| 2 | 2026-07-05 | day 4 | RED     | [[id:CC2B3D6B-2B92-4606-A3BE-E67FB86B2960][Health review 2 — sprint 22 mid-sprint analysis]] |
 
 * Charts
 

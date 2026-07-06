@@ -28,10 +28,10 @@ Regenerate the book entity's C++ core (api domain/messaging, core repository/ser
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-03                               |
+| Now          | PR #1449 open; one review round addressed (SQL validation fix pushed). Awaiting merge. |
+| Waiting on   | PR merge.                              |
+| Next         | Merge PR #1449, close task.            |
+| Last touched | 2026-07-06                               |
 
 * Acceptance
 
@@ -39,9 +39,52 @@ Regenerate the book entity's C++ core (api domain/messaging, core repository/ser
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Regenerated book's C++ core (api/core/sql) from the graph-based
+codegen, then moved its Qt layer from =ores.qt/trading= to
+=ores.qt/refdata= to match the new codegen output location. Manual UI
+testing (login, list, save, rename, history) surfaced several bugs
+beyond the mechanical regen, each fixed and, where the root cause was
+generic, landed as a reusable codegen capability rather than a
+Book-only patch:
+
+- Cross-plugin symbol-lookup crash on login: =BookController= needed
+  =ORES_QT_REFDATA_EXPORT= since =TradingPlugin= constructs it but it
+  lives in =libores.qt.refdata.so= (built with
+  =-fvisibility=hidden=). Landed as a new opt-in codegen capability,
+  =has_export_macro=.
+- =book_changed_event= field mismatch (=e.ids= vs =e.book_ids=) broke
+  the build.
+- Book saves silently failed: =has_change_reason_cache= was never
+  wired for Book, so =promptChangeReason= had no cache to read from.
+- Renaming a book silently no-op'd (version bumped, name unchanged):
+  =name= was wrongly modelled as an immutable =is_key= field — that's
+  a uniqueness constraint, not an immutability one. Real trading
+  systems allow renaming books (GL mapping/id are the durable
+  identity, not the display name). Removed =is_key= from =name=;
+  surfaced the real UUID =id=, read-only, in the detail dialog instead.
+- Fixed two codegen bugs surfaced by giving Book a uuid-typed =is_key=
+  field for the first time: the primary key wasn't checked by the
+  detail-field uuid-type lookup, and the =is_key= UI->entity sync path
+  unconditionally did a =std::string= assignment even for uuid fields
+  (wouldn't compile). Also made =is_key= fields statically
+  =readOnly="true"= in the generated =.ui=, since not every detail-window
+  code path was calling =setReadOnly()=.
+- Closing a Book history window closed the whole app: shared
+  =HistoryDialogBase='s Close button called =window()->close()=
+  directly, which resolves to the main window (not the containing MDI
+  subwindow) when embedded. Added =closeRequested()=/=requestClose()=
+  mirroring =DetailDialogBase='s existing pattern, wired generically
+  into every codegen'd controller's =showHistoryWindow= — fixes this
+  for every entity's history dialog, not just Book's.
+- PR review (three independent automated passes) caught that the
+  initial regeneration had silently dropped all five of Book's insert
+  trigger validations (soft FKs on =parent_portfolio_id=/=party_id=/
+  =owner_unit_id=; value checks on =ledger_ccy=/=book_status=), because
+  =book.org= never had a =* Foreign keys= / =* Insert trigger= section
+  for the codegen to draw from. Added the missing sections (mirroring
+  =ores.refdata.counterparty.org=), regenerated, and verified the
+  restored trigger is semantically identical to the pre-regen SQL (diff
+  + full =compass db recreate=).
 
 * Notes
 
@@ -53,8 +96,12 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                  | File                                                     | Decision | Notes                                                                                  |
+|---+-------------------------------------------------------------------+-----------------------------------------------------------+----------+-----------------------------------------------------------------------------------------|
+| 1 | SQL regen silently dropped 5 soft-FK/value validations (x3 independent bot passes) | projects/ores.sql/create/refdata/refdata_books_create.sql | Fixed    | Added missing =* Foreign keys=/=* Insert trigger= sections to book.org, regenerated; fixed in 81d0d4742 |
+| 2 | Commit hygiene: capture commit 10ec7400 bundled unrelated Book Qt move | (commit message)                                          | Declined | Nothing pushed at the time it was raised was force-pushed since; not worth rewriting history further mid-review |
+| 3 | Double-blank-line artifacts in book_mapper.cpp/book_repository.cpp | projects/ores.refdata/core/src/repository/book_mapper.cpp, book_repository.cpp | Declined | Pre-existing pystache template whitespace quirk (present since the very first regen commit, 40e36f0f2, and identical in counterparty_mapper.cpp/counterparty_repository.cpp); out of scope |
+| 4 | No test coverage for Book service/repository/controller           | (n/a)                                                    | Declined | Pre-existing gap matching every other refdata entity; not introduced by this task |
+| 5 | has_explorer_api/parent_entity_singular capability undocumented in PR description | (PR description)                                          | Fixed    | Updated PR #1449 description to call it out explicitly |
 
 * Result

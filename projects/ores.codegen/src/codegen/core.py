@@ -2004,6 +2004,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             if 'changed_event_include' not in qt and entity_singular and component_include:
                 qt['changed_event_include'] = (
                     f'ores.{component_include}/eventing/{entity_singular}_changed_event.hpp')
+            # Cross-plugin export macro: opt-in via has_export_macro, for entities
+            # whose generated Qt classes are constructed from another qt/* plugin's
+            # shared library (built with -fvisibility=hidden) and therefore need a
+            # dllexport-style annotation to resolve at load time.
+            if qt.get('has_export_macro') and component:
+                if 'export_macro' not in qt:
+                    qt['export_macro'] = f'ORES_QT_{component.upper()}_EXPORT'
+                if 'export_header' not in qt:
+                    qt['export_header'] = f'{component.capitalize()}Export.hpp'
             # Mark last item in columns for template iteration
             if 'columns' in qt:
                 _mark_last_item(qt['columns'])
@@ -2084,6 +2093,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 c.get('name'): c.get('cpp_type', '')
                 for c in domain_entity.get('columns', [])
             }
+            _pk = domain_entity.get('primary_key')
+            if _pk and _pk.get('column'):
+                domain_col_types.setdefault(_pk['column'], _pk.get('cpp_type', ''))
             for i, f in enumerate(detail_fields):
                 f['is_line_edit'] = f.get('type') == 'line_edit'
                 f['is_text_edit'] = f.get('type') in ('text_edit', 'plain_text_edit')

@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.qt/export.hpp"
 #include <QDateTime>
 #include <QMainWindow>
@@ -201,6 +202,18 @@ protected:
      * @param window The container window to close when the dialog requests it.
      */
     void connect_dialog_close(DetailDialogBase* dialog, DetachableMdiSubWindow* window);
+
+    /**
+     * @brief Connects a history dialog's closeRequested signal to the window's close slot.
+     *
+     * Mirrors connect_dialog_close() for HistoryDialogBase — use this after
+     * creating a history dialog so its Close button closes only the
+     * containing MDI subwindow, not the whole application, when embedded.
+     *
+     * @param dialog The history dialog.
+     * @param window The container window to close when the dialog requests it.
+     */
+    void connect_dialog_close(HistoryDialogBase* dialog, DetachableMdiSubWindow* window);
 
     /**
      * @brief Registers a detachable window and emits detachableWindowCreated signal.

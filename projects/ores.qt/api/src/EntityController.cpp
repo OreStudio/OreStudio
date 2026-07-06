@@ -240,6 +240,11 @@ void EntityController::connect_dialog_close(DetailDialogBase* dialog,
     connect(dialog, &DetailDialogBase::closeRequested, window, &QWidget::close);
 }
 
+void EntityController::connect_dialog_close(HistoryDialogBase* dialog,
+                                            DetachableMdiSubWindow* window) {
+    connect(dialog, &HistoryDialogBase::closeRequested, window, &QWidget::close);
+}
+
 void EntityController::register_detachable_window(DetachableMdiSubWindow* window) {
     emit detachableWindowCreated(window);
 

@@ -103,6 +103,10 @@ HistoryDialogBase::DiffResult BookHistoryDialog::calculateDiffAt(int ci, int pi)
     const auto& curr = versions_[ci];
     const auto& prev = versions_[pi];
 
+    if (curr.id != prev.id)
+        diffs.append({tr("Id"),
+                      {QString::fromStdString(boost::uuids::to_string(prev.id)),
+                       QString::fromStdString(boost::uuids::to_string(curr.id))}});
     checkString(diffs, tr("Name"), curr.name, prev.name);
     checkString(diffs, tr("Ledger Currency"), curr.ledger_ccy, prev.ledger_ccy);
     checkString(diffs, tr("GL Account Ref"), curr.gl_account_ref, prev.gl_account_ref);
@@ -117,6 +121,7 @@ void BookHistoryDialog::displayFullDetails(int index) {
 
     const auto& version = versions_[index];
 
+    ui_->idValue->setText(QString::fromStdString(boost::uuids::to_string(version.id)));
     ui_->nameValue->setText(QString::fromStdString(version.name));
     ui_->ledgerCcyValue->setText(QString::fromStdString(version.ledger_ccy));
     ui_->glAccountRefValue->setText(QString::fromStdString(version.gl_account_ref));

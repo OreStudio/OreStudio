@@ -266,6 +266,8 @@ Basel III/IV classification.
 :history_response_class:  refdata::messaging::get_book_history_response
 :history_message_type:    get_book_history_request
 :has_explorer_api:        true
+:has_change_reason_cache: true
+:has_export_macro:        true
 :parent_entity_singular:  portfolio
 :settings_group:          BookListWindow
 :window_title:            Books
@@ -276,7 +278,8 @@ Basel III/IV classification.
 
 | field          | label           | widget           | type      | is_key | is_required | placeholder                |
 |----------------+-----------------+------------------+-----------+--------+-------------+----------------------------|
-| name           | Name            | nameEdit         | line_edit | true   | true        | Enter book name            |
+| id             | Id              | idEdit           | line_edit | true   | true        | Book id                    |
+| name           | Name            | nameEdit         | line_edit |        | true        | Enter book name            |
 | ledger_ccy     | Ledger Currency | ledgerCcyEdit    | line_edit |        |             | Enter ledger currency      |
 | gl_account_ref | GL Account Ref  | glAccountRefEdit | line_edit |        |             | Enter GL account reference |
 | cost_center    | Cost Center     | costCenterEdit   | line_edit |        |             | Enter cost center          |

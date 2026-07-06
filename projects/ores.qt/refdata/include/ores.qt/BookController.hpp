@@ -33,6 +33,7 @@ namespace ores::qt {
 
 class BookMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing book windows and operations.
@@ -56,6 +57,7 @@ public:
     BookController(QMainWindow* mainWindow,
                    QMdiArea* mdiArea,
                    ClientManager* clientManager,
+                   ChangeReasonCache* changeReasonCache,
                    const QString& username,
                    QObject* parent = nullptr);
 
@@ -87,6 +89,7 @@ private:
     void showDetailWindow(const refdata::domain::book& book);
     void showHistoryWindow(const refdata::domain::book& book);
 
+    ChangeReasonCache* changeReasonCache_;
     BookMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

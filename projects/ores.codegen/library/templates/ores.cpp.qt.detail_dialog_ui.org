@@ -78,6 +78,11 @@ The full template source. Edit here and re-tangle with
             <property name="placeholderText">
              <string>{{placeholder}}</string>
             </property>
+{{#is_key}}
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+{{/is_key}}
            </widget>
 {{/is_line_edit}}
 {{#is_text_edit}}

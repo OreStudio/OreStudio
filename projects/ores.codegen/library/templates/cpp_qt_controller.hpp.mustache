@@ -11,6 +11,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "{{domain_entity.qt.domain_include}}"
 #include "ores.qt/EntityListMdiWindow.hpp"
+{{#domain_entity.qt.has_export_macro}}
+#include "ores.qt/{{domain_entity.qt.export_header}}"
+{{/domain_entity.qt.has_export_macro}}
 
 namespace ores::qt {
 
@@ -32,7 +35,7 @@ class ImageCache;
  * Manages the lifecycle of {{domain_entity.entity_singular_words}} list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class {{domain_entity.entity_pascal}}Controller final : public EntityController {
+class {{#domain_entity.qt.has_export_macro}}{{domain_entity.qt.export_macro}} {{/domain_entity.qt.has_export_macro}}{{domain_entity.entity_pascal}}Controller final : public EntityController {
     Q_OBJECT
 
 private:

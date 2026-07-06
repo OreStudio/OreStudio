@@ -76,7 +76,8 @@ void BookDetailDialog::setupConnections() {
     connect(ui_->deleteButton, &QPushButton::clicked, this, &BookDetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this, &BookDetailDialog::onCloseClicked);
 
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onCodeChanged);
+    connect(ui_->idEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
     connect(ui_->ledgerCcyEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
     connect(
         ui_->glAccountRefEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
@@ -115,7 +116,8 @@ void BookDetailDialog::markDirty() {
 
 void BookDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->nameEdit->setReadOnly(true);
+    ui_->idEdit->setReadOnly(true);
+    ui_->nameEdit->setReadOnly(readOnly);
     ui_->ledgerCcyEdit->setReadOnly(readOnly);
     ui_->glAccountRefEdit->setReadOnly(readOnly);
     ui_->costCenterEdit->setReadOnly(readOnly);
@@ -125,6 +127,7 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
 }
 
 void BookDetailDialog::updateUiFromBook() {
+    ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(book_.id)));
     ui_->nameEdit->setText(QString::fromStdString(book_.name));
     ui_->ledgerCcyEdit->setText(QString::fromStdString(book_.ledger_ccy));
     ui_->glAccountRefEdit->setText(QString::fromStdString(book_.gl_account_ref));
@@ -143,9 +146,7 @@ void BookDetailDialog::updateUiFromBook() {
 }
 
 void BookDetailDialog::updateBookFromUi() {
-    if (createMode_) {
-        book_.name = ui_->nameEdit->text().trimmed().toStdString();
-    }
+    book_.name = ui_->nameEdit->text().trimmed().toStdString();
     book_.ledger_ccy = ui_->ledgerCcyEdit->text().trimmed().toStdString();
     book_.gl_account_ref = ui_->glAccountRefEdit->text().trimmed().toStdString();
     book_.cost_center = ui_->costCenterEdit->text().trimmed().toStdString();
@@ -169,9 +170,10 @@ void BookDetailDialog::updateSaveButtonState() {
 }
 
 bool BookDetailDialog::validateInput() {
+    const QString id_val = ui_->idEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true && !name_val.isEmpty();
+    return true && !id_val.isEmpty() && !name_val.isEmpty();
 }
 
 void BookDetailDialog::onSaveClicked() {

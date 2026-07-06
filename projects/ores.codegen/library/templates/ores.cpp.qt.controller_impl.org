@@ -399,6 +399,7 @@ void {{domain_entity.entity_pascal}}Controller::showHistoryWindow(const QString&
     historyWindow->setWindowTitle(QString("{{domain_entity.entity_title}} History: %1").arg(code));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);

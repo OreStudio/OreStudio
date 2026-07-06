@@ -31,11 +31,11 @@ plan (task 6E0CD16E).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Implementation complete; build passes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close out and merge.                   |
+| Next         | Nothing. |
 | Last touched | 2026-07-06                               |
 
 * Acceptance
@@ -166,3 +166,26 @@ mdi_window and detail_dialog templates both get the same
 | 8 | Follow-up round: continuation-line indentation doesn't match file's clang-format style | SettingGatedActionController.hpp/.cpp                     | Fixed    | Ran clang-format -i in 6b05cb53f                              |
 
 * Result
+
+Shipped =SettingGatedActionController= (=ores.qt/api=), a reusable
+non-templated helper that generalises the subscribe/notify/query
+mechanism for gating =QAction= visibility off a boolean system
+setting — one controller instance can gate several actions across
+different settings with a single NATS subscription and a single
+=list_settings_request= fetch, plus an optional per-action guard
+predicate (ANDed with the setting) for cases like a read-only detail
+dialog. Migrated =CurrencyMdiWindow= and =CurrencyDetailDialog='s
+duplicated =updateGenerateActionVisibility=/
+=onSystemSettingNotification=/=onConnectionEstablished= mechanism onto
+it. Added the opt-in =has_setting_gated_actions= qt-profile flag
+("Setting-gated actions" table, action/setting rows) to the
+mdi_window and detail_dialog mustache/org templates, and flipped it
+on for currency as first consumer. A PR review round caught a
+correctness regression (the shared controller re-showing the generate
+action during a live setting-change notification while a read-only
+history dialog was open) — fixed by adding the guard-predicate
+mechanism described above; verified fixed by two follow-up review
+passes. All three acceptance criteria met: the knob is generic
+(usable by any action via the table, not generate-button-specific),
+regenerating currency's gated sections reproduces the hand-migrated
+behaviour (verified via diff), and the build passes.

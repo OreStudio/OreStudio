@@ -100,3 +100,10 @@ Verified: =ores.qt.api.lib= builds clean (MOC ran correctly for
 |   |                 |      |          |       |
 
 * Result
+
+Delivered =HierarchyModelBuilder=/=HierarchyTreeWidget= as generic,
+entity-agnostic Qt classes, plus the =9B165431-2921-4CAC-A2E8-2C186741E523=
+paste-block seam in the detail-dialog codegen template. 15 assertions
+across 4 test cases pass; =ores.qt.api.lib= builds clean. No entity
+binds the seam yet — that is task 3 ("Bind composite child-entity and
+hierarchy widgets to party and counterparty"), still open.

@@ -113,3 +113,10 @@ retired.
 |   |                 |      |          |       |
 
 * Result
+
+Decided: handcrafted, reusable =EmbeddedChildTableWidget= + thin
+generated binding, not a new codegen Qt facet — the backend fetch is
+already codegen-generated and the 4 child entities collapse to only 2
+distinct column shapes. Rough API specified. Binding it to
+party/counterparty is task 3 ("Bind composite child-entity and
+hierarchy widgets to party and counterparty"), still open.

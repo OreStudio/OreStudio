@@ -92,3 +92,10 @@ Follow-up tasks (shell/CLI/HTTP/Wt excluded — separate stories):
 |   |                 |      |          |       |
 
 * Result
+
+Full-layer verdict recorded (see Notes table). Spawned 2 follow-up
+tasks on this story: "Bring party under codegen" (blocked — hand-written
+trigger logic with no facet) and "Verify party Qt UI end-to-end
+post-NATS" (blocked on a follow-up QA session, 3 bugs fixed so far).
+Security-definer search_path gap fixed directly rather than left for
+the blocked codegen migration.

@@ -70,3 +70,7 @@ all 3 functions now carry =search_path=public, pg_temp= alongside
 |   |                 |      |          |       |
 
 * Result
+
+All 3 functions patched with =set search_path = public, pg_temp= and
+verified live against =pg_proc.proconfig= after a clean schema rebuild.
+Confirmed by PR #1450's review as matching the established pattern.

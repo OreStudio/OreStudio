@@ -163,6 +163,7 @@ drop function if exists ores_refdata_validate_party_status_fn;
 :item_var:               status
 :key_field:              code
 :has_uuid_primary_key:   false
+:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_party_statuses_request
 :get_response_class:     refdata::messaging::get_party_statuses_response
 :get_message_type:       get_party_statuses_request

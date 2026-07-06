@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class PartyStatusMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing party status windows and operations.
@@ -55,6 +56,7 @@ public:
     PartyStatusController(QMainWindow* mainWindow,
                           QMdiArea* mdiArea,
                           ClientManager* clientManager,
+                          ChangeReasonCache* changeReasonCache,
                           const QString& username,
                           QObject* parent = nullptr);
 
@@ -81,6 +83,7 @@ private:
     void showDetailWindow(const refdata::domain::party_status& status);
     void showHistoryWindow(const QString& code);
 
+    ChangeReasonCache* changeReasonCache_;
     PartyStatusMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

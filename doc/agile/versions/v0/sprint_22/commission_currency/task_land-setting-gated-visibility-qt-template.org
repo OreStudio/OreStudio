@@ -150,8 +150,13 @@ mdi_window and detail_dialog templates both get the same
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                          | File                                                     | Decision | Notes                                                       |
+|---+---------------------------------------------------------------------------+-----------------------------------------------------------+----------+--------------------------------------------------------------|
+| 1 | Shared controller drops read-only guard on live notifications (correctness) | SettingGatedActionController.hpp/.cpp, CurrencyDetailDialog.cpp | Fixed    | Added optional guard predicate to registerAction(); fixed in b7176c782 |
+| 2 | Hand-written files' QTimer::singleShot defer diverges from template's synchronous refresh() | CurrencyMdiWindow.cpp, CurrencyDetailDialog.cpp          | Fixed    | Deferral was leftover scaffolding, not load-bearing; removed from both, b7176c782 |
+| 3 | isConnected() -> isLoggedIn() unification in refresh() gate                | SettingGatedActionController.cpp                          | Declined | Intentional: list_settings_request requires auth either way, isLoggedIn() is the correct gate |
+| 4 | No explicit #include <QFutureWatcher> (relies on <QtConcurrent>)          | SettingGatedActionController.cpp                          | Declined | Matches existing codebase convention throughout ores.qt      |
+| 5 | No unit test for SettingGatedActionController                            | SettingGatedActionController.cpp                          | Declined | Interesting paths need a live ClientManager/NATS connection; follow-up, not blocking |
+| 6 | Double construction of controller if setClientManager called twice (latent footgun) | CurrencyDetailDialog.cpp, mustache template               | Declined | Not live today — every call site builds a fresh dialog per invocation |
 
 * Result

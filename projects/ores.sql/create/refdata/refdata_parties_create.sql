@@ -222,3 +222,64 @@ on delete to "ores_refdata_parties_tbl" do instead
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+
+-- =============================================================================
+-- Hierarchy traversal for parties.
+-- Returns a flat set of {id, parent_id, name} nodes for the subtree rooted
+-- at p_root_id. When p_from_root is true, first walks up parent_id to the
+-- ultimate ancestor (parent_id is null) and recurses down from there instead,
+-- returning the whole tenant tree the given node belongs to.
+-- =============================================================================
+create or replace function ores_refdata_parties_hierarchy_fn(
+    p_tenant_id uuid,
+    p_root_id uuid,
+    p_from_root boolean default false
+) returns table(id uuid, parent_id uuid, name text) as $$
+declare
+    v_root_id uuid;
+begin
+    v_root_id := p_root_id;
+
+    if p_from_root then
+        with recursive ancestors as (
+            select t.id, t.parent_party_id as parent_id
+            from "ores_refdata_parties_tbl" t
+            where t.tenant_id = p_tenant_id
+              and t.id = p_root_id
+              and t.valid_to = ores_utility_infinity_timestamp_fn()
+            union all
+            select t.id, t.parent_party_id as parent_id
+            from "ores_refdata_parties_tbl" t
+            join ancestors a on t.id = a.parent_id
+            where t.tenant_id = p_tenant_id
+              and t.valid_to = ores_utility_infinity_timestamp_fn()
+        )
+        select a.id into v_root_id
+        from ancestors a
+        where a.parent_id is null
+        limit 1;
+
+        if v_root_id is null then
+            v_root_id := p_root_id;
+        end if;
+    end if;
+
+    return query
+    with recursive descendants as (
+        select t.id, t.parent_party_id as parent_id,
+               t.full_name::text as name
+        from "ores_refdata_parties_tbl" t
+        where t.tenant_id = p_tenant_id
+          and t.id = v_root_id
+          and t.valid_to = ores_utility_infinity_timestamp_fn()
+        union all
+        select t.id, t.parent_party_id as parent_id,
+               t.full_name::text as name
+        from "ores_refdata_parties_tbl" t
+        join descendants d on t.parent_party_id = d.id
+        where t.tenant_id = p_tenant_id
+          and t.valid_to = ores_utility_infinity_timestamp_fn()
+    )
+    select d.id, d.parent_id, d.name from descendants d;
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;

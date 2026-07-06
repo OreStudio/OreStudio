@@ -42,6 +42,7 @@ std::uint32_t counterparty_service::count_counterparties() {
     return repo_.get_total_counterparty_count(ctx_);
 }
 
+
 std::optional<domain::counterparty> counterparty_service::get_counterparty(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting counterparty: " << id;
     auto results = repo_.read_latest(ctx_, id);
@@ -86,6 +87,13 @@ std::vector<domain::counterparty>
 counterparty_service::get_counterparty_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty: " << id;
     return repo_.read_all(ctx_, id);
+}
+
+std::vector<ores::utility::domain::hierarchy_node>
+counterparty_service::get_hierarchy(const boost::uuids::uuid& root_id, bool from_root) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting hierarchy for counterparty root: " << root_id;
+    auto rows = repo_.get_hierarchy(ctx_, root_id, from_root);
+    return ores::utility::domain::build_tree(rows);
 }
 
 }

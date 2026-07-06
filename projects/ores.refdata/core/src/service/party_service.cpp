@@ -99,4 +99,12 @@ std::vector<domain::party> party_service::get_party_history(const boost::uuids::
     return repo_.read_all(id);
 }
 
+std::vector<ores::utility::domain::hierarchy_node>
+party_service::get_hierarchy(const boost::uuids::uuid& root_id, bool from_root) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting hierarchy for party root: " << root_id;
+    const auto tenant_id = ctx_.tenant_id().to_uuid();
+    auto rows = repo_.get_hierarchy(tenant_id, root_id, from_root);
+    return ores::utility::domain::build_tree(rows);
+}
+
 }

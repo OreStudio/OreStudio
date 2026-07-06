@@ -28,6 +28,7 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <algorithm>
 
 using namespace ores::refdata::generators;
 using ores::refdata::domain::party;
@@ -139,4 +140,33 @@ TEST_CASE("read_nonexistent_party_id", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
 
     CHECK(read_parties.size() == 0);
+}
+
+TEST_CASE("get_hierarchy_returns_subtree_rooted_at_given_party", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    party_repository repo(h.context());
+    const auto system_id = repo.read_system_party(h.tenant_id().to_string()).at(0).id;
+
+    auto root = generate_synthetic_party(ctx);
+    root.change_reason_code = "system.test";
+    root.parent_party_id = system_id;
+    repo.write(root);
+
+    auto child = generate_synthetic_party(ctx);
+    child.change_reason_code = "system.test";
+    child.parent_party_id = root.id;
+    repo.write(child);
+
+    const auto rows = repo.get_hierarchy(h.tenant_id().to_uuid(), root.id, false);
+    BOOST_LOG_SEV(lg, debug) << "Hierarchy rows: " << rows.size();
+
+    REQUIRE(rows.size() == 2);
+    const auto has_id = [&rows](const boost::uuids::uuid& id) {
+        return std::ranges::any_of(rows, [&id](const auto& r) { return r.id == id; });
+    };
+    CHECK(has_id(root.id));
+    CHECK(has_id(child.id));
 }

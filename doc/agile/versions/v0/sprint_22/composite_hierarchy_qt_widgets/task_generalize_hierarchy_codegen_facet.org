@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 54C76A81-AA42-4404-B02D-C3AB5D934A50
+:END:
+#+title: Task: Generalize self-referential hierarchy into a codegen facet (SQL, CTE, NATS)
+#+description: Add a has_parent_id-style codegen facet generating the parent soft-FK column, insert-trigger validation, a recursive-CTE hierarchy query (from-root or from-self), and a generic get_<entity>_hierarchy NATS message returning {id, parent_id, label} nodes for display. Apply to party and counterparty (migrating their hand-written equivalents) and to book (net-new hierarchy support, no existing parent_book_id).
+#+type: task
+#+level: s1
+#+filetags: :codegen:refdata:hierarchy:qt:sprint_22:v0:composite_hierarchy_qt_widgets:
+#+owner: marco
+#+branch: feature/appraise-party-all-layers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give party and counterparty a single mechanism to fetch their whole
+self-referencing hierarchy in one server-side round trip, instead of
+the naive alternative of fetching a paginated flat entity list
+client-side and merging pages (which fragments the tree at page
+boundaries if a child's parent lands on a different page).
+
+Scope narrowed during implementation, by explicit decision:
+- =has_parent_id= is a *Flag* (a cross-cutting property like
+  =has_tenant_id=), not a "facet" — corrected terminology, see
+  =org_entity_meta_model.org=.
+- The flag generates *only* the recursive-CTE hierarchy query
+  function, not the parent column or its insert-trigger validation —
+  those stay hand-maintained (party/counterparty's existing
+  validation is untouched, not migrated onto the flag).
+- The NATS message/handler is hand-written for party and counterparty
+  first, not codegen-generated — proving the pattern before investing
+  in protocol/service/handler template work, same approach already
+  used for the Qt hierarchy widgets.
+- =book= (net-new hierarchy support) is out of scope here — filed as
+  a follow-up capture instead of attempted in this pass.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                  |
+| Parent story | [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-07-05                               |
+
+* Acceptance
+
+- =has_parent_id= Flag generates the recursive-CTE hierarchy query function, consumed by party and counterparty.
+- Recursive-CTE hierarchy query supports both from-root and from-self starting points.
+- Hand-written =get_<entity>_hierarchy_request/response= NATS message and handler for party and counterparty, returning a nested =ores::utility::domain::hierarchy_node= tree.
+- Verified end-to-end against a live environment (party: full live NATS round-trip; counterparty: build + structural symmetry with party).
+
+* Plan
+
+Surveyed =has_tenant_id='s existing Flag pattern and the =:implements=
+paste-block convention first, to place =has_parent_id= correctly (SQL
+Flag, not a new facet/paste-block, since the pattern is shared by 2+
+entities). Implemented the SQL function first, verified live for both
+entities, then the shared =ores.utility= tree-assembly type, then the
+hand-written NATS layer, verified live for party.
+
+* Notes
+
+Delivered:
+- =has_parent_id: true= / =parent_id_column= / =hierarchy_name_field=
+  SQL Flag, documented in =org_entity_meta_model.org=, generating
+  =<product>_<component>_<entity_plural>_hierarchy_fn=. Applied to
+  =counterparty= via full codegen regen (verified =--diff= first);
+  applied to =party= by hand (party's SQL can't be safely regenerated
+  wholesale yet — see the =Bring party under codegen= task, BLOCKED).
+  Verified live against a real DB rebuild for both entities: from-self
+  and from-root (correctly resolving to the true root) both correct.
+- =ores::utility::domain::hierarchy_node=/=hierarchy_flat_row=/
+  =build_tree()= — shared, handwritten, entity-agnostic tree-assembly
+  type. =HierarchyModelBuilder= (Qt) simplified to consume the nested
+  type directly instead of linking flat rows itself.
+- Hand-written =get_party_hierarchy_request/response=
+  (=refdata.v1.parties.hierarchy=) and the counterparty mirror
+  (=refdata.v1.counterparties.hierarchy=): repository method calling
+  the SQL function, service method nesting via =build_tree()=,
+  handler/registrar mirroring the existing =get_parties_request=
+  pattern exactly. Verified via full live NATS round-trip for party
+  (authenticated via =iam.v1.auth.service-login=, correct tree
+  returned); counterparty verified via build + structural symmetry
+  with party only, not a separate live call.
+- New repository test
+  (=get_hierarchy_returns_subtree_rooted_at_given_party=) passes; full
+  =ores.refdata.core.tests= run shows 25 pre-existing failures
+  unrelated to this change (synthetic-data-generator fixture issues —
+  fakers producing values like =party_id_scheme=LEI-7= and
+  =business_centre=USNY= not seeded in this dev DB).
+
+Filed as follow-up captures rather than attempted here: =book=
+net-new hierarchy support, and codegen-generating the NATS
+message/handler once the hand-written pattern is proven in task 3
+(Qt binding).
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Follow-up, done same day rather than deferred: the hand-written NATS
+layer was itself generalized into the codegen templates
+(protocol/repository/service/nats-handler/nats-sub-registrar), each
+verified zero-diff for =counterparty= before applying for real.
+=has_parent_id=/=parent_id_column=/=hierarchy_name_field= relocated
+from the SQL-only Flags section to the top-level Flags section so the
+same flag drives both SQL and C++ generation (matching
+=has_tenant_id='s precedent). =party= confirmed to have the same kind
+of pre-existing C++-layer drift already found in its SQL/protocol
+layers, so it stays hand-written. See the
+=codegen_generate_hierarchy_nats_layer= capture (now marked resolved)
+for the full account.

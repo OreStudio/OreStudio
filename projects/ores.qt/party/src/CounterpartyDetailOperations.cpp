@@ -41,9 +41,13 @@ bool counterparty_detail_operations::has_party_category() const {
 operation_result counterparty_detail_operations::save_entity(ClientManager* cm,
                                                              const entity_data& data) const {
 
+    auto tenant_id = ores::utility::uuid::tenant_id::from_string(data.tenant_id);
+    if (!tenant_id)
+        return {false, "Invalid tenant: " + tenant_id.error()};
+
     refdata::domain::counterparty cpty;
     cpty.version = data.version;
-    cpty.tenant_id = ores::utility::uuid::tenant_id::from_string(data.tenant_id).value();
+    cpty.tenant_id = *tenant_id;
     cpty.id = data.id;
     cpty.full_name = data.full_name;
     cpty.short_code = data.short_code;

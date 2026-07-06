@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.utility/domain/hierarchy.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <sqlgen/postgres.hpp>
@@ -94,6 +95,22 @@ public:
      * @return UUIDs of root and all descendant parties
      */
     std::vector<boost::uuids::uuid> read_descendants(const boost::uuids::uuid& root_id);
+
+    /**
+     * @brief Reads the party hierarchy as a flat set of {id, parent_id, name}
+     * rows, via ores_refdata_parties_hierarchy_fn.
+     *
+     * @param tenant_id The tenant owning the hierarchy.
+     * @param root_id The party to start from.
+     * @param from_root If true, first walks up to the ultimate ancestor and
+     * returns the whole tree the given node belongs to, instead of just its
+     * subtree.
+     * @return Flat hierarchy rows, ready for ores::utility::domain::build_tree.
+     */
+    std::vector<ores::utility::domain::hierarchy_flat_row>
+    get_hierarchy(const boost::uuids::uuid& tenant_id,
+                  const boost::uuids::uuid& root_id,
+                  bool from_root);
 
     std::vector<domain::party> read_all(const boost::uuids::uuid& id);
     void remove(const boost::uuids::uuid& id);

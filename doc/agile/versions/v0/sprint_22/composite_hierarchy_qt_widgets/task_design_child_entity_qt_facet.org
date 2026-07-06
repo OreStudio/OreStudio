@@ -7,43 +7,98 @@
 #+level: s1
 #+filetags: :composite_hierarchy_qt_widgets:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/appraise-party-all-layers
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Determine whether counterparty_identifier/counterparty_contact_information/
+party_identifier/party_contact_information need a new codegen Qt facet
+for embeddable child tables, or a handcrafted base widget with a thin
+generated binding.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-07-04                               |
 
 * Acceptance
 
--
+- Written design decision: facet vs handcrafted widget + generated binding.
+- Decision is consistent with the hierarchy-widget precedent (task 2 of this story).
+- Rough API shape for the chosen approach is specified.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Investigated (1) the existing foreign_keys/list_by paged query already
+generated for the 4 child entities, (2) the current hand-maintained
+=EntityDetailDialog=/=EntityDetailOperations= rendering of identifier
+and contact child tables, (3) the cost of a brand-new Qt facet vs
+reusing the =:implements <UUID>= paste-block convention, and (4)
+whether the 4 child entities' column shapes are similar enough for a
+single reusable widget.
 
 * Notes
+
+Decision: **handcrafted, reusable widget + thin generated binding**
+(same shape as the hierarchy-widget decision in task 2), not a new
+codegen Qt facet. Evidence:
+
+- The backend fetch-by-parent-id capability is *already* fully
+  codegen-generated for all 4 child entities via a =:list_by: true=
+  flag on the FK field (=projects/ores.refdata/modeling/ores.refdata.party_identifier.org=
+  and siblings) — =list_..._by_<parent>_id=/=count_..._by_<parent>_id=
+  service calls, offset/limit pagination. Nothing to build here.
+- The current hand-maintained code (=EntityDetailDialog.cpp=,
+  =EntityDetailOperations.hpp=) is already almost entirely generic:
+  plain =QTableWidget= setup, populate loop, add/edit modal
+  construction, and delete wiring are identical between identifier
+  and contact cases and between party/counterparty. The =identifier_entry=/
+  =contact_entry= DTOs and the =entity_detail_operations= virtual
+  interface are already entity-agnostic — only the column list and
+  the four data-access calls vary per entity.
+- Column shapes: only *two* distinct shapes across all 4 entities —
+  =party_identifier=/=counterparty_identifier= are field-for-field
+  identical (id_scheme, id_value, description); =party_contact_information=/
+  =counterparty_contact_information= are field-for-field identical
+  (contact_type, street lines, city, state, country_code, postal_code,
+  phone, email, web_page). A single parameterized widget covers both.
+- A new facet would require inventing new org-model vocabulary for
+  columns/validators the handcrafted DTOs already express, plus
+  generating 4 near-identical bespoke widget classes — for no benefit
+  over parameterizing one class.
+- The detail-dialog codegen templates currently have *no* =:implements=
+  paste-block seams at all, so seams need adding regardless of which
+  option is chosen — this is not a point in favour of the facet.
+
+Rough API for the reusable widget (e.g. =EmbeddedChildTableWidget=):
+constructed with a =columns= list (header label, field accessor,
+editor widget kind, validator), a =fetch_page(offset, limit)= callback
+bound to the entity's generated list/count calls, =save(row)= and
+=remove(id)= callbacks bound to the generated save/delete calls, and
+a =parent_id= (settable, for dialog reuse on selection change). The
+generated per-entity binding (task 2/3 of this story) instantiates
+this widget twice per detail dialog (identifiers, contacts) with the
+column defs and callbacks wired to that entity's generated service —
+no bespoke widget subclass needed.
+
+Once proven in task 3 against party/counterparty,
+=EntityDetailDialog=/=EntityDetailOperations= (~2,300 lines) can be
+retired.
 
 * PRs
 
@@ -58,3 +113,10 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Decided: handcrafted, reusable =EmbeddedChildTableWidget= + thin
+generated binding, not a new codegen Qt facet — the backend fetch is
+already codegen-generated and the 4 child entities collapse to only 2
+distinct column shapes. Rough API specified. Binding it to
+party/counterparty is task 3 ("Bind composite child-entity and
+hierarchy widgets to party and counterparty"), still open.

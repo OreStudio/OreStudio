@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 9ECEAAB2-1E3C-4545-BE69-964926753894
+:END:
+#+title: Codegen-generate the get_hierarchy NATS message once proven
+#+description: Once the hand-written get_<entity>_hierarchy pattern is proven end-to-end (party/counterparty, task 3 Qt binding), extend the protocol/service/handler codegen templates to generate it per has_parent_id entity instead of hand-writing.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:refdata:messaging:hierarchy:resolved:
+#+created: 2026-07-05
+#+updated: 2026-07-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* Resolved
+
+Done, sooner than planned (didn't wait for task 3's Qt binding to prove
+the pattern first — build/unit verification was judged sufficient
+given the pattern already had a full live NATS round-trip for party).
+=has_parent_id=-gated blocks added to the protocol, repository,
+service, nats-handler, and nats-sub-registrar codegen templates;
+=counterparty= regenerated for real across all five addresses, each
+verified zero-diff (or diff-only-in-clang-format-reflow) against the
+hand-written version first. =party= intentionally left hand-written —
+its repository/entity/mapper layer has the same pre-existing,
+unrelated drift already found in its SQL/protocol layers.
+
+* What
+
+Extend the C++ protocol/repository/service/handler codegen templates
+to generate the =get_<entity>_hierarchy_request/response= message,
+repository query, service method, and handler/registrar subscription
+per =has_parent_id= entity, superseding the hand-written
+implementations added for =party= and =counterparty=.
+
+* Why
+
+The pattern was deliberately hand-written first (repository →
+service → protocol → handler → registrar for party, mirrored to
+counterparty) to prove it end-to-end before investing in template
+work, following the same approach already used for the Qt hierarchy
+widgets in this same story. Once task 3 (binding the Qt widgets to
+party/counterparty) has exercised the pattern in the UI and it's
+holding up, generalizing it into codegen removes the now-duplicated
+hand-written code and gets it for free for any future =has_parent_id=
+entity (e.g. =book=, see the companion capture).
+
+* References
+
+- =projects/ores.refdata/core/include/ores.refdata.core/messaging/party_handler.hpp= — hand-written reference implementation (=hierarchy()= method).
+- =projects/ores.refdata/api/include/ores.refdata.api/messaging/party_protocol.hpp= — =get_party_hierarchy_request/response=.
+- =projects/ores.codegen/modeling/org_entity_meta_model.org= — =has_parent_id= Flag documentation (SQL layer only, so far).
+
+* See also
+
+- Companion capture: =Add net-new self-referencing hierarchy support to book= — a second consumer that would benefit once this is generated.
+
+* See also
+
+-

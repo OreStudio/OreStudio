@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 560DB730-99F5-4C75-9415-9DC62BB0A6E8
+:END:
+#+title: Task: Verify party Qt UI end-to-end post-NATS
+#+description: Verify the Qt list window, detail dialog (via PartyDetailOperations/EntityDetailDialog), history dialog, delete, and cross-session eventing for party against a live environment post-NATS migration; fix any regressions found.
+#+type: task
+#+level: s1
+#+filetags: :commission_party:sprint_22:v0:qt:
+#+owner: marco
+#+branch: feature/appraise-party-all-layers
+#+pr: 1450
+#+blocked_on: Needs a dedicated follow-up QA session to drive history dialog, delete, and cross-session eventing through the Qt client.
+#+blocked_since: 2026-07-06
+#+created: 2026-07-04
+#+updated: 2026-07-06
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] |
+| Now          | List window and detail dialog (save/business-centre) verified; 3 bugs found and fixed (crash, WRLD default, flag repaint). Raising a partial PR for this. |
+| Waiting on   | A dedicated follow-up QA session for history dialog, delete, and cross-session eventing. |
+| Next         | Resume manual QA on history/delete/eventing in a follow-up session. |
+| Last touched | 2026-07-06                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+- Party identifiers (LEI) and contact information do not yet display in
+  the Qt detail dialog — no identifiers/contact-info widget exists in
+  =projects/ores.qt/party= yet. This is expected: it is tracked by the
+  separate "Bind composite child-entity and hierarchy widgets to party
+  and counterparty" task, not a regression in this one.
+- Confirmed the LEI =max_cardinality: 1= rule works correctly:
+  attempting to add a second LEI via =ores.shell= for a party already
+  carrying one (from GLEIF provisioning) is correctly rejected by
+  =ores_refdata_party_identifiers_insert_fn()=.
+- Found a real regression: the business-centre combo in
+  =EntityDetailDialog= shows the wrong flag on initial load (e.g. GBLO
+  shows the US flag) until the dropdown is opened, which repaints it
+  correctly. Root-causing and fixing separately.
+- Found and fixed a crash: saving a newly-added party (or counterparty)
+  aborted the client. =EntityDetailDialog::setCreateMode(true)= never
+  populated =entity_.tenant_id=, so on save
+  =tenant_id::from_string("").value()= threw inside a =QtConcurrent=
+  task; the uncaught exception rethrown on =.result()= called
+  =std::terminate()=. Fixed by stamping =entity_.tenant_id= from
+  =ClientManager::currentTenantId()= in create mode, and hardened
+  =party_detail_operations::save_entity= /
+  =counterparty_detail_operations::save_entity= to return a failed
+  =operation_result= instead of throwing on an invalid tenant id.
+- Found and fixed the business-centre flag regression: =QComboBox=
+  does not repaint the closed-box icon for the current index when
+  =setItemIcon= changes it after the fact — only the popup or a
+  reselect picks it up. Fixed in =set_combo_flag_icons()= by cycling
+  =setCurrentIndex(-1)= then back (signal-blocked) after applying
+  icons, so every flag combo (business centre, currency, country)
+  repaints immediately.
+- Found and fixed a related bug: new parties/counterparties defaulted
+  their business centre to whatever code happened to be first in the
+  tenant's list (e.g. a US one), not =WRLD= as intended.
+  =updateEntityFromUi()='s =bcc.empty() ? "WRLD" : bcc= fallback was
+  dead code — =QComboBox::currentText()= is never actually empty once
+  populated. Fixed by stamping =entity_.business_center_code = "WRLD"=
+  explicitly for a fresh entity right after the combo is populated.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 1450 | [refdata,qt] Appraise party across all layers; hierarchy facet; Qt save-crash fixes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Hierarchy CTEs / build_tree() have no cycle guard | ores.utility/src/domain/hierarchy.cpp, refdata_party_functions_create.sql | Deferred | Low severity (one-root-per-tenant convention constrains real data); filed as backlog capture doc/agile/product_backlog/inbox/hierarchy-cycle-guard.org |
+| 2 | 4 review passes, no line comments, no other blocking findings | — | Accepted | CI green; rebased onto main; merging |
+
+* Result

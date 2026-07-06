@@ -42,6 +42,9 @@ The full template source. Edit here and re-tangle with
 {{#system_tenant_validation}}
 #include "ores.utility/uuid/tenant_id.hpp"
 {{/system_tenant_validation}}
+{{#has_parent_id}}
+#include <boost/uuid/string_generator.hpp>
+{{/has_parent_id}}
 <<paste:F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F>>
 
 namespace ores::{{component}}::messaging {
@@ -284,6 +287,40 @@ public:
     }
 
 {{/extra_list_requests}}
+{{#has_parent_id}}
+    void hierarchy(ores::nats::message msg) {
+        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::{{entity_singular}}_service svc(req_ctx);
+        if (auto req = decode<get_{{entity_singular}}_hierarchy_request>(msg)) {
+            try {
+                boost::uuids::string_generator gen;
+                auto roots = svc.get_hierarchy(gen(req->root_id), req->from_root);
+                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, get_{{entity_singular}}_hierarchy_response{
+                    .success = true, .roots = std::move(roots)});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, get_{{entity_singular}}_hierarchy_response{
+                    .success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+{{/has_parent_id}}
 <<paste:B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F>>
 private:
     ores::nats::service::client& nats_;

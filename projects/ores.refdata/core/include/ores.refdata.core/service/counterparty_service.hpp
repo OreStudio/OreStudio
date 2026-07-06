@@ -25,6 +25,8 @@
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
+#include "ores.utility/domain/hierarchy.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -75,6 +77,7 @@ public:
      */
     std::uint32_t count_counterparties();
 
+
     /**
      * @brief Retrieves a single counterparty by its id.
      *
@@ -116,6 +119,18 @@ public:
      * @brief Retrieves all historical versions of a counterparty.
      */
     std::vector<domain::counterparty> get_counterparty_history(const std::string& id);
+
+    /**
+     * @brief Gets the counterparty hierarchy (as a forest of trees) rooted
+     * at, or containing, the given counterparty.
+     *
+     * @param root_id The counterparty to start from.
+     * @param from_root If true, returns the whole tree the given node
+     * belongs to instead of just its subtree.
+     * @return A forest of hierarchy_node trees (normally a single root).
+     */
+    std::vector<ores::utility::domain::hierarchy_node>
+    get_hierarchy(const boost::uuids::uuid& root_id, bool from_root);
 
 private:
     context ctx_;

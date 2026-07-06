@@ -71,7 +71,7 @@ begin
       and p.party_category = 'System'
       and p.valid_to = ores_utility_infinity_timestamp_fn();
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- Get the display name and category of a specific party.
 -- Used during login to include party context in the login response without
@@ -91,7 +91,7 @@ begin
       and p.tenant_id = p_tenant_id
       and p.valid_to = ores_utility_infinity_timestamp_fn();
 end;
-$$ language plpgsql stable security definer;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
 
 -- Compute the visible party set for a given party within a tenant.
 -- Returns an array of UUIDs containing the given party and all its descendants
@@ -117,4 +117,4 @@ begin
         SELECT array_agg(id) FROM party_tree
     );
 end;
-$$ language plpgsql stable security definer;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;

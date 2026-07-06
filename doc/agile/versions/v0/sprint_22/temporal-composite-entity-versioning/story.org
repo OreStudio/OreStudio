@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 366DCF08-C483-47B7-A136-229B4D2FC394
+:END:
+#+title: Story: Temporal composite entity versioning
+#+description: Design the target state for versioning composite entities (parent + child tables like party/counterparty identifiers and contact information): saving a child must bump the parent's version, loading a parent at version N must compose children as they looked as of that version, and we need to work out enforcement across SQL/codegen and how composite version history is displayed in the Qt client.
+#+type: story
+#+level: s2
+#+filetags: :architecture:composite_entity:versioning:party:counterparty:sprint_22:v0:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Produce a comprehensive architecture document under doc/architecture laying out the target state for complex/composite object versioning (option A: child saves bump the parent's version; loading a parent as-of version N composes children as of that same version), and work out how to enforce it across SQL (triggers), codegen (templates/facets), and the Qt UI (including how a composite entity's version/history dialog should look, e.g. a unified children-version view).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Blocked. Not yet started.               |
+| Waiting on    | [[id:560DB730-99F5-4C75-9415-9DC62BB0A6E8][Verify party Qt UI end-to-end post-NATS]] to land — party is the reference case for the target composite versioning model. |
+| Next          | Once that PR lands, break this story into tasks and start the architecture doc. |
+| Last touched  | 2026-07-06                               |
+
+* Acceptance
+
+- Architecture document written under doc/architecture covering: (1) the target temporal-composite versioning model, (2) SQL enforcement approach (trigger cascade to bump parent version on child insert/update), (3) codegen facet/template changes needed to generate this consistently, (4) how composite as-of reads compose parent+children by matching valid_from/valid_to windows, (5) Qt UX design for composite version/history dialogs. Document reviewed and captured decisions distilled for follow-up implementation stories (party/counterparty first, as the reference case).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

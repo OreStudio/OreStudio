@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.utility/domain/hierarchy.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <optional>
@@ -117,6 +118,18 @@ public:
      * @return Vector of all versions, newest first
      */
     std::vector<domain::party> get_party_history(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Gets the party hierarchy (as a forest of trees) rooted at, or
+     * containing, the given party.
+     *
+     * @param root_id The party to start from.
+     * @param from_root If true, returns the whole tree the given node
+     * belongs to instead of just its subtree.
+     * @return A forest of hierarchy_node trees (normally a single root).
+     */
+    std::vector<ores::utility::domain::hierarchy_node>
+    get_hierarchy(const boost::uuids::uuid& root_id, bool from_root);
 
 private:
     context ctx_;

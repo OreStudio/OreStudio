@@ -268,6 +268,14 @@ void EntityDetailDialog::populateLookups() {
         apply_flag_icons(
             self->ui_->businessCenterCombo, self->imageCache_, FlagSource::BusinessCentre);
 
+        // QComboBox always has a currentText once populated (defaults to
+        // item 0), so business_center_code is never actually empty by the
+        // time updateEntityFromUi() runs its "WRLD" fallback. Stamp the
+        // intended default explicitly here instead, for a fresh entity.
+        if (self->createMode_ && self->entity_.business_center_code.empty()) {
+            self->entity_.business_center_code = "WRLD";
+        }
+
         self->updateUiFromEntity();
 
         // Also load all entities for parent combo + hierarchy
@@ -535,6 +543,9 @@ void EntityDetailDialog::setCreateMode(bool createMode) {
 
     if (createMode) {
         setProvenanceEnabled(false);
+
+        if (clientManager_)
+            entity_.tenant_id = clientManager_->currentTenantId();
 
         // Disable sub-entity toolbars until entity is saved
         if (identifierToolbar_)

@@ -50,7 +50,7 @@ Reference data entities representing the ORE domain model.
 | currency                        | Y   | Y      | Y      | Y       | Y  | Y    | Y   | Y     | Y  |
 | currency_market_tier            | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
 | monetary_nature                 | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
-| party                           | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+| party                           | Y   | Y      | Y      | Y       | Y  | N    | N   | Y*    | N  |
 | party_contact_information       | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
 | party_counterparty              | Y   | Y      | Y      | Y       | N  | N    | N   | N     | N  |
 | party_id_scheme                 | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
@@ -60,6 +60,8 @@ Reference data entities representing the ORE domain model.
 | portfolio                       | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
 | purpose_type                    | N   | Y      | N      | Y       | Y  | N    | N   | N     | N  |
 | rounding_type                   | Y   | Y      | Y      | Y       | Y  | N    | N   | N     | N  |
+
+=Y*= — partial: =party= shell has =list= only, =add=/=remove= not yet implemented.
 
 Entities with domain types but no SQL table (lookup/enum types): =asset_class=,
 =asset_measure=, =benchmark_rate=, =business_process=, =cashflow_type=,

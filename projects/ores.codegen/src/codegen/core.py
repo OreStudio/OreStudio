@@ -1673,6 +1673,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         sql_table = domain_entity_to_table_context(domain_entity)['table']
         normalise_sql_table_context(sql_table)
         data['table'] = sql_table
+        # normalise_sql_table_context computes tenant-scope flags onto its own
+        # (shallow-copied) validation_fn dict; sync them back onto domain_entity
+        # so the domain-entity SQL template — which reads domain_entity.validation_fn
+        # directly — sees scope_system/scope_both/scope_tenant too.
+        if 'validation_fn' in sql_table:
+            domain_entity['validation_fn'] = sql_table['validation_fn']
         if any(
             v.get('cardinality_limit_table')
             for v in domain_entity.get('insert_trigger', {}).get('validations', [])
@@ -1949,6 +1955,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Audit columns (modified_by, performed_by, change_reason_code, change_commentary,
         # version): suppressed for hypertable time-series entities via #+no_audit_columns.
         domain_entity['has_audit_columns'] = not sql_section.get('no_audit_columns', False)
+        # change_reason_code is validated automatically by the has_audit_columns block
+        # below; suppress that auto-emission when the model's own insert_trigger
+        # validations table already declares an explicit row for it, to avoid
+        # emitting the NEW.change_reason_code assignment twice.
+        domain_entity['change_reason_code_declared'] = any(
+            v.get('column') == 'change_reason_code'
+            for v in domain_entity.get('insert_trigger', {}).get('validations', [])
+        )
         # Mark last items in new iterable sql sub-sections for template rendering
         if 'fk_copy_validations' in sql_section:
             _mark_last_item(sql_section['fk_copy_validations'])

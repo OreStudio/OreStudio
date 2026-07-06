@@ -28,6 +28,7 @@
 #include <QPointer>
 #include <QString>
 #include <QStringList>
+#include <functional>
 #include <vector>
 
 namespace ores::qt {
@@ -69,8 +70,17 @@ public:
      * The action starts hidden; call refresh() (or wait for
      * login/reconnect, which this class wires automatically) to
      * evaluate its initial visibility.
+     *
+     * @param guard Optional additional condition ANDed with the
+     * setting's value — e.g. a detail dialog passing `[this]{ return
+     * !readOnly_; }` so the action stays hidden while viewing a
+     * read-only historical version, regardless of the setting.
+     * Re-evaluated on every refresh(), including ones triggered by a
+     * live setting-change notification.
      */
-    void registerAction(QAction* action, const QString& setting_name);
+    void registerAction(QAction* action,
+                       const QString& setting_name,
+                       std::function<bool()> guard = {});
 
     /**
      * @brief Re-checks every registered action's visibility.
@@ -89,6 +99,7 @@ private:
     struct GatedAction {
         QPointer<QAction> action;
         QString setting_name;
+        std::function<bool()> guard;
     };
 
     ClientManager* clientManager_;

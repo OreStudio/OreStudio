@@ -161,7 +161,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::setClientManager(ClientManager
     if (clientManager_) {
         settingGatedActions_ = new SettingGatedActionController(clientManager_, this);
 {{#domain_entity.qt.setting_gated_actions}}
-        settingGatedActions_->registerAction({{action}}_, "{{setting}}");
+        settingGatedActions_->registerAction(
+            {{action}}_, "{{setting}}", [this]() { return !readOnly_; });
 {{/domain_entity.qt.setting_gated_actions}}
         if (clientManager_->isLoggedIn())
             settingGatedActions_->refresh();

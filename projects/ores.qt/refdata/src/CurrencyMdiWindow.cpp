@@ -40,7 +40,6 @@
 #include <QToolBar>
 #include <QUrl>
 #include <QtConcurrent>
-#include <QtCore/QTimer>
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QHBoxLayout>
@@ -265,10 +264,8 @@ CurrencyMdiWindow::CurrencyMdiWindow(ClientManager* clientManager,
                 this,
                 &CurrencyMdiWindow::onConnectionStateChanged);
 
-        if (clientManager_->isLoggedIn()) {
-            // Defer visibility check to after event loop processes
-            QTimer::singleShot(0, this, [this]() { settingGatedActions_->refresh(); });
-        }
+        if (clientManager_->isLoggedIn())
+            settingGatedActions_->refresh();
     }
 
     updateActionStates();

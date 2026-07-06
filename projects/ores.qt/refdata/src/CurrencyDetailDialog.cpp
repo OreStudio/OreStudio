@@ -40,7 +40,6 @@
 #include <QMetaObject>
 #include <QPainter>
 #include <QPixmap>
-#include <QTimer>
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QtConcurrent>
@@ -242,15 +241,12 @@ void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
     if (clientManager_) {
         settingGatedActions_ = new SettingGatedActionController(clientManager_, this);
         settingGatedActions_->registerAction(
-            generateAction_, QString::fromStdString(std::string{synthetic_generation_flag}));
+            generateAction_,
+            QString::fromStdString(std::string{synthetic_generation_flag}),
+            [this]() { return !isReadOnly_; });
 
-        // If already logged in, check flag now (deferred: let the event loop process first)
-        if (clientManager_->isLoggedIn()) {
-            QTimer::singleShot(100, this, [this]() {
-                if (!isReadOnly_)
-                    settingGatedActions_->refresh();
-            });
-        }
+        if (clientManager_->isLoggedIn())
+            settingGatedActions_->refresh();
 
         // Populate lookup combos if already connected
         if (clientManager_->isConnected()) {

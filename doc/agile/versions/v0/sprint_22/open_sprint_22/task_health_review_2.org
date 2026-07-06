@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_22:sprint_22:v0:
 #+owner: marco
 #+branch: feature/verify-qt-counterparty-v2
-#+pr:
+#+pr: 1444
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-05
@@ -53,7 +53,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1444][#1444]] | [agile] Sprint 22 health review 2 + ccache support + state-drift fixes |
 
 * Review
 

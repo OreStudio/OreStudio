@@ -8,7 +8,7 @@
 #+filetags: :product:refdata:commissioning:book:codegen:sprint_22:v0:commission_book:
 #+owner: marco
 #+branch: feature/sync-cpp-core-codegen-book
-#+pr:
+#+pr: 1449
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1449][#1449]] | [ores.refdata,ores.qt,ores.codegen] Sync C++ core codegen output for book |
 
 * Review
 

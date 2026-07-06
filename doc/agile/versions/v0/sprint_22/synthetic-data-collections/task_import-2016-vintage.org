@@ -35,11 +35,11 @@ straightforward.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Unblocked — [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] and [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][the duplicate-key fix]] are both merged; =marketdata import= against =Legacy/Example_56= now works cleanly. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the import against a real environment and verify acceptance. |
+| Next         | Nothing. |
 | Last touched | 2026-07-05                               |
 
 * Acceptance
@@ -103,3 +103,37 @@ fixing(s)= with 103 duplicate warnings, no errors.
 |   |                 |      |          |       |
 
 * Result
+
+DB recreated fresh, Barclays tenant/party provisioned (GLEIF bundle,
+81 parties), services started. Ran =marketdata import= against
+=Legacy/Example_56/Input/market.txt=: =✓ Imported 176 series, 7777
+observation(s), 0 fixing(s)= with the expected 103 duplicate-key
+warnings, no errors.
+
+Verified via SQL (=ores_marketdata_market_series_tbl= /
+=ores_marketdata_market_observations_tbl=, current rows only —
+=valid_to = ores_utility_infinity_timestamp_fn()=), all dated
+=2016-02-05=, =source = 'ore.reference'=, =point_id = 'SPOT'=:
+
+| Pair    | Series qualifier | Value             |
+|---------+-------------------+--------------------|
+| EURUSD  | EUR/USD           | 1.132337 (exact)   |
+| GBPUSD  | USD/GBP           | 1.394610179594994  |
+| EURCHF  | EUR/CHF           | 1.125046           |
+| USDCHF  | USD/CHF           | 1.006480623903378  |
+| EURJPY  | EUR/JPY           | 128.15046          |
+
+GBPUSD is stored as series =USD/GBP= (the known key-order quirk —
+value is the EUR-cross-derived GBP/USD rate, not USD-in-GBP),
+consistent with the story's =* Decisions=. EUR/USD ÷ EUR/GBP
+(=1.132337 / 0.811938 ≈ 1.3946=) matches the stored =USD/GBP= value,
+confirming it is correct.
+
+Confirmed re-runnability: ran the same import a second time —
+=✓ Imported 0 series, 7777 observation(s), 0 fixing(s)=, no errors.
+Observation table is bitemporal: the first run's 7777 rows were
+closed out (=valid_to= set) and 7777 fresh current rows written; no
+duplicate *current* rows, and EUR/USD's current value is still
+exactly =1.132337=.
+
+All acceptance criteria met.

@@ -8,7 +8,7 @@
 #+filetags: :commission_party:sprint_22:v0:qt:
 #+owner: marco
 #+branch: feature/appraise-party-all-layers
-#+pr:
+#+pr: 1450
 #+blocked_on: Needs a dedicated follow-up QA session to drive history dialog, delete, and cross-session eventing through the Qt client.
 #+blocked_since: 2026-07-06
 #+created: 2026-07-04
@@ -87,7 +87,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 1450 | [refdata,qt] Appraise party across all layers; hierarchy facet; Qt save-crash fixes |
 
 * Review
 

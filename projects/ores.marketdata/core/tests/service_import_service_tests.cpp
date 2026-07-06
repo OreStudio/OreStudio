@@ -18,6 +18,8 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.testing/database_helper.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -79,4 +81,60 @@ TEST_CASE("import_with_duplicates_are_errors_skips_only_the_affected_section", t
     // errored market-data section.
     CHECK(resp.observation_count == 0);
     CHECK(resp.fixing_count == 1);
+}
+
+TEST_CASE("import_defaults_point_id_to_spot_for_scalar_series", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    import_service svc(h.context());
+    ores::marketdata::repository::market_series_repository series_repo;
+    ores::marketdata::repository::market_observations_repository obs_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 FX/RATE/EUR/USD 1.132337\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    REQUIRE(resp.observation_count == 1);
+
+    const auto series = series_repo.read_latest_by_type(h.context(), "FX", "RATE", "EUR/USD");
+    REQUIRE(series.size() == 1);
+    CHECK(series.front().is_scalar);
+
+    const auto observations = obs_repo.read_latest(h.context(), series.front().id);
+    REQUIRE(observations.size() == 1);
+    CHECK(observations.front().point_id == "SPOT");
+}
+
+TEST_CASE("import_leaves_point_id_empty_for_non_scalar_series_with_short_key", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    import_service svc(h.context());
+    ores::marketdata::repository::market_series_repository series_repo;
+    ores::marketdata::repository::market_observations_repository obs_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    // IR_SWAP has qualifier_depth 3 (currency/index_tenor/fixed_freq), so a
+    // key with only 2 qualifier segments is short: decompose_key treats it
+    // as a malformed/no-point_id key (not a scalar quote), and the import
+    // must not mislabel it as "SPOT".
+    req.market_data_content = "20160205 IR_SWAP/RATE/EUR/2D/1D 0.01\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    REQUIRE(resp.observation_count == 1);
+
+    const auto series = series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "EUR/2D/1D");
+    REQUIRE(series.size() == 1);
+    CHECK_FALSE(series.front().is_scalar);
+
+    const auto observations = obs_repo.read_latest(h.context(), series.front().id);
+    REQUIRE(observations.size() == 1);
+    CHECK(observations.front().point_id.empty());
 }

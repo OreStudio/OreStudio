@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 4B43E9AF-8EFC-4FB1-BDFD-7A79FFB86249
+:END:
+#+title: No cycle guard in hierarchy CTEs and build_tree()
+#+description: PR #1450's review (4 independent Claude runs) consistently flagged: the recursive hierarchy CTEs (party/counterparty *_hierarchy_fn, and the codegen twin in sql_schema_domain_entity_create.mustache) and ores::utility::domain::build_tree() have no cycle guard. A parent_id cycle (A's parent is B, B's parent is A, no external root) would either spin the recursive CTE until Postgres's safety net kicks in, or silently drop both nodes from build_tree()'s output forest (neither qualifies as a root). Low severity given DB-level one-root-per-tenant conventions constrain real data, but worth a defensive fix (cycle detection in the CTE, and detecting unreached ids in build_tree to promote them to extra roots like the existing orphan-handling guarantee) plus a test case in domain_hierarchy_tests.cpp.
+#+type: capture
+#+level: cross
+#+filetags: :hierarchy:codegen:sql:party:counterparty:robustness:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

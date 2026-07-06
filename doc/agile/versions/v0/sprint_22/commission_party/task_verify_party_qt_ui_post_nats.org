@@ -93,6 +93,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Hierarchy CTEs / build_tree() have no cycle guard | ores.utility/src/domain/hierarchy.cpp, refdata_party_functions_create.sql | Deferred | Low severity (one-root-per-tenant convention constrains real data); filed as backlog capture doc/agile/product_backlog/inbox/hierarchy-cycle-guard.org |
+| 2 | 4 review passes, no line comments, no other blocking findings | — | Accepted | CI green; rebased onto main; merging |
 
 * Result

@@ -1,0 +1,61 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.orgmode Component (planned — currently a codegen stub)
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace orgmode #F2F2F2 {
+        namespace domain #FEFECE {
+            class document <<struct>> {
+                +keywords : std::vector<keyword>
+                +properties : std::map<std::string, std::string>
+                +headings : std::vector<heading>
+            }
+            class heading <<struct>> {
+                +level : unsigned int
+                +title : std::string
+                +todo_keyword : std::string
+                +body : std::vector<block>
+                +children : std::vector<heading>
+            }
+            class link <<struct>> {
+                +target_id : std::string
+                +text : std::string
+            }
+            document o-- heading
+            heading o-- link
+        }
+        namespace parser #FEFECE {
+            class parse <<function>> {
+                +parse(path: std::filesystem::path) : domain::document
+            }
+            parse ..> domain::document : produces
+        }
+        namespace indexing #FEFECE {
+            class resolver <<class>> {
+                +resolve(link: domain::link) : resolved_target
+            }
+            resolver ..> domain::link : consumes
+        }
+    }
+}
+
+@enduml

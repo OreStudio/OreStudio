@@ -8,7 +8,7 @@
 #+filetags: :org:codegen:shell:testing:sprint_22:v0:
 #+created: 2026-07-06
 #+updated: 2026-07-06
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -59,18 +59,19 @@ Scope:
   =sprint show= or =doc show= shell command), from a future =ores.qt=
   panel, or from any other C++ consumer. Qt is a later, separate story
   building *on* this component, not part of it.
-- *Codegen*: scaffold the component itself via
-  =codegen-add-component= (api/core/service split, following this
-  project's usual component layout), and use codegen for the
-  structured parts of the domain model (the document-element C++
-  types) wherever the shape is regular enough — hand-write only the
-  actual parsing/traversal logic.
+- *Codegen*: scaffold the component itself via codegen as a *simple/
+  flat* component — no api/core/service split, per
+  [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]]'s
+  guidance for infrastructure libraries with no DB/service concern —
+  and use codegen for the structured parts of the domain model (the
+  document-element C++ types) wherever the shape is regular enough —
+  hand-write only the actual parsing/traversal logic.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -79,9 +80,10 @@ Scope:
 
 * Acceptance
 
-- [ ] New =ores.orgmode= component exists, scaffolded via
-  =codegen-add-component=, following the project's api/core/service
-  layout.
+- [ ] New =ores.orgmode= component exists, scaffolded via codegen as a
+  simple/flat component (=projects/ores.orgmode/= with =include=,
+  =src=, =tests=, =modeling= directly inside — no api/core/service
+  split).
 - [ ] A C++ document structure captures, at minimum: =#+type:= and
   other frontmatter keywords, the =:ID:= property, headings (with
   nesting), plain-text/list/table body content, and =id:= links (target
@@ -113,7 +115,7 @@ Scope:
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A7BB331B-CF2E-4072-92D0-CF0C13699625][Scaffold ores.orgmode component]] | BACKLOG | | | Scaffold the ores.orgmode component (api/core/service split) via codegen-add-component, following this project's usual component layout, ready for the parser/link-resolution implementation. |
+| [[id:A7BB331B-CF2E-4072-92D0-CF0C13699625][Scaffold ores.orgmode component]] | DONE | 2026-07-06 | 2026-07-06 | Scaffold the ores.orgmode component (simple/flat component, per component_architecture.org — no API/service split needed for a pure parsing library) via codegen, following this project's usual component layout, ready for the parser/link-resolution implementation. |
 | [[id:A195FA1D-DEEE-4C9C-B618-2450AFF9F160][Implement the org-mode parser, ported from dogen.org]] | BACKLOG | | | Port and adapt dogen.org's entity model and parser (~/Development/masd/dogen.local1/projects/dogen.org) to ores.orgmode's conventions: document/headline/drawer/section/block C++ types, frontmatter and PROPERTIES parsing, and new id: link entities that dogen.org doesn't have. |
 | [[id:70B9F457-3490-4669-8F80-645979F6D0B9][Implement link resolution via the org-roam SQLite index]] | BACKLOG | | | Implement id: link resolution by querying the existing org-roam SQLite index that compass index already builds and maintains — read-only, no second index built or maintained by ores.orgmode. |
 | [[id:E6B194A7-655E-4B23-AC96-7CA1596CACF3][Corpus-wide parse-to-JSON test]] | BACKLOG | | | Add a test that parses every .org doc in the repo and dumps each to JSON: a scale/robustness check against the real corpus, and a debuggable, diffable view of what the parser extracts from any given doc. |

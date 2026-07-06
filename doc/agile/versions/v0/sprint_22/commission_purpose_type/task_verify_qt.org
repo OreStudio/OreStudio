@@ -8,7 +8,7 @@
 #+filetags: :commission_purpose_type:sprint_22:v0:
 #+owner: marco
 #+branch: feature/commission-purpose-type
-#+pr:
+#+pr: 1451
 #+blocked_on: 9763FBBF-7912-4EA2-A544-67E90EA27882
 #+blocked_since: 2026-07-06
 #+created: 2026-07-02
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1451][#1451]] | [refdata] Migrate purpose_type to ores.codegen.entity; fix codegen template bugs |
 
 * Review
 

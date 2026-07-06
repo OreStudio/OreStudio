@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: A195FA1D-DEEE-4C9C-B618-2450AFF9F160
+:END:
+#+title: Task: Implement the org-mode parser, ported from dogen.org
+#+description: Port and adapt dogen.org's entity model and parser (~/Development/masd/dogen.local1/projects/dogen.org) to ores.orgmode's conventions: document/headline/drawer/section/block C++ types, frontmatter and PROPERTIES parsing, and new id: link entities that dogen.org doesn't have.
+#+type: task
+#+level: s1
+#+filetags: :org:parser:dogen:ores_orgmode_component:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Port =dogen.org='s entity model and parser
+(=~/Development/masd/dogen.local1/projects/dogen.org=) into
+=ores.orgmode=, adapted to this project's current codegen/component
+conventions (its getter/setter style predates them). Reuse the
+document/headline/drawer/section/block shape as-is where it fits;
+add what it's missing — a first-class =id:= link entity (target UUID +
+display text) and a =#+type:= field surfaced on the document, since
+=dogen.org= has no notion of either. Scope the parser to the subset of
+org syntax this project's agile/knowledge docs actually use (frontmatter
+=#+= keywords, =:PROPERTIES:= drawer, headings, plain paragraphs,
+lists, tables, links) — not full org-mode.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-06                               |
+
+* Acceptance
+
+- [ ] Document/headline/drawer/section/block C++ types exist in
+  =ores.orgmode=, ported from =dogen.org= and adapted to current
+  conventions.
+- [ ] Parser reads frontmatter =#+= keywords (including =#+type:=),
+  the =:PROPERTIES:= drawer (=:ID:= in particular), headings with
+  nesting, plain paragraphs, lists, tables, and =[[id:UUID][text]]=
+  links into that structure.
+- [ ] Parsing a story, a task, a sprint, and a knowledge doc from this
+  repo produces output cross-checked against what =compass show=
+  reports for the same doc.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

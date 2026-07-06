@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 70B9F457-3490-4669-8F80-645979F6D0B9
+:END:
+#+title: Task: Implement link resolution via the org-roam SQLite index
+#+description: Implement id: link resolution by querying the existing org-roam SQLite index that compass index already builds and maintains — read-only, no second index built or maintained by ores.orgmode.
+#+type: task
+#+level: s1
+#+filetags: :org:sqlite:indexing:link-resolution:ores_orgmode_component:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Given a parsed document's outgoing =id:= links, resolve each one
+against the existing org-roam SQLite index that =compass index= already
+builds and maintains — return the resolved target's path/title/type
+(or a clear "not found" for a dangling link, without crashing).
+=ores.orgmode= reads this database read-only; it does not build or
+maintain a second index. This is what lets a caller walk task → story
+→ sprint (or any other =id:= link) without re-deriving the link graph
+compass already has.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-06                               |
+
+* Acceptance
+
+- [ ] Given a parsed document, resolve its outgoing =id:= links against
+  the org-roam SQLite index and return the target's path/title/type.
+- [ ] A dangling link (no matching row in the index) is handled
+  cleanly — no crash, a clear "unresolved" result.
+- [ ] No new index is built or maintained by =ores.orgmode= — it only
+  reads the existing database =compass index= produces.
+- [ ] A minimal =ores.shell= command (e.g. =sprint show= or =doc show=)
+  demonstrates parsing a doc and following at least one resolved link,
+  proving the component works end-to-end outside Qt.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

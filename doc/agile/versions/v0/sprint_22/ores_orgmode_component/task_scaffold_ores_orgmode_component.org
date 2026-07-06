@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: A7BB331B-CF2E-4072-92D0-CF0C13699625
+:END:
+#+title: Task: Scaffold ores.orgmode component
+#+description: Scaffold the ores.orgmode component (api/core/service split) via codegen-add-component, following this project's usual component layout, ready for the parser/link-resolution implementation.
+#+type: task
+#+level: s1
+#+filetags: :org:codegen:scaffold:ores_orgmode_component:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run =codegen-add-component= to scaffold =ores.orgmode= with this
+project's standard api/core/service split and CMake wiring, so the
+parser/link-resolution work in the following tasks has somewhere to
+land. No parsing logic here — just a building, empty-but-wired
+component.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-06                               |
+
+* Acceptance
+
+- [ ] =ores.orgmode= exists as a component with api/core/service
+  layout, following the same CMake/component conventions as e.g.
+  =ores.refdata=.
+- [ ] Component builds clean (empty implementation) and is wired into
+  the top-level build.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: E6B194A7-655E-4B23-AC96-7CA1596CACF3
+:END:
+#+title: Task: Corpus-wide parse-to-JSON test
+#+description: Add a test that parses every .org doc in the repo and dumps each to JSON: a scale/robustness check against the real corpus, and a debuggable, diffable view of what the parser extracts from any given doc.
+#+type: task
+#+level: s1
+#+filetags: :org:testing:json:ores_orgmode_component:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a test that walks every =.org= document in the repo, parses each
+with =ores.orgmode=, and dumps the resulting structure to JSON. This is
+a scale/robustness check against the real corpus (nothing should crash
+or hang the parser on any doc actually in the repo, not just curated
+fixtures) and, as a byproduct, gives a debuggable, diffable view of
+what the parser extracts from any given doc — useful on its own while
+developing or debugging the parser, independent of the test's
+pass/fail result.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-06                               |
+
+* Acceptance
+
+- [ ] One test (not per-doc) parses every =.org= file in the repo and
+  serializes each parsed document to JSON.
+- [ ] Test fails loudly (with the offending file path) if any doc
+  crashes, hangs, or throws during parsing.
+- [ ] JSON output is written somewhere inspectable (a build-output
+  directory) so it's usable as a debugging aid, not just a pass/fail
+  gate.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

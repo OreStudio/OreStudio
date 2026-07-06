@@ -121,7 +121,10 @@ Checked every real consumer before touching anything:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | validate_fn missing existence check (soft-FK regression) | refdata_business_day_convention_types_create.sql | Accepted | Fixed in 2f155a7ff. Root cause: codegen bug (domain_entity SQL-create template never computes scope flags) — captured separately, hand-fixed here. |
+| 2 | Duplicate change_reason_code validation call | refdata_business_day_convention_types_create.sql | Accepted | Fixed in 2f155a7ff. |
+| 3 | Drop script leaves validate_fn orphaned | refdata_business_day_convention_types_drop.sql | Accepted | Fixed in 2f155a7ff. |
+| 4 | Generator double-increments synthetic counter (nit) | business_day_convention_type_generator.cpp | Accepted | Fixed in 2f155a7ff. |
 
 * Result
 

@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.refdata.api/generators/party_identifier_generator.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.refdata.api/domain/party_id_scheme_constants.hpp"
-#include "ores.refdata.api/generators/party_identifier_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -49,8 +49,7 @@ generate_synthetic_party_identifier(utility::generation::generation_context& ctx
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    r.id_scheme =
-        std::string(id_scheme_constants::all[idx % id_scheme_constants::all.size()]);
+    r.id_scheme = std::string(id_scheme_constants::all[idx % id_scheme_constants::all.size()]);
     r.id_value = std::string(faker::string::alphanumeric(20)) + "-" + std::to_string(idx);
     r.description = std::string("Test identifier");
     r.modified_by = modified_by;

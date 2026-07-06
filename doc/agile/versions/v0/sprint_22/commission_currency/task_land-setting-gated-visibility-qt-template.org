@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/land-setting-gated-visibility-qt-template
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,7 +31,7 @@ plan (task 6E0CD16E).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -48,9 +48,64 @@ plan (task 6E0CD16E).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Current state (investigated 2026-07-06)
+
+The mechanism (=setupGenerateAction=/=updateGenerateActionVisibility=/
+=onSystemSettingNotification=) is duplicated near-verbatim in both
+=CurrencyMdiWindow= and =CurrencyDetailDialog=: subscribe to the
+=system_setting_changed_event= NATS event on login/reconnect, listen
+for =ClientManager::notificationReceived=, and on either a
+notification or an explicit refresh, run a =QtConcurrent= task issuing
+=variability::messaging::list_settings_request= and setting the
+action's visibility from the (single) matching setting's boolean
+value. ~50 lines duplicated per file, entirely generic apart from the
+setting name and which =QAction*= it gates.
+
+** Design
+
+Extract a reusable, non-templated helper — =SettingGatedActionController=
+(=QObject=, =ores.qt/api=, same "generalise the wiring, not the entity"
+shape as =ImportEntityDialog=) — rather than generating the ~50 lines
+per action in mustache:
+
+- =explicit SettingGatedActionController(ClientManager*, QObject* parent = nullptr)=
+  wires the login/reconnect/notification subscription once, internally.
+- =void registerAction(QAction* action, QString setting_name)= — adds
+  an action to gate; one controller instance can gate several actions
+  off different settings, so a single NATS subscription and a single
+  =list_settings_request= batch-check covers all of them (avoids N
+  separate fetches for N gated actions).
+- =void refresh()= — force a re-check of every registered action
+  (called after login, and by the caller if already logged in at
+  construction time).
+- Internally: on a =system_setting_changed_event= notification, only
+  re-checks if the changed setting name is one of the registered ones;
+  on =refresh()=, one =list_settings_request=, then set every
+  registered action's visibility from the matching setting.
+
+Codegen side: a new "Setting-gated actions" Qt table section (one row
+per action: =action= field name, =setting= name — mirrors the shape of
+the existing "Icon columns (Qt model)" table rather than a single
+boolean flag, since the acceptance criterion is genericity over *any*
+action, potentially more than one per entity). =has_setting_gated_actions=
+is derived (non-empty table), same pattern as =has_flag_icon=.
+mdi_window and detail_dialog templates both get the same
+={{#has_setting_gated_actions}}= block: construct the controller,
+=registerAction= per row, wire =loggedIn=/=reconnected= to =refresh()=.
+
+** Steps
+
+1. Add =SettingGatedActionController= to =ores.qt/api=.
+2. Migrate currency's =CurrencyMdiWindow= and =CurrencyDetailDialog= to
+   use it in place of the duplicated hand-written mechanism.
+3. Add the "Setting-gated actions" table + derived
+   =has_setting_gated_actions= flag (org_loader.py) and the
+   corresponding mustache sections in both
+   =cpp_qt_mdi_window.*.mustache= and =cpp_qt_detail_dialog.*.mustache=.
+4. Flip it on for currency (generateAction_ /
+   system.synthetic_data_generation, in both templates); regenerate;
+   diff against the migrated hand-written version from step 2.
+5. Build passes; acceptance met.
 
 * Notes
 

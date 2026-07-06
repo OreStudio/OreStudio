@@ -59,7 +59,9 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale Now/Next narrative text on 3 stories flipped to STARTED | fix_orphan_docs_and_tag_taxonomy, codegen-unification-blockers, qt-upgrade-6.9 story.org | Accepted | Fixed in c005d5a98; also fixed commission_party_status which had the same issue |
+| 2 | Commit message claims stories "flagged by health review 2" but fixes a different set; 3/5 flagged stories remain drifted | task_health_review_2.org | Accepted | Added follow-up note in c005d5a98 clarifying scope: only party_status overlaps; book/purpose_type/composite-hierarchy-widgets need fixing from their own worktrees |
+| 3 | ccache wrapper change is comment-only; PR summary phrasing overstates it | build/scripts/compiler_cache_wrapper.sh | Declined | Minor nit, not worth a follow-up commit |
 
 * Result
 

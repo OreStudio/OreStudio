@@ -21,7 +21,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.refdata/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>

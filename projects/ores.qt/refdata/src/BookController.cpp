@@ -135,17 +135,35 @@ void BookController::onAddNewRequested() {
     showAddWindow();
 }
 
+void BookController::openAdd() {
+    showAddWindow();
+}
+void BookController::openAddWithParent(boost::uuids::uuid parentPortfolioId) {
+    showAddWindow(parentPortfolioId);
+}
+void BookController::openEdit(const refdata::domain::book& book) {
+    showDetailWindow(book);
+}
+void BookController::openHistory(const refdata::domain::book& book) {
+    showHistoryWindow(book);
+}
+
 void BookController::onShowHistory(const refdata::domain::book& book) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << book.name;
     showHistoryWindow(book);
 }
 
-void BookController::showAddWindow() {
+void BookController::showAddWindow(boost::uuids::uuid parentPortfolioId) {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new book";
 
     auto* detailDialog = new BookDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    if (!parentPortfolioId.is_nil()) {
+        refdata::domain::book prefilled;
+        prefilled.parent_portfolio_id = parentPortfolioId;
+        detailDialog->setBook(prefilled);
+    }
     detailDialog->setCreateMode(true);
 
     connect(detailDialog, &BookDetailDialog::statusMessage, this, &BookController::statusMessage);

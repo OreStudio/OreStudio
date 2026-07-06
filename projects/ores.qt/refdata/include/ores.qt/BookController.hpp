@@ -24,7 +24,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.refdata/domain/book.hpp"
+#include "ores.refdata.api/domain/book.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
 
@@ -62,6 +62,11 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+    void openAdd();
+    void openAddWithParent(boost::uuids::uuid parentPortfolioId);
+    void openEdit(const refdata::domain::book& book);
+    void openHistory(const refdata::domain::book& book);
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
@@ -77,7 +82,7 @@ private slots:
     void onOpenVersion(const refdata::domain::book& book, int versionNumber);
 
 private:
-    void showAddWindow();
+    void showAddWindow(boost::uuids::uuid parentPortfolioId = {});
     void showDetailWindow(const refdata::domain::book& book);
     void showHistoryWindow(const refdata::domain::book& book);
 

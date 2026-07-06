@@ -19,7 +19,7 @@
  */
 #include "ores.qt/BookHistoryDialog.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.refdata/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ui_BookHistoryDialog.h"
 #include <boost/uuid/uuid_io.hpp>
 

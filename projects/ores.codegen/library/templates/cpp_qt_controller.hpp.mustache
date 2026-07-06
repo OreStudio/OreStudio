@@ -66,6 +66,15 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+{{#domain_entity.qt.has_explorer_api}}
+    void openAdd();
+{{#domain_entity.qt.has_parent_relationship}}
+    void openAddWithParent(boost::uuids::uuid {{domain_entity.qt.parent_id_field_camel}});
+{{/domain_entity.qt.has_parent_relationship}}
+    void openEdit(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+    void openHistory(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+{{/domain_entity.qt.has_explorer_api}}
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
@@ -82,7 +91,12 @@ private slots:
                        int versionNumber);
 
 private:
+{{#domain_entity.qt.has_parent_relationship}}
+    void showAddWindow(boost::uuids::uuid {{domain_entity.qt.parent_id_field_camel}} = {});
+{{/domain_entity.qt.has_parent_relationship}}
+{{^domain_entity.qt.has_parent_relationship}}
     void showAddWindow();
+{{/domain_entity.qt.has_parent_relationship}}
     void showDetailWindow(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
 {{#domain_entity.qt.has_uuid_primary_key}}
     void showHistoryWindow(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});

@@ -23,7 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
-#include "ores.refdata/domain/book.hpp"
+#include "ores.refdata.api/domain/book.hpp"
 #include <boost/uuid/uuid.hpp>
 
 namespace Ui {

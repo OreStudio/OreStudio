@@ -2039,6 +2039,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 qt['has_badge_columns'] = any(
                     c.get('is_badge') for c in qt['columns']
                 )
+            # has_explorer_api opts a controller into the public
+            # openAdd()/openEdit()/openHistory() surface a sibling explorer
+            # window (e.g. PortfolioExplorer, OrgExplorer) needs to drive it
+            # from outside. parent_entity_singular is an optional companion:
+            # when set, the controller additionally gets
+            # openAddWithParent(boost::uuids::uuid parent<Pascal>Id) for
+            # explorers that create this entity nested under a parent node.
+            parent_entity_singular = qt.get('parent_entity_singular')
+            qt['has_parent_relationship'] = bool(
+                qt.get('has_explorer_api') and parent_entity_singular
+            )
+            if qt['has_parent_relationship']:
+                parent_pascal = snake_to_pascal(parent_entity_singular)
+                qt['parent_entity_pascal'] = parent_pascal
+                qt.setdefault('parent_id_field_camel', f'parent{parent_pascal}Id')
+                qt.setdefault('parent_id_field', f'parent_{parent_entity_singular}_id')
             # Add iterator variable reference for templates
             qt['item_var'] = qt.get('item_var', 'item')
             # Auto-generate default detail_fields if not provided

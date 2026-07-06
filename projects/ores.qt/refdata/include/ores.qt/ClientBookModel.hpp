@@ -25,7 +25,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.refdata/domain/book.hpp"
+#include "ores.refdata.api/domain/book.hpp"
 #include <QFutureWatcher>
 #include <vector>
 

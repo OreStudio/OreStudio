@@ -245,9 +245,9 @@ Basel III/IV classification.
 
 ** Qt
 :PROPERTIES:
-:domain_include:          ores.refdata/domain/book.hpp
+:domain_include:          ores.refdata.api/domain/book.hpp
 :domain_class:            refdata::domain::book
-:protocol_include:        ores.refdata/messaging/book_protocol.hpp
+:protocol_include:        ores.refdata.api/messaging/book_protocol.hpp
 :collection_name:         books
 :item_var:                book
 :key_field:               name
@@ -265,6 +265,8 @@ Basel III/IV classification.
 :history_request_class:   refdata::messaging::get_book_history_request
 :history_response_class:  refdata::messaging::get_book_history_response
 :history_message_type:    get_book_history_request
+:has_explorer_api:        true
+:parent_entity_singular:  portfolio
 :settings_group:          BookListWindow
 :window_title:            Books
 :icon:                    Book

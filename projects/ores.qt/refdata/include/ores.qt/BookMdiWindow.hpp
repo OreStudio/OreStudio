@@ -25,7 +25,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.refdata/domain/book.hpp"
+#include "ores.refdata.api/domain/book.hpp"
 #include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolBar>

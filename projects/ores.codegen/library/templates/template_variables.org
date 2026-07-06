@@ -210,6 +210,12 @@ Variables for Qt model/view and dialog archetypes.
 | =spin_max=            | Maximum value for a spin box.                            | =9999=              |
 | =is_already_optional= | True if the underlying C++ field is already optional.    | =true=              |
 | =has_change_reason_cache= | True if the controller wires a =ChangeReasonCache= into its detail dialogs (authored knob; see variability model). | =true= |
+| =has_explorer_api=    | True if the controller exposes =openAdd=/=openEdit=/=openHistory= for a sibling explorer window to drive it (authored knob; see variability model). | =true= |
+| =parent_entity_singular= | Authored knob naming this entity's parent entity; drives =has_parent_relationship= and the derived fields below. | =portfolio= |
+| =has_parent_relationship= | Derived: true iff =has_explorer_api= and =parent_entity_singular= are both set. Gates =openAddWithParent= generation. | =true= |
+| =parent_entity_pascal= | Derived PascalCase of =parent_entity_singular=. | =Portfolio= |
+| =parent_id_field_camel= | Derived constructor-parameter name for the parent id: =parent<Pascal>Id=. | =parentPortfolioId= |
+| =parent_id_field=     | Derived snake_case domain field the parent id is written into: =parent_<singular>_id=. | =parent_portfolio_id= |
 | =image_linking=       | True if the Qt view links to an image asset.             | =true=              |
 | =list_filter_column=  | Column used for live filtering in list views.            | =name=              |
 | =filter_column=       | Alias for list filter column.                            | =name=              |

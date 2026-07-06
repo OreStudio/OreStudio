@@ -504,6 +504,12 @@ def run(argv, project_root: Path) -> int:
 
     db_host = existing.get("ORES_DB_HOST") or "localhost"
 
+    # sccache config: dir and size are shared across all worktrees (one
+    # server, one cache), so every checkout should agree on the same values.
+    sccache_dir = (existing.get("SCCACHE_DIR")
+                   or str(Path.home() / ".cache" / "sccache"))
+    sccache_cache_size = existing.get("SCCACHE_CACHE_SIZE") or "50G"
+
     # SSH agent directory (optional): compass.sh exports SSH_AUTH_SOCK from
     # the sole socket in this directory when the calling environment does not
     # provide a live one (e.g. sandboxed LLM sessions).
@@ -575,6 +581,18 @@ ORES_BASE_PORT={base_port}
         out.append(f"ORES_PRESET={preset}\n")
     out.append(f"""\
 ORES_DATABASE_NAME={db_name}
+
+# ---------------------------------------------------------------------------
+# sccache: cache dir + size are shared across all worktrees — one server, one
+# cache. build/scripts/sccache_wrapper.sh reads these and exports them before
+# the server first starts, so a change only takes effect on the next build
+# after a server restart:
+#   sccache --stop-server
+# Change here and re-run compass env configure everywhere to keep worktrees
+# in sync, or edit directly.
+# ---------------------------------------------------------------------------
+SCCACHE_DIR={sccache_dir}
+SCCACHE_CACHE_SIZE={sccache_cache_size}
 
 # ---------------------------------------------------------------------------
 # SSH agent directory (optional) — compass.sh exports SSH_AUTH_SOCK from the

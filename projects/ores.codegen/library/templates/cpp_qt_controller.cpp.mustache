@@ -154,6 +154,26 @@ void {{domain_entity.entity_pascal}}Controller::onAddNewRequested() {
     showAddWindow();
 }
 
+{{#domain_entity.qt.has_explorer_api}}
+void {{domain_entity.entity_pascal}}Controller::openAdd() {
+    showAddWindow();
+}
+{{#domain_entity.qt.has_parent_relationship}}
+void {{domain_entity.entity_pascal}}Controller::openAddWithParent(
+    boost::uuids::uuid {{domain_entity.qt.parent_id_field_camel}}) {
+    showAddWindow({{domain_entity.qt.parent_id_field_camel}});
+}
+{{/domain_entity.qt.has_parent_relationship}}
+void {{domain_entity.entity_pascal}}Controller::openEdit(
+    const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}) {
+    showDetailWindow({{domain_entity.qt.item_var}});
+}
+void {{domain_entity.entity_pascal}}Controller::openHistory(
+    const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}) {
+    showHistoryWindow({{domain_entity.qt.item_var}});
+}
+{{/domain_entity.qt.has_explorer_api}}
+
 {{#domain_entity.qt.has_uuid_primary_key}}
 void {{domain_entity.entity_pascal}}Controller::onShowHistory(
     const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}) {
@@ -169,7 +189,13 @@ void {{domain_entity.entity_pascal}}Controller::onShowHistory(
 }
 {{/domain_entity.qt.has_uuid_primary_key}}
 
+{{#domain_entity.qt.has_parent_relationship}}
+void {{domain_entity.entity_pascal}}Controller::showAddWindow(
+    boost::uuids::uuid {{domain_entity.qt.parent_id_field_camel}}) {
+{{/domain_entity.qt.has_parent_relationship}}
+{{^domain_entity.qt.has_parent_relationship}}
 void {{domain_entity.entity_pascal}}Controller::showAddWindow() {
+{{/domain_entity.qt.has_parent_relationship}}
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new {{domain_entity.entity_singular_words}}";
 
     auto* detailDialog = new {{domain_entity.entity_pascal}}DetailDialog(mainWindow_);
@@ -182,6 +208,13 @@ void {{domain_entity.entity_pascal}}Controller::showAddWindow() {
 {{/domain_entity.qt.needs_image_cache}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+{{#domain_entity.qt.has_parent_relationship}}
+    if (!{{domain_entity.qt.parent_id_field_camel}}.is_nil()) {
+        {{domain_entity.qt.domain_class}} prefilled;
+        prefilled.{{domain_entity.qt.parent_id_field}} = {{domain_entity.qt.parent_id_field_camel}};
+        detailDialog->set{{domain_entity.entity_pascal_short}}(prefilled);
+    }
+{{/domain_entity.qt.has_parent_relationship}}
     detailDialog->setCreateMode(true);
 
     connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::statusMessage,

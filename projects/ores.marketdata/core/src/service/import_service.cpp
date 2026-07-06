@@ -116,13 +116,17 @@ import_service::import(const messaging::import_market_data_request& req) {
     repository::market_observations_repository obs_repo;
     repository::market_fixings_repository fixings_repo;
 
-    // Cache: (series_type, metric, qualifier) → series.id
+    // Cache: (series_type, metric, qualifier) → (series.id, is_scalar)
     using SeriesKey = std::tuple<std::string, std::string, std::string>;
-    std::map<SeriesKey, boost::uuids::uuid> series_cache;
+    struct series_info {
+        boost::uuids::uuid id;
+        bool is_scalar;
+    };
+    std::map<SeriesKey, series_info> series_cache;
 
     auto find_or_create_series = [&](const std::string& series_type,
                                      const std::string& metric,
-                                     const std::string& qualifier) -> boost::uuids::uuid {
+                                     const std::string& qualifier) -> series_info {
         const auto key = std::make_tuple(series_type, metric, qualifier);
         const auto it = series_cache.find(key);
         if (it != series_cache.end())
@@ -131,8 +135,9 @@ import_service::import(const messaging::import_market_data_request& req) {
         // Look up existing series in DB.
         const auto existing = series_repo.read_latest_by_type(ctx_, series_type, metric, qualifier);
         if (!existing.empty()) {
-            series_cache.emplace(key, existing.front().id);
-            return existing.front().id;
+            const series_info info{existing.front().id, existing.front().is_scalar};
+            series_cache.emplace(key, info);
+            return info;
         }
 
         // Create a new series.
@@ -155,9 +160,10 @@ import_service::import(const messaging::import_market_data_request& req) {
         s.change_commentary = "Imported from ORE market data file";
         series_repo.write(ctx_, s);
 
-        series_cache.emplace(key, s.id);
+        const series_info info{s.id, s.is_scalar};
+        series_cache.emplace(key, info);
         ++resp.series_count;
-        return s.id;
+        return info;
     };
 
     const auto on_duplicate = req.duplicates_are_errors ?
@@ -188,15 +194,20 @@ import_service::import(const messaging::import_market_data_request& req) {
             std::vector<domain::market_observation> observations;
             observations.reserve(data.size());
             for (const auto& d : data) {
-                const auto sid = find_or_create_series(d.series_type, d.metric, d.qualifier);
+                const auto series = find_or_create_series(d.series_type, d.metric, d.qualifier);
 
                 domain::market_observation obs;
                 obs.id = gen();
                 obs.tenant_id = ctx_.tenant_id();
                 obs.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
-                obs.series_id = sid;
+                obs.series_id = series.id;
                 obs.observation_datetime = std::chrono::sys_days{d.date};
-                obs.point_id = d.point_id.value_or("");
+                // Scalar series (FX spot, equity spot, ...) have no tenor/surface
+                // coordinate; point_id defaults to "SPOT" for those. Non-scalar
+                // series with a missing point_id (malformed/unrecognised key)
+                // keep the empty default rather than being mislabelled as spot.
+                obs.point_id =
+                    d.point_id.value_or(series.is_scalar ? "SPOT" : "");
                 obs.source = req.source;
                 obs.value = d.value;
                 observations.push_back(std::move(obs));
@@ -220,13 +231,13 @@ import_service::import(const messaging::import_market_data_request& req) {
             fixings.reserve(data.size());
             for (const auto& f : data) {
                 // Fixing series: series_type=FIXING, metric=RATE, qualifier=index_name
-                const auto sid = find_or_create_series("FIXING", "RATE", f.qualifier);
+                const auto series = find_or_create_series("FIXING", "RATE", f.qualifier);
 
                 domain::market_fixing fix;
                 fix.id = gen();
                 fix.tenant_id = ctx_.tenant_id();
                 fix.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
-                fix.series_id = sid;
+                fix.series_id = series.id;
                 fix.fixing_date = f.date;
                 fix.source = req.source;
                 fix.value = f.value;

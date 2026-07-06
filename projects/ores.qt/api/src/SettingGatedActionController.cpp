@@ -35,8 +35,9 @@ constexpr std::string_view system_setting_event_name =
 }
 
 SettingGatedActionController::SettingGatedActionController(ClientManager* client_manager,
-                                                            QObject* parent)
-    : QObject(parent), clientManager_(client_manager) {
+                                                           QObject* parent)
+    : QObject(parent)
+    , clientManager_(client_manager) {
 
     if (!clientManager_)
         return;
@@ -104,8 +105,8 @@ void SettingGatedActionController::refresh() {
                     if (!gated.action)
                         continue;
 
-                    const auto it = std::find_if(
-                        settings.begin(), settings.end(), [&gated](const auto& s) {
+                    const auto it =
+                        std::find_if(settings.begin(), settings.end(), [&gated](const auto& s) {
                             return s.name == gated.setting_name.toStdString();
                         });
 
@@ -117,17 +118,17 @@ void SettingGatedActionController::refresh() {
                     if (enabled && gated.guard && !gated.guard())
                         enabled = false;
                     gated.action->setVisible(enabled);
-                    BOOST_LOG_SEV(lg(), info) << "Action visibility for setting "
-                                              << gated.setting_name.toStdString()
-                                              << " set to: " << enabled;
+                    BOOST_LOG_SEV(lg(), info)
+                        << "Action visibility for setting " << gated.setting_name.toStdString()
+                        << " set to: " << enabled;
                 }
             });
     watcher->setFuture(future);
 }
 
 void SettingGatedActionController::onNotification(const QString& eventType,
-                                                   const QDateTime&,
-                                                   const QStringList& entityIds) {
+                                                  const QDateTime&,
+                                                  const QStringList& entityIds) {
     if (eventType != QString::fromStdString(std::string{system_setting_event_name}))
         return;
 

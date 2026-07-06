@@ -120,15 +120,19 @@ mdi_window and detail_dialog templates both get the same
   codegen for currency" reconciliation still being incremental,
   capability-by-capability.
 - =CurrencyDetailDialog='s =updateGenerateActionVisibility()= had an
-  extra rule the shared controller doesn't know about — hide in
-  read-only/history mode — preserved as-is via the pre-existing
-  unconditional =generateAction_->setVisible(false)= in =setReadOnly()=
-  (untouched) plus an =!isReadOnly_= guard around the one place that
-  calls =refresh()= after login. A live setting-change notification
-  arriving while a read-only history view happens to be open could
-  still transiently re-show the action (the controller has no
-  per-action read-only predicate) — a narrow edge case, not worth
-  complicating the shared abstraction for one caller.
+  extra rule the shared controller initially didn't know about — hide
+  in read-only/history mode, rechecked on *every* visibility update
+  including notification-triggered ones. The first cut of this task
+  only guarded the initial post-login check, which the PR review
+  round correctly flagged as a regression (a live setting-change
+  notification while a read-only history view was open could
+  transiently re-show the action). Resolved by adding an optional
+  =guard= predicate to =registerAction()=, ANDed with the setting's
+  value on every =refresh()= — =CurrencyDetailDialog= passes
+  =[this]{ return !isReadOnly_; }=, and the generic detail_dialog
+  template does the same with its own =readOnly_= member, so future
+  =has_setting_gated_actions= consumers get the same protection by
+  default. See PR #1446's review round for the full back-and-forth.
 - Verified via =codegen entity generate currency --address
   ores.cpp.qt --diff=: the has_setting_gated_actions-gated sections
   match the hand-migrated code modulo formatting. Did not adopt the

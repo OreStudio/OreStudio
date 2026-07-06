@@ -61,8 +61,7 @@ private:
     }
 
 public:
-    explicit SettingGatedActionController(ClientManager* client_manager,
-                                          QObject* parent = nullptr);
+    explicit SettingGatedActionController(ClientManager* client_manager, QObject* parent = nullptr);
 
     /**
      * @brief Registers an action to be gated by a boolean system setting.
@@ -78,9 +77,8 @@ public:
      * Re-evaluated on every refresh(), including ones triggered by a
      * live setting-change notification.
      */
-    void registerAction(QAction* action,
-                       const QString& setting_name,
-                       std::function<bool()> guard = {});
+    void
+    registerAction(QAction* action, const QString& setting_name, std::function<bool()> guard = {});
 
     /**
      * @brief Re-checks every registered action's visibility.

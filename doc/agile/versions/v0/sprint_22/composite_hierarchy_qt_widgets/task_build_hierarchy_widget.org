@@ -8,7 +8,7 @@
 #+filetags: :composite_hierarchy_qt_widgets:sprint_22:v0:
 #+owner: marco
 #+branch: feature/appraise-party-all-layers
-#+pr:
+#+pr: 1450
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -91,7 +91,7 @@ Verified: =ores.qt.api.lib= builds clean (MOC ran correctly for
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1450][#1450]] | [refdata,qt] Appraise party across all layers; hierarchy facet; Qt save-crash fixes |
 
 * Review
 

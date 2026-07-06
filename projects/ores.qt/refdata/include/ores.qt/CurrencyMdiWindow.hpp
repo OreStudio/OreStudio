@@ -25,6 +25,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
+#include "ores.qt/SettingGatedActionController.hpp"
 #include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolBar>
@@ -90,9 +91,6 @@ private slots:
     void onRowDoubleClicked(const QModelIndex& index);
     void onSelectionChanged();
     void onConnectionStateChanged();
-    void onSystemSettingNotification(const QString& eventType,
-                                     const QDateTime& timestamp,
-                                     const QStringList& entityIds);
 
 protected:
     QString normalRefreshTooltip() const override {
@@ -103,7 +101,6 @@ private:
     void updateActionStates();
     void setupReloadAction();
     void setupGenerateAction();
-    void updateGenerateActionVisibility();
 
 private:
     QVBoxLayout* verticalLayout_;
@@ -125,6 +122,7 @@ private:
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     QString username_;
+    SettingGatedActionController* settingGatedActions_;
 };
 
 }

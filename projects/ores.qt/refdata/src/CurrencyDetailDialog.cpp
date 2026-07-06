@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/CurrencyDetailDialog.hpp"
-#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -31,8 +30,6 @@
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.variability.api/eventing/system_setting_changed_event.hpp"
-#include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include "ui_CurrencyDetailDialog.h"
 #include <QFutureWatcher>
 #include <QGroupBox>
@@ -57,10 +54,6 @@ namespace ores::qt {
 using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
 namespace {
-// Event type name for system setting changes
-constexpr std::string_view system_setting_event_name =
-    eventing::domain::event_traits<variability::eventing::system_setting_changed_event>::name;
-
 // Feature flag name for synthetic data generation
 constexpr std::string_view synthetic_generation_flag = "system.synthetic_data_generation";
 }
@@ -247,25 +240,16 @@ void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
 
     if (clientManager_) {
-        // Connect to system setting notifications for generate action visibility
-        connect(clientManager_,
-                &ClientManager::notificationReceived,
-                this,
-                &CurrencyDetailDialog::onSystemSettingNotification);
+        settingGatedActions_ = new SettingGatedActionController(clientManager_, this);
+        settingGatedActions_->registerAction(
+            generateAction_, QString::fromStdString(std::string{synthetic_generation_flag}));
 
-        // Subscribe to system setting events when logged in/reconnected
-        connect(clientManager_,
-                &ClientManager::loggedIn,
-                this,
-                &CurrencyDetailDialog::onConnectionEstablished);
-        connect(clientManager_,
-                &ClientManager::reconnected,
-                this,
-                &CurrencyDetailDialog::onConnectionEstablished);
-
-        // If already logged in, subscribe and check flag
+        // If already logged in, check flag now (deferred: let the event loop process first)
         if (clientManager_->isLoggedIn()) {
-            onConnectionEstablished();
+            QTimer::singleShot(100, this, [this]() {
+                if (!isReadOnly_)
+                    settingGatedActions_->refresh();
+            });
         }
 
         // Populate lookup combos if already connected
@@ -934,54 +918,6 @@ void CurrencyDetailDialog::setupGenerateAction() {
     generateAction_->setVisible(false);
 }
 
-void CurrencyDetailDialog::updateGenerateActionVisibility() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        generateAction_->setVisible(false);
-        return;
-    }
-
-    // Don't show in read-only mode (history view)
-    if (isReadOnly_) {
-        generateAction_->setVisible(false);
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Checking feature flag for detail dialog: "
-                               << synthetic_generation_flag;
-
-    QPointer<CurrencyDetailDialog> self = this;
-    QtConcurrent::run([self]() -> bool {
-        if (!self || !self->clientManager_)
-            return false;
-
-        variability::messaging::list_settings_request request;
-        auto result = self->clientManager_->process_authenticated_request(std::move(request));
-
-        if (!result) {
-            BOOST_LOG_SEV(lg(), debug) << "System settings request failed";
-            return false;
-        }
-
-        // Find our specific setting
-        auto it = std::find_if(result->settings.begin(), result->settings.end(), [](const auto& s) {
-            return s.name == synthetic_generation_flag;
-        });
-
-        if (it == result->settings.end()) {
-            BOOST_LOG_SEV(lg(), debug) << "System setting not found: " << synthetic_generation_flag;
-            return false;
-        }
-
-        return (it->value == "true");
-    }).then(this, [self](bool enabled) {
-        if (self && self->generateAction_ && !self->isReadOnly_) {
-            self->generateAction_->setVisible(enabled);
-            BOOST_LOG_SEV(lg(), debug)
-                << "Generate action visibility in detail dialog set to: " << enabled;
-        }
-    });
-}
-
 void CurrencyDetailDialog::onGenerateClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Generate clicked in detail dialog";
 
@@ -1025,32 +961,6 @@ void CurrencyDetailDialog::onGenerateClicked() {
                                    "Generation Error",
                                    QString("Failed to generate currency data: %1").arg(e.what()));
     }
-}
-
-void CurrencyDetailDialog::onSystemSettingNotification(const QString& eventType,
-                                                       const QDateTime& timestamp,
-                                                       const QStringList& entityIds) {
-
-    // Check if this is a system setting change event
-    if (eventType != QString::fromStdString(std::string{system_setting_event_name})) {
-        return;
-    }
-
-    // Check if our flag was affected
-    QString ourFlag = QString::fromStdString(std::string{synthetic_generation_flag});
-    if (!entityIds.isEmpty() && !entityIds.contains(ourFlag)) {
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "System setting notification received in detail dialog";
-    updateGenerateActionVisibility();
-}
-
-void CurrencyDetailDialog::onConnectionEstablished() {
-    clientManager_->subscribeToEvent(std::string{system_setting_event_name});
-
-    // Use QTimer to delay the visibility check until after event loop processes
-    QTimer::singleShot(100, this, &CurrencyDetailDialog::updateGenerateActionVisibility);
 }
 
 void CurrencyDetailDialog::populateRoundingTypeCombo() {

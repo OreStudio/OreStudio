@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/CurrencyMdiWindow.hpp"
-#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -31,8 +30,6 @@
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.variability.api/eventing/system_setting_changed_event.hpp"
-#include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include <QAction>
 #include <QDesktopServices>
 #include <QFileDialog>
@@ -61,10 +58,6 @@ namespace ores::qt {
 using namespace ores::logging;
 
 namespace {
-// Event type name for system setting changes
-constexpr std::string_view system_setting_event_name =
-    eventing::domain::event_traits<variability::eventing::system_setting_changed_event>::name;
-
 // Feature flag name for synthetic data generation
 constexpr std::string_view synthetic_generation_flag = "system.synthetic_data_generation";
 }
@@ -85,7 +78,8 @@ CurrencyMdiWindow::CurrencyMdiWindow(ClientManager* clientManager,
     , currencyModel_(std::make_unique<ClientCurrencyModel>(clientManager, imageCache))
     , clientManager_(clientManager)
     , imageCache_(imageCache)
-    , username_(username) {
+    , username_(username)
+    , settingGatedActions_(new SettingGatedActionController(clientManager, this)) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating currency MDI window";
 
@@ -271,28 +265,9 @@ CurrencyMdiWindow::CurrencyMdiWindow(ClientManager* clientManager,
                 this,
                 &CurrencyMdiWindow::onConnectionStateChanged);
 
-        // Connect to system setting notifications for generate action visibility
-        connect(clientManager_,
-                &ClientManager::notificationReceived,
-                this,
-                &CurrencyMdiWindow::onSystemSettingNotification);
-
-        // Subscribe to system setting events when logged in
-        connect(clientManager_, &ClientManager::loggedIn, this, [this]() {
-            clientManager_->subscribeToEvent(std::string{system_setting_event_name});
-            updateGenerateActionVisibility();
-        });
-
-        connect(clientManager_, &ClientManager::reconnected, this, [this]() {
-            clientManager_->subscribeToEvent(std::string{system_setting_event_name});
-            updateGenerateActionVisibility();
-        });
-
-        // If already logged in, subscribe and check flag
         if (clientManager_->isLoggedIn()) {
-            clientManager_->subscribeToEvent(std::string{system_setting_event_name});
             // Defer visibility check to after event loop processes
-            QTimer::singleShot(0, this, &CurrencyMdiWindow::updateGenerateActionVisibility);
+            QTimer::singleShot(0, this, [this]() { settingGatedActions_->refresh(); });
         }
     }
 
@@ -795,51 +770,8 @@ void CurrencyMdiWindow::setupGenerateAction() {
     connect(generateAction_, &QAction::triggered, this, &CurrencyMdiWindow::generateSynthetic);
     toolBar_->addAction(generateAction_);
 
-    // Initially hidden - will be shown if feature flag is enabled
-    generateAction_->setVisible(false);
-}
-
-void CurrencyMdiWindow::updateGenerateActionVisibility() {
-    if (!clientManager_ || !clientManager_->isLoggedIn()) {
-        generateAction_->setVisible(false);
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Checking feature flag: " << synthetic_generation_flag;
-
-    QPointer<CurrencyMdiWindow> self = this;
-    QtConcurrent::run([self]() -> bool {
-        if (!self || !self->clientManager_)
-            return false;
-
-        variability::messaging::list_settings_request request;
-        auto result = self->clientManager_->process_authenticated_request(std::move(request));
-
-        if (!result) {
-            BOOST_LOG_SEV(lg(), debug) << "System settings request failed";
-            return false;
-        }
-
-        // Find our specific setting
-        auto it = std::find_if(result->settings.begin(), result->settings.end(), [](const auto& s) {
-            return s.name == synthetic_generation_flag;
-        });
-
-        if (it == result->settings.end()) {
-            BOOST_LOG_SEV(lg(), debug) << "System setting not found: " << synthetic_generation_flag;
-            return false;
-        }
-
-        const bool enabled = (it->value == "true");
-        BOOST_LOG_SEV(lg(), debug)
-            << "System setting " << synthetic_generation_flag << " enabled: " << enabled;
-        return enabled;
-    }).then(this, [self](bool enabled) {
-        if (self && self->generateAction_) {
-            self->generateAction_->setVisible(enabled);
-            BOOST_LOG_SEV(lg(), info) << "Generate action visibility set to: " << enabled;
-        }
-    });
+    settingGatedActions_->registerAction(generateAction_,
+                                         QString::fromStdString(std::string{synthetic_generation_flag}));
 }
 
 void CurrencyMdiWindow::generateSynthetic() {
@@ -892,24 +824,5 @@ void CurrencyMdiWindow::generateSynthetic() {
     }
 }
 
-void CurrencyMdiWindow::onSystemSettingNotification(const QString& eventType,
-                                                    const QDateTime& timestamp,
-                                                    const QStringList& entityIds) {
-
-    // Check if this is a system setting change event
-    if (eventType != QString::fromStdString(std::string{system_setting_event_name})) {
-        return;
-    }
-
-    // Check if our flag was affected
-    QString ourFlag = QString::fromStdString(std::string{synthetic_generation_flag});
-    if (!entityIds.isEmpty() && !entityIds.contains(ourFlag)) {
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info)
-        << "System setting notification received, updating generate action visibility";
-    updateGenerateActionVisibility();
-}
 
 }

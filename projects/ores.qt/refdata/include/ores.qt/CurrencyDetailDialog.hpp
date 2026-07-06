@@ -24,6 +24,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
+#include "ores.qt/SettingGatedActionController.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include <QAction>
@@ -142,11 +143,6 @@ private slots:
     void onNextVersionClicked();
     void onLastVersionClicked();
 
-    void onSystemSettingNotification(const QString& eventType,
-                                     const QDateTime& timestamp,
-                                     const QStringList& entityIds);
-    void onConnectionEstablished();
-
 private:
     void updateSaveResetButtonState();
     void setFieldsReadOnly(bool readOnly);
@@ -155,7 +151,6 @@ private:
     void updateVersionNavButtonStates();
     void showVersionNavActions(bool visible);
     void setupGenerateAction();
-    void updateGenerateActionVisibility();
     void populateRoundingTypeCombo();
     void populateMonetaryNatureCombo();
     void populateMarketTierCombo();
@@ -176,6 +171,7 @@ private:
 
     ClientManager* clientManager_;
     ImageCache* imageCache_;
+    SettingGatedActionController* settingGatedActions_{nullptr};
     QAction* isoCodeFlagAction_{nullptr};
     refdata::domain::currency currentCurrency_;
     QString pendingImageId_;

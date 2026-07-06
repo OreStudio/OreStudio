@@ -61,7 +61,6 @@ void PartyPlugin::on_login(const plugin_context& ctx) {
     partyStatusController_ = std::make_unique<PartyStatusController>(ctx_.main_window,
                                                                      ctx_.mdi_area,
                                                                      ctx_.client_manager,
-                                                                     ctx_.change_reason_cache,
                                                                      ctx_.username,
                                                                      this);
     connectControllerSignals(partyStatusController_.get());

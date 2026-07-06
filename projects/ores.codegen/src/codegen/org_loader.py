@@ -762,19 +762,17 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                 # excludes audit/system fields that are meaningless before a
                 # record is imported (its own version/modified_by/recorded_at
                 # belong to the never-yet-saved row, not the source file).
-                _import_excluded_fields = {
-                    "version",
-                    "modified_by",
-                    "recorded_at",
-                    "change_reason_code",
-                    "change_commentary",
-                }
+                #
+                # Opt-in, not opt-out: a column only appears in the import
+                # preview if its row in "Columns (Qt model)" sets
+                # :import_preview: true explicitly. An exclude-list keyed on
+                # generic properties (is_timestamp, audit field names) was
+                # tried first and silently over-included fields the entity
+                # author never intended to preview (caught in PR #1445
+                # review — currency's hand-migrated dialog only shows 5 of
+                # its 14 columns, not the ~11 an opt-out list would keep).
                 qt_out["import_preview_columns"] = [
-                    c
-                    for c in qt_out["columns"]
-                    if not c.get("is_computed")
-                    and c.get("field") not in _import_excluded_fields
-                    and not c.get("is_timestamp")
+                    c for c in qt_out["columns"] if c.get("import_preview")
                 ]
             ic = _section(qt, "Icon columns (Qt model)")
             if ic:

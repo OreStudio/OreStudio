@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
 #+branch: feature/land-setting-gated-visibility-qt-template
-#+pr:
+#+pr: 1446
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -146,7 +146,7 @@ mdi_window and detail_dialog templates both get the same
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1446][#1446]] | [codegen,qt] Land setting-gated action-visibility as a qt-profile capability |
 
 * Review
 

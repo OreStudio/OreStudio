@@ -31,11 +31,11 @@ for currency" regenerates =CurrencyMdiWindow=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Implementation complete; build passes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close out and merge.                   |
+| Next         | Nothing. |
 | Last touched | 2026-07-06                               |
 
 * Acceptance
@@ -118,10 +118,16 @@ different generality:
 
 - Reusing the full =qt.columns= list for the import preview table was
   wrong: fields like =version=/=modified_by=/=recorded_at= are
-  meaningless before a record is imported. Added a derived
-  =import_preview_columns= (org_loader.py) that filters =columns= down
-  to non-computed, non-timestamp, non-audit fields, rather than a
-  second hand-authored column table per entity.
+  meaningless before a record is imported. First cut added a derived
+  =import_preview_columns= (org_loader.py) filtering =columns= down to
+  non-computed, non-timestamp, non-audit fields — an *opt-out*
+  exclude-list. PR review caught that this still over-included fields
+  (11 columns for currency vs the 5 the hand-migrated dialog actually
+  shows), and that the =--diff= verification below should have caught
+  the mismatch and didn't. Replaced with an *opt-in*
+  =:import_preview: true= column property instead, so an entity author
+  explicitly marks which columns matter for the import preview — no
+  exclude-list to silently under/over-fire.
 - The naive =get{{entity_pascal}}s()= method name mispluralised
   ("getCurrencys"). Used the existing =entity_pascal_short_plural=
   property (already used elsewhere, e.g.
@@ -146,8 +152,29 @@ different generality:
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                        | File                | Decision | Notes                                                     |
+|---+---------------------------------------------------------------------------+----------------------+----------+-------------------------------------------------------------|
+| 1 | import_preview_columns exclude-list over-includes fields (11 vs 5 hand-migrated) | org_loader.py       | Fixed    | Replaced with opt-in :import_preview: column flag, 263d90206 |
+| 2 | No unit test for import_preview_columns derivation in org_loader.py     | org_loader.py       | Declined | No existing test file for org_loader.py at all; bigger lift than this fix, follow-up |
 
 * Result
+
+Shipped =ImportEntityDialog= (=ores.qt/api=), a generic, non-templated
+preview-and-import dialog (Qt moc can't process class templates with
+=Q_OBJECT=, so it's driven by type-erased rows and =label_of=/
+=import_one= callbacks), replacing the currency-specific
+=ImportCurrencyDialog=. Added the opt-in =has_csv_xml_io= qt-profile
+flag to the mdi_window/client_model mustache templates: toolbar
+actions (Import XML, Export CSV, Export XML), generated
+=exportToCSV=/=exportToXML=/=importFromXML= wired to the entity's
+csv/xml exporter/importer by naming convention, and a bulk
+=get<Plural>()= accessor on the client model. The import preview
+column list is opt-in per column (=:import_preview: true=), not
+derived from an exclude-list — a PR review round caught the original
+exclude-list approach over-including fields (11 vs 5 for currency)
+and it was corrected. Currency is the first consumer
+(=generateAction_= wiring aside, this task covers CSV/XML only).
+Verified via =codegen entity generate currency --address ores.cpp.qt
+--diff=: the has_csv_xml_io-gated sections match the hand-migrated
+code, including the corrected 5-column import preview. All three
+acceptance criteria met. PR #1445.

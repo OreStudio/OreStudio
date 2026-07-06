@@ -100,7 +100,10 @@ fixing(s)= with 103 duplicate warnings, no errors.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | SPOT default applied to every observation, not just scalar series (raised on 3 review passes) | import_service.cpp | Accepted | Fixed in 7f5180833 — gated on is_scalar, threaded out of find_or_create_series |
+| 2 | No test coverage for the point_id default | service_import_service_tests.cpp | Accepted | Added scalar-SPOT and non-scalar-short-key-empty regression tests in 7f5180833 |
+| 3 | Pre-existing point_id='' rows in other environments won't be superseded by a re-run | import_service.cpp | Declined | No other environment has run this import path yet; nothing to backfill |
+| 4 | Domain test/docs still say scalar point_id is empty, contradicting the import's SPOT convention | domain_market_observation_tests.cpp | Declined | Out of scope for this task; struct default vs. import convention are distinct concerns — can file a follow-up |
 
 * Result
 

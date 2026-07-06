@@ -40,8 +40,7 @@ generate_synthetic_business_day_convention_type(utility::generation::generation_
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.code = std::string(faker::word::noun()) + "_bdc_" + std::to_string(++counter) + "-" +
-             std::to_string(idx);
+    r.code = std::string(faker::word::noun()) + "_bdc" + "-" + std::to_string(idx);
     r.name = "Test Business Day Convention " + std::to_string(faker::number::integer(1000, 9999));
     r.description = std::string(faker::lorem::sentence());
     r.display_order = 0;

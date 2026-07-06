@@ -80,9 +80,6 @@ begin
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
-    -- Validate change_reason_code
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
-
     -- Version management
     select version into current_version
     from "ores_refdata_business_day_convention_types_tbl"
@@ -134,6 +131,7 @@ on delete to "ores_refdata_business_day_convention_types_tbl" do instead
 -- Validation function for business_day_convention_type
 -- Validates that a code exists in the business_day_convention_types table.
 -- Returns the validated value, or default if null/empty.
+-- Validates against both the tenant's own data and the system tenant's canonical set.
 -- =============================================================================
 create or replace function ores_refdata_validate_business_day_convention_type_fn(
     p_tenant_id uuid,
@@ -146,6 +144,30 @@ begin
             using errcode = '23502';
     end if;
 
+    -- Allow pass-through if neither this tenant nor the system tenant has
+    -- seeded active business_day_convention_types yet (freshly provisioned tenant).
+    if not exists (
+        select 1 from ores_refdata_business_day_convention_types_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against this tenant's values and the system tenant's canonical set.
+    if not exists (
+        select 1 from ores_refdata_business_day_convention_types_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+          and code = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid business_day_convention_type: %. Must be one of: %', p_value, (
+            select string_agg(code::text, ', ' order by display_order)
+            from ores_refdata_business_day_convention_types_tbl
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
 
     return p_value;
 end;

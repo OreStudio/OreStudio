@@ -45,7 +45,7 @@ Unique business day convention type code.
 Examples: 'Following', 'ModifiedFollowing', 'Preceding', 'Unadjusted'.
 
 #+begin_src cpp :name generator
-std::string(faker::word::noun()) + "_bdc_" + std::to_string(++counter)
+std::string(faker::word::noun()) + "_bdc"
 #+end_src
 
 * Natural keys

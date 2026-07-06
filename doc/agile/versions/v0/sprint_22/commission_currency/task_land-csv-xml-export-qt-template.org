@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
 #+branch: feature/land-csv-xml-export-qt-template
-#+pr:
+#+pr: 1445
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -142,7 +142,7 @@ different generality:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1445][#1445]] | [codegen,qt] Land CSV/XML import-export as a qt-profile capability |
 
 * Review
 

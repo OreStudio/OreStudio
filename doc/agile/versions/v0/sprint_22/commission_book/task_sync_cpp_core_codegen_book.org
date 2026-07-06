@@ -26,11 +26,11 @@ Regenerate the book entity's C++ core (api domain/messaging, core repository/ser
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] |
-| Now          | PR #1449 open; one review round addressed (SQL validation fix pushed). Awaiting merge. |
+| Now          | Nothing. |
 | Waiting on   | PR merge.                              |
-| Next         | Merge PR #1449, close task.            |
+| Next         | Nothing. |
 | Last touched | 2026-07-06                               |
 
 * Acceptance
@@ -105,3 +105,25 @@ Book-only patch:
 | 5 | has_explorer_api/parent_entity_singular capability undocumented in PR description | (PR description)                                          | Fixed    | Updated PR #1449 description to call it out explicitly |
 
 * Result
+
+Book's C++ core (api/core/sql) is regenerated from the graph-based
+codegen and its Qt layer moved from =ores.qt/trading= to
+=ores.qt/refdata= to match. Acceptance met: =book_entity= uses
+=db_timestamp=; service/handler use =delete_*= naming and pagination;
+protocol matches the regenerated handler; refdata builds cleanly; no
+dangling old-API consumers (the old =ores.qt/trading= Book files are
+removed, and =TradingPlugin= now consumes the regenerated
+=BookController= from =ores.qt/refdata=).
+
+Beyond the mechanical regen, manual UI testing surfaced and fixed
+several real bugs (cross-plugin export crash, missing change-reason
+wiring, an immutable-name modelling mistake, a uuid-key-field codegen
+gap, and a shared "history dialog closes the whole app" bug), plus a
+review-caught SQL regression (Book's insert-trigger validations were
+silently dropped). Four reusable codegen capabilities landed as a
+result: =has_export_macro=, =has_change_reason_cache= wiring for Book,
+the =is_key=+uuid detail-field fix, and =has_explorer_api=/
+=parent_entity_singular=. Full detail in =* Plan= above and the =*
+Review= table.
+
+Merged via PR #1449.

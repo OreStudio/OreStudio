@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :open_sprint_22:sprint_22:v0:
 #+owner: marco
-#+branch: feature/verify-qt-counterparty
+#+branch: feature/verify-qt-counterparty-v2
 #+pr:
 #+blocked_on:
 #+blocked_since:

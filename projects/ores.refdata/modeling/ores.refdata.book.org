@@ -194,6 +194,38 @@ Basel III/IV classification.
 :tablename: ores_refdata_books_tbl
 :END:
 
+* Foreign keys
+
+** parent_portfolio_id
+:PROPERTIES:
+:table:         ores_refdata_portfolios_tbl
+:nullable:      false
+:error_message: Invalid parent_portfolio_id: %. No active portfolio found with this id.
+:END:
+
+** party_id
+:PROPERTIES:
+:table:         ores_refdata_parties_tbl
+:nullable:      false
+:error_message: Invalid party_id: %. No active party found with this id.
+:END:
+
+** owner_unit_id
+:PROPERTIES:
+:table:         ores_refdata_business_units_tbl
+:nullable:      true
+:error_message: Invalid owner_unit_id: %. No active business unit found.
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column      | validation_function                |
+|-------------+-------------------------------------|
+| ledger_ccy  | ores_refdata_validate_currency_fn   |
+| book_status | ores_refdata_validate_book_status_fn |
+
 * C++
 
 ** Flags

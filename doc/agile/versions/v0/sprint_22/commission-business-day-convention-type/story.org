@@ -2,7 +2,7 @@
 :ID: 0345DCE3-4B85-4132-9A25-E58285632F76
 :END:
 #+title: Story: Commission: business_day_convention_type
-#+description: Move business_day_convention_type from ores.trading to ores.refdata (zero current consumers, but conceptually an ORE convention type alongside currency_pair_convention and the other *_convention entities) and commission it fully: SQL, codegen, domain, repository, service, messaging, Qt UI.
+#+description: Move business_day_convention_type from ores.trading to ores.refdata (zero current consumers, but conceptually an ORE convention type alongside fx_convention and the other *_convention entities) and commission it fully: SQL, codegen, domain, repository, service, messaging, Qt UI.
 #+type: story
 #+level: s2
 #+filetags: :product:refdata:commissioning:business_day_convention_type:sprint_22:v0:
@@ -15,16 +15,16 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Discovered while modelling Currency pair support in reference data:
+Discovered while modelling [[id:109FBFD6-C505-4196-B3EE-D5C798CE050F][fx_convention]]:
 =business_day_convention_type= lives in =ores.trading=
-([[id:841BFAF8-9361-4E4E-BCF8-3F167296FA43][ores.trading.business_day_convention_type]]), but every =*_convention=
+(=ores.trading.business_day_convention_type=, now removed), but every =*_convention=
 entity that would actually reference it (=ibor_index_convention=,
 =fx_convention=, =swap_convention=, etc.) already lives in
 =ores.refdata=. It's misplaced. Move it to =ores.refdata=, commission it
 fully — SQL, codegen model, domain, repository, service, messaging, Qt
 UI — following the [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]], and delete the
 =ores.trading= original. This unblocks
-[[id:C73E0414-9154-417F-B069-7055BB58AA4C][currency_pair_convention]] soft-FK'ing to it same-component, matching
+[[id:109FBFD6-C505-4196-B3EE-D5C798CE050F][fx_convention]] soft-FK'ing to it same-component, matching
 every other refdata soft-FK. (Turned out not to be zero-consumer as
 first thought — =trading_swap_legs= soft-FKs it too; see the task's
 =* Plan= for the full investigation.)

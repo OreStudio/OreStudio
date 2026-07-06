@@ -32,11 +32,11 @@ touches these two files.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Done.                                   |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Ready for review/merge.                |
+| Next         | Nothing. |
 | Last touched | 2026-07-06                               |
 
 * Acceptance
@@ -73,3 +73,15 @@ generates a batch via count, no random pick), so it needed no change.
 |   |                 |      |          |       |
 
 * Result
+
+Added =ores::refdata::generators::generate_random_fictional_currency()=
+next to the existing =generate_fictional_currencies()=, moving the
+=std::uniform_int_distribution= random-pick selection out of the Qt
+UI layer. =CurrencyDetailDialog::onGenerateClicked()= now calls it
+directly and is reduced to orchestration; the now-unused =<random>=
+include was dropped.
+=CurrencyMdiWindow::generateSynthetic()= already only orchestrated a
+batch generation by count (no random pick embedded), so it needed no
+change. Acceptance met: no random-pick logic remains in either Qt
+class, both call sites are pure orchestration, and the build passes.
+PR #1441.

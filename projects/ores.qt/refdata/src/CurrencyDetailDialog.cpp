@@ -50,7 +50,6 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
-#include <random>
 
 namespace ores::qt {
 
@@ -987,11 +986,7 @@ void CurrencyDetailDialog::onGenerateClicked() {
 
     try {
         utility::generation::generation_context ctx;
-        auto currencies = refdata::generators::generate_fictional_currencies(0, ctx);
-        static std::random_device rd;
-        static std::mt19937 gen(rd());
-        std::uniform_int_distribution<std::size_t> dist(0, currencies.size() - 1);
-        const auto& currency = currencies[dist(gen)];
+        const auto currency = refdata::generators::generate_random_fictional_currency(ctx);
 
         // Only fill ISO code in add mode - in edit mode it's the primary key
         if (isAddMode_) {

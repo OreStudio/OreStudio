@@ -168,7 +168,7 @@ jobs:
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          max-size: 2000M
+          max-size: 2500M
           save: false
 
       - name: Install dev packages
@@ -236,13 +236,6 @@ jobs:
         with:
           doNotCache: false
 
-      - name: Restore cmake build cache
-        if: matrix.compiler == 'gcc' && matrix.buildtype == 'debug'
-        uses: actions/cache/restore@v6
-        with:
-          path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/projects
-          key: cmake-build-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-
       - name: Run CTest workflow
         run: |
           export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
@@ -259,22 +252,6 @@ jobs:
               cmake_args="${cmake_args},code_coverage=1"
           fi
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
-
-      - name: Delete cmake cache entry
-        if: ${{ !cancelled() }} && matrix.compiler == 'gcc' && matrix.buildtype == 'debug'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api --method DELETE \
-            "/repos/${{ github.repository }}/actions/caches?key=cmake-build-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja" \
-            || true
-
-      - name: Save cmake build cache
-        if: ${{ !cancelled() }} && matrix.compiler == 'gcc' && matrix.buildtype == 'debug'
-        uses: actions/cache/save@v6
-        with:
-          path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/projects
-          key: cmake-build-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
 
       - name: Delete sccache entry
         if: ${{ !cancelled() }}

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/relocate-currency-qt-generator-logic
+#+pr: 1441
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,12 +32,12 @@ touches these two files.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-06                               |
 
 * Acceptance
 
@@ -50,9 +50,13 @@ touches these two files.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added =ores::refdata::generators::generate_random_fictional_currency()=
+next to the existing =generate_fictional_currencies()=, moving the
+=std::uniform_int_distribution= random-pick there. Updated
+=CurrencyDetailDialog::onGenerateClicked()= to call it directly,
+dropping the now-unused =<random>= include.
+=CurrencyMdiWindow::generateSynthetic()= already only orchestrated (it
+generates a batch via count, no random pick), so it needed no change.
 
 * Notes
 
@@ -60,12 +64,26 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1441][#1441]] | [refdata,qt,build] Relocate currency generator logic; fix CI cache waste |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                | File                                            | Decision | Notes                                              |
+|---+-------------------------------------------------------------------+---------------------------------------------------+----------+-----------------------------------------------------|
+| 1 | No unit test for generate_random_fictional_currency() (raised by all 3 review passes) | generators_currency_generator_tests.cpp         | Fixed    | Added generate_random_fictional_currency_returns_known_currency, d171a7f7b |
+| 2 | Materializes full 50-entry vector to pick one element (perf nit)  | currency_generator.cpp                          | Declined | Unchanged from original inline code, not a regression; follow-up if ever needed |
+| 3 | Task doc "Last touched" date one day ahead of PR creation (nit)  | task_relocate-currency-qt-generator-logic.org   | Declined | Correct for actual last-edit time, not a typo       |
 
 * Result
+
+Added =ores::refdata::generators::generate_random_fictional_currency()=
+next to the existing =generate_fictional_currencies()=, moving the
+=std::uniform_int_distribution= random-pick selection out of the Qt
+UI layer. =CurrencyDetailDialog::onGenerateClicked()= now calls it
+directly and is reduced to orchestration; the now-unused =<random>=
+include was dropped.
+=CurrencyMdiWindow::generateSynthetic()= already only orchestrated a
+batch generation by count (no random pick embedded), so it needed no
+change. Acceptance met: no random-pick logic remains in either Qt
+class, both call sites are pure orchestration, and the build passes.
+PR #1441.

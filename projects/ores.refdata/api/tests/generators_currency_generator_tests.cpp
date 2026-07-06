@@ -184,3 +184,18 @@ TEST_CASE("generate_fictional_currencies_contains_known_currencies", tags) {
     CHECK(codes.count("XER") == 1); // Eriadoran Euro
     CHECK(codes.count("XKR") == 1); // Krynnish Krynn
 }
+
+TEST_CASE("generate_random_fictional_currency_returns_known_currency", tags) {
+    auto lg(make_logger(test_suite));
+    generation_context ctx;
+
+    const auto all = generate_fictional_currencies(0, ctx);
+    std::set<std::string> known_codes;
+    for (const auto& c : all)
+        known_codes.insert(c.iso_code);
+
+    const auto currency = generate_random_fictional_currency(ctx);
+    BOOST_LOG_SEV(lg, debug) << "Generated random fictional currency: " << currency;
+
+    CHECK(known_codes.count(currency.iso_code) == 1);
+}

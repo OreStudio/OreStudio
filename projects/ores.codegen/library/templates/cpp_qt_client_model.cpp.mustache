@@ -312,6 +312,12 @@ Client{{domain_entity.entity_pascal}}Model::get{{domain_entity.entity_pascal_sho
     return &{{domain_entity.qt.collection_name}}_[idx];
 }
 
+{{#domain_entity.qt.has_csv_xml_io}}
+std::vector<{{domain_entity.qt.domain_class}}> Client{{domain_entity.entity_pascal}}Model::get{{domain_entity.entity_pascal_short_plural}}() const {
+    return {{domain_entity.qt.collection_name}}_;
+}
+{{/domain_entity.qt.has_csv_xml_io}}
+
 QVariant Client{{domain_entity.entity_pascal}}Model::recency_foreground_color(
     const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

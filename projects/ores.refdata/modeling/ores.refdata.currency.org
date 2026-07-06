@@ -329,6 +329,17 @@ version-navigation UI that consumes this richer shape.
 :settings_group:              CurrencyListWindow
 :window_title:                Currencies
 :icon:                        Currency
+:has_csv_xml_io:              true
+:csv_export_include:          ores.refdata.api/csv/exporter.hpp
+:csv_export_class:            refdata::csv::exporter
+:csv_export_method:           export_currency_config
+:xml_export_include:          ores.ore.core/xml/exporter.hpp
+:xml_export_class:            ore::xml::exporter
+:xml_export_method:           export_currency_config
+:xml_import_include:          ores.ore.core/xml/importer.hpp
+:xml_import_class:            ore::xml::importer
+:xml_import_method:           import_currency_config
+:xml_validate_method:         validate_currency
 :END:
 
 *** Columns (Qt model)

@@ -93,6 +93,13 @@ public:
      */
     const {{domain_entity.qt.domain_class}}* get{{domain_entity.entity_pascal_short}}(int row) const;
 
+{{#domain_entity.qt.has_csv_xml_io}}
+    /**
+     * @brief Get a copy of all currently-loaded {{domain_entity.entity_plural_words}}.
+     */
+    std::vector<{{domain_entity.qt.domain_class}}> get{{domain_entity.entity_pascal_short_plural}}() const;
+{{/domain_entity.qt.has_csv_xml_io}}
+
     /**
      * @brief Load a specific page of data.
      */

@@ -758,6 +758,24 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             qc = _section(qt, "Columns (Qt model)")
             if qc:
                 qt_out["columns"] = _qt_columns(qc)
+                # Preview columns for the generic import dialog (has_csv_xml_io):
+                # excludes audit/system fields that are meaningless before a
+                # record is imported (its own version/modified_by/recorded_at
+                # belong to the never-yet-saved row, not the source file).
+                _import_excluded_fields = {
+                    "version",
+                    "modified_by",
+                    "recorded_at",
+                    "change_reason_code",
+                    "change_commentary",
+                }
+                qt_out["import_preview_columns"] = [
+                    c
+                    for c in qt_out["columns"]
+                    if not c.get("is_computed")
+                    and c.get("field") not in _import_excluded_fields
+                    and not c.get("is_timestamp")
+                ]
             ic = _section(qt, "Icon columns (Qt model)")
             if ic:
                 qt_out["icon_columns"] = _qt_icon_columns(ic)

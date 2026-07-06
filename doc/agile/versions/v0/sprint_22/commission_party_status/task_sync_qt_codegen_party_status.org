@@ -59,7 +59,8 @@ plan itself stays — it is the historical record of what we did.)
 |---+-----------------+------+----------+-------|
 | 1 | ChangeReasonCache wiring dropped by regen | PartyStatusController.hpp/.cpp | Accepted | Fixed in 3c4ca3f1 — root cause was missing :has_change_reason_cache: true on the model; regenerated the facet instead of hand-patching |
 | 2 | fetch_statuses pagination no-op | ClientPartyStatusModel.cpp | Declined | Pre-existing/systemic across all ClientXModel::fetch_* implementations; out of scope for this sync |
-| 3 | Delete change-reason category defaults to "system" | PartyStatusDetailDialog.cpp | Declined | Pre-existing codegen template gap, shared by other already-merged entities; belongs in the shared template, not this PR |
+| 3 | Delete change-reason category defaults to "system" | PartyStatusDetailDialog.cpp | Accepted | Fixed in aeb2d0a0 — corrected cpp_qt_detail_dialog.cpp.mustache to pass "common"; regen sweep for other already-merged entities captured separately |
 | 4 | task.org cosmetic Now/State mismatch, stray blank-line diff noise | task_sync_qt_codegen_party_status.org, PartyStatusDetailDialog.hpp | Declined | Cosmetic/harmless, not worth a special pass |
+| 5 | Template drift: .mustache hand-edited without updating its .org literate source | cpp_qt_detail_dialog.cpp.mustache, ores.cpp.qt.detail_dialog_impl.org | Accepted | Fixed in 3fa67c34 — applied the fix to the org source and re-tangled; Template drift CI check now green |
 
 * Result

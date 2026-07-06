@@ -33,10 +33,10 @@ for currency" regenerates =CurrencyMdiWindow=.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
+| Now          | Implementation complete; build passes. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-04                               |
+| Next         | Close out and merge.                   |
+| Last touched | 2026-07-06                               |
 
 * Acceptance
 
@@ -113,6 +113,28 @@ different generality:
    the migrated hand-written version from step 2 — should match
    modulo naming.
 5. Build passes; acceptance met.
+
+** Implementation notes
+
+- Reusing the full =qt.columns= list for the import preview table was
+  wrong: fields like =version=/=modified_by=/=recorded_at= are
+  meaningless before a record is imported. Added a derived
+  =import_preview_columns= (org_loader.py) that filters =columns= down
+  to non-computed, non-timestamp, non-audit fields, rather than a
+  second hand-authored column table per entity.
+- The naive =get{{entity_pascal}}s()= method name mispluralised
+  ("getCurrencys"). Used the existing =entity_pascal_short_plural=
+  property (already used elsewhere, e.g.
+  =on{{entity_pascal_short_plural}}Loaded=) instead of inventing a new
+  per-entity property.
+- Verified by running =codegen entity generate currency --address
+  ores.cpp.qt --diff= and comparing the has_csv_xml_io-gated sections
+  against the hand-migrated code from step 2 — match modulo
+  formatting/comments. Did *not* adopt the full regenerated file set:
+  currency's Qt layer has substantial pre-existing drift unrelated to
+  this capability (badges, image cache, generator button, NATS
+  notifications, ...) that the broader "Sync Qt codegen for currency"
+  story/regenerate plan still needs to reconcile separately.
 
 * Notes
 

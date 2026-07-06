@@ -24,12 +24,14 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientPurposeTypeModel.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 #include "ores.refdata.api/domain/purpose_type.hpp"
 #include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolBar>
 
 namespace ores::qt {
+
 
 /**
  * @brief MDI window for displaying and managing purpose types.
@@ -55,22 +57,22 @@ public:
                                   QWidget* parent = nullptr);
     ~PurposeTypeMdiWindow() override = default;
 
-public slots:
-    void doReload() override;
-
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showTypeDetails(const refdata::domain::purpose_type& pt);
+    void showTypeDetails(const refdata::domain::purpose_type& type);
     void addNewRequested();
     void typeDeleted(const QString& code);
-    void showTypeHistory(const refdata::domain::purpose_type& pt);
+    void showTypeHistory(const refdata::domain::purpose_type& type);
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();
@@ -97,6 +99,7 @@ private:
     QTableView* tableView_;
     ClientPurposeTypeModel* model_;
     QSortFilterProxyModel* proxyModel_;
+    PaginationWidget* paginationWidget_;
 
     // Toolbar actions
     QAction* reloadAction_;

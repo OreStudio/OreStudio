@@ -72,18 +72,18 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
-    void onShowDetails(const refdata::domain::purpose_type& pt);
+    void onShowDetails(const refdata::domain::purpose_type& type);
     void onAddNewRequested();
-    void onShowHistory(const refdata::domain::purpose_type& pt);
-    void onRevertVersion(const refdata::domain::purpose_type& pt);
-    void onOpenVersion(const refdata::domain::purpose_type& pt, int versionNumber);
+    void onShowHistory(const refdata::domain::purpose_type& type);
+    void onRevertVersion(const refdata::domain::purpose_type& type);
+    void onOpenVersion(const refdata::domain::purpose_type& type, int versionNumber);
 
 private:
     void showAddWindow();
-    void showDetailWindow(const refdata::domain::purpose_type& pt);
+    void showDetailWindow(const refdata::domain::purpose_type& type);
     void showHistoryWindow(const QString& code);
 
-    ChangeReasonCache* changeReasonCache_{nullptr};
+    ChangeReasonCache* changeReasonCache_;
     PurposeTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

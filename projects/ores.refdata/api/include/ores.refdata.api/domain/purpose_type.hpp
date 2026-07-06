@@ -66,7 +66,7 @@ struct purpose_type final {
     /**
      * @brief Order for UI display purposes.
      */
-    int display_order;
+    int display_order = 0;
 
     /**
      * @brief Username of the person who last modified this purpose type.

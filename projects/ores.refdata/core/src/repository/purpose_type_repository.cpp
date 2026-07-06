@@ -36,24 +36,24 @@ std::string purpose_type_repository::sql() {
     return generate_create_table_sql<purpose_type_entity>(lg());
 }
 
-void purpose_type_repository::write(context ctx, const domain::purpose_type& pt) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing purpose type to database: " << pt.code;
+void purpose_type_repository::write(context ctx, const domain::purpose_type& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing purpose type: " << v.code;
     execute_write_query(
-        ctx, purpose_type_mapper::map(pt), lg(), "Writing purpose type to database.");
+        ctx, purpose_type_mapper::map(v), lg(), "Writing purpose type to database.");
 }
 
-void purpose_type_repository::write(context ctx, const std::vector<domain::purpose_type>& pts) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing purpose types to database. Count: " << pts.size();
+void purpose_type_repository::write(context ctx, const std::vector<domain::purpose_type>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing purpose types. Count: " << v.size();
     execute_write_query(
-        ctx, purpose_type_mapper::map(pts), lg(), "Writing purpose types to database.");
+        ctx, purpose_type_mapper::map(v), lg(), "Writing purpose types to database.");
 }
 
 std::vector<domain::purpose_type> purpose_type_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<purpose_type_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("name"_c);
+                       order_by("code"_c);
 
     return execute_read_query<purpose_type_entity, domain::purpose_type>(
         ctx,
@@ -65,9 +65,8 @@ std::vector<domain::purpose_type> purpose_type_repository::read_latest(context c
 
 std::vector<domain::purpose_type> purpose_type_repository::read_latest(context ctx,
                                                                        const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest purpose type. Code: " << code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest purpose type. code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<purpose_type_entity>> |
@@ -83,8 +82,7 @@ std::vector<domain::purpose_type> purpose_type_repository::read_latest(context c
 
 std::vector<domain::purpose_type> purpose_type_repository::read_all(context ctx,
                                                                     const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all purpose type versions. Code: " << code;
-
+    BOOST_LOG_SEV(lg(), debug) << "Reading all purpose type versions. code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<purpose_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -98,10 +96,10 @@ std::vector<domain::purpose_type> purpose_type_repository::read_all(context ctx,
         "Reading all purpose type versions by code.");
 }
 
-void purpose_type_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing purpose type from database: " << code;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+void purpose_type_repository::remove(context ctx, const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing purpose type: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::delete_from<purpose_type_entity> |
@@ -110,9 +108,53 @@ void purpose_type_repository::remove(context ctx, const std::string& code) {
     execute_delete_query(ctx, query, lg(), "Removing purpose type from database.");
 }
 
-void purpose_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
-    const auto query = sqlgen::delete_from<purpose_type_entity> | where("code"_c.in(codes));
-    execute_delete_query(ctx, query, lg(), "batch removing purpose_types");
+std::vector<domain::purpose_type>
+purpose_type_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest purpose types with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<purpose_type_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<purpose_type_entity, domain::purpose_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return purpose_type_mapper::map(entities); },
+        lg(),
+        "Reading latest purpose types with pagination.");
 }
+
+std::uint32_t purpose_type_repository::get_total_type_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active purpose type count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::select_from<purpose_type_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active purpose type count: " << count;
+    return count;
+}
+
+void purpose_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<purpose_type_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing purpose types.");
+}
+
 
 }

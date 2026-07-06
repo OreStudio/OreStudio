@@ -19,6 +19,7 @@
  */
 #include "ores.refdata.core/service/purpose_type_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -30,50 +31,54 @@ using namespace ores::logging;
 purpose_type_service::purpose_type_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::purpose_type> purpose_type_service::list_types() {
+std::vector<domain::purpose_type> purpose_type_service::list_types(std::uint32_t offset,
+                                                                   std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all purpose types";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::optional<domain::purpose_type> purpose_type_service::find_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding purpose type: " << code;
+std::uint32_t purpose_type_service::count_types() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total purpose types count";
+    return repo_.get_total_type_count(ctx_);
+}
+
+
+std::optional<domain::purpose_type> purpose_type_service::get_type(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting purpose type: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) {
+    if (results.empty())
         return std::nullopt;
-    }
     return results.front();
 }
 
-void purpose_type_service::save_type(const domain::purpose_type& pt) {
-    if (pt.code.empty()) {
-        throw std::invalid_argument("Purpose type code cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving purpose type: " << pt.code;
-    auto t = pt;
+void purpose_type_service::save_type(const domain::purpose_type& v) {
+    if (v.code.empty())
+        throw std::invalid_argument("Purpose Type code cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving purpose type: " << v.code;
+    auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved purpose type: " << pt.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved purpose type: " << v.code;
 }
 
 void purpose_type_service::save_types(const std::vector<domain::purpose_type>& types) {
-    for (const auto& t : types) {
-        if (t.code.empty())
-            throw std::invalid_argument("Purpose type code cannot be empty.");
-    }
+    for (const auto& e : types)
+        if (e.code.empty())
+            throw std::invalid_argument("Purpose Type code cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " purpose types";
-    auto stamped = types;
-    for (auto& t : stamped)
-        stamp(t, ctx_);
-    repo_.write(ctx_, stamped);
+    auto ts = types;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
-void purpose_type_service::remove_type(const std::string& code) {
+void purpose_type_service::delete_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing purpose type: " << code;
     repo_.remove(ctx_, code);
     BOOST_LOG_SEV(lg(), info) << "Removed purpose type: " << code;
 }
 
-void purpose_type_service::remove_types(const std::vector<std::string>& codes) {
+void purpose_type_service::delete_types(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 

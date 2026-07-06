@@ -21,6 +21,7 @@
 #define ORES_REFDATA_API_MESSAGING_PURPOSE_TYPE_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/purpose_type.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -28,20 +29,26 @@ namespace ores::refdata::messaging {
 
 struct get_purpose_types_request {
     using response_type = struct get_purpose_types_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.purpose-types.list";
-    int offset = 0;
-    int limit = 100;
+    static constexpr std::string_view nats_subject = "refdata.v1.purpose_types.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_purpose_types_response {
-    std::vector<ores::refdata::domain::purpose_type> purpose_types;
+    std::vector<ores::refdata::domain::purpose_type> types;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_purpose_type_request {
     using response_type = struct save_purpose_type_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.purpose-types.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.purpose_types.save";
     ores::refdata::domain::purpose_type data;
+
+    static save_purpose_type_request from(ores::refdata::domain::purpose_type v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_purpose_type_response {
@@ -51,8 +58,8 @@ struct save_purpose_type_response {
 
 struct delete_purpose_type_request {
     using response_type = struct delete_purpose_type_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.purpose-types.delete";
-    std::string type;
+    static constexpr std::string_view nats_subject = "refdata.v1.purpose_types.delete";
+    std::vector<std::string> codes;
 };
 
 struct delete_purpose_type_response {
@@ -62,14 +69,14 @@ struct delete_purpose_type_response {
 
 struct get_purpose_type_history_request {
     using response_type = struct get_purpose_type_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.purpose-types.history";
-    std::string type;
+    static constexpr std::string_view nats_subject = "refdata.v1.purpose_types.history";
+    std::string code;
 };
 
 struct get_purpose_type_history_response {
+    std::vector<ores::refdata::domain::purpose_type> history;
     bool success = false;
     std::string message;
-    std::vector<ores::refdata::domain::purpose_type> history;
 };
 
 }

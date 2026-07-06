@@ -345,9 +345,6 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     connectControllerSignals(treatmentDimensionController_.get());
 }
 
-// ---------------------------------------------------------------------------
-// IPlugin::setup_menus — populate the shared Reference Data menu.
-// ---------------------------------------------------------------------------
 void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
                                << " reference_data=" << (smc.reference_data_menu ? "ok" : "null")

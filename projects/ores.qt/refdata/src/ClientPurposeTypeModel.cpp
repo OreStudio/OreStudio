@@ -76,31 +76,31 @@ QVariant ClientPurposeTypeModel::data(const QModelIndex& index, int role) const 
     if (row >= types_.size())
         return {};
 
-    const auto& pt = types_[row];
+    const auto& type = types_[row];
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
             case Code:
-                return QString::fromStdString(pt.code);
+                return QString::fromStdString(type.code);
             case Name:
-                return QString::fromStdString(pt.name);
+                return QString::fromStdString(type.name);
             case Description:
-                return QString::fromStdString(pt.description);
+                return QString::fromStdString(type.description);
             case DisplayOrder:
-                return pt.display_order;
+                return static_cast<qlonglong>(type.display_order);
             case Version:
-                return pt.version;
+                return static_cast<qlonglong>(type.version);
             case ModifiedBy:
-                return QString::fromStdString(pt.modified_by);
+                return QString::fromStdString(type.modified_by);
             case RecordedAt:
-                return relative_time_helper::format(pt.recorded_at);
+                return relative_time_helper::format(type.recorded_at);
             default:
                 return {};
         }
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(pt.code);
+        return recency_foreground_color(type.code);
     }
 
     return {};
@@ -119,7 +119,7 @@ ClientPurposeTypeModel::headerData(int section, Qt::Orientation orientation, int
         case Description:
             return tr("Description");
         case DisplayOrder:
-            return tr("Order");
+            return tr("Display Order");
         case Version:
             return tr("Version");
         case ModifiedBy:
@@ -132,46 +132,92 @@ ClientPurposeTypeModel::headerData(int section, Qt::Orientation orientation, int
 }
 
 void ClientPurposeTypeModel::refresh() {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
+
     if (is_fetching_) {
-        BOOST_LOG_SEV(lg(), debug) << "Already fetching, skipping refresh";
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
         return;
     }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh purpose type model: disconnected.";
         emit loadError("Not connected to server");
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Starting purpose type fetch";
-    is_fetching_ = true;
+    if (!types_.empty()) {
+        beginResetModel();
+        types_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        total_available_count_ = 0;
+        endResetModel();
+    }
 
+    fetch_types(0, page_size_);
+}
+
+void ClientPurposeTypeModel::load_page(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
+
+    if (is_fetching_) {
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring load_page request.";
+        return;
+    }
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load page: disconnected.";
+        return;
+    }
+
+    if (!types_.empty()) {
+        beginResetModel();
+        types_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        endResetModel();
+    }
+
+    fetch_types(offset, limit);
+}
+
+void ClientPurposeTypeModel::fetch_types(std::uint32_t offset, std::uint32_t limit) {
+    is_fetching_ = true;
     QPointer<ClientPurposeTypeModel> self = this;
 
-    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
         return exception_helper::wrap_async_fetch<FetchResult>(
             [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making purpose types request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false,
                             .types = {},
+                            .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
                 refdata::messaging::get_purpose_types_request request;
-                auto response_result =
+
+                auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
-                if (!response_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .types = {},
-                            .error_message = "Failed to send request",
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << response_result->purpose_types.size() << " purpose types";
+                    << "Fetched " << result->types.size() << " purpose types";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->types.size());
                 return {.success = true,
-                        .types = std::move(response_result->purpose_types),
+                        .types = std::move(result->types),
+                        .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};
             },
@@ -193,19 +239,38 @@ void ClientPurposeTypeModel::onTypesLoaded() {
         return;
     }
 
-    beginResetModel();
-    types_ = std::move(result.types);
-    endResetModel();
+    total_available_count_ = result.total_available_count;
 
-    const bool has_recent = recencyTracker_.update(types_);
-    if (has_recent && !pulseManager_->is_pulsing()) {
-        pulseManager_->start_pulsing();
-        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                   << " purpose types newer than last reload";
+    const int new_count = static_cast<int>(result.types.size());
+
+    if (new_count > 0) {
+        beginResetModel();
+        types_ = std::move(result.types);
+        endResetModel();
+
+        const bool has_recent = recencyTracker_.update(types_);
+        if (has_recent && !pulseManager_->is_pulsing()) {
+            pulseManager_->start_pulsing();
+            BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                       << " purpose types newer than last reload";
+        }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << types_.size() << " purpose types";
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " purpose types."
+                              << " Total available: " << total_available_count_;
+
     emit dataLoaded();
+}
+
+void ClientPurposeTypeModel::set_page_size(std::uint32_t size) {
+    if (size == 0 || size > 1000) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size
+                                  << ". Must be between 1 and 1000. Using default: 100";
+        page_size_ = 100;
+    } else {
+        page_size_ = size;
+        BOOST_LOG_SEV(lg(), info) << "Page size set to: " << page_size_;
+    }
 }
 
 const refdata::domain::purpose_type* ClientPurposeTypeModel::getType(int row) const {

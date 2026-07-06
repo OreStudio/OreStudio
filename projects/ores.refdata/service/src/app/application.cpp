@@ -40,6 +40,7 @@
 #include "ores.refdata.api/eventing/party_identifier_changed_event.hpp"
 #include "ores.refdata.api/eventing/party_type_changed_event.hpp"
 #include "ores.refdata.api/eventing/portfolio_changed_event.hpp"
+#include "ores.refdata.api/eventing/purpose_type_changed_event.hpp"
 #include "ores.refdata.core/messaging/registrar.hpp"
 #include "ores.refdata.service/app/application_exception.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
@@ -156,6 +157,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         event_source, "ores.refdata.party_type", "ores_refdata_party_types");
     ev::service::registrar::register_mapping<rdev::portfolio_changed_event>(
         event_source, "ores.refdata.portfolio", "ores_refdata_portfolios");
+    ev::service::registrar::register_mapping<rdev::purpose_type_changed_event>(
+        event_source, "ores.refdata.purpose_type", "ores_refdata_purpose_types");
 
     auto book_sub =
         event_bus.subscribe<rdev::book_changed_event>([&nats](const rdev::book_changed_event& e) {
@@ -340,6 +343,17 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 ev::domain::entity_change_event{.entity = "ores.refdata.portfolio",
                                                 .timestamp = e.timestamp,
                                                 .entity_ids = e.ids,
+                                                .tenant_id = e.tenant_id});
+        });
+
+    auto purpose_type_sub = event_bus.subscribe<rdev::purpose_type_changed_event>(
+        [&nats](const rdev::purpose_type_changed_event& e) {
+            publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<rdev::purpose_type_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.purpose_type",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.codes,
                                                 .tenant_id = e.tenant_id});
         });
 

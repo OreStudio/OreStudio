@@ -24,6 +24,8 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.refdata.api/domain/purpose_type.hpp"
+#include <vector>
+
 
 namespace Ui {
 class PurposeTypeDetailDialog;
@@ -56,9 +58,19 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setType(const refdata::domain::purpose_type& pt);
+    void setType(const refdata::domain::purpose_type& type);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
+
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
 
 signals:
     void typeSaved(const QString& code);
@@ -74,7 +86,6 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
@@ -86,6 +97,7 @@ private:
     void updateTypeFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
 
     Ui::PurposeTypeDetailDialog* ui_;
     ClientManager* clientManager_;

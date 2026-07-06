@@ -24,6 +24,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/RefdataExport.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
@@ -39,7 +40,7 @@ class DetachableMdiSubWindow;
  * Manages the lifecycle of book list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class BookController final : public EntityController {
+class ORES_QT_REFDATA_EXPORT BookController final : public EntityController {
     Q_OBJECT
 
 private:

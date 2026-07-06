@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class BusinessDayConventionTypeMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing business day convention type windows and operations.
@@ -55,6 +56,7 @@ public:
     BusinessDayConventionTypeController(QMainWindow* mainWindow,
                                         QMdiArea* mdiArea,
                                         ClientManager* clientManager,
+                                        ChangeReasonCache* changeReasonCache,
                                         const QString& username,
                                         QObject* parent = nullptr);
 
@@ -82,6 +84,7 @@ private:
     void showDetailWindow(const refdata::domain::business_day_convention_type& type);
     void showHistoryWindow(const QString& code);
 
+    ChangeReasonCache* changeReasonCache_;
     BusinessDayConventionTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

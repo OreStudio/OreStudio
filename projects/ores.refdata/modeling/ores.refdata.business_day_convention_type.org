@@ -164,6 +164,7 @@ Ordinal position for dropdown/list display.
 :item_var:                    type
 :key_field:                   code
 :has_uuid_primary_key:        false
+:has_change_reason_cache:     true
 :get_request_class:           refdata::messaging::get_business_day_convention_types_request
 :get_response_class:          refdata::messaging::get_business_day_convention_types_response
 :get_message_type:            get_business_day_convention_types_request

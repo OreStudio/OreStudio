@@ -22,6 +22,7 @@
 #include "ores.qt/BusinessDayConventionTypeDetailDialog.hpp"
 #include "ores.qt/BusinessDayConventionTypeHistoryDialog.hpp"
 #include "ores.qt/BusinessDayConventionTypeMdiWindow.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
@@ -43,9 +44,11 @@ BusinessDayConventionTypeController::BusinessDayConventionTypeController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -162,6 +165,8 @@ void BusinessDayConventionTypeController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new business day convention type";
 
     auto* detailDialog = new BusinessDayConventionTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -212,6 +217,8 @@ void BusinessDayConventionTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new BusinessDayConventionTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -352,6 +359,8 @@ void BusinessDayConventionTypeController::onOpenVersion(
     }
 
     auto* detailDialog = new BusinessDayConventionTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(type);
@@ -403,6 +412,8 @@ void BusinessDayConventionTypeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BusinessDayConventionTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_type = type;

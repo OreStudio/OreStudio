@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 3C96C458-DD17-456C-8201-AF57A59191D4
+:END:
+#+title: Fix batch currency generation UX and audit-field leakage
+#+description: CurrencyMdiWindow's batch Generate adds N unsaved synthetic currencies to the list requiring one save-click per row, and populates audit fields that shouldn't be set until save.
+#+type: capture
+#+level: cross
+#+filetags: :qt:currency:generator:ux:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=CurrencyMdiWindow::generateSynthetic()=
+([[proj:projects/ores.qt/refdata/src/CurrencyMdiWindow.cpp][CurrencyMdiWindow.cpp:815]]) asks for a count, calls
+=generate_fictional_currencies(count, ctx)=, and adds all N generated
+currencies directly into the client model via
+=add_synthetic_currencies()= — they show up "in blue" in the list as
+unsaved rows. This doesn't fit the rest of the app's edit model: every
+other add/edit flow opens one record in the detail dialog and saves it
+explicitly; here the user has to open and save N rows one at a time
+after the fact, with no bulk-save and no way to discard the whole
+batch except editing/deleting each row individually.
+
+Separately, the generated currencies come back with audit fields
+already populated — =modified_by= is explicitly set in the loop right
+before calling =add_synthetic_currencies()=, and
+=generate_fictional_currencies()= itself stamps =recorded_at= (see
+=currency_generator.cpp=). Audit fields like these should only be set
+by the server at actual save time, not pre-filled into an unsaved,
+in-memory-only row.
+
+The single-record =CurrencyDetailDialog::onGenerateClicked()= path
+(via the newly-relocated =generate_random_fictional_currency()=) does
+not have this problem — it only fills the visible form fields, and
+audit fields are set normally by the save path. This capture is about
+the *batch* (=CurrencyMdiWindow=) path only.
+
+* Why
+
+The batch-generate UX doesn't match how the rest of the entity's edit
+model works (single-record open/edit/save), creating friction (N
+manual saves) and a confusing "blue = unsaved" convention with no bulk
+action. Pre-populating audit fields on unsaved rows is also
+conceptually wrong — those fields describe what happened at save time,
+not what a client-side generator produced.
+
+* References
+
+- [[proj:projects/ores.qt/refdata/src/CurrencyMdiWindow.cpp][CurrencyMdiWindow.cpp]] — =generateSynthetic()=, ~line 815
+- [[proj:projects/ores.qt/refdata/src/ClientCurrencyModel.cpp][ClientCurrencyModel.cpp]] — =add_synthetic_currencies()=, ~line 378
+- [[proj:projects/ores.refdata/api/src/generators/currency_generator.cpp][currency_generator.cpp]] — =generate_fictional_currencies()= sets =recorded_at=
+
+* See also
+
+- [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Story: Commission: currency]]

@@ -258,7 +258,8 @@ void PartyStatusDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 

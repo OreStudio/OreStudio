@@ -563,7 +563,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
     }
 
     const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, false);
+        ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting {{domain_entity.entity_singular_words}}: "

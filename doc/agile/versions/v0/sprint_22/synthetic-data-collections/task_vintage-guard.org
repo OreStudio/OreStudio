@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :synthetic-data-collections:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/vintage-guard
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-03
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -37,15 +37,19 @@ collection proactively.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-03                               |
+| Now          | Confirmed a real prerequisite gap (see Plan) before implementing the guard itself. |
+| Waiting on   | Nothing — the gap is in this task's scope, not a separate blocker. |
+| Next         | Add the vintage source/date association to fx_spot_generation_config, then the guard logic. |
+| Last touched | 2026-07-06                               |
 
 * Acceptance
 
+- =fx_spot_generation_config= (schema, domain, JSON/table I/O) carries
+  a =vintage_source=/=vintage_date= association so a feed can declare
+  which vintage it depends on — the prerequisite this task discovered
+  was missing.
 - Starting a feed with missing vintage data (either collection — both
   seed initial spot from the same vintage, per the story's Decisions)
   fails with a clear, actionable message naming the missing
@@ -59,6 +63,44 @@ collection proactively.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Prerequisite gap found while starting this task: neither
+=fx_spot_generation_config= nor its parent
+=market_data_generation_config=
+(=projects/ores.synthetic/api/include/ores.synthetic.api/domain/=)
+carries any field associating a feed with the vintage it should be
+validated/seeded against. =fx_spot_generation_config= has =ore_key=
+(e.g. =FX/RATE/EUR/USD=) and a manually-entered =gmm_initial_price=,
+but no =vintage_source= (e.g. =ore.reference=) or =vintage_date=
+(e.g. =2016-02-05=). Without this, there is nothing for a guard to
+query — =ores_marketdata_market_observations_tbl= is keyed on
+=(series, observation_datetime, point_id)=, and the feed config has no
+=observation_datetime= to look up. This must be closed before the
+guard logic itself can be written:
+
+1. Add =vintage_source= and =vintage_date= columns to
+   =fx_spot_generation_config= (SQL schema, domain struct, JSON I/O,
+   table I/O — via codegen, see
+   [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]]-adjacent =codegen-add-sql-schema=/
+   =code-add-domain-type= conventions) so each feed declares which
+   vintage it depends on. Populate them for any existing configs (none
+   yet — =Seed Basic and Realistic dataset bundles= is still BACKLOG
+   and depends on this task).
+2. Implicit check: before =fx_spot_feed= starts, query
+   =ores_marketdata_market_observations_tbl= for
+   =(source = vintage_source, observation_datetime = vintage_date,
+   point_id = 'SPOT')= matching the feed's =ore_key= series. Fail with
+   the specified actionable message if absent.
+3. On-demand check: Market Simulator toolbar action that iterates all
+   configured feeds (enabled or not) and runs the same query per feed,
+   surfacing pass/fail per entry rather than requiring each to start.
+4. Confirm with the story owner whether =vintage_source=/
+   =vintage_date= belong on =fx_spot_generation_config= specifically
+   or should be hoisted to the parent =market_data_generation_config=
+   (both collections currently seed from the *same* vintage per the
+   story's Decisions, so a per-config field may be redundant — but
+   per-config keeps the door open for mixed-vintage collections
+   later). Default to per-config unless that proves awkward.
 
 * Notes
 

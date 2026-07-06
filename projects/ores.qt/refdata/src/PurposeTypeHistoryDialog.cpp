@@ -19,10 +19,8 @@
  */
 #include "ores.qt/PurposeTypeHistoryDialog.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
 #include "ui_PurposeTypeHistoryDialog.h"
-#include <QHeaderView>
 
 namespace ores::qt {
 
@@ -37,71 +35,81 @@ PurposeTypeHistoryDialog::PurposeTypeHistoryDialog(const QString& code,
     , clientManager_(clientManager) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
-
-    ui_->titleLabel->setText(QString("History for: %1").arg(code_));
-
     ui_->versionListWidget->setColumnCount(5);
-    ui_->versionListWidget->setHorizontalHeaderLabels(
-        {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
-
-    initializeHistoryUi({.versionList = ui_->versionListWidget,
-                         .changesTable = ui_->changesTableWidget,
-                         .titleLabel = ui_->titleLabel,
-                         .closeButton = ui_->closeButton});
+    ui_->versionListWidget->setHorizontalHeaderLabels({tr("Version"),
+                                                       tr("Recorded At"),
+                                                       tr("Modified By"),
+                                                       tr("Performed By"),
+                                                       tr("Commentary")});
+    ui_->changesTableWidget->setColumnCount(3);
+    ui_->changesTableWidget->setHorizontalHeaderLabels(
+        {tr("Field"), tr("Old Value"), tr("New Value")});
+    initializeHistoryUi(
+        {ui_->versionListWidget, ui_->changesTableWidget, ui_->titleLabel, ui_->closeButton});
 }
 
-PurposeTypeHistoryDialog::~PurposeTypeHistoryDialog() = default;
+PurposeTypeHistoryDialog::~PurposeTypeHistoryDialog() {
+    delete ui_;
+}
+
+QString PurposeTypeHistoryDialog::code() const {
+    return code_;
+}
 
 void PurposeTypeHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), debug) << "Loading history for purpose type: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_purpose_type_history_request request;
-    request.type = code_.toStdString();
+    request.code = code_.toStdString();
 
-    runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
-        if (!response.success) {
-            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
-            historyLoadFailed(QString::fromStdString(response.message));
-            return;
-        }
-        versions_ = std::move(response.history);
-        historyLoaded();
-    });
+    QPointer<PurposeTypeHistoryDialog> self = this;
+    runHistoryRequest(clientManager_,
+                      std::move(request),
+                      [self](refdata::messaging::get_purpose_type_history_response response) {
+                          if (!self)
+                              return;
+                          if (!response.success) {
+                              self->historyLoadFailed(QString::fromStdString(response.message));
+                              return;
+                          }
+                          self->versions_ = std::move(response.history);
+                          self->historyLoaded();
+                      });
 }
 
 int PurposeTypeHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow PurposeTypeHistoryDialog::versionRow(int index) const {
-    const auto& version = versions_[index];
-    return {.version = version.version,
-            .cells = {relative_time_helper::format(version.recorded_at),
-                      QString::fromStdString(version.modified_by),
-                      QString::fromStdString(version.performed_by),
-                      QString::fromStdString(version.change_commentary)}};
-}
-
 QString PurposeTypeHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::DiffResult PurposeTypeHistoryDialog::calculateDiffAt(int current_index,
-                                                                        int previous_index) const {
-    const auto& current = versions_[current_index];
-    const auto& previous = versions_[previous_index];
+HistoryDialogBase::VersionRow PurposeTypeHistoryDialog::versionRow(int index) const {
+    const auto& v = versions_[index];
+    return {v.version,
+            {relative_time_helper::format(v.recorded_at),
+             QString::fromStdString(v.modified_by),
+             QString::fromStdString(v.performed_by),
+             QString::fromStdString(v.change_commentary)}};
+}
 
+HistoryDialogBase::DiffResult PurposeTypeHistoryDialog::calculateDiffAt(int ci, int pi) const {
     DiffResult diffs;
-    checkString(diffs, "Code", current.code, previous.code);
-    checkString(diffs, "Name", current.name, previous.name);
-    checkString(diffs, "Description", current.description, previous.description);
+    const auto& curr = versions_[ci];
+    const auto& prev = versions_[pi];
 
+    checkString(diffs, tr("Code"), curr.code, prev.code);
+    checkString(diffs, tr("Name"), curr.name, prev.name);
+    checkString(diffs, tr("Description"), curr.description, prev.description);
     return diffs;
 }
 
 void PurposeTypeHistoryDialog::displayFullDetails(int index) {
+    if (index < 0 || static_cast<size_t>(index) >= versions_.size())
+        return;
+
     const auto& version = versions_[index];
 
     ui_->codeValue->setText(QString::fromStdString(version.code));
@@ -114,20 +122,11 @@ void PurposeTypeHistoryDialog::displayFullDetails(int index) {
 }
 
 void PurposeTypeHistoryDialog::openVersionAt(int index) {
-    const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening purpose type version " << version.version
-                              << " in read-only mode";
-    emit openVersionRequested(version, version.version);
+    emit openVersionRequested(versions_[index], versions_[index].version);
 }
 
 void PurposeTypeHistoryDialog::revertToVersionAt(int index) {
-    // The base has already confirmed with the user; the server handles
-    // versioning, so simply request the revert to the selected version.
-    const auto& selected = versions_[index];
-
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
-
-    emit revertVersionRequested(selected);
+    emit revertVersionRequested(versions_[index]);
 }
 
 }

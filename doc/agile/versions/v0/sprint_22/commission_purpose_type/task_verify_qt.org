@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 324912C7-DBE0-44CB-98E9-7DBF74A31D25
+:END:
+#+title: Task: Verify purpose_type Qt UI end-to-end post-NATS
+#+description: Manually test all Qt windows for purpose_type (MDI list, detail dialog, history dialog, delete command, NATS eventing) against a live service; fix any regressions.
+#+type: task
+#+level: s1
+#+filetags: :commission_purpose_type:sprint_22:v0:
+#+owner: marco
+#+branch: feature/commission-purpose-type
+#+pr: 1451
+#+blocked_on: 9763FBBF-7912-4EA2-A544-67E90EA27882
+#+blocked_since: 2026-07-06
+#+created: 2026-07-02
+#+updated: 2026-07-06
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run the Qt application against a live service and verify all five purpose_type UI acceptance criteria: list window loads, detail dialog round-trips, history dialog shows history, delete preserves history, and a mutation in one connected session appears in a second via NATS eventing. Fix regressions inline or file as captures.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] |
+| Now          | Migrated purpose_type to ores.codegen.entity; fixed two codegen template bugs (duplicate change_reason_code validation, lost validation_fn scope flags) along the way. List/detail/history/delete verified. NATS eventing hand-patched directly in application.cpp to unblock verification — this is a workaround, not the real fix. |
+| Waiting on   | [[id:9763FBBF-7912-4EA2-A544-67E90EA27882][Codegen: generate per-entity NATS event-mapping registrar]] — replace the hand-patch with generated registration before closing this task. |
+| Next         | Once the codegen registrar story lands, remove the hand-wired purpose_type block from application.cpp and re-verify via the generated path. |
+| Last touched | 2026-07-06                               |
+
+* Acceptance
+
+- MDI list window loads and displays purpose_type records. Detail dialog edit/save/reload persists. History dialog shows a historical version after an edit. Delete removes the record while history remains accessible. Eventing: a change in client A appears in client B without manual refresh. Regressions fixed or filed. Findings recorded in Result. Site builds cleanly.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1451][#1451]] | [refdata] Migrate purpose_type to ores.codegen.entity; fix codegen template bugs |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Generated purpose_type_registrar.hpp/cpp never called; request/response handlers still hand-wired inline in registrar.cpp | registrar.cpp | Fixed — 95759a487 | Replaced inline block with append(register_purpose_type_handlers(...)), matching party_type. |
+| 2 | fetch_types never sets request.offset/limit; pagination silently ignored | ClientPurposeTypeModel.cpp | Fixed — 95759a487 | Root cause: model missing has_pagination Qt flag; added to purpose_type.org and regenerated (also fixed total_available_count using local page size instead of server total). |
+| 3 | No regression tests for the two codegen template fixes | ores.codegen/src/codegen/core.py | Declined (deferred) | Filed as capture instead of expanding this PR: doc/agile/product_backlog/inbox/codegen_regression_tests_for_domain_entity_sql.org |
+
+* Result

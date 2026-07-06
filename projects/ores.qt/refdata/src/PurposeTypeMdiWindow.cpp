@@ -19,10 +19,8 @@
  */
 #include "ores.qt/PurposeTypeMdiWindow.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
@@ -44,6 +42,7 @@ PurposeTypeMdiWindow::PurposeTypeMdiWindow(ClientManager* clientManager,
     , tableView_(nullptr)
     , model_(nullptr)
     , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
     , reloadAction_(nullptr)
     , addAction_(nullptr)
     , editAction_(nullptr)
@@ -52,13 +51,10 @@ PurposeTypeMdiWindow::PurposeTypeMdiWindow(ClientManager* clientManager,
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
 void PurposeTypeMdiWindow::setupUi() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();
@@ -67,6 +63,9 @@ void PurposeTypeMdiWindow::setupUi() {
 
     setupTable();
     layout->addWidget(tableView_);
+
+    paginationWidget_ = new PaginationWidget(this);
+    layout->addWidget(paginationWidget_);
 }
 
 void PurposeTypeMdiWindow::setupToolbar() {
@@ -119,39 +118,66 @@ void PurposeTypeMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(
-        new EntityItemDelegate(ClientPurposeTypeModel::columnStyles(), tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+
     initializeTableSettings(tableView_,
                             model_,
-                            ClientPurposeTypeModel::kSettingsGroup,
-                            ClientPurposeTypeModel::defaultHiddenColumns(),
-                            ClientPurposeTypeModel::kDefaultWindowSize,
+                            "PurposeTypeListWindow",
+                            {ClientPurposeTypeModel::Description},
+                            {900, 400},
                             1);
 }
 
 void PurposeTypeMdiWindow::setupConnections() {
     connect(model_, &ClientPurposeTypeModel::dataLoaded, this, &PurposeTypeMdiWindow::onDataLoaded);
     connect(model_, &ClientPurposeTypeModel::loadError, this, &PurposeTypeMdiWindow::onLoadError);
-    connectModel(model_);
 
     connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
             this,
             &PurposeTypeMdiWindow::onSelectionChanged);
     connect(tableView_, &QTableView::doubleClicked, this, &PurposeTypeMdiWindow::onDoubleClicked);
+
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
+
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
+        const auto total = model_->total_available_count();
+        if (total > 0 && total <= 1000) {
+            model_->set_page_size(total);
+            model_->refresh();
+        }
+    });
+
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
+
+    connectModel(model_);
 }
 
 void PurposeTypeMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading purpose types";
+    clearStaleIndicator();
     emit statusChanged(tr("Loading purpose types..."));
     model_->refresh();
 }
 
 void PurposeTypeMdiWindow::onDataLoaded() {
-    emit statusChanged(tr("Loaded %1 purpose types").arg(model_->rowCount()));
+    const auto loaded = model_->rowCount();
+    const auto total = model_->total_available_count();
+    emit statusChanged(tr("Loaded %1 of %2 purpose types").arg(loaded).arg(total));
+
+    paginationWidget_->update_state(loaded, total);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
 }
 
 void PurposeTypeMdiWindow::onLoadError(const QString& error_message, const QString& details) {
@@ -169,8 +195,8 @@ void PurposeTypeMdiWindow::onDoubleClicked(const QModelIndex& index) {
         return;
 
     auto sourceIndex = proxyModel_->mapToSource(index);
-    if (auto* pt = model_->getType(sourceIndex.row())) {
-        emit showTypeDetails(*pt);
+    if (auto* type = model_->getType(sourceIndex.row())) {
+        emit showTypeDetails(*type);
     }
 }
 
@@ -194,8 +220,8 @@ void PurposeTypeMdiWindow::editSelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* pt = model_->getType(sourceIndex.row())) {
-        emit showTypeDetails(*pt);
+    if (auto* type = model_->getType(sourceIndex.row())) {
+        emit showTypeDetails(*type);
     }
 }
 
@@ -207,9 +233,9 @@ void PurposeTypeMdiWindow::viewHistorySelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* pt = model_->getType(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showTypeHistory for code: " << pt->code;
-        emit showTypeHistory(*pt);
+    if (auto* type = model_->getType(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showTypeHistory for code: " << type->code;
+        emit showTypeHistory(*type);
     }
 }
 
@@ -229,8 +255,8 @@ void PurposeTypeMdiWindow::deleteSelected() {
     std::vector<std::string> codes;
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
-        if (auto* pt = model_->getType(sourceIndex.row())) {
-            codes.push_back(pt->code);
+        if (auto* type = model_->getType(sourceIndex.row())) {
+            codes.push_back(type->code);
         }
     }
 
@@ -267,20 +293,22 @@ void PurposeTypeMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << codes.size() << " purpose types";
+            << "Making delete request for " << codes.size() << " purpose types";
+
+        refdata::messaging::delete_purpose_type_request request;
+        request.codes = codes;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            for (const auto& code : codes) {
+                results.push_back({code, {false, "Failed to communicate with server"}});
+            }
+            return results;
+        }
 
         for (const auto& code : codes) {
-            refdata::messaging::delete_purpose_type_request request;
-            request.type = code;
-            auto response_result =
-                self->clientManager_->process_authenticated_request(std::move(request));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send delete request for " << code;
-                results.push_back({code, {false, "Failed to communicate with server"}});
-                continue;
-            }
-
             results.push_back({code, {response_result->success, response_result->message}});
         }
 

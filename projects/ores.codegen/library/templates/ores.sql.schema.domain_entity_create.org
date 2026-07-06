@@ -470,6 +470,7 @@ begin
 {{/domain_entity.insert_trigger.validations}}
 <<paste:d4e8e136-828d-440a-ba59-82ba2b9d3e2e>>
 {{#domain_entity.has_audit_columns}}
+{{^domain_entity.change_reason_code_declared}}
 {{#domain_entity.has_tenant_in_pk}}
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -490,6 +491,7 @@ begin
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.change_reason_code);
 
 {{/domain_entity.has_tenant_id}}
+{{/domain_entity.change_reason_code_declared}}
 {{/domain_entity.has_audit_columns}}
 {{#domain_entity.has_audit_columns}}
     -- Version management

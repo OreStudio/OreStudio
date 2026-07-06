@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 9763FBBF-7912-4EA2-A544-67E90EA27882
+:END:
+#+title: Story: Codegen: generate per-entity NATS event-mapping registrar
+#+description: Extend codegen to generate the Postgres LISTEN/NOTIFY-to-NATS event-mapping registration (register_mapping + event_bus.subscribe + publish_entity_event) per entity, collapsing the current hand-maintained application.cpp wiring (3 manual edits per entity) into a single generated registrar call, mirroring the existing request/response registrar pattern.
+#+type: story
+#+level: s2
+#+filetags: :codegen:eventing:refdata:commissioning:sprint_22:v0:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every domain entity's live NATS change-event pipeline (Postgres NOTIFY channel -> in-process event_bus -> re-published NATS event) is currently wired by hand in each component's service/src/app/application.cpp: one #include, one register_mapping<T_changed_event>() call, and one event_bus.subscribe<T_changed_event>() lambda per entity, scattered across three places. This is 100% mechanical (event type, channel name, and entity name are already known from the entity's codegen model) and has already caused a missed-wiring regression (purpose_type, and previously party_type). Extend codegen to emit a per-entity event-mapping registration function into the same generated <entity>_registrar.hpp/cpp pair already produced for request/response handlers, and add a small service-layer registrar aggregator (mirroring ores.refdata.core::messaging::registrar::register_handlers) so application.cpp collapses each per-entity block down to a single call.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-06                               |
+
+* Acceptance
+
+- Codegen emits register_<entity>_event_mapping(event_source, event_bus, nats) into the existing generated <entity>_registrar.hpp/cpp pair for every domain_entity model with eventing enabled.
+- A new service-layer registrar aggregator (e.g. ores::refdata::service::messaging::event_registrar or similar, colocated with application.cpp) calls each generated per-entity function; application.cpp's entity-change-event pipeline section collapses to a single aggregator call, matching the existing register_handlers call-site pattern.
+- purpose_type and all other refdata entities currently wired by hand in application.cpp are migrated to the generated path with zero loss of functionality; cross-client NATS eventing verified working for at least purpose_type.
+- Pattern documented (recipe or knowledge doc) so other components (trading, marketdata, etc.) can adopt the same generated registrar without hand-wiring their own application.cpp.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

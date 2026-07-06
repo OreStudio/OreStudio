@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 7BD9F806-1E51-46AF-AD05-6C1EF61963D7
+:END:
+#+title: Add a compass client stop command
+#+description: compass client launches the Qt client detached but has no stop verb to terminate running instances.
+#+type: capture
+#+level: cross
+#+filetags: :ores.compass:client:qt:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass client= launches the Qt client detached (=compass client
+[--instance-name …] [--colour …]=) and prints its PID, but there is no way to
+stop it again through compass. =compass client stop= is not a recognised
+subcommand — the parser only accepts launch options (=--preset=, =--colour=,
+=--instance-name=, =--log-level=), so stopping a running client currently means
+finding the PID by hand (=pgrep -af ores.qt=) and killing it, or tearing down
+the whole fleet. Add a =stop= verb that terminates the detached client(s):
+=compass client stop [--instance-name <name>]= to stop a specific instance, and
+stop-all when no name is given. It should resolve the PID the same way launch
+records it (PID file / instance name / =instance-color=), terminate gracefully,
+and report what was stopped — mirroring =compass services stop=.
+
+* Why
+
+The launch/stop asymmetry is a rough edge: you can start a client through compass
+but not stop it, which breaks the compass-first workflow and forces raw =pgrep=/=kill=
+(a documented anti-pattern). This bites especially when running multiple named
+instances (e.g. the two-client NATS eventing verification), where killing the
+right one by PID is error-prone.
+
+* References
+
+- =projects/ores.compass/= client launch implementation (Operate pillar, =compass client=).
+- Symmetry reference: =compass services stop=.
+
+* See also
+
+-

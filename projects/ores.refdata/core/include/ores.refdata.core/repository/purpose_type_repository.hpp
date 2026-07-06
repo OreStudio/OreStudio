@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/purpose_type.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <cstdint>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -46,16 +47,52 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
-    void write(context ctx, const domain::purpose_type& pt);
-    void write(context ctx, const std::vector<domain::purpose_type>& pts);
+    /**
+     * @brief Writes purpose types to database.
+     */
+    /**@{*/
+    void write(context ctx, const domain::purpose_type& v);
+    void write(context ctx, const std::vector<domain::purpose_type>& v);
+    /**@}*/
 
+    /**
+     * @brief Reads latest purpose types, possibly filtered by code.
+     */
+    /**@{*/
     std::vector<domain::purpose_type> read_latest(context ctx);
     std::vector<domain::purpose_type> read_latest(context ctx, const std::string& code);
+    /**@}*/
 
+    /**
+     * @brief Reads all purpose types, possibly filtered by code.
+     */
     std::vector<domain::purpose_type> read_all(context ctx, const std::string& code);
 
+
+    /**
+     * @brief Reads latest purpose types with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::purpose_type>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active purpose types.
+     * @param ctx Repository context with database connection
+     * @return Total number of active purpose types
+     */
+    std::uint32_t get_total_type_count(context ctx);
+
+    /**
+     * @brief Deletes a purpose type by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& code);
 
     /**

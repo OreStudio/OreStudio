@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: C99FE60D-4E6C-4B62-9C33-8767BAE696C4
+:END:
+#+title: Task: Implement and verify purpose_type shell commands
+#+description: Implement shell list, add, and remove commands for purpose_type (new implementation) and verify them against a live service.
+#+type: task
+#+level: s1
+#+filetags: :commission_purpose_type:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement the purpose_type shell commands (list, add, remove) following the shell entity codegen pattern, wire them into ores.shell, and verify each against a live service.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- Shell list returns purpose_type records. Shell add creates a record. Shell remove deletes a record while preserving history. Commands wired and discoverable. Findings recorded in Result. Site builds cleanly.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Not implemented here. ores.shell has no codegen profile for entity commands
+(the layer is hand-written per entity), so shell-command commissioning was
+lifted into a top-level story to be templatized once across entities rather
+than hand-coded per commission:
+
+- [[id:8BCD0D1C-AAFB-4FAA-A0E3-022FC6EF93C2][Shell entity commands — top-level commissioning story]]
+
+purpose_type shell commands will be produced by that story's per-entity
+rollout. Closed as superseded; out of scope for this commissioning exercise.

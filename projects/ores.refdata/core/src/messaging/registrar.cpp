@@ -46,28 +46,27 @@
 #include "ores.refdata.core/messaging/party_status_registrar.hpp"
 #include "ores.refdata.core/messaging/party_type_registrar.hpp"
 #include "ores.refdata.core/messaging/portfolio_registrar.hpp"
+#include "ores.refdata.core/messaging/purpose_type_registrar.hpp"
 #include "ores.refdata.core/messaging/rounding_type_registrar.hpp"
 #include "ores.refdata.core/messaging/swap_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/zero_convention_registrar.hpp"
 
 // Entities without a per-entity sub-registrar: asset_class, business_centre
-// and business_unit_type have no codegen model; purpose_type is a table (not a
-// domain_entity); party_contact / counterparty_contact use *_contact_handler
-// against *_contact_information protocols (name mismatch); publish_from_dq is a
-// bespoke multi-subject workflow handler. These stay wired inline below.
+// and business_unit_type have no codegen model; party_contact /
+// counterparty_contact use *_contact_handler against *_contact_information
+// protocols (name mismatch); publish_from_dq is a bespoke multi-subject
+// workflow handler. These stay wired inline below.
 #include "ores.refdata.api/messaging/asset_class_protocol.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_type_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
 #include "ores.refdata.api/messaging/party_contact_information_protocol.hpp"
-#include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
 #include "ores.refdata.core/messaging/asset_class_handler.hpp"
 #include "ores.refdata.core/messaging/business_centre_handler.hpp"
 #include "ores.refdata.core/messaging/business_unit_type_handler.hpp"
 #include "ores.refdata.core/messaging/counterparty_contact_handler.hpp"
 #include "ores.refdata.core/messaging/party_contact_handler.hpp"
 #include "ores.refdata.core/messaging/publish_from_dq_handler.hpp"
-#include "ores.refdata.core/messaging/purpose_type_handler.hpp"
 #include <array>
 #include <iterator>
 #include <memory>
@@ -119,6 +118,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_party_status_handlers(nats, ctx, verifier));
     append(register_party_type_handlers(nats, ctx, verifier));
     append(register_portfolio_handlers(nats, ctx, verifier));
+    append(register_purpose_type_handlers(nats, ctx, verifier));
     append(register_rounding_type_handlers(nats, ctx, verifier));
     append(register_swap_convention_handlers(nats, ctx, verifier));
     append(register_zero_convention_handlers(nats, ctx, verifier));
@@ -205,29 +205,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                  [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(
             nats.queue_subscribe(get_business_centre_history_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
-    }
-
-    // ----------------------------------------------------------------
-    // Purpose types (table model, not a domain_entity).
-    // ----------------------------------------------------------------
-    {
-        auto h = std::make_shared<purpose_type_handler>(nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            get_purpose_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-                h->list(std::move(msg));
-            }));
-        subs.push_back(nats.queue_subscribe(
-            save_purpose_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-                h->save(std::move(msg));
-            }));
-        subs.push_back(nats.queue_subscribe(
-            delete_purpose_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-                h->remove(std::move(msg));
-            }));
-        subs.push_back(
-            nats.queue_subscribe(get_purpose_type_history_request::nats_subject,
                                  queue_group,
                                  [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }

@@ -17,17 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/purpose_type_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.refdata.api/domain/purpose_type_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
-namespace ores::refdata::repository {
+namespace ores::refdata::domain {
 
-std::ostream& operator<<(std::ostream& s, const purpose_type_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+
+std::string convert_to_table(const std::vector<purpose_type>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header << "Code" << "Name" << "Description" << "Display Order" << "Modified By"
+          << "Version" << fort::endr;
+
+    for (const auto& pt : v) {
+        table << pt.code << pt.name << pt.description << pt.display_order << pt.modified_by
+              << pt.version << fort::endr;
+    }
+    return table.to_string();
 }
 
 }

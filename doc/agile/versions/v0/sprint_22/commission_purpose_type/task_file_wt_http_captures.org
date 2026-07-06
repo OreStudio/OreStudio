@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 6657BD12-480B-4FAB-B7D9-CA62AFEAF54B
+:END:
+#+title: Task: File Wt and HTTP backlog captures for purpose_type
+#+description: File product-backlog captures for Wt web UI and HTTP REST API support for purpose_type.
+#+type: task
+#+level: s1
+#+filetags: :commission_purpose_type:sprint_22:v0:
+#+owner: marco
+#+branch: feature/commission-purpose-type
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+File well-structured backlog captures for purpose_type Wt web UI support and HTTP REST API support so the remaining access layers are tracked.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-03                               |
+
+* Acceptance
+
+- Backlog capture filed for purpose_type Wt support. Backlog capture filed for purpose_type HTTP support. Both reference the story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+No per-entity captures were filed. Wt and HTTP support are now owned by
+two standalone top-level commissioning stories that cover all entities
+generically, superseding the per-commission "file Wt/HTTP captures"
+pattern:
+
+- [[id:03FC50B3-622B-4456-AE66-2F180B526723][HTTP entity endpoints — top-level commissioning story]]
+- [[id:EEE4880F-525A-4805-8082-B8638CB54ABA][Wt entity UI — top-level commissioning story]]
+
+purpose_type will be picked up as part of those stories' per-entity
+rollout, not here. Closed as superseded; Wt/HTTP explicitly out of scope
+for this commissioning exercise.

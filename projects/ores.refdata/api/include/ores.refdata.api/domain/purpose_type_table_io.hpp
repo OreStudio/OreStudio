@@ -17,17 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/purpose_type_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_REFDATA_API_DOMAIN_PURPOSE_TYPE_TABLE_IO_HPP
+#define ORES_REFDATA_API_DOMAIN_PURPOSE_TYPE_TABLE_IO_HPP
 
-namespace ores::refdata::repository {
+#include "ores.refdata.api/domain/purpose_type.hpp"
+#include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const purpose_type_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+namespace ores::refdata::domain {
+
+/**
+ * @brief Dumps the purpose_type objects to a stream in table format.
+ */
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<purpose_type>& v);
+
 }
 
-}
+#endif

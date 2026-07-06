@@ -21,7 +21,6 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
 #include "ui_PurposeTypeDetailDialog.h"
 #include <QFutureWatcher>
@@ -39,7 +38,6 @@ PurposeTypeDetailDialog::PurposeTypeDetailDialog(QWidget* parent)
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
 }
@@ -51,9 +49,11 @@ PurposeTypeDetailDialog::~PurposeTypeDetailDialog() {
 QTabWidget* PurposeTypeDetailDialog::tabWidget() const {
     return ui_->tabWidget;
 }
+
 QWidget* PurposeTypeDetailDialog::provenanceTab() const {
     return ui_->provenanceTab;
 }
+
 ProvenanceWidget* PurposeTypeDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
 }
@@ -93,8 +93,8 @@ void PurposeTypeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void PurposeTypeDetailDialog::setType(const refdata::domain::purpose_type& pt) {
-    type_ = pt;
+void PurposeTypeDetailDialog::setType(const refdata::domain::purpose_type& type) {
+    type_ = type;
     updateUiFromType();
 }
 
@@ -102,10 +102,13 @@ void PurposeTypeDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
-
     setProvenanceEnabled(!createMode);
-
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void PurposeTypeDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
@@ -129,6 +132,7 @@ void PurposeTypeDetailDialog::updateUiFromType() {
                        type_.recorded_at,
                        type_.change_reason_code,
                        type_.change_commentary);
+
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -140,7 +144,6 @@ void PurposeTypeDetailDialog::updateTypeFromUi() {
     type_.name = ui_->nameEdit->text().trimmed().toStdString();
     type_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     type_.modified_by = username_;
-    type_.performed_by = username_;
 }
 
 void PurposeTypeDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -159,10 +162,10 @@ void PurposeTypeDetailDialog::updateSaveButtonState() {
 }
 
 bool PurposeTypeDetailDialog::validateInput() {
-    const QString code = ui_->codeEdit->text().trimmed();
-    const QString name = ui_->nameEdit->text().trimmed();
+    const QString code_val = ui_->codeEdit->text().trimmed();
+    const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return !code.isEmpty() && !name.isEmpty();
+    return true && !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void PurposeTypeDetailDialog::onSaveClicked() {
@@ -173,12 +176,9 @@ void PurposeTypeDetailDialog::onSaveClicked() {
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(
-            this, "Invalid Input", "Please fill in all required fields (Code and Name).");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
-
-    updateTypeFromUi();
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -187,6 +187,8 @@ void PurposeTypeDetailDialog::onSaveClicked() {
         return;
     type_.change_reason_code = crSel->reason_code;
     type_.change_commentary = crSel->commentary;
+
+    updateTypeFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving purpose type: " << type_.code;
 
@@ -210,7 +212,6 @@ void PurposeTypeDetailDialog::onSaveClicked() {
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
-
 
         return {response_result->success, response_result->message};
     };
@@ -257,8 +258,7 @@ void PurposeTypeDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel =
-        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
     if (!crSel)
         return;
 
@@ -277,14 +277,13 @@ void PurposeTypeDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_purpose_type_request request;
-        request.type = code;
+        request.codes = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
-
 
         return {response_result->success, response_result->message};
     };

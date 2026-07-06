@@ -1,0 +1,206 @@
+:PROPERTIES:
+:ID: 770F93B6-4363-413A-B923-3BC399125957
+:END:
+#+title: ores.refdata.purpose_type
+#+description: Codegen entity model for the refdata =purpose_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Classification of portfolio purpose.
+#+entity_singular: purpose_type
+#+entity_plural: purpose_types
+#+entity_title: Purpose Type
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-07-06
+#+updated: 2026-07-06
+
+Reference data table defining valid purpose type values.
+Examples: 'Hedging', 'Trading', 'Investment'.
+
+Purpose types are managed by the system tenant and are used to
+classify the intent of portfolio records.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique purpose type code.
+
+Examples: 'Hedging', 'Trading', 'Investment'.
+
+#+begin_src cpp :name generator
+std::string("PurposeType")
+#+end_src
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the purpose type.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Purpose"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the purpose type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_purpose_types_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_purpose_type_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: purpose type
+:entity_plural_words:   purpose types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pt
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/purpose_type.hpp
+:domain_class:           refdata::domain::purpose_type
+:protocol_include:       ores.refdata.api/messaging/purpose_type_protocol.hpp
+:collection_name:        types
+:item_var:               type
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      refdata::messaging::get_purpose_types_request
+:get_response_class:     refdata::messaging::get_purpose_types_response
+:get_message_type:       get_purpose_types_request
+:save_request_class:     refdata::messaging::save_purpose_type_request
+:save_response_class:    refdata::messaging::save_purpose_type_response
+:save_message_type:      save_purpose_type_request
+:delete_request_class:   refdata::messaging::delete_purpose_type_request
+:delete_response_class:  refdata::messaging::delete_purpose_type_response
+:delete_message_type:    delete_purpose_type_request
+:history_request_class:  refdata::messaging::get_purpose_type_history_request
+:history_response_class: refdata::messaging::get_purpose_type_history_response
+:history_message_type:   get_purpose_type_history_request
+:has_change_reason_cache: true
+:has_pagination:         true
+:settings_group:         PurposeTypeListWindow
+:window_title:           Purpose Types
+:icon:                   Flag
+:END:
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | auto  |
+| Name         | name          | Name          | string    | auto  |
+| Description  | description   | Description   | string    | auto  |
+| DisplayOrder | display_order | Display Order | int       | 70    |
+| Version      | version       | Version       | int       | 70    |
+| ModifiedBy   | modified_by   | Modified By   | string    | auto  |
+| RecordedAt   | recorded_at   | Recorded At   | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

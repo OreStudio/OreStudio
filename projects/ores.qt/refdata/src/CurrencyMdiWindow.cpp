@@ -24,7 +24,7 @@
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
-#include "ores.qt/ImportCurrencyDialog.hpp"
+#include "ores.qt/ImportEntityDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/csv/exporter.hpp"
 #include "ores.refdata.api/generators/currency_generator.hpp"
@@ -641,14 +641,55 @@ void CurrencyMdiWindow::importFromXML() {
         emit statusChanged(
             QString("Found %1 currencies - opening import dialog...").arg(currencies.size()));
 
+        // Build preview rows and validate up front, same as the dialog used to do internally.
+        std::vector<ImportEntityRow> rows;
+        rows.reserve(currencies.size());
+        for (const auto& currency : currencies) {
+            const auto validation_error = importer::validate_currency(currency);
+            rows.push_back(
+                {.display_values = {QString::fromStdString(currency.iso_code),
+                                    QString::fromStdString(currency.name),
+                                    QString::fromStdString(currency.symbol),
+                                    QString::fromStdString(currency.fraction_symbol),
+                                    QString::number(currency.fractions_per_unit)},
+                 .is_valid = validation_error.empty(),
+                 .invalid_reason = QString::fromStdString(validation_error)});
+        }
+
+        auto client_manager = clientManager_;
+        auto username = username_;
+        auto currencies_by_row = currencies;
+        auto label_of = [currencies_by_row](std::size_t index) {
+            return QString::fromStdString(currencies_by_row[index].iso_code);
+        };
+        auto import_one = [client_manager, username, currencies_by_row](std::size_t index) {
+            using namespace ores::refdata::messaging;
+            auto currency_to_import = currencies_by_row[index];
+            currency_to_import.modified_by = username.toStdString();
+
+            try {
+                auto request = save_currency_request::from(currency_to_import);
+                auto response_result = client_manager->process_authenticated_request(std::move(request));
+                return response_result.has_value() && response_result->success;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error) << "Error importing currency "
+                                          << currencies_by_row[index].iso_code << ": " << e.what();
+                return false;
+            }
+        };
+
         // Show import dialog with full preview and import capability
-        // Assuming ImportCurrencyDialog is updated to take ClientManager
-        auto* dialog =
-            new ImportCurrencyDialog(currencies, fileName, clientManager_, username_, this);
+        auto* dialog = new ImportEntityDialog("Currencies",
+                                              fileName,
+                                              {"ISO Code", "Name", "Symbol", "Fraction Symbol", "Fractions/Unit"},
+                                              std::move(rows),
+                                              label_of,
+                                              import_one,
+                                              this);
 
         // Connect completion signal to refresh UI
         connect(dialog,
-                &ImportCurrencyDialog::importCompleted,
+                &ImportEntityDialog::importCompleted,
                 this,
                 [this](int success_count, int total_count) {
                     BOOST_LOG_SEV(lg(), info) << "Import complete: " << success_count << " of "
@@ -673,7 +714,7 @@ void CurrencyMdiWindow::importFromXML() {
                 });
 
         // Connect cancellation signal
-        connect(dialog, &ImportCurrencyDialog::importCancelled, this, [this]() {
+        connect(dialog, &ImportEntityDialog::importCancelled, this, [this]() {
             BOOST_LOG_SEV(lg(), debug) << "Import cancelled by user";
             emit statusChanged("Import cancelled");
         });

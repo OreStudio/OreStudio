@@ -150,125 +150,139 @@
               </property>
               <layout class="QFormLayout" name="formLayout">
                <item row="0" column="0">
-                <widget class="QLabel" name="nameValueLabel">
+                <widget class="QLabel" name="idLabel">
                  <property name="text">
-                  <string>Name:</string>
+                  <string>Id:</string>
                  </property>
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLabel" name="nameValue">
+                <widget class="QLabel" name="idValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="ledgerCcyValueLabel">
+                <widget class="QLabel" name="nameLabel">
                  <property name="text">
-                  <string>Ledger Currency:</string>
+                  <string>Name:</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLabel" name="ledgerCcyValue">
+                <widget class="QLabel" name="nameValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="glAccountRefValueLabel">
+                <widget class="QLabel" name="ledger_ccyLabel">
                  <property name="text">
-                  <string>GL Account Ref:</string>
+                  <string>Ledger Currency:</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QLabel" name="glAccountRefValue">
+                <widget class="QLabel" name="ledgerCcyValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="costCenterValueLabel">
+                <widget class="QLabel" name="gl_account_refLabel">
                  <property name="text">
-                  <string>Cost Centre:</string>
+                  <string>GL Account Ref:</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="QLabel" name="costCenterValue">
+                <widget class="QLabel" name="glAccountRefValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="bookStatusValueLabel">
+                <widget class="QLabel" name="cost_centerLabel">
                  <property name="text">
-                  <string>Status:</string>
+                  <string>Cost Center:</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="QLabel" name="bookStatusValue">
+                <widget class="QLabel" name="costCenterValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="5" column="0">
-                <widget class="QLabel" name="versionNumberLabel">
+                <widget class="QLabel" name="book_statusLabel">
                  <property name="text">
-                  <string>Version:</string>
+                  <string>Status:</string>
                  </property>
                 </widget>
                </item>
                <item row="5" column="1">
-                <widget class="QLabel" name="versionNumberValue">
+                <widget class="QLabel" name="bookStatusValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="6" column="0">
-                <widget class="QLabel" name="modifiedByLabel">
+                <widget class="QLabel" name="versionNumberLabel">
                  <property name="text">
-                  <string>Modified By:</string>
+                  <string>Version:</string>
                  </property>
                 </widget>
                </item>
                <item row="6" column="1">
-                <widget class="QLabel" name="modifiedByValue">
+                <widget class="QLabel" name="versionNumberValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="7" column="0">
-                <widget class="QLabel" name="recordedAtLabel">
+                <widget class="QLabel" name="modifiedByLabel">
                  <property name="text">
-                  <string>Recorded At:</string>
+                  <string>Modified By:</string>
                  </property>
                 </widget>
                </item>
                <item row="7" column="1">
-                <widget class="QLabel" name="recordedAtValue">
+                <widget class="QLabel" name="modifiedByValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="8" column="0">
+                <widget class="QLabel" name="recordedAtLabel">
+                 <property name="text">
+                  <string>Recorded At:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="1">
+                <widget class="QLabel" name="recordedAtValue">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="0">
                 <widget class="QLabel" name="changeCommentaryLabel">
                  <property name="text">
                   <string>Change Commentary:</string>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="1">
+               <item row="9" column="1">
                 <widget class="QLabel" name="changeCommentaryValue">
                  <property name="text">
                   <string/>

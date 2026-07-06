@@ -18,6 +18,7 @@
  *
  */
 #include "ores.refdata.core/repository/book_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

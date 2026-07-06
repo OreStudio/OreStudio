@@ -18,34 +18,36 @@
  *
  */
 #include "ores.qt/BookController.hpp"
-#include "ores.qt/BadgeCache.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/BookDetailDialog.hpp"
 #include "ores.qt/BookHistoryDialog.hpp"
 #include "ores.qt/BookMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/eventing/book_changed_event.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include <boost/uuid/uuid.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view book_event_name =
+    eventing::domain::event_traits<refdata::eventing::book_changed_event>::name;
+}
+
 BookController::BookController(QMainWindow* mainWindow,
                                QMdiArea* mdiArea,
                                ClientManager* clientManager,
-                               ImageCache* imageCache,
                                ChangeReasonCache* changeReasonCache,
-                               BadgeCache* badgeCache,
                                const QString& username,
                                QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
-    , imageCache_(imageCache)
+    : EntityController(mainWindow, mdiArea, clientManager, username, book_event_name, parent)
     , changeReasonCache_(changeReasonCache)
-    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -62,7 +64,7 @@ void BookController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new BookMdiWindow(clientManager_, imageCache_, username_, badgeCache_);
+    listWindow_ = new BookMdiWindow(clientManager_, username_);
 
     // Connect signals
     connect(listWindow_, &BookMdiWindow::statusChanged, this, &BookController::statusMessage);
@@ -76,7 +78,7 @@ void BookController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Books");
     listMdiSubWindow_->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::Book, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -86,6 +88,8 @@ void BookController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -124,19 +128,6 @@ void BookController::reloadListWindow() {
     }
 }
 
-void BookController::openAdd() {
-    showAddWindow();
-}
-void BookController::openAddWithParent(boost::uuids::uuid parent_id) {
-    showAddWindow(parent_id);
-}
-void BookController::openEdit(const refdata::domain::book& b) {
-    showDetailWindow(b);
-}
-void BookController::openHistory(const refdata::domain::book& b) {
-    showHistoryWindow(b);
-}
-
 void BookController::onShowDetails(const refdata::domain::book& book) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << book.name;
     showDetailWindow(book);
@@ -145,6 +136,19 @@ void BookController::onShowDetails(const refdata::domain::book& book) {
 void BookController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new book requested";
     showAddWindow();
+}
+
+void BookController::openAdd() {
+    showAddWindow();
+}
+void BookController::openAddWithParent(boost::uuids::uuid parentPortfolioId) {
+    showAddWindow(parentPortfolioId);
+}
+void BookController::openEdit(const refdata::domain::book& book) {
+    showDetailWindow(book);
+}
+void BookController::openHistory(const refdata::domain::book& book) {
+    showHistoryWindow(book);
 }
 
 void BookController::onShowHistory(const refdata::domain::book& book) {
@@ -156,17 +160,15 @@ void BookController::showAddWindow(boost::uuids::uuid parentPortfolioId) {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new book";
 
     auto* detailDialog = new BookDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
-    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setChangeReasonCache(changeReasonCache_);
-
     if (!parentPortfolioId.is_nil()) {
         refdata::domain::book prefilled;
         prefilled.parent_portfolio_id = parentPortfolioId;
         detailDialog->setBook(prefilled);
     }
-
     detailDialog->setCreateMode(true);
 
     connect(detailDialog, &BookDetailDialog::statusMessage, this, &BookController::statusMessage);
@@ -186,7 +188,7 @@ void BookController::showAddWindow(boost::uuids::uuid parentPortfolioId) {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Book");
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::Book, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -207,10 +209,10 @@ void BookController::showDetailWindow(const refdata::domain::book& book) {
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << book.name;
 
     auto* detailDialog = new BookDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
-    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setCreateMode(false);
     detailDialog->setBook(book);
 
@@ -240,11 +242,12 @@ void BookController::showDetailWindow(const refdata::domain::book& book) {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Book: %1").arg(identifier));
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::Book, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<BookController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -307,10 +310,12 @@ void BookController::showHistoryWindow(const refdata::domain::book& book) {
     historyWindow->setWindowTitle(QString("Book History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<BookController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -337,10 +342,10 @@ void BookController::onOpenVersion(const refdata::domain::book& book, int versio
     }
 
     auto* detailDialog = new BookDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
-    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setBook(book);
     detailDialog->setReadOnly(true);
 
@@ -387,12 +392,15 @@ void BookController::onRevertVersion(const refdata::domain::book& book) {
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BookDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
-    detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setBook(book);
+    auto reverted_book = book;
+    reverted_book.version = 0;
+    detailDialog->setBook(reverted_book);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog, &BookDetailDialog::statusMessage, this, &BookController::statusMessage);
     connect(detailDialog, &BookDetailDialog::errorMessage, this, &BookController::errorMessage);

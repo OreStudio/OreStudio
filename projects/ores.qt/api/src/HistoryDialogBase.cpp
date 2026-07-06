@@ -23,7 +23,6 @@
 #include <QAction>
 #include <QHeaderView>
 #include <QLabel>
-#include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QTableWidget>
@@ -95,19 +94,7 @@ void HistoryDialogBase::initializeHistoryUi(const HistoryWidgets& widgets) {
     if (widgets_.closeButton) {
         widgets_.closeButton->setIcon(
             IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-        connect(widgets_.closeButton, &QPushButton::clicked, this, [this]() {
-            // When embedded (not detached), window() resolves to the main
-            // window, not this dialog's containing subwindow, so climb the
-            // parent chain to close the MDI subwindow instead of the app.
-            for (QWidget* parent = parentWidget(); parent; parent = parent->parentWidget()) {
-                if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-                    mdiSubWindow->close();
-                    return;
-                }
-            }
-            if (window())
-                window()->close();
-        });
+        connect(widgets_.closeButton, &QPushButton::clicked, this, &HistoryDialogBase::requestClose);
     }
 
     updateActionStates();

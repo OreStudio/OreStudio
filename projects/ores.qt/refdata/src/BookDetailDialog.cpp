@@ -19,17 +19,13 @@
  */
 #include "ores.qt/BookDetailDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ui_BookDetailDialog.h"
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QtConcurrent>
-#include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -43,7 +39,6 @@ BookDetailDialog::BookDetailDialog(QWidget* parent)
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
 }
@@ -55,9 +50,11 @@ BookDetailDialog::~BookDetailDialog() {
 QTabWidget* BookDetailDialog::tabWidget() const {
     return ui_->tabWidget;
 }
+
 QWidget* BookDetailDialog::provenanceTab() const {
     return ui_->provenanceTab;
 }
+
 ProvenanceWidget* BookDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
 }
@@ -79,156 +76,17 @@ void BookDetailDialog::setupConnections() {
     connect(ui_->deleteButton, &QPushButton::clicked, this, &BookDetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this, &BookDetailDialog::onCloseClicked);
 
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onCodeChanged);
-    connect(ui_->descriptionEdit,
-            &QPlainTextEdit::textChanged,
-            this,
-            &BookDetailDialog::onFieldChanged);
-    connect(ui_->ledgerCcyCombo,
-            &QComboBox::currentTextChanged,
-            this,
-            &BookDetailDialog::onFieldChanged);
+    connect(ui_->idEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
+    connect(ui_->ledgerCcyEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
     connect(
         ui_->glAccountRefEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
     connect(ui_->costCenterEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
-    connect(ui_->bookStatusCombo,
-            &QComboBox::currentTextChanged,
-            this,
-            &BookDetailDialog::onFieldChanged);
-    connect(ui_->bookTypeCombo,
-            &QComboBox::currentTextChanged,
-            this,
-            &BookDetailDialog::onFieldChanged);
-    connect(ui_->parentPortfolioCombo,
-            &QComboBox::currentTextChanged,
-            this,
-            &BookDetailDialog::onFieldChanged);
-    connect(ui_->ownerUnitCombo,
-            &QComboBox::currentIndexChanged,
-            this,
-            &BookDetailDialog::onFieldChanged);
+    connect(ui_->bookStatusEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
 }
 
 void BookDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
-    populateCurrencyCombo();
-    populateBookStatusCombo();
-    populateParentPortfolioCombo();
-    populateOwnerUnitCombo();
-}
-
-void BookDetailDialog::setImageCache(ImageCache* imageCache) {
-    imageCache_ = imageCache;
-    setup_flag_combo(this, ui_->ledgerCcyCombo, imageCache_, FlagSource::Currency);
-}
-
-void BookDetailDialog::populateCurrencyCombo() {
-    if (!clientManager_ || !clientManager_->isConnected())
-        return;
-
-    QPointer<BookDetailDialog> self = this;
-    auto* cm = clientManager_;
-
-    auto task = [cm]() -> std::vector<std::string> {
-        return fetch_currency_codes(cm);
-    };
-
-    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
-    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
-        auto codes = watcher->result();
-        watcher->deleteLater();
-        if (!self)
-            return;
-
-        self->ui_->ledgerCcyCombo->clear();
-        self->ui_->ledgerCcyCombo->addItem(QString()); // "(select)" sentinel
-        for (const auto& code : codes) {
-            self->ui_->ledgerCcyCombo->addItem(QString::fromStdString(code));
-        }
-
-        apply_flag_icons(self->ui_->ledgerCcyCombo, self->imageCache_, FlagSource::Currency);
-
-        self->updateUiFromBook();
-    });
-
-    QFuture<std::vector<std::string>> future = QtConcurrent::run(task);
-    watcher->setFuture(future);
-}
-
-void BookDetailDialog::populateBookStatusCombo() {
-    ui_->bookStatusCombo->clear();
-    // Lifecycle states for books: Active, Closed, Frozen.
-    // TODO: populate asynchronously from the book_statuses lookup service
-    // once the protocol is available.
-    for (const auto* status : {"Active", "Closed", "Frozen"}) {
-        ui_->bookStatusCombo->addItem(QString::fromUtf8(status));
-    }
-}
-
-void BookDetailDialog::populateParentPortfolioCombo() {
-    if (!clientManager_ || !clientManager_->isConnected())
-        return;
-
-    QPointer<BookDetailDialog> self = this;
-    auto* cm = clientManager_;
-
-    auto task = [cm]() -> std::vector<portfolio_entry> {
-        return fetch_portfolio_entries(cm);
-    };
-
-    auto* watcher = new QFutureWatcher<std::vector<portfolio_entry>>(self);
-    connect(
-        watcher, &QFutureWatcher<std::vector<portfolio_entry>>::finished, self, [self, watcher]() {
-            auto entries = watcher->result();
-            watcher->deleteLater();
-            if (!self)
-                return;
-
-            self->portfolioEntries_ = entries;
-            self->ui_->parentPortfolioCombo->clear();
-            for (const auto& e : entries) {
-                self->ui_->parentPortfolioCombo->addItem(QString::fromStdString(e.name));
-            }
-            self->updateUiFromBook();
-        });
-
-    QFuture<std::vector<portfolio_entry>> future = QtConcurrent::run(task);
-    watcher->setFuture(future);
-}
-
-void BookDetailDialog::populateOwnerUnitCombo() {
-    if (!clientManager_ || !clientManager_->isConnected())
-        return;
-
-    QPointer<BookDetailDialog> self = this;
-    auto* cm = clientManager_;
-
-    auto task = [cm]() -> std::vector<business_unit_entry> {
-        return fetch_business_unit_entries(cm);
-    };
-
-    auto* watcher = new QFutureWatcher<std::vector<business_unit_entry>>(self);
-    connect(watcher,
-            &QFutureWatcher<std::vector<business_unit_entry>>::finished,
-            self,
-            [self, watcher]() {
-                auto entries = watcher->result();
-                watcher->deleteLater();
-                if (!self)
-                    return;
-
-                self->ownerUnitEntries_ = entries;
-                self->ui_->ownerUnitCombo->clear();
-                self->ui_->ownerUnitCombo->addItem(tr("(none)"), QString{});
-                for (const auto& e : entries) {
-                    self->ui_->ownerUnitCombo->addItem(QString::fromStdString(e.name),
-                                                       QString::fromStdString(e.id));
-                }
-                self->updateUiFromBook();
-            });
-
-    QFuture<std::vector<business_unit_entry>> future = QtConcurrent::run(task);
-    watcher->setFuture(future);
 }
 
 void BookDetailDialog::setUsername(const std::string& username) {
@@ -242,64 +100,39 @@ void BookDetailDialog::setBook(const refdata::domain::book& book) {
 
 void BookDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    if (createMode) {
-        boost::uuids::random_generator gen;
-        book_.id = gen();
-    }
     ui_->deleteButton->setVisible(!createMode);
-
     setProvenanceEnabled(!createMode);
-
+    if (createMode) {
+        book_.id = boost::uuids::random_generator()();
+    }
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void BookDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
 void BookDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->nameEdit->setReadOnly(true);
-    ui_->descriptionEdit->setReadOnly(readOnly);
-    ui_->ledgerCcyCombo->setEnabled(!readOnly);
+    ui_->idEdit->setReadOnly(true);
+    ui_->nameEdit->setReadOnly(readOnly);
+    ui_->ledgerCcyEdit->setReadOnly(readOnly);
     ui_->glAccountRefEdit->setReadOnly(readOnly);
     ui_->costCenterEdit->setReadOnly(readOnly);
-    ui_->bookStatusCombo->setEnabled(!readOnly);
-    ui_->bookTypeCombo->setEnabled(!readOnly);
-    ui_->parentPortfolioCombo->setEnabled(!readOnly);
-    ui_->ownerUnitCombo->setEnabled(!readOnly);
+    ui_->bookStatusEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void BookDetailDialog::updateUiFromBook() {
+    ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(book_.id)));
     ui_->nameEdit->setText(QString::fromStdString(book_.name));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(book_.description));
-    ui_->ledgerCcyCombo->setCurrentText(QString::fromStdString(book_.ledger_ccy));
+    ui_->ledgerCcyEdit->setText(QString::fromStdString(book_.ledger_ccy));
     ui_->glAccountRefEdit->setText(QString::fromStdString(book_.gl_account_ref));
     ui_->costCenterEdit->setText(QString::fromStdString(book_.cost_center));
-    ui_->bookStatusCombo->setCurrentText(QString::fromStdString(book_.book_status));
-    ui_->bookTypeCombo->setCurrentIndex(book_.is_trading_book != 0 ? 1 : 0);
-
-    // Select the parent portfolio by matching the stored UUID to a loaded entry
-    const auto parent_id_str = boost::uuids::to_string(book_.parent_portfolio_id);
-    ui_->parentPortfolioCombo->setCurrentIndex(0);
-    for (const auto& e : portfolioEntries_) {
-        if (e.id == parent_id_str) {
-            ui_->parentPortfolioCombo->setCurrentText(QString::fromStdString(e.name));
-            break;
-        }
-    }
-
-    // Select the owner unit: index 0 = "(none)", remaining items carry UUID as data
-    ui_->ownerUnitCombo->setCurrentIndex(0);
-    if (book_.owner_unit_id) {
-        const auto owner_id_str = boost::uuids::to_string(*book_.owner_unit_id);
-        const auto qowner = QString::fromStdString(owner_id_str);
-        for (int i = 1; i < ui_->ownerUnitCombo->count(); ++i) {
-            if (ui_->ownerUnitCombo->itemData(i).toString() == qowner) {
-                ui_->ownerUnitCombo->setCurrentIndex(i);
-                break;
-            }
-        }
-    }
+    ui_->bookStatusEdit->setText(QString::fromStdString(book_.book_status));
 
     populateProvenance(book_.version,
                        book_.modified_by,
@@ -307,37 +140,18 @@ void BookDetailDialog::updateUiFromBook() {
                        book_.recorded_at,
                        book_.change_reason_code,
                        book_.change_commentary);
+
     hasChanges_ = false;
     updateSaveButtonState();
 }
 
 void BookDetailDialog::updateBookFromUi() {
     book_.name = ui_->nameEdit->text().trimmed().toStdString();
-    book_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    book_.ledger_ccy = ui_->ledgerCcyCombo->currentText().trimmed().toStdString();
+    book_.ledger_ccy = ui_->ledgerCcyEdit->text().trimmed().toStdString();
     book_.gl_account_ref = ui_->glAccountRefEdit->text().trimmed().toStdString();
     book_.cost_center = ui_->costCenterEdit->text().trimmed().toStdString();
-    book_.book_status = ui_->bookStatusCombo->currentText().trimmed().toStdString();
-    book_.is_trading_book = (ui_->bookTypeCombo->currentIndex() == 1) ? 1 : 0;
+    book_.book_status = ui_->bookStatusEdit->text().trimmed().toStdString();
     book_.modified_by = username_;
-    book_.performed_by = username_;
-
-    // Resolve parent portfolio name back to UUID
-    const auto parent_name = ui_->parentPortfolioCombo->currentText().trimmed().toStdString();
-    for (const auto& e : portfolioEntries_) {
-        if (e.name == parent_name) {
-            book_.parent_portfolio_id = boost::lexical_cast<boost::uuids::uuid>(e.id);
-            break;
-        }
-    }
-
-    // Resolve owner unit: item data holds the UUID string; index 0 = none
-    const auto owner_data = ui_->ownerUnitCombo->currentData().toString().trimmed().toStdString();
-    if (owner_data.empty()) {
-        book_.owner_unit_id = std::nullopt;
-    } else {
-        book_.owner_unit_id = boost::lexical_cast<boost::uuids::uuid>(owner_data);
-    }
 }
 
 void BookDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -356,10 +170,10 @@ void BookDetailDialog::updateSaveButtonState() {
 }
 
 bool BookDetailDialog::validateInput() {
+    const QString id_val = ui_->idEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
-    const QString ccy_val = ui_->ledgerCcyCombo->currentText().trimmed();
 
-    return !name_val.isEmpty() && !ccy_val.isEmpty();
+    return true && !id_val.isEmpty() && !name_val.isEmpty();
 }
 
 void BookDetailDialog::onSaveClicked() {
@@ -370,10 +184,7 @@ void BookDetailDialog::onSaveClicked() {
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(
-            this,
-            "Invalid Input",
-            "Please fill in all required fields (name and currency are required).");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
@@ -468,13 +279,13 @@ void BookDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, id = book_.id]() -> DeleteResult {
+    auto task = [self, id_str = boost::uuids::to_string(book_.id)]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         refdata::messaging::delete_book_request request;
-        request.ids.push_back(boost::uuids::to_string(id));
+        request.ids = {id_str};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

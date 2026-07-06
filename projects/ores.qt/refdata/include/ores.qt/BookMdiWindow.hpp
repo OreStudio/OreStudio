@@ -32,7 +32,6 @@
 
 namespace ores::qt {
 
-class BadgeCache;
 
 /**
  * @brief MDI window for displaying and managing books.
@@ -54,23 +53,16 @@ private:
 
 public:
     explicit BookMdiWindow(ClientManager* clientManager,
-                           ImageCache* imageCache,
                            const QString& username,
-                           BadgeCache* badgeCache,
                            QWidget* parent = nullptr);
     ~BookMdiWindow() override = default;
-
-public slots:
-    void doReload() override;
-
-protected:
-    void onWindowWorkspaceChanged(const WorkspaceContext& ctx) override;
 
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void showBookDetails(const refdata::domain::book& book);
     void addNewRequested();
+    void bookDeleted(const QString& code);
     void showBookHistory(const refdata::domain::book& book);
 
 public slots:
@@ -78,8 +70,9 @@ public slots:
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
-    void importTrades();
-    void exportToXml();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();
@@ -88,10 +81,6 @@ private slots:
     void onDoubleClicked(const QModelIndex& index);
 
 protected:
-    bool isWorkspaceScoped() const override {
-        return false;
-    }
-
     QString normalRefreshTooltip() const override {
         return tr("Refresh books");
     }
@@ -104,9 +93,7 @@ private:
     void updateActionStates();
 
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
     QString username_;
-    BadgeCache* badgeCache_;
 
     QToolBar* toolbar_;
     QTableView* tableView_;
@@ -120,8 +107,6 @@ private:
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
-    QAction* importAction_;
-    QAction* exportXmlAction_;
 };
 
 }

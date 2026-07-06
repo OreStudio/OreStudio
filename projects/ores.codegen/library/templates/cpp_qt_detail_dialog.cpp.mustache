@@ -362,6 +362,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
 void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_pascal_short}}FromUi() {
 {{#domain_entity.qt.detail_fields}}
 {{#is_key}}
+{{^is_uuid}}
     if (createMode_) {
 {{#is_line_edit}}
         {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->text().trimmed().toStdString();
@@ -373,6 +374,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
         {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->currentData().toString().trimmed().toStdString();
 {{/is_dynamic_combo}}
     }
+{{/is_uuid}}
 {{/is_key}}
 {{^is_key}}
 {{#is_line_edit}}

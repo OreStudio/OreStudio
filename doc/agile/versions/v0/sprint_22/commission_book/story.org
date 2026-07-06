@@ -8,6 +8,7 @@
 #+filetags: :product:refdata:commissioning:book:sprint_22:v0:
 #+created: 2026-05-29
 #+updated: 2026-06-12
+#+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -23,12 +24,12 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | C++ core/SQL and Qt UI sync done (PR #1449). Shell, CLI, manual chapter, and remaining Qt verification not started. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-05-29                               |
+| Next          | Break out remaining tasks: shell list/add/remove, CLI list/add/remove, manual chapter, Qt eventing/delete verification, Wt/HTTP backlog captures. |
+| Last touched  | 2026-07-06                               |
 
 * Acceptance
 
@@ -52,4 +53,4 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:9AB461BD-AD46-4980-A801-BE6104270C52][Sync C++ core codegen output for book]] | DONE | 2026-07-03 | 2026-07-06 | Regenerate book's api/core/sql from the new graph-based codegen and land a build-consistent core sync. |

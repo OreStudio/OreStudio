@@ -24,17 +24,16 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/RefdataExport.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
 
 namespace ores::qt {
 
-class BadgeCache;
 class BookMdiWindow;
-class ChangeReasonCache;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing book windows and operations.
@@ -42,7 +41,7 @@ class DetachableMdiSubWindow;
  * Manages the lifecycle of book list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class BookController final : public EntityController {
+class ORES_QT_REFDATA_EXPORT BookController final : public EntityController {
     Q_OBJECT
 
 private:
@@ -58,9 +57,7 @@ public:
     BookController(QMainWindow* mainWindow,
                    QMdiArea* mdiArea,
                    ClientManager* clientManager,
-                   ImageCache* imageCache,
                    ChangeReasonCache* changeReasonCache,
-                   BadgeCache* badgeCache,
                    const QString& username,
                    QObject* parent = nullptr);
 
@@ -92,9 +89,7 @@ private:
     void showDetailWindow(const refdata::domain::book& book);
     void showHistoryWindow(const refdata::domain::book& book);
 
-    ImageCache* imageCache_;
     ChangeReasonCache* changeReasonCache_;
-    BadgeCache* badgeCache_;
     BookMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

@@ -26,18 +26,15 @@
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.refdata.api/domain/book.hpp"
-#include <QAbstractTableModel>
 #include <QFutureWatcher>
 #include <vector>
 
 namespace ores::qt {
 
-class ImageCache;
-
 /**
  * @brief Model for displaying books fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches book
+ * This model extends AbstractClientModel and fetches book
  * data asynchronously using the ores.comms client.
  */
 class ClientBookModel final : public AbstractClientModel {
@@ -60,17 +57,15 @@ public:
         Name,
         LedgerCcy,
         BookStatus,
-        IsTradingBook,
         CostCenter,
+        IsTradingBook,
         Version,
         ModifiedBy,
         RecordedAt,
         ColumnCount
     };
 
-    explicit ClientBookModel(ClientManager* clientManager,
-                             ImageCache* imageCache,
-                             QObject* parent = nullptr);
+    explicit ClientBookModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientBookModel() override = default;
 
     // QAbstractTableModel interface
@@ -117,15 +112,6 @@ public:
         return total_available_count_;
     }
 
-signals:
-    /**
-     * @brief Emitted when data has been successfully loaded.
-     */
-
-    /**
-     * @brief Emitted when an error occurs during data loading.
-     */
-
 private slots:
     void onBooksLoaded();
     void onPulseStateChanged(bool isOn);
@@ -145,7 +131,6 @@ private:
     void fetch_books(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
     std::vector<refdata::domain::book> books_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};

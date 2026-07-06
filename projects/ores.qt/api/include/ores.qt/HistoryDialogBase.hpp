@@ -101,7 +101,22 @@ signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
 
+    /**
+     * @brief Emitted when the dialog wants to close its container window.
+     *
+     * Controllers should connect this signal to the container window's
+     * close() slot to enable decoupled window management.
+     */
+    void closeRequested();
+
 protected:
+    /**
+     * @brief Request closure of the container window.
+     */
+    void requestClose() {
+        emit closeRequested();
+    }
+
     /**
      * @brief One row of the version list, rendered as strings.
      *

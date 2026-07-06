@@ -325,6 +325,8 @@ binding — without touching the domain object graph. (The many /computed/
 | =has_pagination= | bool | false | Emit pagination controls in the list view |
 | =has_uuid_primary_key= | bool | (set) | Client treats the PK as a uuid for id handling |
 | =has_change_reason_cache= | bool | false | Controller constructor accepts a =ChangeReasonCache*= parameter; each detail-dialog creation site (add, edit, open-version, revert) calls =setChangeReasonCache= before wiring the dialog. Set to =true= for entities whose detail dialogs require a reason for every mutation. |
+| =has_explorer_api= | bool | false | Controller exposes public =openAdd()=, =openEdit(entity)=, =openHistory(entity)= so a sibling explorer window (e.g. a tree mixing this entity with another) can drive it from outside, instead of only reacting to its own list/detail windows. |
+| =parent_entity_singular= | string | (unset) | Only meaningful with =has_explorer_api=. Names another entity as this one's parent (e.g. book's parent is portfolio). Adds =openAddWithParent(boost::uuids::uuid parent<Pascal>Id)= and prefills that field when the add dialog opens nested under a parent explorer node. Assumes a =parent_<entity>_id= uuid column already exists on the domain entity. |
 | =window_title= | string | derived | MDI sub-window title |
 | =icon= | string | derived | Window / menu icon resource |
 | =settings_group= | string | derived | =QSettings= group for persisted view state |

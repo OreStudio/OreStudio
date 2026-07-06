@@ -19,10 +19,8 @@
  */
 #include "ores.qt/BookHistoryDialog.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ui_BookHistoryDialog.h"
-#include <QHeaderView>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -40,21 +38,26 @@ BookHistoryDialog::BookHistoryDialog(const boost::uuids::uuid& id,
     , clientManager_(clientManager) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
-
-    ui_->titleLabel->setText(QString("History for: %1").arg(code_));
-
     ui_->versionListWidget->setColumnCount(5);
-    ui_->versionListWidget->setHorizontalHeaderLabels(
-        {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
-
-    initializeHistoryUi({.versionList = ui_->versionListWidget,
-                         .changesTable = ui_->changesTableWidget,
-                         .titleLabel = ui_->titleLabel,
-                         .closeButton = ui_->closeButton});
+    ui_->versionListWidget->setHorizontalHeaderLabels({tr("Version"),
+                                                       tr("Recorded At"),
+                                                       tr("Modified By"),
+                                                       tr("Performed By"),
+                                                       tr("Commentary")});
+    ui_->changesTableWidget->setColumnCount(3);
+    ui_->changesTableWidget->setHorizontalHeaderLabels(
+        {tr("Field"), tr("Old Value"), tr("New Value")});
+    initializeHistoryUi(
+        {ui_->versionListWidget, ui_->changesTableWidget, ui_->titleLabel, ui_->closeButton});
 }
 
-BookHistoryDialog::~BookHistoryDialog() = default;
+BookHistoryDialog::~BookHistoryDialog() {
+    delete ui_;
+}
+
+QString BookHistoryDialog::code() const {
+    return code_;
+}
 
 void BookHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), debug) << "Loading history for book: " << code_.toStdString();
@@ -63,52 +66,62 @@ void BookHistoryDialog::loadHistory() {
     refdata::messaging::get_book_history_request request;
     request.id = boost::uuids::to_string(id_);
 
-    runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
-        if (!response.success) {
-            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
-            historyLoadFailed(QString::fromStdString(response.message));
-            return;
-        }
-        versions_ = std::move(response.books);
-        historyLoaded();
-    });
+    QPointer<BookHistoryDialog> self = this;
+    runHistoryRequest(clientManager_,
+                      std::move(request),
+                      [self](refdata::messaging::get_book_history_response response) {
+                          if (!self)
+                              return;
+                          if (!response.success) {
+                              self->historyLoadFailed(QString::fromStdString(response.message));
+                              return;
+                          }
+                          self->versions_ = std::move(response.history);
+                          self->historyLoaded();
+                      });
 }
 
 int BookHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow BookHistoryDialog::versionRow(int index) const {
-    const auto& version = versions_[index];
-    return {.version = version.version,
-            .cells = {relative_time_helper::format(version.recorded_at),
-                      QString::fromStdString(version.modified_by),
-                      QString::fromStdString(version.performed_by),
-                      QString::fromStdString(version.change_commentary)}};
-}
-
 QString BookHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::DiffResult BookHistoryDialog::calculateDiffAt(int current_index,
-                                                                 int previous_index) const {
-    const auto& current = versions_[current_index];
-    const auto& previous = versions_[previous_index];
+HistoryDialogBase::VersionRow BookHistoryDialog::versionRow(int index) const {
+    const auto& v = versions_[index];
+    return {v.version,
+            {relative_time_helper::format(v.recorded_at),
+             QString::fromStdString(v.modified_by),
+             QString::fromStdString(v.performed_by),
+             QString::fromStdString(v.change_commentary)}};
+}
 
+HistoryDialogBase::DiffResult BookHistoryDialog::calculateDiffAt(int ci, int pi) const {
     DiffResult diffs;
-    checkString(diffs, "Name", current.name, previous.name);
-    checkString(diffs, "Ledger Currency", current.ledger_ccy, previous.ledger_ccy);
-    checkString(diffs, "GL Account Ref", current.gl_account_ref, previous.gl_account_ref);
-    checkString(diffs, "Cost Center", current.cost_center, previous.cost_center);
-    checkString(diffs, "Status", current.book_status, previous.book_status);
+    const auto& curr = versions_[ci];
+    const auto& prev = versions_[pi];
 
+    if (curr.id != prev.id)
+        diffs.append({tr("Id"),
+                      {QString::fromStdString(boost::uuids::to_string(prev.id)),
+                       QString::fromStdString(boost::uuids::to_string(curr.id))}});
+    checkString(diffs, tr("Name"), curr.name, prev.name);
+    checkString(diffs, tr("Ledger Currency"), curr.ledger_ccy, prev.ledger_ccy);
+    checkString(diffs, tr("GL Account Ref"), curr.gl_account_ref, prev.gl_account_ref);
+    checkString(diffs, tr("Cost Center"), curr.cost_center, prev.cost_center);
+    checkString(diffs, tr("Status"), curr.book_status, prev.book_status);
     return diffs;
 }
 
 void BookHistoryDialog::displayFullDetails(int index) {
+    if (index < 0 || static_cast<size_t>(index) >= versions_.size())
+        return;
+
     const auto& version = versions_[index];
 
+    ui_->idValue->setText(QString::fromStdString(boost::uuids::to_string(version.id)));
     ui_->nameValue->setText(QString::fromStdString(version.name));
     ui_->ledgerCcyValue->setText(QString::fromStdString(version.ledger_ccy));
     ui_->glAccountRefValue->setText(QString::fromStdString(version.gl_account_ref));
@@ -121,19 +134,11 @@ void BookHistoryDialog::displayFullDetails(int index) {
 }
 
 void BookHistoryDialog::openVersionAt(int index) {
-    const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening book version " << version.version << " in read-only mode";
-    emit openVersionRequested(version, version.version);
+    emit openVersionRequested(versions_[index], versions_[index].version);
 }
 
 void BookHistoryDialog::revertToVersionAt(int index) {
-    // The base has already confirmed with the user; revert TO the
-    // selected version.
-    const auto& selected = versions_[index];
-
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
-
-    emit revertVersionRequested(selected);
+    emit revertVersionRequested(versions_[index]);
 }
 
 }

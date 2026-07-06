@@ -23,9 +23,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.qt/ImageCache.hpp"
-#include "ores.qt/LookupFetcher.hpp"
 #include "ores.refdata.api/domain/book.hpp"
+#include <vector>
+
 
 namespace Ui {
 class BookDetailDialog;
@@ -57,11 +57,20 @@ public:
     ~BookDetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
-    void setImageCache(ImageCache* imageCache);
     void setUsername(const std::string& username);
     void setBook(const refdata::domain::book& book);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
+
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
 
 signals:
     void bookSaved(const QString& code);
@@ -87,19 +96,13 @@ private:
     void updateUiFromBook();
     void updateBookFromUi();
     void updateSaveButtonState();
-    void populateCurrencyCombo();
-    void populateBookStatusCombo();
-    void populateParentPortfolioCombo();
-    void populateOwnerUnitCombo();
     bool validateInput();
+
 
     Ui::BookDetailDialog* ui_;
     ClientManager* clientManager_;
-    ImageCache* imageCache_{nullptr};
     std::string username_;
     refdata::domain::book book_;
-    std::vector<portfolio_entry> portfolioEntries_;
-    std::vector<business_unit_entry> ownerUnitEntries_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

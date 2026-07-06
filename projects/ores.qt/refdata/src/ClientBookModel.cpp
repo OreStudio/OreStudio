@@ -20,10 +20,10 @@
 #include "ores.qt/ClientBookModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -35,12 +35,9 @@ std::string book_key_extractor(const refdata::domain::book& e) {
 }
 }
 
-ClientBookModel::ClientBookModel(ClientManager* clientManager,
-                                 ImageCache* imageCache,
-                                 QObject* parent)
+ClientBookModel::ClientBookModel(ClientManager* clientManager, QObject* parent)
     : AbstractClientModel(parent)
     , clientManager_(clientManager)
-    , imageCache_(imageCache)
     , watcher_(new QFutureWatcher<FetchResult>(this))
     , recencyTracker_(book_key_extractor)
     , pulseManager_(new RecencyPulseManager(this)) {
@@ -56,21 +53,6 @@ ClientBookModel::ClientBookModel(ClientManager* clientManager,
             &RecencyPulseManager::pulsing_complete,
             this,
             &ClientBookModel::onPulsingComplete);
-
-    if (imageCache_) {
-        connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
-            if (!books_.empty()) {
-                emit dataChanged(
-                    index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::DecorationRole});
-            }
-        });
-        connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
-            if (!books_.empty()) {
-                emit dataChanged(
-                    index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::DecorationRole});
-            }
-        });
-    }
 }
 
 int ClientBookModel::rowCount(const QModelIndex& parent) const {
@@ -95,13 +77,6 @@ QVariant ClientBookModel::data(const QModelIndex& index, int role) const {
 
     const auto& book = books_[row];
 
-    if (role == Qt::DecorationRole && index.column() == Column::LedgerCcy) {
-        if (imageCache_ && !book.ledger_ccy.empty()) {
-            return imageCache_->getCurrencyFlagIcon(book.ledger_ccy);
-        }
-        return {};
-    }
-
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
             case Name:
@@ -110,12 +85,12 @@ QVariant ClientBookModel::data(const QModelIndex& index, int role) const {
                 return QString::fromStdString(book.ledger_ccy);
             case BookStatus:
                 return QString::fromStdString(book.book_status);
-            case IsTradingBook:
-                return book.is_trading_book != 0 ? tr("Trading") : tr("Banking");
             case CostCenter:
                 return QString::fromStdString(book.cost_center);
+            case IsTradingBook:
+                return static_cast<qlonglong>(book.is_trading_book);
             case Version:
-                return book.version;
+                return static_cast<qlonglong>(book.version);
             case ModifiedBy:
                 return QString::fromStdString(book.modified_by);
             case RecordedAt:
@@ -143,10 +118,10 @@ QVariant ClientBookModel::headerData(int section, Qt::Orientation orientation, i
             return tr("Ledger Ccy");
         case BookStatus:
             return tr("Status");
-        case IsTradingBook:
-            return tr("Book Type");
         case CostCenter:
-            return tr("Cost Centre");
+            return tr("Cost Center");
+        case IsTradingBook:
+            return tr("Trading");
         case Version:
             return tr("Version");
         case ModifiedBy:
@@ -227,27 +202,23 @@ void ClientBookModel::fetch_books(std::uint32_t offset, std::uint32_t limit) {
 
                 refdata::messaging::get_books_request request;
 
-                const auto ws_id = self->workspaceContext().id.toStdString();
                 auto result =
-                    self->clientManager_->process_authenticated_request(std::move(request), ws_id);
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch books: " << result.error();
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .books = {},
                             .total_available_count = 0,
-                            .error_message =
-                                QString::fromStdString("Failed to fetch books: " + result.error()),
+                            .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->books.size()
-                    << " books, total available: " << result->total_available_count;
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->books.size() << " books";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->books.size());
                 return {.success = true,
                         .books = std::move(result->books),
-                        .total_available_count =
-                            static_cast<std::uint32_t>(result->total_available_count),
+                        .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};
             },

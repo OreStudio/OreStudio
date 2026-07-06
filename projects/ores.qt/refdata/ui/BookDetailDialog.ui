@@ -39,143 +39,89 @@
          </property>
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_nameEdit">
+           <widget class="QLabel" name="labelId">
+            <property name="text">
+             <string>Id:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="idEdit">
+            <property name="placeholderText">
+             <string>Book id</string>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelName">
             <property name="text">
              <string>Name:</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="1" column="1">
            <widget class="QLineEdit" name="nameEdit">
             <property name="placeholderText">
              <string>Enter book name</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_parentPortfolioCombo">
-            <property name="text">
-             <string>Portfolio:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="parentPortfolioCombo">
-            <property name="editable">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="label_ownerUnitCombo">
+           <widget class="QLabel" name="labelLedgerCcy">
             <property name="text">
-             <string>Owner Unit:</string>
+             <string>Ledger Currency:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QComboBox" name="ownerUnitCombo">
-            <property name="editable">
-             <bool>true</bool>
+           <widget class="QLineEdit" name="ledgerCcyEdit">
+            <property name="placeholderText">
+             <string>Enter ledger currency</string>
             </property>
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="label_ledgerCcyCombo">
-            <property name="text">
-             <string>Currency:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QComboBox" name="ledgerCcyCombo">
-            <property name="editable">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_glAccountRefEdit">
+           <widget class="QLabel" name="labelGlAccountRef">
             <property name="text">
              <string>GL Account Ref:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="3" column="1">
            <widget class="QLineEdit" name="glAccountRefEdit">
             <property name="placeholderText">
              <string>Enter GL account reference</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_costCentreEdit">
+          <item row="4" column="0">
+           <widget class="QLabel" name="labelCostCenter">
             <property name="text">
-             <string>Cost Centre:</string>
+             <string>Cost Center:</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="4" column="1">
            <widget class="QLineEdit" name="costCenterEdit">
             <property name="placeholderText">
-             <string>Enter cost centre</string>
+             <string>Enter cost center</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_bookStatusCombo">
+          <item row="5" column="0">
+           <widget class="QLabel" name="labelBookStatus">
             <property name="text">
              <string>Status:</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
-           <widget class="QComboBox" name="bookStatusCombo"/>
-          </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_bookTypeCombo">
-            <property name="text">
-             <string>Book Type:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QComboBox" name="bookTypeCombo">
-            <item>
-             <property name="text">
-              <string>Banking</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Trading</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="8" column="0">
-           <widget class="QLabel" name="label_descriptionEdit">
-            <property name="text">
-             <string>Description:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="1">
-           <widget class="QPlainTextEdit" name="descriptionEdit">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>80</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>150</height>
-             </size>
-            </property>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="bookStatusEdit">
             <property name="placeholderText">
-             <string>Enter description (optional)</string>
+             <string>Enter status</string>
             </property>
            </widget>
           </item>

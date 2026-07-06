@@ -36,6 +36,9 @@ The full template source. Edit here and re-tangle with
 #include "ores.logging/make_logger.hpp"
 #include "{{domain_entity.qt.domain_include}}"
 #include "ores.qt/EntityListMdiWindow.hpp"
+{{#domain_entity.qt.has_export_macro}}
+#include "ores.qt/{{domain_entity.qt.export_header}}"
+{{/domain_entity.qt.has_export_macro}}
 
 namespace ores::qt {
 
@@ -57,7 +60,7 @@ class ImageCache;
  * Manages the lifecycle of {{domain_entity.entity_singular_words}} list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class {{domain_entity.entity_pascal}}Controller final : public EntityController {
+class {{#domain_entity.qt.has_export_macro}}{{domain_entity.qt.export_macro}} {{/domain_entity.qt.has_export_macro}}{{domain_entity.entity_pascal}}Controller final : public EntityController {
     Q_OBJECT
 
 private:
@@ -91,6 +94,15 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+{{#domain_entity.qt.has_explorer_api}}
+    void openAdd();
+{{#domain_entity.qt.has_parent_relationship}}
+    void openAddWithParent(boost::uuids::uuid {{domain_entity.qt.parent_id_field_camel}});
+{{/domain_entity.qt.has_parent_relationship}}
+    void openEdit(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+    void openHistory(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+{{/domain_entity.qt.has_explorer_api}}
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
@@ -107,7 +119,12 @@ private slots:
                        int versionNumber);
 
 private:
+{{#domain_entity.qt.has_parent_relationship}}
+    void showAddWindow(boost::uuids::uuid {{domain_entity.qt.parent_id_field_camel}} = {});
+{{/domain_entity.qt.has_parent_relationship}}
+{{^domain_entity.qt.has_parent_relationship}}
     void showAddWindow();
+{{/domain_entity.qt.has_parent_relationship}}
     void showDetailWindow(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
 {{#domain_entity.qt.has_uuid_primary_key}}
     void showHistoryWindow(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});

@@ -196,7 +196,9 @@ import_service::import(const messaging::import_market_data_request& req) {
                 obs.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
                 obs.series_id = sid;
                 obs.observation_datetime = std::chrono::sys_days{d.date};
-                obs.point_id = d.point_id.value_or("");
+                // Scalar series (FX spot, equity spot, ...) have no tenor/surface
+                // coordinate; for spot, tenor is set to "SPOT".
+                obs.point_id = d.point_id.value_or("SPOT");
                 obs.source = req.source;
                 obs.value = d.value;
                 observations.push_back(std::move(obs));

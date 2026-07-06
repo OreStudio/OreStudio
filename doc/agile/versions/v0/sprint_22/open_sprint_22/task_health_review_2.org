@@ -158,6 +158,19 @@ variability-marketdata's own =story.org= says State=DONE, "All four
 tasks complete; PR pending", but =sprint.org= still lists it BACKLOG
 — completed work not yet reflected upward.
 
+*Follow-up (PR #1444):* only *Commission: party_status* from the five
+above was fixed in this checkout, plus five unrelated stories this
+review didn't flag (=book_status=, =refactor_codegen_cpp=,
+=codegen-unification-blockers=, =fix_orphan_docs_and_tag_taxonomy=,
+=qt-upgrade-6.9=) that turned out to share the same BACKLOG-with-DONE-
+tasks symptom on a broader sweep. *Commission: book*, *Commission:
+purpose_type*, and *Composite child-entity/hierarchy Qt widgets*
+remain exactly as drifted as described above — their task docs are
+either absent or themselves still BACKLOG in this checkout, so they
+need fixing from the worktree that actually holds the work (clever_
+dijkstra, eager_maxwell, solid_dirac respectively), not from here.
+=Commission: business_day_convention_type= remains entirely untracked.
+
 | Metric | Value | Target | Status |
 |--------+-------+--------+--------|
 | Stories DONE / total | 14/51 (0.27) | ≥0.5 GREEN / 0.3–0.5 AMBER | RED |

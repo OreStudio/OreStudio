@@ -25,9 +25,9 @@ pin in =continuous-macos.yml= can then be removed.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Scaffold task in progress (PR #1304).  |
+| Now           | Scaffold task done (PR #1304); implementation not yet started. |
 | Waiting on    | Nothing.                               |
-| Next          | Close scaffold task; begin implement.  |
+| Next          | Begin implementation.                  |
 | Last touched  | 2026-07-06                               |
 
 * Acceptance

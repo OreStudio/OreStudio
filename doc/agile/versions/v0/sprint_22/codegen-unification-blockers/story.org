@@ -39,9 +39,9 @@ The blockers, in implementation order:
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Scaffolding tasks.                     |
+| Now           | B1, B2, B3, B5, and B8 done; B4 (collapse refdata/refdata-cpp components) is the next open blocker. |
 | Waiting on    | Nothing.                               |
-| Next          | Implement blockers in order B2→B3→B1→B5→B4. |
+| Next          | Implement B4.                          |
 | Last touched  | 2026-07-06                               |
 
 * Acceptance

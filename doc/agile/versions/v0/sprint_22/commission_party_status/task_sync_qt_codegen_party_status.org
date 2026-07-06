@@ -8,7 +8,7 @@
 #+filetags: :commission_party_status:sprint_22:v0:
 #+owner: marco
 #+branch: feature/sync-qt-codegen-party-status
-#+pr:
+#+pr: 1443
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -51,7 +51,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1443][#1443]] | [refdata,qt] Sync Qt codegen output for party_status |
 
 * Review
 

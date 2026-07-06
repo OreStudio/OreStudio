@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 063FEC4A-CC5F-470E-964F-DD4AF6162EB5
+:END:
+#+title: Task: Write temporal composite entity versioning architecture document
+#+description: Write the target-state architecture document under doc/architecture for composite (parent+child) entity versioning: option A (child saves bump the parent's version), as-of composition on load, enforcement across SQL/codegen, and Qt composite version/history dialog UX.
+#+type: task
+#+level: s1
+#+filetags: :architecture:composite_entity:versioning:party:counterparty:temporal-composite-entity-versioning:sprint_22:v0:
+#+owner: marco
+#+branch: feature/write-composite-versioning-architecture-doc
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:366DCF08-C483-47B7-A136-229B4D2FC394][Temporal composite entity versioning]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write the target-state architecture document for versioning composite
+(parent + child) entities, so implementation stories have a single
+agreed design to work from.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:366DCF08-C483-47B7-A136-229B4D2FC394][Temporal composite entity versioning]] |
+| Now          | Document drafted; awaiting review of the open decisions. |
+| Waiting on   | Sign-off on: child DELETE bumping the parent, flag names, mandatory reason-code stamping. |
+| Next         | Review with the author; adjust and close.       |
+| Last touched | 2026-07-06                               |
+
+* Acceptance
+
+- Document written at [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal composite entity versioning: target state]]
+  under doc/knowledge/architecture, wired into the knowledge index.
+- Covers: the target model (option A), SQL enforcement mechanism,
+  as-of read-side composition, Qt composite history UX, rollout plan.
+- Open decisions explicitly called out rather than silently assumed.
+
+* Plan
+
+Surveyed the existing bitemporal conventions ([[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps]]) and
+the codegen insert-trigger version-management block
+(=sql_schema_domain_entity_create.mustache=) to ground the design in
+what already exists, then the =party_identifier= FK model
+([[id:CDB0273E-8DBA-417D-A31E-0475BF7538B7][ores.refdata.party_identifier]], its =:list_by:= flag) as the extension
+point for the new mechanism. Confirmed via grep there is no existing
+"bump parent version" or "cascade" precedent anywhere in
+=projects/ores.sql= or =projects/ores.codegen= — this is genuinely
+greenfield.
+
+* Notes
+
+Key insight that shapes the whole design: because the parent bump
+happens in the *same transaction* as the child write, the parent's
+=[valid_from, valid_to)= windows end up exactly partitioning time into
+"child-set-stable" epochs by construction. That means "compose parent
+as of version N" is a plain temporal window join against the
+children (interval overlap), not a separate version-mapping
+mechanism — this generalises the existing single-table as-of point
+query (=valid_from <= t and valid_to > t=, per [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps]]) to a
+window.
+
+Flagged 3 open decisions rather than picking silently: whether child
+DELETE should also bump the parent (proposed yes), the actual codegen
+flag names, and whether reason-code stamping on the touch function is
+mandatory. Also explicitly scoped multi-level cascading (grandchild →
+child → parent) out of v1.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

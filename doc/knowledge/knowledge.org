@@ -175,6 +175,9 @@ How the codebase is put together.
   bitemporal design, extensions, and key utility functions.
 - [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and timestamps]] — bitemporality, =TIMESTAMPTZ=, =db_timestamp=,
   =time_point=, UTC standard, and the conversion layer.
+- [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal composite entity versioning: target state]] — child writes
+  bumping a parent's version, as-of composition of parent + children,
+  and the SQL/codegen/Qt enforcement plan.
 
 * Tooling
 

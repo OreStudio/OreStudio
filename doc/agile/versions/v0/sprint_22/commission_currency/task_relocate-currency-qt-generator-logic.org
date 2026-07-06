@@ -68,9 +68,11 @@ generates a batch via count, no random pick), so it needed no change.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                | File                                            | Decision | Notes                                              |
+|---+-------------------------------------------------------------------+---------------------------------------------------+----------+-----------------------------------------------------|
+| 1 | No unit test for generate_random_fictional_currency() (raised by all 3 review passes) | generators_currency_generator_tests.cpp         | Fixed    | Added generate_random_fictional_currency_returns_known_currency, d171a7f7b |
+| 2 | Materializes full 50-entry vector to pick one element (perf nit)  | currency_generator.cpp                          | Declined | Unchanged from original inline code, not a regression; follow-up if ever needed |
+| 3 | Task doc "Last touched" date one day ahead of PR creation (nit)  | task_relocate-currency-qt-generator-logic.org   | Declined | Correct for actual last-edit time, not a typo       |
 
 * Result
 

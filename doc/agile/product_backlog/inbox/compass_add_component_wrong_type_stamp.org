@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: A09EB5C6-5C99-430E-A83F-8B64525218F8
+:END:
+#+title: compass add component stamps #+type: component instead of ores.codegen.component
+#+description: compass add component's scaffold template stamps #+type: component, but codegen only recognises the long form ores.codegen.component (every existing component_overview.org in the repo uses it) — every fresh component scaffold needs a manual fix until the template is corrected.
+#+type: capture
+#+level: cross
+#+filetags: :compass:codegen:bug:scaffold:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=./compass.sh add component --slug component_overview ...= scaffolds
+=#+type: component= in the generated frontmatter, but
+=ores.codegen='s org loader only recognises
+=#+type: ores.codegen.component= — the error is
+=unrecognised #+type: 'component'. Known types: [...]=. Every other
+=component_overview.org= already in the repo (=ores.diff=, =ores.nats=,
+=ores.wt.service=, etc.) uses the long form, so this looks like the
+scaffold template simply drifted from what codegen expects. Found
+while scaffolding =ores.orgmode=
+([[id:A7BB331B-CF2E-4072-92D0-CF0C13699625][task]]); worked around by
+hand-editing the one file rather than fixing the template, to keep
+that task scoped to the component itself.
+
+* Why
+
+Every future =compass add component= run hits this immediately and
+silently produces a broken doc until someone notices the codegen error
+and fixes it by hand — small but avoidable friction on a path meant to
+be a one-command scaffold.
+
+* References
+
+- =projects/ores.compass/src/= — wherever the component scaffold
+  template lives (not yet located precisely).
+- =projects/ores.codegen/src/codegen/org_loader.py= — the =#+type:=
+  allow-list that rejects the short form.
+
+* See also
+
+- [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] — where this was found.

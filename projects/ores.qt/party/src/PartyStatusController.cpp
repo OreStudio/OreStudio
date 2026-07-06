@@ -18,12 +18,15 @@
  *
  */
 #include "ores.qt/PartyStatusController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PartyStatusDetailDialog.hpp"
 #include "ores.qt/PartyStatusHistoryDialog.hpp"
 #include "ores.qt/PartyStatusMdiWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/eventing/party_status_changed_event.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -32,13 +35,18 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view status_event_name =
+    eventing::domain::event_traits<refdata::eventing::party_status_changed_event>::name;
+}
+
 PartyStatusController::PartyStatusController(QMainWindow* mainWindow,
                                              QMdiArea* mdiArea,
                                              ClientManager* clientManager,
                                              ChangeReasonCache* changeReasonCache,
                                              const QString& username,
                                              QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, status_event_name, parent)
     , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
@@ -95,6 +103,8 @@ void PartyStatusController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -246,6 +256,7 @@ void PartyStatusController::showDetailWindow(const refdata::domain::party_status
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<PartyStatusController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -311,6 +322,7 @@ void PartyStatusController::showHistoryWindow(const QString& code) {
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<PartyStatusController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -393,8 +405,11 @@ void PartyStatusController::onRevertVersion(const refdata::domain::party_status&
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setStatus(status);
+    auto reverted_status = status;
+    reverted_status.version = 0;
+    detailDialog->setStatus(reverted_status);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog,
             &PartyStatusDetailDialog::statusMessage,

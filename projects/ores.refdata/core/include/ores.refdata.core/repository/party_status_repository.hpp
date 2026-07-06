@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_status.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <cstdint>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -46,16 +47,52 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
-    void write(context ctx, const domain::party_status& status);
-    void write(context ctx, const std::vector<domain::party_status>& statuses);
+    /**
+     * @brief Writes party statuses to database.
+     */
+    /**@{*/
+    void write(context ctx, const domain::party_status& v);
+    void write(context ctx, const std::vector<domain::party_status>& v);
+    /**@}*/
 
+    /**
+     * @brief Reads latest party statuses, possibly filtered by code.
+     */
+    /**@{*/
     std::vector<domain::party_status> read_latest(context ctx);
     std::vector<domain::party_status> read_latest(context ctx, const std::string& code);
+    /**@}*/
 
+    /**
+     * @brief Reads all party statuses, possibly filtered by code.
+     */
     std::vector<domain::party_status> read_all(context ctx, const std::string& code);
 
+
+    /**
+     * @brief Reads latest party statuses with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::party_status>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active party statuses.
+     * @param ctx Repository context with database connection
+     * @return Total number of active party statuses
+     */
+    std::uint32_t get_total_status_count(context ctx);
+
+    /**
+     * @brief Deletes a party status by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& code);
 
     /**

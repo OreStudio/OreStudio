@@ -32,6 +32,7 @@
 
 namespace ores::qt {
 
+
 /**
  * @brief MDI window for displaying and managing party statuses.
  *
@@ -56,9 +57,6 @@ public:
                                   QWidget* parent = nullptr);
     ~PartyStatusMdiWindow() override = default;
 
-public slots:
-    void doReload() override;
-
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
@@ -72,6 +70,9 @@ public slots:
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();

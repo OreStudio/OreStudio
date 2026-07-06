@@ -156,13 +156,14 @@ drop function if exists ores_refdata_validate_party_status_fn;
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.refdata/domain/party_status.hpp
+:domain_include:         ores.refdata.api/domain/party_status.hpp
 :domain_class:           refdata::domain::party_status
-:protocol_include:       ores.refdata/messaging/party_status_protocol.hpp
+:protocol_include:       ores.refdata.api/messaging/party_status_protocol.hpp
 :collection_name:        statuses
 :item_var:               status
 :key_field:              code
 :has_uuid_primary_key:   false
+:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_party_statuses_request
 :get_response_class:     refdata::messaging::get_party_statuses_response
 :get_message_type:       get_party_statuses_request

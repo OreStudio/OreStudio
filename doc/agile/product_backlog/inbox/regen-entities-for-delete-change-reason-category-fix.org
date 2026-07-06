@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 7FC1A168-C14C-4B36-BF9D-130E6FF150FE
+:END:
+#+title: Regenerate already-synced entities after Delete change-reason category template fix
+#+description: cpp_qt_detail_dialog.cpp.mustache's Delete change-reason prompt was fixed in PR #1443 to pass category='common' instead of defaulting to 'system' (which only offers the test-data reason). Entities regenerated before this fix — at least CurrencyMarketTierDetailDialog, confirmed by review, likely others synced before PR #1443 — still have the old broken call and need a regen sweep (compass codegen regenerate --address ores.cpp.qt) to pick up the corrected template.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-07-06
+#+updated: 2026-07-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

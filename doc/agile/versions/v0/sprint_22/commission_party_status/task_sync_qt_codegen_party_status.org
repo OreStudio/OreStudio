@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_party_status:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/sync-qt-codegen-party-status
+#+pr: 1443
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Ensure the Qt codegen templates (qt profile) produce output that matches the rep
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -51,12 +51,50 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1443][#1443]] | [refdata,qt] Sync Qt codegen output for party_status |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | ChangeReasonCache wiring dropped by regen | PartyStatusController.hpp/.cpp | Accepted | Fixed in 3c4ca3f1 — root cause was missing :has_change_reason_cache: true on the model; regenerated the facet instead of hand-patching |
+| 2 | fetch_statuses pagination no-op | ClientPartyStatusModel.cpp | Declined | Pre-existing/systemic across all ClientXModel::fetch_* implementations; out of scope for this sync |
+| 3 | Delete change-reason category defaults to "system" | PartyStatusDetailDialog.cpp | Accepted | Fixed in aeb2d0a0 — corrected cpp_qt_detail_dialog.cpp.mustache to pass "common"; regen sweep for other already-merged entities captured separately |
+| 4 | task.org cosmetic Now/State mismatch, stray blank-line diff noise | task_sync_qt_codegen_party_status.org, PartyStatusDetailDialog.hpp | Declined | Cosmetic/harmless, not worth a special pass |
+| 5 | Template drift: .mustache hand-edited without updating its .org literate source | cpp_qt_detail_dialog.cpp.mustache, ores.cpp.qt.detail_dialog_impl.org | Accepted | Fixed in 3fa67c34 — applied the fix to the org source and re-tangled; Template drift CI check now green |
 
 * Result
+
+Ran the =qt= profile for =party_status= and synced all six generated
+files (client model, MDI window, detail dialog, history dialog,
+controller, UI) against the current codegen templates. Regenerated
+=party_status_protocol.hpp=, =party_status_handler.hpp=,
+=party_status_entity.hpp/cpp=, =party_status_repository.cpp=, and
+=party_status_service.cpp= in refdata to match.
+
+Review caught two real regressions the mechanical sync introduced,
+both fixed at the root cause rather than patched onto generated code:
+
+- =PartyStatusController= silently dropped =ChangeReasonCache= wiring
+  because the model was missing =:has_change_reason_cache: true=;
+  added the property and regenerated the facet (would have broken
+  Create/Amend/Delete for party statuses in the Qt UI).
+- The Delete change-reason prompt defaulted to category ="system"=
+  (only offers a test-data reason) instead of ="common"=; traced to a
+  =cpp_qt_detail_dialog.cpp.mustache= template gap shared by other
+  already-merged entities, fixed at the =.org= literate source and
+  re-tangled.
+
+A hand-edit of the tangled =.mustache= directly (without updating its
+=.org= source) briefly broke the =Template drift= CI check;
+corrected by applying the fix to the source and re-tangling.
+
+Filed two follow-up captures for out-of-scope findings:
+=fix-client-model-fetch-pagination-no-op= (systemic
+=ClientXModel::fetch_*= pagination gap) and
+=regen-entities-for-delete-change-reason-category-fix= (regen sweep
+for entities synced before the Delete category fix).
+
+All acceptance criteria met: zero diff against the =qt= profile for
+=party_status=, every drift decision recorded in the Review table
+above, CI green (canary, site, drift, roundtrip, claude-review).

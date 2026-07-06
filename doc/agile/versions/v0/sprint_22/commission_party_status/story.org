@@ -66,5 +66,5 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 | [[id:408DA433-CD01-4050-A548-F01BC4BB7404][Sync SQL codegen for party_status]] | DONE | 2026-06-25 | 2026-06-25 | Re-run SQL codegen for party_status; diff against repo; fix templates or repo to eliminate drift. |
 | [[id:94A50F97-A7FC-4486-BD0B-0FB305998C01][Sync C++ core codegen for party_status]] | DONE | 2026-06-25 | 2026-06-25 | Re-run domain, repository, service, and generator profiles for party_status; diff against repo; fix templates to match code. |
 | [[id:7F64F55A-32BA-4774-8508-FF7F05FD984F][Sync C++ messaging codegen for party_status]] | DONE | 2026-06-26 | 2026-06-26 | Re-run protocol, nats-eventing, and nats-handler profiles for party_status; diff against repo; fix templates to match code. |
-| [[id:6E67EFF3-D794-46D2-8D70-8216B1662659][Sync Qt codegen for party_status]] | BACKLOG | | | Re-run Qt profile for party_status; diff against repo; fix templates to match code. |
+| [[id:6E67EFF3-D794-46D2-8D70-8216B1662659][Sync Qt codegen for party_status]] | DONE | 2026-07-04 | 2026-07-06 | Re-run Qt profile for party_status; diff against repo; fix templates to match code. |
 | [[id:8388B86F-EEDF-4C5E-9B52-2CC8A3ABD796][Verify and fix party_status SQL DDL]] | BACKLOG | | | Verify party_status SQL DDL against the evaluation checklist criteria and fix any deviations. |

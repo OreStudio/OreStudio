@@ -83,7 +83,7 @@ private:
     void showDetailWindow(const refdata::domain::party_status& status);
     void showHistoryWindow(const QString& code);
 
-    ChangeReasonCache* changeReasonCache_{nullptr};
+    ChangeReasonCache* changeReasonCache_;
     PartyStatusMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

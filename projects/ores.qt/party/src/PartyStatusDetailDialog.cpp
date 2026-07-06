@@ -107,6 +107,11 @@ void PartyStatusDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
+void PartyStatusDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void PartyStatusDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
@@ -127,6 +132,7 @@ void PartyStatusDetailDialog::updateUiFromStatus() {
                        status_.recorded_at,
                        status_.change_reason_code,
                        status_.change_commentary);
+
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -138,7 +144,6 @@ void PartyStatusDetailDialog::updateStatusFromUi() {
     status_.name = ui_->nameEdit->text().trimmed().toStdString();
     status_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     status_.modified_by = username_;
-    status_.performed_by = username_;
 }
 
 void PartyStatusDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -160,7 +165,7 @@ bool PartyStatusDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return !code_val.isEmpty() && !name_val.isEmpty();
+    return true && !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void PartyStatusDetailDialog::onSaveClicked() {
@@ -175,8 +180,6 @@ void PartyStatusDetailDialog::onSaveClicked() {
         return;
     }
 
-    updateStatusFromUi();
-
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
@@ -184,6 +187,8 @@ void PartyStatusDetailDialog::onSaveClicked() {
         return;
     status_.change_reason_code = crSel->reason_code;
     status_.change_commentary = crSel->commentary;
+
+    updateStatusFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving party status: " << status_.code;
 
@@ -207,7 +212,6 @@ void PartyStatusDetailDialog::onSaveClicked() {
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
-
 
         return {response_result->success, response_result->message};
     };
@@ -255,7 +259,7 @@ void PartyStatusDetailDialog::onDeleteClicked() {
     }
 
     const auto crSel =
-        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -274,14 +278,13 @@ void PartyStatusDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_party_status_request request;
-        request.status = code;
+        request.codes = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
-
 
         return {response_result->success, response_result->message};
     };

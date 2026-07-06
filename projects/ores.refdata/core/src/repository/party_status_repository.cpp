@@ -36,25 +36,24 @@ std::string party_status_repository::sql() {
     return generate_create_table_sql<party_status_entity>(lg());
 }
 
-void party_status_repository::write(context ctx, const domain::party_status& status) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party status to database: " << status.code;
+void party_status_repository::write(context ctx, const domain::party_status& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing party status: " << v.code;
     execute_write_query(
-        ctx, party_status_mapper::map(status), lg(), "Writing party status to database.");
+        ctx, party_status_mapper::map(v), lg(), "Writing party status to database.");
 }
 
-void party_status_repository::write(context ctx,
-                                    const std::vector<domain::party_status>& statuses) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party statuses to database. Count: " << statuses.size();
+void party_status_repository::write(context ctx, const std::vector<domain::party_status>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing party statuses. Count: " << v.size();
     execute_write_query(
-        ctx, party_status_mapper::map(statuses), lg(), "Writing party statuses to database.");
+        ctx, party_status_mapper::map(v), lg(), "Writing party statuses to database.");
 }
 
 std::vector<domain::party_status> party_status_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_status_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("name"_c);
+                       order_by("code"_c);
 
     return execute_read_query<party_status_entity, domain::party_status>(
         ctx,
@@ -66,9 +65,8 @@ std::vector<domain::party_status> party_status_repository::read_latest(context c
 
 std::vector<domain::party_status> party_status_repository::read_latest(context ctx,
                                                                        const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party status. Code: " << code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party status. code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<party_status_entity>> |
@@ -84,8 +82,7 @@ std::vector<domain::party_status> party_status_repository::read_latest(context c
 
 std::vector<domain::party_status> party_status_repository::read_all(context ctx,
                                                                     const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all party status versions. Code: " << code;
-
+    BOOST_LOG_SEV(lg(), debug) << "Reading all party status versions. code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_status_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -99,10 +96,10 @@ std::vector<domain::party_status> party_status_repository::read_all(context ctx,
         "Reading all party status versions by code.");
 }
 
-void party_status_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party status from database: " << code;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+void party_status_repository::remove(context ctx, const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing party status: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::delete_from<party_status_entity> |
@@ -111,9 +108,53 @@ void party_status_repository::remove(context ctx, const std::string& code) {
     execute_delete_query(ctx, query, lg(), "Removing party status from database.");
 }
 
-void party_status_repository::remove(context ctx, const std::vector<std::string>& codes) {
-    const auto query = sqlgen::delete_from<party_status_entity> | where("code"_c.in(codes));
-    execute_delete_query(ctx, query, lg(), "batch removing party_statuses");
+std::vector<domain::party_status>
+party_status_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party statuses with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_status_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<party_status_entity, domain::party_status>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_status_mapper::map(entities); },
+        lg(),
+        "Reading latest party statuses with pagination.");
 }
+
+std::uint32_t party_status_repository::get_total_status_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party status count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::select_from<party_status_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active party status count: " << count;
+    return count;
+}
+
+void party_status_repository::remove(context ctx, const std::vector<std::string>& codes) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<party_status_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing party statuses.");
+}
+
 
 }

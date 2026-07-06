@@ -181,6 +181,7 @@ drop function if exists ores_refdata_validate_purpose_type_fn;
 :history_response_class: refdata::messaging::get_purpose_type_history_response
 :history_message_type:   get_purpose_type_history_request
 :has_change_reason_cache: true
+:has_pagination:         true
 :settings_group:         PurposeTypeListWindow
 :window_title:           Purpose Types
 :icon:                   Flag

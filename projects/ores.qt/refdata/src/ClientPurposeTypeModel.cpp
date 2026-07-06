@@ -199,6 +199,8 @@ void ClientPurposeTypeModel::fetch_types(std::uint32_t offset, std::uint32_t lim
                 }
 
                 refdata::messaging::get_purpose_types_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -213,11 +215,12 @@ void ClientPurposeTypeModel::fetch_types(std::uint32_t offset, std::uint32_t lim
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->types.size() << " purpose types";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->types.size());
+                    << "Fetched " << result->types.size()
+                    << " purpose types, total available: " << result->total_available_count;
                 return {.success = true,
                         .types = std::move(result->types),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

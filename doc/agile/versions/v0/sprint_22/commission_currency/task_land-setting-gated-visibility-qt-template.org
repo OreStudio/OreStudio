@@ -162,5 +162,7 @@ mdi_window and detail_dialog templates both get the same
 | 4 | No explicit #include <QFutureWatcher> (relies on <QtConcurrent>)          | SettingGatedActionController.cpp                          | Declined | Matches existing codebase convention throughout ores.qt      |
 | 5 | No unit test for SettingGatedActionController                            | SettingGatedActionController.cpp                          | Declined | Interesting paths need a live ClientManager/NATS connection; follow-up, not blocking |
 | 6 | Double construction of controller if setClientManager called twice (latent footgun) | CurrencyDetailDialog.cpp, mustache template               | Declined | Not live today — every call site builds a fresh dialog per invocation |
+| 7 | Follow-up round: fix confirmed correct end-to-end; task doc stale (described gap as still open) | task_land-setting-gated-visibility-qt-template.org         | Fixed    | Updated implementation notes in 6b05cb53f                    |
+| 8 | Follow-up round: continuation-line indentation doesn't match file's clang-format style | SettingGatedActionController.hpp/.cpp                     | Fixed    | Ran clang-format -i in 6b05cb53f                              |
 
 * Result

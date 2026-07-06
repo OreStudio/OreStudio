@@ -21,7 +21,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.trading.api/messaging/business_day_convention_type_protocol.hpp"
+#include "ores.refdata.api/messaging/business_day_convention_type_protocol.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
@@ -51,8 +51,6 @@ BusinessDayConventionTypeMdiWindow::BusinessDayConventionTypeMdiWindow(ClientMan
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
@@ -61,6 +59,7 @@ void BusinessDayConventionTypeMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -128,6 +127,7 @@ void BusinessDayConventionTypeMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
+
 
     initializeTableSettings(tableView_,
                             model_,
@@ -314,12 +314,11 @@ void BusinessDayConventionTypeMdiWindow::deleteSelected() {
         if (!self)
             return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for " << codes.size()
-                                   << " business day convention types";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Making delete request for " << codes.size() << " business day convention types";
 
-        trading::messaging::delete_business_day_convention_type_request request;
+        refdata::messaging::delete_business_day_convention_type_request request;
         request.codes = codes;
-
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -334,6 +333,7 @@ void BusinessDayConventionTypeMdiWindow::deleteSelected() {
         for (const auto& code : codes) {
             results.push_back({code, {response_result->success, response_result->message}});
         }
+
         return results;
     };
 

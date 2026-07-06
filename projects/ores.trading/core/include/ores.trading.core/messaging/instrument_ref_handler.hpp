@@ -27,14 +27,12 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.trading.api/messaging/business_day_convention_type_protocol.hpp"
 #include "ores.trading.api/messaging/day_count_fraction_type_protocol.hpp"
 #include "ores.trading.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.trading.api/messaging/leg_type_protocol.hpp"
 #include "ores.trading.api/messaging/payment_frequency_type_protocol.hpp"
 #include "ores.trading.api/messaging/trade_type_protocol.hpp"
 #include "ores.trading.core/export.hpp"
-#include "ores.trading.core/service/business_day_convention_type_service.hpp"
 #include "ores.trading.core/service/day_count_fraction_type_service.hpp"
 #include "ores.trading.core/service/floating_index_type_service.hpp"
 #include "ores.trading.core/service/leg_type_service.hpp"
@@ -197,28 +195,6 @@ public:
         history_impl<service::day_count_fraction_type_service,
                      get_day_count_fraction_type_history_request,
                      get_day_count_fraction_type_history_response>(std::move(msg));
-    }
-
-    // Business day convention type
-    void list_business_day_convention_types(ores::nats::message msg) {
-        list_impl<service::business_day_convention_type_service,
-                  get_business_day_convention_types_request,
-                  get_business_day_convention_types_response>(std::move(msg));
-    }
-    void save_business_day_convention_type(ores::nats::message msg) {
-        save_impl<service::business_day_convention_type_service,
-                  save_business_day_convention_type_request,
-                  save_business_day_convention_type_response>(std::move(msg));
-    }
-    void delete_business_day_convention_type(ores::nats::message msg) {
-        delete_impl<service::business_day_convention_type_service,
-                    delete_business_day_convention_type_request,
-                    delete_business_day_convention_type_response>(std::move(msg));
-    }
-    void history_business_day_convention_type(ores::nats::message msg) {
-        history_impl<service::business_day_convention_type_service,
-                     get_business_day_convention_type_history_request,
-                     get_business_day_convention_type_history_response>(std::move(msg));
     }
 
     // Floating index type

@@ -24,7 +24,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.trading.api/domain/business_day_convention_type.hpp"
+#include "ores.refdata.api/domain/business_day_convention_type.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
 
@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class BusinessDayConventionTypeMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing business day convention type windows and operations.
@@ -55,6 +56,7 @@ public:
     BusinessDayConventionTypeController(QMainWindow* mainWindow,
                                         QMdiArea* mdiArea,
                                         ClientManager* clientManager,
+                                        ChangeReasonCache* changeReasonCache,
                                         const QString& username,
                                         QObject* parent = nullptr);
 
@@ -70,18 +72,19 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
-    void onShowDetails(const trading::domain::business_day_convention_type& type);
+    void onShowDetails(const refdata::domain::business_day_convention_type& type);
     void onAddNewRequested();
-    void onShowHistory(const trading::domain::business_day_convention_type& type);
-    void onRevertVersion(const trading::domain::business_day_convention_type& type);
-    void onOpenVersion(const trading::domain::business_day_convention_type& type,
+    void onShowHistory(const refdata::domain::business_day_convention_type& type);
+    void onRevertVersion(const refdata::domain::business_day_convention_type& type);
+    void onOpenVersion(const refdata::domain::business_day_convention_type& type,
                        int versionNumber);
 
 private:
     void showAddWindow();
-    void showDetailWindow(const trading::domain::business_day_convention_type& type);
+    void showDetailWindow(const refdata::domain::business_day_convention_type& type);
     void showHistoryWindow(const QString& code);
 
+    ChangeReasonCache* changeReasonCache_;
     BusinessDayConventionTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

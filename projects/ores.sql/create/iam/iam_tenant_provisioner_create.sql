@@ -34,6 +34,7 @@
 --   - party_categories, party_types, party_statuses: Party classification
 --   - contact_types, party_id_schemes: Contact and identifier lookups
 --   - book_statuses, purpose_types: Book and purpose lookups
+--   - business_day_convention_types: Business day adjustment conventions
 --   - rounding_types: Rounding method definitions
 --   - monetary_natures, currency_market_tiers: Currency classification
 --
@@ -291,6 +292,22 @@ begin
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % purpose types', v_copied_count;
+
+    -- Business day convention types (e.g. Following, ModifiedFollowing, Preceding)
+    insert into ores_refdata_business_day_convention_types_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_business_day_convention_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % business day convention types', v_copied_count;
 
     -- Rounding types (e.g. Up, Down, Closest, Floor, Ceiling)
     insert into ores_refdata_rounding_types_tbl (

@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 0345DCE3-4B85-4132-9A25-E58285632F76
+:END:
+#+title: Story: Commission: business_day_convention_type
+#+description: Move business_day_convention_type from ores.trading to ores.refdata (zero current consumers, but conceptually an ORE convention type alongside fx_convention and the other *_convention entities) and commission it fully: SQL, codegen, domain, repository, service, messaging, Qt UI.
+#+type: story
+#+level: s2
+#+filetags: :product:refdata:commissioning:business_day_convention_type:sprint_22:v0:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Discovered while modelling [[id:109FBFD6-C505-4196-B3EE-D5C798CE050F][fx_convention]]:
+=business_day_convention_type= lives in =ores.trading=
+(=ores.trading.business_day_convention_type=, now removed), but every =*_convention=
+entity that would actually reference it (=ibor_index_convention=,
+=fx_convention=, =swap_convention=, etc.) already lives in
+=ores.refdata=. It's misplaced. Move it to =ores.refdata=, commission it
+fully — SQL, codegen model, domain, repository, service, messaging, Qt
+UI — following the [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]], and delete the
+=ores.trading= original. This unblocks
+[[id:109FBFD6-C505-4196-B3EE-D5C798CE050F][fx_convention]] soft-FK'ing to it same-component, matching
+every other refdata soft-FK. (Turned out not to be zero-consumer as
+first thought — =trading_swap_legs= soft-FKs it too; see the task's
+=* Plan= for the full investigation.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Nothing.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Raise PR.                       |
+| Last touched  | 2026-07-05                               |
+
+* Acceptance
+
+- [X] =business_day_convention_type= exists in =ores.refdata=, modelled
+  as an =ores.codegen.entity= (not the legacy =table= type), following
+  the aux-type pattern (=code=/=name=/=description=/=display_order=).
+- [X] SQL, domain, repository, service, messaging, and Qt UI are all
+  generated via codegen, matching the entity evaluation checklist's
+  criteria for an auxiliary type.
+- [X] The =ores.trading= original (SQL, =.org= model, generated C++, CLI
+  wiring) is fully removed, not left dangling alongside the new one.
+- [X] Site/build/tests stay green after the move.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F7C39C66-DFA0-4A10-B473-F3827B8A7187][Move business_day_convention_type to ores.refdata and commission fully]] | DONE | 2026-07-04 | 2026-07-05 | Model business_day_convention_type as ores.codegen.entity in ores.refdata, generate SQL/domain/repository/service/messaging/Qt via codegen, wire CMake and menus, then remove the ores.trading original. |
+
+* Decisions
+
+* Out of scope
+
+-

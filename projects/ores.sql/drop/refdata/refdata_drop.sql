@@ -94,6 +94,8 @@
 \ir ./refdata_currencies_drop.sql
 
 -- Lookup tables (must drop after tables that reference them)
+\ir ./refdata_business_day_convention_types_notify_trigger_drop.sql
+\ir ./refdata_business_day_convention_types_drop.sql
 \ir ./refdata_currency_market_tiers_notify_trigger_drop.sql
 \ir ./refdata_currency_market_tiers_drop.sql
 \ir ./refdata_monetary_natures_notify_trigger_drop.sql

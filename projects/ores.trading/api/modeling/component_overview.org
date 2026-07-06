@@ -39,7 +39,7 @@ server) and Qt client components depend on this library.
 - NATS protocol headers: =messaging/trade_protocol.hpp=,
   =messaging/instrument_protocol.hpp=, and per-instrument variants.
 - Enumeration types with JSON/table I/O: =activity_type=, =trade_type=,
-  =business_day_convention_type=, =day_count_fraction_type=, etc.
+  =day_count_fraction_type=, etc.
 
 * Entry points
 

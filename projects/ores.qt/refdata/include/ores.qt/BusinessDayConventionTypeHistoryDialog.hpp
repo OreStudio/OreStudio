@@ -23,10 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
-#include "ores.trading.api/domain/business_day_convention_type.hpp"
-#include <QString>
-#include <memory>
-#include <vector>
+#include "ores.refdata.api/domain/business_day_convention_type.hpp"
 
 namespace Ui {
 class BusinessDayConventionTypeHistoryDialog;
@@ -60,33 +57,27 @@ public:
     ~BusinessDayConventionTypeHistoryDialog() override;
 
     void loadHistory() override;
-
-    /**
-     * @brief Returns the identifier of the business day convention type.
-     */
-    [[nodiscard]] QString code() const override {
-        return code_;
-    }
+    [[nodiscard]] QString code() const override;
 
 signals:
-    void openVersionRequested(const trading::domain::business_day_convention_type& type,
+    void openVersionRequested(const refdata::domain::business_day_convention_type& type,
                               int versionNumber);
-    void revertVersionRequested(const trading::domain::business_day_convention_type& type);
+    void revertVersionRequested(const refdata::domain::business_day_convention_type& type);
 
 protected:
     [[nodiscard]] int historySize() const override;
     [[nodiscard]] VersionRow versionRow(int index) const override;
     [[nodiscard]] QString historyTitle() const override;
-    [[nodiscard]] DiffResult calculateDiffAt(int current_index, int previous_index) const override;
+    [[nodiscard]] DiffResult calculateDiffAt(int ci, int pi) const override;
     void displayFullDetails(int index) override;
     void openVersionAt(int index) override;
     void revertToVersionAt(int index) override;
 
 private:
-    std::unique_ptr<Ui::BusinessDayConventionTypeHistoryDialog> ui_;
+    Ui::BusinessDayConventionTypeHistoryDialog* ui_;
     QString code_;
     ClientManager* clientManager_;
-    std::vector<trading::domain::business_day_convention_type> versions_;
+    std::vector<refdata::domain::business_day_convention_type> versions_;
 };
 
 }

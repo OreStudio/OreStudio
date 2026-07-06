@@ -113,8 +113,8 @@ begin
     NEW.day_count_fraction_code := ores_trading_validate_day_count_fraction_type_fn(
         NEW.tenant_id, NEW.day_count_fraction_code);
 
-    -- Validate business_day_convention_code
-    NEW.business_day_convention_code := ores_trading_validate_business_day_convention_type_fn(
+    -- Validate business_day_convention_code (moved to ores.refdata)
+    NEW.business_day_convention_code := ores_refdata_validate_business_day_convention_type_fn(
         NEW.tenant_id, NEW.business_day_convention_code);
 
     -- Validate payment_frequency_code

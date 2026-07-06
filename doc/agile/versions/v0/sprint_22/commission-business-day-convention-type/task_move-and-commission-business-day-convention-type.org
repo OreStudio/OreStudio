@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: F7C39C66-DFA0-4A10-B473-F3827B8A7187
+:END:
+#+title: Task: Move business_day_convention_type to ores.refdata and commission fully
+#+description: Model business_day_convention_type as ores.codegen.entity in ores.refdata, generate SQL/domain/repository/service/messaging/Qt via codegen, wire CMake and menus, then remove the ores.trading original.
+#+type: task
+#+level: s1
+#+filetags: :commission-business-day-convention-type:sprint_22:v0:
+#+owner: marco
+#+branch: feature/move-and-commission-business-day-convention-type
+#+pr: 1442
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Move =business_day_convention_type= from =ores.trading= to =ores.refdata=
+and commission it fully (SQL, domain, repository, service, messaging,
+Qt), since every real consumer of this type (the =*_convention=
+entities, and now [[id:109FBFD6-C505-4196-B3EE-D5C798CE050F][fx_convention]]) lives in =ores.refdata=,
+not =ores.trading=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-05                               |
+
+* Acceptance
+
+- [X] =business_day_convention_type= exists in =ores.refdata=, modelled
+  as an =ores.codegen.entity= (not the legacy =table= type), following
+  the aux-type pattern (=code=/=name=/=description=/=display_order=).
+- [X] SQL, domain, repository, service, messaging, and Qt UI are all
+  generated via codegen, matching the entity evaluation checklist's
+  criteria for an auxiliary type.
+- [X] The =ores.trading= original (SQL, =.org= model, generated C++, CLI
+  wiring) is fully removed, not left dangling alongside the new one.
+- [X] Site/build/tests stay green after the move (build succeeds; DB
+  recreate succeeds; the only test failures are pre-existing and
+  unrelated — see Result).
+
+* Plan
+
+Scaffolded the model via =compass add entity_org --component refdata
+--slug business_day_convention_type=, then filled it in following
+=ores.refdata.currency_market_tier='s aux-type shape
+(code/name/description/display_order) rather than trading's leaner
+original (which only had =description=), since it's now a first-class
+=ores.refdata= lookup type. Generated each facet individually
+(=sql=, =domain=, =generator=, =all-cpp=, =nats-eventing=,
+=nats-handler=, =nats-sub-registrar=, =qt=) via
+=compass codegen generate --model <path> --profile <profile>=,
+disambiguating from the still-existing trading model by path since
+both shared an entity name during the transition.
+
+** Investigation before removing the trading original
+
+Checked every real consumer before touching anything:
+- Qt: =ores.qt.refdata= already had a full, *committed* Qt layer
+  (Controller/MdiWindow/DetailDialog/HistoryDialog,
+  =RefdataPlugin.cpp= wiring) for this exact entity, dated months
+  ago — built ahead of a backend that never existed until this task.
+  Compiling it for the first time surfaced two latent bugs: an invalid
+  =Icon::Calendar= enum value (fixed to =Icon::CalendarClock=) and a
+  delete-request field name/shape mismatch (fixed with
+  =:delete_request_id_field: codes= +
+  =:delete_request_id_is_plural: true=, matching the native
+  batch-delete protocol shape).
+- CLI: =ores.cli= had full hand-written wiring (options struct, parser,
+  =application.cpp= export/add/delete handlers) — not a codegen gap
+  exemption, just hand-code that needed removing along with the
+  trading original, per the story's acceptance.
+- SQL: *not* zero-consumer as originally believed —
+  =trading_swap_legs_create.sql= soft-FKs =business_day_convention_code=
+  to it. Repointed that one call site at
+  =ores_refdata_validate_business_day_convention_type_fn= before
+  deleting the trading version.
+- NATS: hand-written combined handler
+  (=instrument_ref_handler.hpp=/=registrar_trades.cpp=) alongside three
+  other trading aux types — removed just this type's four subscribe
+  blocks and handler methods, left the others alone.
+
+** Gotchas hit generating a brand-new entity from scratch
+
+- =needs_counter= (the synthetic-generator boilerplate) is derived from
+  =primary_key.is_text=, which needs to be set explicitly
+  (=:is_text: true=) — omitting it silently produces a generator that
+  references an undeclared =counter= variable.
+- New =.cpp= files aren't picked up by CMake's =GLOB_RECURSE= until a
+  fresh =cmake --preset ...= configure — a build immediately after
+  =codegen generate= will fail to *link* (undefined reference) even
+  though the file exists on disk and compiles fine on its own.
+- Hand-maintained files with no =AUTO-GENERATED= marker
+  (=ores.refdata.core/messaging/registrar.cpp=,
+  =ores.refdata.service/app/application.cpp=) must be wired manually —
+  codegen does not touch them. Missing the eventing relay wiring in
+  =application.cpp= is exactly the kind of silent gap the entity
+  evaluation checklist warns about (cf. the =party_type= precedent).
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1442][#1442]] | [refdata] Move and commission business_day_convention_type |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | validate_fn missing existence check (soft-FK regression) | refdata_business_day_convention_types_create.sql | Accepted | Fixed in 2f155a7ff. Root cause: codegen bug (domain_entity SQL-create template never computes scope flags) — captured separately, hand-fixed here. |
+| 2 | Duplicate change_reason_code validation call | refdata_business_day_convention_types_create.sql | Accepted | Fixed in 2f155a7ff. |
+| 3 | Drop script leaves validate_fn orphaned | refdata_business_day_convention_types_drop.sql | Accepted | Fixed in 2f155a7ff. |
+| 4 | Generator double-increments synthetic counter (nit) | business_day_convention_type_generator.cpp | Accepted | Fixed in 2f155a7ff. |
+
+* Result
+
+=business_day_convention_type= now lives in =ores.refdata=, fully
+commissioned (SQL/domain/repository/service/messaging/Qt), with the
+=ores.trading= original fully removed and
+=trading_swap_legs_create.sql='s soft-FK repointed at the new
+validation function. Build succeeds; a full DB recreate succeeds; the
+=rat= test suite shows 25 pre-existing failures (=business_centre=/
+=party_id_scheme=/=change_reason_code= fixture drift), all unrelated to
+this change and already being fixed independently in the =brave_hopper=
+environment's =hotfix/refdata-test-fixture-drift= branch. Rebased
+cleanly onto latest =origin/main=.

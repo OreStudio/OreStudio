@@ -31,7 +31,6 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:2446DB5D-CDEF-46C8-A8F8-0829CBB733E2][ores.trading.cap_floor_instrument]] | Interest rate cap or floor instrument. |
 | [[id:104DDBF1-12E8-435F-90F0-A701AAD9078F][ores.trading.fra_instrument]] | Forward Rate Agreement (FRA) instrument. |
 | [[id:3B868579-42B4-4A10-8A8E-F51B3289FE4F][ores.trading.rpa_instrument]] | Risk Participation Agreement (RPA) instrument. |
-| [[id:841BFAF8-9361-4E4E-BCF8-3F167296FA43][ores.trading.business_day_convention_type]] | ORE business day convention code (e.g. Following, ModifiedFollowing, Unadjusted). |
 | [[id:7856FDEB-E15B-4A72-BFA5-57ECF053AFFF][ores.trading.day_count_fraction_type]] | ORE day count fraction convention code (e.g. A360, A365F, ActAct(ISDA)). |
 | [[id:BB9BC875-883B-42D2-B9D0-12346B486D6C][ores.trading.payment_frequency_type]] | ORE payment frequency code (e.g. Annual, Semiannual, Quarterly, Monthly). |
 | [[id:40DDDC9B-1913-4B8C-A313-E2D694C5B156][ores.trading.leg_type]] | ORE leg type code (e.g. Fixed, Floating, OIS, CMS, CPI). |

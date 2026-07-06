@@ -45,6 +45,8 @@
                (format "[%s](file:%s%s)" root path (or desc path))))))
 
 (setq org-id-locations-file (expand-file-name "./.org-id-locations-file"))
+(setq org-publish-timestamp-directory (expand-file-name "./build/output/org-timestamps/"))
+(make-directory org-publish-timestamp-directory t)
 (org-id-update-id-locations (directory-files-recursively "." "\\.org$"))
 (setq package-user-dir (expand-file-name "./.packages"))
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")

@@ -33,10 +33,10 @@ plan (task 6E0CD16E).
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
+| Now          | Implementation complete; build passes. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-04                               |
+| Next         | Close out and merge.                   |
+| Last touched | 2026-07-06                               |
 
 * Acceptance
 
@@ -106,6 +106,39 @@ mdi_window and detail_dialog templates both get the same
    system.synthetic_data_generation, in both templates); regenerate;
    diff against the migrated hand-written version from step 2.
 5. Build passes; acceptance met.
+
+** Implementation notes
+
+- The actual =QAction= creation (icon, tooltip, connected slot —
+  =generateAction_ = new QAction("Generate", ...)= etc.) stays
+  hand-written per entity, same as currency's =generateSynthetic()=/
+  =onGenerateClicked()= feature logic itself. Only the
+  subscribe/notify/query *wiring* is generalised — regenerating
+  currency's files wholesale today would leave =generateAction_= a
+  never-constructed =nullptr= (the template has no opinion on what the
+  action looks like or does), consistent with the broader "Sync Qt
+  codegen for currency" reconciliation still being incremental,
+  capability-by-capability.
+- =CurrencyDetailDialog='s =updateGenerateActionVisibility()= had an
+  extra rule the shared controller doesn't know about — hide in
+  read-only/history mode — preserved as-is via the pre-existing
+  unconditional =generateAction_->setVisible(false)= in =setReadOnly()=
+  (untouched) plus an =!isReadOnly_= guard around the one place that
+  calls =refresh()= after login. A live setting-change notification
+  arriving while a read-only history view happens to be open could
+  still transiently re-show the action (the controller has no
+  per-action read-only predicate) — a narrow edge case, not worth
+  complicating the shared abstraction for one caller.
+- Verified via =codegen entity generate currency --address
+  ores.cpp.qt --diff=: the has_setting_gated_actions-gated sections
+  match the hand-migrated code modulo formatting. Did not adopt the
+  full regenerated file set (same pre-existing unrelated drift as the
+  CSV/XML task).
+- Lesson from this task: commit hand-migration edits to the actual
+  entity files *before* running a test full-regenerate-then-revert —
+  =git checkout --= reverts to the last commit, not to "before this
+  local experiment," and silently discarded the CurrencyMdiWindow/
+  CurrencyDetailDialog edits once, requiring a redo.
 
 * Notes
 

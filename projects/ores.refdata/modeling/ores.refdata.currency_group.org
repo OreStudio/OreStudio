@@ -176,7 +176,7 @@ drop function if exists ores_refdata_validate_currency_group_fn;
 :delete_request_class:    refdata::messaging::delete_currency_group_request
 :delete_response_class:   refdata::messaging::delete_currency_group_response
 :delete_message_type:     delete_currency_group_request
-:delete_request_id_field: code
+:delete_request_id_field: codes
 :history_request_class:       refdata::messaging::get_currency_group_history_request
 :history_response_class:      refdata::messaging::get_currency_group_history_response
 :history_message_type:        get_currency_group_history_request

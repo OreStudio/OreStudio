@@ -16,6 +16,10 @@
 {{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}
 #include "{{combo_include}}"
 {{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
+{{#domain_entity.qt.has_flagged_combo_fields}}
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
+{{/domain_entity.qt.has_flagged_combo_fields}}
 
 namespace Ui {
 class {{domain_entity.entity_pascal}}DetailDialog;
@@ -99,6 +103,9 @@ private:
 {{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}
     void populate{{combo_setter_pascal}}();
 {{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
+{{#domain_entity.qt.detail_fields}}{{#is_flagged_combo}}
+    void populate{{field_pascal}}Combo();
+{{/is_flagged_combo}}{{/domain_entity.qt.detail_fields}}
 
     Ui::{{domain_entity.entity_pascal}}DetailDialog* ui_;
     ClientManager* clientManager_;

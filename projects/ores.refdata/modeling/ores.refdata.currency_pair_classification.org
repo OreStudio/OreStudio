@@ -174,7 +174,7 @@ drop function if exists ores_refdata_validate_currency_pair_classification_fn;
 :delete_request_class:    refdata::messaging::delete_currency_pair_classification_request
 :delete_response_class:   refdata::messaging::delete_currency_pair_classification_response
 :delete_message_type:     delete_currency_pair_classification_request
-:delete_request_id_field: code
+:delete_request_id_field: codes
 :history_request_class:       refdata::messaging::get_currency_pair_classification_history_request
 :history_response_class:      refdata::messaging::get_currency_pair_classification_history_response
 :history_message_type:        get_currency_pair_classification_history_request

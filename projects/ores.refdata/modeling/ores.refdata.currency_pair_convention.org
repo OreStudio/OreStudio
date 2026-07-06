@@ -1,0 +1,291 @@
+:PROPERTIES:
+:ID: 1B88215B-1FE0-4CAF-B6AB-53F471963CA6
+:END:
+#+title: ores.refdata.currency_pair_convention
+#+description: Codegen entity model for the refdata =currency_pair_convention= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Quoting and date conventions for a currency pair, 1:1 with currency_pair.
+#+entity_singular: currency_pair_convention
+#+entity_plural: currency_pair_conventions
+#+entity_title: Currency Pair Convention
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-07-06
+#+updated: 2026-07-06
+
+Quoting and date-convention fields for a currency pair — pip factor,
+tick size, calendars, business day convention, spot-relative/end-of-
+month flags — folded in from the retired =fx_convention= entity (see
+[[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]). Keyed 1:1 by
+=pair_code=, the same value space as
+[[id:E1EE950D-FC22-4DAB-A93F-8B2A15196031][ores.refdata.currency_pair]]'s own primary key — every pair has at
+most one convention record, so a separate identifier scheme would be
+pure overhead. Like every other soft-FK relationship in this codebase,
+=pair_code= is validated via trigger, not a hard DB foreign key.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   pair_code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Same value as the owning =currency_pair.pair_code= (e.g. "EUR/USD") —
+a 1:1 extension key, not an independent identifier.
+
+#+begin_src cpp :name generator
+std::string(faker::finance::currencyCode()) + "/" + std::string(faker::finance::currencyCode())
+#+end_src
+
+* Columns
+
+** pip_factor
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+Converts pips to absolute rate moves (0.0001 for most pairs, 0.01 for
+JPY crosses).
+
+#+begin_src cpp :name generator
+0.0001
+#+end_src
+
+** tick_size
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+Minimum rate increment, in pips.
+
+#+begin_src cpp :name generator
+0.1
+#+end_src
+
+** decimal_places
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  4
+:END:
+
+Decimal places for rate display.
+
+#+begin_src cpp :name generator
+4
+#+end_src
+
+** advance_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar used advancing spot→forward. Free-text pending
+[[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]].
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** business_day_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Soft FK to =ores_trading_business_day_convention_types_tbl=.
+
+#+begin_src cpp :name generator
+std::string("Following")
+#+end_src
+
+** spot_relative
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether forward dates are generated relative to the spot date.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** end_of_month
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether end-of-month convention applies.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_currency_pair_conventions_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_currency_pair_convention_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     pair_code
+:END:
+
+* Insert trigger
+** Validations
+
+| column                   | validation_function                            |
+|--------------------------+--------------------------------------------------|
+| pair_code                | ores_refdata_validate_currency_pair_fn         |
+| business_day_convention  | ores_trading_validate_business_day_convention_type_fn |
+| change_reason_code       | ores_dq_validate_change_reason_fn              |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: convention
+:entity_plural_short:   conventions
+:entity_singular_words: currency pair convention
+:entity_plural_words:   currency pair conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cpv
+:END:
+
+** Table display
+
+| column                   | header                   |
+|--------------------------+---------------------------|
+| pair_code                | Pair                     |
+| pip_factor               | Pip Factor               |
+| tick_size                | Tick Size                |
+| decimal_places           | Decimal Places           |
+| advance_calendar         | Advance Calendar         |
+| business_day_convention  | Business Day Convention |
+| spot_relative            | Spot Relative            |
+| end_of_month             | End Of Month             |
+| modified_by              | Modified By               |
+| version                  | Version                   |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/currency_pair_convention.hpp
+:domain_class:           refdata::domain::currency_pair_convention
+:protocol_include:       ores.refdata.api/messaging/protocol.hpp
+:collection_name:        conventions
+:item_var:               convention
+:key_field:              pair_code
+:has_uuid_primary_key:         false
+:has_change_reason_cache:      true
+:get_request_class:      refdata::messaging::get_currency_pair_conventions_request
+:get_response_class:     refdata::messaging::get_currency_pair_conventions_response
+:get_message_type:       get_currency_pair_conventions_request
+:save_request_class:     refdata::messaging::save_currency_pair_convention_request
+:save_response_class:    refdata::messaging::save_currency_pair_convention_response
+:save_message_type:      save_currency_pair_convention_request
+:delete_request_class:    refdata::messaging::delete_currency_pair_convention_request
+:delete_response_class:   refdata::messaging::delete_currency_pair_convention_response
+:delete_message_type:     delete_currency_pair_convention_request
+:delete_request_id_field: pair_codes
+:history_request_class:       refdata::messaging::get_currency_pair_convention_history_request
+:history_response_class:      refdata::messaging::get_currency_pair_convention_history_response
+:history_message_type:        get_currency_pair_convention_history_request
+:history_request_id_field:    pair_code
+:history_response_data_field: history
+:settings_group:         CurrencyPairConventionListWindow
+:window_title:           Currency Pair Conventions
+:icon:                   Currency
+:END:
+
+*** Columns (Qt model)
+
+| enum_name              | field                   | header                   | type      | width |
+|------------------------+--------------------------+---------------------------+-----------+-------|
+| PairCode               | pair_code                | Pair                     | string    | 100   |
+| PipFactor              | pip_factor                | Pip Factor               | double    | 90    |
+| TickSize                | tick_size                 | Tick Size                | double    | 90    |
+| DecimalPlaces           | decimal_places             | Decimal Places           | int       | 100   |
+| AdvanceCalendar         | advance_calendar           | Advance Calendar         | string    | 130   |
+| BusinessDayConvention   | business_day_convention    | Business Day Convention | string    | 150   |
+| SpotRelative            | spot_relative              | Spot Relative             | bool      | 100   |
+| EndOfMonth              | end_of_month               | End Of Month              | bool      | 100   |
+| Version                 | version                    | Version                   | int       | 70    |
+| ModifiedBy              | modified_by                | Modified By               | string    | auto  |
+| RecordedAt              | recorded_at                 | Recorded At               | timestamp | auto  |
+
+*** Detail fields
+
+| field                    | label                    | widget                     | type      | is_key | is_required | placeholder                        |
+|--------------------------+---------------------------+-----------------------------+-----------+--------+-------------+--------------------------------------|
+| pair_code                | Pair Code                | pairCodeEdit                | line_edit | true   | true        | e.g. EUR/USD                        |
+| pip_factor               | Pip Factor                | pipFactorEdit               | line_edit |        | true        | e.g. 0.0001                          |
+| tick_size                | Tick Size                 | tickSizeEdit                 | line_edit |        | true        | e.g. 0.1                             |
+| decimal_places           | Decimal Places            | decimalPlacesSpinBox         | spin_box  |        | true        |                                       |
+| advance_calendar         | Advance Calendar          | advanceCalendarEdit          | line_edit |        |             | e.g. TARGET                          |
+| business_day_convention  | Business Day Convention   | businessDayConventionEdit    | line_edit |        |             | e.g. Following                       |
+| spot_relative            | Spot Relative              | spotRelativeCheckBox         | check_box |        |             |                                       |
+| end_of_month             | End Of Month               | endOfMonthCheckBox           | check_box |        |             |                                       |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] — parent story.
+- [[id:E1EE950D-FC22-4DAB-A93F-8B2A15196031][ores.refdata.currency_pair]] — owning identity entity.

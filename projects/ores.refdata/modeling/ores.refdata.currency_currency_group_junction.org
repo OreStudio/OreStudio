@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 579032D2-3637-4188-859E-6C17C1D144F7
+:END:
+#+title: ores.refdata.currency_currency_group
+#+description: Codegen junction model for currency_currency_groups.
+#+type: ores.codegen.junction
+#+component: refdata
+#+filetags: :model:junction:refdata:
+#+name: currency_currency_groups
+#+name_singular: currency_currency_group
+#+name_title: Currency Currency Group
+#+name_singular_words: currency group assignment
+#+brief: Links a currency to a desk grouping it belongs to (G11, Scandies, ...).
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-07-06
+#+updated: 2026-07-06
+
+Many-to-many junction between currency and currency_group, mirroring
+the existing party_currencies pattern. A currency can belong to any
+number of groups simultaneously (e.g. NOK: G11 *and* SCANDIES *and*
+COMMODITY) — see
+[[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] for the design rationale
+(replacing the original boolean =is_g11= flag).
+
+* Left
+:PROPERTIES:
+:column:        currency_iso_code
+:column_short:  currency
+:column_title:  Currency
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for looking up groups a currency belongs to
+:END:
+
+ISO 4217 code of the currency.
+
+References ores_refdata_currencies_tbl.iso_code (soft FK).
+
+#+begin_src cpp :name generator
+std::string("NOK")
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        currency_group_code
+:column_short:  group
+:column_title:  Group
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding currencies in a group
+:END:
+
+Code of the currency group this currency belongs to.
+
+References ores_refdata_currency_groups_tbl.code (soft FK).
+
+#+begin_src cpp :name generator
+std::string("G11")
+#+end_src
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_currency_currency_groups_tbl
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short: currency_group
+:name_short:          currency_groups
+:name_singular_words: currency group
+:name_words:          currency groups
+:order_column:        currency_group_code
+:END:
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ccg
+:END:
+
+** Table display
+
+| column              | header      |
+|---------------------+-------------|
+| currency_iso_code   | Currency    |
+| currency_group_code | Group       |
+| modified_by         | Modified By |
+| version             | Version     |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] — parent story.

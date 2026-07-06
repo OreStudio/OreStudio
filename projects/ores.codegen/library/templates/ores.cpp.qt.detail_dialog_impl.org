@@ -64,7 +64,11 @@ using namespace ores::logging;
 {{domain_entity.entity_pascal}}DetailDialog::{{domain_entity.entity_pascal}}DetailDialog(QWidget* parent)
     : DetailDialogBase(parent),
       ui_(new Ui::{{domain_entity.entity_pascal}}DetailDialog),
-      clientManager_(nullptr) {
+      clientManager_(nullptr){{#domain_entity.qt.has_setting_gated_actions}},
+{{#domain_entity.qt.setting_gated_actions}}
+      {{action}}_(nullptr),
+{{/domain_entity.qt.setting_gated_actions}}
+      settingGatedActions_(nullptr){{/domain_entity.qt.has_setting_gated_actions}} {
 
     ui_->setupUi(this);
     setupUi();
@@ -177,6 +181,17 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
 
 void {{domain_entity.entity_pascal}}DetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+{{#domain_entity.qt.has_setting_gated_actions}}
+
+    if (clientManager_) {
+        settingGatedActions_ = new SettingGatedActionController(clientManager_, this);
+{{#domain_entity.qt.setting_gated_actions}}
+        settingGatedActions_->registerAction({{action}}_, "{{setting}}");
+{{/domain_entity.qt.setting_gated_actions}}
+        if (clientManager_->isLoggedIn())
+            settingGatedActions_->refresh();
+    }
+{{/domain_entity.qt.has_setting_gated_actions}}
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::setUsername(const std::string& username) {

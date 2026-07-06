@@ -350,6 +350,12 @@ version-navigation UI that consumes this richer shape.
 | ModifiedBy         | modified_by        | Modified By     | string    | auto  |
 | RecordedAt         | recorded_at        | Recorded At     | timestamp | auto  |
 
+*** Setting-gated actions
+
+| action         | setting                          |
+|----------------+-----------------------------------|
+| generateAction | system.synthetic_data_generation  |
+
 ** Custom service constructor init
 
 #+begin_src cpp :name ctor_init :implements 4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B

@@ -38,6 +38,9 @@ The full template source. Edit here and re-tangle with
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "{{domain_entity.qt.domain_include}}"
+{{#domain_entity.qt.has_setting_gated_actions}}
+#include "ores.qt/SettingGatedActionController.hpp"
+{{/domain_entity.qt.has_setting_gated_actions}}
 
 namespace ores::qt {
 
@@ -136,6 +139,12 @@ private:
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
+{{#domain_entity.qt.has_setting_gated_actions}}
+{{#domain_entity.qt.setting_gated_actions}}
+    QAction* {{action}}_;
+{{/domain_entity.qt.setting_gated_actions}}
+    SettingGatedActionController* settingGatedActions_;
+{{/domain_entity.qt.has_setting_gated_actions}}
 };
 
 }

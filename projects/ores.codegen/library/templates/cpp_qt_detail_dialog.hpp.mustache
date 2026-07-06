@@ -9,6 +9,10 @@
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "{{domain_entity.qt.domain_include}}"
+{{#domain_entity.qt.has_setting_gated_actions}}
+#include "ores.qt/SettingGatedActionController.hpp"
+#include <QAction>
+{{/domain_entity.qt.has_setting_gated_actions}}
 {{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}
 #include "{{combo_include}}"
 {{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
@@ -106,6 +110,12 @@ private:
 {{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}
     std::vector<{{combo_type}}> {{combo_items_member}}_;
 {{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
+{{#domain_entity.qt.has_setting_gated_actions}}
+{{#domain_entity.qt.setting_gated_actions}}
+    QAction* {{action}}_;
+{{/domain_entity.qt.setting_gated_actions}}
+    SettingGatedActionController* settingGatedActions_{nullptr};
+{{/domain_entity.qt.has_setting_gated_actions}}
 };
 
 }

@@ -497,6 +497,22 @@ def _qt_icon_columns(node: OrgNode) -> list[dict[str, Any]]:
     return out
 
 
+def _qt_setting_gated_actions(node: OrgNode) -> list[dict[str, Any]]:
+    """Convert the Qt 'Setting-gated actions' table into the dict list shape.
+
+    Each row names one existing QAction* member (`action`, without the
+    trailing underscore) whose visibility is gated by a boolean system
+    setting (`setting`). Wired via a single shared
+    SettingGatedActionController per mdi_window/detail_dialog rather
+    than duplicating the subscribe/notify/query mechanism per action.
+    """
+    if not node.tables:
+        return []
+    return [
+        {k: _parse_typed(v) for k, v in row.items()} for row in node.tables[0]
+    ]
+
+
 def _custom_methods(node: OrgNode) -> list[dict[str, Any]]:
     """Each custom method is a sub-heading with its own ID, prose body
     explaining intent, and named src blocks for declaration/implementation."""
@@ -746,6 +762,10 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             if ic:
                 qt_out["icon_columns"] = _qt_icon_columns(ic)
                 qt_out["has_icon_columns"] = bool(qt_out["icon_columns"])
+            sga = _section(qt, "Setting-gated actions")
+            if sga:
+                qt_out["setting_gated_actions"] = _qt_setting_gated_actions(sga)
+                qt_out["has_setting_gated_actions"] = bool(qt_out["setting_gated_actions"])
             # has_flag_icon is derived, not a separately-authored property:
             # an entity has the single-column image_id-keyed flag mechanism
             # iff it declared which column shows it. Any manually-set

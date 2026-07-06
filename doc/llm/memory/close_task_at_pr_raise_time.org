@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 975C94B2-06AC-4073-B187-ED4779FCAC7B
+:END:
+#+title: Close task bookkeeping when raising the PR, not after review
+#+description: Task DONE, story row, and Result section should be closed as part of raising the PR, not deferred to after the review round finishes.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+
+Close a task's bookkeeping (state → DONE, story's Tasks row, and the
+=* Result= section) when raising its PR — as part of =pr-raise=, not
+as a separate step deferred until the review round finishes.
+
+*Why:* The =agile-close-task= skill's original guidance ("close at end
+of review round, before merge, so bookkeeping rides the PR") meant a
+dedicated close-task commit landed *after* every review-round fix
+commit, adding its own push + CI cycle on top of the round's own.
+Closing at PR-raise time instead means review-round fixes are the only
+commits still needed after the PR opens — no trailing bookkeeping
+round-trip stacked on the end. Called out explicitly after this
+happened on PR #1446 (task closed only after two follow-up review
+rounds had already landed, each with its own push/CI wait).
+
+*How to apply:* When running =pr-raise= for a task-backed branch, do
+the task's close-out (state, story row, Result) in the same commit
+sequence as opening the PR, before pushing. Review-round fixes after
+that still get their own commits/replies as normal — just no separate
+"close task" commit tacked on afterward. If the task's scope shifts
+mid-review (e.g. a review finding expands the work), it's fine to
+amend the Result section in a follow-up commit, but the DONE state
+itself should already be set from the PR-raise step.

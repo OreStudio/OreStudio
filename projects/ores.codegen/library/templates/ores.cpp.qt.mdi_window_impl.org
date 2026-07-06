@@ -80,10 +80,21 @@ using namespace ores::logging;
       addAction_(nullptr),
       editAction_(nullptr),
       deleteAction_(nullptr),
-      historyAction_(nullptr) {
+      historyAction_(nullptr){{#domain_entity.qt.has_setting_gated_actions}},
+{{#domain_entity.qt.setting_gated_actions}}
+      {{action}}_(nullptr),
+{{/domain_entity.qt.setting_gated_actions}}
+      settingGatedActions_(new SettingGatedActionController(clientManager, this)){{/domain_entity.qt.has_setting_gated_actions}} {
 
     setupUi();
     setupConnections();
+{{#domain_entity.qt.has_setting_gated_actions}}
+{{#domain_entity.qt.setting_gated_actions}}
+    settingGatedActions_->registerAction({{action}}_, "{{setting}}");
+{{/domain_entity.qt.setting_gated_actions}}
+    if (clientManager_ && clientManager_->isLoggedIn())
+        settingGatedActions_->refresh();
+{{/domain_entity.qt.has_setting_gated_actions}}
     reload();
 }
 

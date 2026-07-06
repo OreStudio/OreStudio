@@ -758,6 +758,22 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             qc = _section(qt, "Columns (Qt model)")
             if qc:
                 qt_out["columns"] = _qt_columns(qc)
+                # Preview columns for the generic import dialog (has_csv_xml_io):
+                # excludes audit/system fields that are meaningless before a
+                # record is imported (its own version/modified_by/recorded_at
+                # belong to the never-yet-saved row, not the source file).
+                #
+                # Opt-in, not opt-out: a column only appears in the import
+                # preview if its row in "Columns (Qt model)" sets
+                # :import_preview: true explicitly. An exclude-list keyed on
+                # generic properties (is_timestamp, audit field names) was
+                # tried first and silently over-included fields the entity
+                # author never intended to preview (caught in PR #1445
+                # review — currency's hand-migrated dialog only shows 5 of
+                # its 14 columns, not the ~11 an opt-out list would keep).
+                qt_out["import_preview_columns"] = [
+                    c for c in qt_out["columns"] if c.get("import_preview")
+                ]
             ic = _section(qt, "Icon columns (Qt model)")
             if ic:
                 qt_out["icon_columns"] = _qt_icon_columns(ic)

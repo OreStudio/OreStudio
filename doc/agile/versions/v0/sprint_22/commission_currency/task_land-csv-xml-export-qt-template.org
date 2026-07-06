@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/land-csv-xml-export-qt-template
+#+pr: 1445
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,12 +31,12 @@ for currency" regenerates =CurrencyMdiWindow=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-06                               |
 
 * Acceptance
 
@@ -48,9 +48,99 @@ for currency" regenerates =CurrencyMdiWindow=.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Current state (investigated 2026-07-06)
+
+Currency is the *only* entity with CSV/XML import/export anywhere in
+the codebase — there is no existing generic pattern to templatize
+against:
+- =ores.refdata.api/csv/exporter.hpp= has exactly one method,
+  =export_currency_config=; no other entity has a CSV exporter.
+- =ore::xml::exporter/importer::export_currency_config= /
+  =import_currency_config= are likewise currency-only.
+- =ImportCurrencyDialog= (preview table, checkboxes, progress bar,
+  cancel) is a hand-written, currency-specific =QDialog=.
+- =cpp_qt_mdi_window.{hpp,cpp}.mustache= have zero hooks for
+  CSV/XML/import/export today.
+
+So this is new capability design, not a "lift existing pattern into
+mustache" job.
+
+** Scope decision
+
+Split into two independently-landable pieces, since they have
+different generality:
+
+1. *CSV/XML domain-layer exporter/importer* — per-entity, hand-written
+   (like today), NOT templated. The record shape differs too much
+   entity-to-entity to make a generic serializer worth the codegen
+   complexity for two formats. Codegen's job is only to know an entity
+   *has* these and wire the Qt calls to them by convention
+   (=export_<entity>_config=, =import_<entity>_config=), same as it
+   already does for e.g. =generate_fictional_currencies=-style
+   generator hooks.
+2. *Qt wiring* — templated. A new opt-in mdi_window flag,
+   =has_csv_xml_io: true=, gated the same way =has_flag_icon= gates
+   the flag-image mechanism today. When set, the generated
+   =*MdiWindow= gets:
+   - toolbar actions: Import XML, Export CSV, Export XML
+   - =exportToCSV()=/=exportToXML()=/=importFromXML()= methods calling
+     the entity's =csv::exporter=/=xml::exporter=/=xml::importer= by
+     the naming convention above
+   - a generic =ImportEntityDialog<Entity>= (header-only template in
+     =ores.qt/api=, same shape as =DynamicComboSetup.hpp='s
+     =populateDynamicCombo<Entity>=) replacing the currency-specific
+     =ImportCurrencyDialog=, parametrized by:
+     - =code_of(Entity)= / preview column accessors (reuse the
+       mustache field list already used for the entity's list/detail
+       views instead of a second field enumeration)
+     - the import call
+   - the =has_csv_xml_io= knob also implies the entity type is
+     copy/move-constructible and has the two free functions above;
+     codegen should fail fast at generation time if either is missing
+     rather than emit code that won't compile.
+
+** Steps
+
+1. Add =ImportEntityDialog<Entity>= template to =ores.qt/api=,
+   modelled on =ImportCurrencyDialog= but parametrized per the above.
+2. Migrate currency's =ImportCurrencyDialog= call site to it; delete
+   =ImportCurrencyDialog.{hpp,cpp}= once the migration is verified
+   behaviourally equivalent.
+3. Add the =has_csv_xml_io= schema flag to the qt entity model
+   (Python side) and the corresponding mustache sections in
+   =cpp_qt_mdi_window.{hpp,cpp}.mustache=.
+4. Flip the flag on for currency's model; regenerate; diff against
+   the migrated hand-written version from step 2 — should match
+   modulo naming.
+5. Build passes; acceptance met.
+
+** Implementation notes
+
+- Reusing the full =qt.columns= list for the import preview table was
+  wrong: fields like =version=/=modified_by=/=recorded_at= are
+  meaningless before a record is imported. First cut added a derived
+  =import_preview_columns= (org_loader.py) filtering =columns= down to
+  non-computed, non-timestamp, non-audit fields — an *opt-out*
+  exclude-list. PR review caught that this still over-included fields
+  (11 columns for currency vs the 5 the hand-migrated dialog actually
+  shows), and that the =--diff= verification below should have caught
+  the mismatch and didn't. Replaced with an *opt-in*
+  =:import_preview: true= column property instead, so an entity author
+  explicitly marks which columns matter for the import preview — no
+  exclude-list to silently under/over-fire.
+- The naive =get{{entity_pascal}}s()= method name mispluralised
+  ("getCurrencys"). Used the existing =entity_pascal_short_plural=
+  property (already used elsewhere, e.g.
+  =on{{entity_pascal_short_plural}}Loaded=) instead of inventing a new
+  per-entity property.
+- Verified by running =codegen entity generate currency --address
+  ores.cpp.qt --diff= and comparing the has_csv_xml_io-gated sections
+  against the hand-migrated code from step 2 — match modulo
+  formatting/comments. Did *not* adopt the full regenerated file set:
+  currency's Qt layer has substantial pre-existing drift unrelated to
+  this capability (badges, image cache, generator button, NATS
+  notifications, ...) that the broader "Sync Qt codegen for currency"
+  story/regenerate plan still needs to reconcile separately.
 
 * Notes
 
@@ -58,12 +148,33 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1445][#1445]] | [codegen,qt] Land CSV/XML import-export as a qt-profile capability |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                        | File                | Decision | Notes                                                     |
+|---+---------------------------------------------------------------------------+----------------------+----------+-------------------------------------------------------------|
+| 1 | import_preview_columns exclude-list over-includes fields (11 vs 5 hand-migrated) | org_loader.py       | Fixed    | Replaced with opt-in :import_preview: column flag, 263d90206 |
+| 2 | No unit test for import_preview_columns derivation in org_loader.py     | org_loader.py       | Declined | No existing test file for org_loader.py at all; bigger lift than this fix, follow-up |
 
 * Result
+
+Shipped =ImportEntityDialog= (=ores.qt/api=), a generic, non-templated
+preview-and-import dialog (Qt moc can't process class templates with
+=Q_OBJECT=, so it's driven by type-erased rows and =label_of=/
+=import_one= callbacks), replacing the currency-specific
+=ImportCurrencyDialog=. Added the opt-in =has_csv_xml_io= qt-profile
+flag to the mdi_window/client_model mustache templates: toolbar
+actions (Import XML, Export CSV, Export XML), generated
+=exportToCSV=/=exportToXML=/=importFromXML= wired to the entity's
+csv/xml exporter/importer by naming convention, and a bulk
+=get<Plural>()= accessor on the client model. The import preview
+column list is opt-in per column (=:import_preview: true=), not
+derived from an exclude-list — a PR review round caught the original
+exclude-list approach over-including fields (11 vs 5 for currency)
+and it was corrected. Currency is the first consumer
+(=generateAction_= wiring aside, this task covers CSV/XML only).
+Verified via =codegen entity generate currency --address ores.cpp.qt
+--diff=: the has_csv_xml_io-gated sections match the hand-migrated
+code, including the corrected 5-column import preview. All three
+acceptance criteria met. PR #1445.

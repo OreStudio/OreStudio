@@ -14,6 +14,13 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+{{#domain_entity.qt.has_csv_xml_io}}
+#include "ores.qt/ImportEntityDialog.hpp"
+#include <QDesktopServices>
+#include <QFile>
+#include <QFileDialog>
+#include <QUrl>
+{{/domain_entity.qt.has_csv_xml_io}}
 {{#domain_entity.qt.has_badge_columns}}
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/BadgeCache.hpp"
@@ -55,6 +62,11 @@ using namespace ores::logging;
       addAction_(nullptr),
       editAction_(nullptr),
       deleteAction_(nullptr),
+{{#domain_entity.qt.has_csv_xml_io}}
+      importXMLAction_(nullptr),
+      exportCSVAction_(nullptr),
+      exportXMLAction_(nullptr),
+{{/domain_entity.qt.has_csv_xml_io}}
       historyAction_(nullptr){{#domain_entity.qt.has_setting_gated_actions}},
 {{#domain_entity.qt.setting_gated_actions}}
       {{action}}_(nullptr),
@@ -138,6 +150,34 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this,
             &{{domain_entity.entity_pascal}}MdiWindow::viewHistorySelected);
+
+{{#domain_entity.qt.has_csv_xml_io}}
+    toolbar_->addSeparator();
+
+    importXMLAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ImportOre, IconUtils::DefaultIconColor),
+        tr("Import XML"));
+    importXMLAction_->setToolTip(tr("Import {{domain_entity.entity_plural_words}} from an ORE XML file"));
+    connect(importXMLAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}MdiWindow::importFromXML);
+
+    exportCSVAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ExportCsv, IconUtils::DefaultIconColor),
+        tr("Export CSV"));
+    exportCSVAction_->setToolTip(tr("Export {{domain_entity.entity_plural_words}} to CSV"));
+    connect(exportCSVAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}MdiWindow::exportToCSV);
+
+    exportXMLAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ExportOre, IconUtils::DefaultIconColor),
+        tr("Export XML"));
+    exportXMLAction_->setToolTip(tr("Export {{domain_entity.entity_plural_words}} to ORE XML"));
+    connect(exportXMLAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}MdiWindow::exportToXML);
+{{/domain_entity.qt.has_csv_xml_io}}
 }
 
 void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
@@ -590,5 +630,192 @@ void {{domain_entity.entity_pascal}}MdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
+{{#domain_entity.qt.has_csv_xml_io}}
+void {{domain_entity.entity_pascal}}MdiWindow::exportToCSV() {
+    if (model_->rowCount() == 0) {
+        QMessageBox::information(this, "No Data", "There are no {{domain_entity.entity_plural_words}} to export.");
+        return;
+    }
+
+    auto {{domain_entity.qt.collection_name}} = model_->get{{domain_entity.entity_pascal_short_plural}}();
+
+    QString fileName = QFileDialog::getSaveFileName(
+        this, "Export to CSV", "{{domain_entity.qt.collection_name}}.csv", "CSV Files (*.csv);;All Files (*)");
+    if (fileName.isEmpty())
+        return;
+
+    try {
+        std::string csvData = {{domain_entity.qt.csv_export_class}}::{{domain_entity.qt.csv_export_method}}({{domain_entity.qt.collection_name}});
+
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            MessageBoxHelper::critical(
+                this, "File Error", QString("Could not open file for writing: %1").arg(fileName));
+            return;
+        }
+        file.write(csvData.c_str(), csvData.length());
+        file.close();
+
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+        emit statusChanged(QString("Successfully exported {{domain_entity.entity_plural_words}} to %1").arg(fileName));
+    } catch (const std::exception& e) {
+        MessageBoxHelper::critical(
+            this, "Export Error", QString("Error during CSV export: %1").arg(e.what()));
+    }
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::exportToXML() {
+    if (model_->rowCount() == 0) {
+        QMessageBox::information(this, "No Data", "There are no {{domain_entity.entity_plural_words}} to export.");
+        return;
+    }
+
+    auto {{domain_entity.qt.collection_name}} = model_->get{{domain_entity.entity_pascal_short_plural}}();
+
+    QString fileName = QFileDialog::getSaveFileName(
+        this, "Export to ORE XML", "{{domain_entity.qt.collection_name}}.xml", "XML Files (*.xml);;All Files (*)");
+    if (fileName.isEmpty())
+        return;
+
+    try {
+        std::string xmlData = {{domain_entity.qt.xml_export_class}}::{{domain_entity.qt.xml_export_method}}({{domain_entity.qt.collection_name}});
+
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            MessageBoxHelper::critical(
+                this, "File Error", QString("Could not open file for writing: %1").arg(fileName));
+            return;
+        }
+        file.write(xmlData.c_str(), xmlData.length());
+        file.close();
+
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+        emit statusChanged(QString("Successfully exported {{domain_entity.entity_plural_words}} to %1").arg(fileName));
+    } catch (const std::exception& e) {
+        MessageBoxHelper::critical(
+            this, "Export Error", QString("Error during XML export: %1").arg(e.what()));
+    }
+}
+
+void {{domain_entity.entity_pascal}}MdiWindow::importFromXML() {
+    if (!clientManager_->isLoggedIn()) {
+        MessageBoxHelper::warning(
+            this, "Not Logged In", "Cannot import {{domain_entity.entity_plural_words}} while not logged in.");
+        return;
+    }
+
+    QString fileName = QFileDialog::getOpenFileName(
+        this, "Select ORE XML File to Import", QString(), "ORE XML Files (*.xml);;All Files (*)");
+    if (fileName.isEmpty())
+        return;
+
+    emit statusChanged("Parsing XML file...");
+
+    try {
+        std::filesystem::path path(fileName.toStdString());
+        auto {{domain_entity.qt.collection_name}} = {{domain_entity.qt.xml_import_class}}::{{domain_entity.qt.xml_import_method}}(path);
+
+        if ({{domain_entity.qt.collection_name}}.empty()) {
+            MessageBoxHelper::information(this,
+                                          "No {{domain_entity.entity_title}} Found",
+                                          "The selected XML file does not contain any {{domain_entity.entity_plural_words}}.");
+            emit statusChanged("Import cancelled - no {{domain_entity.entity_plural_words}} found");
+            return;
+        }
+
+        emit statusChanged(
+            QString("Found %1 {{domain_entity.entity_plural_words}} - opening import dialog...").arg({{domain_entity.qt.collection_name}}.size()));
+
+        std::vector<ImportEntityRow> rows;
+        rows.reserve({{domain_entity.qt.collection_name}}.size());
+        for (const auto& {{domain_entity.qt.item_var}} : {{domain_entity.qt.collection_name}}) {
+            const auto validation_error = {{domain_entity.qt.xml_import_class}}::{{domain_entity.qt.xml_validate_method}}({{domain_entity.qt.item_var}});
+            rows.push_back(
+                {.display_values = {
+{{#domain_entity.qt.import_preview_columns}}
+{{#is_string}}
+                    QString::fromStdString({{domain_entity.qt.item_var}}.{{field}}),
+{{/is_string}}
+{{#is_int}}
+                    QString::number({{domain_entity.qt.item_var}}.{{field}}),
+{{/is_int}}
+{{#is_bool}}
+                    {{domain_entity.qt.item_var}}.{{field}} ? "true" : "false",
+{{/is_bool}}
+{{#is_double}}
+                    QString::number({{domain_entity.qt.item_var}}.{{field}}),
+{{/is_double}}
+{{#is_uuid}}
+                    QString::fromStdString(boost::uuids::to_string({{domain_entity.qt.item_var}}.{{field}})),
+{{/is_uuid}}
+{{/domain_entity.qt.import_preview_columns}}
+                 },
+                 .is_valid = validation_error.empty(),
+                 .invalid_reason = QString::fromStdString(validation_error)});
+        }
+
+        auto client_manager = clientManager_;
+        auto username = username_;
+        auto {{domain_entity.qt.collection_name}}_by_row = {{domain_entity.qt.collection_name}};
+        auto label_of = [{{domain_entity.qt.collection_name}}_by_row](std::size_t index) {
+            return QString::fromStdString({{domain_entity.qt.collection_name}}_by_row[index].{{domain_entity.qt.key_field}});
+        };
+        auto import_one = [client_manager, username, {{domain_entity.qt.collection_name}}_by_row](std::size_t index) {
+            auto {{domain_entity.qt.item_var}}_to_import = {{domain_entity.qt.collection_name}}_by_row[index];
+            {{domain_entity.qt.item_var}}_to_import.modified_by = username.toStdString();
+            try {
+                auto request = {{domain_entity.qt.save_request_class}}::from({{domain_entity.qt.item_var}}_to_import);
+                auto response_result = client_manager->process_authenticated_request(std::move(request));
+                return response_result.has_value() && response_result->success;
+            } catch (const std::exception&) {
+                return false;
+            }
+        };
+
+        auto* dialog = new ImportEntityDialog(
+            "{{domain_entity.entity_plural_words}}",
+            fileName,
+            {
+{{#domain_entity.qt.import_preview_columns}}
+                "{{header}}",
+{{/domain_entity.qt.import_preview_columns}}
+            },
+            std::move(rows),
+            label_of,
+            import_one,
+            this);
+
+        connect(dialog, &ImportEntityDialog::importCompleted, this,
+                [this](int success_count, int total_count) {
+            if (success_count > 0) {
+                model_->refresh();
+                QString message = QString("Successfully imported %1 of %2 {{domain_entity.entity_plural_words}}")
+                                      .arg(success_count).arg(total_count);
+                emit statusChanged(message);
+                MessageBoxHelper::information(this, "Import Complete", message);
+            } else {
+                emit statusChanged("Import failed - no {{domain_entity.entity_plural_words}} imported");
+                MessageBoxHelper::warning(
+                    this, "Import Failed", "Failed to import {{domain_entity.entity_plural_words}}. Check the log for details.");
+            }
+        });
+
+        connect(dialog, &ImportEntityDialog::importCancelled, this, [this]() {
+            emit statusChanged("Import cancelled");
+        });
+
+        if (dialog->exec() != QDialog::Accepted) {
+            emit statusChanged("Import cancelled");
+        }
+        dialog->deleteLater();
+
+    } catch (const std::exception& e) {
+        MessageBoxHelper::critical(
+            this, "Import Error", QString("Failed to import XML file:\n%1").arg(e.what()));
+        emit statusChanged("Import failed");
+    }
+}
+{{/domain_entity.qt.has_csv_xml_io}}
 
 }

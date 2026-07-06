@@ -16,6 +16,11 @@
 {{#domain_entity.qt.has_setting_gated_actions}}
 #include "ores.qt/SettingGatedActionController.hpp"
 {{/domain_entity.qt.has_setting_gated_actions}}
+{{#domain_entity.qt.has_csv_xml_io}}
+#include "{{domain_entity.qt.csv_export_include}}"
+#include "{{domain_entity.qt.xml_export_include}}"
+#include "{{domain_entity.qt.xml_import_include}}"
+{{/domain_entity.qt.has_csv_xml_io}}
 
 namespace ores::qt {
 
@@ -71,6 +76,11 @@ public slots:
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+{{#domain_entity.qt.has_csv_xml_io}}
+    void exportToCSV();
+    void exportToXML();
+    void importFromXML();
+{{/domain_entity.qt.has_csv_xml_io}}
 
 protected:
     void doReload() override;
@@ -113,6 +123,11 @@ private:
     QAction* addAction_;
     QAction* editAction_;
     QAction* deleteAction_;
+{{#domain_entity.qt.has_csv_xml_io}}
+    QAction* importXMLAction_;
+    QAction* exportCSVAction_;
+    QAction* exportXMLAction_;
+{{/domain_entity.qt.has_csv_xml_io}}
     QAction* historyAction_;
 {{#domain_entity.qt.has_setting_gated_actions}}
 {{#domain_entity.qt.setting_gated_actions}}

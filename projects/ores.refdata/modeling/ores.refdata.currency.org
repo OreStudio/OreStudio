@@ -329,26 +329,37 @@ version-navigation UI that consumes this richer shape.
 :settings_group:              CurrencyListWindow
 :window_title:                Currencies
 :icon:                        Currency
+:has_csv_xml_io:              true
+:csv_export_include:          ores.refdata.api/csv/exporter.hpp
+:csv_export_class:            refdata::csv::exporter
+:csv_export_method:           export_currency_config
+:xml_export_include:          ores.ore.core/xml/exporter.hpp
+:xml_export_class:            ore::xml::exporter
+:xml_export_method:           export_currency_config
+:xml_import_include:          ores.ore.core/xml/importer.hpp
+:xml_import_class:            ore::xml::importer
+:xml_import_method:           import_currency_config
+:xml_validate_method:         validate_currency
 :END:
 
 *** Columns (Qt model)
 
-| enum_name          | field              | header          | type      | width |
-|--------------------+--------------------+-----------------+-----------+-------|
-| IsoCode            | iso_code           | Code            | string    | auto  |
-| CurrencyName       | name               | Currency Name   | string    | auto  |
-| NumericCode        | numeric_code       | Numeric Code    | string    | 70    |
-| Symbol             | symbol             | Symbol          | string    | 60    |
-| FractionSymbol     | fraction_symbol    | Fraction        | string    | 60    |
-| FractionsPerUnit   | fractions_per_unit | Per Unit        | int       | 70    |
-| RoundingType       | rounding_type      | Rounding Type   | string    | auto  |
-| RoundingPrecision  | rounding_precision | Precision       | int       | 70    |
-| Format             | format             | Format          | string    | auto  |
-| MonetaryNature     | monetary_nature    | Monetary Nature | string    | auto  |
-| MarketTier         | market_tier        | Market Tier     | string    | auto  |
-| Version            | version            | Version         | int       | 70    |
-| ModifiedBy         | modified_by        | Modified By     | string    | auto  |
-| RecordedAt         | recorded_at        | Recorded At     | timestamp | auto  |
+| enum_name          | field              | header          | type      | width | import_preview |
+|--------------------+--------------------+-----------------+-----------+-------+----------------|
+| IsoCode            | iso_code           | Code            | string    | auto  | true           |
+| CurrencyName       | name               | Currency Name   | string    | auto  | true           |
+| NumericCode        | numeric_code       | Numeric Code    | string    | 70    |                |
+| Symbol             | symbol             | Symbol          | string    | 60    | true           |
+| FractionSymbol     | fraction_symbol    | Fraction        | string    | 60    | true           |
+| FractionsPerUnit   | fractions_per_unit | Per Unit        | int       | 70    | true           |
+| RoundingType       | rounding_type      | Rounding Type   | string    | auto  |                |
+| RoundingPrecision  | rounding_precision | Precision       | int       | 70    |                |
+| Format             | format             | Format          | string    | auto  |                |
+| MonetaryNature     | monetary_nature    | Monetary Nature | string    | auto  |                |
+| MarketTier         | market_tier        | Market Tier     | string    | auto  |                |
+| Version            | version            | Version         | int       | 70    |                |
+| ModifiedBy         | modified_by        | Modified By     | string    | auto  |                |
+| RecordedAt         | recorded_at        | Recorded At     | timestamp | auto  |                |
 
 *** Setting-gated actions
 

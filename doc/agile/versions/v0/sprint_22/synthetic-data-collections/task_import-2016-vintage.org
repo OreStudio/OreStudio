@@ -8,7 +8,7 @@
 #+filetags: :synthetic-data-collections:sprint_22:v0:
 #+owner: marco
 #+branch: feature/import-2016-vintage
-#+pr:
+#+pr: 1447
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -94,7 +94,7 @@ fixing(s)= with 103 duplicate warnings, no errors.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1447][#1447]] | [marketdata] Import 2016-02-05 ORE reference vintage |
 
 * Review
 

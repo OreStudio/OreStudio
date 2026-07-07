@@ -29,6 +29,8 @@ file(GLOB_RECURSE files RELATIVE
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
+target_compile_definitions(${tests_target_name}
+    PRIVATE ORES_REPO_ROOT="${CMAKE_SOURCE_DIR}")
 
 target_link_libraries(${tests_target_name}
     PRIVATE
@@ -38,6 +40,7 @@ target_link_libraries(${tests_target_name}
         ores.logging.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
+        unofficial::sqlite3::sqlite3
         ${CMAKE_THREAD_LIBS_INIT})
 
 add_custom_target(test_${tests_target_name}

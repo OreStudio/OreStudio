@@ -36,7 +36,8 @@
         "libfort",
         "croncpp",
         "cnats",
-        "libarchive"
+        "libarchive",
+        "sqlite3"
     ],
     "default-features": [ "wt" ],
     "features": {

@@ -38,10 +38,10 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PRIVATE
-        ores.database.lib
-        ores.utility.lib
-        sqlgen::sqlgen
-        Boost::boost)
-# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
+        Boost::boost
+        unofficial::sqlite3::sqlite3)
+# A pure parsing/indexing library: reads the org-roam SQLite index
+# directly (unofficial::sqlite3::sqlite3), no ores.database/sqlgen
+# (those are for this project's own Postgres access) and no NATS.
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

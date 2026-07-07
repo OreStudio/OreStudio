@@ -118,6 +118,13 @@ The full template source. Edit here and re-tangle with
             </property>
            </widget>
 {{/is_dynamic_combo}}
+{{#is_flagged_combo}}
+           <widget class="QComboBox" name="{{widget}}">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
+            </property>
+           </widget>
+{{/is_flagged_combo}}
 {{#is_check_box}}
            <widget class="QCheckBox" name="{{widget}}">
             <property name="text">

@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 155FA378-9953-4EA0-8495-7C61E40BE81C
+:END:
+#+title: Task: Add librarian support for currency pairs
+#+description: Extend the DQ librarian so creating a party yields a usable set of currency pairs out of the box, following the same publish-from-dq bundle pattern used for the synthetic FX foundation.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Wire currency pairs into the DQ librarian so that creating a party
+yields a usable set of currency pairs out of the box, the same way
+[[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] did for synthetic FX
+configs: ride an existing publish-from-dq bundle (or add
+=currency_pairs= as a member of one) rather than inventing a new
+trigger or wizard phase, per the defaulting-mechanism lesson learned in
+that story (no automatic hook exists on party creation; the "librarian
+gives it a usable config" story is satisfied via the existing bundle
+publish path, not a new one).
+
+Depends on the =currency_pair= entity actually existing in the database
+— i.e. on the =ores.codegen.entity= implementation of the design from
+[[id:1689B6B1-129F-44F0-A3FF-7E069BF9E394][Model the currency pair entity for codegen]] and
+[[id:8B45AB22-FD56-41DB-A74B-750E460188D2][Replace is_g11 flag with an extensible currency-group model]] landing
+first.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | The =currency_pair= codegen implementation (not yet a task in this story). |
+| Next         | Scaffold the codegen implementation task, then begin this one. |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- [ ] Provisioning a party via the standard =ores.shell= recipe (and/or
+  the Qt Party Setup wizard, scope to be confirmed) results in a usable
+  set of currency pairs being available for it, with zero manual steps.
+- [ ] The mechanism reuses an existing publish-from-dq bundle rather
+  than adding a new bundle or a new wizard phase, unless investigation
+  during this task shows that assumption is wrong (as happened for the
+  FX foundation story).
+- [ ] Verified end-to-end: provision a party and confirm the expected
+  currency pairs exist for it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

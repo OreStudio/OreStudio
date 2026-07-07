@@ -31,7 +31,7 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 
     domain::{{entity_singular}} r;
 {{#has_audit_columns}}
-    r.version = 1;
+    r.version = 0;
 {{/has_audit_columns}}
 {{#has_tenant_id}}
     r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
@@ -42,8 +42,14 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{/has_workspace_id}}
 {{#primary_key.is_text}}
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+{{#primary_key.generator_expr}}
     r.{{primary_key.column}} = {{{primary_key.generator_expr}}} + "-"
         + std::to_string(idx);
+{{/primary_key.generator_expr}}
+{{^primary_key.generator_expr}}
+    r.{{primary_key.column}} = std::string(faker::word::noun()) + "-"
+        + std::to_string(idx);
+{{/primary_key.generator_expr}}
 {{/primary_key.is_text}}
 {{#primary_key.is_uuid}}
     r.{{primary_key.column}} = ctx.generate_uuid();
@@ -155,7 +161,7 @@ domain::{{name_singular}} generate_synthetic_{{name_singular}}(
 {{/has_tenant_id}}
 
     domain::{{name_singular}} r;
-    r.version = 1;
+    r.version = 0;
 {{#has_tenant_id}}
     r.tenant_id = tenant_id;
 {{/has_tenant_id}}

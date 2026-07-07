@@ -73,6 +73,7 @@ public:
      */
     std::vector<domain::currency> read_all(context ctx, const std::string& iso_code);
 
+
     /**
      * @brief Reads latest currencies with pagination support.
      * @param ctx Repository context with database connection

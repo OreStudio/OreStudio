@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: AB8BDE3C-F4FC-4794-8AB3-9E72593BFC26
+:END:
+#+title: Task: Implement currency_pair and currency_pair_convention via ores.codegen.entity
+#+description: Model currency_pair and currency_pair_convention as ores.codegen.entity models per the settled field design, run all codegen profiles (SQL, C++ core, messaging, Qt, CLI, shell), and reconcile generated output until zero-diff.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch: feature/currency-pair-refdata
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Model =currency_pair= (identity), =currency_pair_convention= (1:1
+quoting/date conventions), and their two new aux types
+(=currency_pair_classification=, =currency_group=) plus the
+=currency_currency_group= junction, via =ores.codegen.entity=/
+=ores.codegen.junction=, per the settled field design. Generate and
+reconcile SQL, C++ core, messaging, and Qt profiles until the
+component builds cleanly. CLI/shell profiles are a separate,
+pre-existing codegen gap (tracked elsewhere), not blocking this task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | All 5 entities modelled, generated (SQL/C++/messaging/Qt), and building cleanly. |
+| Waiting on   | Nothing.                               |
+| Next         | Resume the migrate-off-fx-convention task; run compass db recreate to verify SQL end-to-end. |
+| Last touched | 2026-07-06                               |
+
+* Acceptance
+
+- [X] currency_pair, currency_pair_convention, currency_pair_classification,
+  currency_group, and currency_currency_group_junction modelled as
+  =ores.codegen.entity=/=ores.codegen.junction=.
+- [X] SQL, C++ core (domain/generator/repository/service), messaging
+  (protocol/nats-eventing/nats-handler), and Qt profiles generated for
+  all 5.
+- [X] currency_pair's base/quote/settlement currency fields use the new
+  flagged_combo Qt facet (flag icons via FlagIconHelper).
+- [X] currency_pair's list column shows a composited base+quote flag
+  icon via the existing generic icon_columns facet.
+- [X] ores.refdata.api.lib, ores.refdata.core.lib, ores.qt.refdata.lib,
+  and both test targets build cleanly.
+- [ ] compass db recreate run to verify the generated SQL applies
+  cleanly end-to-end (not yet done this session).
+
+* Plan
+
+Read the settled field design from the three prior design tasks
+([[id:1689B6B1-129F-44F0-A3FF-7E069BF9E394][entity model]], [[id:8B45AB22-FD56-41DB-A74B-750E460188D2][currency-group replacement]], [[id:9D58E37B-797C-430D-8724-EE50737C6DE1][identity/convention split]]), then
+diffed the target shape against =currency.org='s own knobs (change-
+reason variability, Qt =has_change_reason_cache=, table display,
+insert-trigger validations table) to make sure nothing "standard" was
+missing, per explicit instruction mid-task.
+
+Discovered the desired UX (flag-icon currency pickers) had no working
+codegen path: =is_dynamic_combo= exists in =core.py= but was never wired
+to the actual async fetch helper (=populateDynamicCombo<Entity>=,
+hand-invoked only in =CurrencyDetailDialog.cpp=); the real working
+precedent for flag-icon currency pickers
+(=FlagIconHelper::apply_flag_icons= + =fetch_currency_codes=) is 100%
+hand-written across ~10 trading forms. Per project convention (paste
+blocks only for genuinely one-off cases), added a new generic Qt
+facet, =flagged_combo=, to =core.py= + the three detail-dialog templates
+(=header=/=ui=/=impl= =.org= sources, tangled to =.mustache=) rather than
+a paste block, since the pattern already existed identically elsewhere.
+=currency_pair='s list-column composited flag icon needed no new work —
+=icon_columns= already supported the two-field case generically (its own
+docstring cites "e.g. a currency pair" as the motivating example).
+
+Generation surfaced two pre-existing =core.py= bugs, both fixed:
+=needs_counter= read the primary key's derived =is_text= flag before it
+was computed (always False), and was scoped inside an
+=if 'natural_keys' in domain_entity= block that =currency_pair= (no
+natural keys) never entered — so a text-PK entity with a custom
+generator and no natural keys never got its uniqueness-suffix counter
+declared, a compile error. Also found =protocol.hpp= (a hand-maintained
+per-component aggregator of every entity's own protocol header) needed
+new =#include=s added by hand for the 4 new entities — codegen doesn't
+touch that file.
+
+Modelling decisions of note: =classification= and =fixing_source= stayed
+free-text line-edits rather than dynamic combos — no working codegen
+path exists yet for aux-type reference-data combos either (separate,
+already-captured gap, see =codegen_flagged_dynamic_combo.org=). Dropped
+an initial =points_factor()= computed-method design (no paste point
+exists on the generated domain struct, only repository/service) in
+favour of deferring the reciprocal computation to the future ORE
+mapper, which can just inline =1.0 / pip_factor=.
+
+* Notes
+
+Two follow-ups deliberately left out of scope for this task:
+
+- The composited pair-flag list column reads correctly-sized only if
+  the generated =CurrencyPairMdiWindow='s list view calls
+  =setIconSize(currency_pair_icon_size())= (see =FlagIconHelper.hpp=) —
+  no codegen facet sets this yet; FX Spot Grid does it by hand today.
+  Not done here; the column will render with Qt's default (squarish)
+  icon size until addressed.
+- =compass db recreate= hasn't been run this session to verify the
+  generated SQL create/drop scripts apply cleanly against a live
+  database — build-level compilation was verified, not the DB schema
+  itself.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

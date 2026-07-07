@@ -30,6 +30,15 @@
 -- Core reference data tables
 \ir ./refdata_currencies_create.sql
 \ir ./refdata_currencies_notify_trigger_create.sql
+\ir ./refdata_currency_pair_classifications_create.sql
+\ir ./refdata_currency_pair_classifications_notify_trigger_create.sql
+\ir ./refdata_currency_groups_create.sql
+\ir ./refdata_currency_groups_notify_trigger_create.sql
+\ir ./refdata_currency_currency_group_create.sql
+\ir ./refdata_currency_pairs_create.sql
+\ir ./refdata_currency_pairs_notify_trigger_create.sql
+\ir ./refdata_currency_pair_conventions_create.sql
+\ir ./refdata_currency_pair_conventions_notify_trigger_create.sql
 \ir ./refdata_countries_create.sql
 \ir ./refdata_countries_notify_trigger_create.sql
 
@@ -137,8 +146,6 @@
 \ir ./refdata_ibor_index_conventions_notify_trigger_create.sql
 \ir ./refdata_overnight_index_conventions_create.sql
 \ir ./refdata_overnight_index_conventions_notify_trigger_create.sql
-\ir ./refdata_fx_conventions_create.sql
-\ir ./refdata_fx_conventions_notify_trigger_create.sql
 \ir ./refdata_cds_conventions_create.sql
 \ir ./refdata_cds_conventions_notify_trigger_create.sql
 \ir ./refdata_publish_from_dq_create.sql

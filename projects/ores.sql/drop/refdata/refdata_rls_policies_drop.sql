@@ -111,8 +111,20 @@ drop policy if exists currency_market_tiers_tenant_isolation_policy on "ores_ref
 -- CDS Conventions
 drop policy if exists cds_conventions_tenant_isolation_policy on "ores_refdata_cds_conventions_tbl";
 
--- FX Conventions
-drop policy if exists fx_conventions_tenant_isolation_policy on "ores_refdata_fx_conventions_tbl";
+-- Currency Pair Conventions
+drop policy if exists currency_pair_conventions_tenant_isolation_policy on "ores_refdata_currency_pair_conventions_tbl";
+
+-- Currency Pairs
+drop policy if exists currency_pairs_tenant_isolation_policy on "ores_refdata_currency_pairs_tbl";
+
+-- Currency Currency Groups (junction)
+drop policy if exists currency_currency_groups_tenant_isolation_policy on "ores_refdata_currency_currency_groups_tbl";
+
+-- Currency Groups
+drop policy if exists currency_groups_tenant_isolation_policy on "ores_refdata_currency_groups_tbl";
+
+-- Currency Pair Classifications
+drop policy if exists currency_pair_classifications_tenant_isolation_policy on "ores_refdata_currency_pair_classifications_tbl";
 
 -- Overnight Index Conventions
 drop policy if exists overnight_index_conventions_tenant_isolation_policy on "ores_refdata_overnight_index_conventions_tbl";

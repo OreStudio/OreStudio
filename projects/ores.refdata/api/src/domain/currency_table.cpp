@@ -20,9 +20,22 @@
 #include "ores.refdata.api/domain/currency_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::refdata::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<currency>& v) {
     fort::char_table table;
@@ -30,12 +43,15 @@ std::string convert_to_table(const std::vector<currency>& v) {
 
     table << fort::header << "Code" << "Currency Name" << "Numeric Code" << "Symbol" << "Fraction"
           << "Per Unit" << "Rounding Type" << "Precision" << "Format" << "Monetary Nature"
-          << "Market Tier" << "Modified By" << "Version" << fort::endr;
+          << "Market Tier" << "Spot Days" << "Deliverable" << "Day Basis" << "Base Precedence"
+          << "Holiday Calendar" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& c : v) {
         table << c.iso_code << c.name << c.numeric_code << c.symbol << c.fraction_symbol
               << c.fractions_per_unit << c.rounding_type << c.rounding_precision << c.format
-              << c.monetary_nature << c.market_tier << c.modified_by << c.version << fort::endr;
+              << c.monetary_nature << c.market_tier << c.spot_days << c.deliverable << c.day_basis
+              << c.base_precedence << opt_str(c.holiday_calendar) << c.modified_by << c.version
+              << fort::endr;
     }
     return table.to_string();
 }

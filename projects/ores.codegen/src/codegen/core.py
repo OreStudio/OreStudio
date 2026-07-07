@@ -1817,14 +1817,28 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['has_date_or_timestamp_natural_keys'] = any(
                 k.get('is_date') or k.get('is_timestamp') for k in nks
             )
-            domain_entity['needs_counter'] = (
-                domain_entity.get('primary_key', {}).get('is_text', False)
-                or domain_entity['has_text_natural_keys']
-            )
             if len(nks) > 1:
                 domain_entity['natural_keys_composite_columns'] = ', '.join(nk['column'] for nk in nks)
                 if 'natural_keys_composite_name' not in domain_entity:
                     domain_entity['natural_keys_composite_name'] = '_'.join(nk['column'] for nk in nks)
+        else:
+            # No natural keys at all (e.g. currency_pair): has_text_natural_keys
+            # defaults False so needs_counter below falls back to the primary
+            # key check alone.
+            domain_entity.setdefault('has_text_natural_keys', False)
+        # Check primary_key's raw 'type' rather than the derived 'is_text'
+        # flag: that flag isn't computed until later in this function, so
+        # reading it here would always see False (order-dependency bug —
+        # only ever surfaced once a text-PK entity supplied a custom
+        # generator, triggering the uniqueness-suffix/counter code path).
+        # Also moved outside the 'natural_keys' presence check above: an
+        # entity with a text PK and no natural keys at all (e.g.
+        # currency_pair) still needs the counter, but previously this whole
+        # computation only ran when natural_keys existed.
+        domain_entity['needs_counter'] = (
+            domain_entity.get('primary_key', {}).get('type') == 'text'
+            or domain_entity['has_text_natural_keys']
+        )
         if 'indexes' in domain_entity:
             _mark_last_item(domain_entity['indexes'])
         if 'validations' in domain_entity:
@@ -2115,12 +2129,25 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f['is_text_edit'] = f.get('type') in ('text_edit', 'plain_text_edit')
                 f['is_static_combo'] = f.get('type') == 'static_combo'
                 f['is_dynamic_combo'] = f.get('type') == 'dynamic_combo'
+                # A flagged_combo is a single-select combo asynchronously
+                # populated from a plain code list (e.g. fetch_currency_codes),
+                # with an optional per-item flag icon. Generalises the
+                # hand-duplicated pattern in ~10 trading forms
+                # (OreCurrencyComboBox + apply_flag_icons); distinct from
+                # is_dynamic_combo (struct-shaped code/description/
+                # display_order lookups, e.g. rounding_type) since a plain
+                # code list has no description/sort-order fields to show.
+                f['is_flagged_combo'] = f.get('type') == 'flagged_combo'
+                if f['is_flagged_combo']:
+                    f.setdefault('combo_allow_blank', False)
+                    flag_source = f.get('flag_source', 'currency')
+                    f['flag_source_pascal'] = snake_to_pascal(flag_source)
                 f['is_check_box'] = f.get('type') == 'check_box'
                 f['is_spin_box'] = f.get('type') == 'spin_box'
                 field_cpp = domain_col_types.get(f.get('field'), '')
                 f['is_optional_string'] = (
                     field_cpp.startswith('std::optional<std::string>')
-                    and (f['is_line_edit'] or f['is_text_edit'])
+                    and (f['is_line_edit'] or f['is_text_edit'] or f['is_flagged_combo'])
                 )
                 # UUID type detection — needed for boost::uuids::to_string() conversions
                 _is_any_uuid = 'boost::uuids::uuid' in field_cpp
@@ -2156,13 +2183,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f['value_widget'] = widget.replace('Edit', 'Value').replace('Combo', 'Value')
                 # Derive label_widget for detail dialog form labels (e.g. code -> labelCode)
                 f['label_widget'] = 'label' + snake_to_pascal(f.get('field', ''))
+                # Derive field_pascal for generated method names (e.g. base_currency -> BaseCurrency)
+                f['field_pascal'] = snake_to_pascal(f.get('field', ''))
                 if f.get('is_required') and (f.get('is_line_edit') or f.get('is_static_combo')):
                     required_fields.append({
                         'field': f['field'],
                         'widget': f['widget'],
                         '_is_last': False,
                     })
-                if f.get('is_required') and f.get('is_dynamic_combo'):
+                if f.get('is_required') and (f.get('is_dynamic_combo') or f.get('is_flagged_combo')):
                     required_dynamic_combo_fields.append({
                         'field': f['field'],
                         'widget': f['widget'],
@@ -2183,10 +2212,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f.get('type') in ('text_edit', 'plain_text_edit') for f in detail_fields
             )
             qt['has_combo_fields'] = any(
-                f.get('type') in ('static_combo', 'dynamic_combo') for f in detail_fields
+                f.get('type') in ('static_combo', 'dynamic_combo', 'flagged_combo')
+                for f in detail_fields
             )
             qt['has_dynamic_combo_fields'] = any(
                 f.get('type') == 'dynamic_combo' for f in detail_fields
+            )
+            qt['has_flagged_combo_fields'] = any(
+                f.get('type') == 'flagged_combo' for f in detail_fields
             )
             qt['has_static_combo_fields'] = any(
                 f.get('type') == 'static_combo' for f in detail_fields

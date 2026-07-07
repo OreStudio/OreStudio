@@ -30,7 +30,7 @@
  * sourced from ORE's ore_types.xsd. Moved here from ores.trading
  * (see [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]]) since every consumer of
  * this type — the *_convention entities and now
- * [[id:109FBFD6-C505-4196-B3EE-D5C798CE050F][fx_convention]] — lives in ores.refdata, not ores.trading.
+ * [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][currency_pair_convention]] — lives in ores.refdata, not ores.trading.
  */
 
 create table if not exists "ores_refdata_business_day_convention_types_tbl" (

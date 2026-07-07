@@ -1,0 +1,149 @@
+:PROPERTIES:
+:ID: 9D58E37B-797C-430D-8724-EE50737C6DE1
+:END:
+#+title: Task: Split currency_pair into identity and convention entities; finalize field model
+#+description: Split the single currency_pair design into a lean currency_pair identity entity and a currency_pair_convention entity for the fx_convention-derived quoting/date-convention fields, mirroring how ORE conceptually separates a pair from its conventions. Produce the final, settled field-by-field model for both, ready for ores.codegen.entity.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The design so far bundled pure pair *identity* (pair code, legs,
+deliverability, classification, fixing source, cut code) and
+*conventions* (pip factor, tick size, calendars, business day
+convention, spot-relative/end-of-month — largely inherited from
+=fx_convention=) into one =currency_pair= entity. Split these into two
+entities, matching the codebase's existing =*_convention= idiom
+(=ibor_index_convention=, =swap_convention=, =fx_convention=, etc., each
+holding one instrument type's date/quoting rules separately from that
+instrument's own identity) — and produce the final, settled
+field-by-field model for both.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- [X] =currency_pair= is a lean identity entity: pair code, legs,
+  deliverability, classification, fixing source, cut code — no
+  quoting/date-convention fields.
+- [X] =currency_pair_convention= holds every quoting/date-convention
+  field carried over from =fx_convention=, 1:1 with =currency_pair=.
+- [X] The split is named consistently with the existing =*_convention=
+  entity family, not an ad hoc name.
+- [X] Every field from the prior single-entity design still has a home;
+  none silently dropped in the split.
+
+* Plan
+
+Re-partitioned the settled field list from
+[[id:1689B6B1-129F-44F0-A3FF-7E069BF9E394][Model the currency pair entity for codegen]] and
+[[id:C73E0414-9154-417F-B069-7055BB58AA4C][Reconcile currency_pair design with fx_convention]] into two entities.
+=currency_pair_convention= is keyed 1:1 by =currency_pair.pair_code=
+(reused as its own PK, not a separate identifier scheme like
+=fx_convention='s =EUR-USD-FX-CONVENTIONS= string) — every pair has
+at most one convention record, so a composite/second identifier would
+be pure overhead.
+
+** Entity 2a — =currency_pair= (identity, =ores_refdata_currency_pairs_tbl=)
+
+Primary key: =pair_code= (text, e.g. =EUR/USD=, canonical base/quote
+order).
+
+| Column               | Type    | Nullable | Notes                                                             |
+|-----------------------+---------+----------+---------------------------------------------------------------------|
+| =base_currency=        | text    | false    | Soft FK → =currency.iso_code=.                                    |
+| =quote_currency=       | text    | false    | Soft FK → =currency.iso_code=.                                    |
+| =deliverable=          | boolean | false    | Whether the pair settles physically or cash-only (NDF flag).      |
+| =settlement_currency=  | text    | true     | Soft FK → =currency.iso_code=; set only for non-deliverable pairs.|
+| =classification=       | text    | false    | Soft FK → =currency_pair_classification= (unchanged from before). |
+| =fixing_source=        | text    | true     | Default fixing source for cash-settled / NDF trades on this pair. |
+
+=spot_days=, =business_day_calendar=, =settlement_calendar=, and
+=is_g11= remain *derived* at read time from the two legs — unchanged
+from the original design.
+
+** Entity 2b — =currency_pair_convention= (=ores_refdata_currency_pair_conventions_tbl=)
+
+Primary key: =pair_code= (same value space as =currency_pair.pair_code=;
+hard FK to it — a genuine 1:1 extension, not a lookup).
+
+| Column                     | Type    | Nullable | Notes                                                                 |
+|-----------------------------+---------+----------+--------------------------------------------------------------------------|
+| =pip_factor=                | numeric | false    | Converts pips to absolute rate moves (=0.0001= / =0.01= for JPY).      |
+| =tick_size=                 | numeric | false    | Minimum rate increment, in pips.                                       |
+| =decimal_places=            | integer | false    | Decimal places for rate display.                                       |
+| =advance_calendar=          | text    | true     | Calendar used advancing spot→forward; interim raw text pending [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][the calendar story]]. |
+| =business_day_convention=   | text    | true     | Soft FK → =ores.trading.business_day_convention_type= (validated, unlike =fx_convention='s equivalent). |
+| =spot_relative=             | boolean | true     | Whether forward dates are generated relative to the spot date.         |
+| =end_of_month=              | boolean | true     | Whether end-of-month convention applies.                               |
+
+Not a stored column: =points_factor()= — computed on demand via a
+codegen paste block (=double points_factor() const { return 1.0 /
+pip_factor; }=), consumed by the =ores.ore= mapper that needs the
+reciprocal/divisor form ORE's XML expects.
+
+** What didn't change
+
+- =currency= extensions (=spot_days=, =deliverable=, =day_basis=,
+  =base_precedence=, =holiday_calendar=).
+- =currency_pair_classification= auxiliary type (major/minor/exotic).
+- =currency_group= auxiliary type + =currency_currency_group_junction=
+  (G11, Scandies, Antipodeans, ...).
+- The three open questions from the original modelling task
+  (day-count/calendar representation, aux-type model type, fixing-source
+  reference) — still open, now scoped to whichever of the two new
+  entities they land on.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Split the single =currency_pair= design into =currency_pair= (identity:
+pair_code, legs, deliverable, settlement_currency, default_cut_code,
+classification, fixing_source) and =currency_pair_convention= (1:1,
+hard-FK'd by =pair_code=: pip_factor, tick_size, decimal_places,
+advance_calendar, business_day_convention, spot_relative, end_of_month,
+plus a computed =points_factor()= helper), matching the codebase's
+existing =*_convention= entity family. No fields lost in the split;
+=currency= extensions and the two auxiliary types (classification,
+currency_group) are unchanged.
+
+*Correction*: =default_cut_code= was subsequently *dropped* from
+=currency_pair= entirely (not kept as interim text) — see
+[[id:4B4ED152-1670-4E81-895A-24D747382D4C][Model market data cuts as proper ORE Studio reference data]]'s note.
+The field-by-field table above is left as historical record; the actual
+=currency_pair= entity has no cut-code field until that story adds one
+back as a proper FK.

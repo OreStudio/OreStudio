@@ -37,11 +37,16 @@ rounding, and display formatting across the system.
 
 ISO 4217 alpha-3 code (e.g., "USD", "EUR", "GBP").
 
-No =:name generator= block is defined for this primary key. The synthetic
-=generate_synthetic_currency= function produces counter-based codes; the
-fictional generator (=generate_fictional_currencies=, injected via custom
-generator sections below) is the authoritative test-data source and does
-not rely on the template-generated synthetic path.
+The =:name generator= block below only supplies the literal "X" prefix
+consumed by the template's counter-based =generate_synthetic_currency=
+codepath (=X= + counter, e.g. "X0", "X1"); the fictional generator
+(=generate_fictional_currencies=, injected via custom generator sections
+below) remains the authoritative test-data source and does not depend on
+this synthetic path.
+
+#+begin_src cpp :name generator
+std::string("X")
+#+end_src
 
 * Natural keys
 
@@ -81,8 +86,15 @@ std::to_string(faker::number::integer(10001, 99999))
 
 Currency symbol displayed in the UI (e.g., "$", "€", "£").
 
+=faker::finance::currencySymbol()= can return an empty string for some
+locales; fall back to "$" rather than violate the non-nullable
+constraint.
+
 #+begin_src cpp :name generator
-std::string(faker::finance::currencySymbol())
+[] {
+    const auto sym = faker::finance::currencySymbol();
+    return sym.empty() ? std::string("$") : std::string(sym);
+}()
 #+end_src
 
 ** fraction_symbol
@@ -187,6 +199,84 @@ Optional reference to a flag or logo image in the images table.
 
 #+begin_src cpp :name generator
 std::nullopt
+#+end_src
+
+** spot_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  2
+:END:
+
+Business days to settlement for a spot trade in this currency (USD is
+1, most others are 2). Used to derive =currency_pair.spot_days= as the
+max of the two legs' values.
+
+#+begin_src cpp :name generator
+faker::helper::randomElement(std::vector<int>{1, 2})
+#+end_src
+
+** deliverable
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  true
+:END:
+
+Whether cash in this currency can be delivered offshore. false for
+currencies subject to capital controls (e.g. CNY, INR, KRW), which
+forces any pair involving them to be non-deliverable (NDF).
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** day_basis
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  "ACT/360"
+:END:
+
+Day-count convention code (e.g. "ACT/360", "ACT/365"). Free-text for
+now — no aux-type table exists yet; see
+[[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] for the open question.
+
+#+begin_src cpp :name generator
+std::string("ACT/360")
+#+end_src
+
+** base_precedence
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  100
+:END:
+
+Ordinal rank in the base-currency precedence table used to determine
+canonical base/quote order for a pair (lower = takes precedence as
+base currency).
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+** holiday_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Named holiday calendar identifier (e.g. "TARGET", "US", "UK"). Free-text
+pending [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]].
+
+#+begin_src cpp :name generator
+std::string("TARGET")
 #+end_src
 
 * SQL
@@ -298,6 +388,11 @@ version-navigation UI that consumes this richer shape.
 | format             | Format          |
 | monetary_nature    | Monetary Nature |
 | market_tier        | Market Tier     |
+| spot_days          | Spot Days       |
+| deliverable        | Deliverable     |
+| day_basis          | Day Basis       |
+| base_precedence    | Base Precedence |
+| holiday_calendar   | Holiday Calendar |
 | modified_by        | Modified By     |
 | version            | Version         |
 
@@ -357,6 +452,11 @@ version-navigation UI that consumes this richer shape.
 | Format             | format             | Format          | string    | auto  |                |
 | MonetaryNature     | monetary_nature    | Monetary Nature | string    | auto  |                |
 | MarketTier         | market_tier        | Market Tier     | string    | auto  |                |
+| SpotDays           | spot_days          | Spot Days       | int       | 70    |                |
+| Deliverable        | deliverable        | Deliverable     | bool      | 80    |                |
+| DayBasis           | day_basis          | Day Basis       | string    | 80    |                |
+| BasePrecedence     | base_precedence    | Base Precedence | int       | 100   |                |
+| HolidayCalendar    | holiday_calendar   | Holiday Calendar| string    | auto  |                |
 | Version            | version            | Version         | int       | 70    |                |
 | ModifiedBy         | modified_by        | Modified By     | string    | auto  |                |
 | RecordedAt         | recorded_at        | Recorded At     | timestamp | auto  |                |

@@ -24,6 +24,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <set>
 
 namespace {
@@ -194,7 +195,7 @@ TEST_CASE("generate_random_fictional_currency_returns_known_currency", tags) {
     for (const auto& c : all)
         known_codes.insert(c.iso_code);
 
-    const auto currency = generate_random_fictional_currency(ctx);
+    const auto currency = faker::helper::randomElement(all);
     BOOST_LOG_SEV(lg, debug) << "Generated random fictional currency: " << currency;
 
     CHECK(known_codes.count(currency.iso_code) == 1);

@@ -23,7 +23,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Move =business_day_convention_type= from =ores.trading= to =ores.refdata=
 and commission it fully (SQL, domain, repository, service, messaging,
 Qt), since every real consumer of this type (the =*_convention=
-entities, and now [[id:109FBFD6-C505-4196-B3EE-D5C798CE050F][fx_convention]]) lives in =ores.refdata=,
+entities, and now [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][fx_convention]]) lives in =ores.refdata=,
 not =ores.trading=.
 
 * Status

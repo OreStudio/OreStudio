@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: ABEC5C46-05CA-42D7-9D20-3B4DC06BBED5
+:END:
+#+title: Currency groups (desk groupings)
+#+description: Extensible, many-to-many currency groupings used by trading desks (G11, Scandies, Antipodeans, Asians, Latams, commodity currencies) as opposed to the single-valued market tier and pair classification.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:domain:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+
+* Summary
+
+Trading desks group currencies in many overlapping ways beyond the
+single-valued *market tier* (G11 vs Emerging Markets): geographic desks
+(Scandies, Asians, Latams), risk-factor groupings (commodity currencies,
+Antipodeans), and ad hoc display groupings (a spot screen's "Majors"
+tab). A currency can belong to *several* groups at once — NOK is G11
+*and* a Scandie *and* arguably a commodity currency — so this cannot be
+a single field like =market_tier=; it needs a many-to-many relationship,
+extensible without a schema change every time a desk invents a new
+grouping. This is a *currency*-level concept, not a currency-pair one:
+grouping the pair follows from grouping its two legs, not the other way
+round.
+
+* Detail
+
+** Typical desk groupings
+
+Non-exhaustive; new groups should be addable by inserting a row, not by
+migrating a schema:
+
+- *G11*: =EUR, USD, GBP, JPY, AUD, CAD, CHF, DKK, NOK, NZD, SEK= — the
+  liquid majors taxonomy used for desk allocation (see
+  [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]]).
+- *Scandies*: =DKK, NOK, SEK= — Scandinavian currencies, often desked
+  together despite being G11.
+- *Antipodeans*: =AUD, NZD= — correlated Pacific currencies.
+- *Commodity currencies*: =AUD, CAD, NZD, NOK, ZAR, ...= — currencies
+  whose value correlates with a commodity export (oil, metals, dairy).
+- *Asians*: =JPY, SGD, HKD, KRW, THB, ...= — regional EM/G11 mix, desked
+  by geography rather than liquidity tier.
+- *Latams*: =MXN, BRL, ARS, CLP, COP, ...= — Latin American EM
+  currencies, often sharing a desk and IPV process.
+- Ad hoc display groupings a UI might want (e.g. a spot screen's
+  "Majors" tab) are just another group, not a special case.
+
+** Why not a boolean flag, and why not on the pair
+
+A boolean like "is G11" only expresses membership of one fixed set; it
+cannot express "also a Scandie" or "also a commodity currency" without
+adding another boolean per group, and every new desk grouping would need
+a schema migration. The right shape is a *currency group* lookup type
+plus a many-to-many *currency ↔ currency group* junction — the same
+shape as the existing =party_currencies= junction
+([[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]]), just between currency and group instead of
+currency and party.
+
+Group membership belongs on the *currency*, not the *currency pair*: a
+pair's "is this a G11 pair" question is answered by checking both legs'
+group memberships, not by storing a derived flag that could drift out of
+sync with the currencies' own memberships. See
+[[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]] for where this fits (or
+doesn't) in the entity model.
+
+* See also
+
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the hub.
+- [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] — the G11/EM market-tier taxonomy this
+  complements.
+- [[id:4F93228E-C638-429C-993A-360EE88BD86A][Currency pair classification: major, minor, exotic]] — the
+  independent, pair-level taxonomy.
+- [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]] — the entity-model
+  reference.

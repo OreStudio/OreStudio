@@ -61,7 +61,8 @@ class OisConventionController;
 class FraConventionController;
 class IborIndexConventionController;
 class OvernightIndexConventionController;
-class FxConventionController;
+class CurrencyPairController;
+class CurrencyPairConventionController;
 class CdsConventionController;
 class PartyTypeController;
 
@@ -131,7 +132,8 @@ private:
     std::unique_ptr<FraConventionController> fraConventionController_;
     std::unique_ptr<IborIndexConventionController> iborIndexConventionController_;
     std::unique_ptr<OvernightIndexConventionController> overnightIndexConventionController_;
-    std::unique_ptr<FxConventionController> fxConventionController_;
+    std::unique_ptr<CurrencyPairController> currencyPairController_;
+    std::unique_ptr<CurrencyPairConventionController> currencyPairConventionController_;
     std::unique_ptr<CdsConventionController> cdsConventionController_;
 
     // Data Catalogue controllers (owned here, contributed to data_management_menu)

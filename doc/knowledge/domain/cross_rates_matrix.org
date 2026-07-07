@@ -38,6 +38,8 @@ and the correlations/vol surfaces built on the same pattern.
 - *Computation* → [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][Triangulation and cross rates]] and the
   [[id:6F7DFFDF-9E22-4870-916C-7680DE1EB065][spot rate derivation mechanics]] (parity, forward points).
 - *Quoting* → [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] (majors/minors, base/quote, reciprocals).
+- *The pair as an entity* → [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] (companion hub: deliverability,
+  pip conventions, classification, entity fields).
 - *Risk* → [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]].
 - *Operations* → [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] (local/global, verification, approval).
 - *Volatility* → [[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][Volatility surface driving]] and [[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][Correlation management]]

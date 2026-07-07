@@ -51,7 +51,7 @@ unique =:ID:=, then attach three Babel blocks:
 #+begin_src org
 *** read_latest_all_tenants
 :PROPERTIES:
-:ID: B3E91D47-A2C6-4F18-9E5D-7C8B0A1F6D32
+:ID: ADE6B255-BF59-4358-ADCB-2B13A4B55E1B
 :END:
 
 Reads the latest records across all tenants (no tenant_id filter).
@@ -95,6 +95,7 @@ runs.
 
 * See also
 
+- [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — module list, data files, generation flow.
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta model]] — defines the paste UUIDs and their semantics.
 - [[id:6499F37D-73C3-4E3C-A5D8-6DE23D160D33][ores.cpp.repository.repository_header]] — template that hosts the declaration paste point.
 - [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][ores.cpp.repository.repository_impl]] — template that hosts the impl and includes paste points.

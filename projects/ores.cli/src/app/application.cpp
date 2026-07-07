@@ -89,13 +89,16 @@
 #include "ores.refdata.api/domain/country_json_io.hpp"
 #include "ores.refdata.api/domain/country_table_io.hpp"
 #include "ores.refdata.api/domain/currency_json.hpp"
+#include "ores.refdata.api/domain/currency_pair.hpp"
+#include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/domain/currency_table.hpp"
 #include "ores.refdata.core/repository/cds_convention_repository.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
+#include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
+#include "ores.refdata.core/repository/currency_pair_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
 #include "ores.refdata.core/repository/fra_convention_repository.hpp"
-#include "ores.refdata.core/repository/fx_convention_repository.hpp"
 #include "ores.refdata.core/repository/ibor_index_convention_repository.hpp"
 #include "ores.refdata.core/repository/ois_convention_repository.hpp"
 #include "ores.refdata.core/repository/overnight_index_convention_repository.hpp"
@@ -203,7 +206,8 @@ void application::import_conventions(const std::vector<std::filesystem::path>& f
     refdata::repository::fra_convention_repository fra_rp;
     refdata::repository::ibor_index_convention_repository ibor_rp;
     refdata::repository::overnight_index_convention_repository overnight_rp;
-    refdata::repository::fx_convention_repository fx_rp;
+    refdata::repository::currency_pair_repository currency_pair_rp;
+    refdata::repository::currency_pair_convention_repository currency_pair_convention_rp;
     refdata::repository::cds_convention_repository cds_rp;
 
     for (const auto& f : files) {
@@ -217,7 +221,18 @@ void application::import_conventions(const std::vector<std::filesystem::path>& f
         fra_rp.write(context_, convs.fra);
         ibor_rp.write(context_, convs.ibor_index);
         overnight_rp.write(context_, convs.overnight_index);
-        fx_rp.write(context_, convs.fx);
+
+        std::vector<refdata::domain::currency_pair> pairs;
+        std::vector<refdata::domain::currency_pair_convention> pair_conventions;
+        pairs.reserve(convs.fx.size());
+        pair_conventions.reserve(convs.fx.size());
+        for (const auto& fx : convs.fx) {
+            pairs.push_back(fx.pair);
+            pair_conventions.push_back(fx.convention);
+        }
+        currency_pair_rp.write(context_, pairs);
+        currency_pair_convention_rp.write(context_, pair_conventions);
+
         cds_rp.write(context_, convs.cds);
 
         const auto total = convs.zero.size() + convs.deposit.size() + convs.swap.size() +

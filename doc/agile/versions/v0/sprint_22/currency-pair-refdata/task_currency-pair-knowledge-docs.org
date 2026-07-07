@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 141A6CD3-60BA-42E6-BEC4-14122F70451A
+:END:
+#+title: Task: Build knowledge documents for currency pairs
+#+description: Turn freeform notes on currency pairs into a set of small, self-contained zettelkasten-style knowledge documents, cross-linked via org-roam links (including to existing docs like the cross rates matrix), with an index document tying them together.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Take Marco's freeform notes on currency pairs and turn them into
+properly-fitted ORE Studio knowledge documents: broken up into small,
+self-contained zettelkasten units (not one monolith), each tagged and
+indexed per the =doc-add-knowledge= convention, and cross-linked via
+org-roam =[[id:...]]= links — both amongst themselves and to existing
+related documents (e.g. the cross rates matrix). Produce an index
+document that ties the set together.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- [X] Marco's notes are decomposed into multiple small, self-contained
+  knowledge documents (one topic per document), scaffolded via
+  =compass add knowledge=.
+- [X] Each document is tagged appropriately and linked from an index
+  document.
+- [X] Documents are cross-linked to each other and to existing related
+  documents (e.g. the cross rates matrix) via org-roam =[[id:...]]=
+  links, not plain text references.
+- [X] =compass index= is re-run so the new documents are searchable.
+
+* Plan
+
+Read the source notes (=~/Development/Notebooks/summaries/currency-pairs.org=)
+and cross-checked them against the existing CRM knowledge cluster in
+=doc/knowledge/domain/= before writing anything, to avoid duplicating
+=fx_currency_conventions.org= and =fx_spot_date_and_settlement.org=, which
+already covered base/quote precedence, G11/EM, and spot days.
+
+Split the remaining, not-yet-covered material into five new zettels plus
+a hub note, all scaffolded via =compass add knowledge=:
+=fx_deliverability_and_ndf=, =fx_pip_tick_and_pip_factor=,
+=fx_pair_classification=, =fx_currency_pair_entity_fields=,
+=fx_valuation_spot_date_and_overnight=, and the =fx_currency_pairs= hub.
+Extended the two overlapping docs instead of duplicating them (fixing
+sources/barrier inversion into conventions; business-day vs settlement-day
+and holiday calendars into spot/settlement).
+
+Renamed the non-idiomatic "mfactor" to the desk-standard *pip factor*
+throughout, including in an older doc (=fx_spot_rate_derivation_mechanics.org=)
+that used the same term.
+
+After the docs were in place, reorganised =doc/knowledge/knowledge.org=
+on request: split the flat =* Domain= list into topic subheadings (FX and
+market data conventions, Rates and curves, Risk/valuation/reporting,
+Trading and front office, Data quality, Synthetic data generation), moved
+infrastructure/PoC-flavoured docs (marketdata inventory, FX spot PoC,
+generator library, NATS polymorphic types) into =* Architecture= where
+they belong, and removed the nested child-bullet lists under the CRM and
+Currency pairs hub entries (redundant with the hub pages' own concept
+maps).
+
+Verified via =compass show= (id-link resolution) and a full
+=compass build --direct site= (catches any broken id-link).
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Shipped six new knowledge documents under =doc/knowledge/domain/=
+(=fx_currency_pairs= hub, =fx_deliverability_and_ndf=,
+=fx_pip_tick_and_pip_factor=, =fx_pair_classification=,
+=fx_currency_pair_entity_fields=, =fx_valuation_spot_date_and_overnight=),
+extended =fx_currency_conventions.org= and =fx_spot_date_and_settlement.org=
+with the notes' non-duplicate material, and fixed "mfactor" →
+"pip factor" wherever it appeared. Reorganised the =knowledge.org= Domain
+index into topic subheadings and relocated infrastructure/PoC docs into
+Architecture. =compass index= and a full site build both ran clean — no
+broken id-links. Committed as =222f448aa= on
+=feature/currency-pair-refdata=.

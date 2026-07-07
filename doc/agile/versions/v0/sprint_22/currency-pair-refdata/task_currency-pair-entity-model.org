@@ -1,0 +1,173 @@
+:PROPERTIES:
+:ID: 1689B6B1-129F-44F0-A3FF-7E069BF9E394
+:END:
+#+title: Task: Model the currency pair entity for codegen
+#+description: Model the currency pair (and supporting currency) entities with all fields identified in the knowledge cluster (base/quote, spot days, deliverability/NDF, pip factor/tick size, classification, cut code, fixing source, etc.), ready to drive ores.codegen.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Design the data model for currency pairs as first-class =ores.refdata=
+reference data, covering every field surfaced by the
+[[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][currency pairs knowledge cluster]] (base/quote, spot days, deliverability
+and NDFs, pip factor/tick size, major/minor/exotic classification, cut
+code, fixing source), plus the currency-level fields it depends on that
+=ores.refdata.currency= doesn't carry yet. The output is an entity/field
+design (this task) that a follow-on implementation task turns into actual
+=ores.codegen.entity= model files.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- [X] Every field named in the knowledge cluster is placed on a concrete
+  entity, with type, nullability, and soft-FK target where applicable.
+- [X] Extensions needed on the existing =currency= entity are
+  distinguished from the new =currency_pair= entity.
+- [X] New auxiliary/lookup types (e.g. classification) follow the existing
+  =rounding_type=/=monetary_nature=/=market_tier= soft-FK pattern rather
+  than inventing a new one.
+- [X] Open questions that codegen implementation must resolve are called
+  out explicitly rather than silently assumed.
+
+* Plan
+
+Read the six currency-pair knowledge documents and the existing
+=ores.refdata.currency= codegen model
+([[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]]) to see what already exists before designing
+anything new, following the same "extend, don't duplicate" approach as
+the knowledge task. =currency= already carries the ISO identity, display
+and rounding fields; it is missing everything spot-days/deliverability/
+calendar-related that the pair depends on. Modelled three things:
+extensions to the existing =currency= entity, a new =currency_pair=
+entity, and one new auxiliary lookup type for classification, reusing
+the existing =rounding_type=/=monetary_nature=/=market_tier= soft-FK
+pattern rather than inventing a new one.
+
+** Entity 1 — extend =currency= (=ores_refdata_currencies_tbl=)
+
+New columns needed on the currency itself, per
+[[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]]:
+
+| Column            | Type    | Nullable | Notes                                                                 |
+|-------------------+---------+----------+------------------------------------------------------------------------|
+| =spot_days=         | integer | false    | Business days to settlement; USD=1, most others=2.                    |
+| =deliverable=       | boolean | false    | Whether cash in this currency can be delivered offshore.               |
+| =day_basis=         | text    | false    | Day-count convention code (=ACT/360=, =ACT/365=); soft FK, no existing aux table — open question below. |
+| =base_precedence=   | integer | false    | Ordinal rank in the base-currency precedence table (lower = takes base). |
+| =holiday_calendar=  | text    | true     | Named holiday calendar identifier; nullable until a calendar entity exists (open question below). |
+
+=market_tier= already on =currency= substitutes for the G11/EM split
+described in [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] — no new column needed there.
+
+** Entity 2 — new =currency_pair= entity (=ores_refdata_currency_pairs_tbl=)
+
+Primary key: =pair_code= (text, e.g. =EUR/USD=), always stored in
+canonical base/quote order per
+[[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]].
+
+| Column                | Type    | Nullable | Notes                                                                 |
+|------------------------+---------+----------+------------------------------------------------------------------------|
+| =base_currency=         | text    | false    | Soft FK → =currency.iso_code=.                                        |
+| =quote_currency=        | text    | false    | Soft FK → =currency.iso_code=.                                        |
+| =pip_factor=            | numeric | false    | Converts pips to absolute rate moves (=0.0001= / =0.01= for JPY).      |
+| =tick_size=             | numeric | false    | Minimum rate increment, in pips.                                       |
+| =decimal_places=        | integer | false    | Decimal places for rate display.                                       |
+| =deliverable=           | boolean | false    | Whether the pair settles physically or cash-only (NDF flag).           |
+| =settlement_currency=   | text    | true     | Soft FK → =currency.iso_code=; set only for non-deliverable pairs.     |
+| =default_cut_code=      | text    | true     | Default market-data cut for this pair.                                 |
+| =classification=        | text    | false    | Soft FK → new =currency_pair_classification= aux type (Entity 3).      |
+| =fixing_source=         | text    | true     | Default fixing source for cash-settled / NDF trades on this pair.      |
+
+Deliberately *not* columns on this entity (all derived at read time from
+the two currencies, not stored, to avoid the two copies drifting):
+=spot_days= (=max= of the two currencies'), =business_day_calendar=
+(union of the two currencies' calendars), =settlement_calendar=
+(=settlement_currency='s calendar, defaulting to the quote currency's),
+=is_g11= (both currencies' =market_tier=). See
+[[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] for the derivation rules.
+
+** Entity 3 — new =currency_pair_classification= auxiliary type
+
+Same shape as the existing =rounding_type=/=monetary_nature=/
+=market_tier= lookup tables ([[id:8B8550A9-0B92-44E4-A337-A969C90E7FA9][example]]): =code= (PK), =name=,
+=description=, =display_order=. Seeded with =major=, =minor=, =exotic=
+per [[id:4F93228E-C638-429C-993A-360EE88BD86A][Currency pair classification]] — including the DKK/NOK/SEK correction
+(classified =minor=, independent of their G11 =market_tier=).
+
+** Open questions for the implementation task
+
+1. *Day-count and holiday-calendar representation*: no aux-type table
+   exists yet for either. Options: (a) free-text codes for now (cheapest,
+   matches how =rounding_type= etc. started before becoming aux tables),
+   (b) model a proper =calendar= entity up front. Recommend (a) — ship
+   the pair/currency fields now, split calendars into their own entity
+   later if/when QuantLib calendar integration needs it structurally.
+2. *Aux-type model type*: existing lookups (=rounding_type= etc.) still
+   use the legacy =ores.codegen.table= type, which a separate backlog
+   story ([[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]]) is migrating away
+   from. The implementation task should model
+   =currency_pair_classification= directly as =ores.codegen.entity= to
+   avoid adding another table that needs migrating later.
+3. *Fixing source*: no fixing-source reference entity exists in
+   =ores.refdata= today. Modelled here as a free-text column; whether it
+   should be a soft FK to a future =fixing_source= entity is out of
+   scope for this task.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Designed three entities: five new columns on the existing =currency=
+entity (=spot_days=, =deliverable=, =day_basis=, =base_precedence=,
+=holiday_calendar=), a new =currency_pair= entity keyed on =pair_code=
+with the fields that must be stored (pip factor, tick size, deliverable,
+settlement currency, cut code, classification, fixing source) vs.
+derived at read time (spot days, calendars, =is_g11=), and a new
+=currency_pair_classification= auxiliary lookup type mirroring the
+existing =rounding_type=/=monetary_nature=/=market_tier= pattern. Three
+open questions flagged for the implementation task: calendar/day-count
+representation, aux-type model type (=entity= not legacy =table=), and
+fixing-source as free text vs. a future reference entity. No codegen
+model files were written yet — this is the design the follow-on
+implementation task will turn into =ores.codegen.entity= sources.
+
+*Correction*: =is_g11= as designed here was replaced by a proper
+many-to-many currency-group model in a follow-on task,
+[[id:8B45AB22-FD56-41DB-A74B-750E460188D2][Replace is_g11 flag with an extensible currency-group model]] — see
+that task for the corrected design. Left as-is here per the "plan is a
+historical record" convention.

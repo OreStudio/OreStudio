@@ -181,6 +181,10 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
     connect(ui_->{{widget}}, &QComboBox::currentIndexChanged, this,
             &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
 {{/is_dynamic_combo}}
+{{#is_flagged_combo}}
+    connect(ui_->{{widget}}, &QComboBox::currentIndexChanged, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
+{{/is_flagged_combo}}
 {{/is_key}}
 {{/domain_entity.qt.detail_fields}}
 }
@@ -199,7 +203,65 @@ void {{domain_entity.entity_pascal}}DetailDialog::setClientManager(ClientManager
             settingGatedActions_->refresh();
     }
 {{/domain_entity.qt.has_setting_gated_actions}}
+{{#domain_entity.qt.detail_fields}}
+{{#is_flagged_combo}}
+    populate{{field_pascal}}Combo();
+{{/is_flagged_combo}}
+{{/domain_entity.qt.detail_fields}}
 }
+{{#domain_entity.qt.detail_fields}}
+{{#is_flagged_combo}}
+
+void {{domain_entity.entity_pascal}}DetailDialog::populate{{field_pascal}}Combo() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<{{domain_entity.entity_pascal}}DetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
+    QObject::connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self,
+        [self, watcher]() {
+            auto codes = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
+
+            auto* combo = self->ui_->{{widget}};
+            const QString previous = combo->currentText();
+            combo->blockSignals(true);
+            combo->clear();
+{{#combo_allow_blank}}
+            combo->addItem(QString());
+{{/combo_allow_blank}}
+            for (const auto& c : codes)
+                combo->addItem(QString::fromStdString(c));
+            // fallback_selection is evaluated here (fetch-completion time), not
+            // at populate-call time, since set{{domain_entity.entity_pascal_short}}() may run before or
+            // after setClientManager() triggers this fetch.
+{{#is_optional_string}}
+            const QString fallback = self->{{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}
+                ? QString::fromStdString(*self->{{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}})
+                : QString{};
+{{/is_optional_string}}
+{{^is_optional_string}}
+            const QString fallback = QString::fromStdString(
+                self->{{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
+{{/is_optional_string}}
+            const QString to_select = !previous.isEmpty() ? previous : fallback;
+            if (!to_select.isEmpty()) {
+                const int idx = combo->findText(to_select);
+                if (idx >= 0) combo->setCurrentIndex(idx);
+            }
+            combo->blockSignals(false);
+
+            if (self->imageCache())
+                apply_flag_icons(combo, self->imageCache(), FlagSource::{{flag_source_pascal}});
+        });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm]() { return {{combo_fetch}}(cm); }));
+}
+{{/is_flagged_combo}}
+{{/domain_entity.qt.detail_fields}}
 
 void {{domain_entity.entity_pascal}}DetailDialog::setUsername(const std::string& username) {
     username_ = username;
@@ -248,6 +310,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly) {
 {{#is_dynamic_combo}}
     ui_->{{widget}}->setEnabled(false);
 {{/is_dynamic_combo}}
+{{#is_flagged_combo}}
+    ui_->{{widget}}->setEnabled(false);
+{{/is_flagged_combo}}
 {{/is_key}}
 {{^is_key}}
 {{#is_line_edit}}
@@ -262,6 +327,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly) {
 {{#is_dynamic_combo}}
     ui_->{{widget}}->setEnabled(!readOnly);
 {{/is_dynamic_combo}}
+{{#is_flagged_combo}}
+    ui_->{{widget}}->setEnabled(!readOnly);
+{{/is_flagged_combo}}
 {{/is_key}}
 {{/domain_entity.qt.detail_fields}}
     ui_->saveButton->setVisible(!readOnly);
@@ -371,6 +439,20 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
         if (idx >= 0) ui_->{{widget}}->setCurrentIndex(idx);
     }
 {{/is_dynamic_combo}}
+{{#is_flagged_combo}}
+    {
+{{#is_optional_string}}
+        const auto val = {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}
+            ? QString::fromStdString(*{{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}})
+            : QString{};
+{{/is_optional_string}}
+{{^is_optional_string}}
+        const auto val = QString::fromStdString({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
+{{/is_optional_string}}
+        const int idx = ui_->{{widget}}->findText(val);
+        ui_->{{widget}}->setCurrentIndex(idx);
+    }
+{{/is_flagged_combo}}
 {{/domain_entity.qt.detail_fields}}
 
     populateProvenance({{domain_entity.qt.item_var}}_.{{#domain_entity.qt.version_access}}{{domain_entity.qt.version_access}}{{/domain_entity.qt.version_access}}{{^domain_entity.qt.version_access}}version{{/domain_entity.qt.version_access}},
@@ -472,6 +554,19 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
     {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
         ui_->{{widget}}->currentData().toString().toStdString();
 {{/is_dynamic_combo}}
+{{#is_flagged_combo}}
+{{#is_optional_string}}
+    {
+        const auto _txt = ui_->{{widget}}->currentText().trimmed().toStdString();
+        {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
+            _txt.empty() ? std::nullopt : std::optional<std::string>(_txt);
+    }
+{{/is_optional_string}}
+{{^is_optional_string}}
+    {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
+        ui_->{{widget}}->currentText().toStdString();
+{{/is_optional_string}}
+{{/is_flagged_combo}}
 {{/is_key}}
 {{/domain_entity.qt.detail_fields}}
     {{domain_entity.qt.item_var}}_.{{#domain_entity.qt.modified_by_access}}{{domain_entity.qt.modified_by_access}}{{/domain_entity.qt.modified_by_access}}{{^domain_entity.qt.modified_by_access}}modified_by{{/domain_entity.qt.modified_by_access}} = username_;

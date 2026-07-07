@@ -312,6 +312,9 @@ To add a new named component:
 - [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]] — operational recipe.
 - [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — operational recipe for the
   org-document generator.
+- [[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][Paste blocks: injecting custom code into generated files]] — how
+  hand-written C++ survives codegen regeneration via =:implements UUID=
+  paste blocks.
 - =projects/ores.codegen/docs/cpp_generation_analysis.md= — analysis of
   the C++ code generation paths.
 - =projects/ores.codegen/docs/doc_generator.md= — full CLI

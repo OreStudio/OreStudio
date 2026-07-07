@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 8B45AB22-FD56-41DB-A74B-750E460188D2
+:END:
+#+title: Task: Replace is_g11 flag with an extensible currency-group model
+#+description: Correct the currency_pair design: is_g11 is a fixed boolean that can't express overlapping desk groupings (Scandies, Antipodeans, commodity currencies, etc.), and G11 membership belongs on the currency, not the pair. Replace it with a many-to-many currency_group lookup + junction, mirroring the existing party_currencies junction pattern.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Correct a design flaw caught in review: the first pass at the
+=currency_pair= entity modelled G11 membership as a boolean =is_g11=
+flag on the pair. That's wrong on two counts — G11 membership is a
+*currency*-level property, not a pair-level one, and desks group
+currencies in many overlapping ways beyond G11 (Scandies, Antipodeans,
+commodity currencies, ...), which a single boolean cannot express.
+Replace it with an extensible, many-to-many *currency group* model, and
+update the knowledge cluster and prior task's design accordingly.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-04                               |
+
+* Acceptance
+
+- [X] =is_g11= is removed from the =currency_pair= entity design.
+- [X] G11 (and other desk groupings) are modelled as a many-to-many
+  relationship on the *currency*, extensible without a schema migration
+  per new group.
+- [X] The new model reuses an existing pattern in the codebase
+  (=party_currencies= junction) rather than inventing a new shape.
+- [X] The knowledge cluster (entity fields doc, classification doc) and
+  the prior task's design are corrected to match, not just this task's
+  own notes.
+
+* Plan
+
+Reused the existing =party_currencies= many-to-many junction
+([[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]]'s custom service methods) as the template: a
+currency can be linked to many parties, and symmetrically, a currency can
+now be linked to many currency groups.
+
+** Entity 4 — new =currency_group= auxiliary type
+
+Same =code=/=name=/=description=/=display_order= shape as
+=currency_pair_classification=; seeded with =G11=, =SCANDIES=,
+=ANTIPODEANS=, =COMMODITY=, =ASIANS=, =LATAMS= to start (see
+[[id:ABEC5C46-05CA-42D7-9D20-3B4DC06BBED5][Currency groups (desk groupings)]] for the full rationale and typical
+groupings) — extensible by inserting a row, no schema change needed for
+a new group.
+
+** Entity 5 — new =currency_currency_group_junction=
+
+Many-to-many junction, same shape as the existing
+=party_currency_junction=: (=currency_iso_code=, =currency_group_code=)
+composite key, tenant-scoped. A currency can belong to any number of
+groups simultaneously (e.g. NOK: =G11= *and* =SCANDIES= *and*
+=COMMODITY=).
+
+** Changes to the prior task's design
+
+- =currency_pair.is_g11= is *removed* — not replaced by anything on the
+  pair. "Is this a G11 pair" is answered by joining both legs against
+  =currency_currency_group_junction= filtered to =G11=, not by a stored
+  flag.
+- =currency.market_tier= (existing field, single-valued: =g10= /
+  =emerging=) is left as-is — it is the single *primary* tier, distinct
+  from the new multi-valued group system. The two coexist: =market_tier=
+  answers "what is this currency's primary liquidity tier", the group
+  junction answers "what desk groupings does this currency belong to".
+- Updated the knowledge docs that had baked in =is_g11= as a pair field:
+  [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]] and
+  [[id:4F93228E-C638-429C-993A-360EE88BD86A][Currency pair classification]], and added a new zettel,
+  [[id:ABEC5C46-05CA-42D7-9D20-3B4DC06BBED5][Currency groups (desk groupings)]], to the hub's concept map.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Removed =is_g11= from the =currency_pair= design and replaced it with two
+new entities: a =currency_group= auxiliary lookup (G11, Scandies,
+Antipodeans, commodity currencies, Asians, Latams) and a
+=currency_currency_group_junction= many-to-many junction between
+currency and group, mirroring the existing =party_currencies= pattern.
+=currency.market_tier= is unchanged and coexists with the new group
+system (single primary tier vs. multi-valued desk groupings). Added a
+new knowledge zettel, [[id:ABEC5C46-05CA-42D7-9D20-3B4DC06BBED5][Currency groups (desk groupings)]], and corrected the
+two knowledge docs and the prior task's =* Plan= that had baked in the
+=is_g11= flag.

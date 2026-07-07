@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: 04A121FA-00D6-43EB-9B21-04EDC1FA493D
+:END:
+#+title: Story: Currency pair support in reference data
+#+description: Add first-class currency pair support to reference data: knowledge-base foundation, domain model, codegen implementation, and librarian support. Umbrella story for the full feature, not just the design.
+#+type: story
+#+level: s2
+#+filetags: :currency:currency_pair:refdata:market_data:v0:sprint_22:
+#+created: 2026-07-04
+#+updated: 2026-07-04
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ORE Studio treats currencies as first-class reference data, but currency
+*pairs* (conventions, quoting, cross rates) are not yet modelled as
+such. This story is the umbrella for the full currency pair feature:
+knowledge-base foundation (done), domain model design (done), the
+=ores.codegen.entity= implementation of that model, and librarian
+support so a new party gets a usable set of currency pairs out of the
+box. It stays open across all of that — it is not a design-only story.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Codegen implementation done (5 entities, builds cleanly); migration off fx_convention unblocked and picked up next. Librarian support and the ORE import/export test remain BACKLOG. |
+| Waiting on    | Nothing.                               |
+| Next          | Migrate fx_convention consumers to currency_pair.       |
+| Last touched  | 2026-07-06                               |
+
+* Acceptance
+
+- [X] A currency pair knowledge document set exists under
+  =doc/knowledge/=, broken into small self-contained documents
+  (conventions, quoting, cross rates, etc.) rather than one monolith.
+- [X] The knowledge documents are cross-linked via org-roam =[[id:...]]=
+  links, including to existing relevant documents (e.g. the cross
+  rates matrix).
+- [X] An index document ties the set together for discoverability.
+- [X] The currency pair entity (and supporting currency fields) is
+  modelled with all fields identified in the knowledge cluster, ready
+  to drive =ores.codegen=.
+- [ ] Creating a party (via librarian) results in a usable set of
+  currency pairs being available for it, following the same
+  publish-from-dq pattern used by the synthetic FX foundation.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:141A6CD3-60BA-42E6-BEC4-14122F70451A][Build knowledge documents for currency pairs]] | DONE | | 2026-07-04 | Turn freeform notes on currency pairs into a set of small, self-contained zettelkasten-style knowledge documents, cross-linked via org-roam links (including to existing docs like the cross rates matrix), with an index document tying them together. |
+| [[id:1689B6B1-129F-44F0-A3FF-7E069BF9E394][Model the currency pair entity for codegen]] | DONE | | 2026-07-04 | Model the currency pair (and supporting currency) entities with all fields identified in the knowledge cluster (base/quote, spot days, deliverability/NDF, pip factor/tick size, classification, cut code, fixing source, etc.), ready to drive ores.codegen. |
+| [[id:8B45AB22-FD56-41DB-A74B-750E460188D2][Replace is_g11 flag with an extensible currency-group model]] | DONE | | 2026-07-04 | Correct the currency_pair design: is_g11 is a fixed boolean that can't express overlapping desk groupings (Scandies, Antipodeans, commodity currencies, etc.), and G11 membership belongs on the currency, not the pair. Replace it with a many-to-many currency_group lookup + junction, mirroring the existing party_currencies junction pattern. |
+| [[id:155FA378-9953-4EA0-8495-7C61E40BE81C][Add librarian support for currency pairs]] | BACKLOG | | | Extend the DQ librarian so creating a party yields a usable set of currency pairs out of the box, following the same publish-from-dq bundle pattern used for the synthetic FX foundation. |
+| [[id:C73E0414-9154-417F-B069-7055BB58AA4C][Reconcile currency_pair design with fx_convention]] | DONE | | 2026-07-04 | fx_convention already covers most of currency_pair's ground (spot days, points factor, calendar, business day convention). Fold its extra fields into the currency_pair design and decide the pip_factor vs points_factor representation, ahead of migrating consumers off fx_convention. |
+| [[id:ED053F15-513A-4E3A-908A-7AE11A2B3316][Migrate fx_convention consumers to currency_pair and retire it]] | DONE | 2026-07-06 | 2026-07-08 | Point ores.ore's conventions_mapper, the Qt CRUD screens, and the CLI registration at currency_pair instead of fx_convention, then drop fx_convention's SQL table, repository, service, Qt files, and CLI wiring. |
+| [[id:9D58E37B-797C-430D-8724-EE50737C6DE1][Split currency_pair into identity and convention entities; finalize field model]] | DONE | | 2026-07-04 | Split the single currency_pair design into a lean currency_pair identity entity and a currency_pair_convention entity for the fx_convention-derived quoting/date-convention fields, mirroring how ORE conceptually separates a pair from its conventions. Produce the final, settled field-by-field model for both, ready for ores.codegen.entity. |
+| [[id:2ABA2FD7-6381-481E-B236-FF401D4EFEB2][Test ORE import/export of FX conventions against currency_pair]] | BACKLOG | | | Verify ORE's conventions.xml <FX> element round-trips correctly through currency_pair after fx_convention is retired: import a real conventions.xml, confirm parsed values match, then export and diff against the original. |
+| [[id:AB8BDE3C-F4FC-4794-8AB3-9E72593BFC26][Implement currency_pair and currency_pair_convention via ores.codegen.entity]] | DONE | 2026-07-06 | 2026-07-06 | All 5 entities modelled, generated (SQL/C++/messaging/Qt), and building cleanly; new flagged_combo Qt facet added for currency-picker flag icons. |
+| [[id:D8C2D3DF-433A-4350-9916-73327EB90999][Add a generic FK-combo-with-flag-icons facet to ores.codegen.entity]] | BACKLOG | | | Promote the OreCurrencyComboBox + LookupFetcher + FlagIconHelper::setup_flag_combo pattern (hand-duplicated across ~10 trading forms) to a first-class codegen Qt facet alongside is_static_combo, so currency_pair's base/quote currency pickers -- and future FK pickers -- are generated, not hand-written. |
+
+* Decisions
+
+- Knowledge-base foundation shipped as six zettels plus a hub note,
+  extending the existing CRM cluster rather than duplicating it (see the
+  first task's =* Plan=).
+- Currency pair modelled as its own entity (=currency_pair=), not folded
+  into =currency=: =spot_days= and calendars are *derived* at read time
+  from the two constituent currencies rather than stored redundantly on
+  the pair, to avoid the two copies drifting apart. Five new columns
+  land on =currency= itself (=spot_days=, =deliverable=, =day_basis=,
+  =base_precedence=, =holiday_calendar=); a new
+  =currency_pair_classification= auxiliary type reuses the existing
+  =rounding_type=/=monetary_nature=/=market_tier= soft-FK pattern. Full
+  field-by-field design lives in the second task's =* Plan=; three open
+  questions (calendar/day-count representation, aux-type model type,
+  fixing-source reference) are deferred to the implementation task.
+- *Corrected* (third task): the initial design put G11 membership on the
+  pair as a boolean =is_g11= flag. That's wrong — it's a currency-level
+  property, and desks need overlapping groupings beyond G11 (Scandies,
+  Antipodeans, commodity currencies, ...) that a boolean can't express.
+  Replaced with a =currency_group= auxiliary type plus a many-to-many
+  =currency_currency_group_junction=, mirroring the existing
+  =party_currencies= junction pattern. =currency.market_tier= is
+  unaffected and coexists as the single-valued primary tier alongside
+  the new multi-valued group system.
+- *Discovered*: =ores.refdata.fx_convention= already exists, fully
+  implemented, and covers most of =currency_pair='s ground (spot days,
+  a =points_factor= reciprocal to our =pip_factor=, a calendar field,
+  business day convention, spot-relative/end-of-month flags). It exists
+  only to round-trip ORE's =conventions.xml= =<FX>= element — no other
+  consumer. Decision: retire it in favour of =currency_pair=, folding in
+  its extra fields (see the reconciliation task).
+- *Split off* (calendar): =holiday_calendar= (on =currency=) and
+  =advance_calendar= (folded in from =fx_convention=, on =currency_pair=)
+  are both unvalidated free text pointing at an ORE/QuantLib calendar
+  name. Rather than keep them as raw strings, calendar modelling
+  (validated calendar codes, FK relationships, Qt screens) is split off
+  into its own backlog story,
+  [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] — =currency_pair=
+  keeps a raw-text calendar field only as an interim measure until that
+  story lands and it can be migrated onto a real FK.
+- *Split into two entities*: =currency_pair= (identity) and
+  =currency_pair_convention= (1:1, the =fx_convention=-derived quoting/
+  date fields), matching the codebase's existing =*_convention= entity
+  family rather than bundling both concerns into one entity. See the
+  fourth task's =* Plan= for the finalized field lists.
+- *Split off* (cut code): =default_cut_code= has no domain model
+  anywhere in ORE Studio — same free-text-pointing-at-nothing problem as
+  calendars. Split off into its own backlog story,
+  [[id:4B4ED152-1670-4E81-895A-24D747382D4C][Model market data cuts as proper ORE Studio reference data]].
+  *Unlike* the calendar field, =default_cut_code= is *dropped from
+  =currency_pair= entirely* rather than kept as interim text — no
+  current consumer needs it, so there's nothing to regress by adding it
+  back as a proper FK once that story lands.
+- *Retired* =fx_convention=: =ores.ore=, the Qt refdata plugin, and the
+  CLI now read/write =currency_pair=/=currency_pair_convention=
+  directly; all of =fx_convention='s SQL/C++/Qt/messaging files are
+  deleted, not deprecated. =SpotDays= round-trips through a
+  mapper-internal transport struct rather than a persisted field, since
+  the file-based =ore roundtrip= import/export path has no database
+  access and can't derive it from =currency= at that point. Two gaps
+  left by earlier tasks were closed as a prerequisite: =currency_pair='s
+  SQL was generated but never wired into the master schema/RLS scripts,
+  and =currency.spot_days= was modelled but never regenerated — both
+  fixed with C++/SQL-only changes to avoid clashing with the concurrent
+  "Commission: currency" story.
+
+* Out of scope
+
+- The day-count and fixing-source reference entities flagged as open
+  questions in the second task.
+- Proper calendar modelling — split off to
+  [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]].
+- Proper cut modelling — split off to
+  [[id:4B4ED152-1670-4E81-895A-24D747382D4C][Model market data cuts as proper ORE Studio reference data]].

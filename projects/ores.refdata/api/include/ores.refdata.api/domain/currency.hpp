@@ -49,10 +49,11 @@ struct currency final {
     /**
      * @brief ISO 4217 alpha-3 code (e.g., "USD", "EUR", "GBP").
      *
-     * No :name generator block is defined for this primary key. The synthetic
-     * generate_synthetic_currency function produces counter-based codes; the fictional generator
-     * (generate_fictional_currencies, injected via custom generator sections below) is the
-     * authoritative test-data source and does not rely on the template-generated synthetic path.
+     * The :name generator block below only supplies the literal "X" prefix consumed by the
+     * template's counter-based generate_synthetic_currency codepath (X + counter, e.g. "X0", "X1");
+     * the fictional generator (generate_fictional_currencies, injected via custom generator
+     * sections below) remains the authoritative test-data source and does not depend on this
+     * synthetic path.
      */
     std::string iso_code;
 
@@ -115,8 +116,8 @@ struct currency final {
     std::optional<boost::uuids::uuid> image_id;
 
     /**
-     * @brief Business days to settlement for a spot trade in this currency (USD1, most others2).
-     * Used to derive currency_pair.spot_days as the max of the two legs' values.
+     * @brief Business days to settlement for a spot trade in this currency (USD is 1, most others
+     * are 2). Used to derive currency_pair.spot_days as the max of the two legs' values.
      */
     int spot_days = 0;
 

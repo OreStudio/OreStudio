@@ -39,7 +39,7 @@ domain::currency generate_synthetic_currency(utility::generation::generation_con
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.iso_code = +"-" + std::to_string(idx);
+    r.iso_code = std::string("X") + "-" + std::to_string(idx);
     r.name = "Test Currency " + std::to_string(faker::number::integer(1000, 9999)) + "-" +
              std::to_string(idx);
     r.numeric_code = std::to_string(faker::number::integer(10001, 99999));

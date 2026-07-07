@@ -877,7 +877,7 @@ mapped_fx conventions_mapper::map_fx(const fxType& v) {
     auto& convention = r.convention;
     convention.pair_code = pair.pair_code;
     convention.pip_factor = v.PointsFactor != 0.0 ? 1.0 / v.PointsFactor : 0.0;
-    convention.tick_size = convention.pip_factor;
+    convention.tick_size = 1.0;
     convention.decimal_places =
         v.PointsFactor > 0.0 ? static_cast<int>(std::lround(std::log10(v.PointsFactor))) : 0;
 

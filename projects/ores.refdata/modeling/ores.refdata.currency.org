@@ -37,11 +37,16 @@ rounding, and display formatting across the system.
 
 ISO 4217 alpha-3 code (e.g., "USD", "EUR", "GBP").
 
-No =:name generator= block is defined for this primary key. The synthetic
-=generate_synthetic_currency= function produces counter-based codes; the
-fictional generator (=generate_fictional_currencies=, injected via custom
-generator sections below) is the authoritative test-data source and does
-not rely on the template-generated synthetic path.
+The =:name generator= block below only supplies the literal "X" prefix
+consumed by the template's counter-based =generate_synthetic_currency=
+codepath (=X= + counter, e.g. "X0", "X1"); the fictional generator
+(=generate_fictional_currencies=, injected via custom generator sections
+below) remains the authoritative test-data source and does not depend on
+this synthetic path.
+
+#+begin_src cpp :name generator
+std::string("X")
+#+end_src
 
 * Natural keys
 
@@ -197,9 +202,9 @@ std::nullopt
 :default:  2
 :END:
 
-Business days to settlement for a spot trade in this currency
-(USD=1, most others=2). Used to derive =currency_pair.spot_days= as
-the max of the two legs' values.
+Business days to settlement for a spot trade in this currency (USD is
+1, most others are 2). Used to derive =currency_pair.spot_days= as the
+max of the two legs' values.
 
 #+begin_src cpp :name generator
 faker::helper::randomElement(std::vector<int>{1, 2})

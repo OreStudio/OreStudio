@@ -31,6 +31,7 @@
 #include "ores.shell/app/commands/lei_commands.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
 #include "ores.shell/app/commands/navigation_commands.hpp"
+#include "ores.shell/app/commands/orgmode_commands.hpp"
 #include "ores.shell/app/commands/parties_commands.hpp"
 #include "ores.shell/app/commands/provision_commands.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
@@ -91,6 +92,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     rbac_commands::register_commands(*root, session_, pagination_);
     tenants_commands::register_commands(*root, session_, pagination_);
     navigation_commands::register_commands(*root, pagination_);
+    orgmode_commands::register_commands(*root);
     script_commands::register_commands(*root, active_session_);
     bundles_commands::register_commands(*root, session_);
     workflow_commands::register_commands(*root, session_);

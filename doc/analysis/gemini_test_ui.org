@@ -1,0 +1,101 @@
+#+TITLE: Requirements Specification: Interactive QA Validation Runner for Qt Applications
+#+AUTHOR: Project Engineering Team
+#+DATE: 2026-07-06
+#+OPTIONS: toc:2 num:t todo:t
+
+* Introduction & Background
+  With multiple autonomous Claude code workers rapidly modifying different dialogs and user interface components across the Qt application, manual verification tracking has become a significant cognitive bottleneck. Developers frequently lose track of which specific feature, branch, or bug fix version they are currently evaluating.
+
+  This document defines the requirements for an *integrated, lightweight QA Validation Runner* built directly into the Qt application. It establishes a machine-readable protocol (JSON-in, JSON-out) to seamlessly close the feedback loop between human validation and AI workers.
+
+* System Architecture & Loop
+  The feature establishes an explicit loop ensuring strict synchronization between changes and tests.
+
+  #+BEGIN_EXAMPLE
+  [ Claude Code Worker ] ---> Generates code changes + test_scenario.json
+                                     |
+                                     v
+  [ Qt App (Debug Mode) ] --> Reads JSON, mounts UI Overlay / DockWidget
+                                     |
+                                     v
+  [ Human Reviewer ] -------> Steps through checklist, adds notes, sets status
+                                     |
+                                     v
+  [ QA Runner Widget ] -----> Saves structured test_result.json on submission
+                                     |
+                                     v
+  [ Claude Code Worker ] <--- Consumes result file; automates next fix iteration
+  #+END_EXAMPLE
+
+* Functional Requirements
+
+** Scenario Input Parsing
+   - **REQ-IN-1:** The application MUST look for a `test_scenario.json` file on startup or monitor a specific sandbox directory via a file watcher (`QFileSystemWatcher`).
+   - **REQ-IN-2:** Alternatively, the application MUST support launching a specific scenario file passed as a command-line argument (e.g., `--qa-scenario path/to/scenario.json`).
+   - **REQ-IN-3:** The system MUST parse the following schema attributes safely:
+     - ~scenario_id~: Unique string mapping back to the feature branch/task.
+     - ~worker_id~: Identifier for the originating Claude worker.
+     - ~target_dialog~: The exact class name of the dialog under test.
+     - ~title~: A concise description of the test goal.
+     - ~steps~: An array of step objects containing an ~id~ and human-readable ~text~.
+
+** Interactive QA Widget Interface
+   - **REQ-UI-1:** The UI MUST be implemented as a dockable widget (~QDockWidget~) or an overlay panel that does not block interaction with the rest of the application.
+   - **REQ-UI-2:** It MUST remain "Always on Top" if detached, keeping the checklist visible while navigating deeply nested dialogs.
+   - **REQ-UI-3:** The panel MUST dynamically generate a checklist of ~QCheckBox~ items based on the input scenario's ~steps~ array.
+   - **REQ-UI-4:** A distinct, prominent "Launch Target Dialog" button SHOULD be provided if the ~target_dialog~ can be instantiated dynamically via Qt's meta-object system (~QMetaObject~).
+   - **REQ-UI-5:** The interface MUST provide a text entry region (~QPlainTextEdit~) for freeform tester feedback and notes.
+   - **REQ-UI-6:** The interface MUST include a clear status toggle or radio group allowing the tester to explicitly flag the outcome as **PASS** or **FAIL**.
+
+** Result Output Generation
+   - **REQ-OUT-1:** The widget MUST expose a "Complete Test" or "Submit Feedback" button that is only enabled after all checklist items have been checked or a status has been selected.
+   - **REQ-OUT-2:** Upon submission, the widget MUST export a file named `test_result.json` to a designated workspace directory.
+   - **REQ-OUT-3:** The output JSON schema MUST contain:
+     - ~scenario_id~: Matching the input file exactly.
+     - ~tester_status~: Str string representing `"PASSED"` or `"FAILED"`.
+     - ~completed_at~: ISO 8601 UTC timestamp.
+     - ~step_results~: An object mapping step IDs to boolean completion states.
+     - ~tester_notes~: Capturing all text input provided by the reviewer.
+     - ~environment_metadata~: Capturing git branch, commit hash, and build timestamp to ensure multi-worktree execution sanity.
+
+* Non-Functional Requirements
+  - **Performance:** Parsing and UI generation must happen instantly (< 100ms) to ensure it doesn't degrade developer-mode load times.
+  - **Build Targets:** The QA validation runner component MUST be wrapped inside macro blocks (`#ifdef QT_DEBUG`) to ensure it is completely stripped out of release binaries.
+  - **Zero External Dependencies:** Use standard library components and native Qt classes (~QJsonDocument~, ~QJsonObject~) to prevent adding complex external build requirements.
+
+* Data Schemas
+
+** Input Schema (`test_scenario.json`)
+   #+BEGIN_SRC json
+   {
+     "scenario_id": "feat_party_management_42",
+     "worker_id": "claude_architect_v1",
+     "target_dialog": "OresPartyManagerDialog",
+     "title": "Verify Tenant RLS & Counterparty Mapping",
+     "steps": [
+       { "id": "step_1", "text": "Open Party Manager and verify tenant isolation holds." },
+       { "id": "step_2", "text": "Click 'Add Counterparty' and check if ISO 20022 tags align." },
+       { "id": "step_3", "text": "Ensure the 'Save' button is disabled when Legal Entity Identifier (LEI) is invalid." }
+     ]
+   }
+   #+END_SRC
+
+** Output Schema (`test_result.json`)
+   #+BEGIN_SRC json
+   {
+     "scenario_id": "feat_party_management_42",
+     "tester_status": "FAILED",
+     "completed_at": "2026-07-06T13:35:00Z",
+     "step_results": {
+       "step_1": true,
+       "step_2": true,
+       "step_3": false
+     },
+     "tester_notes": "Step 3 failed: The Save button remains clickable even if I enter an invalid LEI string. The validation regex isn't catching it.",
+     "environment_metadata": {
+       "git_branch": "feature/lei-validation-fix",
+       "git_commit": "a1b2c3d4e5f67890",
+       "build_time": "2026-07-06T13:10:00Z"
+     }
+   }
+   #+END_SRC

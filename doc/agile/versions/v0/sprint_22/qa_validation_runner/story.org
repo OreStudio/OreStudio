@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: E4A4D94A-C9B9-4075-931E-94AA5D8044FE
+:END:
+#+title: Story: QA Validation Runner: in-app test tracking for the multi-worktree fleet
+#+description: Second story of the QA Validation Runner epic — a Qt panel, built on ores.orgmode, so the single human tester can tell which scenario is under test, on which branch/worktree, across the whole fleet, with results recorded next to the driving story/task instead of scattered JSON files.
+#+type: story
+#+level: s2
+#+filetags: :qt:testing:fleet:dx:sprint_22:v0:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Second story of the *QA Validation Runner* epic (see
+[[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode
+parsing and org-roam link resolution]] for the first — this story
+*depends* on it and does no org parsing of its own).
+
+The fleet has grown to 10 worktrees, most of them wanting UI-level
+verification of their in-flight story or task, but there is only one
+human tester. In practice the tester loses track of *what* is being
+tested, *on which branch/environment*, and *what was found* —
+verification notes end up scattered across chat, or not recorded at
+all.
+
+Add a QA Validation Runner to =ores.qt=: a dockable panel that turns a
+scenario (a checklist of manual steps tied to a story/task) into a
+guided, trackable test session, and writes the result back next to the
+docs that drove it — not to a JSON file nobody reads again.
+
+Gemini's initial analysis (=doc/analysis/gemini_test_ui.org=, mockup
+=doc/analysis/gemini_test_ui_mockup.png=) proposes a
+=test_scenario.json= / =test_result.json= protocol so an AI worker can
+hand a checklist to the UI and consume the result back. The panel UX
+(docked checklist, PASS/FAIL toggle, freeform notes, "launch target
+dialog") is a good starting point, but the *storage format* changes
+direction for this codebase: **the scenario is a new org-mode document
+type, not JSON.**
+
+- A new doc type — provisionally =test_scenario= — is scaffolded the
+  same way a task or story is: =compass add test_scenario=, saved
+  *under* the driving story's directory, linked (=id:= link both ways)
+  to the task it verifies. It is filled in with target dialog, title,
+  and the checklist of steps before testing starts — an ordinary org
+  file, reviewable in a PR, greppable, renderable on the site like any
+  other doc.
+- The Qt panel reads/writes this doc via the =ores.orgmode= component from
+  the prerequisite story — it does not implement its own org
+  parsing. What this story adds on top: rewriting the =* Results=
+  section in place on save (a targeted write, not something
+  =ores.orgmode='s reader needs to support generically), and the UI itself.
+- Workflow: instantiate the scenario doc under the story, link it to
+  the task, fill in the details — then point the Qt panel at that
+  file. The tester runs through the checklist in the app, ticks steps,
+  writes notes, sets PASS/FAIL, hits save. The panel rewrites the
+  scenario doc's =* Results= section in place (step outcomes, notes,
+  status, environment metadata — branch/commit/worktree identity read
+  from the checkout, not hand-entered) and stamps the compass journal.
+  The doc is now the single source of truth: =git diff= shows the
+  result, the website renders it, and the next Claude session can just
+  read the file.
+
+A second, closely-related gap: with this much parallel work across the
+fleet, the tester (and Claude, picking a session back up) loses the
+*context* of what a given scenario is even testing — the story/task
+doc has that context, but nobody wants to leave the running app and go
+digging through the site or the org file by hand mid-test. So the same
+panel (or a sibling tab) should also render the driving story and its
+tasks — title, goal, acceptance, status, tasks table — using the
+=ores.orgmode= document structure to drive a simple, structure-aware
+renderer (headings, lists, tables, basic emphasis is enough; not a
+faithful org renderer).
+
+The tester also needs a fleet-level view: which worktree is asking for
+what test, so they can pick one scenario at a time instead of holding
+it all in their head. Compass already renders this info
+(=compass fleet=, =compass show <task>=) — this story should establish
+how the Qt panel surfaces it without duplicating compass's data model.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-06                               |
+
+* Acceptance
+
+- [ ] A new =test_scenario= org doc type is defined (frontmatter,
+  required sections) and scaffoldable via =compass add test_scenario=,
+  saved under the driving story's directory and =id:=-linked to the
+  task it verifies.
+- [ ] =ores.qt= consumes the prerequisite =ores.orgmode= component to
+  parse =test_scenario= and story/task docs — no org parsing
+  reimplemented in Qt. The panel adds only the =* Results=-section
+  rewrite-on-save and a simple structure-aware renderer for display
+  (headings, lists, tables, basic emphasis).
+- [ ] =ores.qt= gains a dockable QA Validation Runner panel (debug
+  builds only) that opens a =test_scenario= doc, shows its info (title,
+  target dialog, steps), lets the tester tick steps, capture freeform
+  notes, and set a PASS/FAIL outcome.
+- [ ] Environment metadata (branch, commit, worktree identity) is
+  read from the running checkout, not hand-entered by the tester.
+- [ ] Submitting a result rewrites the scenario doc's =* Results=
+  section in place (step outcomes, notes, status, environment
+  metadata) — no standalone JSON artefact — and stamps the compass
+  journal.
+- [ ] The same panel (or a sibling tab) can render the driving
+  story/task docs (goal, acceptance, status, tasks table) so the
+  tester doesn't need to leave the app to recover context.
+- [ ] The tester can see, from within the panel or a companion list,
+  which worktrees/tasks in the fleet currently have a scenario waiting
+  — sourced from compass's existing fleet/task data, not duplicated.
+- [ ] Rendered =test_scenario= docs (with their filled-in =* Results=)
+  show up correctly on the published site, same as any other doc.
+- [ ] Works end-to-end for at least one real story from this sprint as
+  a pilot before being declared done.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+- Scenario and result storage is org-mode docs under the story, not
+  JSON files as Gemini's analysis proposed. Rationale: this project
+  already treats org docs as the source of truth for everything
+  agile — git history, PR review, compass indexing, site rendering all
+  come for free; a JSON sidecar would be a second, disconnected
+  source of truth nobody browses after the fact.
+- Org reading/writing is not reimplemented in =ores.qt= — it consumes
+  the =ores.orgmode= component from the prerequisite story in this
+  epic, so the parsing investment is made once and shared with
+  =ores.shell= and anything else that needs it.
+
+* Out of scope
+
+- Fully automating test execution (this is a *manual*-test tracking
+  aid, not a test-automation framework).
+- A generic multi-user test-management system; this is scoped to the
+  single-tester, multi-worktree reality described above.
+- A general-purpose org-mode parser/renderer in =ores.qt=; both the
+  scenario reader/writer and the story/task viewer only need to handle
+  the small, fixed subset of org syntax this project actually uses in
+  its agile docs.
+- The AI-worker-writes-scenario-JSON half of Gemini's loop; scenario
+  docs are hand-authored (by a human or by Claude) for now.

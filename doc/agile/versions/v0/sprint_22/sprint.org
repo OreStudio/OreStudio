@@ -133,6 +133,20 @@ and CI checks so generated code stays trustworthy. Carried from sprint 21.
 | [[id:25A93F0B-FD5C-4EA1-9194-093073B44C44][Add compass client start/stop subcommands]] | DONE | 2026-07-03 | 2026-07-03 | compass client was flat (launch-only); add start/stop matching the services/env/nats subcommand convention. |
 | [[id:B7C756F2-985A-49FA-BE98-D50C4F418B51][Compass GitHub Actions support]] | STARTED | | | Give compass a quick overview of all GitHub Actions runs, highlight which ones are failing, and for failing runs surface the error detail via gh CLI without needing to download full logs. |
 
+*** Epic: Org-mode support
+
+Add first-class org-mode support to the C++ side of the codebase — parsing docs into a structure,
+resolving id: links — as a shared foundation for tooling built on top of it. First two stories:
+ores.orgmode itself, then a Qt QA Validation Runner built on it to address the fleet's testing
+bottleneck (10 worktrees, one human tester, no way to track what's under test or what was found).
+More stories expected here over time as other consumers emerge.
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] | DONE | 2026-07-06 | 2026-07-07 | New component: parse org-mode docs into a C++ structure, resolve id: links via the existing org-roam SQLite index. Pure C++, usable from ores.shell; ports the shape of ores.compass's Python org parser. |
+| [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] | BACKLOG | | | Qt panel, built on ores.orgmode, turning a test_scenario org doc's checklist into a guided test session; results and story/task context rendered in-app, not a standalone JSON file. |
+
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading

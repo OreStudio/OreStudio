@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: A85B16E3-5A42-4484-A570-13EE7CFA9F50
+:END:
+#+title: Story: ores.orgmode: C++ org-mode parsing and org-roam link resolution
+#+description: New ores.orgmode component: parse org-mode files into a C++ structure capturing key document elements (headings, properties, types, links), and resolve id: links via the org-roam SQLite index — pure C++, usable from ores.shell and any future consumer, codegen-driven where possible.
+#+type: story
+#+level: s2
+#+filetags: :org:codegen:shell:testing:sprint_22:v0:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+First story of the *QA Validation Runner* epic. Everything downstream —
+the Qt panel, the future =test_scenario= doc type, "show me the current
+sprint from the shell" — needs the same foundation: a way to read an
+org-mode agile doc into a C++ structure and follow its =id:= links,
+without shelling out to compass or re-implementing org parsing per
+consumer. Build that foundation once, in a new component, =ores.orgmode=,
+independent of any UI.
+
+Scope:
+
+- *Parser*: read a =.org= file (frontmatter =#+= keywords, the
+  =:PROPERTIES:= drawer, headings, plain paragraphs, simple lists,
+  tables, and =[[id:UUID][description]]= links) into a C++ document
+  structure. This is deliberately *not* a general org-mode
+  implementation — only the subset this project's agile/knowledge docs
+  actually use (the same subset =ores.compass='s Python org parser
+  already handles; that implementation is the reference for scope, not
+  something to reinvent from a spec). Capture the document's =#+type:=
+  (story/task/sprint/knowledge/... ) as a first-class field so callers
+  can branch on it.
+- *Reuse, don't reinvent*: an earlier project (=dogen=) already built a
+  C++ org-mode entity model + parser covering headlines, drawers,
+  blocks, tags, TODO keywords, priority cookies, and affiliated
+  keywords — a faithful implementation of the
+  [[https://orgmode.org/worg/dev/org-syntax.html][org-syntax spec]], not
+  a from-scratch reinvention (see
+  =~/Development/masd/dogen.local1/projects/dogen.org= —
+  =include/dogen.org/types/entities/{document,headline,drawer,section,block}.hpp=,
+  =src/types/helpers/{parser,builder,document_factory}.cpp=). It has no
+  =id:= link entity or org-roam integration (both are new work for this
+  story), and its generated getter/setter style is older than this
+  project's current codegen conventions, but the document/headline/
+  drawer/block *shape* is directly reusable as the starting point for
+  =ores.orgmode='s entity model — port and adapt rather than design from a
+  blank page.
+- *Link resolution*: given a document, resolve its =id:= links against
+  the org-roam SQLite index (the same database =compass search=/=compass
+  show= already read from) so a caller can walk from a task to its
+  parent story, from a story to its sprint, etc., without re-deriving
+  that graph.
+- *Pure C++, no Qt dependency*: usable from =ores.shell= (e.g. a
+  =sprint show= or =doc show= shell command), from a future =ores.qt=
+  panel, or from any other C++ consumer. Qt is a later, separate story
+  building *on* this component, not part of it.
+- *Codegen*: scaffold the component itself via codegen as a *simple/
+  flat* component — no api/core/service split, per
+  [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]]'s
+  guidance for infrastructure libraries with no DB/service concern —
+  and use codegen for the structured parts of the domain model (the
+  document-element C++ types) wherever the shape is regular enough —
+  hand-write only the actual parsing/traversal logic.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Build the Qt QA Validation Runner on top (next story in the epic). |
+| Last touched  | 2026-07-07                               |
+
+* Acceptance
+
+- [X] New =ores.orgmode= component exists, scaffolded via codegen as a
+  simple/flat component (=projects/ores.orgmode/= with =include=,
+  =src=, =tests=, =modeling= directly inside — no api/core/service
+  split).
+- [X] A C++ document structure captures, at minimum: =#+type:= and
+  other frontmatter keywords, the =:ID:= property, headings (with
+  nesting), plain-text/list/table body content, and =id:= links (target
+  UUID + display text).
+- [X] Parsing works on real repo docs — at minimum a story, a task, a
+  sprint, and a knowledge doc — with output cross-checked against what
+  =compass show= reports for the same doc.
+- [X] Link resolution: given a parsed document, resolve its outgoing
+  =id:= links via the org-roam SQLite index and return the resolved
+  target's path/title/type; handle a dangling link (no matching row)
+  without crashing.
+- [X] A minimal =ores.shell= command (=doc-show <path>=) demonstrates
+  the component end-to-end: read a doc, follow at least one link,
+  print something useful — proving this works outside Qt.
+- [X] Unit tests cover the parser against representative fixtures
+  (including at least one malformed/edge-case doc) and the link
+  resolver against a test SQLite index.
+- [X] A corpus-wide test parses *every* =.org= doc in the repo and
+  dumps each to JSON (one test, not per-doc) — this is both a scale/
+  robustness check (nothing in the real corpus should crash or hang
+  the parser) and a byproduct: the JSON dump is a debuggable,
+  diffable view of what the parser actually extracted from a real
+  doc, useful on its own while developing the parser.
+- [X] Link resolution is backed by the existing org-roam SQLite index
+  =compass index= already builds and maintains — =ores.orgmode= reads
+  that database, it does not build or maintain a second index.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A7BB331B-CF2E-4072-92D0-CF0C13699625][Scaffold ores.orgmode component]] | DONE | 2026-07-06 | 2026-07-06 | Scaffold the ores.orgmode component (simple/flat component, per component_architecture.org — no API/service split needed for a pure parsing library) via codegen, following this project's usual component layout, ready for the parser/link-resolution implementation. |
+| [[id:A195FA1D-DEEE-4C9C-B618-2450AFF9F160][Implement the org-mode parser, ported from dogen.org]] | DONE | 2026-07-06 | 2026-07-07 | Port and adapt dogen.org's entity model and parser (~/Development/masd/dogen.local1/projects/dogen.org) to ores.orgmode's conventions: document/headline/drawer/section/block C++ types, frontmatter and PROPERTIES parsing, and new id: link entities that dogen.org doesn't have. |
+| [[id:70B9F457-3490-4669-8F80-645979F6D0B9][Implement link resolution via the org-roam SQLite index]] | DONE | 2026-07-07 | 2026-07-07 | Implement id: link resolution by querying the existing org-roam SQLite index that compass index already builds and maintains — read-only, no second index built or maintained by ores.orgmode. |
+| [[id:E6B194A7-655E-4B23-AC96-7CA1596CACF3][Corpus-wide parse-to-JSON test]] | DONE | 2026-07-07 | 2026-07-07 | Add a test that parses every .org doc in the repo and dumps each to JSON: a scale/robustness check against the real corpus, and a debuggable, diffable view of what the parser extracts from any given doc. |
+
+* Decisions
+
+- Ported the *shape* of =ores.compass='s existing Python org parser
+  (=ores.codegen/src/codegen/org_loader.py=), not =dogen.org= verbatim
+  as originally planned. =dogen.org= is a faithful general org-mode
+  implementation (TODO keywords, priority cookies, tags as distinct
+  fields) — machinery nothing in this repo's docs needs, since
+  =org_loader.py= already covers exactly the subset that matters and
+  was the story's own stated reference for scope. =dogen.org= still
+  served its purpose: confirming the org-syntax edge cases worth
+  handling (skipped heading levels, drawers, table separators) before
+  writing any code.
+- Component is pure C++ with no Qt dependency, so it's usable from
+  =ores.shell= immediately and from =ores.qt= later — the UI is a
+  separate, later story, not bundled into this one.
+- All domain types are hand-written, not codegen'd — codegen's entity/
+  field_group model is for flat, DB-backed shapes; =heading= is a
+  recursive tree and none of these types are persisted or exposed over
+  NATS, so the usual codegen machinery doesn't apply. Codegen was used
+  where it did fit: the component scaffold itself.
+- Link resolution reads the org-roam SQLite index directly
+  (=unofficial::sqlite3::sqlite3=, a new vcpkg dependency), not through
+  =ores.database=/=sqlgen= (Postgres-oriented, irrelevant here) — the
+  codegen-generated component scaffold had linked those by default;
+  trimmed them.
+- =resolved_target::type= comes from a best-effort re-parse of the
+  target file's own frontmatter (via =ores.orgmode='s own parser)
+  rather than org-roam's =properties= column — that column's
+  =CATEGORY= is the file's basename, not this project's =#+type:=
+  keyword, so it can't answer the question directly.
+
+* Out of scope
+
+- The Qt panel, the =test_scenario= doc type, and any UI work — that's
+  the next story in this epic; this story only has to produce the C++
+  library and prove it from the shell.
+- General org-mode support (export backends, babel execution, etc.) —
+  only the parsing/reading subset this project's docs actually use.

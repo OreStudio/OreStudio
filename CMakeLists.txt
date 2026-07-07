@@ -364,6 +364,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent Network Svg Cha
 # Reflect CPP
 find_package(pugixml CONFIG REQUIRED)
 find_package(reflectcpp CONFIG REQUIRED)
+find_package(unofficial-sqlite3 CONFIG REQUIRED)
 
 # SQLGen
 find_package(sqlgen REQUIRED)

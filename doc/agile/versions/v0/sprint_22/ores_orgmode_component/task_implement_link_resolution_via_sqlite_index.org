@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: 70B9F457-3490-4669-8F80-645979F6D0B9
+:END:
+#+title: Task: Implement link resolution via the org-roam SQLite index
+#+description: Implement id: link resolution by querying the existing org-roam SQLite index that compass index already builds and maintains — read-only, no second index built or maintained by ores.orgmode.
+#+type: task
+#+level: s1
+#+filetags: :org:sqlite:indexing:link-resolution:ores_orgmode_component:sprint_22:v0:
+#+owner: marco
+#+branch: agile/qa-validation-runner-story
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Given a parsed document's outgoing =id:= links, resolve each one
+against the existing org-roam SQLite index that =compass index= already
+builds and maintains — return the resolved target's path/title/type
+(or a clear "not found" for a dangling link, without crashing).
+=ores.orgmode= reads this database read-only; it does not build or
+maintain a second index. This is what lets a caller walk task → story
+→ sprint (or any other =id:= link) without re-deriving the link graph
+compass already has.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-06                               |
+
+* Acceptance
+
+- [X] Given a parsed document, resolve its outgoing =id:= links against
+  the org-roam SQLite index and return the target's path/title/type.
+- [X] A dangling link (no matching row in the index) is handled
+  cleanly — no crash, a clear "unresolved" result.
+- [X] No new index is built or maintained by =ores.orgmode= — it only
+  reads the existing database =compass index= produces.
+- [X] A minimal =ores.shell= command (=doc-show <path>=) demonstrates
+  parsing a doc and following at least one resolved link, proving the
+  component works end-to-end outside Qt.
+
+* Plan
+
+Inspected =.org-roam.db='s live schema directly
+(=sqlite3 .org-roam.db ".schema"=) rather than guessing: standard
+org-roam layout — =nodes(id, file, level, pos, ..., title, properties,
+olp)=, plus =files=/=aliases=/=tags=/=links=/=refs=. Two findings that
+shaped the design:
+
+- Every text column is stored as an Emacs Lisp =prin1=-printed string
+  literal — *including the surrounding double quotes* (e.g.
+  =id= is literally the 38-character string ="F7C39C66-..."=, quotes
+  included, not a 36-character UUID). Queries must quote the lookup
+  key the same way, and results must be unquoted (also undoing
+  backslash-escaping of ="= and =\= inside) before use.
+- =nodes.properties= is *not* our =:PROPERTIES:= drawer or a clean
+  key-value store — it's org-roam's own elisp alist (=CATEGORY=,
+  =ALLTAGS=, =FILE=, ...), and =CATEGORY= turned out to be the file's
+  basename, not this project's =#+type:= keyword. So =type= isn't
+  something the index can answer directly. Rather than parse that
+  elisp blob, =resolved_target::type= is populated by re-parsing the
+  *target file's* frontmatter with =ores.orgmode='s own parser
+  (=parser::parse_file=) after the SQLite lookup finds its path — a
+  small, best-effort, one-off cost per resolution (caught and left
+  empty on failure, e.g. a target file that's moved since the index
+  was last built), not a second index.
+
+Added =sqlite3= as a new vcpkg dependency (link target
+=unofficial::sqlite3::sqlite3=, per the vcpkg-emitted usage message —
+not the plain =sqlite3= name the port itself is called). Found, while
+wiring =ores.orgmode='s CMakeLists during the scaffold task, that
+codegen's flat =component= profile had linked =ores.database.lib=/
+=sqlgen::sqlgen= by default (Postgres-oriented — irrelevant here, and
+actively wrong for a component that talks to SQLite directly); trimmed
+those and linked =sqlite3= instead.
+
+=resolver= is pimpl'd around a bare =sqlite3*= (forward-declared in the
+header, `std::unique_ptr` with a custom deleter calling
+=sqlite3_close=) so no consumer of =ores.orgmode= needs =<sqlite3.h>= in
+their own translation units. Opens with =SQLITE_OPEN_READONLY=
+explicitly — this class must never write to compass's index.
+
+Demonstrated end-to-end via a new, NATS-free =ores.shell= command,
+=doc-show <path>=: parses the file, prints its id/type/title/heading
+count, depth-first-searches for the first =id:= link in the document,
+and resolves it. Tried it against two real docs from the shell
+(without logging in, confirming no NATS dependency): the parser
+task's own doc correctly reported an *unresolved* link (its Goal
+section contains a literal =[[id:UUID][description]]= as a template
+example, not a real link — a nice accidental proof that unresolved
+links are handled cleanly); the scaffold task's doc correctly resolved
+its link to the parent story, printing its =type=/=title=/=path=.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=ores.orgmode= can now resolve =id:= links against the live org-roam
+index: new =domain::resolved_target= type and
+=indexing::resolver= class, backed by a new =sqlite3= vcpkg dependency
+(=unofficial::sqlite3::sqlite3=). Handles org-roam's quoted-string
+storage format, resolves =type= via a best-effort re-parse of the
+target file rather than the unrelated =CATEGORY= column, and never
+writes to the index. 4 new Catch2 test cases (fixture-DB unit tests
+plus a real-=.org-roam.db= integration test) — 47 assertions / 12
+cases total in the component now, all passing. Demonstrated end-to-end
+via a new NATS-free =ores.shell doc-show <path>= command: verified live
+against two real task docs, correctly resolving one real link
+(task → parent story) and correctly reporting one non-link-shaped
+=[[id:...][...]]= example string as unresolved.

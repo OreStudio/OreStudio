@@ -39,10 +39,10 @@ collection proactively.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Confirmed a real prerequisite gap (see Plan) before implementing the guard itself. |
-| Waiting on   | Nothing — the gap is in this task's scope, not a separate blocker. |
-| Next         | Add the vintage source/date association to fx_spot_generation_config, then the guard logic. |
-| Last touched | 2026-07-06                               |
+| Now          | Prerequisite gap closed and guard logic implemented (steps 1-3 of Plan); PR open. |
+| Waiting on   | Nothing.                               |
+| Next         | Manual Qt smoke test of the guard/validate-all UX, then close out. |
+| Last touched | 2026-07-07                               |
 
 * Acceptance
 
@@ -101,6 +101,36 @@ guard logic itself can be written:
    story's Decisions, so a per-config field may be redundant — but
    per-config keeps the door open for mixed-vintage collections
    later). Default to per-config unless that proves awkward.
+
+Steps 1-3 done:
+
+- Step 1: =vintage_source=/=vintage_date= added to
+  =fx_spot_generation_config= via codegen (=ores.cpp= + hand-applied
+  =ores.sql.schema= column/check additions — the wholesale SQL
+  regeneration would have clobbered pre-existing custom validation-
+  function logic unrelated to this change, so that part was applied
+  by hand instead). Went with per-config (not hoisted to the parent),
+  per the default in point 4 above — not revisited since nothing made
+  it awkward.
+- Step 2: =market_data_client= gained =find_series=/
+  =list_observations= (no dedicated lookup-by-key request existed).
+  =feed_controller::start()= now takes optional =vintage_source=/
+  =vintage_date= and checks =market_observation= before spawning the
+  feed, returning a new =vintage_data_missing= result with the
+  specified actionable message; =start_market_feed_config_request=
+  carries the two new fields, populated in
+  =MarketSimulatorWindow::startPairsAsync= from the
+  =fx_spot_generation_config=.
+- Step 3: new =validate_market_feed_config_request/response= (subject
+  =marketdata.v1.market_feed_configs.validate=) exposes the same check
+  standalone; a new "Validate Vintage" Market Simulator toolbar action
+  iterates every configured FX rate and shows pass/fail per entry.
+
+Verified: =ores.synthetic.core.tests= (59 cases) and
+=ores.synthetic.api.tests= (14 cases) pass against a freshly recreated
+DB; =ores.synthetic.service.exe= and =ores.qt.exe= link cleanly. Not
+yet done: a manual click-through of the guard rejecting a feed start
+and of the toolbar action, in a running Qt client.
 
 * Notes
 

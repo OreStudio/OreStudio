@@ -21,12 +21,12 @@ Produce a comprehensive architecture document under doc/architecture laying out 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Blocked. Not yet started.               |
-| Waiting on    | [[id:560DB730-99F5-4C75-9415-9DC62BB0A6E8][Verify party Qt UI end-to-end post-NATS]] to land — party is the reference case for the target composite versioning model. |
-| Next          | Once that PR lands, break this story into tasks and start the architecture doc. |
-| Last touched  | 2026-07-06                               |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-07                               |
 
 * Acceptance
 
@@ -36,9 +36,23 @@ Produce a comprehensive architecture document under doc/architecture laying out 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:063FEC4A-CC5F-470E-964F-DD4AF6162EB5][Write temporal composite entity versioning architecture document]] | STARTED | 2026-07-06 | | Write the target-state architecture document under doc/architecture for composite (parent+child) entity versioning: option A (child saves bump the parent's version), as-of composition on load, enforcement across SQL/codegen, and Qt composite version/history dialog UX. |
+| [[id:063FEC4A-CC5F-470E-964F-DD4AF6162EB5][Write temporal composite entity versioning architecture document]] | DONE | 2026-07-06 | 2026-07-07 | Write the target-state architecture document under doc/architecture for composite (parent+child) entity versioning: option A (child saves bump the parent's version), as-of composition on load, enforcement across SQL/codegen, and Qt composite version/history dialog UX. |
 
 * Decisions
+
+- Option A confirmed: child writes bump the parent's version, in the
+  same transaction, rather than the reverse.
+- "As of parent version N" composition is a two-step fetch (get parent
+  row's =[valid_from, valid_to)= window, then fetch each child table
+  filtered to that same window) — not a mechanism requiring a
+  version-mapping table.
+- Multi-level cascading (grandchild → child → parent) is out of scope
+  for v1; single-level (party/counterparty → identifiers/contacts)
+  only.
+- Follow-up implementation tracked as a separate story: [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement
+  temporal composite entity versioning]] (see that story for the open
+  decisions on child-delete bumping, flag names, and reason-code
+  stamping, resolved there before implementation starts).
 
 * Out of scope
 

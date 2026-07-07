@@ -28,11 +28,11 @@ agreed design to work from.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:366DCF08-C483-47B7-A136-229B4D2FC394][Temporal composite entity versioning]] |
-| Now          | Document drafted; awaiting review of the open decisions. |
+| Now          | Nothing. |
 | Waiting on   | Sign-off on: child DELETE bumping the parent, flag names, mandatory reason-code stamping. |
-| Next         | Review with the author; adjust and close.       |
+| Next         | Nothing. |
 | Last touched | 2026-07-06                               |
 
 * Acceptance
@@ -73,6 +73,15 @@ flag names, and whether reason-code stamping on the touch function is
 mandatory. Also explicitly scoped multi-level cascading (grandchild →
 child → parent) out of v1.
 
+Reviewed with the author: the read-side design (fetch parent, note its
+=[valid_from, valid_to)= window, fetch each child table as-of that
+window) confirmed to match intent — "temporal window join" is
+terminology for that two-step fetch, not a mandate for a single SQL
+=JOIN= statement. Save-side design (bump parent in the same
+transaction as the child write, standardized reason-code comment)
+confirmed to match intent as originally proposed. Proceeding straight
+to an implementation story.
+
 * PRs
 
 | PR | Title |
@@ -86,3 +95,11 @@ child → parent) out of v1.
 |   |                 |      |          |       |
 
 * Result
+
+Document written and reviewed:
+[[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal composite entity versioning: target state]]. Target model
+(option A), SQL touch-function mechanism, as-of window-join
+composition, Qt composite history UX, and rollout plan all confirmed
+against intent. Open decisions (child delete, flag names, mandatory
+reason-code stamping) carried forward to the implementation story
+rather than blocking this task.

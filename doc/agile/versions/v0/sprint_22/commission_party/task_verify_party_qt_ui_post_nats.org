@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch: feature/appraise-party-all-layers
 #+pr: 1450
-#+blocked_on: Needs a dedicated follow-up QA session to drive history dialog, delete, and cross-session eventing through the Qt client.
+#+blocked_on: Needs a dedicated follow-up QA session to drive history dialog, delete, and cross-session eventing through the Qt client; history/eventing verification is also blocked on [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] landing, since party's history dialog is exactly what that story changes.
 #+blocked_since: 2026-07-06
 #+created: 2026-07-04
-#+updated: 2026-07-06
+#+updated: 2026-07-07
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -29,9 +29,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | State        | BLOCKED                              |
 | Parent story | [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] |
 | Now          | List window and detail dialog (save/business-centre) verified; 3 bugs found and fixed (crash, WRLD default, flag repaint). Raising a partial PR for this. |
-| Waiting on   | A dedicated follow-up QA session for history dialog, delete, and cross-session eventing. |
-| Next         | Resume manual QA on history/delete/eventing in a follow-up session. |
-| Last touched | 2026-07-06                               |
+| Waiting on   | A dedicated follow-up QA session for history dialog, delete, and cross-session eventing; also [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] for the history-dialog portion. |
+| Next         | Resume manual QA on delete/eventing now; history-dialog verification waits on the composite versioning story. |
+| Last touched | 2026-07-07                               |
 
 * Acceptance
 

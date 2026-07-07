@@ -435,6 +435,9 @@ version-navigation UI that consumes this richer shape.
 :xml_import_class:            ore::xml::importer
 :xml_import_method:           import_currency_config
 :xml_validate_method:         validate_currency
+:has_version_navigation:      true
+:version_history_include:     ores.refdata.api/messaging/currency_history_protocol.hpp
+:version_history_type:        refdata::messaging::currency_version_history
 :END:
 
 *** Columns (Qt model)

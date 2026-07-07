@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
 #+branch: feature/land-version-nav-ui-qt-template
-#+pr:
+#+pr: 1458
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -93,7 +93,7 @@ confirming the divergence this capability was meant to close.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1458][#1458]] | [codegen] Land has_version_navigation as a qt-profile capability |
 
 * Review
 

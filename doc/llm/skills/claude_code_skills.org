@@ -131,6 +131,7 @@ Environment, database, services, shell, client, site.
 | [[id:1226649E-49D5-4C80-878D-6A17D3F20A62][devops-deploy-skills]] | Devops Deploy Skills | Build the Claude Code skills bundle from doc/llm/skills and purge stale deployed directories. |
 | [[id:435BD960-CA83-4B1A-829D-F345181206B2][devops-recreate-db]] | Devops Recreate DB | Rebuild the database from scratch: drop, recreate, restore schema and seed data. |
 | [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][devops-run-client]] | Devops Run Client | Launch the Qt client detached, with optional colour and instance name for parallel runs. |
+| [[id:7562DD4F-8F75-408B-BAE2-BB943839969D][devops-run-environment]] | Devops Run Environment | Run the full environment-readying sequence: stop services, recreate the database, start services, provision the Barclays Plc tenant, and start the Qt client. |
 | [[id:40DE3AD0-7A32-45FF-9DFA-5F9492187F2A][devops-run-shell]] | Devops Run Shell | Launch ores.shell with NATS and login defaults from .env, interactively or scripted with -f. |
 | [[id:29075D79-6152-4C3A-B9E0-4E97010D8E0B][devops-run-sql]] | Devops Run SQL | Run SQL in the environment via compass with credentials and connection from .env. |
 | [[id:C35F1575-4894-46B9-9356-E68F275CFD3B][devops-setup-environment]] | Devops Setup Environment | Set up a working environment end-to-end: sync indexes, deploy skills and settings, init env, recreate the DB. |

@@ -73,6 +73,10 @@ The Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] you invoke p
 - [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][code-investigate-test-failure]] — when a test goes red mid-task.
 - [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory]] — when the user gives feedback that should outlive
   this session, file a memory before moving on.
+- [[id:7562DD4F-8F75-408B-BAE2-BB943839969D][devops-run-environment]] — when a task needs a live, logged-in-ready
+  environment (Qt UI verification, manual testing): stop services,
+  recreate the database, start services, provision the tenant, start
+  the client.
 - Entity / component / type creators ([[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-cli-entity]],
   [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][codegen-add-component]], [[id:B1450696-8C51-4CC5-8910-84912A411AB6][code-add-domain-type]], [[id:BDCC47D4-B050-409E-8C50-3D179843A274][codegen-add-http-entity]],
   [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][codegen-add-qt-entity]], [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][codegen-add-shell-entity]]) — when the task is

@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 7562DD4F-8F75-408B-BAE2-BB943839969D
+:END:
+#+title: Devops Run Environment
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :llm:skill:skills:claude_code:compass:environment:devops:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+
+#+begin_export markdown
+---
+name: devops-run-environment
+description: Run the full environment-readying sequence: stop services, recreate the database, start services, provision the Barclays Plc tenant, and start the Qt client.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Getting a checkout from "unknown/stale state" to a usable, logged-in-ready
+environment in one pass — the sequence most verification or manual-testing
+tasks need at the start: stop services, recreate the database, start
+services, provision the tenant, start the client. For a fully fresh
+checkout or new worktree (indexes, skills/settings deploy, env init too),
+use =devops-setup-environment= instead.
+
+* How to use this skill
+
+Run [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] end to end. Unless the user asks for a
+different tenant (e.g. the synthetic Acme provisioner), default to the
+Barclays Plc (GLEIF) provisioner.
+
+* Recipes
+
+- [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]
+- [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]] — if provisioning fails on connection slots.
+
+* Reference
+
+- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]]§DevOps — sibling environment-lifecycle skills this composes with.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

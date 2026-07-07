@@ -17,21 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ORGMODE_DOMAIN_STUB_HPP
-#define ORES_ORGMODE_DOMAIN_STUB_HPP
+#ifndef ORES_ORGMODE_DOMAIN_TABLE_HPP
+#define ORES_ORGMODE_DOMAIN_TABLE_HPP
 
 #include <string>
+#include <vector>
 
 namespace ores::orgmode::domain {
 
 /**
- * @brief Stub to be removed once real domain types are added.
+ * @brief A pipe-delimited org table; the separator row (`|---+---|`) is
+ * dropped during parsing, and the first remaining row is the header.
  */
-struct stub final {
-    int version = 0;
-};
+struct table final {
+    std::vector<std::string> headers;
+    std::vector<std::vector<std::string>> rows;
 
-std::string stub_function();
+    friend bool operator==(const table&, const table&) = default;
+};
 
 }
 

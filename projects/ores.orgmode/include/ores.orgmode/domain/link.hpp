@@ -17,13 +17,34 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.testing/logging_listener.hpp"
-#include <catch2/catch_session.hpp>
-#include <catch2/reporters/catch_reporter_registrars.hpp>
+#ifndef ORES_ORGMODE_DOMAIN_LINK_HPP
+#define ORES_ORGMODE_DOMAIN_LINK_HPP
 
-CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+#include <string>
 
-int main(int argc, char* argv[]) {
-    ores::testing::logging_listener::set_test_module_name("ores.orgmode.tests");
-    return Catch::Session().run(argc, argv);
+namespace ores::orgmode::domain {
+
+/**
+ * @brief An `[[id:UUID][text]]` link found in a heading's body content.
+ *
+ * `dogen.org` (the entity model this component ports) has no notion of
+ * links at all; this type is new work specific to `ores.orgmode`, needed
+ * to resolve a document's outgoing references via the org-roam index.
+ */
+struct link final {
+    /**
+     * @brief The UUID after `id:`, e.g. "F7C39C66-DFA0-4A10-B473-F3827B8A7187".
+     */
+    std::string target_id;
+
+    /**
+     * @brief The display text between the second pair of brackets.
+     */
+    std::string text;
+
+    friend bool operator==(const link&, const link&) = default;
+};
+
 }
+
+#endif

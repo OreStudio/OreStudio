@@ -17,12 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.orgmode/domain/stub.hpp"
+#ifndef ORES_ORGMODE_DOMAIN_PROPERTY_HPP
+#define ORES_ORGMODE_DOMAIN_PROPERTY_HPP
+
+#include <string>
 
 namespace ores::orgmode::domain {
 
-std::string stub_function() {
-    return "STUB code to be removed";
-}
+/**
+ * @brief One `:KEY: VALUE` entry inside a `:PROPERTIES:` ... `:END:` drawer.
+ */
+struct property final {
+    std::string key;
+    std::string value;
+
+    friend bool operator==(const property&, const property&) = default;
+};
 
 }
+
+#endif

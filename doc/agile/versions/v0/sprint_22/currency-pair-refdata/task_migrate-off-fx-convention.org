@@ -111,12 +111,23 @@ existing first (not yet a task in this story — needs scaffolding).
   (=*.puml=) still mention =fx_convention= / =FxConvention= — these are
   hand-authored/synced diagram sources, not generated from the code
   touched here, and updating them is a separate follow-up.
-- Not done: =ores.qt.refdata='s NATS messaging registrar for
-  =currency_pair= (e.g. =currency_pair_registrar.hpp=) does not exist
-  yet — the earlier codegen commit for =currency_pair= only generated
-  domain/SQL/Qt/repository/service, not the messaging facet. Out of
-  scope for this task (fx_convention's own registrar entry was simply
-  removed, not replaced).
+- Done: =ores.refdata.service='s NATS messaging registrar for
+  =currency_pair=, =currency_pair_convention=, and
+  =currency_pair_classification= — the =nats-sub-registrar= facet was
+  written (mustache templates + two DONE tasks in the
+  =introduce-per-entity-sub-registrars= story) but never actually added
+  to =facet_catalogue.org=, so codegen couldn't produce these files and
+  the three entities had handlers with no service wiring (NATS callers
+  got "no service is handling subject"). Added the missing facet entry,
+  tangled, generated the three registrar pairs via
+  =ores.cpp.nats-sub-registrar=, and wired them into
+  =registrar.cpp=. Verified live: a =currency_pairs.list= NATS request
+  now returns =unauthorized= (routed and handled) instead of "no
+  service is handling subject".
+- Also moved the Qt =Currency &Pairs= menu action from
+  =Reference Data → Conventions= (where it sat alongside actual
+  curve-building conventions) to top level, next to =Currencies= — it
+  is core reference data, not a convention.
 
 * PRs
 
@@ -134,6 +145,7 @@ existing first (not yet a task in this story — needs scaffolding).
 | 4 | Stray footnote-like artefact ("USD1") in a doc comment | currency.hpp (generated) | Fixed | c3e7cdf2c — reworded model doc to avoid org =verbatim= stripping |
 | 5 | No unit test for =map_fx=/=reverse_fx= round-trip | conventions_mapper.cpp | Declined (tracked) | Already covered by BACKLOG task_test-ore-fx-convention-import.org |
 | 6 | =pip_factor= reciprocal is a float round-trip, may drift on export | conventions_mapper.cpp | Declined (tracked) | Same BACKLOG task as above |
+| 7 | Corrupted synthetic =code= prefix (=+"-"=) recurs in two new generators; same class as #1, root cause in the template | currency_group_generator.cpp, currency_pair_classification_generator.cpp | Fixed | 07a76974 — added a =#generator_expr=/=^generator_expr= guard (faker-noun fallback) to the =generator_impl= template, matching the existing =natural_keys= pattern, instead of patching each entity's model |
 
 * Result
 

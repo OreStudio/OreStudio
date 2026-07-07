@@ -58,7 +58,11 @@ struct document final {
      * @brief First keyword value matching @p key (case-sensitive), if any.
      *
      * Convenience for the common lookups: `find_keyword("type")`,
-     * `find_keyword("title")`.
+     * `find_keyword("title")`. org-mode itself treats keywords
+     * case-insensitively, but this project's docs consistently write
+     * them lowercase (`#+type:`, not `#+TYPE:`), so an exact match is
+     * enough in practice; a doc that broke that convention would just
+     * look up as not found rather than erroring.
      */
     [[nodiscard]] std::optional<std::string> find_keyword(const std::string& key) const {
         for (const auto& kw : keywords) {
@@ -70,6 +74,10 @@ struct document final {
 
     /**
      * @brief The file-level `:ID:` property, if present.
+     *
+     * Case-sensitive exact match on `"ID"`, same caveat as
+     * `find_keyword` — this project's docs are consistently uppercase
+     * here.
      */
     [[nodiscard]] std::optional<std::string> id() const {
         for (const auto& p : file_properties) {

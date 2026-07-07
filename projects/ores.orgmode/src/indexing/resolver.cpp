@@ -30,7 +30,8 @@ namespace {
  * @brief org-roam stores every text column as an elisp `prin1`-printed
  * string literal — including the surrounding double quotes and
  * backslash-escaping of `"` and `\` inside. Undo both so callers see
- * the plain value.
+ * the plain value, e.g. `"a\"b"` (7 characters, quotes included)
+ * becomes `a"b` (3 characters).
  */
 std::string unquote(const std::string& raw) {
     if (raw.size() < 2 || raw.front() != '"' || raw.back() != '"')

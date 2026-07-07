@@ -18,6 +18,7 @@
  *
  */
 #include "ores.orgmode/parser/parser.hpp"
+#include <cctype>
 #include <fstream>
 #include <regex>
 #include <sstream>

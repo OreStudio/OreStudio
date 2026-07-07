@@ -20,7 +20,6 @@
 #ifndef ORES_SHELL_APP_COMMANDS_ORGMODE_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_ORGMODE_COMMANDS_HPP
 
-#include "ores.logging/make_logger.hpp"
 #include <iosfwd>
 #include <string>
 
@@ -42,15 +41,6 @@ namespace ores::shell::app::commands {
  * be the final shape of any future doc-browsing UX.
  */
 class orgmode_commands {
-private:
-    inline static std::string_view logger_name = "ores.shell.app.commands.orgmode_commands";
-
-    static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
 public:
     static void register_commands(cli::Menu& root_menu);
 

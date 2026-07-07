@@ -26,8 +26,6 @@
 
 namespace ores::shell::app::commands {
 
-using namespace logging;
-
 namespace {
 
 /**

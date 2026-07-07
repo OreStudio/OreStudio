@@ -36,11 +36,11 @@ generate_synthetic_currency_pair_classification(utility::generation::generation_
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::currency_pair_classification r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.code = +"-" + std::to_string(idx);
+    r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.name = std::string(faker::word::adjective()) + " Classification" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);

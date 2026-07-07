@@ -1,0 +1,46 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+#+title: {{title}}
+#+description: {{description}}
+#+type: test_scenario
+#+level: s1
+#+filetags: {{filetags}}
+#+target_dialog:
+#+created: {{date}}
+#+updated: {{date}}
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:{{parent_id}}][{{parent_title}}]] in [[id:{{story_id}}][{{story_title}}]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:{{parent_id}}][{{parent_title}}]] |
+| Parent story  | [[id:{{story_id}}][{{story_title}}]]   |
+| Target dialog | (Qt dialog class under test, if any.)   |
+| State         | {{state}}                               |
+
+* Steps
+
+- [ ] (First manual step the tester should perform.)
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+** Step results
+
+| Step | Passed |
+|------+--------|
+
+* Notes

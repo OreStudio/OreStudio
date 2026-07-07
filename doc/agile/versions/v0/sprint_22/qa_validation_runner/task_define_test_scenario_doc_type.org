@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 2E1B2069-1851-4230-991F-DC2C7C53BA86
+:END:
+#+title: Task: Define the test_scenario org doc type
+#+description: Define and scaffold a new test_scenario org doc type (frontmatter, Scenario Info/Steps/Results sections), following the same doc-type-registration path as story/task, so it's creatable, indexable, and site-renderable like any other agile doc.
+#+type: task
+#+level: s1
+#+filetags: :org:codegen:testing:doc-type:qa_validation_runner:sprint_22:v0:
+#+owner: marco
+#+branch: feature/qa-validation-runner-panel
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Register a new =test_scenario= org doc type through the same scaffold
+path story/task already use (=ores.codegen/src/doc_generate.py=), so
+=compass add test_scenario= produces a proper, indexable, site-
+renderable doc — not a hand-typed file that happens to look similar.
+Body: =Scenario Info= (mandatory links to both the task it verifies
+*and* the driving story, target dialog, state), =Steps= (a checklist),
+=Results= (structure the Qt panel will later rewrite in place), and
+=Notes=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-07                               |
+
+* Acceptance
+
+- [X] =compass add test_scenario= scaffolds a valid doc:
+  =:PROPERTIES:=/=:ID:=, frontmatter (=#+type: test_scenario= and
+  friends), =Scenario Info=/=Steps=/=Results=/=Notes= sections.
+  =test_scenario= is registered in =doc_generate.py= the same way
+  =task=/=story= are (=TYPE_TO_TEMPLATE=, =DEFAULT_INITIAL_STATE=,
+  =PARENT_OF_TYPE=, =derive_ancestor_slugs=, output-path rule),
+  not a special-cased hack.
+- [X] Scaffolded doc mandatorily links *both* the task it verifies and
+  the driving story (=Verifies task= / =Parent story= rows in
+  =Scenario Info=, plus both linked in the intro sentence).
+- [X] Saved under the driving story's directory as
+  =scenario_<slug>.org=, same placement convention as =task=.
+- [X] =compass index=/=compass show= recognise the new type and
+  resolve its outgoing links correctly.
+- [X] Renders correctly via =compass build --direct site= — no broken
+  links, no build errors.
+
+* Plan
+
+Followed the existing =task=/=story= registration path in
+=ores.codegen/src/doc_generate.py= rather than inventing a parallel
+mechanism: added =test_scenario= to =TYPE_TO_TEMPLATE=,
+=DEFAULT_INITIAL_STATE= (=PENDING=, since a scenario's lifecycle is
+pending/passed/failed, not backlog/started/done),
+=PARENT_OF_TYPE= (parent type =task=, since a scenario verifies a
+task), =derive_ancestor_slugs= (same shape as =task= — lives directly
+in the story folder), title-prefixing (=Test Scenario: ...=), and the
+output-path rule (=scenario_<slug>.org=, mirroring =task_<slug>.org=
+but under its own prefix so the two sort separately in a listing).
+
+Two things needed beyond copying =task='s pattern:
+
+- *Mandatory dual link.* A task's parent (the story) is
+  auto-detectable by convention: =parent_dir / "story.org"= always
+  exists in the standard layout, so no explicit flag is needed. But a
+  =test_scenario='s task parent has no fixed filename
+  (=task_<slug>.org= — the slug varies), so =--parent-id=/
+  =--parent-title= must be passed explicitly, same as when scaffolding
+  a task's own children would. The *story* link, though, is trivially
+  auto-detectable exactly like a task's own parent-story lookup — since
+  a =test_scenario= lives directly in the story folder alongside its
+  task, =parent_dir / "story.org"= resolves it with no extra flags in
+  the common case. Added =--story-id=/=--story-title= as optional
+  overrides for the rare case (e.g. scaffolding into a mismatched
+  directory) where auto-detection guesses wrong.
+- *New template.* Wrote
+  =library/templates/doc_test_scenario_org.org= (literate source) and
+  hand-tangled =doc_test_scenario.org.mustache= (normally
+  =compass build --direct tangle_codegen_templates= would do this from
+  Emacs org-babel, not available in this session) — mirroring
+  =doc_task_org.org='s structure but with scenario-specific sections
+  instead of Goal/Plan/PRs/Review.
+
+Verified end-to-end: scaffolded a real doc under
+=doc/agile/versions/v0/sprint_22/qa_validation_runner/=, confirmed both
+=--parent-id= (explicit) and the story (auto-detected, no flag needed)
+resolved correctly via =compass show= (2 outgoing links, both
+resolving), reindexed cleanly, and rebuilt the site with no errors.
+Deleted the throwaway pilot doc afterward — the real pilot is a
+separate, later task once the Qt panel exists to actually drive one.
+
+Documented the new type in =doc/meta/document_types.org= (a short
+inline entry, not yet a full standalone contract page like
+=task=/=story= have — the type is new and still settling through its
+first real pilot) and in =compass add --help='s usage text.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=test_scenario= is a fully registered doc type: =compass add
+test_scenario --parent-dir <story> --parent-id <task> --parent-title
+<task title>= scaffolds a valid, indexable, site-renderable doc with
+mandatory task *and* story links (story auto-detected). Registered in
+=doc_generate.py= the same way =task=/=story= are — no special-case
+hack. New template pair (=doc_test_scenario_org.org= literate source +
+hand-tangled =doc_test_scenario.org.mustache=). Documented in
+=doc/meta/document_types.org= and =compass add --help=. Verified via a
+throwaway scaffold + =compass show= (links resolved) + full site
+rebuild (clean), then deleted — the real pilot is a separate later
+task.

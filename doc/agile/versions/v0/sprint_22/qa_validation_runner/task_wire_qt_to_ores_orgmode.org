@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: B0348B15-F862-41ED-AA18-7660FE466A92
+:END:
+#+title: Task: Wire ores.qt to ores.orgmode and add the Results-rewrite + doc renderer
+#+description: Add ores.orgmode as a Qt dependency; implement the targeted * Results section rewrite-on-save for test_scenario docs, and a simple structure-aware renderer (headings/lists/tables/basic emphasis) shared by the scenario panel and the story/task viewer.
+#+type: task
+#+level: s1
+#+filetags: :qt:org:rendering:qa_validation_runner:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =ores.orgmode= as a Qt dependency; implement the targeted =*
+Results= section rewrite-on-save for =test_scenario= docs, and a
+simple structure-aware renderer (headings/lists/tables/basic emphasis)
+shared by the scenario panel and the story/task viewer. Foundation
+both later Qt tasks build on — no UI here yet.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-07                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

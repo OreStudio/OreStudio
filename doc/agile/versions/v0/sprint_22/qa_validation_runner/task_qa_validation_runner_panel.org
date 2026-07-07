@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 1844F421-2D4C-4E9A-8608-0E0AAD38DFEE
+:END:
+#+title: Task: Build the QA Validation Runner dockable panel
+#+description: Qt dockable panel (debug builds only): open a test_scenario doc, show its info and checklist, let the tester tick steps/write notes/set PASS-FAIL, and save (rewriting the doc's Results section and stamping the compass journal).
+#+type: task
+#+level: s1
+#+filetags: :qt:testing:ui:qa_validation_runner:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a Qt dockable panel (debug builds only): open a =test_scenario=
+doc, show its info and checklist, let the tester tick steps, write
+notes, and set a PASS/FAIL outcome, then save — rewriting the doc's =*
+Results= section in place (via the prerequisite task's rewrite logic)
+and stamping the compass journal. The core interactive piece of the
+epic.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-07                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

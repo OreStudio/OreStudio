@@ -206,8 +206,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                 // coordinate; point_id defaults to "SPOT" for those. Non-scalar
                 // series with a missing point_id (malformed/unrecognised key)
                 // keep the empty default rather than being mislabelled as spot.
-                obs.point_id =
-                    d.point_id.value_or(series.is_scalar ? "SPOT" : "");
+                obs.point_id = d.point_id.value_or(series.is_scalar ? "SPOT" : "");
                 obs.source = req.source;
                 obs.value = d.value;
                 observations.push_back(std::move(obs));

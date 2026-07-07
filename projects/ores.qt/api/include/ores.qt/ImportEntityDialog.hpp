@@ -125,8 +125,8 @@ private slots:
 
 private:
     void setupUI(const QString& entity_name_plural,
-                const QString& filename,
-                const QStringList& column_headers);
+                 const QString& filename,
+                 const QStringList& column_headers);
     void populateTable();
     void updateSelectionCount();
     void updateImportButtonState();

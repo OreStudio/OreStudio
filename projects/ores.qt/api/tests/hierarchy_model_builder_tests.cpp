@@ -28,7 +28,8 @@ namespace {
 const std::string tags("[hierarchy_model_builder]");
 
 ores::utility::domain::hierarchy_node
-make_node(const boost::uuids::uuid& id, std::optional<boost::uuids::uuid> parent_id,
+make_node(const boost::uuids::uuid& id,
+          std::optional<boost::uuids::uuid> parent_id,
           const std::string& name,
           std::vector<ores::utility::domain::hierarchy_node> children = {}) {
     ores::utility::domain::hierarchy_node node;
@@ -96,9 +97,11 @@ TEST_CASE("build_walks_multiple_levels_of_nesting", tags) {
     auto grandchildId = boost::uuids::random_generator()();
 
     std::vector<ores::utility::domain::hierarchy_node> roots{
-        make_node(rootId, std::nullopt, "Root",
-                  {make_node(childId, rootId, "Child",
-                             {make_node(grandchildId, childId, "Grandchild")})}),
+        make_node(rootId,
+                  std::nullopt,
+                  "Root",
+                  {make_node(
+                      childId, rootId, "Child", {make_node(grandchildId, childId, "Grandchild")})}),
     };
 
     std::unique_ptr<QStandardItemModel> model(ores::qt::HierarchyModelBuilder::build(roots));

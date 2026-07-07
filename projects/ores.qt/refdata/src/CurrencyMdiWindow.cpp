@@ -646,14 +646,13 @@ void CurrencyMdiWindow::importFromXML() {
         rows.reserve(currencies.size());
         for (const auto& currency : currencies) {
             const auto validation_error = importer::validate_currency(currency);
-            rows.push_back(
-                {.display_values = {QString::fromStdString(currency.iso_code),
-                                    QString::fromStdString(currency.name),
-                                    QString::fromStdString(currency.symbol),
-                                    QString::fromStdString(currency.fraction_symbol),
-                                    QString::number(currency.fractions_per_unit)},
-                 .is_valid = validation_error.empty(),
-                 .invalid_reason = QString::fromStdString(validation_error)});
+            rows.push_back({.display_values = {QString::fromStdString(currency.iso_code),
+                                               QString::fromStdString(currency.name),
+                                               QString::fromStdString(currency.symbol),
+                                               QString::fromStdString(currency.fraction_symbol),
+                                               QString::number(currency.fractions_per_unit)},
+                            .is_valid = validation_error.empty(),
+                            .invalid_reason = QString::fromStdString(validation_error)});
         }
 
         auto client_manager = clientManager_;
@@ -669,23 +668,25 @@ void CurrencyMdiWindow::importFromXML() {
 
             try {
                 auto request = save_currency_request::from(currency_to_import);
-                auto response_result = client_manager->process_authenticated_request(std::move(request));
+                auto response_result =
+                    client_manager->process_authenticated_request(std::move(request));
                 return response_result.has_value() && response_result->success;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), error) << "Error importing currency "
-                                          << currencies_by_row[index].iso_code << ": " << e.what();
+                                           << currencies_by_row[index].iso_code << ": " << e.what();
                 return false;
             }
         };
 
         // Show import dialog with full preview and import capability
-        auto* dialog = new ImportEntityDialog("Currencies",
-                                              fileName,
-                                              {"ISO Code", "Name", "Symbol", "Fraction Symbol", "Fractions/Unit"},
-                                              std::move(rows),
-                                              label_of,
-                                              import_one,
-                                              this);
+        auto* dialog = new ImportEntityDialog(
+            "Currencies",
+            fileName,
+            {"ISO Code", "Name", "Symbol", "Fraction Symbol", "Fractions/Unit"},
+            std::move(rows),
+            label_of,
+            import_one,
+            this);
 
         // Connect completion signal to refresh UI
         connect(dialog,
@@ -808,8 +809,8 @@ void CurrencyMdiWindow::setupGenerateAction() {
     connect(generateAction_, &QAction::triggered, this, &CurrencyMdiWindow::generateSynthetic);
     toolBar_->addAction(generateAction_);
 
-    settingGatedActions_->registerAction(generateAction_,
-                                         QString::fromStdString(std::string{synthetic_generation_flag}));
+    settingGatedActions_->registerAction(
+        generateAction_, QString::fromStdString(std::string{synthetic_generation_flag}));
 }
 
 void CurrencyMdiWindow::generateSynthetic() {

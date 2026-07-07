@@ -157,13 +157,13 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(dayCountFractionTypeController_.get());
 
-    businessDayConventionTypeController_ = std::make_unique<BusinessDayConventionTypeController>(
-        ctx_.main_window,
-        ctx_.mdi_area,
-        ctx_.client_manager,
-        ctx_.change_reason_cache,
-        ctx_.username,
-        this);
+    businessDayConventionTypeController_ =
+        std::make_unique<BusinessDayConventionTypeController>(ctx_.main_window,
+                                                              ctx_.mdi_area,
+                                                              ctx_.client_manager,
+                                                              ctx_.change_reason_cache,
+                                                              ctx_.username,
+                                                              this);
     connectControllerSignals(businessDayConventionTypeController_.get());
 
     floatingIndexTypeController_ = std::make_unique<FloatingIndexTypeController>(

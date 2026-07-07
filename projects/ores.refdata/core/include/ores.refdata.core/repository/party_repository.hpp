@@ -107,10 +107,8 @@ public:
      * subtree.
      * @return Flat hierarchy rows, ready for ores::utility::domain::build_tree.
      */
-    std::vector<ores::utility::domain::hierarchy_flat_row>
-    get_hierarchy(const boost::uuids::uuid& tenant_id,
-                  const boost::uuids::uuid& root_id,
-                  bool from_root);
+    std::vector<ores::utility::domain::hierarchy_flat_row> get_hierarchy(
+        const boost::uuids::uuid& tenant_id, const boost::uuids::uuid& root_id, bool from_root);
 
     std::vector<domain::party> read_all(const boost::uuids::uuid& id);
     void remove(const boost::uuids::uuid& id);

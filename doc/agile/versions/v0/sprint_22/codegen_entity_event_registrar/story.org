@@ -8,7 +8,7 @@
 #+filetags: :codegen:eventing:refdata:commissioning:sprint_22:v0:
 #+created: 2026-07-06
 #+updated: 2026-07-06
-#+environment:
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Every domain entity's live NATS change-event pipeline (Postgres NOTIFY channel -
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -39,7 +39,7 @@ Every domain entity's live NATS change-event pipeline (Postgres NOTIFY channel -
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:061B4573-F0F5-4DA4-BB16-D186270BD30F][Generate per-entity NATS event-mapping registrar]] | STARTED | 2026-07-07 | | Extend codegen to emit register_<entity>_event_mapping into the generated <entity>_registrar.hpp/cpp pair, add a service-layer aggregator, and migrate application.cpp's hand-wired entity change-event pipeline to call it. |
 
 * Decisions
 

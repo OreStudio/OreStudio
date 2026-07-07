@@ -21,8 +21,6 @@
 -- ORE conventions (no dependants, drop first)
 \ir ./refdata_cds_conventions_notify_trigger_drop.sql
 \ir ./refdata_cds_conventions_drop.sql
-\ir ./refdata_fx_conventions_notify_trigger_drop.sql
-\ir ./refdata_fx_conventions_drop.sql
 \ir ./refdata_overnight_index_conventions_notify_trigger_drop.sql
 \ir ./refdata_overnight_index_conventions_drop.sql
 \ir ./refdata_ibor_index_conventions_notify_trigger_drop.sql
@@ -88,6 +86,17 @@
 \ir ./refdata_party_types_drop.sql
 \ir ./refdata_party_categories_notify_trigger_drop.sql
 \ir ./refdata_party_categories_drop.sql
+
+-- Currency pairs (must drop before currencies, currency_pair_classifications, currency_groups)
+\ir ./refdata_currency_pair_conventions_notify_trigger_drop.sql
+\ir ./refdata_currency_pair_conventions_drop.sql
+\ir ./refdata_currency_pairs_notify_trigger_drop.sql
+\ir ./refdata_currency_pairs_drop.sql
+\ir ./refdata_currency_currency_groups_drop.sql
+\ir ./refdata_currency_groups_notify_trigger_drop.sql
+\ir ./refdata_currency_groups_drop.sql
+\ir ./refdata_currency_pair_classifications_notify_trigger_drop.sql
+\ir ./refdata_currency_pair_classifications_drop.sql
 
 -- Currencies
 \ir ./refdata_currencies_notify_trigger_drop.sql

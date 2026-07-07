@@ -22,9 +22,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include <random>
 #include <string>
-#include <unordered_set>
 
 namespace ores::refdata::generators {
 
@@ -37,18 +35,15 @@ domain::currency generate_synthetic_currency(utility::generation::generation_con
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::currency r;
+    r.version = 1;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.iso_code = "X" + std::to_string(idx);
+    r.iso_code = +"-" + std::to_string(idx);
     r.name = "Test Currency " + std::to_string(faker::number::integer(1000, 9999)) + "-" +
              std::to_string(idx);
     r.numeric_code = std::to_string(faker::number::integer(10001, 99999));
-    // faker::finance::currencySymbol() can return an empty string for some
-    // real-world currencies in its data set; fall back to a deterministic
-    // symbol so generated test data always has a non-empty symbol.
-    const auto sym = faker::finance::currencySymbol();
-    r.symbol = sym.empty() ? "$" : std::string(sym);
+    r.symbol = std::string(faker::finance::currencySymbol());
     r.fraction_symbol = std::string("c");
     r.fractions_per_unit = 100;
     r.rounding_type = std::string("Closest");
@@ -57,6 +52,11 @@ domain::currency generate_synthetic_currency(utility::generation::generation_con
     r.monetary_nature = std::string("fiat");
     r.market_tier = std::string("g10");
     r.image_id = std::nullopt;
+    r.spot_days = faker::helper::randomElement(std::vector<int>{1, 2});
+    r.deliverable = true;
+    r.day_basis = std::string("ACT/360");
+    r.base_precedence = faker::number::integer(1, 100);
+    r.holiday_calendar = std::string("TARGET");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";
@@ -1001,13 +1001,5 @@ generate_fictional_currencies(std::size_t n, utility::generation::generation_con
         return all;
 
     return std::vector<domain::currency>(all.begin(), all.begin() + n);
-}
-
-domain::currency generate_random_fictional_currency(utility::generation::generation_context& ctx) {
-    auto currencies = generate_fictional_currencies(0, ctx);
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_int_distribution<std::size_t> dist(0, currencies.size() - 1);
-    return currencies[dist(gen)];
 }
 }

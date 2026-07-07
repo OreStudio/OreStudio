@@ -29,6 +29,8 @@
 #include "ores.qt/CountryController.hpp"
 #include "ores.qt/CurrencyController.hpp"
 #include "ores.qt/CurrencyMarketTierController.hpp"
+#include "ores.qt/CurrencyPairController.hpp"
+#include "ores.qt/CurrencyPairConventionController.hpp"
 #include "ores.qt/DataDomainController.hpp"
 #include "ores.qt/DataLibrarianWindow.hpp"
 #include "ores.qt/DatasetBundleController.hpp"
@@ -38,7 +40,6 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FloatingIndexTypeController.hpp"
 #include "ores.qt/FraConventionController.hpp"
-#include "ores.qt/FxConventionController.hpp"
 #include "ores.qt/IborIndexConventionController.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LegTypeController.hpp"
@@ -268,9 +269,19 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(overnightIndexConventionController_.get());
 
-    fxConventionController_ = std::make_unique<FxConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connectControllerSignals(fxConventionController_.get());
+    currencyPairController_ = std::make_unique<CurrencyPairController>(ctx_.main_window,
+                                                                       ctx_.mdi_area,
+                                                                       ctx_.client_manager,
+                                                                       ctx_.image_cache,
+                                                                       ctx_.change_reason_cache,
+                                                                       ctx_.username,
+                                                                       this);
+    connectControllerSignals(currencyPairController_.get());
+
+    currencyPairConventionController_ = std::make_unique<CurrencyPairConventionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.change_reason_cache,
+        ctx_.username, this);
+    connectControllerSignals(currencyPairConventionController_.get());
 
     cdsConventionController_ = std::make_unique<CdsConventionController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
@@ -448,11 +459,17 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (overnightIndexConventionController_)
                 overnightIndexConventionController_->showListWindow();
         });
-        auto* actFxConventions =
-            menuOreConventions->addAction(ico(Icon::Tag), tr("F&X Conventions"));
-        connect(actFxConventions, &QAction::triggered, this, [this]() {
-            if (fxConventionController_)
-                fxConventionController_->showListWindow();
+        auto* actCurrencyPairs =
+            menuOreConventions->addAction(ico(Icon::Tag), tr("Currency &Pairs"));
+        connect(actCurrencyPairs, &QAction::triggered, this, [this]() {
+            if (currencyPairController_)
+                currencyPairController_->showListWindow();
+        });
+        auto* actCurrencyPairConventions =
+            menuOreConventions->addAction(ico(Icon::Tag), tr("Currency Pair Conve&ntions"));
+        connect(actCurrencyPairConventions, &QAction::triggered, this, [this]() {
+            if (currencyPairConventionController_)
+                currencyPairConventionController_->showListWindow();
         });
         auto* actCdsConventions =
             menuOreConventions->addAction(ico(Icon::Tag), tr("&CDS Conventions"));

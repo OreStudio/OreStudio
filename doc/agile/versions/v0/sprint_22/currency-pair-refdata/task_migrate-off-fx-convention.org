@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
-#+updated: 2026-07-04
+#+updated: 2026-07-07
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -37,33 +37,86 @@ existing first (not yet a task in this story — needs scaffolding).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Unblocked — currency_pair codegen landed and builds cleanly. Not yet started. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Point ores.ore's conventions_mapper at currency_pair/currency_pair_convention. |
-| Last touched | 2026-07-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-07                               |
 
 * Acceptance
 
-- [ ] =ores.ore='s =conventions_mapper= reads/writes =currency_pair=
+- [X] =ores.ore='s =conventions_mapper= reads/writes =currency_pair=
   (via its =points_factor()= helper for the divisor form) instead of
   =fx_convention=; the exported/imported ORE XML is unchanged
   byte-for-byte for the fields that carry over.
-- [ ] =fx_convention='s Qt CRUD screens and CLI registration are
+- [X] =fx_convention='s Qt CRUD screens and CLI registration are
   removed, not just left dangling; any equivalent CRUD need is served by
   =currency_pair='s own generated Qt/CLI surface.
-- [ ] =fx_convention='s SQL table, triggers, repository, service, and
+- [X] =fx_convention='s SQL table, triggers, repository, service, and
   messaging are deleted from the codebase, not merely deprecated.
-- [ ] No dangling references to =fx_convention= remain (grep clean).
+- [X] No dangling references to =fx_convention= remain (grep clean).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Rewrote =conventions_mapper::map_fx=/=reverse_fx= (=ores.ore.core=) to
+   map =fxType= to/from a new =mapped_fx= transport struct pairing
+   =currency_pair= + =currency_pair_convention=. =SpotDays= is carried on
+   =mapped_fx= itself (not persisted on either domain type) because the
+   =ore roundtrip= import/export path has no database access and must
+   still round-trip the value byte-for-byte — see the currency-derived
+   spot-lag note below for why it can't be looked up from =currency=
+   here. Verified byte-for-byte roundtrip against
+   =external/ore/examples/Input/conventions.xml='s =<FX>= elements.
+2. Repointed =ores.cli='s =import_conventions= at
+   =currency_pair_repository=/=currency_pair_convention_repository=
+   instead of =fx_convention_repository=.
+3. Repointed the Qt "ORE Conventions" menu
+   (=RefdataPlugin=) at =CurrencyPairController=/=CurrencyPairConventionController=
+   instead of =FxConventionController= — these controllers existed
+   (generated) but were never wired into the plugin; wiring them in is
+   what makes the "served by currency_pair's own Qt surface" acceptance
+   criterion literally true, not just aspirational.
+4. Deleted all =fx_convention= files: Qt controller/dialogs/windows/ui,
+   SQL create/drop scripts, and the =ores.refdata= api/core domain,
+   repository, service, messaging, and generator files. Removed its
+   wiring from the hand-maintained NATS =registrar.cpp=.
+5. Discovered along the way that =currency_pair='s own SQL was never
+   wired into the master =refdata_create.sql=/=refdata_drop.sql=/RLS
+   policy scripts (generated in isolation by a prior task) — the tables
+   didn't exist in the DB at all. Wired them in (create/drop order:
+   classifications and groups before pairs, pairs before conventions;
+   reverse on drop) since the migration is meaningless without them.
+6. Discovered =currency.spot_days= (added to the model in an earlier
+   commit but never regenerated) is needed to derive
+   =currency_pair.spot_days= at read time, per the design in
+   [[id:C73E0414-9154-417F-B069-7055BB58AA4C][Reconcile currency_pair design with fx_convention]]. Regenerated only
+   =currency='s domain/repository/generator/SQL-create facets (skipped
+   Qt/CLI to avoid clashing with the concurrent "Commission: currency"
+   story). A full SQL regen pulled in unrelated template drift (case
+   normalisation, and a dropped tenant-fallback validation branch) so
+   the SQL column additions were hand-applied instead of using the
+   generated file wholesale.
+7. Fixed an unrelated pre-existing build break in
+   =CurrencyDetailDialog.cpp= (call to a generator function that no
+   longer exists) as a one-line drive-by, since it blocked verifying the
+   Qt wiring changes compiled.
+8. Retired the =ores.refdata.fx_convention= codegen model doc (no
+   incoming links) and removed it from =ores.refdata.module.org='s
+   entity table, adding the =currency_pair= family in its place.
 
 * Notes
+
+- Not done: the =ores.refdata.api/core/qt= PlantUML class diagrams
+  (=*.puml=) still mention =fx_convention= / =FxConvention= — these are
+  hand-authored/synced diagram sources, not generated from the code
+  touched here, and updating them is a separate follow-up.
+- Not done: =ores.qt.refdata='s NATS messaging registrar for
+  =currency_pair= (e.g. =currency_pair_registrar.hpp=) does not exist
+  yet — the earlier codegen commit for =currency_pair= only generated
+  domain/SQL/Qt/repository/service, not the messaging facet. Out of
+  scope for this task (fx_convention's own registrar entry was simply
+  removed, not replaced).
 
 * PRs
 
@@ -78,3 +131,14 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+=fx_convention= is fully retired: =ores.ore=, the Qt refdata plugin, and
+the CLI now read/write =currency_pair=/=currency_pair_convention=
+directly, with the divisor/multiplier =pip_factor= reciprocal computed
+inline rather than stored twice. Along the way, closed two gaps left by
+earlier tasks in this story — =currency_pair='s SQL was never wired into
+the master schema scripts, and =currency.spot_days= was modelled but
+never generated — both required for this migration to actually work
+end-to-end. Verified via a live DB recreate (tables present, fx tables
+gone) and a byte-for-byte =ore roundtrip= CLI run against a real ORE
+=conventions.xml=.

@@ -144,11 +144,66 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- FX Conventions
+-- Currency Pair Classifications
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_fx_conventions_tbl enable row level security;
+alter table ores_refdata_currency_pair_classifications_tbl enable row level security;
 
-create policy fx_conventions_tenant_isolation_policy on ores_refdata_fx_conventions_tbl
+create policy currency_pair_classifications_tenant_isolation_policy
+on ores_refdata_currency_pair_classifications_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Currency Groups
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_currency_groups_tbl enable row level security;
+
+create policy currency_groups_tenant_isolation_policy on ores_refdata_currency_groups_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Currency Currency Groups (junction)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_currency_currency_groups_tbl enable row level security;
+
+create policy currency_currency_groups_tenant_isolation_policy
+on ores_refdata_currency_currency_groups_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Currency Pairs
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_currency_pairs_tbl enable row level security;
+
+create policy currency_pairs_tenant_isolation_policy on ores_refdata_currency_pairs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Currency Pair Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_currency_pair_conventions_tbl enable row level security;
+
+create policy currency_pair_conventions_tenant_isolation_policy
+on ores_refdata_currency_pair_conventions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

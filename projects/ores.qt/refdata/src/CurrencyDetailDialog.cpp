@@ -918,7 +918,7 @@ void CurrencyDetailDialog::onGenerateClicked() {
 
     try {
         utility::generation::generation_context ctx;
-        const auto currency = refdata::generators::generate_random_fictional_currency(ctx);
+        const auto currency = refdata::generators::generate_fictional_currencies(1, ctx).front();
 
         // Only fill ISO code in add mode - in edit mode it's the primary key
         if (isAddMode_) {

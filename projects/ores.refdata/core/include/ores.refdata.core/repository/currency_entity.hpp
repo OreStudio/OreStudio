@@ -53,6 +53,11 @@ struct currency_entity {
     std::string monetary_nature;
     std::string market_tier;
     std::optional<std::string> image_id;
+    int spot_days = 0;
+    bool deliverable = false;
+    std::string day_basis;
+    int base_precedence = 0;
+    std::optional<std::string> holiday_calendar;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

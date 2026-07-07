@@ -30,12 +30,15 @@ The =ores.refdata= module groups all logical entities in the =ores.refdata= name
 | [[id:282C87C1-11E1-42F0-BEE6-D6983A5F836B][ores.refdata.portfolio]] | Logical aggregation node for risk and reporting. |
 | [[id:7DD42682-6914-4F4E-907C-D57DBBB89B8A][ores.refdata.monetary_nature]] | Monetary nature of the currency. |
 | [[id:284D8D40-D243-4E75-885F-FDA5591FB22F][ores.refdata.currency_market_tier]] | Classification of currency by market tier. |
+| [[id:C2C74B40-9998-4AA4-BED3-3C13A483D96A][ores.refdata.currency_group]] | Desk-style currency groupings (G11, Scandies, etc.). |
+| [[id:5D216C96-35D1-47DA-A348-EF639461E57B][ores.refdata.currency_pair_classification]] | Liquidity classification of a currency pair (major, minor, exotic). |
+| [[id:E1EE950D-FC22-4DAB-A93F-8B2A15196031][ores.refdata.currency_pair]] | Currency pair identity (base/quote legs, deliverability, classification). |
+| [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]] | Quoting and date conventions for a currency pair. |
 | [[id:1DE2BE9C-A783-42A6-988B-96DFA6A0DA08][ores.refdata.rounding_type]] | Valid rounding methods per ORE XML schema. |
 | [[id:B94A2D2A-7653-4165-AD13-B13008BE3B5A][ores.refdata.business_day_convention_type]] | ORE business day convention code (e.g. Following, ModifiedFollowing, Unadjusted). |
 | [[id:F68E18C5-A704-40E8-A37B-4B8F5DCB5089][ores.refdata.swap_convention]] | Conventions for a vanilla interest rate swap. |
 | [[id:558BC028-D6EF-473C-96E7-8518D6302472][ores.refdata.cds_convention]] | Conventions for a credit default swap (CDS). |
 | [[id:3625B2B3-267C-483B-8B3D-CCBB3EDF3443][ores.refdata.fra_convention]] | Conventions for a forward rate agreement (FRA). |
-| [[id:109FBFD6-C505-4196-B3EE-D5C798CE050F][ores.refdata.fx_convention]] | Conventions for FX spot and forward contracts. |
 | [[id:F7C5287B-7781-45EA-BA4C-63F077E36A89][ores.refdata.deposit_convention]] | Conventions for a money-market deposit or IBOR index fixing. |
 | [[id:852FE06C-70D9-48BC-B768-D99D87D0D796][ores.refdata.ibor_index_convention]] | Conventions for an interbank offered rate (IBOR) index. |
 | [[id:136FC526-B671-4438-A790-BFD5E48B0C8B][ores.refdata.ois_convention]] | Conventions for an overnight index swap (OIS). |

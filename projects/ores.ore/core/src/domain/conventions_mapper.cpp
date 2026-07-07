@@ -19,6 +19,7 @@
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include <algorithm>
+#include <cmath>
 #include <map>
 #include <stdexcept>
 
@@ -380,24 +381,28 @@ overnightIndexType reverse_overnight_index(const refdata::domain::overnight_inde
     return r;
 }
 
-fxType reverse_fx(const refdata::domain::fx_convention& v) {
+std::string fx_convention_id(const std::string& base_currency, const std::string& quote_currency) {
+    return base_currency + "-" + quote_currency + "-FX-CONVENTIONS";
+}
+
+fxType reverse_fx(const domain::mapped_fx& v) {
     fxType r;
-    static_cast<std::string&>(r.Id) = v.id;
+    static_cast<std::string&>(r.Id) = fx_convention_id(v.pair.base_currency, v.pair.quote_currency);
     r.SpotDays = static_cast<int64_t>(v.spot_days);
-    r.SourceCurrency = parse_currency_code(v.source_currency);
-    r.TargetCurrency = parse_currency_code(v.target_currency);
-    r.PointsFactor = v.points_factor;
-    if (v.advance_calendar) {
+    r.SourceCurrency = parse_currency_code(v.pair.base_currency);
+    r.TargetCurrency = parse_currency_code(v.pair.quote_currency);
+    r.PointsFactor = v.convention.pip_factor != 0.0 ? 1.0 / v.convention.pip_factor : 0.0;
+    if (v.convention.advance_calendar) {
         fxType_AdvanceCalendar_t ac;
-        static_cast<std::string&>(ac) = *v.advance_calendar;
+        static_cast<std::string&>(ac) = *v.convention.advance_calendar;
         r.AdvanceCalendar = ac;
     }
-    if (v.spot_relative)
-        r.SpotRelative = make_bool(*v.spot_relative);
-    if (v.end_of_month)
-        r.EOM = make_bool(*v.end_of_month);
-    if (v.convention)
-        r.Convention = parse_bdc(*v.convention);
+    if (v.convention.spot_relative)
+        r.SpotRelative = make_bool(*v.convention.spot_relative);
+    if (v.convention.end_of_month)
+        r.EOM = make_bool(*v.convention.end_of_month);
+    if (v.convention.business_day_convention)
+        r.Convention = parse_bdc(*v.convention.business_day_convention);
     return r;
 }
 
@@ -857,29 +862,38 @@ conventions_mapper::map_overnight_index(const overnightIndexType& v) {
     return r;
 }
 
-refdata::domain::fx_convention conventions_mapper::map_fx(const fxType& v) {
+mapped_fx conventions_mapper::map_fx(const fxType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping FX convention: " << std::string(v.Id);
 
-    refdata::domain::fx_convention r;
-    r.id = std::string(v.Id);
+    mapped_fx r;
     r.spot_days = static_cast<int>(v.SpotDays);
-    r.source_currency = to_string(v.SourceCurrency);
-    r.target_currency = to_string(v.TargetCurrency);
-    r.points_factor = v.PointsFactor;
+
+    auto& pair = r.pair;
+    pair.base_currency = to_string(v.SourceCurrency);
+    pair.quote_currency = to_string(v.TargetCurrency);
+    pair.pair_code = pair.base_currency + "/" + pair.quote_currency;
+    set_audit(pair);
+
+    auto& convention = r.convention;
+    convention.pair_code = pair.pair_code;
+    convention.pip_factor = v.PointsFactor != 0.0 ? 1.0 / v.PointsFactor : 0.0;
+    convention.tick_size = convention.pip_factor;
+    convention.decimal_places =
+        v.PointsFactor > 0.0 ? static_cast<int>(std::lround(std::log10(v.PointsFactor))) : 0;
 
     if (v.AdvanceCalendar)
-        r.advance_calendar = std::string(*v.AdvanceCalendar);
+        convention.advance_calendar = std::string(*v.AdvanceCalendar);
 
     if (v.SpotRelative)
-        r.spot_relative = parse_bool(*v.SpotRelative);
+        convention.spot_relative = parse_bool(*v.SpotRelative);
 
     if (v.EOM)
-        r.end_of_month = parse_bool(*v.EOM);
+        convention.end_of_month = parse_bool(*v.EOM);
 
     if (v.Convention)
-        r.convention = normalize_bdc(*v.Convention);
+        convention.business_day_convention = normalize_bdc(*v.Convention);
 
-    set_audit(r);
+    set_audit(convention);
     return r;
 }
 

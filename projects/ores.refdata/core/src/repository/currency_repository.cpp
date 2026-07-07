@@ -95,6 +95,7 @@ std::vector<domain::currency> currency_repository::read_all(context ctx,
         "Reading all currency versions by iso_code.");
 }
 
+
 void currency_repository::remove(context ctx, const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency: " << iso_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));

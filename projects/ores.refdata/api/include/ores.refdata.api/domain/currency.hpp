@@ -115,6 +115,39 @@ struct currency final {
     std::optional<boost::uuids::uuid> image_id;
 
     /**
+     * @brief Business days to settlement for a spot trade in this currency (USD1, most others2).
+     * Used to derive currency_pair.spot_days as the max of the two legs' values.
+     */
+    int spot_days = 0;
+
+    /**
+     * @brief Whether cash in this currency can be delivered offshore. false for currencies subject
+     * to capital controls (e.g. CNY, INR, KRW), which forces any pair involving them to be
+     * non-deliverable (NDF).
+     */
+    bool deliverable = false;
+
+    /**
+     * @brief Day-count convention code (e.g. "ACT/360", "ACT/365"). Free-text for now — no aux-type
+     * table exists yet; see [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in
+     * reference data]] for the open question.
+     */
+    std::string day_basis;
+
+    /**
+     * @brief Ordinal rank in the base-currency precedence table used to determine canonical
+     * base/quote order for a pair (lower = takes precedence as base currency).
+     */
+    int base_precedence = 0;
+
+    /**
+     * @brief Named holiday calendar identifier (e.g. "TARGET", "US", "UK"). Free-text pending
+     * [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference
+     * data]].
+     */
+    std::optional<std::string> holiday_calendar;
+
+    /**
      * @brief Username of the person who last modified this currency.
      */
     std::string modified_by;

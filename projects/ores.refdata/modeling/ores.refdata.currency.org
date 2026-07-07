@@ -202,7 +202,7 @@ Business days to settlement for a spot trade in this currency
 the max of the two legs' values.
 
 #+begin_src cpp :name generator
-faker::helper::arrayElement<int>({1, 2})
+faker::helper::randomElement(std::vector<int>{1, 2})
 #+end_src
 
 ** deliverable

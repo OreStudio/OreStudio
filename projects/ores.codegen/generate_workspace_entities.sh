@@ -20,7 +20,6 @@ run models/refdata/book_domain_entity.json
 run models/refdata/cds_convention_domain_entity.json
 run models/refdata/deposit_convention_domain_entity.json
 run models/refdata/fra_convention_domain_entity.json
-run models/refdata/fx_convention_domain_entity.json
 run models/refdata/ibor_index_convention_domain_entity.json
 run models/refdata/ois_convention_domain_entity.json
 run models/refdata/overnight_index_convention_domain_entity.json

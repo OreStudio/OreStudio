@@ -65,15 +65,6 @@ generate_unique_synthetic_currencies(std::size_t n, utility::generation::generat
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::currency>
 generate_fictional_currencies(std::size_t n, utility::generation::generation_context& ctx);
-
-/**
- * @brief Generates a single, randomly-selected fictional currency.
- *
- * Used by UI "generate" actions that fill a form with one sample
- * currency, rather than adding a batch to a list.
- */
-ORES_REFDATA_API_EXPORT domain::currency
-generate_random_fictional_currency(utility::generation::generation_context& ctx);
 }
 
 #endif

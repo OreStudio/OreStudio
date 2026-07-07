@@ -24,9 +24,10 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/cds_convention.hpp"
+#include "ores.refdata.api/domain/currency_pair.hpp"
+#include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.refdata.api/domain/fra_convention.hpp"
-#include "ores.refdata.api/domain/fx_convention.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include "ores.refdata.api/domain/ois_convention.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
@@ -35,6 +36,21 @@
 #include <vector>
 
 namespace ores::ore::domain {
+
+/**
+ * @brief A currency_pair identity paired with its 1:1 convention record, as produced by mapping a
+ * single ORE XML <FX> element.
+ *
+ * @c spot_days is carried here rather than on @c currency_pair or @c currency_pair_convention: it
+ * is not persisted on either (see the currency-pair-refdata story — spot days is derived from the
+ * two legs' currency.spot_days at read time), but this mapper has no database access and must
+ * still round-trip the value byte-for-byte between ORE XML import and export.
+ */
+struct mapped_fx {
+    refdata::domain::currency_pair pair;
+    refdata::domain::currency_pair_convention convention;
+    int spot_days = 0;
+};
 
 /**
  * @brief All convention types extracted from a single ORE conventions.xml file.
@@ -52,7 +68,7 @@ struct mapped_conventions {
     std::vector<refdata::domain::fra_convention> fra;
     std::vector<refdata::domain::ibor_index_convention> ibor_index;
     std::vector<refdata::domain::overnight_index_convention> overnight_index;
-    std::vector<refdata::domain::fx_convention> fx;
+    std::vector<mapped_fx> fx;
     std::vector<refdata::domain::cds_convention> cds;
 };
 
@@ -102,7 +118,7 @@ public:
     static refdata::domain::overnight_index_convention
     map_overnight_index(const overnightIndexType& v);
 
-    static refdata::domain::fx_convention map_fx(const fxType& v);
+    static mapped_fx map_fx(const fxType& v);
 
     static refdata::domain::cds_convention map_cds(const cdsConventionsType& v);
 

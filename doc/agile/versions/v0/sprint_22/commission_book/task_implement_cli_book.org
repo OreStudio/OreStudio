@@ -26,11 +26,11 @@ Create the CLI support for book in projects/ores.cli — options header and sour
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded.                             |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing — covered by the CLI top-level commissioning story. |
 | Last touched | 2026-07-07                               |
 
 * Acceptance
@@ -49,6 +49,14 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+Abandoned in favour of the "CLI commands — top-level commissioning
+story" capture (=doc/agile/product_backlog/inbox/cli_commands_codegen_top_level_story.org=,
+id 469958E3-B249-4D4C-95A9-E7CDB703F0C0), which explicitly supersedes
+per-commission CLI tasks: =ores.cli= has no codegen profile, and CLI
+commands should be established/templatized once as a horizontal layer
+rather than hand-written per entity as this task would have done. No
+CLI code was written for book.
 
 * PRs
 

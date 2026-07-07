@@ -26,7 +26,7 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | C++ core/SQL and Qt UI sync done (PR #1449). Shell and CLI tasks broken out (BACKLOG); manual chapter and remaining Qt verification not started. |
+| Now           | C++ core/SQL and Qt UI sync done (PR #1449). Shell and CLI tasks abandoned — superseded by the top-level shell/CLI codegen commissioning stories (product backlog inbox). Manual chapter and remaining Qt verification not started. |
 | Waiting on    | Nothing.                               |
 | Next          | Break out remaining tasks: manual chapter, Qt eventing/delete verification, Wt/HTTP backlog captures. |
 | Last touched  | 2026-07-07                               |
@@ -54,5 +54,5 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:9AB461BD-AD46-4980-A801-BE6104270C52][Sync C++ core codegen output for book]] | DONE | 2026-07-03 | 2026-07-06 | Regenerate book's api/core/sql from the new graph-based codegen and land a build-consistent core sync. |
-| [[id:EA1377BB-EDC7-4A7A-97ED-25C0316735D9][Implement shell list/add/remove commands for book]] | BACKLOG | | | Add book CRUD scripts to the ores.shell library following the same pattern as countries and currencies. |
-| [[id:2F991961-F55B-4403-B4D4-278DA91E4107][Implement CLI list/add/remove commands for book]] | BACKLOG | | | Add book support to ores.cli following the same pattern as countries and currencies: options struct, entity parser, and list/add/remove subcommands. |
+| [[id:EA1377BB-EDC7-4A7A-97ED-25C0316735D9][Implement shell list/add/remove commands for book]] | ABANDONED | 2026-07-07 | 2026-07-07 | Superseded by the shell entity commands top-level commissioning story (product backlog inbox). |
+| [[id:2F991961-F55B-4403-B4D4-278DA91E4107][Implement CLI list/add/remove commands for book]] | ABANDONED | | 2026-07-07 | Superseded by the CLI commands top-level commissioning story (product backlog inbox). |

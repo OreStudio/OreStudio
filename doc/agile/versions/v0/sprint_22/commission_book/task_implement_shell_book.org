@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_book:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-shell-book
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-07
 #+updated: 2026-07-07
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Create the book shell script set (list/get, add, remove, history, help) in proje
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded.                             |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing — covered by the shell top-level commissioning story. |
 | Last touched | 2026-07-07                               |
 
 * Acceptance
@@ -50,6 +50,15 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+Abandoned in favour of the "Shell entity commands — top-level
+commissioning story" capture (=doc/agile/product_backlog/inbox/shell_commands_codegen_top_level_story.org=,
+id 8BCD0D1C-AAFB-4FAA-A0E3-022FC6EF93C2), which explicitly supersedes
+per-commission shell tasks: =ores.shell= has no codegen profile, and
+shell commands should be established/templatized once as a horizontal
+layer (reference entity, generated aggregator, codegen facet) rather
+than hand-written per entity as this task would have done. No shell
+code was written for book.
 
 * PRs
 

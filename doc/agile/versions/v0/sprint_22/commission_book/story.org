@@ -26,10 +26,10 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | C++ core/SQL and Qt UI sync done (PR #1449). Shell, CLI, manual chapter, and remaining Qt verification not started. |
+| Now           | C++ core/SQL and Qt UI sync done (PR #1449). Shell and CLI tasks broken out (BACKLOG); manual chapter and remaining Qt verification not started. |
 | Waiting on    | Nothing.                               |
-| Next          | Break out remaining tasks: shell list/add/remove, CLI list/add/remove, manual chapter, Qt eventing/delete verification, Wt/HTTP backlog captures. |
-| Last touched  | 2026-07-06                               |
+| Next          | Break out remaining tasks: manual chapter, Qt eventing/delete verification, Wt/HTTP backlog captures. |
+| Last touched  | 2026-07-07                               |
 
 * Acceptance
 

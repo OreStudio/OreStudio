@@ -5,7 +5,7 @@
 #+description: Add book support to ores.cli following the same pattern as countries and currencies: options struct, entity parser, and list/add/remove subcommands.
 #+type: task
 #+level: s1
-#+filetags: :commission_book:sprint_22:v0:cli:
+#+filetags: :commission_book:sprint_22:v0:
 #+owner: marco
 #+branch:
 #+pr:

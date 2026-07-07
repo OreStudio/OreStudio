@@ -32,6 +32,9 @@
 #include "ores.refdata.core/messaging/counterparty_registrar.hpp"
 #include "ores.refdata.core/messaging/country_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_market_tier_registrar.hpp"
+#include "ores.refdata.core/messaging/currency_pair_classification_registrar.hpp"
+#include "ores.refdata.core/messaging/currency_pair_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/currency_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_registrar.hpp"
 #include "ores.refdata.core/messaging/deposit_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/fra_convention_registrar.hpp"
@@ -104,6 +107,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_country_handlers(nats, ctx, verifier));
     append(register_currency_handlers(nats, ctx, verifier));
     append(register_currency_market_tier_handlers(nats, ctx, verifier));
+    append(register_currency_pair_classification_handlers(nats, ctx, verifier));
+    append(register_currency_pair_convention_handlers(nats, ctx, verifier));
+    append(register_currency_pair_handlers(nats, ctx, verifier));
     append(register_deposit_convention_handlers(nats, ctx, verifier));
     append(register_fra_convention_handlers(nats, ctx, verifier));
     append(register_ibor_index_convention_handlers(nats, ctx, verifier));

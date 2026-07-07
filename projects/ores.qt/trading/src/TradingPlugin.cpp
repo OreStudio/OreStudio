@@ -81,8 +81,10 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
     bookController_ = std::make_unique<BookController>(ctx_.main_window,
                                                        ctx_.mdi_area,
                                                        ctx_.client_manager,
+                                                       ctx_.image_cache,
                                                        ctx_.change_reason_cache,
                                                        ctx_.username,
+                                                       ctx_.badge_cache,
                                                        this);
     connectControllerSignals(bookController_.get());
 

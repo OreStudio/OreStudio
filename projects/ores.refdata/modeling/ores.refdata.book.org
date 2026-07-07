@@ -319,16 +319,26 @@ Basel III/IV classification.
 
 *** Columns (Qt model)
 
-| enum_name     | field           | header      | type      | width |
-|---------------+-----------------+-------------+-----------+-------|
-| Name          | name            | Name        | string    | 200   |
-| LedgerCcy     | ledger_ccy      | Ledger Ccy  | string    | 100   |
-| BookStatus    | book_status     | Status      | string    | 100   |
-| CostCenter    | cost_center     | Cost Center | string    | 120   |
-| IsTradingBook | is_trading_book | Trading     | int       | 70    |
-| Version       | version         | Version     | int       | 80    |
-| ModifiedBy    | modified_by     | Modified By | string    | 120   |
-| RecordedAt    | recorded_at     | Recorded At | timestamp | 150   |
+| enum_name     | field           | header      | type      | width | is_badge | badge_key       | formatter      | formatter_include            |
+|---------------+-----------------+-------------+-----------+-------+----------+-----------------+----------------+-------------------------------|
+| Name          | name            | Name        | string    | 200   |          |                 |                |                               |
+| LedgerCcy     | ledger_ccy      | Ledger Ccy  | string    | 100   |          |                 |                |                               |
+| BookStatus    | book_status     | Status      | string    | 100   | true     | book_status     |                |                               |
+| CostCenter    | cost_center     | Cost Center | string    | 120   |          |                 |                |                               |
+| IsTradingBook | is_trading_book | Trading     | int       | 70    | true     | book_is_trading | boolYesNoLabel | ores.qt/BoolYesNoLabel.hpp    |
+| Version       | version         | Version     | int       | 80    |          |                 |                |                               |
+| ModifiedBy    | modified_by     | Modified By | string    | 120   |          |                 |                |                               |
+| RecordedAt    | recorded_at     | Recorded At | timestamp | 150   |          |                 |                |                               |
+
+*** Icon columns (Qt model)
+
+Ledger currency gets its own flag icon, same as any other
+single-currency cell (e.g. Currency's own code column) — no
+compositing needed since it's a single column.
+
+| column    | accessor           | field1     | field2 |
+|-----------+--------------------+------------+--------|
+| LedgerCcy | currency_flag_icon | ledger_ccy |        |
 
 ** Custom repository methods
 

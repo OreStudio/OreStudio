@@ -18,8 +18,10 @@
  *
  */
 #include "ores.qt/ClientBookModel.hpp"
+#include "ores.qt/BoolYesNoLabel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include <QtConcurrent>
@@ -88,7 +90,7 @@ QVariant ClientBookModel::data(const QModelIndex& index, int role) const {
             case CostCenter:
                 return QString::fromStdString(book.cost_center);
             case IsTradingBook:
-                return static_cast<qlonglong>(book.is_trading_book);
+                return boolYesNoLabel(book.is_trading_book);
             case Version:
                 return static_cast<qlonglong>(book.version);
             case ModifiedBy:
@@ -98,6 +100,11 @@ QVariant ClientBookModel::data(const QModelIndex& index, int role) const {
             default:
                 return {};
         }
+    }
+
+    if (role == Qt::DecorationRole && imageCache_) {
+        if (index.column() == Column::LedgerCcy)
+            return currency_flag_icon(*imageCache_, book.ledger_ccy);
     }
 
     if (role == Qt::ForegroundRole) {
@@ -280,6 +287,7 @@ const refdata::domain::book* ClientBookModel::getBook(int row) const {
         return nullptr;
     return &books_[idx];
 }
+
 
 QVariant ClientBookModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

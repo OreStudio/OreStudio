@@ -72,6 +72,10 @@ BEGIN
         'Lifecycle status codes for book records.', 2);
 
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_is_trading', 'Book Is Trading',
+        'Whether a book is a trading book (Yes/No badge).', 19);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'portfolio_status', 'Portfolio Status',
         'Lifecycle status codes for portfolio records.', 3);
 
@@ -359,6 +363,13 @@ BEGIN
         'book_status', 'Frozen', 'frozen');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_status', 'Pending', 'pending');
+
+    -- book_is_trading (reuses login_online/inactive colours — same
+    -- generic positive/negative palette as account_online)
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_is_trading', 'Yes', 'login_online');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_is_trading', 'No', 'inactive');
 
     -- portfolio_status
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),

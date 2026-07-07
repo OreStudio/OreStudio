@@ -43,13 +43,17 @@ constexpr std::string_view book_event_name =
 BookController::BookController(QMainWindow* mainWindow,
                                QMdiArea* mdiArea,
                                ClientManager* clientManager,
+                               ImageCache* imageCache,
                                ChangeReasonCache* changeReasonCache,
                                const QString& username,
+                               BadgeCache* badgeCache,
                                QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, book_event_name, parent)
     , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
+    setImageCache(imageCache);
 
     BOOST_LOG_SEV(lg(), debug) << "BookController created";
 }
@@ -64,7 +68,7 @@ void BookController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new BookMdiWindow(clientManager_, username_);
+    listWindow_ = new BookMdiWindow(clientManager_, username_, badgeCache_, imageCache_);
 
     // Connect signals
     connect(listWindow_, &BookMdiWindow::statusChanged, this, &BookController::statusMessage);
@@ -162,6 +166,7 @@ void BookController::showAddWindow(boost::uuids::uuid parentPortfolioId) {
     auto* detailDialog = new BookDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     if (!parentPortfolioId.is_nil()) {
@@ -211,6 +216,7 @@ void BookController::showDetailWindow(const refdata::domain::book& book) {
     auto* detailDialog = new BookDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -344,6 +350,7 @@ void BookController::onOpenVersion(const refdata::domain::book& book, int versio
     auto* detailDialog = new BookDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setBook(book);
@@ -394,6 +401,7 @@ void BookController::onRevertVersion(const refdata::domain::book& book) {
     auto* detailDialog = new BookDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_book = book;

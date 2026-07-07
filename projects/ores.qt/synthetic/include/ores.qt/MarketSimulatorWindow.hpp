@@ -116,6 +116,7 @@ private slots:
     void onStopFeedClicked();
     void onStartAllClicked();
     void onStopAllClicked();
+    void onValidateVintageClicked();
     void appendTickSample(double mid);
     void onTickChartFlash();
 
@@ -189,6 +190,7 @@ private:
     QAction* stopFeedAction_;
     QAction* startAllAction_;
     QAction* stopAllAction_;
+    QAction* validateVintageAction_;
 
     // Left panel
     QTreeView* feedsTree_;

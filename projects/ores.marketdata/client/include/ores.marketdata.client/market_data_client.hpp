@@ -25,6 +25,7 @@
 #include "ores.marketdata.client/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <expected>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -71,6 +72,26 @@ public:
      */
     [[nodiscard]] std::expected<int, std::string>
     save_observations(const std::vector<domain::market_observation>& observations);
+
+    /**
+     * @brief Find an existing market series by its natural key.
+     *
+     * Fetches a generous page of series (limit 10000) and scans for an exact
+     * (series_type, metric, qualifier) match; there is no dedicated
+     * lookup-by-key request on the protocol yet.
+     *
+     * @return The matching series, std::nullopt if none found, or an error.
+     */
+    [[nodiscard]] std::expected<std::optional<domain::market_series>, std::string>
+    find_series(const std::string& series_type,
+               const std::string& metric,
+               const std::string& qualifier);
+
+    /**
+     * @brief List observations for a series (limit 10000, first page).
+     */
+    [[nodiscard]] std::expected<std::vector<domain::market_observation>, std::string>
+    list_observations(const std::string& series_id);
 
 private:
     ores::nats::service::nats_client& nats_;

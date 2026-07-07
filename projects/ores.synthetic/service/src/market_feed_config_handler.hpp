@@ -75,6 +75,7 @@ public:
         }
 
         start_market_feed_config_response resp;
+        std::string error_detail;
         const auto result = ctrl_->start(req->ore_key,
                                          req->source_name,
                                          req->gmm_means,
@@ -82,7 +83,10 @@ public:
                                          req->gmm_weights,
                                          req->gmm_initial_price,
                                          req->ticks_per_hour,
-                                         req->process_type);
+                                         req->process_type,
+                                         req->vintage_source,
+                                         req->vintage_date,
+                                         &error_detail);
 
         const std::string id = req->source_name.empty() ? req->ore_key : req->source_name;
         using sr = feed_controller::start_result;
@@ -100,7 +104,38 @@ public:
                 BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
                     << msg.subject << " — feed already running: " << id;
                 break;
+            case sr::vintage_data_missing:
+                resp.success = false;
+                resp.message = error_detail;
+                BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
+                    << msg.subject << " — feed " << id << " rejected: " << error_detail;
+                break;
         }
+        reply(nats_, msg, resp);
+    }
+
+    void validate(ores::nats::message msg) {
+        using namespace ores::marketdata::messaging;
+        [[maybe_unused]] const auto cid = log_handler_entry(market_feed_config_handler_lg(), msg);
+
+        auto req = decode<validate_market_feed_config_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
+                << msg.subject << " — empty or malformed validate body; rejecting";
+            reply(nats_,
+                  msg,
+                  validate_market_feed_config_response{.success = false,
+                                                       .available = false,
+                                                       .message = "Malformed validate request"});
+            return;
+        }
+
+        validate_market_feed_config_response resp;
+        resp.success = true;
+        std::string error_detail;
+        resp.available =
+            ctrl_->validate(req->ore_key, req->vintage_source, req->vintage_date, error_detail);
+        resp.message = resp.available ? "Vintage data available" : error_detail;
         reply(nats_, msg, resp);
     }
 

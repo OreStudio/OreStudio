@@ -30,9 +30,11 @@
 #include "process_factory.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <atomic>
 #include <cctype>
 #include <chrono>
+#include <format>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -84,7 +86,7 @@ public:
         shutdown();
     }
 
-    enum class start_result { started, already_running };
+    enum class start_result { started, already_running, vintage_data_missing };
 
     /**
      * @brief Start one producer feed. Keyed by source_name (unique per producer).
@@ -93,6 +95,12 @@ public:
      * spawns its tick thread. Series resolution is handled lazily by the
      * marketdata ingest loop on first tick arrival — the synthetic service has
      * no marketdata writes to perform.
+     *
+     * If @p vintage_source is non-empty, the feed's required vintage data
+     * (source, date) is checked in market_observation before anything is
+     * started; a missing vintage returns vintage_data_missing with @p
+     * error_detail set to an actionable message, and no feed is spawned. An
+     * empty vintage_source skips the check (e.g. ad-hoc/default requests).
      */
     start_result start(const std::string& ore_key,
                        const std::string& source_name,
@@ -101,7 +109,19 @@ public:
                        std::vector<double> weights,
                        double initial_price,
                        double ticks_per_hour,
-                       const std::string& process_type = "geometric") {
+                       const std::string& process_type = "geometric",
+                       const std::string& vintage_source = {},
+                       const std::string& vintage_date = {},
+                       std::string* error_detail = nullptr) {
+        if (!vintage_source.empty()) {
+            std::string detail;
+            if (!vintage_data_available(ore_key, vintage_source, vintage_date, detail)) {
+                if (error_detail)
+                    *error_detail = std::move(detail);
+                return start_result::vintage_data_missing;
+            }
+        }
+
         std::lock_guard lock(mu_);
         const std::string key = source_name.empty() ? ore_key : source_name;
         if (feeds_.contains(key))
@@ -185,7 +205,91 @@ public:
         return names;
     }
 
+    /**
+     * @brief Check whether a feed's required vintage data exists, without
+     * starting it. Powers the Market Simulator "validate all" action.
+     *
+     * @param error_detail Set to an actionable message when unavailable;
+     * untouched otherwise.
+     */
+    bool validate(const std::string& ore_key,
+                 const std::string& vintage_source,
+                 const std::string& vintage_date,
+                 std::string& error_detail) {
+        return vintage_data_available(ore_key, vintage_source, vintage_date, error_detail);
+    }
+
 private:
+    // Split "FX/RATE/EUR/USD" into ("FX", "RATE", "EUR/USD"). Returns false
+    // (and leaves the out-params untouched) if there are fewer than 3 parts.
+    static bool
+    parse_ore_key(const std::string& ore_key, std::string& series_type,
+                 std::string& metric, std::string& qualifier) {
+        std::vector<std::string> parts;
+        std::stringstream ss(ore_key);
+        std::string tok;
+        while (std::getline(ss, tok, '/'))
+            parts.push_back(tok);
+        if (parts.size() < 3)
+            return false;
+        series_type = parts[0];
+        metric = parts[1];
+        qualifier = parts[2];
+        for (std::size_t i = 3; i < parts.size(); ++i)
+            qualifier += "/" + parts[i];
+        return true;
+    }
+
+    // ISO date part of a observation_datetime, e.g. "2016-02-05" from a
+    // timestamp at any time-of-day on that date (observations are always
+    // recorded at midnight UTC for date-only vintages, but this tolerates
+    // otherwise).
+    static std::string date_part(std::chrono::system_clock::time_point tp) {
+        const auto days = std::chrono::floor<std::chrono::days>(tp);
+        return std::format("{:%F}", days);
+    }
+
+    // Core vintage-availability check shared by start() and validate().
+    bool vintage_data_available(const std::string& ore_key,
+                               const std::string& vintage_source,
+                               const std::string& vintage_date,
+                               std::string& error_detail) {
+        const auto missing_message = [&] {
+            return "No vintage data found for source=" + vintage_source +
+                   ", date=" + vintage_date + " — run the reference-data import first";
+        };
+
+        std::string series_type, metric, qualifier;
+        if (!parse_ore_key(ore_key, series_type, metric, qualifier)) {
+            error_detail = "Cannot parse ORE key '" + ore_key + "'.";
+            return false;
+        }
+
+        auto series = md_client_.find_series(series_type, metric, qualifier);
+        if (!series) {
+            error_detail = "Failed to look up series for '" + ore_key + "': " + series.error();
+            return false;
+        }
+        if (!series->has_value()) {
+            error_detail = missing_message();
+            return false;
+        }
+
+        auto observations = md_client_.list_observations(boost::uuids::to_string((*series)->id));
+        if (!observations) {
+            error_detail =
+                "Failed to look up observations for '" + ore_key + "': " + observations.error();
+            return false;
+        }
+        for (const auto& obs : *observations) {
+            if (obs.source == vintage_source && obs.point_id == "SPOT" &&
+                date_part(obs.observation_datetime) == vintage_date)
+                return true;
+        }
+        error_detail = missing_message();
+        return false;
+    }
+
     static constexpr std::chrono::minutes status_interval_{1};
 
     void status_loop() {

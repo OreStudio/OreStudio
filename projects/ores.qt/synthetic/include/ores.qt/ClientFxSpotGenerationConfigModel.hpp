@@ -62,6 +62,8 @@ public:
         TicksPerHour,
         ProcessType,
         Enabled,
+        VintageSource,
+        VintageDate,
         Version,
         ModifiedBy,
         RecordedAt,

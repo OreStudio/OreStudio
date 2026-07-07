@@ -171,6 +171,36 @@ Whether the configuration is active and eligible for generation.
 faker::datatype::boolean()
 #+end_src
 
+** vintage_source
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Source tag of the market-data vintage this feed's initial spot and
+availability guard are validated against (e.g. "ore.reference"),
+matching =market_observation.source=.
+
+#+begin_src cpp :name generator
+std::string("ore.reference")
+#+end_src
+
+** vintage_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Observation date of the market-data vintage this feed's initial spot
+and availability guard are validated against, ISO format (e.g.
+"2016-02-05"), matching =market_observation.observation_datetime=.
+
+#+begin_src cpp :name generator
+std::string("2016-02-05")
+#+end_src
+
 * SQL
 
 ** Flags
@@ -190,6 +220,8 @@ faker::datatype::boolean()
 | "gmm_initial_price" > 0                               |
 | "ticks_per_hour" > 0                                  |
 | "process_type" in ('geometric', 'arithmetic', 'ou')   |
+| "vintage_source" <> ''                                |
+| "vintage_date" is not null                            |
 
 * Foreign keys
 
@@ -281,6 +313,8 @@ faker::datatype::boolean()
 | ticks_per_hour      | Ticks per Hour      | ticksPerHourEdit     | spin_box  |        | true        |                                 |
 | process_type        | Process Type        | processTypeEdit      | line_edit |        | true        | geometric, arithmetic, or ou    |
 | enabled             | Enabled             | enabledCheck         | check_box |        |             |                                 |
+| vintage_source      | Vintage Source      | vintageSourceEdit    | line_edit |        | true        | e.g. ore.reference              |
+| vintage_date        | Vintage Date        | vintageDateEdit      | line_edit |        | true        | YYYY-MM-DD                      |
 
 *** Columns (Qt model)
 
@@ -301,6 +335,8 @@ the formatter function needs, if any.
 | TicksPerHour       | ticks_per_hour      | Ticks/Hr            | int       | 80    |                   |                                |
 | ProcessType        | process_type        | Process Type        | string    | 100   | processTypeLabel  | ores.qt/ProcessTypeLabel.hpp   |
 | Enabled            | enabled             | Enabled             | bool      | 70    |                   |                                |
+| VintageSource      | vintage_source      | Vintage Source      | string    | 140   |                   |                                |
+| VintageDate        | vintage_date        | Vintage Date        | string    | 110   |                   |                                |
 | Version            | version             | Version             | int       | 70    |                   |                                |
 | ModifiedBy         | modified_by         | Modified By         | string    | 120   |                   |                                |
 | RecordedAt         | recorded_at         | Recorded At         | timestamp | 150   |                   |                                |

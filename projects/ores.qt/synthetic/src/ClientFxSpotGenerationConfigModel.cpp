@@ -101,6 +101,10 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
                 return processTypeLabel(fx_spot_generation_config.process_type);
             case Enabled:
                 return fx_spot_generation_config.enabled ? tr("true") : tr("false");
+            case VintageSource:
+                return QString::fromStdString(fx_spot_generation_config.vintage_source);
+            case VintageDate:
+                return QString::fromStdString(fx_spot_generation_config.vintage_date);
             case Version:
                 return static_cast<qlonglong>(fx_spot_generation_config.version);
             case ModifiedBy:
@@ -149,6 +153,10 @@ QVariant ClientFxSpotGenerationConfigModel::headerData(int section,
             return tr("Process Type");
         case Enabled:
             return tr("Enabled");
+        case VintageSource:
+            return tr("Vintage Source");
+        case VintageDate:
+            return tr("Vintage Date");
         case Version:
             return tr("Version");
         case ModifiedBy:

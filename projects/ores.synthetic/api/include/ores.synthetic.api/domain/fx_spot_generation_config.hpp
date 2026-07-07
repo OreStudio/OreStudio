@@ -95,7 +95,8 @@ struct fx_spot_generation_config final {
     int ticks_per_hour = 0;
 
     /**
-     * @brief Price-process engine: "geometric" (multiplicative) or "arithmetic" (additive).
+     * @brief Price-process engine: "geometric" (multiplicative), "arithmetic" (additive), or "ou"
+     * (Ornstein-Uhlenbeck, mean-reverting).
      */
     std::string process_type = "geometric";
 
@@ -103,6 +104,19 @@ struct fx_spot_generation_config final {
      * @brief Whether the configuration is active and eligible for generation.
      */
     bool enabled = false;
+
+    /**
+     * @brief Source tag of the market-data vintage this feed's initial spot and availability guard
+     * are validated against (e.g. "ore.reference"), matching market_observation.source.
+     */
+    std::string vintage_source;
+
+    /**
+     * @brief Observation date of the market-data vintage this feed's initial spot and availability
+     * guard are validated against, ISO format (e.g. "2016-02-05"), matching
+     * market_observation.observation_datetime.
+     */
+    std::string vintage_date;
 
     /**
      * @brief Username of the person who last modified this FX spot generation config.

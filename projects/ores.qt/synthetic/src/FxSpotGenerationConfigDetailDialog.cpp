@@ -101,6 +101,14 @@ void FxSpotGenerationConfigDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &FxSpotGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->vintageSourceEdit,
+            &QLineEdit::textChanged,
+            this,
+            &FxSpotGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->vintageDateEdit,
+            &QLineEdit::textChanged,
+            this,
+            &FxSpotGenerationConfigDetailDialog::onFieldChanged);
 }
 
 void FxSpotGenerationConfigDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -139,6 +147,8 @@ void FxSpotGenerationConfigDetailDialog::setReadOnly(bool readOnly) {
     ui_->quoteCurrencyEdit->setReadOnly(readOnly);
     ui_->gmmInitialPriceEdit->setReadOnly(readOnly);
     ui_->processTypeEdit->setReadOnly(readOnly);
+    ui_->vintageSourceEdit->setReadOnly(readOnly);
+    ui_->vintageDateEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -153,6 +163,9 @@ void FxSpotGenerationConfigDetailDialog::updateUiFromConfig() {
     ui_->ticksPerHourEdit->setValue(fx_spot_generation_config_.ticks_per_hour);
     ui_->processTypeEdit->setText(QString::fromStdString(fx_spot_generation_config_.process_type));
     ui_->enabledCheck->setChecked(fx_spot_generation_config_.enabled);
+    ui_->vintageSourceEdit->setText(
+        QString::fromStdString(fx_spot_generation_config_.vintage_source));
+    ui_->vintageDateEdit->setText(QString::fromStdString(fx_spot_generation_config_.vintage_date));
 
     populateProvenance(fx_spot_generation_config_.version,
                        fx_spot_generation_config_.modified_by,
@@ -175,6 +188,9 @@ void FxSpotGenerationConfigDetailDialog::updateConfigFromUi() {
     fx_spot_generation_config_.ticks_per_hour = ui_->ticksPerHourEdit->value();
     fx_spot_generation_config_.process_type = ui_->processTypeEdit->text().trimmed().toStdString();
     fx_spot_generation_config_.enabled = ui_->enabledCheck->isChecked();
+    fx_spot_generation_config_.vintage_source =
+        ui_->vintageSourceEdit->text().trimmed().toStdString();
+    fx_spot_generation_config_.vintage_date = ui_->vintageDateEdit->text().trimmed().toStdString();
     fx_spot_generation_config_.modified_by = username_;
 }
 
@@ -198,9 +214,12 @@ bool FxSpotGenerationConfigDetailDialog::validateInput() {
     const QString quote_currency_code_val = ui_->quoteCurrencyEdit->text().trimmed();
     const QString gmm_initial_price_val = ui_->gmmInitialPriceEdit->text().trimmed();
     const QString process_type_val = ui_->processTypeEdit->text().trimmed();
+    const QString vintage_source_val = ui_->vintageSourceEdit->text().trimmed();
+    const QString vintage_date_val = ui_->vintageDateEdit->text().trimmed();
 
     return true && !base_currency_code_val.isEmpty() && !quote_currency_code_val.isEmpty() &&
-           !gmm_initial_price_val.isEmpty() && !process_type_val.isEmpty();
+           !gmm_initial_price_val.isEmpty() && !process_type_val.isEmpty() &&
+           !vintage_source_val.isEmpty() && !vintage_date_val.isEmpty();
 }
 
 void FxSpotGenerationConfigDetailDialog::onSaveClicked() {

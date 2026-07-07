@@ -43,6 +43,7 @@ std::uint32_t fx_spot_generation_config_service::count_fx_spot_generation_config
     return repo_.get_total_fx_spot_generation_config_count(ctx_);
 }
 
+
 std::optional<domain::fx_spot_generation_config>
 fx_spot_generation_config_service::get_fx_spot_generation_config(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting FX spot generation config: " << id;

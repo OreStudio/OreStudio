@@ -35,7 +35,7 @@ domain::currency generate_synthetic_currency(utility::generation::generation_con
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::currency r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
@@ -43,7 +43,10 @@ domain::currency generate_synthetic_currency(utility::generation::generation_con
     r.name = "Test Currency " + std::to_string(faker::number::integer(1000, 9999)) + "-" +
              std::to_string(idx);
     r.numeric_code = std::to_string(faker::number::integer(10001, 99999));
-    r.symbol = std::string(faker::finance::currencySymbol());
+    r.symbol = [] {
+        const auto sym = faker::finance::currencySymbol();
+        return sym.empty() ? std::string("$") : std::string(sym);
+    }();
     r.fraction_symbol = std::string("c");
     r.fractions_per_unit = 100;
     r.rounding_type = std::string("Closest");

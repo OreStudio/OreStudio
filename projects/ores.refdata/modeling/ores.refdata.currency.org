@@ -86,8 +86,15 @@ std::to_string(faker::number::integer(10001, 99999))
 
 Currency symbol displayed in the UI (e.g., "$", "€", "£").
 
+=faker::finance::currencySymbol()= can return an empty string for some
+locales; fall back to "$" rather than violate the non-nullable
+constraint.
+
 #+begin_src cpp :name generator
-std::string(faker::finance::currencySymbol())
+[] {
+    const auto sym = faker::finance::currencySymbol();
+    return sym.empty() ? std::string("$") : std::string(sym);
+}()
 #+end_src
 
 ** fraction_symbol

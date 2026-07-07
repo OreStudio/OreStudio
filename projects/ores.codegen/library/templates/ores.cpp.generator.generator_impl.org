@@ -56,7 +56,7 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 
     domain::{{entity_singular}} r;
 {{#has_audit_columns}}
-    r.version = 1;
+    r.version = 0;
 {{/has_audit_columns}}
 {{#has_tenant_id}}
     r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
@@ -180,7 +180,7 @@ domain::{{name_singular}} generate_synthetic_{{name_singular}}(
 {{/has_tenant_id}}
 
     domain::{{name_singular}} r;
-    r.version = 1;
+    r.version = 0;
 {{#has_tenant_id}}
     r.tenant_id = tenant_id;
 {{/has_tenant_id}}

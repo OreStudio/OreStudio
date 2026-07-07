@@ -120,9 +120,9 @@ racing. This falls out for free if the touch is implemented as a
 shared SQL function that both the parent's own trigger and every
 child's trigger call.
 
-*** Should child DELETE also bump the parent?
+*** Child DELETE also bumps the parent
 
-*Proposed default, needs sign-off:* yes. Deleting a child changes the
+*Decided: yes.* Deleting a child changes the
 parent's composed state exactly as much as adding one, so the
 soft-delete rule (=on delete ... do instead update ... set valid_to =
 current_timestamp=) should touch the parent the same way the insert
@@ -224,14 +224,18 @@ as-of composition above. Candidate shape (not yet decided in detail):
 4. Extend to =counterparty= (same shape, already on the unified
    codegen template).
 
-** Open decisions needing sign-off
+** Decisions (resolved)
 
-- Child DELETE bumping the parent (proposed: yes — see above).
-- Exact flag names (=:bump_parent_version:=, =:list_by_as_of:=) —
-  placeholders, not committed schema.
-- Whether the touch function's reason-code stamping is mandatory or
-  optional per entity.
-- Multi-level cascading — explicitly out of scope for v1.
+- *Child DELETE bumps the parent*, same as insert/update — symmetric
+  with the write side, so "as of version N" stays accurate across
+  deletions.
+- *Flag name*: =:bump_parent_version:= (on the child's FK section,
+  alongside =:list_by:=). =:list_by_as_of:= is confirmed as the
+  read-side counterpart's placeholder name too.
+- *Reason-code stamping is mandatory*: the touch function always
+  stamps a distinguishing reason (e.g. =child_updated:party_identifier=)
+  itself — callers don't opt in or out.
+- Multi-level cascading remains explicitly out of scope for v1.
 
 * See also
 

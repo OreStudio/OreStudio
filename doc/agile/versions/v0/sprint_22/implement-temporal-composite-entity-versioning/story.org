@@ -8,7 +8,7 @@
 #+filetags: :composite_entity:versioning:party:counterparty:codegen:sql:qt:sprint_22:v0:
 #+created: 2026-07-07
 #+updated: 2026-07-07
-#+environment:
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,11 +21,11 @@ Land the SQL/codegen mechanism for child writes to bump a parent's version in th
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Open decisions resolved; starting the SQL touch-function mechanism. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | SQL touch-function mechanism (codegen FK flag), then as-of query, then Qt dialog. |
 | Last touched  | 2026-07-07                               |
 
 * Acceptance
@@ -36,12 +36,23 @@ Land the SQL/codegen mechanism for child writes to bump a parent's version in th
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B98B0994-BF55-42FB-AEE6-A953A534A15A][Resolve open decisions from the versioning architecture doc]] | BACKLOG | | | Sign off on: whether child DELETE also bumps the parent version, the actual codegen flag names (bump_parent_version, list_by_as_of), and whether reason-code stamping on the touch function is mandatory. Record decisions in the architecture doc and this story. |
+| [[id:B98B0994-BF55-42FB-AEE6-A953A534A15A][Resolve open decisions from the versioning architecture doc]] | DONE | 2026-07-07 | 2026-07-07 | Sign off on: whether child DELETE also bumps the parent version, the actual codegen flag names (bump_parent_version, list_by_as_of), and whether reason-code stamping on the touch function is mandatory. Record decisions in the architecture doc and this story. |
 | [[id:A801BC8E-1D2E-4CFD-A9B8-E11327D0551D][SQL touch-function mechanism: child writes bump parent version]] | BACKLOG | | | Hand-patch party_identifier/party_contact_information (and generate the equivalent for counterparty via the codegen facet) so their insert trigger and soft-delete rule call a shared touch function that bumps the parent's version in the same transaction, with a standardized change-reason comment. |
 | [[id:F770C2EF-5574-415F-911C-6F900488C1E4][As-of window-join read-side composition query]] | BACKLOG | | | Add the parent as-of-version fetch and the child as-of-window list query (interval overlap against the parent's valid_from/valid_to), plus a service-level helper composing parent+children as of a given parent version. |
 | [[id:F41DC692-99AE-4F0C-9D6E-76BA767BB93E][Qt composite history/version dialog]] | BACKLOG | | | Extend the party/counterparty history dialog to show composed children state as of a selected parent version, built on the as-of composition query and the embeddable child-table widget. |
 
 * Decisions
+
+- Child DELETE bumps the parent version, symmetric with insert/update.
+- Codegen FK flag: =:bump_parent_version:= (alongside =:list_by:=);
+  read-side counterpart =:list_by_as_of:=.
+- Reason-code stamping on the touch function is mandatory.
+- This is codegen-driven from the start, not a hand-patch-only
+  affair: both flags are variability knobs on the entity =.org=
+  model — enabling them on any FK generates the full mechanism (touch
+  function call from the trigger and delete rule, the as-of query).
+  Party is hand-patched first only because party itself isn't yet
+  under codegen; counterparty gets it purely by flipping the flags.
 
 * Out of scope
 

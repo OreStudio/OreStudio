@@ -23,7 +23,11 @@ env:
 
 on:  # yamllint disable-line rule:truthy
   schedule:
-    - cron: '0 */4 * * *'
+    # Recent runs typically take 5-8h (matrix: msvc/clang x debug/release);
+    # a 4h window meant the next scheduled trigger routinely fired before
+    # the previous run finished, queueing overlapping runs behind the
+    # per-matrix concurrency group instead of replacing them.
+    - cron: '0 */12 * * *'
   push:
     tags:
       - '*'

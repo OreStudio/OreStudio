@@ -32,10 +32,9 @@ namespace ores::refdata::domain {
  * Reference data defining desk-style currency groupings. Unlike
  * currency.market_tier (single-valued primary liquidity tier), a
  * currency can belong to any number of groups simultaneously via
- * [[id:ores.refdata.currency_currency_group_junction][ores.refdata.currency_currency_group_junction]]
- * (e.g. NOK: G11 *and* SCANDIES *and* COMMODITY). Seeded with G11, SCANDIES, ANTIPODEANS,
- * COMMODITY, ASIANS, LATAMS — extensible by inserting a row, no schema
- * change needed for a new group.
+ * [[id:579032D2-3637-4188-859E-6C17C1D144F7][ores.refdata.currency_currency_group_junction]] (e.g.
+ * NOK: G11 *and* SCANDIES *and* COMMODITY). Seeded with G11, SCANDIES, ANTIPODEANS, COMMODITY,
+ * ASIANS, LATAMS — extensible by inserting a row, no schema change needed for a new group.
  */
 struct currency_group final {
     /**

@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: F1827F31-5E88-4058-994B-546A5CC10B9A
+:END:
+#+title: ores.cpp.nats-event-registrar.nats_event_registrar_implementation
+#+description: Per-entity event-mapping registrar implementation wiring the entity's changed-event to the Postgres LISTEN/NOTIFY channel and re-publishing it to NATS. nats-event-registrar profile.
+#+type: archetype
+#+output: projects/{component_service_dir}/src/messaging/{entity}_event_registrar.cpp
+#+facet: ores.cpp.nats-event-registrar
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+
+This page is the node for the =ores.cpp.nats-event-registrar.nats_event_registrar_implementation= archetype in the codegen
+physical-space address graph. Its title is its MASD address; it generates one
+output artefact and owns the =mustache= source below, tangled to the sibling
+=.mustache= consumed by =generator.py=. Edit this document, then run the
+tangle (=compass build --direct tangle_codegen_templates=).
+
+* Summary
+
+Implements =register_<entity>_event_mapping()=: registers the entity's
+Postgres NOTIFY channel with the =postgres_event_source=, then subscribes
+the resulting in-process =event_bus= event and republishes it to NATS via
+the shared =ores.eventing.core= =publish_entity_event= helper. The channel
+name (=product_component_entity_plural=, e.g. =ores_refdata_purpose_types=)
+matches exactly what the =notify_trigger= SQL archetype emits in its
+=pg_notify()= call — both derive from the same three model fields, so
+they can never drift apart.
+
+* The ores.cpp.nats-event-registrar.nats_event_registrar_implementation archetype
+
+#+begin_src mustache :tangle cpp_nats_event_registrar.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.nats-event-registrar.nats_event_registrar_implementation.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component_service}}/messaging/{{entity_singular}}_event_registrar.hpp"
+#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.core/service/entity_event_publisher.hpp"
+#include "ores.eventing.core/service/registrar.hpp"
+#include "ores.{{component_include}}/eventing/{{entity_singular}}_changed_event.hpp"
+
+namespace ores::{{component}}::service::messaging {
+
+namespace {
+namespace ev = ores::eventing;
+}
+
+[[nodiscard]] ev::service::subscription
+register_{{entity_singular}}_event_mapping(ev::service::postgres_event_source& event_source,
+                                           ev::service::event_bus& event_bus,
+                                           ores::nats::service::client& nats) {
+    ev::service::registrar::register_mapping<{{component}}::eventing::{{entity_singular}}_changed_event>(
+        event_source, "ores.{{component}}.{{entity_singular}}", "{{product}}_{{component}}_{{entity_plural}}");
+
+    return event_bus.subscribe<{{component}}::eventing::{{entity_singular}}_changed_event>(
+        [&nats](const {{component}}::eventing::{{entity_singular}}_changed_event& e) {
+            ev::service::publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<{{component}}::eventing::{{entity_singular}}_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.{{component}}.{{entity_singular}}",
+                                                .timestamp = e.timestamp,
+{{#primary_key.is_text}}
+                                                .entity_ids = e.{{primary_key.column}}s,
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
+                                                .entity_ids = e.{{entity_singular_short}}_ids,
+{{/primary_key.is_uuid}}
+                                                .tenant_id = e.tenant_id});
+        });
+}
+
+} // namespace ores::{{component}}::service::messaging
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]
+- [[id:0C5953E1-3159-4A93-B0CE-51E30CB0FD61][ores.cpp.nats-event-registrar.nats_event_registrar_header]] — the header this implements.
+- [[id:3EAC73DC-6ECE-4DB3-8172-790A2C709AAC][ores.sql.schema.notify_trigger]] — the SQL side of this pipeline; channel name must match.

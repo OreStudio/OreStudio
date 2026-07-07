@@ -1,0 +1,41 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.nats-event-registrar.nats_event_registrar_implementation.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component_service}}/messaging/{{entity_singular}}_event_registrar.hpp"
+#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.core/service/entity_event_publisher.hpp"
+#include "ores.eventing.core/service/registrar.hpp"
+#include "ores.{{component_include}}/eventing/{{entity_singular}}_changed_event.hpp"
+
+namespace ores::{{component}}::service::messaging {
+
+namespace {
+namespace ev = ores::eventing;
+}
+
+[[nodiscard]] ev::service::subscription
+register_{{entity_singular}}_event_mapping(ev::service::postgres_event_source& event_source,
+                                           ev::service::event_bus& event_bus,
+                                           ores::nats::service::client& nats) {
+    ev::service::registrar::register_mapping<{{component}}::eventing::{{entity_singular}}_changed_event>(
+        event_source, "ores.{{component}}.{{entity_singular}}", "{{product}}_{{component}}_{{entity_plural}}");
+
+    return event_bus.subscribe<{{component}}::eventing::{{entity_singular}}_changed_event>(
+        [&nats](const {{component}}::eventing::{{entity_singular}}_changed_event& e) {
+            ev::service::publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<{{component}}::eventing::{{entity_singular}}_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.{{component}}.{{entity_singular}}",
+                                                .timestamp = e.timestamp,
+{{#primary_key.is_text}}
+                                                .entity_ids = e.{{primary_key.column}}s,
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
+                                                .entity_ids = e.{{entity_singular_short}}_ids,
+{{/primary_key.is_uuid}}
+                                                .tenant_id = e.tenant_id});
+        });
+}
+
+} // namespace ores::{{component}}::service::messaging
+{{/domain_entity}}

@@ -33,6 +33,7 @@ do not edit by hand.
 | [[id:EF08BD8A-21CD-4D5F-A574-5C850722DE16][ores.cpp.field-group]] | 1 | C++ field-group headers. |
 | [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]] | 2 | Fake-data generators for testing. |
 | [[id:5703E520-4BC0-4B9D-BA2D-8C3285FC1DC9][ores.cpp.nats-eventing]] | 1 | NATS changed-event publishers. |
+| [[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]] | 2 | Per-entity NATS event-mapping registrar pair wiring an entity's Postgres channel to its changed-event pipeline. |
 | [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]] | 1 | NATS subscription handlers. |
 | [[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]] | 2 | Per-entity NATS sub-registrar pair wiring an entity's subjects to its handler. |
 | [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]] | 1 | Protocol (de)serialisation. |

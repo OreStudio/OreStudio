@@ -1,0 +1,21 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.nats-event-registrar.nats_event_registrar_header.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_service_upper}}_MESSAGING_{{entity_singular_upper}}_EVENT_REGISTRAR_HPP
+#define ORES_{{component_service_upper}}_MESSAGING_{{entity_singular_upper}}_EVENT_REGISTRAR_HPP
+
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
+
+namespace ores::{{component}}::service::messaging {
+
+[[nodiscard]] ores::eventing::service::subscription
+register_{{entity_singular}}_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                           ores::eventing::service::event_bus& event_bus,
+                                           ores::nats::service::client& nats);
+
+} // namespace ores::{{component}}::service::messaging
+
+#endif
+{{/domain_entity}}

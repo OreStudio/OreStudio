@@ -614,11 +614,15 @@ def resolve_output_path(output_pattern, model_data, model_type):
             component_dir = f"ores.{component}/{subcomponent}"
             component_core = f"{component}.core"
             component_core_dir = f"ores.{component}/core"
+            component_service = f"{component}.service"
+            component_service_dir = f"ores.{component}/service"
         else:
             component_include = entity.get('component_include', component)
             component_dir = f"ores.{component}"
             component_core = entity.get('component_core', component)
             component_core_dir = f"ores.{component}"
+            component_service = entity.get('component_service', component)
+            component_service_dir = f"ores.{component}"
         entity_singular = entity.get('entity_singular', 'unknown')
         entity_plural = entity.get('entity_plural', entity_singular + 's')
         entity_pascal = snake_to_pascal(entity_singular)
@@ -627,8 +631,10 @@ def resolve_output_path(output_pattern, model_data, model_type):
 
         result = result.replace('{component_dir}', component_dir)
         result = result.replace('{component_core_dir}', component_core_dir)
+        result = result.replace('{component_service_dir}', component_service_dir)
         result = result.replace('{component_include}', component_include)
         result = result.replace('{component_core}', component_core)
+        result = result.replace('{component_service}', component_service)
         result = result.replace('{component}', component)
         result = result.replace('{entity_plural}', entity_plural)
         result = result.replace('{entity}', entity_singular)
@@ -1858,16 +1864,23 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 domain_entity['component_dir'] = f"ores.{component}/{subcomponent}"
                 domain_entity['component_core'] = f"{component}.core"
                 domain_entity['component_core_dir'] = f"ores.{component}/core"
+                domain_entity['component_service'] = f"{component}.service"
+                domain_entity['component_service_dir'] = f"ores.{component}/service"
             else:
                 domain_entity.setdefault('component_include', component)
                 domain_entity['component_dir'] = f"ores.{component}"
                 domain_entity.setdefault('component_core', component)
                 domain_entity['component_core_dir'] = f"ores.{component}"
+                domain_entity.setdefault('component_service', component)
+                domain_entity['component_service_dir'] = f"ores.{component}"
             domain_entity['component_include_upper'] = (
                 domain_entity['component_include'].replace('.', '_').upper()
             )
             domain_entity['component_core_upper'] = (
                 domain_entity['component_core'].replace('.', '_').upper()
+            )
+            domain_entity['component_service_upper'] = (
+                domain_entity['component_service'].replace('.', '_').upper()
             )
         if 'entity_singular' in domain_entity:
             domain_entity['entity_singular_upper'] = domain_entity['entity_singular'].upper()

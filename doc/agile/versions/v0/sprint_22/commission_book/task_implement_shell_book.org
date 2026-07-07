@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: EA1377BB-EDC7-4A7A-97ED-25C0316735D9
+:END:
+#+title: Task: Implement shell list/add/remove commands for book
+#+description: Add book CRUD scripts to the ores.shell library following the same pattern as countries and currencies.
+#+type: task
+#+level: s1
+#+filetags: :commission_book:sprint_22:v0:shell:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the book shell script set (list/get, add, remove, history, help) in projects/ores.shell/scripts/library/books/, mirroring the structure of countries and currencies, so operators can manage books from the REPL shell.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-07                               |
+
+* Acceptance
+
+- books/ submenu registered in the REPL.
+- list (get) script implemented and working against a live environment.
+- add script implemented and working.
+- remove script implemented and working.
+- history script implemented and working.
+- help script implemented.
+- All commands call the service via NATS (not direct repository access).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

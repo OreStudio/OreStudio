@@ -30,7 +30,9 @@ add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 target_compile_definitions(${tests_target_name}
-    PRIVATE ORES_REPO_ROOT="${CMAKE_SOURCE_DIR}")
+    PRIVATE
+        ORES_REPO_ROOT="${CMAKE_SOURCE_DIR}"
+        ORES_TEST_OUTPUT_DIR="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
 target_link_libraries(${tests_target_name}
     PRIVATE

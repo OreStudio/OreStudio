@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :org:testing:json:ores_orgmode_component:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: agile/qa-validation-runner-story
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-06
 #+updated: 2026-07-06
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,28 +33,50 @@ pass/fail result.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-06                               |
 
 * Acceptance
 
-- [ ] One test (not per-doc) parses every =.org= file in the repo and
+- [X] One test (not per-doc) parses every =.org= file in the repo and
   serializes each parsed document to JSON.
-- [ ] Test fails loudly (with the offending file path) if any doc
+- [X] Test fails loudly (with the offending file path) if any doc
   crashes, hangs, or throws during parsing.
-- [ ] JSON output is written somewhere inspectable (a build-output
+- [X] JSON output is written somewhere inspectable (a build-output
   directory) so it's usable as a debugging aid, not just a pass/fail
   gate.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Serialization used =rfl::json::write= (reflect-cpp), already this
+project's standard for domain-type JSON I/O — confirmed it handles
+=heading='s self-referential =children: vector<heading>= without any
+special-casing needed; recursive aggregate types just work.
+
+=collect_org_files()= walks the repo with
+=recursive_directory_iterator=, pruning =build=, =external=, =.git=,
+=vcpkg=, =vcpkg_installed= by disabling recursion into those
+directories (not filtering paths after the fact, so pruned subtrees
+are never even traversed). Guarded against a silently-empty corpus
+(=REQUIRE(files.size() > 100)=) so a broken exclusion list or a moved
+repo root fails loudly instead of reading as "covered everything".
+Repo root and JSON output directory both come in as compile
+definitions (=ORES_REPO_ROOT=, =ORES_TEST_OUTPUT_DIR=, the latter set
+to =CMAKE_RUNTIME_OUTPUT_DIRECTORY= — same place test-result XMLs
+already land) rather than environment variables, so the test runs the
+same way under =ctest=, a direct binary invocation, or an IDE runner.
+
+Result: found 3565 =.org= files; all parsed without a single exception
+across the full corpus. JSON dumps land in
+=<build>/publish/bin/orgmode_corpus_json/=, one file per doc, named
+from its repo-relative path. Confirms both this component's own docs
+and the wider corpus (agile docs, knowledge docs, codegen templates,
+recipes, ...) actually exercise the parser correctly, not just the
+hand-picked fixtures in =parser_tests.cpp=.
 
 * Notes
 
@@ -71,3 +93,12 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+New =corpus_tests.cpp=: one test walks the whole repo (pruning
+=build=/=external=/=.git=/=vcpkg=/=vcpkg_installed=), parses every
+=.org= file found (3565), and writes each as JSON under
+=<build>/publish/bin/orgmode_corpus_json/=. All 3565 parsed without a
+single exception — no crashes, no hangs, across the real corpus, not
+just hand-picked fixtures. =rfl::json::write= handled the recursive
+=heading= tree with no special-casing needed. Component test suite is
+now 13 test cases / 48 assertions, all passing.

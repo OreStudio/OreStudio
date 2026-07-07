@@ -141,7 +141,7 @@ More stories expected here over time as other consumers emerge.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] | BACKLOG | | | New component: parse org-mode docs into a C++ structure, resolve id: links via the existing org-roam SQLite index. Pure C++, usable from ores.shell; ports dogen.org's entity model. |
+| [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] | DONE | 2026-07-06 | 2026-07-07 | New component: parse org-mode docs into a C++ structure, resolve id: links via the existing org-roam SQLite index. Pure C++, usable from ores.shell; ports the shape of ores.compass's Python org parser. |
 | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] | BACKLOG | | | Qt panel, built on ores.orgmode, turning a test_scenario org doc's checklist into a guided test session; results and story/task context rendered in-app, not a standalone JSON file. |
 
 ** Infrastructure

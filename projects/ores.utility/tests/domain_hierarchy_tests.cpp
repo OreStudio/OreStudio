@@ -25,9 +25,9 @@ namespace {
 
 const std::string tags("[hierarchy]");
 
-ores::utility::domain::hierarchy_flat_row
-make_row(const boost::uuids::uuid& id, std::optional<boost::uuids::uuid> parent_id,
-         const std::string& name) {
+ores::utility::domain::hierarchy_flat_row make_row(const boost::uuids::uuid& id,
+                                                   std::optional<boost::uuids::uuid> parent_id,
+                                                   const std::string& name) {
     ores::utility::domain::hierarchy_flat_row row;
     row.id = id;
     row.parent_id = parent_id;

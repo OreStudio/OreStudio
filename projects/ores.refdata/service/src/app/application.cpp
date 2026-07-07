@@ -187,14 +187,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             [&nats](const rdev::business_day_convention_type_changed_event& e) {
                 publish_entity_event(
                     nats,
-                    std::string(
-                        ev::domain::event_traits<rdev::business_day_convention_type_changed_event>::
-                            name),
-                    ev::domain::entity_change_event{
-                        .entity = "ores.refdata.business_day_convention_type",
-                        .timestamp = e.timestamp,
-                        .entity_ids = e.codes,
-                        .tenant_id = e.tenant_id});
+                    std::string(ev::domain::event_traits<
+                                rdev::business_day_convention_type_changed_event>::name),
+                    ev::domain::entity_change_event{.entity =
+                                                        "ores.refdata.business_day_convention_type",
+                                                    .timestamp = e.timestamp,
+                                                    .entity_ids = e.codes,
+                                                    .tenant_id = e.tenant_id});
             });
 
     auto business_unit_sub = event_bus.subscribe<rdev::business_unit_changed_event>(

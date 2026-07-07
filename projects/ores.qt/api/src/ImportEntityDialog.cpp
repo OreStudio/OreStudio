@@ -75,8 +75,10 @@ void ImportEntityDialog::setupUI(const QString& entity_name_plural,
     // Using stateChanged for Qt 6.x compatibility (checkStateChanged added in 6.7)
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_DEPRECATED
-    connect(
-        selectAllCheckbox_, &QCheckBox::stateChanged, this, &ImportEntityDialog::onSelectAllChanged);
+    connect(selectAllCheckbox_,
+            &QCheckBox::stateChanged,
+            this,
+            &ImportEntityDialog::onSelectAllChanged);
     QT_WARNING_POP
     selectionLayout->addWidget(selectAllCheckbox_);
 
@@ -284,36 +286,39 @@ void ImportEntityDialog::onImportClicked() {
     auto import_one = import_one_;
     auto label_of = label_of_;
 
-    QFuture<std::pair<int, int>> future =
-        QtConcurrent::run([self, selected, total, import_one, label_of]() -> std::pair<int, int> {
-            int success_count = 0;
-            int current = 0;
+    QFuture<std::pair<int, int>> future = QtConcurrent::run([self,
+                                                             selected,
+                                                             total,
+                                                             import_one,
+                                                             label_of]() -> std::pair<int, int> {
+        int success_count = 0;
+        int current = 0;
 
-            for (auto index : selected) {
-                if (self->cancelRequested_.load()) {
-                    BOOST_LOG_SEV(lg(), info)
-                        << "Import cancelled by user at row " << current << " of " << total;
-                    break;
-                }
-
-                current++;
-                const auto label = label_of(index);
-
-                QMetaObject::invokeMethod(
-                    self,
-                    [self, label, current, total]() {
-                        self->progressBar_->setValue(current);
-                        self->statusLabel_->setText(
-                            QString("Importing %1 (%2 of %3)...").arg(label).arg(current).arg(total));
-                    },
-                    Qt::QueuedConnection);
-
-                if (import_one(index))
-                    success_count++;
+        for (auto index : selected) {
+            if (self->cancelRequested_.load()) {
+                BOOST_LOG_SEV(lg(), info)
+                    << "Import cancelled by user at row " << current << " of " << total;
+                break;
             }
 
-            return {success_count, total};
-        });
+            current++;
+            const auto label = label_of(index);
+
+            QMetaObject::invokeMethod(
+                self,
+                [self, label, current, total]() {
+                    self->progressBar_->setValue(current);
+                    self->statusLabel_->setText(
+                        QString("Importing %1 (%2 of %3)...").arg(label).arg(current).arg(total));
+                },
+                Qt::QueuedConnection);
+
+            if (import_one(index))
+                success_count++;
+        }
+
+        return {success_count, total};
+    });
 
     auto* watcher = new QFutureWatcher<std::pair<int, int>>(this);
     connect(watcher, &QFutureWatcher<std::pair<int, int>>::finished, this, [this, watcher]() {

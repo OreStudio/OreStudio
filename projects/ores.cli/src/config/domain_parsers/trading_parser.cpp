@@ -78,10 +78,9 @@ void print_domain_help(std::ostream& info) {
 }
 
 void validate_entity_name(const std::string& entity_name) {
-    const bool is_valid(entity_name == day_count_fraction_types_name ||
-                        entity_name == floating_index_types_name ||
-                        entity_name == payment_frequency_types_name ||
-                        entity_name == leg_types_name);
+    const bool is_valid(
+        entity_name == day_count_fraction_types_name || entity_name == floating_index_types_name ||
+        entity_name == payment_frequency_types_name || entity_name == leg_types_name);
 
     if (!is_valid) {
         BOOST_THROW_EXCEPTION(

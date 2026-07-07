@@ -26,7 +26,9 @@
 namespace ores::qt {
 
 HierarchyTreeWidget::HierarchyTreeWidget(QWidget* parent)
-    : QWidget(parent), layout_(new QVBoxLayout(this)), treeView_(new QTreeView(this)) {
+    : QWidget(parent)
+    , layout_(new QVBoxLayout(this))
+    , treeView_(new QTreeView(this)) {
     treeView_->setHeaderHidden(false);
     treeView_->setSelectionMode(QAbstractItemView::SingleSelection);
     treeView_->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -43,7 +45,9 @@ void HierarchyTreeWidget::setModel(QAbstractItemModel* model) {
     treeView_->setModel(model);
 
     if (model != nullptr) {
-        connect(treeView_->selectionModel(), &QItemSelectionModel::currentChanged, this,
+        connect(treeView_->selectionModel(),
+                &QItemSelectionModel::currentChanged,
+                this,
                 [this](const QModelIndex& current, const QModelIndex&) {
                     emit selectionChanged(current);
                 });

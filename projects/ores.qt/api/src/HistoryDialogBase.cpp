@@ -94,7 +94,8 @@ void HistoryDialogBase::initializeHistoryUi(const HistoryWidgets& widgets) {
     if (widgets_.closeButton) {
         widgets_.closeButton->setIcon(
             IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-        connect(widgets_.closeButton, &QPushButton::clicked, this, &HistoryDialogBase::requestClose);
+        connect(
+            widgets_.closeButton, &QPushButton::clicked, this, &HistoryDialogBase::requestClose);
     }
 
     updateActionStates();

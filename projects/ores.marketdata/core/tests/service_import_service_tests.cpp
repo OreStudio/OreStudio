@@ -130,7 +130,8 @@ TEST_CASE("import_leaves_point_id_empty_for_non_scalar_series_with_short_key", t
     REQUIRE(resp.success);
     REQUIRE(resp.observation_count == 1);
 
-    const auto series = series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "EUR/2D/1D");
+    const auto series =
+        series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "EUR/2D/1D");
     REQUIRE(series.size() == 1);
     CHECK_FALSE(series.front().is_scalar);
 

@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Discovered while modelling [[id:109FBFD6-C505-4196-B3EE-D5C798CE050F][fx_convention]]:
+Discovered while modelling [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][fx_convention]]:
 =day_count_fraction_type= lives in =ores.trading=
 ([[id:7856FDEB-E15B-4A72-BFA5-57ECF053AFFF][ores.trading.day_count_fraction_type]]), with exactly one consumer
 (=trading_swap_legs=), while every =*_convention= entity that would

@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Discovered while modelling [[id:109FBFD6-C505-4196-B3EE-D5C798CE050F][fx_convention]]:
+Discovered while modelling [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][fx_convention]]:
 =business_day_convention_type= lives in =ores.trading=
 (=ores.trading.business_day_convention_type=, now removed), but every =*_convention=
 entity that would actually reference it (=ibor_index_convention=,
@@ -24,7 +24,7 @@ entity that would actually reference it (=ibor_index_convention=,
 fully — SQL, codegen model, domain, repository, service, messaging, Qt
 UI — following the [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]], and delete the
 =ores.trading= original. This unblocks
-[[id:109FBFD6-C505-4196-B3EE-D5C798CE050F][fx_convention]] soft-FK'ing to it same-component, matching
+[[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][fx_convention]] soft-FK'ing to it same-component, matching
 every other refdata soft-FK. (Turned out not to be zero-consumer as
 first thought — =trading_swap_legs= soft-FKs it too; see the task's
 =* Plan= for the full investigation.)

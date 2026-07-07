@@ -128,7 +128,12 @@ existing first (not yet a task in this story — needs scaffolding).
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Corrupted synthetic =iso_code= prefix (=+"-"= instead of ="X"=) | currency_generator.cpp | Fixed | c3e7cdf2c — added explicit primary-key generator block to the model |
+| 2 | =tick_size= set to =pip_factor= (absolute rate move) instead of a pip count | conventions_mapper.cpp | Fixed | c3e7cdf2c — defaults to =1.0= |
+| 3 | Dangling =[[id:...]][fx_convention]]= doc links after deleting its model doc | business_day_convention_type.hpp/.org, refdata_business_day_convention_types_create.sql | Fixed | c3e7cdf2c — repointed at =currency_pair_convention= |
+| 4 | Stray footnote-like artefact ("USD1") in a doc comment | currency.hpp (generated) | Fixed | c3e7cdf2c — reworded model doc to avoid org =verbatim= stripping |
+| 5 | No unit test for =map_fx=/=reverse_fx= round-trip | conventions_mapper.cpp | Declined (tracked) | Already covered by BACKLOG task_test-ore-fx-convention-import.org |
+| 6 | =pip_factor= reciprocal is a float round-trip, may drift on export | conventions_mapper.cpp | Declined (tracked) | Same BACKLOG task as above |
 
 * Result
 

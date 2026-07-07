@@ -380,6 +380,11 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (countryController_)
                 countryController_->showListWindow();
         });
+        auto* actCurrencyPairs = ref->addAction(ico(Icon::Currency), tr("Currency &Pairs"));
+        connect(actCurrencyPairs, &QAction::triggered, this, [this]() {
+            if (currencyPairController_)
+                currencyPairController_->showListWindow();
+        });
 
         ref->addSeparator();
 
@@ -458,12 +463,6 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         connect(actOvernightIndexConventions, &QAction::triggered, this, [this]() {
             if (overnightIndexConventionController_)
                 overnightIndexConventionController_->showListWindow();
-        });
-        auto* actCurrencyPairs =
-            menuOreConventions->addAction(ico(Icon::Tag), tr("Currency &Pairs"));
-        connect(actCurrencyPairs, &QAction::triggered, this, [this]() {
-            if (currencyPairController_)
-                currencyPairController_->showListWindow();
         });
         auto* actCurrencyPairConventions =
             menuOreConventions->addAction(ico(Icon::Tag), tr("Currency Pair Conve&ntions"));

@@ -14,6 +14,7 @@ environments. New recipes go in this folder; edit this inventory to add a link.
 
 * Environment and Logs
 
+- [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]
 - [[id:B7726C15-7A7B-4FC6-A0E2-48A6EE64216F][How do I find the log files for an environment?]]
 
 * Database

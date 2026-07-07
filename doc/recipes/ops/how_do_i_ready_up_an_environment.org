@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 0A22B752-D5CF-4B36-8429-2950130AAABD
+:END:
+#+title: How do I ready up an environment?
+#+description: Stop services, recreate the database, start services, provision the Barclays Plc tenant, and start the Qt client — the full sequence to get a fresh, usable environment.
+#+type: recipe
+#+level: cross
+#+filetags: :ops:environment:recipe:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+
+Chains the individual environment-lifecycle recipes ([[id:D8663EF2-5626-462E-AADC-AB2717F49C0D][How do I start the
+ORE Studio services?]], [[id:4342B077-85EA-4C6A-9BDF-D38560C80B37][How do I recreate the database?]], [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the
+system with Barclays (GLEIF)?]]) into one end-to-end sequence for getting a
+checkout from "unknown state" to "usable, logged-in-ready environment" —
+the sequence most sessions need at the start of a verification or manual
+testing task.
+
+* Question
+
+How do I ready up an environment: stop services if running, recreate the
+database, start services, provision the tenant, and start the client?
+
+* Answer
+
+1. /Stop services/ if any are running (safe to run even if none are up):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh services stop
+   #+end_src
+
+2. /Recreate the database/ — drops and rebuilds roles, schema, and seed
+   data from scratch:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh db recreate -y
+   #+end_src
+
+3. /Start services/ — NATS and all backend services:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh services start
+   #+end_src
+
+   Verify everything came up:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh services status
+   #+end_src
+
+4. /Provision the tenant/ — the default is the Barclays Plc (GLEIF)
+   tenant and party, sourced from the golden copy. Unless the user asks
+   for a different tenant (e.g. the synthetic Acme provisioner, see [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How
+   do I provision the system with Acme (synthetic)?]]), run:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh shell -f \
+     projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+   #+end_src
+
+   If this fails with a Postgres "remaining connection slots are reserved"
+   error, see [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]] — another
+   environment on the shared instance is usually holding excess
+   connections; diagnose before assuming this environment is at fault.
+
+5. /Start the client/, detached, with a distinct colour/instance name so
+   it does not clash with other environments' running instances:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh client start --colour <colour> --instance-name <name>
+   #+end_src
+
+   Log in with the =super_admin= credentials used in the provisioning
+   step (or the tenant admin credentials, once a tenant party is
+   selected).
+
+* Script
+
+No single wrapper script — each step delegates to its own =compass=
+subcommand (=services=, =db=, =shell -f=, =client=); this recipe is the
+sequencing.
+
+* Tested by
+
+Manual: run the full sequence against a fresh checkout and confirm the
+client logs in and lists Barclays Plc party data.
+
+* See also
+
+- [[id:D8663EF2-5626-462E-AADC-AB2717F49C0D][How do I start the ORE Studio services?]]
+- [[id:4342B077-85EA-4C6A-9BDF-D38560C80B37][How do I recreate the database?]]
+- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]
+- [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How do I provision the system with Acme (synthetic)?]]
+- [[id:723F21AD-30F6-4D99-849F-7A44B368E4A1][How do I provision a tenant?]]
+- [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]]

@@ -8,7 +8,7 @@
 #+filetags: :org:codegen:scaffold:ores_orgmode_component:sprint_22:v0:
 #+owner: marco
 #+branch: agile/qa-validation-runner-story
-#+pr:
+#+pr: 1457
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-06
@@ -72,7 +72,7 @@ in scope here).
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1457][#1457]] | [org] Add ores.orgmode: C++ org-mode parsing and org-roam link resolution |
 
 * Review
 

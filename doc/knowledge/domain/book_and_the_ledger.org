@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: D215AB01-8BE4-4E2B-930C-17AC80491C9D
+:END:
+#+title: Book and the ledger
+#+description: How a book connects to the general ledger: the legal-entity/business-unit/cost-centre hierarchy, ledger book mechanics and the ledger sweep, profit remittance and cash sweeping, and P&L attribution and reporting by book.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:trading:book:finance:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+
+* Summary
+
+A [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] sits at the bottom of a strict accounting hierarchy —
+/Legal Entity → Entity → Business Unit → Cost Centre → Ledger Book/ —
+and every ledger book carries a functional currency, a monthly
+balance carry-forward, and a daily *Ledger Sweep* that converts
+transactional-currency positions into that functional currency.
+Profit is periodically crystallised out of trading books and remitted
+to Group via a dedicated *Central Remittance Book*, and P&L
+attribution by book is the backbone of standard risk and P&L
+reporting across the system.
+
+* Detail
+
+** Organisational hierarchy
+
+Books sit at the bottom of a strict accounting hierarchy:
+
+#+BEGIN_EXAMPLE
+Legal Entity → Entity → Business Unit → Cost Centre → Ledger Book
+#+END_EXAMPLE
+
+Each ledger book belongs to exactly one Cost Centre; a Business Unit
+can have many Cost Centres; an Entity is made up of many Business
+Units; a Legal Entity is composed of many Entities. Books also carry
+desk/sub-desk, location, and senior-funder metadata used for
+ownership and dimensional reporting.
+
+** Ledger book mechanics
+
+- Ledger books have their balances carried forward monthly as part of
+  Month End close, with a special year-end variant (Year End) where
+  opening balances for the new year are posted separately.
+- Within the ledger, a book's trial balance is broken down by
+  currency, further split by product (Repos, Loans, Spots & Forwards,
+  Vanilla, Complex) and by counterparty type (Internal — e.g. IDT —
+  vs External — other banks, customers). Per currency, the ledger
+  tracks both functional and transactional Daily, Month-to-Date, and
+  Balance figures.
+- Forward valuations sent to the ledger must be expressed at the
+  *leg level*.
+- Each book has a *functional currency*, as designated by the ledger.
+  Because trades happen in transactional currency, a daily automated
+  process — the *Ledger Sweep* — spot-converts transactional-currency
+  positions (live and settled cash) into functional currency,
+  capturing the resulting P&L into a dedicated *FX Revaluation* entry
+  for that book.
+- Finance separately maps funding books to their associated ledger
+  books and requires a book-level valuation report aggregating all
+  MtM and settled cash into book-level results. Any P&L difference
+  arising purely from the daily natural-to-functional currency
+  conversion is posted as a distinct *P&L Adjustment*.
+
+** Profit remittance and cash sweeping
+
+- *Profit Sell Down* — a monthly adjustment that crystallises profit
+  out of a trading book. Two deals are booked — one in the trading
+  book, one offsetting in a global/central book. Quarterly, the
+  central book's balance determines how much cash is remitted to
+  Group, after which an offsetting trade zeroes the central book back
+  out. This central book is the *Central Remittance Book*.
+- The Profit Remittance tool formalises this: a designated remittance
+  book (e.g. Central Remittance) receives trades against a special
+  *Profit Remittance* internal counterparty, entered per book. Because
+  these trades only move cash balances, they affect funding but are
+  booked as balance-sheet only and do not touch P&L.
+- *EOM Cleardown* — at each month end, a cash trade equal to that
+  book's P&L (in transactional currency) is booked, alongside a
+  functional-currency (e.g. GBP) cash-equivalent trade for the book,
+  with a matching gloss trade posted to the global functional book.
+  Positive P&L books receive cash.
+- *Sweep* — centralises long/short cash balances by sweeping them into
+  a central book. Only books explicitly flagged as *Sweepable*
+  participate.
+
+** P&L attribution and reporting by book
+
+Book-level attribution is a recurring backbone of reporting across the
+system: risk measures (e.g. Rho — the effect of a 0.01% rate move) are
+reported at book level; the standard P&L report is fundamentally "P&L
+by book" (Book, Book Currency, P&L Currency, FX rate, P&L, Delta,
+etc.); and a *Control Explain* process explicitly calls out book moves
+as a cause of hard-to-spot P&L breaks between days, since the deal's
+prior book is not retained on the deal record itself (see
+[[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]]).
+
+Two ledger-adjacent control reports exist specifically for book static
+data: the *Amended Books* report (books whose static data changed
+between two time points) and the *Book List* report (as part of
+standard EOD reporting).
+
+* See also
+
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — hub note.
+- [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] — the ledger setup a book opening requires, and the
+  flat-balance requirement for closure.
+- [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]] — the deal-level activity taxonomy underlying
+  book-level P&L reporting.
+- [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] — book-level risk measures.

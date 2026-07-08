@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 44C9D99B-979B-43AB-90BC-AF7E7D8BDE7C
+:END:
+#+title: Dynamic books
+#+description: A saved, live filter that behaves like a book without being one: deals are automatically added as they are booked if they satisfy the filter's criteria.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:trading:book:finance:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+
+* Summary
+
+A *dynamic book* is a saved, live filter that behaves like a
+[[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] without being one: a named rule set that new deals are
+automatically added to as they are booked, if they satisfy the rule
+set's criteria. Dynamic books appear in the book tree alongside real
+books and compose with free-text search and other filters, giving
+traders an ad hoc grouping mechanism that sits outside the formal
+[[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][book/portfolio hierarchy]] entirely.
+
+* Detail
+
+** Rule set
+
+A dynamic book's filter is a named rule set of the form /Property /
+Operator / Value/ — e.g. =Deal ID Equals X=, =Book Not Y= — chained
+together with comparison operators (=GT=, =LT=, =GTE=, and similar)
+and all AND-ed together. Any deal property can be used: instrument
+type, counterparty, maturity, trade date, delivery date,
+entity/business/centre, EOD, trader, asset, deal ID, or brokerage
+properties.
+
+** Live membership
+
+As new deals are booked, they are automatically added to any dynamic
+book whose criteria they satisfy — membership is evaluated
+continuously, not computed once at creation time. Dynamic books are
+presented in the book tree indistinguishably from real books, and
+compose with free-text search and any other active filters.
+
+** Example use cases
+
+- "All EUR/USD options expiring this week, across all books."
+- "All client trades with counterparty HSBC."
+- "All NDFs fixing tomorrow."
+
+* See also
+
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — hub note.
+- [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]] — the formal hierarchy dynamic books sit
+  alongside but outside of.
+- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the deal blotter dynamic books filter, via its book
+  tree panel.

@@ -151,3 +151,10 @@
 :END:
 
 #+include: "chapter_6_countries.org" :minlevel 2
+
+* Books
+:PROPERTIES:
+:CUSTOM_ID: chapter_7_books
+:END:
+
+#+include: "chapter_7_books.org" :minlevel 2

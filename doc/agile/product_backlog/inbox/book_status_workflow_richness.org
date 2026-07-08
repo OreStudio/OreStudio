@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 8B05E561-92CD-4D7C-B7F7-3D1EE0FB70E1
+:END:
+#+title: Model book_status as a workflow state, not a flat enum
+#+description: The domain lifecycle for opening a book is a multi-step workflow (initiation -> controller review -> enrichment by Finance/Market Risk/Operations -> approval -> access review), tracking where a book sits and who still needs to act. book_status today is a flat 3-value enum (Active/Closed/Frozen). A Pending value was added this session as a placeholder gesture toward the opening workflow but nothing actually tracks workflow position; that Pending value should be reconsidered once real workflow-state modeling is scoped (see fix_book_status_lookup_reference task for the immediate value-mismatch bug, which is separate from this deeper modeling question).
+#+type: capture
+#+level: cross
+#+filetags: :refdata:book:workflow:domain:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

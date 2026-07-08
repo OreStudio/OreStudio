@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 519D3722-34B5-41A2-B101-87A527F7CCFB
+:END:
+#+title: Task: Add book entity chapter to the user manual
+#+description: Document Book's Qt windows (list, detail, history) and behaviours in the user manual.
+#+type: task
+#+level: s1
+#+filetags: :product:refdata:commissioning:book:manual:sprint_22:v0:commission_book:
+#+owner: marco
+#+branch: feature/book-manual-chapter-task
+#+pr: 1466
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a chapter for Book to the user manual documenting the Qt list, detail, and history windows and their behaviours, matching the style of existing entity chapters.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- [X] Manual chapter exists for Book covering list/detail/history windows; site builds cleanly.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1466][#1466]] | [doc,ores.qt] Books manual chapter and domain knowledge cluster |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Added chapter_7_books.org (list/detail/history windows, 5 screenshots),
+wired into user_manual.org. While capturing screenshots, found and
+fixed a real gap: the badge item delegate only coloured popup rows, not
+the closed-box display -- added OreBadgeComboBox (promoted marker class
+whose paintEvent renders the current selection as a badge pill too).
+Also split the freeform Book domain notes into an 8-doc Zettelkasten
+knowledge cluster under doc/knowledge/domain/, reviewed book.org
+against it, and filed the Book data model cleanup story/tasks plus 4
+product-backlog captures for what that review surfaced.

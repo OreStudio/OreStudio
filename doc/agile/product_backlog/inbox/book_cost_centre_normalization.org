@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: EC1CAE87-3DA9-4F46-A749-99230E52C2E5
+:END:
+#+title: Normalize book's cost_center into a real Cost Centre entity
+#+description: cost_center is currently free text on book, but the domain hierarchy (Legal Entity -> Entity -> Business Unit -> Cost Centre -> Ledger Book) treats Cost Centre as a formal accounting object -- no such entity exists in the codebase. Deferred until proper ledger support lands, since Cost Centre only makes sense within that hierarchy.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:book:ledger:domain:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

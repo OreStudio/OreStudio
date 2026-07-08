@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 758EE33B-3944-4875-813A-302BFF9EECD0
+:END:
+#+title: Extend dynamic combo codegen with optional per-item flag icons
+#+description: No codegen mechanism renders a combo box whose items carry flag icons (e.g. a currency or business-centre picker); the only working example is hand-written, bypassing codegen entirely.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:qt:currency:combo:flag:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Fulfilled, not promoted*: [[id:D8C2D3DF-433A-4350-9916-73327EB90999][Task: Add a generic FK-combo-with-flag-icons facet to ores.codegen.entity]]
+landed the =flagged_combo= detail-field type this capture asked for
+(=is_dynamic_combo= extended with a per-item flag decorator reusing
+=FlagIconHelper::apply_flag_icons=). [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Story: Commission: book]] then adopted
+it for =ledger_ccy= and reconciled =Book='s parallel =references_entity=
+mechanism onto it, adding =setup_currency_combo()= as the shared
+implementation and promoting the widget class
+(=ores::qt::OreCurrencyComboBox=) so a =flagged_combo= field gets the
+project's standard combo popup sizing/positioning for free.
+
+* What
+
+Today the qt codegen profile has two separate, unconnected half-mechanisms
+around flags/combos, neither of which is what most fields actually need:
+
+- =is_dynamic_combo= (=projects/ores.codegen/src/codegen/core.py:2091=,
+  backed by =ores::qt::populateDynamicCombo<Entity>= in
+  =ores.qt/api/include/ores.qt/DynamicComboSetup.hpp=) — a real, wired,
+  generated async combo box (text + tooltip). *No icons.*
+- =domain_entity.qt.has_flag_icon= (wired into
+  =cpp_qt_detail_dialog.*.mustache=, =qt_detail_dialog_ui.mustache=,
+  =cpp_qt_client_model.*.mustache=) — a single inline flag icon on a
+  =QLineEdit=, tied to one entity's own uploaded image
+  (=entityImageId()=/=keyFlagIcon()=). *Not a combo, no list.*
+
+The actual "combo box populated with a list of entities, each showing a
+flag" pattern — e.g. =BusinessUnitDetailDialog='s =businessCentreCombo=
+via =FlagIconHelper::setup_flag_combo=/=apply_flag_icons= — is
+*100% hand-written custom code*, not codegen output (no "GENERATED
+FILE" marker on that file). Neither existing mechanism produces it.
+
+Extend =is_dynamic_combo= with an optional per-field flag decorator
+that reuses the existing, working =FlagIconHelper::apply_flag_icons=
+(already generic over =FlagSource::{Currency,Country,BusinessCentre}=)
+so a codegen'd combo field can opt into per-item flags without any new
+rendering code — only new wiring in =core.py= + the detail-dialog
+mustache templates.
+
+* Why
+
+Surfaced while investigating "add a flag to Book's ledger currency"
+(=ledger_ccy=): a free-text field referencing a closed set (currencies)
+should render as a validated, flagged combo, but no codegen path
+produces that today. Currency's own soft-FK combos
+(=monetary_nature=, =market_tier=, =rounding_type=) also went through
+=populateDynamicCombo= without flags, since none of those three carry
+flags — but any future currency/country/business-centre soft-FK combo
+(Book's =ledger_ccy= included) will hit this same gap.
+
+* References
+
+- =projects/ores.qt/api/include/ores.qt/DynamicComboSetup.hpp= —
+  existing text-only dynamic combo helper.
+- =projects/ores.qt/api/src/FlagIconHelper.cpp= — existing, generic,
+  working flag-application logic for combos (currently hand-invoked
+  only from =BusinessUnitDetailDialog=).
+- =projects/ores.qt/api/include/ores.qt/DetailDialogBase.hpp= (around
+  line 300) — the unrelated single-image =has_flag_icon= mechanism, for
+  contrast.
+- [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Story: Reconcile currency
+  Qt custom features with codegen]] — where =is_dynamic_combo= was
+  piloted (text-only) and =has_flag_icon= was scoped as "reconcile
+  currency onto it", without addressing the combo+flag combination.
+
+* See also
+
+- [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Story: Commission: book]]
+  — where this was noticed (Book's =ledger_ccy= field).

@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 7356C36E-2633-4043-9747-27E61593EA4F
+:END:
+#+title: Story: Fix tenant-scoped variability system settings: permissions and per-tenant seeding
+#+description: ores.iam.core's tenant_handler directly instantiates variability::service::system_settings_service using IAM's own DB context to clear a tenant's bootstrap_mode flag on activation, but ores_variability_system_settings_tbl only grants DML to ores_solid_dirac_variability_service, not the iam service role, so the write fails with 'permission denied' and bootstrap_mode is silently left true (the failure is caught and only logged as a warning).
+#+type: story
+#+level: s2
+#+filetags: :sprint_22:v0:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=projects/ores.iam/core/include/ores.iam.core/messaging/tenant_handler.hpp:198-203=
+(=complete_tenant_provisioning=) directly constructs a
+=variability::service::system_settings_service= using IAM's own
+database context and calls =set_bootstrap_mode(false, ...)= to clear
+the tenant's bootstrap flag on activation. This cross-domain call fails
+with =ERROR: permission denied for table
+ores_variability_system_settings_tbl= because that table's grants
+(=projects/ores.sql/create/variability/variability_system_settings_create.sql=)
+only give DML access to =ores_solid_dirac_variability_service= (plus
+=ddl_user=/=owner=/=rw=/=ro=), not the IAM service's own DB role. The
+call is wrapped in a try/catch that only logs a =warn= and continues
+provisioning, so the failure is silent from the operator's point of
+view — the tenant is marked active, but its =bootstrap_mode= setting is
+left stuck =true= in the DB.
+
+Observed while provisioning the Barclays Plc tenant via
+=barclays_system_provision.ores= against a fresh DB
+(=ores.iam.service.0.log:1856-1857=):
+#+begin_example
+[ERROR] [ores.variability.repository.system_settings_repository] Query execution failed: ERROR:  permission denied for table ores_variability_system_settings_tbl
+[WARN] [ores.iam.messaging.tenant_handler] Failed to clear bootstrap mode for tenant 9ef2c435-3c2b-4f36-8cad-1dcbe126d373: Repository error: Query execution failed: ERROR:  permission denied for table ores_variability_system_settings_tbl
+#+end_example
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-08                               |
+
+* Acceptance
+
+- IAM can clear a tenant's =bootstrap_mode= on activation without a
+  permission-denied failure.
+- Tenant-scoped system settings other than =bootstrap_mode= (e.g.
+  =synthetic_data_generation=) are seeded, or fall back to the system
+  tenant's default, for tenants provisioned after this story ships —
+  no more silent feature-vanishing for non-system tenants.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:95F83186-36A6-4F73-9A8A-85FBB02453FA][System settings are tenant-scoped but only bootstrap_mode is seeded per-tenant]] | BACKLOG | | | SettingGatedActionController-gated features (e.g. synthetic data generation) silently hide for every tenant except the system tenant, since system_settings_service.get_all() only reads the caller's own tenant and tenant provisioning only seeds system.bootstrap_mode. |
+| [[id:F1E5832D-F837-40AF-B0B3-32D787C3800A][Grant IAM service DML on variability system_settings table]] | BACKLOG | | | IAM's tenant_handler cross-domain-calls variability::service::system_settings_service to clear bootstrap_mode, but the IAM service DB role has no grant on ores_variability_* tables, so the write fails with permission denied and is silently swallowed. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-07-03 in the product backlog; promoted preserving the UUID.
+
+** What
+
+=projects/ores.iam/core/include/ores.iam.core/messaging/tenant_handler.hpp:198-203=
+(=complete_tenant_provisioning=) directly constructs a
+=variability::service::system_settings_service= using IAM's own
+database context and calls =set_bootstrap_mode(false, ...)= to clear
+the tenant's bootstrap flag on activation. This cross-domain call fails
+with =ERROR: permission denied for table
+ores_variability_system_settings_tbl= because that table's grants
+(=projects/ores.sql/create/variability/variability_system_settings_create.sql=)
+only give DML access to =ores_solid_dirac_variability_service= (plus
+=ddl_user=/=owner=/=rw=/=ro=), not the IAM service's own DB role. The
+call is wrapped in a try/catch that only logs a =warn= and continues
+provisioning, so the failure is silent from the operator's point of
+view — the tenant is marked active, but its =bootstrap_mode= setting is
+left stuck =true= in the DB.
+
+Observed while provisioning the Barclays Plc tenant via
+=barclays_system_provision.ores= against a fresh DB
+(=ores.iam.service.0.log:1856-1857=):
+#+begin_example
+[ERROR] [ores.variability.repository.system_settings_repository] Query execution failed: ERROR:  permission denied for table ores_variability_system_settings_tbl
+[WARN] [ores.iam.messaging.tenant_handler] Failed to clear bootstrap mode for tenant 9ef2c435-3c2b-4f36-8cad-1dcbe126d373: Repository error: Query execution failed: ERROR:  permission denied for table ores_variability_system_settings_tbl
+#+end_example
+
+** Why
+
+Whatever downstream behaviour keys off a tenant's =bootstrap_mode=
+setting (flagged in the code comment as independent of the
+=variability::flags:create= permission, i.e. meant to work
+regardless of user permissions) silently never activates for any
+tenant provisioned this way, since the flag never actually flips to
+=false=. This was flagged while investigating a separate, still-open
+"eventing is broken" report on the Barclays tenant — not confirmed as
+the root cause of that report, but a real, silent correctness bug in
+its own right: either grant the IAM service role write access to
+=ores_variability_system_settings_tbl=, or route the write through
+=ores.variability.service= over NATS instead of a same-process,
+cross-crate repository call using the wrong DB role.
+
+** References
+
+- =projects/ores.iam/core/include/ores.iam.core/messaging/tenant_handler.hpp:186-210=
+- =projects/ores.sql/create/variability/variability_system_settings_create.sql= (grants)
+- =projects/ores.variability/core/src/service/system_settings_service.cpp= (the service being called cross-domain)

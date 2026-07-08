@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: F1E5832D-F837-40AF-B0B3-32D787C3800A
+:END:
+#+title: Task: Grant IAM service DML on variability system_settings table
+#+description: IAM's tenant_handler cross-domain-calls variability::service::system_settings_service to clear bootstrap_mode, but the IAM service DB role has no grant on ores_variability_* tables, so the write fails with permission denied and is silently swallowed.
+#+type: task
+#+level: s1
+#+filetags: :sql:iam:variability:permissions:sprint_22:v0:fix_iam_variability_grant_bootstrap_mode:
+#+owner: marco
+#+branch: feature/system-settings-not-seeded-for-new-tenants
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7356C36E-2633-4043-9747-27E61593EA4F][Fix tenant-scoped variability system settings: permissions and per-tenant seeding]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Grant the IAM service's DB role the access it needs to write
+=ores_variability_system_settings_tbl= so that
+=complete_tenant_provisioning='s cross-domain call to
+=variability::service::system_settings_service::set_bootstrap_mode=
+stops failing with =permission denied= and =bootstrap_mode= actually
+clears to =false= on tenant activation. Decide between (a) a targeted
+grant on the specific table in
+=iam_service_db_grants_create.sql=/the mustache template that
+generates it, or (b) routing the write through
+=ores.variability.service= over NATS instead of a same-process
+cross-crate repository call using the wrong DB role — prefer (b) if it
+is not disproportionate effort, since it avoids widening IAM's DB
+footprint into another domain's tables.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7356C36E-2633-4043-9747-27E61593EA4F][Fix tenant-scoped variability system settings: permissions and per-tenant seeding]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- Provisioning a tenant (e.g. re-running the Barclays Plc scenario
+  against a fresh DB) no longer logs =permission denied for table
+  ores_variability_system_settings_tbl=.
+- The tenant's =bootstrap_mode= setting is =false= in the DB after
+  activation, verified via =ores.shell='s =variability get-setting= (or
+  equivalent) against the provisioned tenant.
+- No unrelated widening of IAM's DB grants beyond what's needed for
+  this write.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

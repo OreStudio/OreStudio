@@ -8,7 +8,7 @@
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
 #+branch: feature/librarian-currency-pair-support
-#+pr:
+#+pr: 1461
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -135,7 +135,7 @@ populates or transports them:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1461][#1461]] | [refdata,sql] Add currency_pairs and currency_pair_conventions to the DQ librarian |
 
 * Review
 

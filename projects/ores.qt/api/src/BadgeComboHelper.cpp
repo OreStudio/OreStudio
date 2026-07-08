@@ -22,6 +22,7 @@
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
+#include "ores.qt/OreBadgeComboBox.hpp"
 #include <QApplication>
 #include <QPainter>
 #include <QPointer>
@@ -77,6 +78,13 @@ void apply_combo_badges(QComboBox* combo, BadgeCache* cache, const std::string& 
         return;
 
     combo->setItemDelegate(new BadgeItemDelegate(combo, cache, badge_key));
+
+    // The item delegate above only paints popup rows -- QComboBox doesn't
+    // route its own closed-box painting through the delegate. When the
+    // combo is the promoted OreBadgeComboBox marker class, also give it
+    // the badge source so the closed box matches the popup.
+    if (auto* badgeBox = qobject_cast<OreBadgeComboBox*>(combo))
+        badgeBox->setBadgeSource(cache, badge_key);
 }
 
 void setup_badge_combo(QObject* context,

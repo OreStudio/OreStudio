@@ -1,0 +1,183 @@
+:PROPERTIES:
+:ID: 35A268FD-D06D-4D7E-9E46-EEBB8B719728
+:END:
+#+title: Books
+#+description: Book management in OreStudio: what a trading book represents, the Qt UI, the flagged currency picker, the status lifecycle, and history and revert.
+#+type: manual
+#+level: cross
+#+filetags: :knowledge:manual:books:trading:user_guide:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+
+#+startup: inlineimages
+@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /book/ as a reference-data
+entity in OreStudio. A book is the internal ledger unit that owns
+positions; the chapter sets out what a book represents, the interface
+that governs its lifecycle, and the meaning of its fields — a
+flag-icon currency picker, an operational status with its own
+lifecycle, and a trading/non-trading flag.
+
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
+** Overview
+
+The chapter advances the argument that managing a book well means first
+understanding what it represents, then the interface that governs its
+lifecycle — and it proceeds in that order. It begins by establishing
+what a book is in [[*What is a Book?][What is a Book?]], distinguishing a book from the
+counterparties and portfolios it sits alongside; this is the premise
+the rest of the chapter builds on. From there it surveys the body of
+records in [[*The Books window][The Books window]] before narrowing to a single record in
+[[*Book Details][Book Details]] and its General and Provenance tabs, including the
+[[*Book lifecycle][Book lifecycle]] a book's status moves through. It then turns to
+changing a record under audit — [[*Editing a book][Editing]], [[*Deleting a book][Deleting]], and
+[[*Book history][Book history]] — culminating in reverting to an earlier version, the
+point at which the bitemporal audit trail does its work. The
+[[*Conclusion][Conclusion]] draws these steps together.
+
+** What is a Book?
+
+A /book/ is the internal ledger unit that owns positions within a
+party's trading organisation. Every trade books into exactly one book;
+a book aggregates the trades it owns for risk, P&L, and reporting
+purposes. Books sit within a party's organisational structure
+alongside business units and portfolios — a portfolio groups related
+books for a trading strategy or desk, while a book is the leaf-level
+unit that actually carries positions.
+
+A book carries a small set of identifying and operational fields:
+
+- A *ledger currency* — the currency positions in this book are
+  reported in.
+- A *GL account reference* — the general ledger account this book maps
+  to in the firm's accounting system.
+- A *cost centre* — the internal cost allocation this book's activity
+  is charged to.
+- A *status* — whether the book is currently active, and if not, why.
+- A *trading flag* — whether this is a trading book (subject to
+  market-risk capital treatment) or a non-trading book (banking-book
+  treatment).
+
+Unlike currencies or countries, a book has no external standards body;
+its identity is entirely OreStudio's own, scoped to the owning party.
+
+** The Books window
+
+Open the Books window from the /Trading/ menu. It lists all books
+defined in the tenant, with one row per book.
+
+#+caption[The Books window]: The Books window, showing the full list of books in the tenant. Each row shows the name, ledger currency (with flag icon), status (as a colour-coded badge), cost centre, whether the book is a trading book (as a Yes/No badge), version number, the identity of the last modifier, and when the record was last recorded. The status bar shows the current page and total record count.
+[[proj:assets/images/books_main_dialog.png]]
+
+The toolbar buttons reload the list and open the add, edit, delete, and
+history actions. The list is paginated; use the page controls at the
+bottom right to navigate. Double-clicking a row opens the *Book
+Details* dialog.
+
+** Book Details
+
+The Book Details dialog has two tabs — *General* and *Provenance*. The
+three action buttons at the bottom — *Delete*, *Close*, and *Save* —
+apply to the book as a whole.
+
+*** General
+
+#+caption[Book Details — General tab]: The General tab for a book. It shows the id, name, ledger currency, GL account reference, cost centre, status, and trading-book flag.
+[[proj:assets/images/book_details_general.png]]
+
+The General tab carries the fields of the book:
+
+- *Id* — the book's identifier. This is the primary key and cannot be
+  changed after creation.
+- *Name* — the book's display name. Unlike the id, the name can be
+  changed after creation — real trading systems allow a book to be
+  renamed while its id and GL mapping remain the durable identity.
+- *Ledger Currency* — the currency this book reports in, chosen from a
+  combo box populated with ISO currency codes, each shown with its
+  flag icon.
+
+  #+caption[The Ledger Currency picker]: The Ledger Currency combo box open, showing the list of ISO currency codes each with its flag icon. Selecting a currency updates the closed box to show the chosen code and flag.
+  [[proj:assets/images/book_ledger_currency_combo.png]]
+
+- *GL Account Ref* — free-text reference to the general ledger account
+  this book maps to.
+- *Cost Center* — free-text internal cost allocation code.
+- *Status* — the book's position in its operational lifecycle, chosen
+  from a combo box. See [[*Book lifecycle][Book lifecycle]] below for what each value
+  means and how a book moves between them.
+
+  #+caption[The Status picker]: The Status combo box open, showing the five status values.
+  [[proj:assets/images/book_status_combo.png]]
+
+- *Trading Book* — a checkbox marking whether this is a trading book.
+  Checked books are shown as a /Yes/ badge in the Books window's
+  Trading column; unchecked books as /No/.
+
+*** Book lifecycle
+
+#+begin_note
+Content pending — awaiting lifecycle notes describing what each status
+means (=Active=, =Inactive=, =Pending=, =Frozen=, =Closed=) and the
+transitions a book goes through between them.
+#+end_note
+
+*** Provenance
+
+The Provenance tab is read-only and shows the audit metadata for the
+current version. See the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Reference Data — Provenance]] section for a full
+description of the provenance fields common to all reference data
+entities.
+
+** Editing a book
+
+To edit a book, open it in the Book Details dialog, make your changes,
+and click *Save*. Before the record is written, OreStudio prompts for
+a change reason — the same /Change Reason Required/ dialog shown in
+the [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] chapter, and not repeated here. Select a *Reason* from
+the drop-down and add optional *Commentary*, then confirm. Every save
+creates a new version; the previous version is never overwritten.
+
+** Deleting a book
+
+To delete a book, open it and click *Delete*. OreStudio asks for
+confirmation before the record is closed off. Deletion is a soft
+close — the record's history is preserved and remains visible in the
+History dialog.
+
+** Book history
+
+To view the full change history, open the details dialog and click
+the history icon in the title bar, or right-click the row and choose
+*History*.
+
+#+caption[The Book History dialog]: The History dialog for a book, listing every version newest-first. Selecting a version populates the detail panel; the Changes tab shows which fields changed between the selected version and its predecessor, rendered as a field-level diff.
+[[proj:assets/images/book_history_dialog.png]]
+
+Select a version to populate the detail panel. The *Changes* tab shows
+which fields changed between the selected version and its predecessor.
+The *Revert* button reinstates any historical version as a *new*
+version, preserving the full audit chain — the old version is never
+rewritten.
+
+** Conclusion
+
+The chapter set out to show that managing a book well follows from
+understanding what it represents and the interface that governs its
+lifecycle, and it has traced exactly that path. A book is the
+leaf-level ledger unit that owns positions, identified within its
+party by an id and name and carrying a ledger currency, a GL mapping,
+a cost centre, a status, and a trading/non-trading flag. Building on
+that, the Qt interface took the record from the list view down to a
+single detail dialog — its currency picker showing flags, its status
+governed by the book lifecycle — and through the editing, deleting,
+and history workflows, where reverting to an earlier version
+demonstrated the same bitemporal audit trail described in the
+[[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter.
+Shell and command-line access to books is not yet implemented; it is
+tracked separately as part of the shell and CLI commissioning work.
+
+** See also
+
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the shared data quality and audit framework this chapter builds on.
+- [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the ledger currency a book references, and the Change Reason Required dialog.

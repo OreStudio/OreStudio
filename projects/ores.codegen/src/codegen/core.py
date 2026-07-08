@@ -2145,6 +2145,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f['is_line_edit'] = f.get('type') == 'line_edit'
                 f['is_text_edit'] = f.get('type') in ('text_edit', 'plain_text_edit')
                 f['is_static_combo'] = f.get('type') == 'static_combo'
+                if f['is_static_combo'] and f.get('badge_key'):
+                    # Promote to the marker class whose closed-box paintEvent
+                    # renders the current selection as a badge pill too, not
+                    # just the popup rows apply_combo_badges() already
+                    # colours -- same shape as combo_widget_class for a
+                    # currency flagged_combo.
+                    f.setdefault('combo_widget_class', 'ores::qt::OreBadgeComboBox')
+                    f.setdefault('combo_widget_extends', 'QComboBox')
+                    f.setdefault('combo_widget_header', 'ores.qt/OreBadgeComboBox.hpp')
                 f['is_dynamic_combo'] = f.get('type') == 'dynamic_combo'
                 if f['is_dynamic_combo'] and f.get('combo_fetch_fn'):
                     field_pascal = snake_to_pascal(f.get('field', ''))

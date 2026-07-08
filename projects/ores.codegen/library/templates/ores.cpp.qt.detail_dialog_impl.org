@@ -187,11 +187,13 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupUi() {
     initKeyFlagField();
 {{/domain_entity.qt.has_key_flag_icon}}
 {{/domain_entity.qt.has_flag_icon}}
-{{#domain_entity.qt.has_version_navigation}}
+{{#domain_entity.qt.has_toolbar}}
 
     toolBar_ = new QToolBar(this);
     toolBar_->setMovable(false);
     toolBar_->setFloatable(false);
+{{/domain_entity.qt.has_toolbar}}
+{{#domain_entity.qt.has_version_navigation}}
 
     revertAction_ = new QAction(tr("Revert"), this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
@@ -240,11 +242,62 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupUi() {
             &{{domain_entity.entity_pascal}}DetailDialog::onLastVersionClicked);
     toolBar_->addAction(lastVersionAction_);
     lastVersionAction_->setVisible(false);
+{{/domain_entity.qt.has_version_navigation}}
+{{#domain_entity.qt.has_generate_action}}
+    setupGenerateAction();
+{{/domain_entity.qt.has_generate_action}}
+{{#domain_entity.qt.has_toolbar}}
 
     if (auto* mainLayout = qobject_cast<QVBoxLayout*>(layout()))
         mainLayout->insertWidget(0, toolBar_);
-{{/domain_entity.qt.has_version_navigation}}
+{{/domain_entity.qt.has_toolbar}}
 }
+{{#domain_entity.qt.has_generate_action}}
+
+void {{domain_entity.entity_pascal}}DetailDialog::setupGenerateAction() {
+    generateAction_ = new QAction(tr("Generate"), this);
+    generateAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Wand, IconUtils::DefaultIconColor));
+    generateAction_->setToolTip(tr("Fill fields with synthetic test data"));
+    connect(generateAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onGenerateClicked);
+    toolBar_->addAction(generateAction_);
+    generateAction_->setVisible(false);
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::onGenerateClicked() {
+    BOOST_LOG_SEV(lg(), debug) << "Generate clicked in detail dialog";
+
+    try {
+        utility::generation::generation_context ctx;
+        auto generated =
+            {{domain_entity.component}}::{{domain_entity.generator_facet_name}}::generate_synthetic_{{domain_entity.entity_singular}}(ctx);
+        // The key identifies an existing record in edit mode; only a
+        // brand-new record (create mode) may take the generated key.
+{{#domain_entity.qt.detail_fields}}
+{{#is_key}}
+        if (!createMode_)
+            generated.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
+                {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}};
+{{/is_key}}
+{{/domain_entity.qt.detail_fields}}
+        {{domain_entity.qt.item_var}}_ = generated;
+        updateUiFrom{{domain_entity.entity_pascal_short}}();
+
+        hasChanges_ = true;
+        updateSaveButtonState();
+
+        emit statusMessage(
+            tr("Generated synthetic {{domain_entity.entity_singular_words}} data - modify as needed and save"));
+
+        BOOST_LOG_SEV(lg(), info) << "Filled fields with generated {{domain_entity.entity_singular_words}}";
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Error generating {{domain_entity.entity_singular_words}}: " << e.what();
+        MessageBoxHelper::critical(this,
+                                   tr("Generation Error"),
+                                   tr("Failed to generate {{domain_entity.entity_singular_words}} data: %1").arg(e.what()));
+    }
+}
+{{/domain_entity.qt.has_generate_action}}
 {{#domain_entity.qt.has_flag_icon}}
 
 std::optional<boost::uuids::uuid>

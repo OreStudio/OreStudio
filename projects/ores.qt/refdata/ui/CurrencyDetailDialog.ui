@@ -41,7 +41,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="labelIsoCode">
             <property name="text">
-             <string>:</string>
+             <string>ISO Code:</string>
             </property>
            </widget>
           </item>
@@ -58,7 +58,7 @@
           <item row="1" column="0">
            <widget class="QLabel" name="labelName">
             <property name="text">
-             <string>:</string>
+             <string>Name:</string>
             </property>
            </widget>
           </item>
@@ -72,7 +72,7 @@
           <item row="2" column="0">
            <widget class="QLabel" name="labelNumericCode">
             <property name="text">
-             <string>:</string>
+             <string>Numeric Code:</string>
             </property>
            </widget>
           </item>
@@ -86,7 +86,7 @@
           <item row="3" column="0">
            <widget class="QLabel" name="labelMonetaryNature">
             <property name="text">
-             <string>:</string>
+             <string>Asset Class:</string>
             </property>
            </widget>
           </item>
@@ -100,7 +100,7 @@
           <item row="4" column="0">
            <widget class="QLabel" name="labelMarketTier">
             <property name="text">
-             <string>:</string>
+             <string>Market Tier:</string>
             </property>
            </widget>
           </item>
@@ -114,7 +114,7 @@
           <item row="5" column="0">
            <widget class="QLabel" name="labelSymbol">
             <property name="text">
-             <string>:</string>
+             <string>Symbol:</string>
             </property>
            </widget>
           </item>
@@ -128,7 +128,7 @@
           <item row="6" column="0">
            <widget class="QLabel" name="labelFractionSymbol">
             <property name="text">
-             <string>:</string>
+             <string>Fraction Symbol:</string>
             </property>
            </widget>
           </item>
@@ -142,7 +142,7 @@
           <item row="7" column="0">
            <widget class="QLabel" name="labelFractionsPerUnit">
             <property name="text">
-             <string>:</string>
+             <string>Fractions Per Unit:</string>
             </property>
            </widget>
           </item>
@@ -159,7 +159,7 @@
           <item row="8" column="0">
            <widget class="QLabel" name="labelFormat">
             <property name="text">
-             <string>:</string>
+             <string>Format:</string>
             </property>
            </widget>
           </item>
@@ -173,7 +173,7 @@
           <item row="9" column="0">
            <widget class="QLabel" name="labelRoundingType">
             <property name="text">
-             <string>:</string>
+             <string>Rounding Type:</string>
             </property>
            </widget>
           </item>
@@ -187,7 +187,7 @@
           <item row="10" column="0">
            <widget class="QLabel" name="labelRoundingPrecision">
             <property name="text">
-             <string>:</string>
+             <string>Rounding Precision:</string>
             </property>
            </widget>
           </item>

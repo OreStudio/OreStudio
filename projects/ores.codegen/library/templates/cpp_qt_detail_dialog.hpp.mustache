@@ -14,11 +14,17 @@
 #include <QAction>
 {{/domain_entity.qt.has_setting_gated_actions}}
 {{#domain_entity.qt.has_version_navigation}}
-#include "ores.qt/IconUtils.hpp"
 #include "{{domain_entity.qt.version_history_include}}"
+{{/domain_entity.qt.has_version_navigation}}
+{{#domain_entity.qt.has_generate_action}}
+#include "ores.{{domain_entity.component_include}}/{{domain_entity.generator_facet_name}}/{{domain_entity.entity_singular}}_generator.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+{{/domain_entity.qt.has_generate_action}}
+{{#domain_entity.qt.has_toolbar}}
+#include "ores.qt/IconUtils.hpp"
 #include <QAction>
 #include <QToolBar>
-{{/domain_entity.qt.has_version_navigation}}
+{{/domain_entity.qt.has_toolbar}}
 {{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}
 {{^combo_fetch_fn}}
 #include "{{combo_include}}"
@@ -121,6 +127,9 @@ private slots:
     void onNextVersionClicked();
     void onLastVersionClicked();
 {{/domain_entity.qt.has_version_navigation}}
+{{#domain_entity.qt.has_generate_action}}
+    void onGenerateClicked();
+{{/domain_entity.qt.has_generate_action}}
 
 protected:
     QTabWidget* tabWidget() const override;
@@ -160,6 +169,9 @@ private:
     void updateVersionNavButtonStates();
     void showVersionNavActions(bool visible);
 {{/domain_entity.qt.has_version_navigation}}
+{{#domain_entity.qt.has_generate_action}}
+    void setupGenerateAction();
+{{/domain_entity.qt.has_generate_action}}
 {{! see * Extension points above }}
 <<paste:F55CB64E-165A-4E15-A50A-5723C0320E97>>
 
@@ -179,8 +191,10 @@ private:
 {{/domain_entity.qt.setting_gated_actions}}
     SettingGatedActionController* settingGatedActions_{nullptr};
 {{/domain_entity.qt.has_setting_gated_actions}}
-{{#domain_entity.qt.has_version_navigation}}
+{{#domain_entity.qt.has_toolbar}}
     QToolBar* toolBar_{nullptr};
+{{/domain_entity.qt.has_toolbar}}
+{{#domain_entity.qt.has_version_navigation}}
     QAction* revertAction_{nullptr};
     QAction* firstVersionAction_{nullptr};
     QAction* prevVersionAction_{nullptr};

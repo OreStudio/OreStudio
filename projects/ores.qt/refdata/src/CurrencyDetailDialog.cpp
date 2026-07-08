@@ -25,9 +25,7 @@
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ui_CurrencyDetailDialog.h"
 #include <QComboBox>
 #include <QFutureWatcher>
@@ -43,9 +41,7 @@ using namespace ores::logging;
 CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     : DetailDialogBase(parent)
     , ui_(new Ui::CurrencyDetailDialog)
-    , clientManager_(nullptr)
-    , generateAction_(nullptr)
-    , settingGatedActions_(nullptr) {
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -147,59 +143,6 @@ void CurrencyDetailDialog::setupUi() {
 
     if (auto* mainLayout = qobject_cast<QVBoxLayout*>(layout()))
         mainLayout->insertWidget(0, toolBar_);
-
-    setupGenerateAction();
-}
-
-void CurrencyDetailDialog::setupGenerateAction() {
-    generateAction_ = new QAction(tr("Generate"), this);
-    generateAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Wand, IconUtils::DefaultIconColor));
-    generateAction_->setToolTip(tr("Fill fields with synthetic test data"));
-    connect(generateAction_, &QAction::triggered, this, &CurrencyDetailDialog::onGenerateClicked);
-    toolBar_->addAction(generateAction_);
-
-    // Initially hidden - will be shown if feature flag is enabled
-    generateAction_->setVisible(false);
-}
-
-void CurrencyDetailDialog::onGenerateClicked() {
-    BOOST_LOG_SEV(lg(), debug) << "Generate clicked in detail dialog";
-
-    try {
-        utility::generation::generation_context ctx;
-        const auto currency = refdata::generators::generate_fictional_currencies(1, ctx).front();
-
-        // Only fill ISO code in add mode - in edit mode it's the primary key
-        if (createMode_) {
-            ui_->isoCodeEdit->setText(QString::fromStdString(currency.iso_code));
-        }
-
-        // Fill all other fields with generated data
-        ui_->nameEdit->setText(QString::fromStdString(currency.name));
-        ui_->numericCodeEdit->setText(QString::fromStdString(currency.numeric_code));
-        ui_->symbolEdit->setText(QString::fromStdString(currency.symbol));
-        ui_->fractionSymbolEdit->setText(QString::fromStdString(currency.fraction_symbol));
-        ui_->fractionsPerUnitSpinBox->setValue(currency.fractions_per_unit);
-        ui_->roundingTypeCombo->setCurrentText(QString::fromStdString(currency.rounding_type));
-        ui_->roundingPrecisionSpinBox->setValue(currency.rounding_precision);
-        ui_->formatEdit->setText(QString::fromStdString(currency.format));
-        ui_->monetaryNatureCombo->setCurrentText(QString::fromStdString(currency.monetary_nature));
-        ui_->marketTierCombo->setCurrentText(QString::fromStdString(currency.market_tier));
-
-        // Mark as dirty
-        hasChanges_ = true;
-        updateSaveButtonState();
-
-        emit statusMessage(tr("Generated synthetic currency data - modify as needed and save"));
-
-        BOOST_LOG_SEV(lg(), info) << "Filled fields with generated currency: " << currency.iso_code;
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Error generating currency: " << e.what();
-        MessageBoxHelper::critical(this,
-                                   tr("Generation Error"),
-                                   tr("Failed to generate currency data: %1").arg(e.what()));
-    }
 }
 
 std::optional<boost::uuids::uuid> CurrencyDetailDialog::entityImageId() const {
@@ -251,14 +194,6 @@ void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
     populateMonetaryNatureCombo();
     populateMarketTierCombo();
     populateRoundingTypeCombo();
-
-    if (clientManager_) {
-        settingGatedActions_ = new SettingGatedActionController(clientManager_, this);
-        settingGatedActions_->registerAction(
-            generateAction_, "system.synthetic_data_generation", [this]() { return !readOnly_; });
-        if (clientManager_->isLoggedIn())
-            settingGatedActions_->refresh();
-    }
 }
 
 void CurrencyDetailDialog::setUsername(const std::string& username) {

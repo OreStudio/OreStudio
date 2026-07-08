@@ -39,6 +39,12 @@ paginated. Rounding Type / Monetary Nature / Market Tier columns
 render as plain text (badge rendering is a separate follow-up task,
 not in scope here).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Flag handling round-trips
 
 Open any currency's detail view. Click the flag icon; the flag
@@ -49,11 +55,24 @@ confirm the flag persisted. This exercises code fully rewritten this
 task (~180 lines of hand-rolled logic replaced by 3 one-line
 overrides) — the highest-risk area.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | ./tmp/Screenshot from 2026-07-08 17-44-42.png initial screen size of details is very small. once i resize:; ; - field names not filled in; - combo boxes not showing tags |
+
 ** Dynamic combos populate and persist
 
 Rounding Type / Monetary Nature / Market Tier combos populate from
 the server (not empty, not stuck on "Loading…"). Change one, save,
 reopen; confirm it persisted.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Dynamic combo fetch-failure shows an error, not a silent empty combo
 
@@ -61,6 +80,12 @@ Stop ores.refdata.service. Open a *new* currency detail dialog.
 Confirm the combos show a "Failed to load" placeholder and an error
 message appears (not a silently empty combo). Restart the service
 afterward.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Version navigation (first/prev/next/last/revert)
 
@@ -72,6 +97,13 @@ correct currency code and version number (this exact string was a
 bug fixed mid-review on the version-nav PR — verify it's not
 blank/garbled).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | no version navigation buttons see ./tmp/Screenshot from 2026-07-08 19-22-36.png |
+
 ** NATS staleness notification lands on a second client
 
 Requires a second running client instance (e.g. =compass client
@@ -81,11 +113,23 @@ old data), confirm a staleness indicator appears within a few
 seconds with no manual refresh — both on the open detail dialog and
 the list window.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** CSV/XML export and XML import round-trip
 
 Currency list toolbar: Export CSV, Export XML — confirm files are
 written with sensible data. Import XML: re-import the exported file;
 confirm it round-trips without errors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Setting-gated Generate actions (list and detail)
 
@@ -96,6 +140,12 @@ dialog (add mode): click Generate; confirm it fills the form with
 synthetic data. Toggle the setting off; confirm both Generate
 buttons disappear without restarting the client.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Delete removes the record
 
 Select a currency (a synthetic one from the Generate step works
@@ -103,11 +153,23 @@ well) and click Delete. Confirm it deletes and history is preserved.
 This regresses a field-name bug (delete_currency_request.iso_code ->
 iso_codes) fixed as part of this task.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Cross-domain navigation opens the right auxiliary window
 
 Currency list toolbar: click Rounding, Monetary Natures, Market
 Tiers. Confirm each opens the corresponding auxiliary entity's list
 window (not currency's own).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** New list-view columns — expected gap, not a regression
 
@@ -118,14 +180,20 @@ ClientCurrencyModel was intentionally kept hand-written this round
 confirm this matches expectations rather than filing it as a new
 bug. Tracked separately by task E7277F16.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-08T18:26:09Z |
+| Branch        | feature/sync-qt-codegen-currency |
+| Commit        | b553654e1 |
+| Worktree      | brave_hopper |
 
 * Notes

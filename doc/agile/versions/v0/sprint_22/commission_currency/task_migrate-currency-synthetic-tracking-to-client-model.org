@@ -15,6 +15,7 @@
 #+updated: 2026-07-08
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+abandoned_reason: Superseded by [[id:3247E7A0-73CD-459D-B2C5-119FC0D7DA33][Rethink synthetic reference-data generation across entities]] — the feature turned out to be half-baked (never actually save-able; see that story's Analysis), so it's being removed and redesigned from scratch rather than migrated as-is.
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
 
@@ -45,11 +46,11 @@ deferred.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                                |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing — see [[id:3247E7A0-73CD-459D-B2C5-119FC0D7DA33][Rethink synthetic reference-data generation across entities]] instead. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance

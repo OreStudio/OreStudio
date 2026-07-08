@@ -67,6 +67,18 @@ struct delete_currency_response {
     std::string message;
 };
 
+struct get_currency_history_request {
+    using response_type = struct get_currency_history_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.currencies.history";
+    std::string iso_code;
+};
+
+struct get_currency_history_response {
+    std::vector<ores::refdata::domain::currency> history;
+    bool success = false;
+    std::string message;
+};
+
 }
 
 #endif

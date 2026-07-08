@@ -55,6 +55,9 @@ The full template source. Edit here and re-tangle with
 #include "ores.qt/{{domain_entity.entity_pascal}}HistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/UiPersistence.hpp"
+{{#domain_entity.qt.has_version_navigation}}
+#include "ores.qt/VersionNavigationHelper.hpp"
+{{/domain_entity.qt.has_version_navigation}}
 
 namespace ores::qt {
 
@@ -128,6 +131,10 @@ void {{domain_entity.entity_pascal}}Controller::showListWindow() {
             this, &{{domain_entity.entity_pascal}}Controller::onAddNewRequested);
     connect(listWindow_, &{{domain_entity.entity_pascal}}MdiWindow::show{{domain_entity.entity_pascal_short}}History,
             this, &{{domain_entity.entity_pascal}}Controller::onShowHistory);
+{{#domain_entity.qt.related_entity_shortcuts}}
+    connect(listWindow_, &{{domain_entity.entity_pascal}}MdiWindow::show{{signal}}Requested,
+            this, &{{domain_entity.entity_pascal}}Controller::show{{signal}}Requested);
+{{/domain_entity.qt.related_entity_shortcuts}}
 {{! see * Extension points above }}
 <<paste:52E70F3B-5903-4359-91FB-B533054A18AC>>
 
@@ -465,8 +472,24 @@ void {{domain_entity.entity_pascal}}Controller::onOpenVersion(
 {{/domain_entity.qt.has_combo_badge_source}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+{{#domain_entity.qt.has_version_navigation}}
+    // A single version-nav toolbar (first/prev/next/last) only means something
+    // if the dialog has the *full* history to navigate, not just this one
+    // version. When onOpenVersion's sender is the HistoryDialog that
+    // requested it, pull that history across; otherwise fall back to a plain
+    // read-only single-version display.
+    if (!wireVersionHistory<{{domain_entity.entity_pascal}}HistoryDialog>(
+            sender(), detailDialog, versionNumber)) {
+        detailDialog->set{{domain_entity.entity_pascal_short}}({{domain_entity.qt.item_var}});
+        detailDialog->setReadOnly(true, versionNumber);
+    }
+    connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::revertRequested,
+            this, &{{domain_entity.entity_pascal}}Controller::onRevertVersion);
+{{/domain_entity.qt.has_version_navigation}}
+{{^domain_entity.qt.has_version_navigation}}
     detailDialog->set{{domain_entity.entity_pascal_short}}({{domain_entity.qt.item_var}});
     detailDialog->setReadOnly(true);
+{{/domain_entity.qt.has_version_navigation}}
 
     connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::statusMessage,
             this, [self = QPointer<{{domain_entity.entity_pascal}}Controller>(this)](const QString& message) {

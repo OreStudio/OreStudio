@@ -72,9 +72,8 @@ signals:
     void errorMessage(const QString& error);
 
     /**
-     * @brief Relayed from CurrencyMdiWindow; wired by RefdataPlugin to open
-     * the corresponding auxiliary list window. Currency-specific, not part
-     * of the qt-profile codegen template.
+     * @brief Relayed from CurrencyMdiWindow; wired to
+     * the target's own controller in the plugin's composition root.
      */
     void showRoundingTypesRequested();
     void showMonetaryNaturesRequested();

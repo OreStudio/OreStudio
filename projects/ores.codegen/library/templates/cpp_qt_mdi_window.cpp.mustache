@@ -188,6 +188,22 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
     connect(exportXMLAction_, &QAction::triggered, this,
             &{{domain_entity.entity_pascal}}MdiWindow::exportToXML);
 {{/domain_entity.qt.has_csv_xml_io}}
+{{#domain_entity.qt.has_related_entity_shortcuts}}
+
+    toolbar_->addSeparator();
+{{#domain_entity.qt.related_entity_shortcuts}}
+
+    {
+        auto* action = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::{{icon}}, IconUtils::DefaultIconColor),
+            tr("{{label}}"));
+        action->setToolTip(tr("{{tooltip}}"));
+        connect(action, &QAction::triggered, this, [this]() {
+            emit show{{signal}}Requested();
+        });
+    }
+{{/domain_entity.qt.related_entity_shortcuts}}
+{{/domain_entity.qt.has_related_entity_shortcuts}}
 }
 
 void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {

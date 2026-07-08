@@ -26,6 +26,7 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
+#include "ores.qt/VersionNavigationHelper.hpp"
 #include "ores.refdata.api/eventing/currency_changed_event.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -365,8 +366,19 @@ void CurrencyController::onOpenVersion(const refdata::domain::currency& currency
     detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCurrency(currency);
-    detailDialog->setReadOnly(true);
+    // A single version-nav toolbar (first/prev/next/last) only means something
+    // if the dialog has the *full* history to navigate, not just this one
+    // version. When onOpenVersion's sender is the HistoryDialog that
+    // requested it, pull that history across; otherwise fall back to a plain
+    // read-only single-version display.
+    if (!wireVersionHistory<CurrencyHistoryDialog>(sender(), detailDialog, versionNumber)) {
+        detailDialog->setCurrency(currency);
+        detailDialog->setReadOnly(true, versionNumber);
+    }
+    connect(detailDialog,
+            &CurrencyDetailDialog::revertRequested,
+            this,
+            &CurrencyController::onRevertVersion);
 
     connect(detailDialog,
             &CurrencyDetailDialog::statusMessage,

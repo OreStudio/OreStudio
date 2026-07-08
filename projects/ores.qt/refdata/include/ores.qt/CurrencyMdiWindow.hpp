@@ -27,7 +27,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.qt/SettingGatedActionController.hpp"
 #include "ores.refdata.api/csv/exporter.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include <QSortFilterProxyModel>
@@ -72,12 +71,10 @@ signals:
     void showCurrencyHistory(const refdata::domain::currency& currency);
 
     /**
-     * @brief Emitted to request opening the auxiliary Rounding Types /
-     * Monetary Natures / Currency Market Tiers list windows.
-     *
-     * Cross-domain navigation, currency-specific: not part of the qt-profile
-     * codegen template, wired by RefdataPlugin to the corresponding
-     * auxiliary controller's showListWindow().
+     * @brief Emitted to request opening a related entity's own list window
+     * (e.g. a lookup entity backing one of this entity's combo fields).
+     * Relayed by the controller and wired to the target's controller in the
+     * plugin's composition root.
      */
     void showRoundingTypesRequested();
     void showMonetaryNaturesRequested();
@@ -91,7 +88,6 @@ public slots:
     void exportToCSV();
     void exportToXML();
     void importFromXML();
-    void generateSynthetic();
 
 protected:
     void doReload() override;
@@ -113,7 +109,6 @@ private:
     void setupTable();
     void setupConnections();
     void updateActionStates();
-    void setupGenerateAction();
 
     ClientManager* clientManager_;
     QString username_;
@@ -134,8 +129,6 @@ private:
     QAction* exportCSVAction_;
     QAction* exportXMLAction_;
     QAction* historyAction_;
-    QAction* generateAction_;
-    SettingGatedActionController* settingGatedActions_;
 };
 
 }

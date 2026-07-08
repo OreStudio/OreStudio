@@ -25,7 +25,6 @@
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
-#include "ores.qt/SettingGatedActionController.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include <QAction>
@@ -110,7 +109,6 @@ private slots:
     void onPrevVersionClicked();
     void onNextVersionClicked();
     void onLastVersionClicked();
-    void onGenerateClicked();
 
 protected:
     QTabWidget* tabWidget() const override;
@@ -128,7 +126,6 @@ private:
     void setupUi();
     void setupConnections();
     void setupCombos();
-    void setupGenerateAction();
     void updateUiFromCurrency();
     void updateCurrencyFromUi();
     void updateSaveButtonState();
@@ -153,8 +150,6 @@ private:
     bool readOnly_{false};
     bool hasChanges_{false};
 
-    QAction* generateAction_;
-    SettingGatedActionController* settingGatedActions_{nullptr};
     QToolBar* toolBar_{nullptr};
     QAction* revertAction_{nullptr};
     QAction* firstVersionAction_{nullptr};

@@ -523,6 +523,25 @@ def _qt_setting_gated_actions(node: OrgNode) -> list[dict[str, Any]]:
     ]
 
 
+def _qt_related_entity_shortcuts(node: OrgNode) -> list[dict[str, Any]]:
+    """Convert the Qt 'Related entity shortcuts' table into the dict list shape.
+
+    Each row is a toolbar shortcut to a related entity's own list window —
+    e.g. currency's Rounding Type / Monetary Nature / Market Tier combos each
+    reference a small lookup entity worth a one-click detour to. `signal`
+    names the emitted/relayed Qt signal (`show{signal}Requested`); `icon`
+    is an Icon:: enum value; `tooltip`/`label` are the toolbar action's
+    tooltip and button text. Wiring the signal to the target entity's own
+    controller happens in the plugin's composition root (e.g.
+    RefdataPlugin), not here — cross-controller wiring is inherently
+    plugin-level, same as every other controller-to-controller signal."""
+    if not node.tables:
+        return []
+    return [
+        {k: _parse_typed(v) for k, v in row.items()} for row in node.tables[0]
+    ]
+
+
 def _custom_methods(node: OrgNode) -> list[dict[str, Any]]:
     """Each custom method is a sub-heading with its own ID, prose body
     explaining intent, and named src blocks for declaration/implementation."""
@@ -831,6 +850,24 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             if sga:
                 qt_out["setting_gated_actions"] = _qt_setting_gated_actions(sga)
                 qt_out["has_setting_gated_actions"] = bool(qt_out["setting_gated_actions"])
+            # Every entity gets a generate_synthetic_<entity> generator (ores.cpp.generator
+            # facet) — a detail dialog opts into a "Generate" toolbar button that fills
+            # its fields from it by naming the QAction member "generateAction" in the
+            # Setting-gated actions table above (member declaration + visibility gating
+            # both come from that table already; this only decides whether the click
+            # handler and its generator call get generated).
+            qt_out["has_generate_action"] = any(
+                a.get("action") == "generateAction" for a in qt_out.get("setting_gated_actions", [])
+            )
+            # A detail dialog needs a QToolBar iff it hosts either version-nav
+            # actions or the Generate action (both add QAction rows to it).
+            qt_out["has_toolbar"] = bool(
+                qt_out.get("has_version_navigation") or qt_out["has_generate_action"]
+            )
+            res = _section(qt, "Related entity shortcuts")
+            if res:
+                qt_out["related_entity_shortcuts"] = _qt_related_entity_shortcuts(res)
+                qt_out["has_related_entity_shortcuts"] = bool(qt_out["related_entity_shortcuts"])
             # has_flag_icon is derived, not a separately-authored property:
             # an entity has the single-column image_id-keyed flag mechanism
             # iff it declared which column shows it. Any manually-set

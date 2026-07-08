@@ -23,7 +23,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
-#include "ores.refdata.api/domain/currency_version_history.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/party_currency_repository.hpp"
@@ -121,19 +120,6 @@ public:
      * @return Vector of all historical versions of the currency.
      */
     std::vector<domain::currency> get_currency_history(const std::string& iso_code);
-
-    /**
-     * @brief Retrieves currency version history with version metadata.
-     *
-     * Converts raw currency records to currency_version objects with
-     * version numbers, modified_by, and recorded_at metadata. Versions
-     * are ordered from newest to oldest.
-     *
-     * @param iso_code The ISO code of the currency.
-     * @return The version history, or std::nullopt if currency not found.
-     */
-    std::optional<domain::currency_version_history>
-    get_currency_version_history(const std::string& iso_code);
 
     /**
      * @brief Lists currencies visible to a specific party, with pagination.

@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: F1778D0E-BDC1-40A2-B889-C4D196FB2BFC
+:END:
+#+title: Task: Show market_tier and monetary_nature as badge columns on the currency list by default
+#+description: The currency list window doesn't currently surface market_tier or monetary_nature columns as badges; once task AEEDE877 lands dynamic-combo badge rendering for the detail dialog, apply the same badge rendering to these two columns in ClientCurrencyModel/CurrencyMdiWindow's list view, and ensure both columns are visible by default (not hidden behind a column-visibility toggle), matching how Book's book_status column renders as a badge in its list view.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: AEEDE877
+#+blocked_since: 2026-07-08
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Once task AEEDE877 lands badge rendering for the =market_tier= and
+=monetary_nature= dynamic combos on the detail dialog, extend the same
+badge rendering to the currency list window's grid columns for these
+two fields, and ensure both columns ship visible by default (not
+hidden behind the column-visibility picker) — matching how Book's
+=book_status= column renders as a badge and is on by default in its
+list view. Blocked on AEEDE877's badge mechanism (dynamic-combo badge
+support doesn't exist yet); do not start before that lands.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- Currency list grid shows =market_tier= and =monetary_nature= as
+  colour-coded badge pills, not plain text, matching Book's
+  =book_status= badge column visually.
+- Both columns are visible by default when the list window first
+  opens for a user with no saved column-visibility preferences (not
+  toggled on manually via the column picker).
+- Existing users' saved column-visibility preferences aren't silently
+  overridden if they'd previously hidden these columns on purpose.
+- Build passes; verified live, not just by code inspection.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

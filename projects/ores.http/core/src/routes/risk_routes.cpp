@@ -179,33 +179,15 @@ asio::awaitable<http_response> risk_routes::handle_delete_currencies(const http_
     }
 }
 
-asio::awaitable<http_response> risk_routes::handle_get_currency_history(const http_request& req) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling get currency history request";
-
-    try {
-        auto code = req.get_path_param("code");
-        if (code.empty()) {
-            co_return http_response::bad_request("Currency code required");
-        }
-
-        refdata::service::currency_service service(ctx_);
-        auto history_opt = service.get_currency_version_history(code);
-
-        refdata::messaging::get_currency_history_response resp;
-        if (!history_opt) {
-            resp.success = false;
-            resp.message = "Currency not found: " + code;
-        } else {
-            resp.success = true;
-            resp.message = "History retrieved successfully";
-            resp.history.versions = std::move(history_opt->versions);
-        }
-
-        co_return http_response::json(rfl::json::write(resp));
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Get currency history error: " << e.what();
-        co_return http_response::internal_error(e.what());
-    }
+asio::awaitable<http_response> risk_routes::handle_get_currency_history(const http_request&) {
+    // Disabled: currency_version/currency_version_history (the hand-written,
+    // non-codegen types this endpoint depended on) were removed when the Qt
+    // history dialog was migrated onto the standard flat std::vector<currency>
+    // history shape. Reimplement once Wt/HTTP entity endpoints are brought
+    // under codegen — see "HTTP entity endpoints — top-level commissioning
+    // story" (03FC50B3-622B-4456-AE66-2F180B526723).
+    co_return http_response::internal_error(
+        "Currency history endpoint temporarily disabled pending HTTP codegen modernization");
 }
 
 }

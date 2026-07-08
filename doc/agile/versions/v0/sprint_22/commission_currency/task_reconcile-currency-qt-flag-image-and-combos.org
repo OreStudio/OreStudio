@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/reconcile-currency-qt-flag-image-and-combos
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -34,12 +34,12 @@ emit.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-08                               |
 
 * Acceptance
 
@@ -53,11 +53,93 @@ emit.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Unlike the 5 prior capability-landing tasks in this story, this one
+was scoped as a genuine call-site migration of currency's real files
+— not a land-template-then-verify-by-diff-then-discard pass. Two
+independent pieces of work:
+
+** 1. Flag image handling migration
+
+=DetailDialogBase= already has a complete, mature flag mechanism
+(=initFlagButton=, =entityImageId()=/=keyFlagField()=/=keyFlagIcon()=
+virtual accessors, =onSelectFlagClicked=, =updateFlagDisplay=,
+=flagChanged()=/=selectedImageId()=/=resetFlagChanged()=) — confirmed
+by =CountryDetailDialog= already using it end to end. Currency's
+~180 lines of hand-rolled equivalent (=flagButton_=,
+=pendingImageId_=, =flagChanged_=, =onCurrencyImageSet=, manual
+=updateFlagDisplay=) were 100% redundant duplication, migrated to
+match Country's pattern exactly:
+- =initFlagButton(ui_->iconGroup->layout())= replaces the hand-built
+  flag button/container.
+- =entityImageId()=/=keyFlagField()=/=keyFlagIcon()= overrides added
+  (matching Country's).
+- =getCurrency()= now uses =flagChanged()=/=selectedImageId()=
+  instead of the local =pendingImageId_= staging.
+- Dropped currency's extra =onCurrencyImageSet= NATS-confirmation
+  toast handling — Country doesn't have this either; the generic
+  =imagesLoaded=/=allLoaded= → =updateFlagDisplay= wiring (already in
+  base's =setImageCache=) covers the refresh.
+- Also dropped the "no-flag placeholder ID" auto-seeding quirk in the
+  old =setCurrency= — unique to currency, inconsistent with how
+  every other flag-icon entity handles a null =image_id=.
+
+** 2. Combo-field codegen wiring
+
+Landed a new =combo_domain_type=-gated branch in the
+=detail_dialog= template (=cpp_qt_detail_dialog.cpp.mustache=)
+generating a =populateDynamicCombo<Entity>= call from per-field org
+properties (=combo_domain_type=, =combo_fetch_fn=,
+=combo_watcher_name=, =combo_code_field=, =combo_tooltip_field=,
+=combo_sort_field=, =combo_label=, =combo_setter_pascal=) — distinct
+from the pre-existing (unused) =combo_helper=/=combo_fetch_fn=
+branches, which don't match the piloted helper's real 9-argument
+signature. Added currency's 3 combo fields (=rounding_type=,
+=monetary_nature=, =market_tier=) to a new "Detail fields" org table
+section (only these 3 — the other 11 currency fields stay unmodelled
+until the final sync task populates the full table).
+
+*Process note*: initially hand-typed the =on_error= callback
+addition directly into =CurrencyDetailDialog.cpp= before adding the
+template capability — caught mid-edit (thanks to a review prompt)
+and reverted. Correct order followed after: land the template
+capability first, regenerate + diff to verify the generated
+=populate*Combo()= bodies match currency's real code, *then* copy
+the verified generated snippet in (adjusting only the real file's
+=currentCurrency_= member name vs. the model's generic =item_var=
+naming — a pre-existing, unrelated drift).
+
+** 3. Fetch-failure-signalling decision
+
+The pilot (task 8AA363F8) flagged that =populateDynamicCombo='s bare
+=std::vector<Entity>= fetch signature can't distinguish "fetch
+failed" from "legitimately empty" — both render a silently-empty
+combo. *Decision*: land the fix, not just document a deferral.
+Changed =populateDynamicCombo='s =fetch= parameter to
+=std::function<std::expected<std::vector<Entity>, QString>(ClientManager*)>=
+and added an =on_error= callback (default no-op) plus a distinct
+"Failed to load" combo placeholder. Updated the 3
+=LookupFetcher= functions currency uses (confirmed sole callers) to
+return =std::expected=, propagating
+=process_authenticated_request='s existing error channel instead of
+silently swallowing it. Currency's 3 combo call sites (both hand and
+generated) now pass an =on_error= callback that emits
+=errorMessage()=.
+
+Scoped to just the 3 functions currency uses — did not touch the
+rest of =LookupFetcher='s many other bare-vector fetchers (out of
+scope, no other entity affected).
 
 * Notes
+
+Verified with a real regenerate + rebuild of =ores.qt.refdata.lib=
+(not a diff-only check): =CurrencyDetailDialog.cpp= compiles clean
+with the migrated flag handling and the generated combo methods.
+Also regenerated Country (no dynamic-combo fields) to confirm the
+new =code()= accessor generalises cleanly with zero
+=combo_domain_type= leakage into peers without it. All regenerated
+trees discarded after verification per this branch's actual
+deliverable (the hand-migrated =CurrencyDetailDialog.{hpp,cpp}=, the
+template, and the =DynamicComboSetup=/=LookupFetcher= API changes).
 
 * PRs
 
@@ -72,3 +154,15 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+All three items landed. Currency's flag handling now calls
+=DetailDialogBase='s generic mechanism (real code change, ~180 lines
+of duplication removed). The 3 soft-FK combo fields are wired through
+a new =combo_domain_type= codegen emit calling
+=populateDynamicCombo<Entity>=, verified equivalent to currency's
+hand-migrated code via regenerate+diff, then applied for real. The
+fetch-failure-signalling gap is closed with a real =std::expected=
+propagation + =on_error= callback, not just documented. Full
+whole-app build (=cmake --build --preset linux-clang-debug-make=)
+passes clean. This closes the last of the 6 prerequisites for "Sync
+Qt codegen for currency" (EA647CBC) — that task is now unblocked.

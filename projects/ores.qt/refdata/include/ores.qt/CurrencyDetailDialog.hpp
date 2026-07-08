@@ -23,14 +23,17 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/SettingGatedActionController.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include <QAction>
+#include <QIcon>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QToolBar>
+#include <boost/uuid/uuid.hpp>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace Ui {
@@ -59,7 +62,6 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setImageCache(ImageCache* imageCache);
 
     void setCurrency(const refdata::domain::currency& currency);
     [[nodiscard]] refdata::domain::currency getCurrency() const;
@@ -114,6 +116,9 @@ protected:
     bool hasUnsavedChanges() const override {
         return isDirty_;
     }
+    std::optional<boost::uuids::uuid> entityImageId() const override;
+    QLineEdit* keyFlagField() const override;
+    QIcon keyFlagIcon(const std::string& key) const override;
 
 signals:
     void currencyUpdated(const QString& iso_code);
@@ -133,8 +138,6 @@ private slots:
     void onDeleteClicked();
     void onRevertClicked();
     void onFieldChanged();
-    void onSelectFlagClicked();
-    void onCurrencyImageSet(const QString& iso_code, bool success, const QString& message);
     void onGenerateClicked();
 
     // Version navigation slots
@@ -146,7 +149,6 @@ private slots:
 private:
     void updateSaveResetButtonState();
     void setFieldsReadOnly(bool readOnly);
-    void updateFlagDisplay();
     void displayCurrentVersion();
     void updateVersionNavButtonStates();
     void showVersionNavActions(bool visible);
@@ -161,20 +163,15 @@ private:
     bool isAddMode_;
     bool isReadOnly_;
     bool isStale_;
-    bool flagChanged_;
     int historicalVersion_;
     std::string username_;
     QToolBar* toolBar_;
     QAction* revertAction_;
     QAction* generateAction_;
-    QPushButton* flagButton_;
 
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
     SettingGatedActionController* settingGatedActions_{nullptr};
-    QAction* isoCodeFlagAction_{nullptr};
     refdata::domain::currency currentCurrency_;
-    QString pendingImageId_;
     static constexpr const char* max_timestamp = "9999-12-31 23:59:59";
 
     // Version navigation members

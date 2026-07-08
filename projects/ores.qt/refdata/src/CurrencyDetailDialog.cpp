@@ -20,9 +20,8 @@
 #include "ores.qt/CurrencyDetailDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/DynamicComboSetup.hpp"
-#include "ores.qt/FlagIconHelper.hpp"
-#include "ores.qt/FlagSelectorDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MdiUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -64,9 +63,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     , isReadOnly_(false)
     , isStale_(false)
     , historicalVersion_(0)
-    , flagButton_(nullptr)
     , clientManager_(nullptr)
-    , imageCache_(nullptr)
     , currentHistoryIndex_(0)
     , firstVersionAction_(nullptr)
     , prevVersionAction_(nullptr)
@@ -140,29 +137,8 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     if (mainLayout)
         mainLayout->insertWidget(0, toolBar_);
 
-    // Add clickable flag button into the iconGroup in the General tab
-    {
-        auto* flagContainer = new QWidget(this);
-        auto* flagLayout = new QHBoxLayout(flagContainer);
-        flagLayout->setContentsMargins(0, 4, 0, 4);
-
-        flagButton_ = new QPushButton(this);
-        flagButton_->setFixedSize(52, 52);
-        flagButton_->setIconSize(QSize(48, 48));
-        flagButton_->setFlat(true);
-        flagButton_->setStyleSheet(
-            "QPushButton { border: none; background: transparent; padding: 0px; } "
-            "QPushButton:hover { background: rgba(255, 255, 255, 15); }");
-        flagButton_->setCursor(Qt::PointingHandCursor);
-        flagButton_->setToolTip(tr("Click to select flag"));
-        connect(
-            flagButton_, &QPushButton::clicked, this, &CurrencyDetailDialog::onSelectFlagClicked);
-        flagLayout->addStretch();
-        flagLayout->addWidget(flagButton_);
-        flagLayout->addStretch();
-
-        ui_->iconGroup->layout()->addWidget(flagContainer);
-    }
+    // Flag editor hosted in the .ui iconGroup; base class owns the button.
+    initFlagButton(ui_->iconGroup->layout());
 
     // Setup bottom buttons
     ui_->saveButton->setIcon(
@@ -229,6 +205,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
                 const auto tip = ui_->marketTierCombo->itemData(idx, Qt::ToolTipRole).toString();
                 ui_->marketTierCombo->setToolTip(tip);
             });
+    connect(this, &DetailDialogBase::flagEdited, this, &CurrencyDetailDialog::onFieldChanged);
 
     // Initially disable save/reset buttons
     updateSaveResetButtonState();
@@ -273,23 +250,6 @@ void CurrencyDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void CurrencyDetailDialog::setImageCache(ImageCache* imageCache) {
-    imageCache_ = imageCache;
-    if (imageCache_) {
-        connect(imageCache_,
-                &ImageCache::currencyImageSet,
-                this,
-                &CurrencyDetailDialog::onCurrencyImageSet);
-        // Connect to imagesLoaded (not currencyMappingsLoaded) because:
-        // - currencyMappingsLoaded fires before icons are re-rendered
-        // - imagesLoaded fires after icons are ready in currency_icons_
-        connect(
-            imageCache_, &ImageCache::imagesLoaded, this, &CurrencyDetailDialog::updateFlagDisplay);
-        connect(
-            imageCache_, &ImageCache::allLoaded, this, &CurrencyDetailDialog::updateFlagDisplay);
-    }
-}
-
 CurrencyDetailDialog::~CurrencyDetailDialog() {
     const auto watchers = findChildren<QFutureWatcherBase*>();
     for (auto* watcher : watchers) {
@@ -308,22 +268,21 @@ ProvenanceWidget* CurrencyDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
 }
 
+std::optional<boost::uuids::uuid> CurrencyDetailDialog::entityImageId() const {
+    return currentCurrency_.image_id;
+}
+
+QLineEdit* CurrencyDetailDialog::keyFlagField() const {
+    return ui_->isoCodeEdit;
+}
+
+QIcon CurrencyDetailDialog::keyFlagIcon(const std::string& key) const {
+    return imageCache() ? imageCache()->getCurrencyFlagIcon(key) : QIcon();
+}
+
 void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency) {
     currentCurrency_ = currency;
     isAddMode_ = currency.iso_code.empty();
-
-    if (currency.image_id) {
-        pendingImageId_ = QString::fromStdString(boost::uuids::to_string(*currency.image_id));
-    } else if (imageCache_) {
-        std::string noFlagId = imageCache_->getNoFlagImageId();
-        if (!noFlagId.empty()) {
-            pendingImageId_ = QString::fromStdString(noFlagId);
-        } else {
-            pendingImageId_.clear();
-        }
-    } else {
-        pendingImageId_.clear();
-    }
 
     ui_->isoCodeEdit->setReadOnly(!isAddMode_);
     ui_->isoCodeEdit->setText(QString::fromStdString(currency.iso_code));
@@ -345,7 +304,6 @@ void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency
                        currency.change_commentary);
 
     isDirty_ = false;
-    flagChanged_ = false;
     emit isDirtyChanged(false);
     updateSaveResetButtonState();
     updateFlagDisplay();
@@ -366,10 +324,8 @@ refdata::domain::currency CurrencyDetailDialog::getCurrency() const {
     currency.market_tier = ui_->marketTierCombo->currentText().toStdString();
     currency.modified_by = username_.empty() ? "qt_user" : username_;
 
-    if (!pendingImageId_.isEmpty()) {
-        boost::uuids::string_generator gen;
-        currency.image_id = gen(pendingImageId_.toStdString());
-    }
+    if (flagChanged())
+        currency.image_id = selectedImageId();
 
     return currency;
 }
@@ -387,10 +343,8 @@ void CurrencyDetailDialog::clearDialog() {
     ui_->monetaryNatureCombo->setCurrentIndex(-1);
     ui_->marketTierCombo->setCurrentIndex(-1);
     clearProvenance();
-    pendingImageId_.clear();
 
     isDirty_ = false;
-    flagChanged_ = false;
     emit isDirtyChanged(false);
     updateSaveResetButtonState();
 }
@@ -448,10 +402,9 @@ void CurrencyDetailDialog::onSaveClicked() {
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Currency saved successfully.";
 
-            self->pendingImageId_.clear();
+            self->resetFlagChanged();
 
             self->isDirty_ = false;
-            self->flagChanged_ = false;
             emit self->isDirtyChanged(false);
             self->updateSaveResetButtonState();
 
@@ -591,9 +544,6 @@ void CurrencyDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 
-    if (flagButton_)
-        flagButton_->setEnabled(!readOnly);
-
     if (revertAction_)
         revertAction_->setVisible(readOnly);
 
@@ -651,125 +601,6 @@ QString CurrencyDetailDialog::isoCode() const {
     return QString::fromStdString(currentCurrency_.iso_code);
 }
 
-void CurrencyDetailDialog::onSelectFlagClicked() {
-    if (!imageCache_) {
-        BOOST_LOG_SEV(lg(), warn) << "Flag clicked but no image cache available.";
-        emit errorMessage("Image cache not available");
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Opening flag selector for: " << currentCurrency_.iso_code;
-
-    // Get current image ID - use pending if set, otherwise from the currency
-    QString currentImageId =
-        pendingImageId_.isEmpty() ?
-            (currentCurrency_.image_id ?
-                 QString::fromStdString(boost::uuids::to_string(*currentCurrency_.image_id)) :
-                 QString()) :
-            pendingImageId_;
-
-    FlagSelectorDialog dialog(imageCache_, currentImageId, this);
-    if (dialog.exec() == QDialog::Accepted) {
-        QString selectedImageId = dialog.selectedImageId();
-        BOOST_LOG_SEV(lg(), debug) << "Selected flag image: " << selectedImageId.toStdString();
-
-        // Store the selection locally - will be persisted on Save
-        pendingImageId_ = selectedImageId;
-        flagChanged_ = true;
-
-        // Update display to show the new selection
-        updateFlagDisplay();
-
-        // Mark as dirty so Save button is enabled
-        if (!isDirty_) {
-            isDirty_ = true;
-            emit isDirtyChanged(true);
-            updateSaveResetButtonState();
-        }
-
-        emit statusMessage(tr("Flag changed. Click Save to apply."));
-    }
-}
-
-void CurrencyDetailDialog::onCurrencyImageSet(const QString& iso_code,
-                                              bool success,
-                                              const QString& message) {
-
-    if (iso_code.toStdString() != currentCurrency_.iso_code) {
-        return; // Not our currency
-    }
-
-    if (success) {
-        BOOST_LOG_SEV(lg(), info) << "Flag updated successfully for: " << currentCurrency_.iso_code;
-        emit statusMessage(
-            tr("Flag updated for %1").arg(QString::fromStdString(currentCurrency_.iso_code)));
-        updateFlagDisplay();
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Failed to update flag for " << currentCurrency_.iso_code
-                                   << ": " << message.toStdString();
-        emit errorMessage(tr("Failed to update flag: %1").arg(message));
-        MessageBoxHelper::critical(this, "Flag Update Failed", message);
-    }
-    pendingImageId_.clear();
-}
-
-void CurrencyDetailDialog::updateFlagDisplay() {
-    if (!flagButton_)
-        return;
-
-    // Update styling based on changed state
-    if (flagChanged_) {
-        // Show orange border to indicate unsaved change
-        flagButton_->setStyleSheet("QPushButton { border: 2px solid orange; background: "
-                                   "transparent; padding: 0px; border-radius: 4px; } "
-                                   "QPushButton:hover { background: rgba(255, 255, 255, 15); }");
-        flagButton_->setToolTip(tr("Flag changed (unsaved)"));
-    } else {
-        // Normal transparent style
-        flagButton_->setStyleSheet(
-            "QPushButton { border: none; background: transparent; padding: 0px; } "
-            "QPushButton:hover { background: rgba(255, 255, 255, 15); }");
-        flagButton_->setToolTip(tr("Click to select flag"));
-    }
-
-    if (!imageCache_) {
-        // No image cache available - use the no-flag placeholder from cache
-        // when it becomes available
-        return;
-    }
-
-    // Determine which image ID to show
-    QString imageIdToShow;
-
-    if (flagChanged_) {
-        // If changed, show pending ID (even if empty - meaning cleared)
-        imageIdToShow = pendingImageId_;
-    } else if (currentCurrency_.image_id) {
-        // Get image_id from the currency domain object
-        imageIdToShow = QString::fromStdString(boost::uuids::to_string(*currentCurrency_.image_id));
-    }
-
-    // If we have an ID, try to get the icon
-    if (!imageIdToShow.isEmpty()) {
-        QIcon icon = imageCache_->getIcon(imageIdToShow.toStdString());
-        if (!icon.isNull()) {
-            flagButton_->setIcon(icon);
-            return;
-        }
-    }
-
-    // Default to "no-flag" placeholder icon
-    QIcon noFlagIcon = imageCache_->getNoFlagIcon();
-    if (!noFlagIcon.isNull()) {
-        flagButton_->setIcon(noFlagIcon);
-    }
-
-    // Inline flag icon on ISO code field
-    const auto iso = ui_->isoCodeEdit->text().trimmed().toStdString();
-    QIcon inlineIcon = imageCache_->getCurrencyFlagIcon(iso);
-    set_line_edit_flag_icon(ui_->isoCodeEdit, inlineIcon, isoCodeFlagAction_);
-}
-
 void CurrencyDetailDialog::showVersionNavActions(bool visible) {
     if (firstVersionAction_)
         firstVersionAction_->setVisible(visible);
@@ -815,12 +646,6 @@ void CurrencyDetailDialog::displayCurrentVersion() {
 
     // Update button states
     updateVersionNavButtonStates();
-
-    // Gray out flag in history view - all versions are read-only
-    if (flagButton_) {
-        flagButton_->setEnabled(false);
-        flagButton_->setToolTip(tr("Historical version - flag display only"));
-    }
 
     // Update window title with short version format
     QWidget* parent = parentWidget();
@@ -965,7 +790,10 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
         [](const auto& t) { return QString::fromStdString(t.code); },
         [](const auto& t) { return QString::fromStdString(t.description); },
         [](const auto& t) { return t.display_order; },
-        [this]() { return QString::fromStdString(currentCurrency_.rounding_type); });
+        [this]() { return QString::fromStdString(currentCurrency_.rounding_type); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load rounding types: %1").arg(error));
+        });
 }
 
 void CurrencyDetailDialog::populateMonetaryNatureCombo() {
@@ -979,7 +807,10 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
         [](const auto& t) { return QString::fromStdString(t.code); },
         [](const auto& t) { return QString::fromStdString(t.description); },
         [](const auto& t) { return t.display_order; },
-        [this]() { return QString::fromStdString(currentCurrency_.monetary_nature); });
+        [this]() { return QString::fromStdString(currentCurrency_.monetary_nature); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load monetary natures: %1").arg(error));
+        });
 }
 
 void CurrencyDetailDialog::populateMarketTierCombo() {
@@ -993,7 +824,10 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
         [](const auto& t) { return QString::fromStdString(t.code); },
         [](const auto& t) { return QString::fromStdString(t.description); },
         [](const auto& t) { return t.display_order; },
-        [this]() { return QString::fromStdString(currentCurrency_.market_tier); });
+        [this]() { return QString::fromStdString(currentCurrency_.market_tier); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load currency market tiers: %1").arg(error));
+        });
 }
 
 }

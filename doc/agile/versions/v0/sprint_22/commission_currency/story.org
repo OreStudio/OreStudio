@@ -99,6 +99,17 @@ auxiliary type (=rounding_type=, =monetary_nature=, =currency_market_tier=).
   bug in the previous version-nav PR (wrong mustache path, silently
   empty, broke compilation).
 
+- Flag/combo reconciliation: unlike the 5 prior capability tasks,
+  this one really did migrate currency's checked-in files (not just
+  land-template-then-discard) — flag handling now calls
+  =DetailDialogBase='s existing generic mechanism, dropping ~180
+  lines of duplicated hand-rolled code. The combo-field codegen emit
+  (=combo_domain_type=, calling =populateDynamicCombo<Entity>=) is
+  new; only currency's 3 combo fields are modelled in its "Detail
+  fields" org table, the other 11 stay unmodelled until the final
+  sync task. The pilot's flagged fetch-failure gap was fixed for
+  real (=std::expected= + =on_error= callback), not deferred.
+
 * Tasks
 
 | Task | State | Start | End | Description |
@@ -126,4 +137,5 @@ auxiliary type (=rounding_type=, =monetary_nature=, =currency_market_tier=).
 | [[id:D9CB6853-797A-4144-BED0-AEBDDBBC173C][Land setting-gated action-visibility knob as a qt-profile template capability]] | DONE | 2026-07-06 | 2026-07-06 | Currency's feature-flagged 'generate synthetic test data' button (gated by system.synthetic_data_generation) has no template equivalent. Generalise it as a conditional action-visibility knob in the mdi_window and detail_dialog templates, with currency as the first real consumer. |
 | [[id:DBDECEFC-7154-4A40-A554-C897AA51BEEE][Land version-navigation UI as a qt-profile detail_dialog template capability]] | DONE | 2026-07-06 | 2026-07-07 | Currency's CurrencyDetailDialog has a full version-navigation UI (first/prev/next/last/revert) 100% absent from the template and the synced peer. Generalise it as a detail_dialog template capability, with currency as the first real consumer. |
 | [[id:D613BDFD-FE12-4945-8878-5C92FA109E40][Land NATS notification-wiring capability in the qt-profile controller template]] | DONE | 2026-07-08 | 2026-07-08 | Currency's CurrencyController has hand-added onNotificationReceived staleness-propagation logic; the template's changed_event_class flag wires the subscription but generates no handler. Land the handler-generation half of this capability, with currency as the first real consumer (no peer currently configures changed_event_class). |
-| [[id:318EE3EB-E15E-4F10-BCF7-154658A4AFE8][Reconcile currency's flag image handling and wire the piloted combo-field mechanism]] | BACKLOG | | | Migrate currency's hand-rolled flag image handling onto the template's existing has_flag_icon mechanism (no new template work, just a call-site migration). Wire currency's 3 soft-FK combo fields (rounding_type, monetary_nature, market_tier) to the already-piloted populateDynamicCombo<Entity> helper via the small per-field codegen emit. Decide and land the fetch-failure-signalling gap flagged during the combo-field pilot before finalizing the emit. |
+| [[id:318EE3EB-E15E-4F10-BCF7-154658A4AFE8][Reconcile currency's flag image handling and wire the piloted combo-field mechanism]] | DONE | 2026-07-08 | 2026-07-08 | Migrate currency's hand-rolled flag image handling onto the template's existing has_flag_icon mechanism (no new template work, just a call-site migration). Wire currency's 3 soft-FK combo fields (rounding_type, monetary_nature, market_tier) to the already-piloted populateDynamicCombo<Entity> helper via the small per-field codegen emit. Decide and land the fetch-failure-signalling gap flagged during the combo-field pilot before finalizing the emit. |
+| [[id:AEEDE877-C48C-4CE1-A5FA-9CB6D023CC28][Render currency's monetary_nature and market_tier combos as badges]] | BACKLOG | | | Currency's monetary_nature and market_tier detail-dialog fields are soft-FK dynamic combos populated via populateDynamicCombo<Entity>; render them as colored badges like Book's book_status field does (setup_badge_combo/BadgeCache), instead of plain text combo items. |

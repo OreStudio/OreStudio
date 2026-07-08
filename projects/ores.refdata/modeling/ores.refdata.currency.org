@@ -442,6 +442,20 @@ version-navigation UI that consumes this richer shape.
 :changed_event_include:       ores.refdata.api/eventing/currency_changed_event.hpp
 :END:
 
+*** Detail fields
+
+Only currency's 3 soft-FK dynamic-combo fields are modelled here — the
+=populateDynamicCombo<Entity>= mechanism (task 318EE3EB), verified by
+regenerate+diff against the hand-migrated =CurrencyDetailDialog.cpp=.
+The remaining 11 fields stay unmodelled until the final "Sync Qt
+codegen for currency" task populates the full table.
+
+| field           | widget               | type          | combo_domain_type                     | combo_fetch_include                                    | combo_fetch_fn              | combo_watcher_name    | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label          | combo_setter_pascal |
+|-----------------+----------------------+---------------+----------------------------------------+-------------------------------------------------------+------------------------------+-----------------------+------------------+----------------------+------------------+----------------------+----------------------|
+| rounding_type   | roundingTypeCombo    | dynamic_combo | refdata::domain::rounding_type         | ores.qt/LookupFetcher.hpp                              | fetch_rounding_types         | roundingTypeWatcher   | code             | description          | display_order    | rounding types        | RoundingTypeCombo    |
+| monetary_nature | monetaryNatureCombo  | dynamic_combo | refdata::domain::monetary_nature       | ores.qt/LookupFetcher.hpp                              | fetch_monetary_natures       | monetaryNatureWatcher | code             | description          | display_order    | monetary natures      | MonetaryNatureCombo  |
+| market_tier     | marketTierCombo      | dynamic_combo | refdata::domain::currency_market_tier  | ores.qt/LookupFetcher.hpp                              | fetch_currency_market_tiers  | marketTierWatcher     | code             | description          | display_order    | currency market tiers | MarketTierCombo      |
+
 *** Columns (Qt model)
 
 | enum_name          | field              | header          | type      | width | import_preview |

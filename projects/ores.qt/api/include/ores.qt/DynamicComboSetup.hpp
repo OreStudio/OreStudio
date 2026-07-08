@@ -28,6 +28,7 @@
 #include <QString>
 #include <QtConcurrent>
 #include <algorithm>
+#include <expected>
 #include <functional>
 #include <vector>
 
@@ -50,9 +51,11 @@ namespace ores::qt {
  * QFutureWatcherBase child named watcher_name already existing on it
  * means a fetch is already in flight).
  * @param client_manager Client manager used to run the fetch.
- * @param fetch Synchronous call fetching the full entity vector;
- * intended to be one of the LookupFetcher functions, run off the UI
- * thread by this helper.
+ * @param fetch Synchronous call fetching the full entity vector, or an
+ * error message on failure; intended to be one of the LookupFetcher
+ * functions, run off the UI thread by this helper. Distinguishing
+ * failure from a legitimately-empty result lets the caller surface a
+ * fetch error instead of silently rendering an empty combo.
  * @param watcher_name Unique object name for the QFutureWatcher,
  * used both for re-entrancy guarding and lookup.
  * @param code_of Extracts the value stored as combo item data and
@@ -65,19 +68,27 @@ namespace ores::qt {
  * selection on the combo — e.g. the current entity's stored value for
  * this field, which may not be set yet when populateDynamicCombo is
  * called (setClientManager runs before setCurrency).
+ * @param on_error Called with the error message when the fetch fails;
+ * the combo shows a distinct "Failed to load" placeholder in that
+ * case. Defaults to a no-op for callers that don't need to surface it
+ * beyond the placeholder.
  * @param loading_placeholder Text shown while the fetch is in flight.
+ * @param error_placeholder Text shown in the combo when the fetch fails.
  */
 template <typename Entity>
-void populateDynamicCombo(QComboBox* combo,
-                          QObject* owner,
-                          ClientManager* client_manager,
-                          std::function<std::vector<Entity>(ClientManager*)> fetch,
-                          const QString& watcher_name,
-                          std::function<QString(const Entity&)> code_of,
-                          std::function<QString(const Entity&)> tooltip_of,
-                          std::function<int(const Entity&)> sort_key_of,
-                          std::function<QString()> fallback_selection,
-                          const QString& loading_placeholder = QObject::tr("Loading…")) {
+void populateDynamicCombo(
+    QComboBox* combo,
+    QObject* owner,
+    ClientManager* client_manager,
+    std::function<std::expected<std::vector<Entity>, QString>(ClientManager*)> fetch,
+    const QString& watcher_name,
+    std::function<QString(const Entity&)> code_of,
+    std::function<QString(const Entity&)> tooltip_of,
+    std::function<int(const Entity&)> sort_key_of,
+    std::function<QString()> fallback_selection,
+    std::function<void(const QString&)> on_error = [](const QString&) {},
+    const QString& loading_placeholder = QObject::tr("Loading…"),
+    const QString& error_placeholder = QObject::tr("Failed to load")) {
     if (!combo || !owner || !client_manager || !client_manager->isConnected())
         return;
 
@@ -92,18 +103,18 @@ void populateDynamicCombo(QComboBox* combo,
     combo->blockSignals(false);
 
     QPointer<QObject> self = owner;
-    QFuture<std::vector<Entity>> future =
-        QtConcurrent::run([self, client_manager, fetch]() -> std::vector<Entity> {
-            if (!self)
-                return {};
-            return fetch(client_manager);
-        });
+    using Result = std::expected<std::vector<Entity>, QString>;
+    QFuture<Result> future = QtConcurrent::run([self, client_manager, fetch]() -> Result {
+        if (!self)
+            return std::vector<Entity>{};
+        return fetch(client_manager);
+    });
 
-    auto* watcher = new QFutureWatcher<std::vector<Entity>>(owner);
+    auto* watcher = new QFutureWatcher<Result>(owner);
     watcher->setObjectName(watcher_name);
     QObject::connect(
         watcher,
-        &QFutureWatcher<std::vector<Entity>>::finished,
+        &QFutureWatcher<Result>::finished,
         owner,
         [self,
          watcher,
@@ -112,13 +123,25 @@ void populateDynamicCombo(QComboBox* combo,
          fallback_selection,
          code_of,
          tooltip_of,
-         sort_key_of]() {
-            auto items = watcher->result();
+         sort_key_of,
+         on_error,
+         error_placeholder]() {
+            auto result = watcher->result();
             watcher->deleteLater();
 
             if (!self)
                 return;
 
+            if (!result) {
+                combo->blockSignals(true);
+                combo->clear();
+                combo->addItem(error_placeholder);
+                combo->blockSignals(false);
+                on_error(result.error());
+                return;
+            }
+
+            auto items = std::move(*result);
             std::sort(items.begin(), items.end(), [&sort_key_of](const auto& a, const auto& b) {
                 return sort_key_of(a) < sort_key_of(b);
             });

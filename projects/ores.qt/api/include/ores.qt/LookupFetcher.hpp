@@ -24,6 +24,8 @@
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
 #include "ores.refdata.api/domain/rounding_type.hpp"
+#include <QString>
+#include <expected>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -145,27 +147,32 @@ ORES_QT_API std::vector<business_unit_entry> fetch_business_unit_entries(ClientM
  *
  * Synchronous call intended to be run from within QtConcurrent::run.
  * Used by DynamicComboSetup to populate currency's rounding_type combo.
- * Returns empty vector on failure.
+ * Returns an error message on failure, distinguishing it from a
+ * legitimately-empty result.
  */
-ORES_QT_API std::vector<refdata::domain::rounding_type> fetch_rounding_types(ClientManager* cm);
+ORES_QT_API std::expected<std::vector<refdata::domain::rounding_type>, QString>
+fetch_rounding_types(ClientManager* cm);
 
 /**
  * @brief Fetches all monetary natures from the server.
  *
  * Synchronous call intended to be run from within QtConcurrent::run.
  * Used by DynamicComboSetup to populate currency's monetary_nature combo.
- * Returns empty vector on failure.
+ * Returns an error message on failure, distinguishing it from a
+ * legitimately-empty result.
  */
-ORES_QT_API std::vector<refdata::domain::monetary_nature> fetch_monetary_natures(ClientManager* cm);
+ORES_QT_API std::expected<std::vector<refdata::domain::monetary_nature>, QString>
+fetch_monetary_natures(ClientManager* cm);
 
 /**
  * @brief Fetches all currency market tiers from the server.
  *
  * Synchronous call intended to be run from within QtConcurrent::run.
  * Used by DynamicComboSetup to populate currency's market_tier combo.
- * Returns empty vector on failure.
+ * Returns an error message on failure, distinguishing it from a
+ * legitimately-empty result.
  */
-ORES_QT_API std::vector<refdata::domain::currency_market_tier>
+ORES_QT_API std::expected<std::vector<refdata::domain::currency_market_tier>, QString>
 fetch_currency_market_tiers(ClientManager* cm);
 
 }

@@ -20,6 +20,7 @@
 #ifndef ORES_QT_PARSE_TRADE_INSTRUMENT_HPP
 #define ORES_QT_PARSE_TRADE_INSTRUMENT_HPP
 
+#include "ores.qt.headless/export.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include <optional>
 #include <string>
@@ -38,8 +39,8 @@ struct IInstrumentFormPopulator;
  * No rfl::AddTagsToVariants is used. No trade_instrument variant is
  * constructed. Returns the trade on success, nullopt on any failure.
  */
-std::optional<trading::domain::trade> parse_trade_instrument(const std::string& raw,
-                                                             IInstrumentFormPopulator& populator);
+ORES_QT_HEADLESS_API std::optional<trading::domain::trade>
+parse_trade_instrument(const std::string& raw, IInstrumentFormPopulator& populator);
 
 } // namespace ores::qt
 

@@ -343,8 +343,6 @@ namespace ores #F2F2F2 {
             -selectButton_ : QPushButton*
             -cancelButton_ : QPushButton*
         }
-        class FontUtils <<struct>> {
-        }
         class HostDisplayNameCache {
             -cache_ : QHash<QString, QString>
         }

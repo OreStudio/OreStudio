@@ -31,7 +31,7 @@ package "ores.qt.headless" {
 }
 
 [ores.qt.api] --> [ores.qt.headless] : links (PUBLIC)
-[ores.qt.api.tests] --> [ores.qt.headless] : links directly\n(no QApplication/display needed)
+[ores.qt.headless.tests] --> [ores.qt.headless] : links directly\n(no QApplication/display needed)
 [OrgDocRenderer] --> [ores.orgmode] : renders parsed docs
 [parse_trade_instrument] --> [ores.trading.api] : domain types
 [TestScenarioResultsWriter] --> [EnvironmentMetadata]

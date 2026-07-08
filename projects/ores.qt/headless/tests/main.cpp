@@ -24,6 +24,6 @@
 CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
 
 int main(int argc, char* argv[]) {
-    ores::testing::logging_listener::set_test_module_name("ores.qt.api.tests");
+    ores::testing::logging_listener::set_test_module_name("ores.qt.headless.tests");
     return Catch::Session().run(argc, argv);
 }

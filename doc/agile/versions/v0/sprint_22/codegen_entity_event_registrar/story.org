@@ -21,11 +21,11 @@ Every domain entity's live NATS change-event pipeline (Postgres NOTIFY channel -
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Shipped in PR #1459: 6/16 refdata entities migrated to the generated registrar; pattern documented; remaining 10 deferred to a capture. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-07-06                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ Every domain entity's live NATS change-event pipeline (Postgres NOTIFY channel -
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:061B4573-F0F5-4DA4-BB16-D186270BD30F][Generate per-entity NATS event-mapping registrar]] | STARTED | 2026-07-07 | | Extend codegen to emit register_<entity>_event_mapping into the generated <entity>_registrar.hpp/cpp pair, add a service-layer aggregator, and migrate application.cpp's hand-wired entity change-event pipeline to call it. |
+| [[id:061B4573-F0F5-4DA4-BB16-D186270BD30F][Generate per-entity NATS event-mapping registrar]] | DONE | 2026-07-07 | 2026-07-08 | Extend codegen to emit register_<entity>_event_mapping into the generated <entity>_registrar.hpp/cpp pair, add a service-layer aggregator, and migrate application.cpp's hand-wired entity change-event pipeline to call it. |
 
 * Decisions
 

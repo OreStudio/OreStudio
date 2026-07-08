@@ -77,7 +77,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]] | BACKLOG | | | Move from ores.trading to ores.refdata (zero current consumers), then commission fully to Qt; spun off from the currency pair story. |
 | [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]] | BACKLOG | | | Move from ores.trading to ores.refdata (update trading_swap_legs' one reference), then commission fully to Qt; spun off from the currency pair story. |
 | [[id:D83F5588-5F05-4AF6-9CCF-98489309DE4A][Move book, book_status, and portfolio to ores.trading]] | BACKLOG | | | These are trading/booking structures, not static reference data; relocate full stack out of ores.refdata. |
-| [[id:9763FBBF-7912-4EA2-A544-67E90EA27882][Codegen: generate per-entity NATS event-mapping registrar]] | BACKLOG | | | Hand-wired application.cpp eventing registration caused a missed-wiring regression (purpose_type); generate it per-entity instead. |
+| [[id:9763FBBF-7912-4EA2-A544-67E90EA27882][Codegen: generate per-entity NATS event-mapping registrar]] | DONE | | 2026-07-08 | Hand-wired application.cpp eventing registration caused a missed-wiring regression (purpose_type); generate it per-entity instead. |
 
 *** Epic: Market data generation
 

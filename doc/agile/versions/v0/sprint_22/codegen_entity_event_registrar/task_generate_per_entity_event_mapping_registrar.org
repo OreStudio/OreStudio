@@ -26,11 +26,11 @@ Add a register_<entity>_event_mapping(event_source, event_bus, nats) function to
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9763FBBF-7912-4EA2-A544-67E90EA27882][Codegen: generate per-entity NATS event-mapping registrar]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-07                               |
 
 * Acceptance
@@ -42,9 +42,25 @@ Add a register_<entity>_event_mapping(event_source, event_bus, nats) function to
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Promoted the duplicated =publish_entity_event= helper into
+=ores.eventing.core= first, so the generated registrar would have a
+shared function to call. Added =component_service=/=component_service_dir=
+template variables (mirroring the existing =component_core= pair) and a
+new =ores.cpp.nats-event-registrar= facet with two archetypes, output
+into the =.service= layer since the eventing pipeline types aren't
+available in =.core=. Verified against a UUID-keyed entity (=book=,
+=entity_singular_short=-prefixed id field) and a text-keyed one
+(=purpose_type=, =primary_key.column=-suffixed) to get the mustache
+branching right. Regenerated all 16 currently hand-wired refdata
+entities, found 10 had stale =nats-eventing= output (a breaking
+id-field rename), backed those out and deferred to a capture rather
+than risk the rename. Wrote the =event_registrar= aggregator and
+migrated the remaining 6 entities' =application.cpp= wiring to it.
+Along the way, discovered =purpose_type='s Qt facet had never been
+regenerated since a shared history-dialog Close-button fix landed on
+main — resynced it.
+
+Key decisions are distilled into the parent story's =* Decisions=.
 
 * Notes
 
@@ -62,3 +78,20 @@ plan itself stays — it is the historical record of what we did.)
 | 2 | PR description overstates publish_entity_event dedup (only refdata's copy removed; 4 other components still duplicate it) | PR description | Fixed — edited PR body | Corrected wording; migrating the other 4 is a separate follow-up, not attempted here. |
 
 * Result
+
+Shipped in PR #1459. =ores.cpp.nats-event-registrar= facet generates
+=register_<entity>_event_mapping()= into the =.service= layer for any
+domain_entity; =ores::refdata::service::messaging::event_registrar=
+aggregates it. 6 of 16 currently hand-wired refdata entities migrated
+(book, business_day_convention_type, country, currency, party_type,
+purpose_type); the other 10 deferred to
+[[id:BA5BCF3B-8953-455D-85F9-1E05A49D9623][a capture]] pending a
+=nats-eventing= drift fix. Cross-client NATS eventing manually
+re-verified for =purpose_type= (create/edit/delete, both Qt clients
+update live). Pattern documented in
+[[id:397C3822-25A2-49BB-9D4E-827EB8F47267][a recipe]] and the
+[[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]]
+knowledge doc. Also fixed a pre-existing =purpose_type= Qt regression
+(history dialog Close button unresponsive) found during
+re-verification — its Qt facet had never been regenerated since the
+fix landed on main.

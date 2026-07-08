@@ -134,6 +134,9 @@ and of the toolbar action, in a running Qt client.
 
 * Notes
 
+Manual test scenario: [[id:AA4E3003-BA42-4885-915D-D85C1841A5DB][Test Scenario: Vintage-availability guard and fixed/vintage price source]]
+(=doc/agile/versions/v0/sprint_22/synthetic-data-collections/scenario_vintage_guard_price_source.org=).
+
 * PRs
 
 | PR | Title |

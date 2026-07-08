@@ -21,6 +21,7 @@
 #define ORES_VARIABILITY_MESSAGING_SYSTEM_SETTING_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -101,6 +102,34 @@ public:
             }
         } else {
             BOOST_LOG_SEV(system_setting_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        }
+    }
+
+    void clear_bootstrap_mode(ores::nats::message msg) {
+        BOOST_LOG_SEV(system_setting_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        // No has_permission check: clearing bootstrap mode on tenant
+        // activation must work regardless of the actor's
+        // variability::flags:create permission. The tenant is scoped from
+        // the validated JWT above, not from client-supplied data.
+        const auto& ctx = *ctx_expected;
+        service::system_settings_service svc(ctx, ctx.tenant_id().to_string());
+        try {
+            svc.set_bootstrap_mode(
+                false,
+                ctx.service_account(),
+                std::string(ores::dq::domain::change_reason_constants::codes::new_record),
+                "Bootstrap mode cleared on tenant activation");
+            BOOST_LOG_SEV(system_setting_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, clear_bootstrap_mode_response{.success = true});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(system_setting_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, clear_bootstrap_mode_response{.success = false, .message = e.what()});
         }
     }
 

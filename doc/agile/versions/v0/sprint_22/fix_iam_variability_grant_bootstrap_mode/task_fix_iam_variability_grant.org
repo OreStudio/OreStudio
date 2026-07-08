@@ -134,6 +134,25 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+- The =clear_bootstrap_mode_request= handler must construct
+  =system_settings_service(ctx, ctx.tenant_id().to_string())= —
+  omitting the explicit =tenant_id= constructor argument left
+  =set_bool_setting='s =tenant_id= field empty, causing =invalid
+  input syntax for type uuid: ''= on insert. Caught live during
+  verification, fixed, rebuilt, reverified.
+- Verified live against the Barclays Plc tenant: rebuilt all
+  services (also surfaced an unrelated stale-binary issue —
+  =ores.refdata.service= hadn't been rebuilt since the
+  =refdata.currency-pairs.publish-from-dq= subject was added, so a
+  full GLEIF provisioning run stalled at that step; a full rebuild
+  fixed it, confirming it wasn't a real regression), then re-ran
+  =tenants complete-provisioning= via =ores.shell=. Logs show
+  =Handling= → =Completed= on
+  =variability.v1.settings.clear_bootstrap_mode= and =Bootstrap mode
+  cleared for tenant: <id>= on the IAM side, no permission-denied or
+  UUID errors. DB check confirms =system.bootstrap_mode = false= for
+  both the tenant and system rows.
+
 * PRs
 
 | PR | Title |

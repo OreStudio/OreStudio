@@ -23,19 +23,20 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.variability.core/service/system_settings_service.hpp"
+#include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include <rfl/json.hpp>
 #include <stdexcept>
 
 namespace ores::iam::messaging {
@@ -192,17 +193,39 @@ public:
 
             BOOST_LOG_SEV(tenant_handler_lg(), info) << "Tenant marked active: " << ids.front();
 
-            // Clear the bootstrap_mode flag server-side using the service's own
-            // credentials — independent of the user having variability::flags:create.
+            // Clear the bootstrap_mode flag via the variability service over
+            // NATS, so the write happens under its own (correctly-granted) DB
+            // role rather than IAM's. The variability-side handler has no
+            // permission check on this subject — independent of the user
+            // having variability::flags:create — so forwarding the original
+            // bearer (scoping the tenant) is sufficient.
             try {
-                variability::service::system_settings_service vss(*ctx_expected, ids.front());
-                vss.set_bootstrap_mode(
-                    false,
-                    ctx_expected->service_account(),
-                    std::string(ores::dq::domain::change_reason_constants::codes::new_record),
-                    "Bootstrap mode cleared on tenant activation");
-                BOOST_LOG_SEV(tenant_handler_lg(), info)
-                    << "Bootstrap mode cleared for tenant: " << ids.front();
+                using namespace ores::variability::messaging;
+                const clear_bootstrap_mode_request req{};
+                const auto json = rfl::json::write(req);
+                const auto* p = reinterpret_cast<const std::byte*>(json.data());
+
+                std::unordered_map<std::string, std::string> hdrs;
+                if (const auto bearer = extract_bearer(msg); !bearer.empty())
+                    hdrs[std::string(ores::nats::headers::delegated_authorization)] =
+                        std::string(ores::nats::headers::bearer_prefix) + bearer;
+
+                const auto resp_msg =
+                    nats_.request_sync(clear_bootstrap_mode_request::nats_subject,
+                                       std::span<const std::byte>(p, json.size()),
+                                       std::move(hdrs),
+                                       std::chrono::seconds(5));
+                const std::string_view sv(reinterpret_cast<const char*>(resp_msg.data.data()),
+                                          resp_msg.data.size());
+                const auto resp = rfl::json::read<clear_bootstrap_mode_response>(sv);
+                if (resp && resp->success) {
+                    BOOST_LOG_SEV(tenant_handler_lg(), info)
+                        << "Bootstrap mode cleared for tenant: " << ids.front();
+                } else {
+                    BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                        << "Failed to clear bootstrap mode for tenant " << ids.front() << ": "
+                        << (resp ? resp->message : "malformed response");
+                }
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(tenant_handler_lg(), warn)
                     << "Failed to clear bootstrap mode for tenant " << ids.front() << ": "
@@ -219,6 +242,18 @@ public:
     }
 
 private:
+    // Extract the raw JWT from an incoming message, preferring the delegated
+    // header so the original end-user context propagates to downstream calls.
+    static std::string extract_bearer(const ores::nats::message& msg) {
+        using namespace ores::nats::headers;
+        for (auto hdr : {delegated_authorization, authorization}) {
+            const auto it = msg.headers.find(std::string(hdr));
+            if (it != msg.headers.end() && it->second.starts_with(bearer_prefix))
+                return std::string(it->second.substr(bearer_prefix.size()));
+        }
+        return {};
+    }
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;

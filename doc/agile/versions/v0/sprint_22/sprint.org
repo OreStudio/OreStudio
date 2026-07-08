@@ -44,6 +44,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] | STARTED | 2026-07-02 | | Scaffold sprint 22, wire manifest, move postponed stories. |
+| [[id:62034F29-D2EB-4BA4-9291-9B35D33A724A][Fix Windows dllimport build failure via ores.qt.headless extraction]] | STARTED | 2026-07-08 | | MSVC C4273 broke Windows CI; root cause was Widgets-free logic living inside ores.qt.api, fixed by extracting a proper ores.qt.headless component. |
 
 ** Product
 

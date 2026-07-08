@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 9370492E-E752-4BBD-BEA4-15C474117C53
+:END:
+#+title: Task: Extract ores.qt.headless to fix the Windows build
+#+description: Move Widgets-free logic (OrgDocRenderer, TestScenarioResultsWriter, EnvironmentMetadata, HierarchyModelBuilder, FontUtils, RepoFileFinder, parse_trade_instrument/IInstrumentFormPopulator) out of ores.qt.api into a new ores.qt.headless component, fixing the MSVC C4273 dllimport-on-a-definition error at the root instead of patching it.
+#+type: task
+#+level: s1
+#+filetags: :qt:build:windows:hotfix:sprint_22:v0:fix_windows_dllimport_build_failure:
+#+owner: marco
+#+branch: hotfix/windows-dllimport-inconsistent-linkage
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:62034F29-D2EB-4BA4-9291-9B35D33A724A][Fix Windows dllimport build failure via ores.qt.headless extraction]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the Windows build (MSVC =/WX= treating C4273, "dllimport on a
+definition", as fatal) by extracting the Widgets-free logic that
+triggered it into its own component — a real architectural fix, not a
+compile-definition workaround.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:62034F29-D2EB-4BA4-9291-9B35D33A724A][Fix Windows dllimport build failure via ores.qt.headless extraction]] |
+| Now          | Extraction complete, verified on Linux; PR open, awaiting Windows CI confirmation. |
+| Waiting on   | Windows CI run on the PR.              |
+| Next         | Merge once Windows CI is green.        |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- [X] Root cause identified: =HierarchyModelBuilder.cpp=/=OrgDocRenderer.cpp=
+  define =ORES_QT_API=-decorated symbols but are compiled a second
+  time directly into =ores.qt.api.tests= (to dodge =ores.qt.api.lib='s
+  Widgets/display requirement for headless testing); without
+  =ORES_QT_API_LIBRARY= defined there, =export.hpp= expands
+  =ORES_QT_API= to dllimport for a TU that also defines the symbol —
+  MSVC flags this as inconsistent linkage (GCC/Clang don't).
+- [X] Fixed at the root — not by defining the macro in the test
+  target (a "quick unblock" alternative was explicitly considered and
+  rejected in favour of the real fix): Widgets-free logic extracted
+  into a new =ores.qt.headless= component with its own
+  =ORES_QT_HEADLESS_API= macro.
+- [X] =ores.qt.api.lib= links =ores.qt.headless.lib= =PUBLIC=; every
+  existing consumer's =#include "ores.qt/X.hpp"= updated to
+  =#include "ores.qt.headless/X.hpp"= (physical move only — no
+  behavioural change).
+- [X] =ores.qt.api='s =tests/= directory retired (every test file in
+  it was exactly the logic that moved); =ores.qt.headless.tests= is
+  the new home, linking the real shared library rather than
+  duplicate-compiling source files.
+- [X] Verified on Linux: =ores.qt.headless.lib=/=tests=,
+  =ores.qt.api.lib=, every =ores.qt.*= plugin, and =ores.qt.exe= all
+  build and link clean; full test suite passes (198 assertions); the
+  QA Validation Runner panel (the feature that most exercises this
+  code) verified live end-to-end via =--open-scenario=.
+- [ ] Windows CI confirms the fix (pending — this is the whole point
+  of the task).
+
+* Plan
+
+Investigated rather than immediately patched: the user pushed back on
+a proposed quick fix ("define =ORES_QT_API_LIBRARY= for the test
+target too") and asked to trace whether this was a genuine
+architectural smell first. It was: Widgets-free, headless-testable
+logic (=OrgDocRenderer=, =TestScenarioResultsWriter=,
+=EnvironmentMetadata=, =HierarchyModelBuilder=, =FontUtils=,
+=RepoFileFinder=, =parse_trade_instrument=/=IInstrumentFormPopulator=)
+was physically living inside =ores.qt.api=, which as a whole requires
+=Qt6::Widgets=/a display — forcing the test target to duplicate-
+compile specific =.cpp= files to test headlessly, which is what broke
+dllexport/dllimport consistency on MSVC.
+
+Confirmed no existing =ores.qt.*= sub-component was already
+Widgets-free (checked every sibling's =CMakeLists.txt= for
+=Qt6::Widgets=/=ores.qt.lib=; all of them require it, since they all
+link =ores.qt.api.lib=), so a new component was warranted rather than
+relocating into an existing one.
+
+Extracted =ores.qt.headless= (own =export.hpp=, macro
+=ORES_QT_HEADLESS_API= deliberately distinct from =ores.qt.api='s
+=ORES_QT_API= — since =ores.qt.api= consumes this component's headers
+directly, both export headers can land in the same TU, and a shared
+macro name would silently clash — last =#define= wins — rather than
+fail loudly). Moved the header namespace too (=ores.qt.headless/X.hpp=,
+not =ores.qt/X.hpp=), matching how every other split component in the
+repo (=ores.trading.api= vs =.core=, etc.) uses the component's own
+name as its header namespace. =FontUtils.hpp= (header-only, no
+=ORES_QT_API= decoration, ~15 consumers across the app) moved too —
+otherwise it would sit at the boundary and risk exactly the
+same-macro-name clash it was designed to avoid.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

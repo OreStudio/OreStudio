@@ -62,6 +62,12 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Backlog tasks this PR implements still marked BACKLOG | story.org | Accepted | Closed 4 tasks (D1F20726, 44F95CF2, BB347C3E, AA3A7511), fixed in 1a31babab |
+| 2 | Stale comment: commodity claimed to reuse nature_simulated | dq_badge_system_populate.sql | Accepted | Fixed in 1a31babab |
+| 3 | Badge count "39" should be "40" | badge_catalogue.org | Accepted (differently) | Dropped the count entirely rather than fix the number — would drift again |
+| 4 | Unset bool: "No" in list vs PartiallyChecked in detail | BoolYesNoLabel.hpp | Declined | Intentional — table cell wants binary read, detail needs tri-state for editing |
+| 5 | AdminPlugin.cpp Scenario Runner fix out of stated scope | AdminPlugin.cpp | Declined | In scope — needed to run the test scenario verifying this PR's own fixes |
+| 6 | notifyOpenDialogs duplication across controllers | CurrencyPairController.cpp / CurrencyPairConventionController.cpp | Declined | Matches established codegen boilerplate shape; dedup is a template-level change, separate PR |
+| 7 | Combo defaults to non-empty value on create (classification/BDC) | CurrencyPairDetailDialog.cpp | Declined | Intentional — static_combo can't represent unset; validateInput() change is correct |
 
 * Result

@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 30563983-1E0E-44D2-8D9D-9BBE7086BF68
+:END:
+#+title: Task: Migrate currency.holiday_calendar to a real FK relationship
+#+description: Replace currency.holiday_calendar's free-text value with a proper (soft or hard) FK relationship to the new calendar entity, supporting a currency needing more than one calendar via a junction table.
+#+type: task
+#+level: s1
+#+filetags: :calendar-reference-data:next:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 1F43998E-BD20-4CBC-8C05-509F1ABF0E0C
+#+blocked_since: 2026-07-08
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace =currency.holiday_calendar='s free-text value with a
+proper FK relationship to the new =calendar= entity, via a junction
+table so a currency can reference more than one calendar (e.g. a
+country calendar and a financial-centre calendar).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] landing first. |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- [ ] A =currency_calendar= (or similarly named) junction table exists,
+  FK-referencing both =currency= and =calendar=.
+- [ ] =currency.holiday_calendar='s existing free-text values are
+  migrated onto the junction table.
+- [ ] The old free-text column is retired.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

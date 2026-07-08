@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: F5D05342-BE66-4E75-8E01-4699612089F7
+:END:
+#+title: Task: Currency Pair Conventions list/detail have no flags for the pair
+#+description: The Currency Pair Conventions list and detail dialog show the Pair column as plain text (e.g. USD/KWD) with no flags; apply the same base/quote flag treatment used in the Currency Pairs main dialog.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Currency Pair Conventions list and detail dialog show the
+=Pair= column/field as plain text (e.g. "USD/KWD") with no flags,
+unlike Currency Pairs. Apply the same base/quote combined-flag
+treatment used there (including the sizing fix from
+[[id:DAE530F1-46FB-4901-80F3-8959EE683840][Currency pair flag icons in list are too small]]), to both the list
+and the detail dialog.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- [ ] Currency Pair Conventions list's =Pair= column shows the
+  base/quote flag icon, same size/style as Currency Pairs.
+- [ ] Currency Pair Conventions detail dialog shows the same flag
+  treatment for its pair field.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 5E8C3909-3BCD-4BBD-9748-2B551054A3B9
+:END:
+#+title: Task: Document currency pairs and conventions in the user manual
+#+description: Add currency pairs and currency pair conventions to the user manual: what they are, how to manage them, and the deliverable/classification/convention concepts, following the manual's existing chapter structure.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Currency pairs and currency pair conventions have no coverage in
+the user manual. Add a section (following the manual's existing
+chapter/screenshot-placeholder conventions) covering: what a currency
+pair is, base/quote/deliverable/settlement_currency/classification,
+what a currency pair convention is (pip_factor, tick_size, calendars,
+business day convention, spot_relative, end_of_month), and how to
+manage both from the Qt client.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- [ ] User manual has a Currency Pairs section explaining the domain
+  concepts (deliverable/NDF, classification, settlement currency).
+- [ ] User manual has a Currency Pair Conventions section explaining
+  pip_factor/tick_size/decimal_places/calendars/business day
+  convention/spot_relative/end_of_month.
+- [ ] Screenshots (or placeholders) included per the manual's existing
+  convention.
+- [ ] Manual PDF rebuilds cleanly with the new content.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

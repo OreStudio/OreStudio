@@ -184,7 +184,7 @@ title='Edit this page on GitHub' aria-label='Edit this page on GitHub'>\
         ("site:pages"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|projects/ores.org-js"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/\\|projects/ores.org-js"
          :publishing-function org-html-publish-to-html
          :publishing-directory "./build/output/site/OreStudio"
          :html-preamble ores/site-preamble
@@ -199,21 +199,21 @@ title='Edit this page on GitHub' aria-label='Edit this page on GitHub'>\
         ("site:images"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|projects/ores.org-js"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/\\|projects/ores.org-js"
          :base-extension "png\\|jpe?g\\|gif\\|svg"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:style"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|projects/ores.org-js"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/\\|projects/ores.org-js"
          :base-extension "css"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:pdf"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|projects/ores.org-js"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/\\|projects/ores.org-js"
          :base-extension "pdf"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)

@@ -21,7 +21,7 @@ from typing import Iterable, Iterator
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-EXCLUDED_DIRS = {"build", ".packages", "vcpkg", "external", ".git", "node_modules"}
+EXCLUDED_DIRS = {"build", ".packages", "vcpkg", "external", ".git", "node_modules", ".claude"}
 
 ID_RE       = re.compile(r"^:ID:\s+([0-9A-Fa-f-]+)\s*$",   re.MULTILINE)
 TITLE_RE    = re.compile(r"^#\+title:\s*(.*?)\s*$",        re.MULTILINE | re.IGNORECASE)

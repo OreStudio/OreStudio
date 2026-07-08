@@ -69,7 +69,12 @@ placeholder text field.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] | BACKLOG | | | Model a calendar domain entity enumerating valid ORE/QuantLib calendar codes (name, optional flag image, etc.) ready to drive ores.codegen.entity. |
+| [[id:30563983-1E0E-44D2-8D9D-9BBE7086BF68][Migrate currency.holiday_calendar to a real FK relationship]] | BACKLOG | | | Replace currency.holiday_calendar's free-text value with a proper (soft or hard) FK relationship to the new calendar entity, supporting a currency needing more than one calendar via a junction table. |
+| [[id:F348285C-7ECE-4D59-9CD1-13931D2C90DE][Migrate currency_pair_convention.advance_calendar onto the calendar model]] | BACKLOG | | | Replace advance_calendar's comma-joined free-text value with a junction table validated against the calendar entity. Resolve the naming question along the way: is 'advance_calendar' idiomatic, or should it just be 'holiday_calendar'/'calendar'? |
+| [[id:24FCC62F-D1AB-4872-8337-E806675EBF7C][Qt screens for calendars: list/add/edit, combo picker, flag display]] | BACKLOG | | | Build the usual entity CRUD Qt screens for calendar (list/add/edit/history), a reusable combo picker widget for other screens to select a calendar (showing the calendar's flag if it has one), and a toolbar button in Currency Pair Conventions' main window into Calendars. |
+| [[id:78A340FA-94F0-49F4-B521-89950A32B1F1][Build ORE's comma-joined calendar string only at the XML export boundary]] | BACKLOG | | | ores.ore's conventions_mapper (or successor) should build ORE's comma-joined calendar-name string from the FK relationship(s) only when exporting to XML — the domain model itself never stores the joined string. |
+| [[id:1D064DDB-0C57-43C6-B17C-07003BC644C1][Holiday-aware date picker widget]] | BACKLOG | | | A reusable Qt date-picker widget that takes one or more calendars as input, highlights their holidays (with a tooltip naming the source calendar), and is used everywhere a date sensitive to holidays needs to be picked. |
 
 * Decisions
 

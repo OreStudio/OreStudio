@@ -419,6 +419,7 @@ void FxSpotRateEditor::buildInstrumentTab() {
     browseVintageButton_->setToolTip(
         tr("List the (source, date) vintages actually imported for this currency "
            "pair, instead of typing them blind."));
+    browseVintageButton_->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     vintageForm->addRow(QString(), browseVintageButton_);
     layout->addLayout(vintageForm);
     connect(browseVintageButton_,

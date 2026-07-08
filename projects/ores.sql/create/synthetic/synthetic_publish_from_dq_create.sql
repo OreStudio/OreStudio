@@ -184,7 +184,17 @@ begin
             v_party_id, v_config_id,
             r.base_currency_code, r.quote_currency_code,
             'synthetic.' || lower(r.base_currency_code) || lower(r.quote_currency_code),
-            'FX/RATE/' || r.base_currency_code || '/' || r.quote_currency_code,
+            -- The ORE reference vintage (Legacy/Example_56/market.txt) stores
+            -- GBP/USD under the reversed key FX/RATE/USD/GBP (a real quirk of
+            -- that vendor file, not a decomposition bug — see the story's
+            -- Decisions and the "duplicate observation key" investigation).
+            -- ore_key must match the vintage's actual key so the guard's
+            -- series lookup finds it; every other pair here uses its natural
+            -- base/quote order.
+            case when r.base_currency_code = 'GBP' and r.quote_currency_code = 'USD'
+                then 'FX/RATE/USD/GBP'
+                else 'FX/RATE/' || r.base_currency_code || '/' || r.quote_currency_code
+            end,
             -- The DQ artefact has no per-row vintage, and every synthetic FX
             -- config published from this dataset seeds from the same ORE
             -- reference vintage the story targets — so this is price_source

@@ -131,6 +131,13 @@ public:
     std::vector<ores::utility::domain::hierarchy_node>
     get_hierarchy(const boost::uuids::uuid& root_id, bool from_root);
 
+    /**
+     * @brief Retrieves a single party as it stood at a specific version. See
+     * the "Temporal composite entity versioning" architecture doc.
+     */
+    std::optional<domain::party> get_party_at_version(const boost::uuids::uuid& id,
+                                                      std::uint32_t version);
+
 private:
     context ctx_;
     repository::party_repository repo_;

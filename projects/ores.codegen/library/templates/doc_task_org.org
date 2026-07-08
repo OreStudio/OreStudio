@@ -2,14 +2,14 @@
 :ID: 21B1EA52-9B33-402F-8CD9-D604FBF41A04
 :END:
 #+title: Archetype: doc_task.org.mustache
-#+description: Task page: Goal, Status, Acceptance, transient Plan, Notes, =* PRs= and =* Review= tables, Result. =#+branch:= / =#+pr:= drive compass pr matching.
+#+description: Task page: Goal, Status, Acceptance, transient Plan, Notes, =* Test Scenarios=, =* PRs= and =* Review= tables, Result. =#+branch:= / =#+pr:= drive compass pr matching.
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-07-08
 
-Task page: Goal, Status, Acceptance, transient Plan, Notes, =* PRs= and =* Review= tables, Result. =#+branch:= / =#+pr:= drive compass pr matching.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
+Task page: Goal, Status, Acceptance, transient Plan, Notes, =* Test Scenarios=, =* PRs= and =* Review= tables, Result. =#+branch:= / =#+pr:= drive compass pr matching.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -73,6 +73,17 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 ,* Notes
+
+,* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
 
 ,* PRs
 

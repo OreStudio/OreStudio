@@ -26,12 +26,15 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
+#include "ores.refdata.core/service/party_contact_information_service.hpp"
+#include "ores.refdata.core/service/party_identifier_service.hpp"
 #include "ores.refdata.core/service/party_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <boost/uuid/string_generator.hpp>
+#include <chrono>
 #include <optional>
 
 namespace ores::refdata::messaging {
@@ -288,6 +291,72 @@ public:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_party_hierarchy_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void composite_as_of(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(party_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        auto req = decode<get_party_composite_as_of_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_party_composite_as_of_response{.success = false,
+                                                     .message = "Failed to decode request"});
+            return;
+        }
+        try {
+            boost::uuids::string_generator gen;
+            const auto id_uuid = gen(req->id);
+            service::party_service party_svc(ctx);
+            const auto version = static_cast<std::uint32_t>(req->version);
+            auto current = party_svc.get_party_at_version(id_uuid, version);
+            if (!current) {
+                reply(nats_,
+                      msg,
+                      get_party_composite_as_of_response{
+                          .success = false,
+                          .message = "No such party version: " + req->id + " v" +
+                              std::to_string(version)});
+                return;
+            }
+
+            // Windows are contiguous by construction: the next version's
+            // valid_from is this version's valid_to. If there is no next
+            // version, this is the current one — its window is still open,
+            // so bound it with a safely-far-future instant instead (see the
+            // "Temporal composite entity versioning" architecture doc; the
+            // domain object does not surface valid_to directly).
+            auto next = party_svc.get_party_at_version(id_uuid, version + 1);
+            const auto window_end = next ? next->recorded_at
+                                         : std::chrono::system_clock::now() +
+                                               std::chrono::hours(24 * 365 * 100);
+
+            service::party_identifier_service identifier_svc(ctx);
+            auto identifiers = identifier_svc.list_party_identifiers_by_party_id_as_of(
+                req->id, current->recorded_at, window_end);
+
+            service::party_contact_information_service contact_svc(ctx);
+            auto contacts = contact_svc.list_party_contact_informations_by_party_as_of(
+                id_uuid, current->recorded_at, window_end);
+
+            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_party_composite_as_of_response{.success = true,
+                                                     .party = std::move(*current),
+                                                     .identifiers = std::move(identifiers),
+                                                     .contacts = std::move(contacts)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(
+                nats_, msg, get_party_composite_as_of_response{.success = false, .message = e.what()});
         }
     }
 

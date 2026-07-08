@@ -21,6 +21,8 @@
 #define ORES_REFDATA_API_MESSAGING_PARTY_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/party.hpp"
+#include "ores.refdata.api/domain/party_contact_information.hpp"
+#include "ores.refdata.api/domain/party_identifier.hpp"
 #include "ores.utility/domain/hierarchy.hpp"
 #include <string>
 #include <vector>
@@ -105,6 +107,27 @@ struct get_party_hierarchy_response {
     bool success = false;
     std::string message;
     std::vector<ores::utility::domain::hierarchy_node> roots;
+};
+
+/**
+ * @brief Reads a party as it stood at a specific version, together with its
+ * identifiers and contact information as they stood during that same
+ * version's [valid_from, valid_to) window. See the "Temporal composite
+ * entity versioning" architecture doc.
+ */
+struct get_party_composite_as_of_request {
+    using response_type = struct get_party_composite_as_of_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.parties.composite_as_of";
+    std::string id;
+    int version = 0;
+};
+
+struct get_party_composite_as_of_response {
+    bool success = false;
+    std::string message;
+    ores::refdata::domain::party party;
+    std::vector<ores::refdata::domain::party_identifier> identifiers;
+    std::vector<ores::refdata::domain::party_contact_information> contacts;
 };
 
 }

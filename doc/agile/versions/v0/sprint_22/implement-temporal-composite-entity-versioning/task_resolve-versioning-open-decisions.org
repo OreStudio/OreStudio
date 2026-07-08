@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: B98B0994-BF55-42FB-AEE6-A953A534A15A
+:END:
+#+title: Task: Resolve open decisions from the versioning architecture doc
+#+description: Sign off on: whether child DELETE also bumps the parent version, the actual codegen flag names (bump_parent_version, list_by_as_of), and whether reason-code stamping on the touch function is mandatory. Record decisions in the architecture doc and this story.
+#+type: task
+#+level: s1
+#+filetags: :composite_entity:versioning:implement-temporal-composite-entity-versioning:sprint_22:v0:
+#+owner: marco
+#+branch: feature/write-composite-versioning-architecture-doc
+#+pr: 1469
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Get explicit sign-off on the 3 open decisions the architecture doc
+flagged, so implementation can proceed without ambiguity.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                       |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-07                               |
+
+* Acceptance
+
+- All 3 decisions recorded in [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][the architecture doc]] and this story.
+
+* Plan
+
+Asked the author directly rather than picking silently.
+
+* Notes
+
+Decisions (all recommended defaults confirmed):
+- Child DELETE bumps the parent version, symmetric with insert/update.
+- Flag name: =:bump_parent_version:= (FK section, alongside
+  =:list_by:=); read-side counterpart =:list_by_as_of:=.
+- Reason-code stamping on the touch function is mandatory, not
+  caller-optional.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 1469 | [sql,codegen,qt] Temporal composite entity versioning |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All 3 decisions confirmed and recorded: child DELETE bumps the
+parent; flag name =:bump_parent_version:=; reason-code stamping
+mandatory. Unblocks the SQL touch-function task.

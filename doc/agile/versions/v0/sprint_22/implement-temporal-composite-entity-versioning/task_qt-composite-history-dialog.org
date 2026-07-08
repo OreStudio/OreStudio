@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: F41DC692-99AE-4F0C-9D6E-76BA767BB93E
+:END:
+#+title: Task: Qt composite history/version dialog
+#+description: Extend the party/counterparty history dialog to show composed children state as of a selected parent version, built on the as-of composition query and the embeddable child-table widget.
+#+type: task
+#+level: s1
+#+filetags: :composite_entity:versioning:qt:implement-temporal-composite-entity-versioning:sprint_22:v0:
+#+owner: marco
+#+branch: feature/write-composite-versioning-architecture-doc
+#+pr: 1469
+#+blocked_on: [[id:2AC41A6E-3F18-48FF-B389-D5CC0E1AAC8F][Bind composite child-entity and hierarchy widgets to party and counterparty]] — the Composite tab's real end-state UX (drill into which child changed) needs per-child history dialogs from that task.
+#+blocked_since: 2026-07-08
+#+created: 2026-07-07
+#+updated: 2026-07-08
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extend the party/counterparty History dialog with a "Composite (as of
+this version)" tab showing the identifiers and contact information
+that composed the entity as of a selected historical version, reaching
+all the way through NATS to the already-proven repository/service
+layer from the previous task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] |
+| Now          | Interim flat-list Composite tab implemented, built, and partially verified live (steps 2-4 of the test scenario pass — as-of scoping is correct). Paused pending children commissioning. |
+| Waiting on   | [[id:2AC41A6E-3F18-48FF-B389-D5CC0E1AAC8F][Bind composite child-entity and hierarchy widgets to party and counterparty]] to land per-child history dialogs. |
+| Next         | Once that task lands, resume the test scenario (steps 5-7) and revisit the Composite tab's UX to drill into per-child history instead of a flat list. |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- New NATS message pair (=get_party_composite_as_of_request/response=,
+  =get_counterparty_composite_as_of_request/response=) reaches the
+  already-proven repository/service as-of methods and returns the
+  parent + its identifiers + its contacts as of a given version.
+- =PartyHistoryDialog=/=CounterpartyHistoryDialog= gain a "Composite
+  (as of this version)" tab, populated whenever a version row is
+  selected, listing identifiers and contacts as they stood then.
+- Builds cleanly end to end (refdata core lib, Qt party lib, full
+  build, controller/refdata services, Qt client all rebuilt).
+- Confirmed live in the running client (pending).
+
+* Plan
+
+Added one hand-written composite NATS message per parent (not a
+generic per-child message) since the Qt dialog needs "parent + all its
+children as of a version" in one round trip, not separate calls per
+child type — the handler internally reuses the exact
+=get_<entity>_at_version=/=list_<entity>_by_<fk>_as_of= service calls
+proven in the previous task. Window end for the requested version is
+derived by fetching version+1 and using its =recorded_at= (windows are
+contiguous by construction); the current/latest version's still-open
+end is bounded with a safely-far-future instant, same approach as the
+proof test in the previous task.
+
+Wired: protocol structs (=party_protocol.hpp=/=counterparty_protocol.hpp=),
+handler methods (=party_handler::composite_as_of=/
+=counterparty_handler::composite_as_of=), registrar subscriptions, and
+the Qt side — a new tab in each history dialog's =.ui=, populated via
+the existing generic =runHistoryRequest= async helper (already used
+for =loadHistory=), triggered from =displayFullDetails= (already the
+hook point for "a version row was selected").
+
+* Notes
+
+Did not attempt a raw live NATS round-trip test outside the Qt client
+(the handler requires JWT auth via =make_request_context=, and faking
+that from a shell/CLI script for a one-off check wasn't worth the
+detour) — instead relied on: (1) the underlying repository/service
+calls already being proven correct with real data in the previous
+task, (2) clean compilation of the handler/registrar wiring (which
+would fail to compile if the message types weren't properly
+reflectable or the service signatures didn't match), and (3) a full
+rebuild of every affected binary (refdata core lib, controller
+service, refdata service, Qt client) succeeding. Live visual
+confirmation in the running client is the remaining verification step
+(see =* Test Scenarios= below).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:9561F122-A25D-4CE5-8AF4-404266925857][Composite history dialog shows children as of a version]] | RUNNING | Steps 2-4 PASS (as-of scoping correct). Step 1 marked FAIL by design review, not a functional defect — see story Decisions: the flat list is the wrong end-state UX, needs a per-child history dialog drill-down, blocked on the sibling story's task 3. Steps 5-7 (live v4 bump, counterparty) still pending. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 1469 | [sql,codegen,qt] Temporal composite entity versioning |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

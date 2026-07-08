@@ -236,6 +236,8 @@ std::string("https://example.com")
 :table:         ores_refdata_counterparties_tbl
 :nullable:      false
 :error_message: Invalid counterparty_id: %. No active counterparty found with this id.
+:bump_parent_version: true
+:list_by_as_of: true
 :END:
 
 * Insert trigger

@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: 9561F122-A25D-4CE5-8AF4-404266925857
+:END:
+#+title: Test Scenario: Composite history dialog shows children as of a version
+#+description: Verify the new 'Composite (as of this version)' tab in PartyHistoryDialog and CounterpartyHistoryDialog correctly shows identifiers and contact information as they stood at each historical version, and that adding/deleting a child bumps the parent's version with the expected commentary.
+#+type: test_scenario
+#+level: s1
+#+filetags: :implement-temporal-composite-entity-versioning:sprint_22:v0:
+#+target_dialog:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:F41DC692-99AE-4F0C-9D6E-76BA767BB93E][Qt composite history/version dialog]] in [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:F41DC692-99AE-4F0C-9D6E-76BA767BB93E][Qt composite history/version dialog]] |
+| Parent story  | [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]]   |
+| Target dialog | PartyHistoryDialog and CounterpartyHistoryDialog (new "Composite (as of this version)" tab) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Context
+
+Background needed before running this — you don't need to re-derive
+any of this, it's already true in the current environment:
+
+- The mechanism: child writes (party_identifier, party_contact_information,
+  and the counterparty equivalents) bump their parent's version in the
+  *same transaction*, with a =change_commentary= like "Bumped by child
+  party_identifier: ...". See [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal composite entity versioning: target state]].
+- The party BRCLYS (Barclays Plc, from the Barclays/GLEIF provisioning
+  script) currently has *3 versions*:
+  - v1 — created by GLEIF import.
+  - v2 — bumped by its LEI identifier (=213800LBQA1Y9L22JB70=) being
+    created moments later, same provisioning run.
+  - v3 — a direct edit ("Party provisioning completed via shell").
+- The counterparty SNTRCH (Sonatrach) has an analogous v1→v2 history
+  from its own LEI identifier.
+- Both parties/counterparties currently have exactly *one* live
+  identifier (LEI) and no contact information yet.
+- Services and the Qt client should already be running (=compass
+  services status=, =compass client start= if not). If the DB was
+  recreated since, re-run
+  =compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+  to restore this exact starting state.
+
+* Steps
+
+** Open BRCLYS's history dialog and check the version list
+
+In the Qt client: Reference Data (or Party menu) → Parties → find
+=BRCLYS= (Barclays Plc) → open its detail dialog → History. Confirm
+the version list shows 3 rows (v1, v2, v3), with v2's commentary
+reading "Bumped by child party_identifier: ...".
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | so we can see composite as of this version but I wonder if this is the right thing. should we not just say "the component changed at this version" and then open the component history dialog? |
+
+** Select v1 and check the Composite tab shows no identifiers
+
+Click the v1 row. Open the "Composite (as of this version)" tab.
+Expected: the Identifiers list shows "(none as of this version)" (the
+LEI identifier didn't exist yet at v1's instant) and Contacts shows
+"(none as of this version)".
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Select v2 and check the Composite tab shows the LEI identifier
+
+Click the v2 row, same tab. Expected: the Identifiers list shows one
+entry — =LEI: 213800LBQA1Y9L22JB70 (v1)=. Contacts still empty.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Select v3 (current) and check the Composite tab is unchanged
+
+Click the v3 row (the latest). Expected: identical to v2's view — one
+LEI identifier, no contacts — since nothing has added/removed a child
+since v2.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Add a second identifier via SQL and confirm the party bumps to v4
+
+Outside the Qt client, run:
+#+begin_src sh
+./compass.sh sql -- -c "insert into ores_refdata_party_identifiers_tbl (tenant_id, id, version, party_id, id_scheme, id_value, modified_by, performed_by, change_reason_code, change_commentary) select tenant_id, gen_random_uuid(), 0, id, 'BIC', 'BARCGB22XXX', 'system', 'test', 'system.test', 'Manual test BIC' from ores_refdata_parties_tbl where short_code='BRCLYS' and valid_to='9999-12-31 23:59:59+00';"
+#+end_src
+Back in the Qt client, reopen (or refresh) BRCLYS's history dialog.
+Expected: a new v4 row appears, with commentary "Bumped by child
+party_identifier: Manual test BIC".
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Select the new v4 and check the Composite tab shows both identifiers
+
+Click the v4 row. Expected: Identifiers list shows *two* entries — the
+original LEI and the new =BIC: BARCGB22XXX (v1)=. Re-select v3: it
+should still show only the LEI (proving the as-of window is correctly
+scoped to what existed at that version, not "everything that exists
+now").
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Repeat the v1→v2 check for counterparty SNTRCH
+
+Open Counterparties → =SNTRCH= (Sonatrach) → History. Confirm the same
+pattern: v1 has no identifiers in the Composite tab, v2 has the LEI.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-07-08T12:02:46Z |
+| Branch        | feature/write-composite-versioning-architecture-doc |
+| Commit        | de0fb9605 |
+| Worktree      | solid_dirac |
+
+* Notes

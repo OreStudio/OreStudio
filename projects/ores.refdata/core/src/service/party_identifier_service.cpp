@@ -101,4 +101,20 @@ party_identifier_service::get_party_identifier_history(const std::string& id) {
     return repo_.read_all(ctx_, id);
 }
 
+std::optional<domain::party_identifier>
+party_identifier_service::get_party_identifier_at_version(const std::string& id,
+                                                          std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting party identifier at version: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
+}
+
+std::vector<domain::party_identifier> party_identifier_service::list_party_identifiers_by_party_id_as_of(
+    const std::string& party_id,
+    std::chrono::system_clock::time_point valid_from_bound,
+    std::chrono::system_clock::time_point valid_to_bound) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing party identifiers by party as of window: " << party_id;
+    return repo_.read_by_party_id_as_of(ctx_, party_id, valid_from_bound, valid_to_bound);
+}
+
 }

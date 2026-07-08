@@ -96,6 +96,27 @@ std::vector<domain::counterparty> counterparty_repository::read_all(context ctx,
         "Reading all counterparty versions by id.");
 }
 
+std::optional<domain::counterparty> counterparty_repository::read_at_version(
+    context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading counterparty at version. id: " << id
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<counterparty_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<counterparty_entity, domain::counterparty>(
+        ctx,
+        query,
+        [](const auto& entities) { return counterparty_mapper::map(entities); },
+        lg(),
+        "Reading counterparty at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
 
 void counterparty_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty: " << id;

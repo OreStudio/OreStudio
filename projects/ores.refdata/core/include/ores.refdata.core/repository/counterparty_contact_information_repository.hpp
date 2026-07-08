@@ -25,6 +25,8 @@
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -65,6 +67,23 @@ public:
 
     std::vector<domain::counterparty_contact_information> read_all(const boost::uuids::uuid& id);
     void remove(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Reads a single counterparty contact information as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     */
+    std::optional<domain::counterparty_contact_information>
+    read_at_version(const boost::uuids::uuid& id, std::uint32_t version);
+
+    /**
+     * @brief Reads counterparty contact informations filtered by counterparty_id that
+     * were live at any point during [valid_from_bound, valid_to_bound) — the set that
+     * composes a parent counterparty's state as of one of its own historical versions.
+     */
+    std::vector<domain::counterparty_contact_information>
+    read_by_counterparty_id_as_of(const boost::uuids::uuid& counterparty_id,
+                                 std::chrono::system_clock::time_point valid_from_bound,
+                                 std::chrono::system_clock::time_point valid_to_bound);
 
 private:
     context ctx_;

@@ -25,11 +25,14 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.core/service/counterparty_contact_information_service.hpp"
+#include "ores.refdata.core/service/counterparty_identifier_service.hpp"
 #include "ores.refdata.core/service/counterparty_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <boost/uuid/string_generator.hpp>
+#include <chrono>
 #include <optional>
 
 namespace ores::refdata::messaging {
@@ -209,6 +212,66 @@ public:
         } else {
             BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void composite_as_of(ores::nats::message msg) {
+        BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_counterparty_composite_as_of_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        try {
+            service::counterparty_service cpty_svc(req_ctx);
+            const auto version = static_cast<std::uint32_t>(req->version);
+            auto current = cpty_svc.get_counterparty_at_version(req->id, version);
+            if (!current) {
+                reply(nats_,
+                      msg,
+                      get_counterparty_composite_as_of_response{
+                          .success = false,
+                          .message = "No such counterparty version: " + req->id + " v" +
+                              std::to_string(version)});
+                return;
+            }
+
+            // See party_handler::composite_as_of — windows are contiguous
+            // by construction; the domain object doesn't surface valid_to.
+            auto next = cpty_svc.get_counterparty_at_version(req->id, version + 1);
+            const auto window_end = next ? next->recorded_at
+                                         : std::chrono::system_clock::now() +
+                                               std::chrono::hours(24 * 365 * 100);
+
+            boost::uuids::string_generator gen;
+            service::counterparty_identifier_service identifier_svc(req_ctx);
+            auto identifiers = identifier_svc.list_counterparty_identifiers_by_counterparty_id_as_of(
+                req->id, current->recorded_at, window_end);
+
+            service::counterparty_contact_information_service contact_svc(req_ctx);
+            auto contacts = contact_svc.list_counterparty_contact_informations_by_counterparty_as_of(
+                gen(req->id), current->recorded_at, window_end);
+
+            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_counterparty_composite_as_of_response{.success = true,
+                                                            .counterparty = std::move(*current),
+                                                            .identifiers = std::move(identifiers),
+                                                            .contacts = std::move(contacts)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  get_counterparty_composite_as_of_response{.success = false, .message = e.what()});
         }
     }
 

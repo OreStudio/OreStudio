@@ -121,6 +121,21 @@ begin
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- Bump ores_refdata_counterparties_tbl's version alongside this write (composite entity
+    -- versioning — see the "Temporal composite entity versioning"
+    -- architecture doc). The touch function re-validates modified_by
+    -- itself; change_reason_code is passed through as-is since it was
+    -- already validated above.
+    perform ores_refdata_counterparties_touch_version_fn(
+        NEW.tenant_id,
+        NEW.counterparty_id,
+        NEW.change_reason_code,
+        NEW.change_commentary,
+        NEW.modified_by,
+        NEW.performed_by,
+        'counterparty_identifier'
+    );
+
     -- Version management
     select version into current_version
     from "ores_refdata_counterparty_identifiers_tbl"
@@ -137,17 +152,22 @@ begin
         end if;
         NEW.version = current_version + 1;
 
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_refdata_counterparty_identifiers_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
@@ -161,9 +181,21 @@ before insert on "ores_refdata_counterparty_identifiers_tbl"
 for each row execute function ores_refdata_counterparty_identifiers_insert_fn();
 
 create or replace rule ores_refdata_counterparty_identifiers_delete_rule as
-on delete to "ores_refdata_counterparty_identifiers_tbl" do instead
+on delete to "ores_refdata_counterparty_identifiers_tbl" do instead (
     update "ores_refdata_counterparty_identifiers_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+    -- Bump ores_refdata_counterparties_tbl's version on delete too (composite entity
+    -- versioning), symmetric with the insert-side call above.
+    select ores_refdata_counterparties_touch_version_fn(
+        OLD.tenant_id,
+        OLD.counterparty_id,
+        OLD.change_reason_code,
+        OLD.change_commentary,
+        OLD.modified_by,
+        OLD.performed_by,
+        'counterparty_identifier'
+    );
+);

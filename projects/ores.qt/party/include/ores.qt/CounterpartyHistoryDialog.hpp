@@ -83,6 +83,14 @@ protected:
     void revertToVersionAt(int index) override;
 
 private:
+    /**
+     * @brief Fetches the counterparty's composite state (identifiers,
+     * contact information) as of the given version and populates the
+     * "Composite" tab. See the "Temporal composite entity versioning"
+     * architecture doc.
+     */
+    void loadCompositeAsOf(int version_number);
+
     std::unique_ptr<Ui::CounterpartyHistoryDialog> ui_;
     boost::uuids::uuid id_;
     QString code_;

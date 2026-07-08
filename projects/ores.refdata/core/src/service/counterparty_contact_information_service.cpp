@@ -111,4 +111,23 @@ counterparty_contact_information_service::get_counterparty_contact_information_h
     return repo_.read_all(id);
 }
 
+std::optional<domain::counterparty_contact_information>
+counterparty_contact_information_service::get_counterparty_contact_information_at_version(
+    const boost::uuids::uuid& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty contact information at version: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(id, version);
+}
+
+std::vector<domain::counterparty_contact_information>
+counterparty_contact_information_service::list_counterparty_contact_informations_by_counterparty_as_of(
+    const boost::uuids::uuid& counterparty_id,
+    std::chrono::system_clock::time_point valid_from_bound,
+    std::chrono::system_clock::time_point valid_to_bound) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Listing counterparty contact informations by counterparty as of window: "
+        << counterparty_id;
+    return repo_.read_by_counterparty_id_as_of(counterparty_id, valid_from_bound, valid_to_bound);
+}
+
 }

@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch: feature/verify-qt-counterparty
 #+pr: 1440
-#+blocked_on: [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] and Commission: party (solid_dirac, feature/appraise-party-all-layers)
+#+blocked_on: [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] and Commission: party (solid_dirac, feature/appraise-party-all-layers); also [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] (solid_dirac) for the history-dialog portion — counterparty_identifier writes should bump counterparty.version once that lands, and this task's history verification should target the post-implementation behaviour, not the current one.
 #+blocked_since: 2026-07-05
 #+created: 2026-07-04
-#+updated: 2026-07-04
+#+updated: 2026-07-07
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

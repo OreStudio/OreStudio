@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B
+:END:
+#+title: Story: Implement temporal composite entity versioning
+#+description: Implement the target state from the architecture doc: SQL touch-function mechanism so child writes bump the parent's version in the same transaction, the as-of window-join read-side composition query, and the Qt composite history dialog. Party and counterparty are the reference case.
+#+type: story
+#+level: s2
+#+filetags: :composite_entity:versioning:party:counterparty:codegen:sql:qt:sprint_22:v0:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Land the SQL/codegen mechanism for child writes to bump a parent's version in the same transaction, the as-of read-side composition query, and the Qt composite history dialog, proven against party and counterparty as the reference entities.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | SQL/codegen mechanism and as-of query fully landed and tested; Qt composite history dialog interim-implemented, then paused (BLOCKED) pending children commissioning. |
+| Waiting on    | [[id:2AC41A6E-3F18-48FF-B389-D5CC0E1AAC8F][Bind composite child-entity and hierarchy widgets to party and counterparty]] (sibling story) to land per-child history dialogs. |
+| Next          | Raise/merge a PR for the work done so far; resume the Qt task once children are commissioned. |
+| Last touched  | 2026-07-08                               |
+
+* Acceptance
+
+- Child writes to party_identifier/party_contact_information (and counterparty equivalents) bump the parent's version in the same transaction, with a standardized change-reason comment. A read-side as-of query composes parent+children by matching valid_from/valid_to windows. The Qt history dialog shows composite state as of a selected parent version. Zero-diff regen where codegen already covers the entity; hand-patched first for party (not yet under codegen), matching the established pattern.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B98B0994-BF55-42FB-AEE6-A953A534A15A][Resolve open decisions from the versioning architecture doc]] | DONE | 2026-07-07 | 2026-07-07 | Sign off on: whether child DELETE also bumps the parent version, the actual codegen flag names (bump_parent_version, list_by_as_of), and whether reason-code stamping on the touch function is mandatory. Record decisions in the architecture doc and this story. |
+| [[id:A801BC8E-1D2E-4CFD-A9B8-E11327D0551D][SQL touch-function mechanism: child writes bump parent version]] | DONE | 2026-07-07 | 2026-07-08 | Hand-patch party_identifier/party_contact_information (and generate the equivalent for counterparty via the codegen facet) so their insert trigger and soft-delete rule call a shared touch function that bumps the parent's version in the same transaction, with a standardized change-reason comment. |
+| [[id:F770C2EF-5574-415F-911C-6F900488C1E4][As-of window-join read-side composition query]] | DONE | 2026-07-08 | 2026-07-08 | Add the parent as-of-version fetch and the child as-of-window list query (interval overlap against the parent's valid_from/valid_to), plus a service-level helper composing parent+children as of a given parent version. |
+| [[id:F41DC692-99AE-4F0C-9D6E-76BA767BB93E][Qt composite history/version dialog]] | BLOCKED | 2026-07-08 | | Extend the party/counterparty history dialog to show composed children state as of a selected parent version, built on the as-of composition query and the embeddable child-table widget. Needs the NATS/protocol layer too (deferred from the as-of task). Interim flat-list implemented and partially verified; blocked on children commissioning for the real drill-down UX. |
+| [[id:7F8A51BA-35CB-467E-B3E5-A847CB37E238][Document the composite versioning approach and codegen recipe]] | BACKLOG | | | Once the mechanism is fully implemented and proven, write a doc/knowledge/architecture page explaining the approach (cross-referencing the existing target-state doc, ores.sql/PostgreSQL architecture docs, and any other related docs found), plus a codegen recipe explaining which variability knobs (:bump_parent_version:, :generate_touch_function:, :list_by_as_of:) to flip to make an entity a composite parent/child. All links must be proper org-roam ID links, cross-referenced both ways. |
+
+* Decisions
+
+- Child DELETE bumps the parent version, symmetric with insert/update.
+- Codegen FK flag: =:bump_parent_version:= (alongside =:list_by:=);
+  read-side counterpart =:list_by_as_of:=.
+- Reason-code stamping on the touch function is mandatory.
+- This is codegen-driven from the start, not a hand-patch-only
+  affair: both flags are variability knobs on the entity =.org=
+  model — enabling them on any FK generates the full mechanism (touch
+  function call from the trigger and delete rule, the as-of query).
+  Party is hand-patched first only because party itself isn't yet
+  under codegen; counterparty gets it purely by flipping the flags.
+- Composite tab UX finding (from the test scenario's first step,
+  marked FAIL by the author): showing a flat "identifiers/contacts as
+  of this version" list is not the right end-state UX — a tester
+  wants to know *which* child changed at a version and drill into
+  *that child's own history* (old value → new value), not re-derive
+  the diff by eye against the previous version's flat list.
+  - That drill-down needs a per-child-entity history dialog
+    (=PartyIdentifierHistoryDialog=, =PartyContactInformationHistoryDialog=,
+    and counterparty equivalents), which doesn't exist yet.
+  - Per-child history dialogs must be codegen-generated (the same
+    facet that generates =HistoryDialogBase=-derived dialogs for
+    top-level entities today), not hand-built one-off for this task.
+  - That commissioning is exactly task 3 ("Bind composite
+    child-entity and hierarchy widgets to party and counterparty") of
+    the sibling [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for
+    codegen]] story — so the Composite tab's flat-list view here is a
+    deliberate interim, blocked from reaching its real end-state UX
+    until that story's task 3 lands. Not a defect to chase further in
+    this task.
+
+* Out of scope
+
+-

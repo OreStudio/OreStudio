@@ -20,6 +20,7 @@
 #include "ores.refdata.core/repository/counterparty_identifier_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/counterparty_identifier_entity.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_mapper.hpp"
@@ -101,6 +102,28 @@ counterparty_identifier_repository::read_all(context ctx, const std::string& id)
         "Reading all counterparty identifier versions by id.");
 }
 
+std::optional<domain::counterparty_identifier> counterparty_identifier_repository::read_at_version(
+    context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading counterparty identifier at version. id: " << id
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<counterparty_identifier_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities =
+        execute_read_query<counterparty_identifier_entity, domain::counterparty_identifier>(
+            ctx,
+            query,
+            [](const auto& entities) { return counterparty_identifier_mapper::map(entities); },
+            lg(),
+            "Reading counterparty identifier at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_latest_by_counterparty_id(
     context ctx, const std::string& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
@@ -147,6 +170,32 @@ counterparty_identifier_repository::get_total_counterparty_identifier_count_by_c
     BOOST_LOG_SEV(lg(), debug) << "Total active counterparty identifiers count by counterparty_id: "
                                << count;
     return count;
+}
+std::vector<domain::counterparty_identifier>
+counterparty_identifier_repository::read_by_counterparty_id_as_of(
+    context ctx,
+    const std::string& counterparty_id,
+    std::chrono::system_clock::time_point valid_from_bound,
+    std::chrono::system_clock::time_point valid_to_bound) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading counterparty identifiers as of window. counterparty_id: "
+                               << counterparty_id;
+
+    const auto vf(
+        make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
+    const auto vt(
+        make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<counterparty_identifier_entity>> |
+                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
+                             "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<counterparty_identifier_entity, domain::counterparty_identifier>(
+        ctx,
+        query,
+        [](const auto& entities) { return counterparty_identifier_mapper::map(entities); },
+        lg(),
+        "Reading counterparty identifiers as of window by counterparty_id.");
 }
 
 void counterparty_identifier_repository::remove(context ctx, const std::string& id) {

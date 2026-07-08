@@ -34,6 +34,9 @@ The full template source. Edit here and re-tangle with
 #include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
 #include "ores.{{component_core}}/repository/{{entity_singular}}_entity.hpp"
 #include "ores.{{component_core}}/repository/{{entity_singular}}_mapper.hpp"
+{{#domain_entity.sql.has_list_by_as_of}}
+#include "ores.platform/time/datetime.hpp"
+{{/domain_entity.sql.has_list_by_as_of}}
 {{#has_parent_id}}
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -192,6 +195,35 @@ std::vector<domain::{{entity_singular}}>
         lg(), "Reading all {{entity_singular_words}} versions by {{primary_key.column}}.");
 }
 
+{{#has_audit_columns}}
+std::optional<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_at_version(context ctx, const std::string& {{primary_key.column}},
+                                                std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_singular_words}} at version. {{primary_key.column}}: "
+                               << {{primary_key.column}} << " version: " << version;
+{{#has_tenant_id}}
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "{{primary_key.column}}"_c == {{primary_key.column}} && "version"_c == version) |
+        sqlgen::limit(1);
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("{{primary_key.column}}"_c == {{primary_key.column}} && "version"_c == version) |
+        sqlgen::limit(1);
+{{/has_tenant_id}}
+
+    const auto entities = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading {{entity_singular_words}} at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+{{/has_audit_columns}}
+
 {{#foreign_keys}}
 {{#list_by}}
 std::vector<domain::{{entity_singular}}>
@@ -277,6 +309,36 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
     return count;
 }
 {{/list_by}}
+{{#list_by_as_of}}
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_by_{{column}}_as_of(
+    context ctx, const std::string& {{column}},
+    std::chrono::system_clock::time_point valid_from_bound,
+    std::chrono::system_clock::time_point valid_to_bound) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_plural_words}} as of window. {{column}}: " << {{column}};
+
+    const auto vf(make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
+    const auto vt(make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+{{#has_tenant_id}}
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "{{column}}"_c == {{column}} &&
+              "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("{{column}}"_c == {{column}} &&
+              "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_tenant_id}}
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading {{entity_plural_words}} as of window by {{column}}.");
+}
+{{/list_by_as_of}}
 {{/foreign_keys}}
 
 void {{entity_singular}}_repository::remove(context ctx, const std::string& {{primary_key.column}}) {

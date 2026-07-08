@@ -129,6 +129,48 @@ void PartyHistoryDialog::displayFullDetails(int index) {
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
     ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
+
+    loadCompositeAsOf(version.version);
+}
+
+void PartyHistoryDialog::loadCompositeAsOf(int version_number) {
+    ui_->compositeIdentifiersListWidget->clear();
+    ui_->compositeContactsListWidget->clear();
+    ui_->compositeIdentifiersListWidget->addItem("Loading...");
+
+    refdata::messaging::get_party_composite_as_of_request request;
+    request.id = boost::uuids::to_string(id_);
+    request.version = version_number;
+
+    runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
+        ui_->compositeIdentifiersListWidget->clear();
+        ui_->compositeContactsListWidget->clear();
+
+        if (!response.success) {
+            BOOST_LOG_SEV(lg(), error) << "Composite as-of request failed: " << response.message;
+            ui_->compositeIdentifiersListWidget->addItem(
+                QString("Failed to load: %1").arg(QString::fromStdString(response.message)));
+            return;
+        }
+
+        if (response.identifiers.empty()) {
+            ui_->compositeIdentifiersListWidget->addItem("(none as of this version)");
+        }
+        for (const auto& pi : response.identifiers) {
+            ui_->compositeIdentifiersListWidget->addItem(QString("%1: %2 (v%3)")
+                                                          .arg(QString::fromStdString(pi.id_scheme))
+                                                          .arg(QString::fromStdString(pi.id_value))
+                                                          .arg(pi.version));
+        }
+
+        if (response.contacts.empty()) {
+            ui_->compositeContactsListWidget->addItem("(none as of this version)");
+        }
+        for (const auto& c : response.contacts) {
+            ui_->compositeContactsListWidget->addItem(
+                QString("%1 (v%2)").arg(QString::fromStdString(c.contact_type)).arg(c.version));
+        }
+    });
 }
 
 void PartyHistoryDialog::openVersionAt(int index) {

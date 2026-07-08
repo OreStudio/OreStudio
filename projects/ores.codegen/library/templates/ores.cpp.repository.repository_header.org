@@ -29,7 +29,9 @@ The full template source. Edit here and re-tangle with
 #ifndef ORES_{{component_core_upper}}_REPOSITORY_{{entity_singular_upper}}_REPOSITORY_HPP
 #define ORES_{{component_core_upper}}_REPOSITORY_{{entity_singular_upper}}_REPOSITORY_HPP
 
+#include <chrono>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
@@ -93,6 +95,21 @@ public:
     std::vector<domain::{{entity_singular}}>
     read_all(context ctx, const std::string& {{primary_key.column}});
 
+{{#has_audit_columns}}
+    /**
+     * @brief Reads a single {{entity_singular_words}} as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param {{primary_key.column}} The {{primary_key.column}} to look up
+     * @param version The version to fetch
+     */
+    std::optional<domain::{{entity_singular}}>
+    read_at_version(context ctx, const std::string& {{primary_key.column}}, std::uint32_t version);
+{{/has_audit_columns}}
+
 {{#foreign_keys}}
 {{#list_by}}
     /**
@@ -112,6 +129,23 @@ public:
     std::uint32_t get_total_{{entity_singular_short}}_count_by_{{column}}(context ctx,
                                                                          const std::string& {{column}});
 {{/list_by}}
+{{#list_by_as_of}}
+    /**
+     * @brief Reads {{entity_plural_words}} filtered by {{column}} that were live at
+     * any point during [valid_from_bound, valid_to_bound) — i.e. the set of
+     * {{entity_plural_words}} that compose a parent entity's state as of one of
+     * its own historical versions. See the "Temporal composite entity
+     * versioning" architecture doc.
+     * @param ctx Repository context with database connection
+     * @param {{column}} The {{column}} to filter by
+     * @param valid_from_bound The parent version's own valid_from
+     * @param valid_to_bound The parent version's own valid_to
+     */
+    std::vector<domain::{{entity_singular}}>
+    read_by_{{column}}_as_of(context ctx, const std::string& {{column}},
+                            std::chrono::system_clock::time_point valid_from_bound,
+                            std::chrono::system_clock::time_point valid_to_bound);
+{{/list_by_as_of}}
 {{/foreign_keys}}
 
     /**

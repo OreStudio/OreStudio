@@ -27,6 +27,7 @@
 #include "ores.utility/domain/hierarchy.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -112,6 +113,15 @@ public:
 
     std::vector<domain::party> read_all(const boost::uuids::uuid& id);
     void remove(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Reads a single party as it stood at a specific version — the
+     * version's own [valid_from, valid_to) window is returned verbatim, so
+     * the caller can compose child entities "as of" the same window. See the
+     * "Temporal composite entity versioning" architecture doc.
+     */
+    std::optional<domain::party> read_at_version(const boost::uuids::uuid& id,
+                                                 std::uint32_t version);
 
 private:
     context ctx_;

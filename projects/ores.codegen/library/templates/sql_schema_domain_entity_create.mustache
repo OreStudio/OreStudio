@@ -466,6 +466,25 @@ begin
 {{/domain_entity.has_tenant_id}}
 {{/domain_entity.change_reason_code_declared}}
 {{/domain_entity.has_audit_columns}}
+{{#domain_entity.foreign_keys}}
+{{#bump_parent_version}}
+    -- Bump {{table}}'s version alongside this write (composite entity
+    -- versioning — see the "Temporal composite entity versioning"
+    -- architecture doc). The touch function re-validates modified_by
+    -- itself; change_reason_code is passed through as-is since it was
+    -- already validated above.
+    perform {{touch_function}}(
+        NEW.tenant_id,
+        NEW.{{column}},
+        NEW.change_reason_code,
+        NEW.change_commentary,
+        NEW.modified_by,
+        NEW.performed_by,
+        '{{domain_entity.entity_singular}}'
+    );
+
+{{/bump_parent_version}}
+{{/domain_entity.foreign_keys}}
 {{#domain_entity.has_audit_columns}}
     -- Version management
     select version into current_version
@@ -484,13 +503,18 @@ begin
         end if;
         NEW.version = current_version + 1;
 
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where {{#domain_entity.has_tenant_in_pk}}tenant_id = NEW.tenant_id
           and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
           and {{/domain_entity.sql.nullable_tenant_id}}{{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
@@ -498,13 +522,13 @@ begin
 {{^domain_entity.has_audit_columns}}
     -- Close the current active row before inserting the new one
     update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where {{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
       and valid_to = ores_utility_infinity_timestamp_fn()
-      and valid_from < current_timestamp;
+      and valid_from < clock_timestamp();
 {{/domain_entity.has_audit_columns}}
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
 {{#domain_entity.has_audit_columns}}
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
@@ -520,16 +544,98 @@ before insert on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain
 for each row execute function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn();
 
 create or replace rule {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_delete_rule as
-on delete to "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" do instead
+on delete to "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" do instead (
     update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
-    set valid_to = current_timestamp{{#domain_entity.sql.extra_delete_sets}},
+    set valid_to = clock_timestamp(){{#domain_entity.sql.extra_delete_sets}},
         {{{.}}}{{/domain_entity.sql.extra_delete_sets}}
     where {{#domain_entity.has_tenant_in_pk}}tenant_id = OLD.tenant_id
       and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = OLD.tenant_id or (tenant_id is null and OLD.tenant_id is null))
       and {{/domain_entity.sql.nullable_tenant_id}}{{domain_entity.primary_key.column}} = OLD.{{domain_entity.primary_key.column}}
       and valid_to = ores_utility_infinity_timestamp_fn();
+{{#domain_entity.foreign_keys}}
+{{#bump_parent_version}}
+    -- Bump {{table}}'s version on delete too (composite entity
+    -- versioning), symmetric with the insert-side call above.
+    select {{touch_function}}(
+        OLD.tenant_id,
+        OLD.{{column}},
+        OLD.change_reason_code,
+        OLD.change_commentary,
+        OLD.modified_by,
+        OLD.performed_by,
+        '{{domain_entity.entity_singular}}'
+    );
+{{/bump_parent_version}}
+{{/domain_entity.foreign_keys}}
+);
 {{/domain_entity.sql.bitemporal_soft_update}}
 {{#domain_entity.has_tenant_id}}
+{{#domain_entity.generate_touch_function}}
+
+-- =============================================================================
+-- Touch-version function for {{domain_entity.entity_singular}}
+-- Bumps this entity's version without changing any of its own columns,
+-- called by a child entity's insert trigger / delete rule when that
+-- child is flagged :bump_parent_version: true against this entity. See
+-- the "Temporal composite entity versioning" architecture doc.
+--
+-- Deliberately does NOT duplicate the version/valid_from/valid_to
+-- management here: it fetches the current row, resets version to the
+-- 0 sentinel, and re-inserts — the table's own insert trigger (above)
+-- then performs the exact same close-current/bump-version dance a
+-- normal application save does. This also sidesteps a real footgun:
+-- current_timestamp is frozen for the whole transaction, so a
+-- same-transaction bulk import (parent + child created together, as
+-- GLEIF provisioning does) would otherwise make the just-inserted
+-- parent row's own valid_from collide with this function's close
+-- timestamp.
+--
+-- p_reason_code is passed through as-is (already a validated code from
+-- the child's own row); p_child_entity distinguishes which child
+-- triggered the bump in the free-text commentary.
+-- =============================================================================
+create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_touch_version_fn(
+    p_tenant_id uuid,
+    p_id {{domain_entity.primary_key.type}},
+    p_reason_code text,
+    p_commentary text,
+    p_modified_by text,
+    p_performed_by text,
+    p_child_entity text
+) returns void as $$
+declare
+    rec {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl%rowtype;
+begin
+    -- for update: takes the same row lock the parent's own insert
+    -- trigger takes, so the snapshot in rec can't be based on a
+    -- business-column value a concurrent direct edit is about to
+    -- change — without this, that concurrent edit could be silently
+    -- reverted once this function's later insert proceeds. See the
+    -- "Temporal composite entity versioning" architecture doc,
+    -- Concurrency section.
+    select * into rec
+    from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    where tenant_id = p_tenant_id
+      and {{domain_entity.primary_key.column}} = p_id
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    if not found then
+        return;
+    end if;
+
+    rec.version := 0;
+    rec.modified_by := p_modified_by;
+    rec.performed_by := p_performed_by;
+    rec.change_reason_code := p_reason_code;
+    rec.change_commentary := format('Bumped by child %s: %s', p_child_entity, coalesce(p_commentary, ''));
+
+    insert into "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    select (rec).*;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+{{/domain_entity.generate_touch_function}}
 {{#domain_entity.validation_fn}}
 
 -- =============================================================================

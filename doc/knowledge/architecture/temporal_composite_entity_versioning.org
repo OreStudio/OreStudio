@@ -1,0 +1,253 @@
+:PROPERTIES:
+:ID: BA159E88-74EB-4401-91CC-1DE7DF5AE50A
+:END:
+#+title: Temporal Composite Entity Versioning: Target State
+#+description: Target state for versioning composite (parent + child) entities: child saves must bump the parent's version, loading a parent as-of version N must compose children as of that version, and how to enforce this across SQL, codegen, and the Qt composite version/history UX.
+#+type: knowledge
+#+level: cross
+#+filetags: :versioning:bitemporality:composite_entity:architecture:party:counterparty:codegen:
+#+created: 2026-07-06
+#+updated: 2026-07-06
+
+* Summary
+
+ORE Studio's bitemporal tables ([[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps]]) version each table
+independently: a child row's insert/update never touches its parent's
+=version=/=valid_from=/=valid_to=, and no query composes a parent with
+its children as of a historical instant. Concretely: adding a LEI to
+party BRCLYS did not bump =parties_tbl.version=, and there is no way to
+ask "what did BRCLYS's identifiers look like as of party version 2".
+This document defines the target state — *option A*: every child
+write bumps the parent's version in the same transaction, which turns
+"compose as of parent version N" into a plain temporal window join,
+no separate version-mapping table required. It lays out the SQL
+mechanism (a new codegen facet flag), the read-side as-of composition
+query, the Qt composite history UX, and the open decisions that need
+sign-off before implementation starts.
+
+* Detail
+
+** The problem, concretely
+
+#+begin_example
+parties_tbl (party BRCLYS)
+  v1  [02:25:59.96 → 02:26:11.97]
+  v2  [02:26:11.97 → infinity]        ← current, last touched 02:26
+
+party_identifiers_tbl (children of BRCLYS)
+  LEI v1  [02:25:59.96 → infinity]    ← created alongside party v1
+  BIC v1  [12:01:54.16 → infinity]    ← added ~10 hours later
+#+end_example
+
+Adding the BIC identifier at 12:01 did not change =parties_tbl= at
+all — the party is still sitting at v2 from 02:26. Two independent
+gaps follow from this:
+
+1. *No aggregate versioning.* A party's version number reflects only
+   direct edits to the party row, not the state of its children. Two
+   parties with identical identifiers/contacts but different edit
+   histories on the party row itself can have wildly different
+   version counts, and there is no single number that identifies "the
+   full state of this party and everything under it."
+2. *No as-of composition.* Every consumer of party's children
+   (=party_identifier_service=, =party_contact_information_service=,
+   the (currently nonexistent) Qt identifiers widget) filters
+   =valid_to = infinity= — always latest, regardless of which party
+   version the caller is actually looking at. There is no query that
+   answers "what were BRCLYS's identifiers as of party v2."
+
+** Current state: independent per-table SCD2
+
+Every codegen'd entity table gets its own self-contained
+insert-trigger version dance
+(=sql_schema_domain_entity_create.mustache=, the
+=domain_entity.has_audit_columns= branch): look up the current row
+=for update=, raise on a stale caller-supplied version, close the
+current row (=valid_to = current_timestamp=), and insert the new one
+with =version = current_version + 1=. This is entity-local — the
+trigger has no notion that its table is a "child" of another. The
+existing FK vocabulary (=Foreign keys= section of the =.org= model,
+e.g. =party_identifier='s =:list_by: true= on its =party_id= FK — see
+[[id:CDB0273E-8DBA-417D-A31E-0475BF7538B7][ores.refdata.party_identifier]]) only generates "fetch all current
+children of a parent," nothing that touches the parent on write or
+reads as of a window.
+
+** Target state: option A — child write bumps parent version
+
+*Decision (per story sign-off): child writes bump the parent's
+version, not the other way round; the parent's temporal windows are
+the source of truth for "as of."*
+
+When a child row is inserted or updated (both go through the same
+insert trigger under this schema's convention — an "update" is just
+another insert against the same PK, letting the trigger assign
+=version=), the same transaction also "touches" the parent: closes the
+parent's current row and inserts a new one with =version + 1=, same
+=valid_from= instant, and every other column copied unchanged. This is
+the *identical* SCD2 dance the parent's own trigger already does for
+direct edits — a child write just triggers it from the other side.
+
+Because the bump happens in the same transaction as the child write,
+the parent's =[valid_from, valid_to)= windows exactly partition time
+into "child-set-stable" epochs by construction. That is the key
+payoff: *composing "parent as of version N" needs no separate mapping
+table* — it is a standard temporal window (interval-overlap) join:
+
+#+begin_src sql
+-- parent row at version N:
+select * from parents_tbl
+where id = :id and version = :n;
+-- (gives [parent.valid_from, parent.valid_to))
+
+-- children valid during that window:
+select * from children_tbl
+where parent_id = :id
+  and valid_from < :parent_valid_to
+  and valid_to   > :parent_valid_from;
+#+end_src
+
+This is the same open-interval overlap test already documented for
+single-table as-of queries in [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps]] (=valid_from <= t and
+valid_to > t=), generalised from a point =t= to a window.
+
+*** Concurrency
+
+The parent "touch" must take the same =select ... for update= row
+lock the parent's own trigger takes, so that two children written
+concurrently (e.g. a LEI added at the same instant as a contact
+record) serialise into two sequential parent version bumps rather than
+racing. This falls out for free if the touch is implemented as a
+shared SQL function that both the parent's own trigger and every
+child's trigger call.
+
+*** Child DELETE also bumps the parent
+
+*Decided: yes.* Deleting a child changes the
+parent's composed state exactly as much as adding one, so the
+soft-delete rule (=on delete ... do instead update ... set valid_to =
+current_timestamp=) should touch the parent the same way the insert
+trigger does. Without this, "party as of version N" would show a
+child that was actually deleted before N, if the deletion didn't bump
+the version that made N current.
+
+*** Multi-level composition
+
+Out of scope for the first cut: this document only covers one level
+(party → identifiers/contacts). A grandchild case would need the bump
+to propagate transitively (grandchild → child → parent), which is a
+natural extension of the same mechanism but adds a second hop of
+locking/ordering to reason about. Flagged as a follow-up once the
+single-level case is proven on party/counterparty.
+
+*** Version-count inflation and change attribution
+
+Bumping the parent on every child write means the parent's version
+history now mixes "the party's own fields changed" with "a child
+changed." The existing generic audit columns
+(=change_reason_code=/=change_commentary=, see [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps]])
+already carry a reason per version; the touch function should stamp a
+distinguishing reason (e.g. =child_updated:party_identifier=) so a
+history view can label which versions were direct edits versus
+child-driven bumps, rather than the count itself becoming noise.
+
+** SQL enforcement
+
+Proposed mechanism, mirroring the existing =:list_by:= FK flag:
+
+- New FK-section flag, e.g. =:bump_parent_version: true=, on the child
+  entity's =.org= model (=party_identifier=, =party_contact_information=
+  and siblings).
+- Codegen generates a per-parent-entity *touch function*, e.g.
+  =ores_refdata_parties_touch_version_fn(tenant_id, id,
+  change_reason_code, modified_by, performed_by)=, doing the
+  lock-close-insert dance against the parent table only (all
+  non-version/temporal/audit columns copied unchanged from the current
+  row).
+- The child's generated insert trigger calls this function once FK
+  validation succeeds, when =:bump_parent_version: true= is set.
+- The soft-delete rule gains the equivalent call, per the decision
+  above.
+- The touch function is shared: the parent's *own* insert trigger can
+  call it too (or inline the identical logic) so there is exactly one
+  place that knows how to bump a given entity's version.
+
+** Read-side: as-of composition query
+
+New repository-level capability, generated alongside =:list_by:='s
+existing "list current children of a parent":
+
+- A parent "as of version" fetch: =find_<parent>_as_of_version(id,
+  version)= — a plain equality lookup, trivial.
+- A child "as of window" list, e.g.
+  =list_<children>_by_<parent>_id_as_of(parent_id, valid_from,
+  valid_to)= — the interval-overlap query above, generated the same
+  way =:list_by:= generates the current-only version today. Candidate
+  flag name: =:list_by_as_of: true= alongside the existing =:list_by:=.
+- A service-level composition helper that calls both and assembles
+  "parent as of version N, with its identifiers/contacts as they stood
+  then" — this is the object the Qt composite history dialog (below)
+  and any future "get composite as of" NATS message would consume.
+
+** Qt UX: composite version/history dialog
+
+Today's per-entity =PartyHistoryDialog=/=CounterpartyHistoryDialog=
+list only the parent's own version rows. Target state needs a
+*composite history view*: selecting a parent version in that list
+should also show what its children looked like as of that version —
+effectively a "children version" panel/tab driven by the read-side
+as-of composition above. Candidate shape (not yet decided in detail):
+
+- Extend the existing history dialog with a secondary panel (or a tab
+  per child kind — identifiers, contacts) that refreshes via the as-of
+  query whenever the selected parent version row changes.
+- Each child's own row in that panel should still show its own
+  =version=/=recorded_at=, so a reviewer can tell "this identifier
+  hasn't changed since v1, even though the parent is now on v5"
+  (distinct from the parent's own version — do not conflate the two).
+- Depends on the (separate, already-scoped) child-embeddable-table
+  widget work from the "Composite child-entity and hierarchy Qt
+  widgets for codegen" story — that story's =EmbeddedChildTableWidget=
+  is the natural building block for the read-only as-of panel too.
+
+** Rollout plan (sketch)
+
+1. Land the SQL touch-function mechanism and the two new codegen
+   flags, proven against =party=/=party_identifier=/
+   =party_contact_information= as the reference case (party is not yet
+   under codegen — see =Bring party under codegen= — so this can be
+   hand-patched first the same way the security-definer fix was, and
+   folded into the codegen templates once party migrates).
+2. Add the as-of read-side queries and a service-level composition
+   helper.
+3. Wire the Qt composite history dialog once the embeddable
+   child-table widget exists.
+4. Extend to =counterparty= (same shape, already on the unified
+   codegen template).
+
+** Decisions (resolved)
+
+- *Child DELETE bumps the parent*, same as insert/update — symmetric
+  with the write side, so "as of version N" stays accurate across
+  deletions.
+- *Flag name*: =:bump_parent_version:= (on the child's FK section,
+  alongside =:list_by:=). =:list_by_as_of:= is confirmed as the
+  read-side counterpart's placeholder name too.
+- *Reason-code stamping is mandatory*: the touch function always
+  stamps a distinguishing reason (e.g. =child_updated:party_identifier=)
+  itself — callers don't opt in or out.
+- Multi-level cascading remains explicitly out of scope for v1.
+
+* See also
+
+- [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] — the bitemporal
+  model, the infinity sentinel, and the as-of point-query pattern this
+  document generalises to a window.
+- [[id:CDB0273E-8DBA-417D-A31E-0475BF7538B7][ores.refdata.party_identifier]] — the reference child entity model
+  (=:list_by:= FK flag) this document's new flags extend.
+- =projects/ores.codegen/library/templates/sql_schema_domain_entity_create.mustache=
+  — the insert-trigger version-management block this document's touch
+  function reuses.
+- [[id:366DCF08-C483-47B7-A136-229B4D2FC394][Story: Temporal composite entity versioning]] — the story this
+  document was written under.
+- =doc/agile/versions/v0/sprint_22/commission_party/task_verify_party_qt_ui_post_nats.org=
+  — where the motivating BRCLYS LEI/BIC gap was found.

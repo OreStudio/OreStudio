@@ -26,6 +26,7 @@ parent_counterparty_id for group structures.
 :has_parent_id:         true
 :parent_id_column:      parent_counterparty_id
 :hierarchy_name_field:  full_name
+:generate_touch_function: true
 :END:
 
 * Primary key

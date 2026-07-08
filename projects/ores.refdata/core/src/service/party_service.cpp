@@ -107,4 +107,10 @@ party_service::get_hierarchy(const boost::uuids::uuid& root_id, bool from_root) 
     return ores::utility::domain::build_tree(rows);
 }
 
+std::optional<domain::party> party_service::get_party_at_version(const boost::uuids::uuid& id,
+                                                                 std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting party at version: " << id << " version: " << version;
+    return repo_.read_at_version(id, version);
+}
+
 }

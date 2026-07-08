@@ -42,7 +42,26 @@ std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}_by_{{co
     return repo_.get_total_{{entity_singular_short}}_count_by_{{column}}(ctx_, {{column}});
 }
 {{/list_by}}
+{{#list_by_as_of}}
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_service::list_{{entity_plural_short}}_by_{{column}}_as_of(
+    const std::string& {{column}},
+    std::chrono::system_clock::time_point valid_from_bound,
+    std::chrono::system_clock::time_point valid_to_bound) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing {{entity_plural_words}} by {{column}} as of window: " << {{column}};
+    return repo_.read_by_{{column}}_as_of(ctx_, {{column}}, valid_from_bound, valid_to_bound);
+}
+{{/list_by_as_of}}
 {{/foreign_keys}}
+{{#has_audit_columns}}
+std::optional<domain::{{entity_singular}}>
+{{entity_singular}}_service::get_{{entity_singular_short}}_at_version(const std::string& {{primary_key.column}},
+                                                                     std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}} at version: " << {{primary_key.column}}
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, {{primary_key.column}}, version);
+}
+{{/has_audit_columns}}
 
 std::optional<domain::{{entity_singular}}>
 {{entity_singular}}_service::get_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {

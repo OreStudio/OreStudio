@@ -42,6 +42,12 @@ std::uint32_t counterparty_service::count_counterparties() {
     return repo_.get_total_counterparty_count(ctx_);
 }
 
+std::optional<domain::counterparty>
+counterparty_service::get_counterparty_at_version(const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty at version: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
+}
 
 std::optional<domain::counterparty> counterparty_service::get_counterparty(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting counterparty: " << id;

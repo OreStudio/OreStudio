@@ -129,9 +129,10 @@ running the panel (dogfooding), not just code review:
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                       | File                                | Decision | Notes                    |
+|---+------------------------------------------------------------------------+--------------------------------------+----------+--------------------------|
+| 1 | Narrowing the pre-login gate to just Telemetry left Configuration/Administration/Reset System/Message Queue reachable before login; Onboard Tenant crashes (null deref) if reached logged out | MainWindow.cpp, AdminPlugin.cpp, ComputePlugin.cpp | Accepted | Fixed in 207314fca — restored per-menu/action login gating in on_login()/on_logout() for both plugins; added a null-guard to show_onboarding_wizard(). |
+| 2 | TestScenarioResultsWriter locates a step by title alone, searched document-wide — two clients sharing a step title silently collide | TestScenarioResultsWriter.cpp, QaValidationRunnerWidget.cpp | Accepted | Fixed in 207314fca — step_result now carries the step's client; writer scopes the search to that client's sub-heading first when set. Regression test added. |
 
 * Result
 

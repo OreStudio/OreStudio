@@ -84,6 +84,9 @@ signals:
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+{{#domain_entity.qt.changed_event_class}}
+    void notifyOpenDialogs(const QStringList& entityIds) override;
+{{/domain_entity.qt.changed_event_class}}
 
 private slots:
     void onShowDetails(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});

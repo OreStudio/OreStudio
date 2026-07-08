@@ -129,6 +129,8 @@ void EntityController::onNotificationReceived(const QString& eventType,
         window->markAsStale();
         BOOST_LOG_SEV(lg(), debug) << "Marked list window as stale";
     }
+
+    notifyOpenDialogs(entityIds);
 }
 
 void EntityController::setClientManager(ClientManager* clientManager, const QString& username) {

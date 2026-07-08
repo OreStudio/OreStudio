@@ -122,6 +122,7 @@ protected:
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
     bool hasUnsavedChanges() const override { return hasChanges_; }
+    QString code() const override;
 {{#domain_entity.qt.has_flag_icon}}
     std::optional<boost::uuids::uuid> entityImageId() const override;
     QLineEdit* keyFlagField() const override;

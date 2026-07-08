@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: CAFBAD72-5BB5-4F3B-8DB5-3D54B2B3B5FA
+:END:
+#+title: Task: Add a Currency Pair Conventions toolbar button to the Currency Pairs MDI window
+#+description: The Currency Pairs list MDI window's toolbar has no quick way to jump to Currency Pair Conventions; add a toolbar button there.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Currency Pairs list MDI window's own toolbar has no quick way
+to jump to Currency Pair Conventions, even though the two are tightly
+related (1:1 by pair_code). Add a toolbar button in the Currency Pairs
+window that opens the Currency Pair Conventions window.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- [ ] The Currency Pairs MDI window's toolbar has a button that opens
+  the Currency Pair Conventions list window.
+- [ ] Existing Reload/Add/Edit/Delete/History buttons are unaffected.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

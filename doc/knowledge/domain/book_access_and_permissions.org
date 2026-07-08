@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: C84899BD-5EC8-4AA7-88D7-CE7ED19BC573
+:END:
+#+title: Book access and permissions
+#+description: The allowed-currency set that constrains what can be booked into a book, the fine-grained permission model books inherit down to every trade, and periodic access review.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:trading:book:finance:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+
+* Summary
+
+Every [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] carries a set of allowed currencies that constrains what
+may be booked into it, and is permissioned at a fine grain — read/write
+on the book, inherited by every trade booked within it. Access to a
+book is not permanent: it lapses without periodic renewal and must be
+re-requested. A proposed disk-usage-style visualisation lets a user
+drill from an aggregate book down into its children to see risk
+concentration.
+
+* Detail
+
+** Book currencies
+
+Each book has a set of allowed currencies; only instruments whose
+currency intersects that set may be booked into it.
+
+** Permissions
+
+All objects in the system, books included, are permissioned at a fine
+grain — e.g. read/write on a book, inherited by every trade booked
+within it. Users can be grouped geographically (e.g. NY users can only
+see NY books), and the permission model must be capable of enforcing
+Chinese Walls between desks. See [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] for how
+centre ownership additionally functions as an access-control
+mechanism at the trade level.
+
+** Access review
+
+Book access is not permanent: it must be periodically reviewed
+(monthly, quarterly, etc.). If nobody renews a user's access to a
+book, it is automatically invalidated and must be re-requested. This
+review cadence is part of the wider [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]], beginning
+during a book's opening workflow and continuing for as long as the
+book remains live.
+
+** Book tree visualisation
+
+A disk-usage-style ("GNOME Baobab") zoomable tree has been proposed,
+letting a user drill from an aggregate book down into its children and
+see risk concentration as a pie-chart-like breakdown.
+
+* See also
+
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — hub note.
+- [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] — the opening workflow's access-review step.
+- [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] — centre ownership as trade-level
+  access control.

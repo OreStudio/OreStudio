@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:index:
 #+created: 2024-06-15
-#+updated: 2026-06-25
+#+updated: 2026-07-08
 
 Durable, cross-cutting knowledge that outlives any sprint. Each entry
 is a single-topic page — a definition, a convention, an explanation of
@@ -86,6 +86,10 @@ Finance concepts the codebase relies on, grouped by topic.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — primary front-office screen: deal grid,
   deal actions, entry form, STP panel, dynamic books, and
   cross-screen navigation.
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — hub note for the trading book: classification,
+  the book/portfolio distinction, dynamic books, book groups
+  and rates centres, lifecycle, ledger connection, and access
+  and permissions.
 
 ** Data quality
 

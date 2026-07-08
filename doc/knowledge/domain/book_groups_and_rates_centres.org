@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: D18DF500-2C6C-42FF-BBAE-D5A46D410910
+:END:
+#+title: Book groups and rates centres
+#+description: Rolling up books by rates centre for consistent revaluation market data, aggregating centre-owned books into a book group, and how centre ownership doubles as access control.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:trading:book:finance:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+
+* Summary
+
+Each [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] is assigned a *rates centre* so that every book sharing a
+centre revalues against consistent market data. Regional/centre-based
+books, owned and managed only by the traders on that centre, are then
+aggregated into a *book group* — a single consolidated view of risk
+sitting on top of the individually-owned regional books. Centre
+ownership of a trade doubles as an access-control mechanism: the
+owning centre has the only read/write access, removing the need for a
+separate locking mechanism.
+
+* Detail
+
+** Rates centre
+
+A rates centre determines which set of revaluation market data a book
+uses at end-of-day. Assigning every book to a rates centre — rather
+than letting each book reference market data independently — keeps
+revaluation consistent across all books that logically share a market
+(e.g. all books managed out of a given regional trading centre use
+that centre's market data snapshot).
+
+** Book group
+
+A book group aggregates the individually-owned, centre-based books
+into a single consolidated risk view, without changing who owns or
+can write to the underlying books. This lets, for example, a global
+head see aggregated risk across all regional centres while each
+centre's traders retain exclusive control of their own books.
+
+** Ownership as access control
+
+The centre that owns a trade is the only centre with read/write access
+to it. This ownership model itself functions as the access-control
+mechanism — there is no separate locking layer needed to prevent two
+centres from concurrently modifying the same book's trades, since
+only the owning centre can write to it in the first place. See
+[[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]] for the broader permission model this
+sits alongside.
+
+* See also
+
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — hub note.
+- [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]] — the trading-side hierarchy book groups
+  aggregate on top of.
+- [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]] — the wider permission model.

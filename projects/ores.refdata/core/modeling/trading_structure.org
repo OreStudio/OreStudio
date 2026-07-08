@@ -182,7 +182,7 @@ Key fields in =ores_refdata_books_tbl=:
 | =parent_portfolio_id=  | Physical portfolio this book sits under               |
 | =owner_unit_id=        | Optional desk/business unit that owns this book       |
 | =ledger_ccy=           | Ledger currency for the book                         |
-| =is_trading_book=      | =1= if FRTB trading book, =0= if banking book         |
+| =regulatory_book_type= | =Trading= or =Banking= (FRTB classification)          |
 | =book_status=          | Active, suspended, closed                             |
 | =cost_center=          | GL cost centre reference                             |
 
@@ -272,7 +272,7 @@ attributed to a specific, documented trading desk within a legal entity. In
 ORE Studio:
 
 - Each FRTB desk is modelled as a =DESK=-type business unit.
-- The =is_trading_book= flag on the book distinguishes trading from banking
+- The =regulatory_book_type= field on the book distinguishes trading from banking
   book positions.
 - The =owner_unit_id= on the book provides the mandatory desk attribution.
 - The desk's =business_centre_code= ties it to the booking legal entity

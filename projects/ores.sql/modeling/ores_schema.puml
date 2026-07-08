@@ -496,7 +496,7 @@ package "refdata" #FFF3E0 {
           gl_account_ref : text
           cost_center : text
         * book_status : text
-        * is_trading_book : integer
+        * regulatory_book_type : text
           owner_unit_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
@@ -1387,7 +1387,7 @@ package "dq_staging" #F3E5F5 {
           gl_account_ref : text
           cost_center : text
         * book_status : text
-        * is_trading_book : integer
+        * regulatory_book_type : text
     }
 
     entity ores_dq_business_centres_artefact_tbl  #F7E5FF {

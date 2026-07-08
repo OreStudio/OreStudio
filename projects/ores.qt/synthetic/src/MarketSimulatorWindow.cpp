@@ -250,6 +250,15 @@ void MarketSimulatorWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(Icon::StopFilled, IconUtils::DefaultIconColor),
         tr("Stop all"));
     stopAllAction_->setToolTip(tr("Stop generating ticks for all FX rates."));
+
+    toolbar_->addSeparator();
+
+    validateVintageAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Checkmark, IconUtils::DefaultIconColor),
+        tr("Validate Vintage"));
+    validateVintageAction_->setToolTip(
+        tr("Check every configured FX rate's required vintage market data exists, "
+           "without starting any feeds."));
 }
 
 void MarketSimulatorWindow::setupLeftPanel() {
@@ -490,6 +499,10 @@ void MarketSimulatorWindow::setupConnections() {
     connect(stopFeedAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStopFeedClicked);
     connect(startAllAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStartAllClicked);
     connect(stopAllAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStopAllClicked);
+    connect(validateVintageAction_,
+           &QAction::triggered,
+           this,
+           &MarketSimulatorWindow::onValidateVintageClicked);
 }
 
 void MarketSimulatorWindow::onReloadClicked() {
@@ -1323,6 +1336,8 @@ void MarketSimulatorWindow::startPairsAsync(
         req.gmm_initial_price = fx.gmm_initial_price;
         req.ticks_per_hour = static_cast<double>(fx.ticks_per_hour);
         req.process_type = fx.process_type;
+        req.vintage_source = fx.vintage_source;
+        req.vintage_date = fx.vintage_date;
         reqs.push_back(std::move(req));
     }
 
@@ -1522,6 +1537,77 @@ void MarketSimulatorWindow::onStopAllClicked() {
     for (const auto& [id, fx] : fxPairs_)
         all.push_back(fx);
     stopPairsAsync(std::move(all));
+}
+
+void MarketSimulatorWindow::onValidateVintageClicked() {
+    std::vector<synthetic::domain::fx_spot_generation_config> all;
+    for (const auto& [id, fx] : fxPairs_)
+        all.push_back(fx);
+    if (all.empty()) {
+        QMessageBox::information(
+            this, tr("Validate Vintage"), tr("No FX rates are configured yet."));
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Validating vintage data for " << all.size() << " FX rate(s).";
+    QPointer<MarketSimulatorWindow> self = this;
+    auto* cm = clientManager_;
+    // ok=true (pass/not-applicable), message
+    using Results = std::vector<std::tuple<std::string, bool, QString>>;
+    auto task = [cm, all]() -> Results {
+        Results results;
+        for (const auto& fx : all) {
+            const std::string label = fx.source_name.empty() ? fx.ore_key : fx.source_name;
+
+            // price_source "fixed" has no vintage to check — not a failure,
+            // just not applicable.
+            if (fx.price_source != "vintage") {
+                results.push_back({label, true, QLatin1String("fixed spot — no vintage to check")});
+                continue;
+            }
+
+            ores::marketdata::messaging::validate_market_feed_config_request req;
+            req.ore_key = fx.ore_key;
+            req.source_name = fx.source_name;
+            req.vintage_source = fx.vintage_source;
+            req.vintage_date = fx.vintage_date;
+            auto resp = cm->process_authenticated_request(req);
+            if (!resp) {
+                results.push_back({label, false, QString::fromStdString(resp.error())});
+                continue;
+            }
+            if (!resp->success) {
+                results.push_back({label, false, QString::fromStdString(resp->message)});
+                continue;
+            }
+            results.push_back({label, resp->available, QString::fromStdString(resp->message)});
+        }
+        return results;
+    };
+
+    auto* watcher = new QFutureWatcher<Results>(self);
+    connect(watcher, &QFutureWatcher<Results>::finished, self, [self, watcher]() {
+        auto results = watcher->result();
+        watcher->deleteLater();
+        if (!self)
+            return;
+        QStringList lines;
+        int okCount = 0;
+        for (const auto& [label, ok, message] : results) {
+            if (ok)
+                ++okCount;
+            lines << (ok ? tr("✓ %1 — %2").arg(QString::fromStdString(label), message)
+                        : tr("✗ %1 — %2").arg(QString::fromStdString(label), message));
+        }
+        QMessageBox::information(
+            self,
+            tr("Validate Vintage"),
+            tr("%1 of %2 FX rate(s) pass (or don't need) vintage validation:\n\n")
+                    .arg(okCount)
+                    .arg(results.size()) +
+                lines.join("\n"));
+    });
+    watcher->setFuture(QtConcurrent::run(task));
 }
 
 // ---- Tick chart ---------------------------------------------------------

@@ -93,6 +93,8 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
                 return QString::fromStdString(fx_spot_generation_config.source_name);
             case OreKey:
                 return QString::fromStdString(fx_spot_generation_config.ore_key);
+            case PriceSource:
+                return QString::fromStdString(fx_spot_generation_config.price_source);
             case GmmInitialPrice:
                 return fx_spot_generation_config.gmm_initial_price;
             case TicksPerHour:
@@ -101,6 +103,10 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
                 return processTypeLabel(fx_spot_generation_config.process_type);
             case Enabled:
                 return fx_spot_generation_config.enabled ? tr("true") : tr("false");
+            case VintageSource:
+                return QString::fromStdString(fx_spot_generation_config.vintage_source);
+            case VintageDate:
+                return QString::fromStdString(fx_spot_generation_config.vintage_date);
             case Version:
                 return static_cast<qlonglong>(fx_spot_generation_config.version);
             case ModifiedBy:
@@ -141,6 +147,8 @@ QVariant ClientFxSpotGenerationConfigModel::headerData(int section,
             return tr("Source Name");
         case OreKey:
             return tr("ORE Key");
+        case PriceSource:
+            return tr("Price Source");
         case GmmInitialPrice:
             return tr("Initial Price");
         case TicksPerHour:
@@ -149,6 +157,10 @@ QVariant ClientFxSpotGenerationConfigModel::headerData(int section,
             return tr("Process Type");
         case Enabled:
             return tr("Enabled");
+        case VintageSource:
+            return tr("Vintage Source");
+        case VintageDate:
+            return tr("Vintage Date");
         case Version:
             return tr("Version");
         case ModifiedBy:
@@ -316,6 +328,7 @@ ClientFxSpotGenerationConfigModel::getConfig(int row) const {
         return nullptr;
     return &fx_spot_generation_configs_[idx];
 }
+
 
 QVariant
 ClientFxSpotGenerationConfigModel::recency_foreground_color(const std::string& code) const {

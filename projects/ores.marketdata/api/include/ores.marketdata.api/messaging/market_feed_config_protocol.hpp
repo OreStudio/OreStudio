@@ -49,10 +49,38 @@ struct start_market_feed_config_request {
     double gmm_initial_price = 1.0800;
     double ticks_per_hour = 12.0;
     std::string process_type = "geometric"; // "geometric" (GBM) or "arithmetic"
+
+    // Vintage-availability guard: the (source, date) of the reference market
+    // data this feed's initial spot depends on. Checked at start() against
+    // market_observation before the feed is actually started; empty
+    // vintage_source skips the check (e.g. ad-hoc/default requests).
+    std::string vintage_source;
+    std::string vintage_date; // ISO format, e.g. "2016-02-05"
 };
 
 struct start_market_feed_config_response {
     bool success = false;
+    std::string message;
+};
+
+/**
+ * @brief Request to check whether a feed's required vintage data exists,
+ * without starting it. Powers the Market Simulator "validate all" action.
+ */
+struct validate_market_feed_config_request {
+    using response_type = struct validate_market_feed_config_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_feed_configs.validate";
+
+    std::string ore_key;
+    std::string source_name;
+    std::string vintage_source;
+    std::string vintage_date; // ISO format, e.g. "2016-02-05"
+};
+
+struct validate_market_feed_config_response {
+    bool success = false; // request-level success (malformed body, etc.)
+    bool available = false; // whether the vintage data was found
+    double resolved_price = 0.0; // the found observation's value; only meaningful if available
     std::string message;
 };
 

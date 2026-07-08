@@ -74,6 +74,7 @@ public:
      */
     std::vector<domain::fx_spot_generation_config> read_all(context ctx, const std::string& id);
 
+
     /**
      * @brief Reads latest FX spot generation configs with pagination support.
      * @param ctx Repository context with database connection

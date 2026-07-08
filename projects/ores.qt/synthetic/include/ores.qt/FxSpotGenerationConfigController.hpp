@@ -92,9 +92,9 @@ private:
     void showHistoryWindow(
         const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config);
 
+    ChangeReasonCache* changeReasonCache_;
     FxSpotGenerationConfigMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
-    ChangeReasonCache* changeReasonCache_;
 };
 
 }

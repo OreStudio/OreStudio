@@ -101,6 +101,7 @@ fx_spot_generation_config_repository::read_all(context ctx, const std::string& i
         "Reading all FX spot generation config versions by id.");
 }
 
+
 void fx_spot_generation_config_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing FX spot generation config: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));

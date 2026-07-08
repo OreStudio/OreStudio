@@ -30,9 +30,11 @@
 #include "process_factory.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <atomic>
 #include <cctype>
 #include <chrono>
+#include <format>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -84,7 +86,7 @@ public:
         shutdown();
     }
 
-    enum class start_result { started, already_running };
+    enum class start_result { started, already_running, vintage_data_missing };
 
     /**
      * @brief Start one producer feed. Keyed by source_name (unique per producer).
@@ -93,6 +95,23 @@ public:
      * spawns its tick thread. Series resolution is handled lazily by the
      * marketdata ingest loop on first tick arrival — the synthetic service has
      * no marketdata writes to perform.
+     *
+     * If @p vintage_source is non-empty ("vintage" price_source), the feed's
+     * required vintage data (source, date) is checked in market_observation
+     * before anything is started; a missing vintage returns
+     * vintage_data_missing with @p error_detail set to an actionable message,
+     * and no feed is spawned. On success, the feed is seeded from the real
+     * imported spot value rather than @p initial_price (which is a sentinel
+     * 0 in vintage mode — see fx_spot_generation_config.price_source). An
+     * empty vintage_source skips the check entirely and uses @p
+     * initial_price as-is ("fixed" price_source, or an ad-hoc/default
+     * request).
+     *
+     * @p caller_bearer_token, when non-empty, is forwarded as
+     * X-Delegated-Authorization on the vintage lookup so it runs in the
+     * calling user's tenant/party context — market_observation is
+     * tenant-scoped (RLS), and this service's own service-account token is
+     * bound to the system tenant, which cannot see another tenant's data.
      */
     start_result start(const std::string& ore_key,
                        const std::string& source_name,
@@ -101,7 +120,27 @@ public:
                        std::vector<double> weights,
                        double initial_price,
                        double ticks_per_hour,
-                       const std::string& process_type = "geometric") {
+                       const std::string& process_type = "geometric",
+                       const std::string& vintage_source = {},
+                       const std::string& vintage_date = {},
+                       std::string* error_detail = nullptr,
+                       const std::string& caller_bearer_token = {}) {
+        if (!vintage_source.empty()) {
+            std::string detail;
+            double resolved_price = 0.0;
+            if (!vintage_data_available(ore_key,
+                                        vintage_source,
+                                        vintage_date,
+                                        detail,
+                                        caller_bearer_token,
+                                        &resolved_price)) {
+                if (error_detail)
+                    *error_detail = std::move(detail);
+                return start_result::vintage_data_missing;
+            }
+            initial_price = resolved_price;
+        }
+
         std::lock_guard lock(mu_);
         const std::string key = source_name.empty() ? ore_key : source_name;
         if (feeds_.contains(key))
@@ -185,7 +224,126 @@ public:
         return names;
     }
 
+    /**
+     * @brief Check whether a feed's required vintage data exists, without
+     * starting it. Powers the Market Simulator "validate all" action.
+     *
+     * @param error_detail Set to an actionable message when unavailable;
+     * untouched otherwise.
+     * @param resolved_price Set to the found observation's value on success;
+     * untouched otherwise.
+     */
+    bool validate(const std::string& ore_key,
+                 const std::string& vintage_source,
+                 const std::string& vintage_date,
+                 std::string& error_detail,
+                 const std::string& caller_bearer_token = {},
+                 double* resolved_price = nullptr) {
+        return vintage_data_available(ore_key,
+                                      vintage_source,
+                                      vintage_date,
+                                      error_detail,
+                                      caller_bearer_token,
+                                      resolved_price);
+    }
+
 private:
+    // Split "FX/RATE/EUR/USD" into ("FX", "RATE", "EUR/USD"). Returns false
+    // (and leaves the out-params untouched) if there are fewer than 3 parts.
+    static bool
+    parse_ore_key(const std::string& ore_key, std::string& series_type,
+                 std::string& metric, std::string& qualifier) {
+        std::vector<std::string> parts;
+        std::stringstream ss(ore_key);
+        std::string tok;
+        while (std::getline(ss, tok, '/'))
+            parts.push_back(tok);
+        if (parts.size() < 3)
+            return false;
+        series_type = parts[0];
+        metric = parts[1];
+        qualifier = parts[2];
+        for (std::size_t i = 3; i < parts.size(); ++i)
+            qualifier += "/" + parts[i];
+        return true;
+    }
+
+    // ISO date part of a observation_datetime, e.g. "2016-02-05" from a
+    // timestamp at any time-of-day on that date (observations are always
+    // recorded at midnight UTC for date-only vintages, but this tolerates
+    // otherwise).
+    static std::string date_part(std::chrono::system_clock::time_point tp) {
+        const auto days = std::chrono::floor<std::chrono::days>(tp);
+        return std::format("{:%F}", days);
+    }
+
+    // Core vintage-availability check shared by start() and validate(). Uses a
+    // market_data_client delegated with the caller's own bearer token when
+    // available, so the lookup runs in the caller's tenant/party context
+    // rather than this service's own (system-tenant) service account, which
+    // cannot see another tenant's market_observation rows under RLS. Falls
+    // back to the service's own client if no token is supplied (e.g. an
+    // internal/ad-hoc call with no end-user session).
+    //
+    // On success, @p resolved_price (if non-null) is set to the matching
+    // observation's value — the real imported spot, not a placeholder — so
+    // callers in "vintage" mode can seed the process from it instead of an
+    // arbitrary/zero initial price.
+    bool vintage_data_available(const std::string& ore_key,
+                               const std::string& vintage_source,
+                               const std::string& vintage_date,
+                               std::string& error_detail,
+                               const std::string& caller_bearer_token = {},
+                               double* resolved_price = nullptr) {
+        const auto missing_message = [&] {
+            return "No vintage data found for source=" + vintage_source +
+                   ", date=" + vintage_date + ".";
+        };
+
+        std::string series_type, metric, qualifier;
+        if (!parse_ore_key(ore_key, series_type, metric, qualifier)) {
+            error_detail = "Cannot parse ORE key '" + ore_key + "'.";
+            return false;
+        }
+
+        auto delegated_nats = auth_nats_.with_delegation(caller_bearer_token);
+        ores::marketdata::client::market_data_client md_client(delegated_nats);
+
+        auto series = md_client.find_series(series_type, metric, qualifier);
+        if (!series) {
+            error_detail = "Failed to look up series for '" + ore_key + "': " + series.error();
+            return false;
+        }
+        if (!series->has_value()) {
+            error_detail = missing_message();
+            return false;
+        }
+
+        auto observations = md_client.list_observations(boost::uuids::to_string((*series)->id));
+        if (!observations) {
+            error_detail =
+                "Failed to look up observations for '" + ore_key + "': " + observations.error();
+            return false;
+        }
+        for (const auto& obs : *observations) {
+            if (obs.source == vintage_source && obs.point_id == "SPOT" &&
+                date_part(obs.observation_datetime) == vintage_date) {
+                if (resolved_price) {
+                    try {
+                        *resolved_price = std::stod(obs.value);
+                    } catch (const std::exception& e) {
+                        error_detail = "Vintage observation value '" + obs.value +
+                                      "' is not a valid number: " + e.what();
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        error_detail = missing_message();
+        return false;
+    }
+
     static constexpr std::chrono::minutes status_interval_{1};
 
     void status_loop() {

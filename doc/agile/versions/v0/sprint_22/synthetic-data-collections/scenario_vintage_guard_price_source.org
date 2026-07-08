@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: AA4E3003-BA42-4885-915D-D85C1841A5DB
+:END:
+#+title: Test Scenario: Vintage-availability guard and fixed/vintage price source
+#+description: Manual Qt client steps to verify the vintage-availability guard, the Market Simulator Validate Vintage action, and the Fixed/From-vintage-data price source selector in the FX spot rate editor.
+#+type: test_scenario
+#+level: s1
+#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+target_dialog: Market Data > Synthetic > Market Simulator
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment: merry_newton
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:E468C540-0CE0-4F89-870D-7ED2CFCDF219][Vintage-availability guard in ores.synthetic]] in [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:E468C540-0CE0-4F89-870D-7ED2CFCDF219][Vintage-availability guard in ores.synthetic]] |
+| Parent story  | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]]   |
+| Target dialog | Market Data > Synthetic > Market Simulator |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A fresh, Barclays-provisioned database with the ORE reference vintage imported:
+  #+begin_src sh :results verbatim
+  compass db recreate -y -k
+  compass services start
+  compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+  compass shell -u tenant_admin@barclays_plc -p Secure-Password-123 \
+    -f projects/ores.shell/scripts/library/marketdata/import_legacy_example_56.ores
+  #+end_src
+- A running Qt client (not yet logged in — see first step below). The
+  Barclays party ships two pre-seeded FX rates: =synthetic.eurusd= and
+  =synthetic.gbpusd=, both =price_source = vintage=,
+  =vintage_source = ore.reference=, =vintage_date = 2016-02-05=.
+
+* Steps
+
+** Log in
+
+Username: =tenant_admin@barclays_plc=. Password: =Secure-Password-123=.
+Confirm the =BARCLAYS PLC= party is active after login.
+
+** Open Market Simulator
+
+Menu: *Market Data > Synthetic > Market Simulator*. Confirm the two
+pre-seeded FX rates (=synthetic.eurusd=, =synthetic.gbpusd=) are
+listed.
+
+** Vintage-derived feed starts at the real imported spot
+
+Select =synthetic.eurusd=, click *Start*. Expected: the feed starts
+successfully (no rejection), and the tick chart's initial price is
+=1.132337= — the real imported EUR/USD spot, not a placeholder. Click
+*Stop* afterwards.
+
+** Guard rejects a missing vintage
+
+Edit =synthetic.eurusd=. Confirm *From vintage data* is selected.
+Change *Vintage date* to =2099-01-01= (no imported data for that date)
+and *Save*. Click *Start*. Expected: rejected with "No vintage data
+found for source=ore.reference, date=2099-01-01." — no feed starts.
+Edit the rate again and restore *Vintage date* to =2016-02-05=; *Save*.
+
+** Fixed spot mode starts at the entered price
+
+Edit =synthetic.gbpusd=. Switch the radio to *Fixed*. Confirm *Initial
+price* becomes enabled and *Vintage source*/*Vintage date* become
+disabled. Set *Initial price* to =1.25= and *Save*. Click *Start*.
+Expected: the feed starts immediately (no vintage lookup performed) at
+=1.25=. Click *Stop*, edit the rate again, switch back to *From vintage
+data* (re-enter =ore.reference= / =2016-02-05=), and *Save* to restore
+the original seeded state.
+
+** Half-filled price source is rejected client-side
+
+Edit any rate, select *From vintage data*, but leave *Vintage source*
+or *Vintage date* blank, then click *Save*. Expected: a warning dialog
+— "Vintage source and date are both required when the price source is
+'From vintage data'." — no save request sent.
+
+** "Validate Vintage" toolbar action reports per-rate status
+
+With at least one vintage-mode and one fixed-mode rate configured,
+click the *Validate Vintage* toolbar button (checkmark icon). Expected
+summary dialog: vintage-mode rates with real data show "✓ <label> —
+Vintage data available (<price>)"; fixed-mode rates show "✓ <label> —
+fixed spot — no vintage to check"; a vintage-mode rate with a missing
+vintage shows "✗ <label> — No vintage data found for source=...,
+date=...". No feeds are started by this action.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

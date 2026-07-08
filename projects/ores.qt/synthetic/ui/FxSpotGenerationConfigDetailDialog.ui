@@ -67,27 +67,41 @@
            </widget>
           </item>
           <item row="2" column="0">
+           <widget class="QLabel" name="labelPriceSource">
+            <property name="text">
+             <string>Price Source:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="priceSourceEdit">
+            <property name="placeholderText">
+             <string>fixed, or vintage</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
            <widget class="QLabel" name="labelGmmInitialPrice">
             <property name="text">
              <string>Initial Price:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QLineEdit" name="gmmInitialPriceEdit">
             <property name="placeholderText">
-             <string>Enter initial price</string>
+             <string>Required if Price Source is fixed</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="4" column="0">
            <widget class="QLabel" name="labelTicksPerHour">
             <property name="text">
              <string>Ticks per Hour:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QSpinBox" name="ticksPerHourEdit">
             <property name="minimum">
              <number>0</number>
@@ -97,31 +111,59 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="labelProcessType">
             <property name="text">
              <string>Process Type:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="5" column="1">
            <widget class="QLineEdit" name="processTypeEdit">
             <property name="placeholderText">
              <string>geometric, arithmetic, or ou</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="labelEnabled">
             <property name="text">
              <string>Enabled:</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="6" column="1">
            <widget class="QCheckBox" name="enabledCheck">
             <property name="text">
              <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="labelVintageSource">
+            <property name="text">
+             <string>Vintage Source:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLineEdit" name="vintageSourceEdit">
+            <property name="placeholderText">
+             <string>Required if Price Source is vintage, e.g. ore.reference</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="labelVintageDate">
+            <property name="text">
+             <string>Vintage Date:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QLineEdit" name="vintageDateEdit">
+            <property name="placeholderText">
+             <string>Required if Price Source is vintage, YYYY-MM-DD</string>
             </property>
            </widget>
           </item>

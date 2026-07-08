@@ -41,10 +41,13 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     "quote_currency_code" text not null,
     "source_name" text not null,
     "ore_key" text not null,
+    "price_source" text not null,
     "gmm_initial_price" double precision not null,
     "ticks_per_hour" integer not null,
     "process_type" text not null,
     "enabled" boolean not null,
+    "vintage_source" text not null,
+    "vintage_date" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -64,9 +67,10 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     check ("base_currency_code" <> "quote_currency_code"),
     check ("source_name" <> ''),
     check ("ore_key" <> ''),
-    check ("gmm_initial_price" > 0),
     check ("ticks_per_hour" > 0),
-    check ("process_type" in ('geometric', 'arithmetic', 'ou'))
+    check ("process_type" in ('geometric', 'arithmetic', 'ou')),
+    check ("price_source" in ('fixed', 'vintage')),
+    check (("price_source" = 'fixed' and "gmm_initial_price" > 0 and "vintage_source" = '' and "vintage_date" = '') or ("price_source" = 'vintage' and "gmm_initial_price" = 0 and "vintage_source" <> '' and "vintage_date" <> ''))
 );
 
 -- Composite natural key: unique combination for active records

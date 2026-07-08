@@ -76,6 +76,7 @@ public:
      */
     std::uint32_t count_fx_spot_generation_configs();
 
+
     /**
      * @brief Retrieves a single FX spot generation config by its id.
      *

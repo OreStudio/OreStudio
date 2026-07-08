@@ -37,15 +37,24 @@ fx_spot_generation_config_mapper::map(const fx_spot_generation_config_entity& v)
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+
     r.config_id = boost::lexical_cast<boost::uuids::uuid>(v.config_id);
+
+
     r.base_currency_code = v.base_currency_code;
+
+
     r.quote_currency_code = v.quote_currency_code;
+
     r.source_name = v.source_name;
     r.ore_key = v.ore_key;
+    r.price_source = v.price_source;
     r.gmm_initial_price = v.gmm_initial_price;
     r.ticks_per_hour = v.ticks_per_hour;
     r.process_type = v.process_type;
     r.enabled = v.enabled;
+    r.vintage_source = v.vintage_source;
+    r.vintage_date = v.vintage_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -65,15 +74,24 @@ fx_spot_generation_config_mapper::map(const domain::fx_spot_generation_config& v
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
+
     r.config_id = boost::uuids::to_string(v.config_id);
+
+
     r.base_currency_code = v.base_currency_code;
+
+
     r.quote_currency_code = v.quote_currency_code;
+
     r.source_name = v.source_name;
     r.ore_key = v.ore_key;
+    r.price_source = v.price_source;
     r.gmm_initial_price = v.gmm_initial_price;
     r.ticks_per_hour = v.ticks_per_hour;
     r.process_type = v.process_type;
     r.enabled = v.enabled;
+    r.vintage_source = v.vintage_source;
+    r.vintage_date = v.vintage_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

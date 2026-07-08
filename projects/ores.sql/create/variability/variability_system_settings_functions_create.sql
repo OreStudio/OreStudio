@@ -26,13 +26,20 @@
 -- SELECT grant on ores_variability_system_settings_tbl. The function owner (DDL
 -- user) performs the read; the caller needs only EXECUTE on this function.
 
--- Tenant-scoped variant: used by IAM when handling per-tenant requests.
+-- Reads the settings visible to one scope: the tenant's system party for
+-- system/tenant-level flags, or a specific party for party-level flags
+-- like onboarding.party. Unambiguous: exactly one row per setting name for
+-- a given (tenant_id, party_id). p_party_id defaults to the tenant's
+-- system party when omitted, mirroring the insert trigger's write-time
+-- default (see ores_variability_resolve_system_party_fn).
 create or replace function ores_variability_get_system_settings_fn(
-    p_tenant_id uuid
+    p_tenant_id uuid,
+    p_party_id uuid default null
 ) returns table(setting_name text, setting_value text) as $$
     select name, value
     from ores_variability_system_settings_tbl
     where tenant_id = p_tenant_id
+      and party_id = coalesce(p_party_id, ores_variability_resolve_system_party_fn(p_tenant_id))
       and valid_to = ores_utility_infinity_timestamp_fn()
     order by name;
 $$ language sql stable security definer set search_path = public, pg_temp;

@@ -155,6 +155,53 @@ did.)
 
 * Notes
 
+** Slice 1 done: schema + C++ data layer for party_id
+
+- =ores_variability_system_settings_tbl= gains a non-nullable
+  =party_id= column; PK, GIST exclusion, and both unique indexes now
+  include it. New shared function
+  =ores_variability_resolve_system_party_fn(tenant_id)= (calls
+  =ores_refdata_read_system_party_fn=, SECURITY DEFINER, falls back to
+  the nil UUID if a tenant has no refdata party — only the sentinel
+  system tenant hits that path in practice, and even it turned out to
+  have one) is used by both the insert trigger (write-time default)
+  and =ores_variability_get_system_settings_fn='s new
+  =p_party_id default null= parameter (read-time default), so omitting
+  party_id resolves identically on both sides.
+- =ores_variability_system_settings_upsert_fn= and =..._set_fn= gained
+  a trailing =p_party_id uuid default null= parameter; all existing
+  call sites (seed script, tenant provisioner, system reset, etc.)
+  are unaffected — they still omit it and get the system-party default.
+- C++: =domain::system_setting.party_id= is
+  =std::optional<std::string>=; entity/mapper mirror it;
+  =system_settings_service= gained a third constructor parameter
+  =party_id= and a =read_for_party()= repository path used when both
+  tenant_id and party_id are set (vs. the existing tenant-only path
+  when only tenant_id is set).
+- *Risk noted, not yet addressed*: =ores.service::messaging::stamp()=
+  generically populates any domain struct's =party_id= field from
+  =ctx.party_id()= (the JWT's selected-party claim) whenever the field
+  exists and is assignable — this now applies to
+  =domain::system_setting= too. =system_setting_handler::save()= calls
+  =stamp(req->data, ctx)= before writing, so a general
+  =save_setting_request= (e.g. via =ores.shell='s =variability
+  save-setting= or the admin UI) issued by a caller with an active
+  party selection will now scope the row to *that* party instead of
+  the tenant's system party — a behaviour change for the existing
+  general CRUD path, not just new onboarding flags. Not exercised by
+  this task (onboarding.party will be written through a dedicated
+  NATS endpoint, same pattern as =clear_bootstrap_mode=, bypassing
+  =save_setting_request= entirely), but flagged for verification
+  before this task closes: check whether typical admin sessions have
+  an active party selection when saving system-wide settings, and if
+  so, decide whether to exempt =system_setting= from generic
+  =stamp()= party derivation.
+- Verified live: full DB recreate (no SQL errors from the populate
+  script), all 24 services start clean, and a full Barclays GLEIF
+  provisioning run completes with =system.bootstrap_mode= clearing to
+  =false= and =party_id= populated correctly for both the system
+  tenant and the Barclays tenant.
+
 * PRs
 
 | PR | Title |

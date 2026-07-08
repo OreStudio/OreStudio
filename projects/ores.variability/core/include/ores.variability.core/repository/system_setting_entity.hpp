@@ -23,6 +23,7 @@
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <iosfwd>
+#include <optional>
 #include <string>
 
 namespace ores::variability::repository {
@@ -38,6 +39,7 @@ struct system_setting_entity {
 
     sqlgen::PrimaryKey<std::string> name;
     std::string tenant_id;
+    std::optional<std::string> party_id;
     int version = 0;
     std::string value;
     std::string data_type;

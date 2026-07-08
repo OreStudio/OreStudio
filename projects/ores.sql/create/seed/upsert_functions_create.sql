@@ -799,21 +799,22 @@ create or replace function ores_variability_system_settings_upsert_fn(
     p_name text,
     p_value text,
     p_data_type text,
-    p_description text
+    p_description text,
+    p_party_id uuid default null
 ) returns void as $$
 begin
     perform ores_seed_validate_not_empty_fn(p_name, 'System setting name');
     perform ores_seed_validate_not_empty_fn(p_data_type, 'System setting data_type');
 
     insert into ores_variability_system_settings_tbl (
-        tenant_id, name, value, data_type, description,
+        tenant_id, party_id, name, value, data_type, description,
         modified_by, performed_by, change_reason_code, change_commentary,
         valid_from, valid_to)
     values (
-        p_tenant_id, p_name, p_value, p_data_type, p_description,
+        p_tenant_id, p_party_id, p_name, p_value, p_data_type, p_description,
         current_user, current_user, 'system.new_record', 'System seed data',
         current_timestamp, ores_utility_infinity_timestamp_fn())
-    on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, party_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise debug 'Created system setting: % = % (%)', p_name, p_value, p_data_type;
@@ -836,8 +837,11 @@ create or replace function ores_variability_system_settings_set_fn(
     p_description text,
     p_modified_by text,
     p_change_reason_code text,
-    p_commentary text
+    p_commentary text,
+    p_party_id uuid default null
 ) returns void as $$
+declare
+    v_party_id uuid := coalesce(p_party_id, ores_variability_resolve_system_party_fn(p_tenant_id));
 begin
     perform ores_seed_validate_not_empty_fn(p_name, 'System setting name');
     perform ores_seed_validate_not_empty_fn(p_data_type, 'System setting data_type');
@@ -846,16 +850,17 @@ begin
     update ores_variability_system_settings_tbl
     set valid_to = current_timestamp
     where tenant_id = p_tenant_id
+      and party_id = v_party_id
       and name = p_name
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     -- Insert new value
     insert into ores_variability_system_settings_tbl (
-        tenant_id, name, value, data_type, description,
+        tenant_id, party_id, name, value, data_type, description,
         modified_by, performed_by, change_reason_code, change_commentary,
         valid_from, valid_to)
     values (
-        p_tenant_id, p_name, p_value, p_data_type, p_description,
+        p_tenant_id, v_party_id, p_name, p_value, p_data_type, p_description,
         p_modified_by, p_modified_by, p_change_reason_code, p_commentary,
         current_timestamp, ores_utility_infinity_timestamp_fn());
 

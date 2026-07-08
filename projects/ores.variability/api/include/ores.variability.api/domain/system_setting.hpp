@@ -21,6 +21,7 @@
 #define ORES_VARIABILITY_DOMAIN_SYSTEM_SETTING_HPP
 
 #include <chrono>
+#include <optional>
 #include <string>
 
 namespace ores::variability::domain {
@@ -44,6 +45,15 @@ struct system_setting final {
      * Use the system tenant UUID for system-wide settings.
      */
     std::string tenant_id;
+
+    /**
+     * @brief Party identifier scoping this setting within the tenant.
+     *
+     * Empty for system-/tenant-wide settings — the database defaults it
+     * to the tenant's system party. Set to a specific party's id for
+     * party-scoped settings (e.g. onboarding.party).
+     */
+    std::optional<std::string> party_id;
 
     /**
      * @brief Name of the setting, serves as the unique identifier.

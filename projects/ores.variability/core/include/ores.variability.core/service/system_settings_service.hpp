@@ -56,8 +56,15 @@ public:
      * @param ctx The database context to use for operations.
      * @param tenant_id The tenant identifier used when creating new settings.
      *        Defaults to empty; must be set for convenience set_* methods to work.
+     * @param party_id The party identifier scoping settings read/written by
+     *        this instance. Defaults to empty, meaning the tenant's system
+     *        party (system-/tenant-wide settings). Set to a specific
+     *        party's id to read/write that party's own settings (e.g.
+     *        onboarding.party). Ignored when tenant_id is empty.
      */
-    explicit system_settings_service(database::context ctx, std::string tenant_id = {});
+    explicit system_settings_service(database::context ctx,
+                                     std::string tenant_id = {},
+                                     std::string party_id = {});
 
     // -------------------------------------------------------------------------
     // Raw access
@@ -163,6 +170,7 @@ private:
 
     database::context ctx_;
     std::string tenant_id_;
+    std::string party_id_;
     repository::system_settings_repository repo_;
 };
 

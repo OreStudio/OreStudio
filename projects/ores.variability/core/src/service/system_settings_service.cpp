@@ -26,9 +26,12 @@ namespace ores::variability::service {
 
 using namespace ores::logging;
 
-system_settings_service::system_settings_service(database::context ctx, std::string tenant_id)
+system_settings_service::system_settings_service(database::context ctx,
+                                                 std::string tenant_id,
+                                                 std::string party_id)
     : ctx_(std::move(ctx))
-    , tenant_id_(std::move(tenant_id)) {}
+    , tenant_id_(std::move(tenant_id))
+    , party_id_(std::move(party_id)) {}
 
 std::optional<domain::system_setting> system_settings_service::get(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Getting system setting: " << name;
@@ -84,10 +87,16 @@ void system_settings_service::refresh() {
     BOOST_LOG_SEV(lg(), debug) << "Refreshing system settings cache from database";
     cache_.clear();
 
-    if (!tenant_id_.empty()) {
+    if (!tenant_id_.empty() && !party_id_.empty()) {
+        // Per-tenant, per-party path: use SECURITY DEFINER function scoped
+        // to a specific party (e.g. reading onboarding.party for one
+        // party rather than the tenant's system party).
+        cache_ = repo_.read_for_party(ctx_, tenant_id_, party_id_);
+    } else if (!tenant_id_.empty()) {
         // Per-tenant path: use SECURITY DEFINER function filtered to the
-        // specific tenant. Required for service users with no direct SELECT
-        // grant on ores_variability_system_settings_tbl.
+        // specific tenant (defaults to its system party). Required for
+        // service users with no direct SELECT grant on
+        // ores_variability_system_settings_tbl.
         cache_ = repo_.read_for_tenant(ctx_, tenant_id_);
     } else {
         // Variability service's own context: caller holds a direct SELECT
@@ -197,6 +206,8 @@ void system_settings_service::set_bool_setting(std::string_view name,
     const auto& def = domain::get_setting_definition(name);
 
     domain::system_setting s{.tenant_id = tenant_id_,
+                             .party_id = party_id_.empty() ? std::nullopt
+                                                            : std::optional(party_id_),
                              .name = std::string(name),
                              .value = value ? "true" : "false",
                              .data_type = std::string(def.data_type),

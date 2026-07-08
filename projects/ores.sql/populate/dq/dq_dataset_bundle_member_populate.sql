@@ -55,7 +55,8 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'iso.countries', 10);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'iso.currencies', 11);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_pairs', 12);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'iso.coding_schemes', 13);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_pair_conventions', 13);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'iso.coding_schemes', 14);
 
     -- FpML Standards
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.coding_schemes', 100);

@@ -169,7 +169,7 @@ drop function if exists ores_refdata_validate_currency_pair_convention_fn;
 | column                   | validation_function                            |
 |--------------------------+--------------------------------------------------|
 | pair_code                | ores_refdata_validate_currency_pair_fn         |
-| business_day_convention  | ores_trading_validate_business_day_convention_type_fn |
+| business_day_convention  | ores_refdata_validate_business_day_convention_type_fn |
 | change_reason_code       | ores_dq_validate_change_reason_fn              |
 
 * C++

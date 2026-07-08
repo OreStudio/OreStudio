@@ -17,24 +17,4 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
-/**
- * Refdata Component Population Script
- *
- * Seeds DQ artefact/dataset data for curated (non-ISO) reference data, so
- * it can be published from the Librarian into a party. All scripts are
- * idempotent.
- */
-
-\echo '=== Refdata Component Population ==='
-\echo ''
-
-\echo '--- Currency Pairs Seed Data ---'
-\ir ./refdata_currency_pairs_seed_populate.sql
-
-\echo ''
-\echo '--- Currency Pair Conventions Seed Data ---'
-\ir ./refdata_currency_pair_conventions_seed_populate.sql
-
-\echo ''
-\echo '=== Refdata Component Population Complete ==='
+drop table if exists "ores_dq_currency_pair_conventions_artefact_tbl";

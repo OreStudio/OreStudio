@@ -8,7 +8,7 @@
 #+filetags: :qt:rendering:dx:qa_validation_runner:sprint_22:v0:
 #+owner: marco
 #+branch: feature/scenario-runner-context-viewer
-#+pr:
+#+pr: 1471
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-07
@@ -129,7 +129,7 @@ against a real scenario doc rather than by inspection alone:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1471][#1471]] | [qt,orgmode] Add the story/task context viewer, with UI polish from dogfooding |
 
 * Review
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_party_status:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/verify-qt-party-status
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,21 +26,21 @@ Confirm that the existing Qt UI for party_status works correctly end-to-end afte
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
 
-- List window loads and displays Active/Inactive/Suspended records.
-- Detail dialog: edit and save round-trips without error in both create and edit mode.
-- History window shows the full change history for a record.
-- Delete removes the live row; history is preserved.
-- Eventing: a change in session A appears in session B without manual refresh.
-- Any regressions found are fixed inline or filed as captures.
+- [X] List window loads and displays Active/Inactive/Suspended records.
+- [X] Detail dialog: edit and save round-trips without error in both create and edit mode.
+- [X] History window shows the full change history for a record.
+- [X] Delete removes the live row; history is preserved.
+- [X] Eventing: a change in session A appears in session B without manual refresh.
+- [X] Any regressions found are fixed inline or filed as captures.
 
 * Plan
 
@@ -49,6 +49,15 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+- History window close button was not wired up; fixed by connecting
+  =connect_dialog_close= in [[PartyStatusController.cpp]].
+- party_status was missing NATS event registration/subscription in
+  =ores.refdata.service= application; added mapping and publish
+  subscription for =party_status_changed_event=.
+- Eventing verified: change in session A (blue) appeared in session B
+  (green) without manual refresh.
+- Delete verified: removes the live row; history preserved.
 
 * PRs
 
@@ -63,3 +72,14 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Verified party_status Qt UI end-to-end post-NATS migration: list,
+detail round-trip (create/edit), history, delete, and cross-session
+eventing all pass. Two regressions found and fixed inline:
+
+- History window's close button was not wired to
+  =connect_dialog_close=, so it did nothing.
+- party_status had no NATS event mapping/subscription in
+  =ores.refdata.service=, so changes never propagated to other
+  sessions; added registration and publish subscription for
+  =party_status_changed_event=.

@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 0B79AFD2-9A6E-475D-A3BE-6F34E1F98358
+:END:
+#+title: Test Scenario: Verify purpose_type Qt UI end-to-end post-NATS
+#+description: Manual verification of purpose_type's Qt UI (list, detail, history, delete) and cross-client NATS eventing via the generated event-mapping registrar, against a live service.
+#+type: test_scenario
+#+level: s1
+#+filetags: :qt:testing:commission_purpose_type:sprint_22:v0:
+#+target_dialog: Trading > Trading Codes > Purpose Types
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:324912C7-DBE0-44CB-98E9-7DBF74A31D25][Verify purpose_type Qt UI end-to-end post-NATS]] in [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:324912C7-DBE0-44CB-98E9-7DBF74A31D25][Verify purpose_type Qt UI end-to-end post-NATS]] |
+| Parent story  | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]]   |
+| Target dialog | Trading > Trading Codes > Purpose Types |
+| Clients       | blue, green                             |
+| State         | PENDING                               |
+
+* Steps
+
+Log in as =tenant_admin@barclays_plc= on both clients before starting.
+Open Purpose Types via Trading > Trading Codes > Purpose Types.
+
+** blue
+
+*** List window loads
+
+Open Purpose Types; confirm the MDI list window loads and displays the
+existing purpose_type records (Code, Name, Description, Display Order,
+Version, Modified By, Recorded At columns).
+
+*** Detail dialog edits and persists
+
+Double-click a record to open its detail dialog; change the
+description, save; reopen the record and confirm the change persisted.
+
+*** History dialog shows the edit
+
+Right-click the edited record and open its history; confirm the prior
+version appears, and the History dialog's Close button actually closes
+the window (regression check — this was broken and fixed during
+commissioning).
+
+*** Delete preserves history
+
+Create a throwaway purpose type, delete it from the list, then confirm
+it disappears from the active list but its history is still reachable
+(e.g. via a version/revert dialog if the UI exposes one, or by
+confirming the delete doesn't hard-remove the row).
+
+** green
+
+*** Confirm the cross-client eventing notification arrives
+
+With =blue='s edit from the previous step already saved, confirm
+=green='s Purpose Types list updated live (recency highlight, no
+manual refresh) shortly after the save. Then make a fresh edit in
+=green= itself and confirm it appears live in =blue=.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

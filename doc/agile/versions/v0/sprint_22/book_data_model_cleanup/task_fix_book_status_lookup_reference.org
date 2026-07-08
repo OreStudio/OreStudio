@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1477][#1477]] | [ores.refdata,ores.qt] Fix book_status/is_trading_book modeling bugs |
 
 * Review
 

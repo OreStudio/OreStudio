@@ -2,7 +2,7 @@
 :ID: 7F8A51BA-35CB-467E-B3E5-A847CB37E238
 :END:
 #+title: Task: Document the composite versioning approach and codegen recipe
-#+description: Once the mechanism is fully implemented and proven, write a doc/knowledge/architecture page explaining the approach (cross-referencing the existing target-state doc, ores.sql/PostgreSQL architecture docs, and any other related docs found), plus a codegen recipe explaining which variability knobs (:bump_parent_version:, :generate_touch_function:, :list_by_as_of:) to flip to make an entity a composite parent/child. All links must be org-roam [[id:...]] links, cross-referenced both ways.
+#+description: Once the mechanism is fully implemented and proven, write a doc/knowledge/architecture page explaining the approach (cross-referencing the existing target-state doc, ores.sql/PostgreSQL architecture docs, and any other related docs found), plus a codegen recipe explaining which variability knobs (:bump_parent_version:, :generate_touch_function:, :list_by_as_of:) to flip to make an entity a composite parent/child. All links must be proper org-roam ID links, cross-referenced both ways.
 #+type: task
 #+level: s1
 #+filetags: :composite_entity:versioning:documentation:codegen:implement-temporal-composite-entity-versioning:sprint_22:v0:

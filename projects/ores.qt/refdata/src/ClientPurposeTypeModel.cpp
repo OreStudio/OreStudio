@@ -283,6 +283,7 @@ const refdata::domain::purpose_type* ClientPurposeTypeModel::getType(int row) co
     return &types_[idx];
 }
 
+
 QVariant ClientPurposeTypeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;

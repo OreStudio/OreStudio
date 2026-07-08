@@ -153,6 +153,7 @@ void PurposeTypeController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void PurposeTypeController::onShowHistory(const refdata::domain::purpose_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
     showHistoryWindow(QString::fromStdString(type.code));
@@ -318,6 +319,7 @@ void PurposeTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Purpose Type History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);

@@ -173,6 +173,7 @@ More stories expected here over time as other consumers emerge.
 |-------+-------+-------+-----+-------------|
 | [[id:F3D9E216-DCB2-4621-899D-DF86727FC736][Hotfix: MacOS CI relevance-guard skips matrix build silently]] | DONE | 2026-07-04 | 2026-07-04 | Continuous MacOS workflow reports overall Success while the scheduled relevance-guard skips the build matrix, so macOS builds are not actually being verified. |
 | [[id:2B91141E-1785-4090-892C-52B8438DAD86][Hotfix: refdata generator/repository test fixtures out of sync with DB constraints]] | DONE | 2026-07-04 | 2026-07-05 | Root cause: 2 counterparty codegen-facet commits introduced generator values violating DB constraints and test expectations; fixed and migrated touched literals to shared change-reason constants. |
+| [[id:7E3D15A2-7B55-4703-8495-AFB7ED3C9456][Hotfix: stale Qt plugin causes crash after ores.qt.api ABI change]] | STARTED | 2026-07-08 | | CMake had no dependency edge from ores.qt.exe to the QPluginLoader-loaded plugin libs, so an ABI change could leave a stale plugin .so segfaulting on load. Cherry-picked the fix off feature/vintage-guard onto its own branch. |
 
 * Achievements
 

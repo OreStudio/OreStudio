@@ -174,7 +174,7 @@ begin
             tenant_id, id, version, party_id, config_id,
             base_currency_code, quote_currency_code,
             source_name, ore_key, gmm_initial_price, ticks_per_hour, process_type,
-            enabled,
+            enabled, vintage_source, vintage_date,
             modified_by, performed_by, change_reason_code, change_commentary
         )
         select
@@ -187,6 +187,11 @@ begin
             'FX/RATE/' || r.base_currency_code || '/' || r.quote_currency_code,
             r.gmm_initial_price, r.ticks_per_hour, r.process_type,
             coalesce(r.enabled, true),
+            -- The DQ artefact has no per-row vintage; every synthetic FX config
+            -- published from this dataset seeds from the same ORE reference
+            -- vintage the story targets. Revisit if/when a dataset carries its
+            -- own vintage (see "Seed Basic and Realistic dataset bundles").
+            'ore.reference', '2016-02-05',
             coalesce(ores_iam_current_service_fn(), current_user), current_user,
             'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
         from (select 1) as _dummy

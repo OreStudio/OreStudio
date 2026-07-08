@@ -319,6 +319,8 @@ void PartyStatusController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
+    connect_dialog_close(historyDialog, historyWindow);
+
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);

@@ -46,7 +46,7 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     "process_type" text not null,
     "enabled" boolean not null,
     "vintage_source" text not null,
-    "vintage_date" date not null,
+    "vintage_date" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -69,8 +69,7 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     check ("gmm_initial_price" > 0),
     check ("ticks_per_hour" > 0),
     check ("process_type" in ('geometric', 'arithmetic', 'ou')),
-    check ("vintage_source" <> ''),
-    check ("vintage_date" is not null)
+    check (("vintage_source" = '' and "vintage_date" = '') or ("vintage_source" <> '' and "vintage_date" <> ''))
 );
 
 -- Composite natural key: unique combination for active records

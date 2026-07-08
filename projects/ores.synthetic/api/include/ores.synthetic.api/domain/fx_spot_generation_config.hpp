@@ -107,14 +107,17 @@ struct fx_spot_generation_config final {
 
     /**
      * @brief Source tag of the market-data vintage this feed's initial spot and availability guard
-     * are validated against (e.g. "ore.reference"), matching market_observation.source.
+     * are validated against (e.g. "ore.reference"), matching market_observation.source. Empty means
+     * "fixed spot": skip the guard and use gmm_initial_price as entered, for testing or when no
+     * reference vintage applies.
      */
     std::string vintage_source;
 
     /**
      * @brief Observation date of the market-data vintage this feed's initial spot and availability
      * guard are validated against, ISO format (e.g. "2016-02-05"), matching
-     * market_observation.observation_datetime.
+     * market_observation.observation_datetime. Empty (with vintage_source empty) means "fixed spot"
+     * — see vintage_source.
      */
     std::string vintage_date;
 

@@ -217,9 +217,15 @@ bool FxSpotGenerationConfigDetailDialog::validateInput() {
     const QString vintage_source_val = ui_->vintageSourceEdit->text().trimmed();
     const QString vintage_date_val = ui_->vintageDateEdit->text().trimmed();
 
+    // Vintage Source/Date are optional (empty = fixed spot, skip the guard),
+    // but must be both empty or both set — a half-filled pair can't be
+    // resolved to either mode.
+    const bool vintage_consistent =
+        (vintage_source_val.isEmpty() && vintage_date_val.isEmpty()) ||
+        (!vintage_source_val.isEmpty() && !vintage_date_val.isEmpty());
+
     return true && !base_currency_code_val.isEmpty() && !quote_currency_code_val.isEmpty() &&
-           !gmm_initial_price_val.isEmpty() && !process_type_val.isEmpty() &&
-           !vintage_source_val.isEmpty() && !vintage_date_val.isEmpty();
+           !gmm_initial_price_val.isEmpty() && !process_type_val.isEmpty() && vintage_consistent;
 }
 
 void FxSpotGenerationConfigDetailDialog::onSaveClicked() {

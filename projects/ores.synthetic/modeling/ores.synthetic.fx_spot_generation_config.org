@@ -180,7 +180,9 @@ faker::datatype::boolean()
 
 Source tag of the market-data vintage this feed's initial spot and
 availability guard are validated against (e.g. "ore.reference"),
-matching =market_observation.source=.
+matching =market_observation.source=. Empty means "fixed spot": skip
+the guard and use =gmm_initial_price= as entered, for testing or when
+no reference vintage applies.
 
 #+begin_src cpp :name generator
 std::string("ore.reference")
@@ -188,7 +190,7 @@ std::string("ore.reference")
 
 ** vintage_date
 :PROPERTIES:
-:type:     date
+:type:     text
 :cpp_type: std::string
 :nullable: false
 :END:
@@ -196,6 +198,8 @@ std::string("ore.reference")
 Observation date of the market-data vintage this feed's initial spot
 and availability guard are validated against, ISO format (e.g.
 "2016-02-05"), matching =market_observation.observation_datetime=.
+Empty (with vintage_source empty) means "fixed spot" — see
+vintage_source.
 
 #+begin_src cpp :name generator
 std::string("2016-02-05")
@@ -220,8 +224,7 @@ std::string("2016-02-05")
 | "gmm_initial_price" > 0                               |
 | "ticks_per_hour" > 0                                  |
 | "process_type" in ('geometric', 'arithmetic', 'ou')   |
-| "vintage_source" <> ''                                |
-| "vintage_date" is not null                            |
+| ("vintage_source" = '' and "vintage_date" = '') or ("vintage_source" <> '' and "vintage_date" <> '') |
 
 * Foreign keys
 
@@ -313,8 +316,8 @@ std::string("2016-02-05")
 | ticks_per_hour      | Ticks per Hour      | ticksPerHourEdit     | spin_box  |        | true        |                                 |
 | process_type        | Process Type        | processTypeEdit      | line_edit |        | true        | geometric, arithmetic, or ou    |
 | enabled             | Enabled             | enabledCheck         | check_box |        |             |                                 |
-| vintage_source      | Vintage Source      | vintageSourceEdit    | line_edit |        | true        | e.g. ore.reference              |
-| vintage_date        | Vintage Date        | vintageDateEdit      | line_edit |        | true        | YYYY-MM-DD                      |
+| vintage_source      | Vintage Source      | vintageSourceEdit    | line_edit |        |             | Leave blank for a fixed spot, or e.g. ore.reference |
+| vintage_date        | Vintage Date        | vintageDateEdit      | line_edit |        |             | Leave blank for a fixed spot, or YYYY-MM-DD |
 
 *** Columns (Qt model)
 

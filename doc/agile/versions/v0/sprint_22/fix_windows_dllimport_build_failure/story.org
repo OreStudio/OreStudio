@@ -23,17 +23,20 @@ over the compiler warning that surfaced it.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Single task, in progress; PR open awaiting Windows CI. |
-| Waiting on    | Windows CI run on the PR.              |
-| Next          | Merge once Windows CI is green.        |
-| Last touched  | 2026-07-08                               |
+| Now           | Nothing.                                |
+| Waiting on    | Manual Windows CI run to finish (merged ahead of it, per explicit instruction — build takes hours). |
+| Next          | Nothing — follow up separately if the Windows run surfaces anything. |
+| Last touched  | 2026-07-09                               |
 
 * Acceptance
 
 - [X] Windows build failure root-caused, not just reproduced.
-- [ ] Windows CI green on the fix PR.
+- [ ] Windows CI green on the fix PR — merged ahead of the manually-
+  triggered run per explicit instruction; everything else (Linux
+  build/link/tests across every affected target, live smoke test,
+  three review passes) was clean.
 - [X] Fix is a real component split (ores.qt.headless), not a
   compile-definition workaround — verified this was the right call by
   checking whether any existing ores.qt.* sub-component was already
@@ -43,7 +46,7 @@ over the compiler warning that surfaced it.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:9370492E-E752-4BBD-BEA4-15C474117C53][Extract ores.qt.headless to fix the Windows build]] | STARTED | 2026-07-08 | | Move Widgets-free logic (OrgDocRenderer, TestScenarioResultsWriter, EnvironmentMetadata, HierarchyModelBuilder, FontUtils, RepoFileFinder, parse_trade_instrument/IInstrumentFormPopulator) out of ores.qt.api into a new ores.qt.headless component, fixing the MSVC C4273 dllimport-on-a-definition error at the root instead of patching it. |
+| [[id:9370492E-E752-4BBD-BEA4-15C474117C53][Extract ores.qt.headless to fix the Windows build]] | DONE | 2026-07-08 | 2026-07-09 | Move Widgets-free logic (OrgDocRenderer, TestScenarioResultsWriter, EnvironmentMetadata, HierarchyModelBuilder, FontUtils, RepoFileFinder, parse_trade_instrument/IInstrumentFormPopulator) out of ores.qt.api into a new ores.qt.headless component, fixing the MSVC C4273 dllimport-on-a-definition error at the root instead of patching it. |
 
 * Decisions
 

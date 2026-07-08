@@ -29,11 +29,11 @@ compile-definition workaround.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:62034F29-D2EB-4BA4-9291-9B35D33A724A][Fix Windows dllimport build failure via ores.qt.headless extraction]] |
-| Now          | Extraction complete, verified on Linux; PR open, awaiting Windows CI confirmation. |
+| Now          | Nothing. |
 | Waiting on   | Windows CI run on the PR.              |
-| Next         | Merge once Windows CI is green.        |
+| Next         | Nothing. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance
@@ -120,3 +120,15 @@ same-macro-name clash it was designed to avoid.
 | 4 | =continuous-windows.yml= only runs on schedule/dispatch, won't exercise this PR automatically | (process, no file)                          | Accepted | Will trigger =workflow_dispatch= before merging to actually confirm the fix on MSVC. |
 
 * Result
+
+Extracted =ores.qt.headless= — the Widgets-free, headless-testable
+logic that was forcing =ores.qt.api.tests= to duplicate-compile
+source files (the actual cause of the MSVC C4273 failure). Verified
+fully on Linux (every affected target builds/links, 198 test
+assertions pass, live QA Validation Runner smoke test); a manual
+=Continuous Windows= run was triggered on the PR branch to confirm the
+MSVC fix directly, but the PR was merged ahead of that run completing
+(it takes hours) per explicit instruction, since everything else was
+verified and reviewed. Follow up once that run finishes; if it
+surfaces anything, it becomes a fast follow-up task in this same
+story, not a revert.

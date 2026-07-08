@@ -27,6 +27,8 @@
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/ReturnDistributionChart.hpp"
 #include "ores.qt/SamplePricePathsChart.hpp"
+#include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.synthetic.api/domain/process_parameter_validation.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
@@ -34,6 +36,7 @@
 #include <QButtonGroup>
 #include <QComboBox>
 #include <QCompleter>
+#include <QDialog>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QFutureWatcher>
@@ -41,10 +44,12 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QPalette>
 #include <QPointer>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QSignalBlocker>
 #include <QSizePolicy>
 #include <QSlider>
@@ -52,10 +57,14 @@
 #include <QTableWidget>
 #include <QTextBrowser>
 #include <QtConcurrent>
+#include <set>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <chrono>
+#include <format>
+#include <tuple>
 #include <cctype>
 #include <cmath>
 #include <optional>
@@ -358,21 +367,27 @@ void FxSpotRateEditor::buildInstrumentTab() {
     form->addRow(QString(), enabledCheck_);
     layout->addLayout(form);
 
-    // Price source: two mutually-exclusive checkable group boxes, each owning
-    // the fields it actually uses — makes the radio-to-fields relationship
-    // visually unambiguous (a flat form with all fields listed regardless of
-    // mode, distinguished only by enabled/disabled greying, was confusing).
+    // Price source: two groups stacked vertically, each headed by its own
+    // radio button. Selecting one disables every field in the other group —
+    // the radio-to-fields relationship is then unambiguous (a flat form
+    // listing both groups' fields side by side, distinguished only by
+    // greying, was confusing).
     auto* priceSourceIntro = new QLabel(
         tr("Where this rate's initial spot comes from — pick one."), tab);
     priceSourceIntro->setStyleSheet("color: gray; font-style: italic;");
     layout->addWidget(priceSourceIntro);
 
-    auto* priceSourceRow = new QHBoxLayout();
+    fixedRadio_ = new QRadioButton(tr("Fixed"), tab);
+    vintageRadio_ = new QRadioButton(tr("From vintage data"), tab);
+    priceSourceGroup_ = new QButtonGroup(this);
+    priceSourceGroup_->setExclusive(true);
+    priceSourceGroup_->addButton(fixedRadio_, 0);
+    priceSourceGroup_->addButton(vintageRadio_, 1);
 
-    fixedGroup_ = new QGroupBox(tr("Fixed"), tab);
-    fixedGroup_->setCheckable(true);
-    auto* fixedForm = new QFormLayout(fixedGroup_);
-    priceSpin_ = new QDoubleSpinBox(fixedGroup_);
+    layout->addWidget(fixedRadio_);
+    auto* fixedForm = new QFormLayout();
+    fixedForm->setContentsMargins(20, 0, 0, 8); // indent under its radio
+    priceSpin_ = new QDoubleSpinBox(tab);
     priceSpin_->setRange(0.0001, 1e9);
     priceSpin_->setDecimals(4);
     priceSpin_->setValue(fx_.gmm_initial_price > 0 ? fx_.gmm_initial_price : 1.0);
@@ -387,51 +402,46 @@ void FxSpotRateEditor::buildInstrumentTab() {
         refreshCharts();
     });
     fixedForm->addRow(tr("Initial price"), priceSpin_);
-    priceSourceRow->addWidget(fixedGroup_, 1);
+    layout->addLayout(fixedForm);
 
-    vintageGroup_ = new QGroupBox(tr("From vintage data"), tab);
-    vintageGroup_->setCheckable(true);
-    auto* vintageForm = new QFormLayout(vintageGroup_);
-    vintageSourceEdit_ = new QLineEdit(vintageGroup_);
+    layout->addWidget(vintageRadio_);
+    auto* vintageForm = new QFormLayout();
+    vintageForm->setContentsMargins(20, 0, 0, 8); // indent under its radio
+    vintageSourceEdit_ = new QLineEdit(tab);
     vintageSourceEdit_->setText(QString::fromStdString(fx_.vintage_source));
     vintageSourceEdit_->setPlaceholderText(tr("e.g. ore.reference"));
-    vintageDateEdit_ = new QLineEdit(vintageGroup_);
+    vintageDateEdit_ = new QLineEdit(tab);
     vintageDateEdit_->setText(QString::fromStdString(fx_.vintage_date));
     vintageDateEdit_->setPlaceholderText(tr("YYYY-MM-DD"));
     vintageForm->addRow(tr("Vintage source"), vintageSourceEdit_);
     vintageForm->addRow(tr("Vintage date"), vintageDateEdit_);
-    priceSourceRow->addWidget(vintageGroup_, 1);
+    browseVintageButton_ = new QPushButton(tr("Browse available…"), tab);
+    browseVintageButton_->setToolTip(
+        tr("List the (source, date) vintages actually imported for this currency "
+           "pair, instead of typing them blind."));
+    vintageForm->addRow(QString(), browseVintageButton_);
+    layout->addLayout(vintageForm);
+    connect(browseVintageButton_,
+           &QPushButton::clicked,
+           this,
+           &FxSpotRateEditor::onBrowseVintageClicked);
 
-    layout->addLayout(priceSourceRow);
     layout->addStretch(1);
 
     const bool vintageMode = fx_.price_source == "vintage";
-    fixedGroup_->setChecked(!vintageMode);
-    vintageGroup_->setChecked(vintageMode);
-    // QGroupBox::setCheckable() gives an independent on/off checkbox, not a
-    // radio button — enforce mutual exclusivity by hand so checking one
-    // always unchecks the other (guarded against the resulting re-entrant
-    // toggled() call).
-    connect(fixedGroup_, &QGroupBox::toggled, this, [this](bool on) {
-        if (syncingPriceSourceGroups_)
-            return;
-        syncingPriceSourceGroups_ = true;
-        if (on)
-            vintageGroup_->setChecked(false);
-        else
-            vintageGroup_->setChecked(true);
-        syncingPriceSourceGroups_ = false;
-    });
-    connect(vintageGroup_, &QGroupBox::toggled, this, [this](bool on) {
-        if (syncingPriceSourceGroups_)
-            return;
-        syncingPriceSourceGroups_ = true;
-        if (on)
-            fixedGroup_->setChecked(false);
-        else
-            fixedGroup_->setChecked(true);
-        syncingPriceSourceGroups_ = false;
-    });
+    (vintageMode ? vintageRadio_ : fixedRadio_)->setChecked(true);
+    const auto updatePriceSourceEnablement = [this]() {
+        const bool vintage = priceSourceGroup_->checkedId() == 1;
+        priceSpin_->setEnabled(!vintage);
+        vintageSourceEdit_->setEnabled(vintage);
+        vintageDateEdit_->setEnabled(vintage);
+        browseVintageButton_->setEnabled(vintage);
+    };
+    updatePriceSourceEnablement();
+    connect(priceSourceGroup_,
+           &QButtonGroup::idClicked,
+           this,
+           [updatePriceSourceEnablement](int) { updatePriceSourceEnablement(); });
 
     tabWidget_->addTab(tab, tr("Instrument"));
 
@@ -944,6 +954,127 @@ void FxSpotRateEditor::recomputeDefaultSourceName() {
 void FxSpotRateEditor::onCurrencyChanged() {
     recomputeOreKey();
     recomputeDefaultSourceName();
+}
+
+void FxSpotRateEditor::onBrowseVintageClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        QMessageBox::warning(
+            this, tr("Disconnected"), tr("Cannot browse vintages while disconnected."));
+        return;
+    }
+
+    const auto base = baseCombo_->currentText().toStdString();
+    const auto quote = quoteCombo_->currentText().toStdString();
+    if (base.empty() || quote.empty()) {
+        QMessageBox::warning(
+            this, tr("Incomplete"), tr("Pick base and quote currencies first."));
+        return;
+    }
+    const std::string qualifier = base + "/" + quote;
+
+    QPointer<FxSpotRateEditor> self = this;
+    auto* cm = clientManager_;
+
+    // A vintage is a distinct (source, date) pair actually present in
+    // market_observation for this pair's series — the same thing the
+    // server-side guard checks against, so browsing here can never offer an
+    // option the guard would then reject.
+    struct Vintage {
+        std::string source;
+        std::string date; // ISO, derived from observation_datetime
+    };
+    struct FetchResult {
+        bool success = false;
+        std::vector<Vintage> vintages;
+        QString error;
+    };
+
+    auto task = [cm, qualifier]() -> FetchResult {
+        namespace m = ores::marketdata::messaging;
+        m::get_market_series_request series_req;
+        series_req.limit = 10000;
+        auto series_resp = cm->process_authenticated_request(series_req);
+        if (!series_resp)
+            return {.success = false, .vintages = {}, .error = QString::fromStdString(series_resp.error())};
+
+        std::string series_id;
+        for (const auto& s : series_resp->market_series) {
+            if (s.series_type == "FX" && s.metric == "RATE" && s.qualifier == qualifier) {
+                series_id = boost::uuids::to_string(s.id);
+                break;
+            }
+        }
+        if (series_id.empty())
+            return {.success = true, .vintages = {}, .error = {}};
+
+        m::get_market_observations_request obs_req;
+        obs_req.series_id = series_id;
+        obs_req.limit = 10000;
+        auto obs_resp = cm->process_authenticated_request(obs_req);
+        if (!obs_resp)
+            return {.success = false, .vintages = {}, .error = QString::fromStdString(obs_resp.error())};
+
+        std::set<std::pair<std::string, std::string>> seen;
+        std::vector<Vintage> vintages;
+        for (const auto& obs : obs_resp->market_observations) {
+            if (obs.point_id != "SPOT")
+                continue;
+            const auto days = std::chrono::floor<std::chrono::days>(obs.observation_datetime);
+            const auto date = std::format("{:%F}", days);
+            if (seen.emplace(obs.source, date).second)
+                vintages.push_back({obs.source, date});
+        }
+        std::sort(vintages.begin(), vintages.end(), [](const auto& a, const auto& b) {
+            return std::tie(a.source, a.date) > std::tie(b.source, b.date); // newest first
+        });
+        return {.success = true, .vintages = std::move(vintages), .error = {}};
+    };
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished, self, [self, watcher, base, quote]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self)
+            return;
+        if (!result.success) {
+            QMessageBox::warning(
+                self, self->tr("Failed to fetch vintages"), result.error);
+            return;
+        }
+        if (result.vintages.empty()) {
+            QMessageBox::information(
+                self,
+                self->tr("No vintages found"),
+                self->tr("No market data has been imported yet for FX/RATE/%1/%2. Run an "
+                        "import first, then browse again.")
+                    .arg(QString::fromStdString(base), QString::fromStdString(quote)));
+            return;
+        }
+
+        QDialog dialog(self);
+        dialog.setWindowTitle(self->tr("Available vintages for %1/%2")
+                                  .arg(QString::fromStdString(base), QString::fromStdString(quote)));
+        auto* layout = new QVBoxLayout(&dialog);
+        auto* list = new QListWidget(&dialog);
+        for (const auto& v : result.vintages) {
+            list->addItem(QString("%1 — %2")
+                              .arg(QString::fromStdString(v.source), QString::fromStdString(v.date)));
+        }
+        list->setCurrentRow(0);
+        layout->addWidget(list);
+        auto* box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+        layout->addWidget(box);
+        connect(box, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+        connect(box, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+        connect(list, &QListWidget::itemDoubleClicked, &dialog, &QDialog::accept);
+
+        if (dialog.exec() == QDialog::Accepted && list->currentRow() >= 0) {
+            const auto& chosen = result.vintages[static_cast<std::size_t>(list->currentRow())];
+            self->vintageSourceEdit_->setText(QString::fromStdString(chosen.source));
+            self->vintageDateEdit_->setText(QString::fromStdString(chosen.date));
+        }
+    });
+    watcher->setFuture(QtConcurrent::run(task));
 }
 
 void FxSpotRateEditor::recomputeFrequencyEcho() {
@@ -1636,7 +1767,7 @@ void FxSpotRateEditor::onSaveClicked() {
         return;
     }
 
-    const bool vintageMode = vintageGroup_->isChecked();
+    const bool vintageMode = priceSourceGroup_->checkedId() == 1;
     if (vintageMode && (vintageSourceEdit_->text().trimmed().isEmpty() ||
                        vintageDateEdit_->text().trimmed().isEmpty())) {
         QMessageBox::warning(this,

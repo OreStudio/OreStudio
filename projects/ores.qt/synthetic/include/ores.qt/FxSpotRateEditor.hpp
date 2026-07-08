@@ -40,6 +40,7 @@
 class QButtonGroup;
 class QGroupBox;
 class QPushButton;
+class QRadioButton;
 class QSlider;
 class QStackedWidget;
 class QTableWidget;
@@ -125,6 +126,7 @@ private slots:
     void onModeChanged();
     void onResetSimple();
     void onResetAdvanced();
+    void onBrowseVintageClicked();
 
 private:
     // The single source of truth for the price model: one GMM component.
@@ -221,18 +223,19 @@ private:
     QComboBox* quoteCombo_;
     QLabel* oreKeyLabel_;
     QLineEdit* sourceNameEdit_;
-    // Price source: mutually-exclusive checkable group boxes (see
-    // buildInstrumentTab). "Fixed" (fixedGroup_ checked) makes priceSpin_
-    // authoritative; "From vintage data" (vintageGroup_ checked) makes
+    // Price source: two radio buttons in an exclusive QButtonGroup (see
+    // buildInstrumentTab). Checking "Fixed" (id 0) makes priceSpin_
+    // authoritative; checking "From vintage data" (id 1) makes
     // vintageSourceEdit_/vintageDateEdit_ authoritative and the spot is
     // derived server-side, guarded by availability — see
     // fx_spot_generation_config.price_source.
-    QGroupBox* fixedGroup_;
-    QGroupBox* vintageGroup_;
-    bool syncingPriceSourceGroups_ = false;
+    QRadioButton* fixedRadio_;
+    QRadioButton* vintageRadio_;
+    QButtonGroup* priceSourceGroup_;
     QDoubleSpinBox* priceSpin_;
     QLineEdit* vintageSourceEdit_;
     QLineEdit* vintageDateEdit_;
+    QPushButton* browseVintageButton_;
     QCheckBox* enabledCheck_;
 
     // Frequency tab.

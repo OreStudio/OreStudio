@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 7E3D15A2-7B55-4703-8495-AFB7ED3C9456
+:END:
+#+title: Story: Hotfix: stale Qt plugin causes crash after ores.qt.api ABI change
+#+description: Domain plugins are QPluginLoader-loaded at runtime, not linked, so CMake never rebuilt them when ores.qt.api's ABI changed -- a stale plugin .so then segfaults on first virtual call into the mismatched vtable. Land the add_dependencies() fix (already written on feature/vintage-guard) on its own, ahead of that unrelated/unfinished PR.
+#+type: story
+#+level: s2
+#+filetags: :sprint_22:v0:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+An ordinary =cmake --build --target ores.qt.exe= must never leave a
+QPluginLoader-loaded plugin .so stale against a freshly-linked exe's ABI —
+CMake needs a real build-order dependency from the exe to every plugin lib,
+even though none of them are link-time dependencies of it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Nothing.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-07-08                               |
+
+* Acceptance
+
+- [X] =ores.qt.exe= has an =add_dependencies()= edge to every
+  QPluginLoader-loaded Qt plugin lib (admin, analytics, compute,
+  data_transfer, marketdata, mktdata, party, refdata, scheduler, synthetic,
+  trading, workspace), forcing build order without adding a compile-time
+  link dependency.
+- [X] A plain =cmake --build --target ores.qt.exe= now rebuilds every
+  plugin alongside the exe, so this specific stale-plugin-ABI crash can no
+  longer happen from that command.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7D3E64E2-B54E-46FD-A325-C1F654776E36][Make ores.qt.exe depend on every Qt plugin lib]] | DONE | 2026-07-08 | 2026-07-08 | Add CMake add_dependencies() edges from ores.qt.exe to every QPluginLoader-loaded plugin lib, so an ordinary cmake --build --target ores.qt.exe can no longer leave a stale plugin .so sitting next to a freshly-linked exe. |
+
+* Decisions
+
+* Out of scope
+
+-

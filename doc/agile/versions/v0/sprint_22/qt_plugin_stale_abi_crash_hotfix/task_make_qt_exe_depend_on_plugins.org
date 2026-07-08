@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 7D3E64E2-B54E-46FD-A325-C1F654776E36
+:END:
+#+title: Task: Make ores.qt.exe depend on every Qt plugin lib
+#+description: Add CMake add_dependencies() edges from ores.qt.exe to every QPluginLoader-loaded plugin lib, so an ordinary cmake --build --target ores.qt.exe can no longer leave a stale plugin .so sitting next to a freshly-linked exe.
+#+type: task
+#+level: s1
+#+filetags: :qt_plugin_stale_abi_crash_hotfix:sprint_22:v0:
+#+owner: marco
+#+branch: feature/qt-plugin-rebuild-dependency
+#+pr: 1474
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7E3D15A2-7B55-4703-8495-AFB7ED3C9456][Hotfix: stale Qt plugin causes crash after ores.qt.api ABI change]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Domain plugins are QPluginLoader-loaded at runtime, not linked, so CMake's
+dependency graph had no reason to rebuild them when ores.qt.api.lib's ABI
+changed. A plugin .so compiled against the old layout then sits next to a
+freshly-linked exe — QPluginLoader loads it anyway (same .so name, no
+version check) and it segfaults on the first virtual call into the
+mismatched vtable. Hit this while testing Book's regulatory_book_type
+combo work on feature/fix-book-status-and-trading-flag; the fix already
+existed on feature/vintage-guard (unrelated, still-open PR #1467) —
+cherry-pick it onto its own branch so it can land independently.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7E3D15A2-7B55-4703-8495-AFB7ED3C9456][Hotfix: stale Qt plugin causes crash after ores.qt.api ABI change]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- [X] =ores.qt.exe= has an =add_dependencies()= edge (not
+  =target_link_libraries=) to every Qt plugin lib, so it stays
+  compile-time decoupled from plugin internals but forces build order.
+- [X] An ordinary =cmake --build --target ores.qt.exe= now also rebuilds
+  every plugin, so a stale plugin .so next to a freshly-linked exe can no
+  longer happen from that command.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1474][#1474]] | [build] Make ores.qt.exe depend on every Qt plugin lib |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | CMake list is correct; plugin-list drift risk flagged as a non-blocking follow-up | CMakeLists.txt | Declined (as-is) | Pre-existing risk in the cherry-picked commit, not introduced by this PR; could file a capture if wanted |
+| 2 | story.org left as unfilled scaffold, disagreed with task/sprint state | story.org, sprint.org | Fixed | 7f58b3385 |
+
+* Result
+
+Cherry-picked commit 3c187cc74 (originally authored on feature/vintage-guard)
+onto a fresh branch off main, feature/qt-plugin-rebuild-dependency, so this
+build-system fix lands independently of that unrelated, still-open PR.
+Applied cleanly, no conflicts.

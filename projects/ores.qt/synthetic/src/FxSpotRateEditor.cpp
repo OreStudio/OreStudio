@@ -45,7 +45,6 @@
 #include <QPalette>
 #include <QPointer>
 #include <QPushButton>
-#include <QRadioButton>
 #include <QSignalBlocker>
 #include <QSizePolicy>
 #include <QSlider>
@@ -349,7 +348,31 @@ void FxSpotRateEditor::buildInstrumentTab() {
     sourceNameEdit_ = new QLineEdit(tab);
     sourceNameEdit_->setText(QString::fromStdString(fx_.source_name));
 
-    priceSpin_ = new QDoubleSpinBox(tab);
+    enabledCheck_ = new QCheckBox(tr("Enabled"), tab);
+    enabledCheck_->setChecked(fx_.enabled);
+
+    form->addRow(tr("Base currency"), baseCombo_);
+    form->addRow(tr("Quote currency"), quoteCombo_);
+    form->addRow(tr("ORE key"), oreKeyLabel_);
+    form->addRow(tr("Source name"), sourceNameEdit_);
+    form->addRow(QString(), enabledCheck_);
+    layout->addLayout(form);
+
+    // Price source: two mutually-exclusive checkable group boxes, each owning
+    // the fields it actually uses — makes the radio-to-fields relationship
+    // visually unambiguous (a flat form with all fields listed regardless of
+    // mode, distinguished only by enabled/disabled greying, was confusing).
+    auto* priceSourceIntro = new QLabel(
+        tr("Where this rate's initial spot comes from — pick one."), tab);
+    priceSourceIntro->setStyleSheet("color: gray; font-style: italic;");
+    layout->addWidget(priceSourceIntro);
+
+    auto* priceSourceRow = new QHBoxLayout();
+
+    fixedGroup_ = new QGroupBox(tr("Fixed"), tab);
+    fixedGroup_->setCheckable(true);
+    auto* fixedForm = new QFormLayout(fixedGroup_);
+    priceSpin_ = new QDoubleSpinBox(fixedGroup_);
     priceSpin_->setRange(0.0001, 1e9);
     priceSpin_->setDecimals(4);
     priceSpin_->setValue(fx_.gmm_initial_price > 0 ? fx_.gmm_initial_price : 1.0);
@@ -363,52 +386,52 @@ void FxSpotRateEditor::buildInstrumentTab() {
             ouThetaLabel_->setText(tr("%1").arg(priceSpin_->value(), 0, 'f', 5));
         refreshCharts();
     });
+    fixedForm->addRow(tr("Initial price"), priceSpin_);
+    priceSourceRow->addWidget(fixedGroup_, 1);
 
-    vintageSourceEdit_ = new QLineEdit(tab);
+    vintageGroup_ = new QGroupBox(tr("From vintage data"), tab);
+    vintageGroup_->setCheckable(true);
+    auto* vintageForm = new QFormLayout(vintageGroup_);
+    vintageSourceEdit_ = new QLineEdit(vintageGroup_);
     vintageSourceEdit_->setText(QString::fromStdString(fx_.vintage_source));
     vintageSourceEdit_->setPlaceholderText(tr("e.g. ore.reference"));
-    vintageDateEdit_ = new QLineEdit(tab);
+    vintageDateEdit_ = new QLineEdit(vintageGroup_);
     vintageDateEdit_->setText(QString::fromStdString(fx_.vintage_date));
     vintageDateEdit_->setPlaceholderText(tr("YYYY-MM-DD"));
+    vintageForm->addRow(tr("Vintage source"), vintageSourceEdit_);
+    vintageForm->addRow(tr("Vintage date"), vintageDateEdit_);
+    priceSourceRow->addWidget(vintageGroup_, 1);
 
-    auto* fixedRadio = new QRadioButton(tr("Fixed"), tab);
-    auto* vintageRadio = new QRadioButton(tr("From vintage data"), tab);
-    priceSourceGroup_ = new QButtonGroup(this);
-    priceSourceGroup_->setExclusive(true);
-    priceSourceGroup_->addButton(fixedRadio, 0);
-    priceSourceGroup_->addButton(vintageRadio, 1);
-    (fx_.price_source == "vintage" ? vintageRadio : fixedRadio)->setChecked(true);
-    auto* priceSourceRow = new QHBoxLayout();
-    priceSourceRow->addWidget(fixedRadio);
-    priceSourceRow->addWidget(vintageRadio);
-    priceSourceRow->addStretch(1);
-
-    const auto updatePriceSourceEnablement = [this]() {
-        const bool vintage = priceSourceGroup_->checkedId() == 1;
-        priceSpin_->setEnabled(!vintage);
-        vintageSourceEdit_->setEnabled(vintage);
-        vintageDateEdit_->setEnabled(vintage);
-    };
-    updatePriceSourceEnablement();
-    connect(priceSourceGroup_,
-           &QButtonGroup::idClicked,
-           this,
-           [updatePriceSourceEnablement](int) { updatePriceSourceEnablement(); });
-
-    enabledCheck_ = new QCheckBox(tr("Enabled"), tab);
-    enabledCheck_->setChecked(fx_.enabled);
-
-    form->addRow(tr("Base currency"), baseCombo_);
-    form->addRow(tr("Quote currency"), quoteCombo_);
-    form->addRow(tr("ORE key"), oreKeyLabel_);
-    form->addRow(tr("Source name"), sourceNameEdit_);
-    form->addRow(tr("Price source"), priceSourceRow);
-    form->addRow(tr("Initial price"), priceSpin_);
-    form->addRow(tr("Vintage source"), vintageSourceEdit_);
-    form->addRow(tr("Vintage date"), vintageDateEdit_);
-    form->addRow(QString(), enabledCheck_);
-    layout->addLayout(form);
+    layout->addLayout(priceSourceRow);
     layout->addStretch(1);
+
+    const bool vintageMode = fx_.price_source == "vintage";
+    fixedGroup_->setChecked(!vintageMode);
+    vintageGroup_->setChecked(vintageMode);
+    // QGroupBox::setCheckable() gives an independent on/off checkbox, not a
+    // radio button — enforce mutual exclusivity by hand so checking one
+    // always unchecks the other (guarded against the resulting re-entrant
+    // toggled() call).
+    connect(fixedGroup_, &QGroupBox::toggled, this, [this](bool on) {
+        if (syncingPriceSourceGroups_)
+            return;
+        syncingPriceSourceGroups_ = true;
+        if (on)
+            vintageGroup_->setChecked(false);
+        else
+            vintageGroup_->setChecked(true);
+        syncingPriceSourceGroups_ = false;
+    });
+    connect(vintageGroup_, &QGroupBox::toggled, this, [this](bool on) {
+        if (syncingPriceSourceGroups_)
+            return;
+        syncingPriceSourceGroups_ = true;
+        if (on)
+            fixedGroup_->setChecked(false);
+        else
+            fixedGroup_->setChecked(true);
+        syncingPriceSourceGroups_ = false;
+    });
 
     tabWidget_->addTab(tab, tr("Instrument"));
 
@@ -1613,7 +1636,7 @@ void FxSpotRateEditor::onSaveClicked() {
         return;
     }
 
-    const bool vintageMode = priceSourceGroup_->checkedId() == 1;
+    const bool vintageMode = vintageGroup_->isChecked();
     if (vintageMode && (vintageSourceEdit_->text().trimmed().isEmpty() ||
                        vintageDateEdit_->text().trimmed().isEmpty())) {
         QMessageBox::warning(this,

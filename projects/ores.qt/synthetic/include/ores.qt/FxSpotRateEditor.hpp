@@ -38,6 +38,7 @@
 #include <vector>
 
 class QButtonGroup;
+class QGroupBox;
 class QPushButton;
 class QSlider;
 class QStackedWidget;
@@ -220,10 +221,15 @@ private:
     QComboBox* quoteCombo_;
     QLabel* oreKeyLabel_;
     QLineEdit* sourceNameEdit_;
-    // Price source: "fixed" (priceSpin_ is authoritative) or "vintage" (spot is
-    // derived server-side from vintageSourceEdit_/vintageDateEdit_, guarded by
-    // availability — see fx_spot_generation_config.price_source).
-    QButtonGroup* priceSourceGroup_;
+    // Price source: mutually-exclusive checkable group boxes (see
+    // buildInstrumentTab). "Fixed" (fixedGroup_ checked) makes priceSpin_
+    // authoritative; "From vintage data" (vintageGroup_ checked) makes
+    // vintageSourceEdit_/vintageDateEdit_ authoritative and the spot is
+    // derived server-side, guarded by availability — see
+    // fx_spot_generation_config.price_source.
+    QGroupBox* fixedGroup_;
+    QGroupBox* vintageGroup_;
+    bool syncingPriceSourceGroups_ = false;
     QDoubleSpinBox* priceSpin_;
     QLineEdit* vintageSourceEdit_;
     QLineEdit* vintageDateEdit_;

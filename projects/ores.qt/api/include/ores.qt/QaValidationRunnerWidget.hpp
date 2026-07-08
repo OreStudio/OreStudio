@@ -135,7 +135,7 @@ signals:
 
 private slots:
     void openStepDetail(QListWidgetItem* item);
-    void followContextLink(const QUrl& url, QTextBrowser* browser);
+    void followContextLink(const QUrl& url);
 
 private:
     void rebuildStepList();
@@ -163,6 +163,16 @@ private:
     QString scenarioPath_;
     QString taskId_;
     QString storyId_;
+
+    /**
+     * @brief Bumped every time loadScenario() runs. A step-detail
+     * subwindow captures this at open time and checks it before
+     * writing back into steps_ — if the tester loads a different
+     * scenario while a subwindow from the old one is still open, its
+     * writes become no-ops instead of silently landing on the new
+     * scenario's step at the same index.
+     */
+    int loadGeneration_ = 0;
 
     std::vector<qa_step> steps_;
 

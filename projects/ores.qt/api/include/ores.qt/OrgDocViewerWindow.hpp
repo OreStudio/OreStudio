@@ -44,9 +44,11 @@ namespace ores::qt {
  * follows — never a detached window, which several window managers
  * pin above the whole application regardless of modality.
  *
- * Each instance opens its own read-only handle onto the org-roam
- * index (found by walking up from @p referencePath) — cheap enough for
- * a manual-testing tool that resolves a handful of links per session.
+ * A fresh read-only handle onto the org-roam index (found by walking
+ * up from @p referencePath) is opened on every navigation rather than
+ * held as a member — cheap enough for a manual-testing tool that
+ * resolves a handful of links per session, and one less lifetime to
+ * manage.
  */
 class ORES_QT_API OrgDocViewerWindow final : public QWidget {
     Q_OBJECT

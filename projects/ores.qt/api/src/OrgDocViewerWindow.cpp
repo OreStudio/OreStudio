@@ -22,9 +22,8 @@
 #include "ores.orgmode/parser/parser.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/OrgDocRenderer.hpp"
+#include "ores.qt/RepoFileFinder.hpp"
 #include <QAction>
-#include <QDir>
-#include <QFileInfo>
 #include <QTextBrowser>
 #include <QToolBar>
 #include <QUrl>
@@ -32,22 +31,6 @@
 #include <memory>
 
 namespace ores::qt {
-
-namespace {
-
-QString find_repo_file(const QString& reference_path, const QString& filename) {
-    QDir dir(QFileInfo(reference_path).absolutePath());
-    for (int i = 0; i < 10; ++i) {
-        const QString candidate = dir.filePath(filename);
-        if (QFileInfo::exists(candidate))
-            return candidate;
-        if (!dir.cdUp())
-            break;
-    }
-    return {};
-}
-
-}
 
 OrgDocViewerWindow::OrgDocViewerWindow(const QString& referencePath, QWidget* parent)
     : QWidget(parent)

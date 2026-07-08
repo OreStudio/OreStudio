@@ -26,6 +26,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/OrgDocRenderer.hpp"
 #include "ores.qt/OrgDocViewerWindow.hpp"
+#include "ores.qt/RepoFileFinder.hpp"
 #include "ores.qt/TestScenarioResultsWriter.hpp"
 #include <QColor>
 #include <QDialogButtonBox>
@@ -38,6 +39,7 @@
 #include <QLabel>
 #include <QListWidget>
 #include <QMdiArea>
+#include <QRegularExpression>
 #include <QPlainTextEdit>
 #include <QProcess>
 #include <QPushButton>
@@ -73,22 +75,6 @@ find_heading(const orgmode::domain::document& doc, const std::string& title) {
 }
 
 /**
- * @brief Walk up from @p reference_path looking for @p filename at the
- * repo root. Empty if not found within a handful of levels.
- */
-QString find_repo_file(const QString& reference_path, const QString& filename) {
-    QDir dir(QFileInfo(reference_path).absolutePath());
-    for (int i = 0; i < 10; ++i) {
-        const QString candidate = dir.filePath(filename);
-        if (QFileInfo::exists(candidate))
-            return candidate;
-        if (!dir.cdUp())
-            break;
-    }
-    return {};
-}
-
-/**
  * @brief Look up a Field/Value table row by field name, across all of
  * @p heading's own tables (not its children's).
  */
@@ -100,6 +86,27 @@ QString find_field_value(const orgmode::domain::heading& heading, const std::str
         }
     }
     return {};
+}
+
+/**
+ * @brief Extract the id from a raw =[[id:UUID][text]]= (or bare
+ * =[[id:UUID]]=) cell value, or empty if it doesn't contain one.
+ */
+QString extract_link_id(const QString& cellValue) {
+    static const QRegularExpression re(R"(\[\[id:([^\]]+)\])");
+    const auto match = re.match(cellValue);
+    return match.hasMatch() ? match.captured(1) : QString();
+}
+
+/**
+ * @brief Find the =Verifies task=/=Parent story= link by field name
+ * rather than table-row position — a scenario doc's Scenario Info
+ * table happens to always list task before story today, but nothing
+ * enforces that order, and a future third link would silently shift
+ * =info->links= positionally.
+ */
+QString find_link_field_id(const orgmode::domain::heading& heading, const std::string& field) {
+    return extract_link_id(find_field_value(heading, field));
 }
 
 step_status parse_step_status(const QString& text) {
@@ -205,7 +212,7 @@ QaValidationRunnerWidget::QaValidationRunnerWidget(QWidget* parent) : QWidget(pa
         auto* browser = new QTextBrowser(tab);
         browser->setOpenLinks(false);
         connect(browser, &QTextBrowser::anchorClicked, this,
-            [this, browser](const QUrl& url) { followContextLink(url, browser); });
+            [this](const QUrl& url) { followContextLink(url); });
         tabLayout->addWidget(browser);
         tabWidget_->addTab(tab, tabTitle);
         return browser;
@@ -245,12 +252,8 @@ bool QaValidationRunnerWidget::loadScenario(const QString& path) {
     }
 
     scenarioPath_ = path;
-    taskId_.clear();
-    storyId_.clear();
-    if (!info->links.empty())
-        taskId_ = QString::fromStdString(info->links.front().target_id);
-    if (info->links.size() > 1)
-        storyId_ = QString::fromStdString(info->links[1].target_id);
+    taskId_ = find_link_field_id(*info, "Verifies task");
+    storyId_ = find_link_field_id(*info, "Parent story");
 
     titleLabel_->setText(QString::fromStdString(doc.find_keyword("title").value_or(path.toStdString())));
     const QString targetDialog = QString::fromStdString(doc.find_keyword("target_dialog").value_or(""));
@@ -265,6 +268,7 @@ bool QaValidationRunnerWidget::loadScenario(const QString& path) {
     // (a step's own *** Result child, once it's been run, would
     // otherwise be indistinguishable from a per-client grouping).
     const bool multi_client = !find_field_value(*info, "Clients").isEmpty();
+    ++loadGeneration_;
     steps_.clear();
     for (const auto& child : steps->children) {
         if (multi_client) {
@@ -332,6 +336,7 @@ void QaValidationRunnerWidget::openStepDetail(QListWidgetItem* item) {
     if (index < 0 || index >= static_cast<int>(steps_.size()))
         return;
     const auto& step = steps_[static_cast<std::size_t>(index)];
+    const int generation = loadGeneration_;
 
     if (!mdiArea_) {
         emit errorOccurred(tr("No MDI area available to open the step in."));
@@ -383,8 +388,12 @@ void QaValidationRunnerWidget::openStepDetail(QListWidgetItem* item) {
     // index is captured by value and re-validated at click time, not a
     // reference into steps_: the tester could load a different scenario
     // (reallocating/shrinking steps_) while this subwindow is still open.
-    auto apply = [this, index, notesEdit, subWindow](step_status status) {
-        if (index >= 0 && index < static_cast<int>(steps_.size())) {
+    // generation guards against the more insidious case — a *same-size*
+    // reload where index would still be in bounds but now refers to an
+    // entirely different scenario's step.
+    auto apply = [this, index, generation, notesEdit, subWindow](step_status status) {
+        if (generation == loadGeneration_ && index >= 0 &&
+            index < static_cast<int>(steps_.size())) {
             auto& s = steps_[static_cast<std::size_t>(index)];
             s.notes = notesEdit->toPlainText();
             s.status = status;
@@ -403,8 +412,8 @@ void QaValidationRunnerWidget::openStepDetail(QListWidgetItem* item) {
     // close/destroyed signal, which would risk running after the
     // widget tree (including notesEdit itself) has started tearing
     // down.
-    connect(notesEdit, &QPlainTextEdit::textChanged, this, [this, index, notesEdit]() {
-        if (index >= 0 && index < static_cast<int>(steps_.size()))
+    connect(notesEdit, &QPlainTextEdit::textChanged, this, [this, index, generation, notesEdit]() {
+        if (generation == loadGeneration_ && index >= 0 && index < static_cast<int>(steps_.size()))
             steps_[static_cast<std::size_t>(index)].notes = notesEdit->toPlainText();
     });
 
@@ -509,8 +518,7 @@ void QaValidationRunnerWidget::loadContextTab(const QString& taskId, const QStri
     renderIdInto(resolver.get(), taskId, taskBrowser_);
 }
 
-void QaValidationRunnerWidget::followContextLink(const QUrl& url, QTextBrowser* browser) {
-    Q_UNUSED(browser);
+void QaValidationRunnerWidget::followContextLink(const QUrl& url) {
     const QString target = url.toString();
     if (!target.startsWith("id:"))
         return;

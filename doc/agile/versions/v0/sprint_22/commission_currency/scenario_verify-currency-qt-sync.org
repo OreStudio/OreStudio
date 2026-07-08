@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 2D99B079-5133-4F1E-8D71-D8B223DAF1DC
+:END:
+#+title: Test Scenario: Verify currency Qt codegen sync
+#+description: Manual verification that all currency Qt-layer capabilities (flag handling, dynamic combos, version-nav, NATS staleness, CSV/XML, setting-gated generate, delete, cross-domain navigation) still work after the mechanical codegen sync.
+#+type: test_scenario
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:
+#+target_dialog: CurrencyDetailDialog
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:EA647CBC-18C7-4555-9A49-FBF55BC192FD][Sync Qt codegen for currency]] in [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:EA647CBC-18C7-4555-9A49-FBF55BC192FD][Sync Qt codegen for currency]] |
+| Parent story  | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]]   |
+| Target dialog | CurrencyDetailDialog                    |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** List window loads
+
+Reference Data > Currencies. Confirm the list loads, is sortable and
+paginated. Rounding Type / Monetary Nature / Market Tier columns
+render as plain text (badge rendering is a separate follow-up task,
+not in scope here).
+
+** Flag handling round-trips
+
+Open any currency's detail view. Click the flag icon; the flag
+selector dialog opens. Pick a different flag; confirm the button
+shows an orange border (unsaved-change indicator) and the inline
+flag icon next to the ISO code field updates live. Save, reopen,
+confirm the flag persisted. This exercises code fully rewritten this
+task (~180 lines of hand-rolled logic replaced by 3 one-line
+overrides) — the highest-risk area.
+
+** Dynamic combos populate and persist
+
+Rounding Type / Monetary Nature / Market Tier combos populate from
+the server (not empty, not stuck on "Loading…"). Change one, save,
+reopen; confirm it persisted.
+
+** Dynamic combo fetch-failure shows an error, not a silent empty combo
+
+Stop ores.refdata.service. Open a *new* currency detail dialog.
+Confirm the combos show a "Failed to load" placeholder and an error
+message appears (not a silently empty combo). Restart the service
+afterward.
+
+** Version navigation (first/prev/next/last/revert)
+
+Save a currency 2-3 times with different values. Open History, open
+a historical version. Click First/Previous/Next/Last; confirm the
+displayed data changes and the window title shows vN. Click Revert
+on a non-latest version; confirm the confirmation dialog shows the
+correct currency code and version number (this exact string was a
+bug fixed mid-review on the version-nav PR — verify it's not
+blank/garbled).
+
+** NATS staleness notification lands on a second client
+
+Requires a second running client instance (e.g. =compass client
+start --colour green=). Open the same currency's detail dialog in
+both instances. In one, edit and save. In the other (still showing
+old data), confirm a staleness indicator appears within a few
+seconds with no manual refresh — both on the open detail dialog and
+the list window.
+
+** CSV/XML export and XML import round-trip
+
+Currency list toolbar: Export CSV, Export XML — confirm files are
+written with sensible data. Import XML: re-import the exported file;
+confirm it round-trips without errors.
+
+** Setting-gated Generate actions (list and detail)
+
+Toggle system.synthetic_data_generation on. List window: click
+Generate, enter a count; confirm N synthetic currencies appear in
+blue (unsaved); save one, confirm it turns normal colour. Detail
+dialog (add mode): click Generate; confirm it fills the form with
+synthetic data. Toggle the setting off; confirm both Generate
+buttons disappear without restarting the client.
+
+** Delete removes the record
+
+Select a currency (a synthetic one from the Generate step works
+well) and click Delete. Confirm it deletes and history is preserved.
+This regresses a field-name bug (delete_currency_request.iso_code ->
+iso_codes) fixed as part of this task.
+
+** Cross-domain navigation opens the right auxiliary window
+
+Currency list toolbar: click Rounding, Monetary Natures, Market
+Tiers. Confirm each opens the corresponding auxiliary entity's list
+window (not currency's own).
+
+** New list-view columns — expected gap, not a regression
+
+Check column visibility for Spot Days, Deliverable, Day Basis, Base
+Precedence, Holiday Calendar. Expected: still missing —
+ClientCurrencyModel was intentionally kept hand-written this round
+(its synthetic-tracking feature has no template equivalent yet);
+confirm this matches expectations rather than filing it as a new
+bug. Tracked separately by task E7277F16.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

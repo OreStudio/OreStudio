@@ -24,6 +24,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from datetime import datetime
 from pathlib import Path
 
 PROTECTED_DBS = ("postgres", "template0", "template1")
@@ -577,8 +578,17 @@ def cmd_db_status(project_root, env):
 
     print(f"📦  Schema")
     print()
+    def _restored_rag(restored_at):
+        try:
+            dt = datetime.strptime(restored_at, "%Y-%m-%d %H:%M")
+        except (ValueError, TypeError):
+            return restored_at
+        age_hours = (datetime.now() - dt).total_seconds() / 3600
+        col = _green if age_hours < 4 else _yellow if age_hours < 24 else _red
+        return col(f"{restored_at}  ({age_hours:.0f}h ago)")
+
     print(f"    version   : {_cyan(info['schema_version'])}")
-    print(f"    restored  : {_cyan(info['restored_at'])}")
+    print(f"    restored  : {_restored_rag(info['restored_at'])}")
     print(f"    built from: {_cyan(info['git_commit'][:12] if info['git_commit'] else '?')}  ({info['git_date']})")
     print(f"    drift     : {drift_str}")
     if drift_warn:
@@ -632,6 +642,37 @@ def cmd_db_status(project_root, env):
             code, status, created = parts[0], parts[1], parts[2]
             status_str = _green(status) if status == "active" else _yellow(status)
             print(f"    {_cyan(code)}  [{status_str}]  created {created}")
+    print()
+
+    # ── Connections ───────────────────────────────────────────────────────────
+
+    conn_total = _query("SELECT count(*) FROM pg_stat_activity;")
+    conn_max = _query("SHOW max_connections;")
+    print(f"🔌  Connections")
+    print()
+    if conn_total is None or conn_max is None:
+        print(f"    {_yellow('? (could not read)')}")
+    else:
+        total, cap = int(conn_total), int(conn_max)
+        pct = (total / cap * 100) if cap else 0
+        col = _red if pct >= 85 else _yellow if pct >= 60 else _green
+        print(f"    total: {col(f'{total} / {cap}')}  ({pct:.0f}% used)")
+        by_env = _query(
+            "SELECT datname, count(*) FROM pg_stat_activity "
+            "WHERE datname IS NOT NULL GROUP BY datname "
+            "ORDER BY count(*) DESC;"
+        )
+        if by_env:
+            print(f"    by environment:")
+            for row in by_env.splitlines():
+                name, n = (row.split("|") + [""])[:2]
+                marker = _green(" ← this env") if name == db_name else ""
+                print(f"      {_cyan(f'{name:<26}')} {n:>4}{marker}")
+        if pct >= 85:
+            print(f"    {_red(f'⚠  Connection pool nearly exhausted ({pct:.0f}% used)')}")
+            print(f"    {_red('   consider stopping idle environments (compass services stop)')}")
+        elif pct >= 60:
+            print(f"    {_yellow(f'⚠  Connection usage elevated ({pct:.0f}% used)')}")
     print()
 
     # ── Counts ────────────────────────────────────────────────────────────────

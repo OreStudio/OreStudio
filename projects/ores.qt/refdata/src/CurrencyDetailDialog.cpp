@@ -780,7 +780,7 @@ void CurrencyDetailDialog::onGenerateClicked() {
 }
 
 void CurrencyDetailDialog::populateRoundingTypeCombo() {
-    BOOST_LOG_SEV(lg(), debug) << "Populating rounding type combo";
+    BOOST_LOG_SEV(lg(), debug) << "Populating rounding_type combo";
     populateDynamicCombo<refdata::domain::rounding_type>(
         ui_->roundingTypeCombo,
         this,
@@ -797,7 +797,7 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
 }
 
 void CurrencyDetailDialog::populateMonetaryNatureCombo() {
-    BOOST_LOG_SEV(lg(), debug) << "Populating monetary nature combo";
+    BOOST_LOG_SEV(lg(), debug) << "Populating monetary_nature combo";
     populateDynamicCombo<refdata::domain::monetary_nature>(
         ui_->monetaryNatureCombo,
         this,
@@ -814,7 +814,7 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
 }
 
 void CurrencyDetailDialog::populateMarketTierCombo() {
-    BOOST_LOG_SEV(lg(), debug) << "Populating market tier combo";
+    BOOST_LOG_SEV(lg(), debug) << "Populating market_tier combo";
     populateDynamicCombo<refdata::domain::currency_market_tier>(
         ui_->marketTierCombo,
         this,

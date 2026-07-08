@@ -8,7 +8,7 @@
 #+filetags: :synthetic-data-collections:sprint_22:v0:
 #+owner: marco
 #+branch: feature/vintage-guard
-#+pr:
+#+pr: 1467
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -138,7 +138,7 @@ and of the toolbar action, in a running Qt client.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1467][#1467]] | [synthetic] Vintage-availability guard for FX spot feeds |
 
 * Review
 

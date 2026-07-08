@@ -32,12 +32,12 @@ plan (task 6E0CD16E).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-08                               |
 
 * Acceptance
 
@@ -50,11 +50,67 @@ plan (task 6E0CD16E).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Investigated the base class first: =EntityController= already
+subscribes to =changed_event_class= and has a private
+=onNotificationReceived= slot that filters by event name and marks
+=listWindow()= stale generically — that half was never missing.
+=CurrencyController= doesn't override =listWindow()=, so it never used
+the base mechanism; instead it hand-rolled its own parallel
+=onNotificationReceived=, connected directly, which (a) duplicates the
+list-marking the base already does and (b) additionally iterates
+=managed_windows_= to mark open detail/history dialogs stale by
+=qobject_cast=-ing to the concrete =CurrencyDetailDialog=/
+=CurrencyHistoryDialog= types and calling their entity-specific
+=isoCode()=/=code()= accessors.
+
+Rather than regenerate that duplication, added a clean extension
+point to the *base* class: a new protected virtual
+=notifyOpenDialogs(const QStringList&)= hook, called from the base's
+existing =onNotificationReceived= right after the list-window
+marking. Default no-op. Generated controllers (gated by
+=changed_event_class=, already-existing flag) override it.
+
+The override needed a way to identify open dialogs generically without
+knowing their concrete type. =HistoryDialogBase= already had a virtual
+=code()= accessor (added earlier for exactly this purpose); added the
+symmetric =code()= to =DetailDialogBase= (default empty) and generated
+an override in the =detail_dialog= template returning the entity's key
+field as a =QString= via the existing =key_to_string_prefix=/=suffix=
+convention (works for both text and uuid keys). The generated
+=notifyOpenDialogs()= then iterates =managed_windows_=, qobject_casts
+each tracked widget to =DetailDialogBase*=/=HistoryDialogBase*=
+(generic — no concrete type needed), and calls =markAsStale()= on
+matches — same "details:"/"history:" key-prefix + entityIds-match
+semantics as currency's hand-written version, just against the base
+types instead of duplicating an =onNotificationReceived= slot.
+
+Verified by regenerating currency's =ores.cpp.qt= profile with
+=changed_event_class= flipped on and rebuilding
+=ores.qt.refdata.lib= for real (not just diffed): caught and fixed a
+real bug from the earlier version-nav PR in the process
+(=onRevertClicked='s confirmation string used the wrong mustache path,
+=domain_entity.key_field= instead of =domain_entity.qt.key_field=,
+rendering empty and breaking compilation) — replaced with a call to
+the newly-generated =code()= accessor, which is both correct and more
+generic (handles uuid keys too). =CurrencyController.cpp= and
+=CurrencyDetailDialog.cpp= (the two files this task's and the
+version-nav capability touch) compiled clean after the fix.
+=CurrencyHistoryDialog.cpp= and =CurrencyMdiWindow.cpp= still fail to
+compile when regenerated — pre-existing, unrelated drift (the
+=iso_code=/=iso_codes= singular/plural mismatch on the delete request,
+and currency's documented split history-protocol gap), tracked by the
+"Sync Qt codegen for currency" task, not this one. Discarded all
+regenerated currency files after verification; only the templates,
+=EntityController=/=DetailDialogBase= base-class additions, and
+currency's model flags are kept.
 
 * Notes
+
+=notifyOpenDialogs= generalises further than currency's hand-written
+mechanism: it works off the generic =DetailDialogBase=/
+=HistoryDialogBase= pointers rather than the concrete per-entity
+dialog types, so any future entity with =changed_event_class= gets
+correct dialog staleness-propagation with zero extra per-entity code.
 
 * PRs
 
@@ -69,3 +125,16 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Landed a protected virtual =notifyOpenDialogs()= hook on
+=EntityController=, called after list-window staleness marking;
+generated controllers (gated by =changed_event_class=) override it to
+propagate staleness to open detail/history dialogs generically via a
+new =DetailDialogBase::code()= accessor (symmetric to the existing
+=HistoryDialogBase::code()=), generated by the =detail_dialog=
+template. Currency flipped on as first consumer. Verified by a real
+regenerate + rebuild (not just diff) of =CurrencyController.cpp=/
+=CurrencyDetailDialog.cpp=, which also caught and fixed a live bug
+from the previous version-nav PR. 5 of 6 prerequisites for "Sync Qt
+codegen for currency" (EA647CBC) are now DONE — only the flag/combo
+reconciliation task remains.

@@ -20,8 +20,10 @@
 #include "ores.qt/BookDetailDialog.hpp"
 #include "ores.qt/BadgeComboHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
@@ -71,6 +73,10 @@ ProvenanceWidget* BookDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
 }
 
+QString BookDetailDialog::code() const {
+    return QString::fromStdString(book_.name);
+}
+
 void BookDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
@@ -111,8 +117,8 @@ void BookDetailDialog::setupConnections() {
 
 void BookDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
-    populateBookStatus();
-    populateRegulatoryBookType();
+    populateBookStatusCombo();
+    populateRegulatoryBookTypeCombo();
     populateLedgerCcyCombo();
 }
 
@@ -160,82 +166,42 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
     ui_->deleteButton->setVisible(!readOnly);
 }
 
-void BookDetailDialog::populateBookStatus() {
-    if (!clientManager_ || !clientManager_->isConnected())
-        return;
-    if (findChild<QFutureWatcherBase*>("bookStatusFetchWatcher"))
-        return;
-
-    QPointer<BookDetailDialog> self = this;
-    auto* cm = clientManager_;
-    QFuture<std::vector<refdata::domain::book_status>> future =
-        QtConcurrent::run([cm]() { return fetch_book_statuses(cm); });
-
-    auto* watcher = new QFutureWatcher<std::vector<refdata::domain::book_status>>(this);
-    watcher->setObjectName("bookStatusFetchWatcher");
-    connect(watcher,
-            &QFutureWatcher<std::vector<refdata::domain::book_status>>::finished,
-            this,
-            [self, watcher]() {
-                auto items = watcher->result();
-                watcher->deleteLater();
-                if (!self)
-                    return;
-
-                // Server returns items already ordered (e.g. by display_order for a
-                // lookup table); not re-sorted here.
-                const auto current = self->ui_->bookStatusCombo->currentText();
-                self->ui_->bookStatusCombo->clear();
-                for (const auto& item : items)
-                    self->ui_->bookStatusCombo->addItem(QString::fromStdString(item.code));
-                const auto to_select =
-                    !current.isEmpty() ? current : QString::fromStdString(self->book_.book_status);
-                if (!to_select.isEmpty())
-                    self->ui_->bookStatusCombo->setCurrentText(to_select);
-                setup_badge_combo(
-                    self, self->ui_->bookStatusCombo, self->badgeCache(), "book_status");
-            });
-    watcher->setFuture(future);
+void BookDetailDialog::populateBookStatusCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating book_status combo";
+    populateDynamicCombo<refdata::domain::book_status>(
+        ui_->bookStatusCombo,
+        this,
+        clientManager_,
+        &fetch_book_statuses,
+        "bookStatusWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        [this]() { return QString::fromStdString(book_.book_status); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load book statuses: %1").arg(error));
+        },
+        [this]() { setup_badge_combo(this, ui_->bookStatusCombo, badgeCache(), "book_status"); });
 }
-void BookDetailDialog::populateRegulatoryBookType() {
-    if (!clientManager_ || !clientManager_->isConnected())
-        return;
-    if (findChild<QFutureWatcherBase*>("regulatoryBookTypeFetchWatcher"))
-        return;
-
-    QPointer<BookDetailDialog> self = this;
-    auto* cm = clientManager_;
-    QFuture<std::vector<refdata::domain::regulatory_book_type>> future =
-        QtConcurrent::run([cm]() { return fetch_regulatory_book_types(cm); });
-
-    auto* watcher = new QFutureWatcher<std::vector<refdata::domain::regulatory_book_type>>(this);
-    watcher->setObjectName("regulatoryBookTypeFetchWatcher");
-    connect(watcher,
-            &QFutureWatcher<std::vector<refdata::domain::regulatory_book_type>>::finished,
-            this,
-            [self, watcher]() {
-                auto items = watcher->result();
-                watcher->deleteLater();
-                if (!self)
-                    return;
-
-                // Server returns items already ordered (e.g. by display_order for a
-                // lookup table); not re-sorted here.
-                const auto current = self->ui_->regulatoryBookTypeCombo->currentText();
-                self->ui_->regulatoryBookTypeCombo->clear();
-                for (const auto& item : items)
-                    self->ui_->regulatoryBookTypeCombo->addItem(QString::fromStdString(item.code));
-                const auto to_select = !current.isEmpty() ?
-                                           current :
-                                           QString::fromStdString(self->book_.regulatory_book_type);
-                if (!to_select.isEmpty())
-                    self->ui_->regulatoryBookTypeCombo->setCurrentText(to_select);
-                setup_badge_combo(self,
-                                  self->ui_->regulatoryBookTypeCombo,
-                                  self->badgeCache(),
-                                  "regulatory_book_type");
-            });
-    watcher->setFuture(future);
+void BookDetailDialog::populateRegulatoryBookTypeCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating regulatory_book_type combo";
+    populateDynamicCombo<refdata::domain::regulatory_book_type>(
+        ui_->regulatoryBookTypeCombo,
+        this,
+        clientManager_,
+        &fetch_regulatory_book_types,
+        "regulatoryBookTypeWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        [this]() { return QString::fromStdString(book_.regulatory_book_type); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load regulatory book types: %1").arg(error));
+        },
+        [this]() {
+            setup_badge_combo(
+                this, ui_->regulatoryBookTypeCombo, badgeCache(), "regulatory_book_type");
+        });
 }
 void BookDetailDialog::updateUiFromBook() {
     ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(book_.id)));

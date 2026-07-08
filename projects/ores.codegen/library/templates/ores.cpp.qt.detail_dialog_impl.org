@@ -662,7 +662,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}
         [this]() { return QString::fromStdString({{domain_entity.qt.item_var}}_.{{field}}); },
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load {{combo_label}}: %1").arg(error));
-        });
+        }{{#badge_key}},
+        [this]() { setup_badge_combo(this, ui_->{{widget}}, badgeCache(), "{{badge_key}}"); }{{/badge_key}});
 }
 {{/combo_domain_type}}
 {{^combo_domain_type}}

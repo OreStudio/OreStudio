@@ -30,6 +30,7 @@ The full template source. Edit here and re-tangle with
 
 #include <atomic>
 #include <string>
+#include <unordered_set>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 {{#has_tenant_id}}
 #include "ores.utility/uuid/tenant_id.hpp"

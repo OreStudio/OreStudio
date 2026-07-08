@@ -438,6 +438,8 @@ version-navigation UI that consumes this richer shape.
 :has_version_navigation:      true
 :version_history_include:     ores.refdata.api/messaging/currency_history_protocol.hpp
 :version_history_type:        refdata::messaging::currency_version_history
+:changed_event_class:         refdata::eventing::currency_changed_event
+:changed_event_include:       ores.refdata.api/eventing/currency_changed_event.hpp
 :END:
 
 *** Columns (Qt model)

@@ -86,6 +86,10 @@ ProvenanceWidget* {{domain_entity.entity_pascal}}DetailDialog::provenanceWidget(
     return ui_->provenanceWidget;
 }
 
+QString {{domain_entity.entity_pascal}}DetailDialog::code() const {
+    return QString::fromStdString({{domain_entity.qt.key_to_string_prefix}}{{domain_entity.qt.item_var}}_.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}});
+}
+
 void {{domain_entity.entity_pascal}}DetailDialog::setupUi() {
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
@@ -515,7 +519,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onRevertClicked() {
         tr("Revert {{domain_entity.entity_title}}"),
         tr("Are you sure you want to revert '%1' to version %2?\n\n"
            "This will create a new version with the data from version %2.")
-            .arg(QString::fromStdString({{domain_entity.qt.item_var}}_.{{domain_entity.key_field}}))
+            .arg(code())
             .arg(historicalVersion_),
         QMessageBox::Yes | QMessageBox::No);
 

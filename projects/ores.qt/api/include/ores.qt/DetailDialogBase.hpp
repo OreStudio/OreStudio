@@ -96,6 +96,14 @@ public:
     virtual void markAsStale() {}
 
     /**
+     * @brief Returns the entity identifier displayed in this dialog;
+     * used by controllers to filter notifications.
+     */
+    [[nodiscard]] virtual QString code() const {
+        return {};
+    }
+
+    /**
      * @brief Returns true if the user has already confirmed closing this dialog.
      *
      * Set by onCloseClicked() after the user acknowledges unsaved changes.

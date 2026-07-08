@@ -238,6 +238,23 @@ protected:
     }
 
     /**
+     * @brief Propagates a change notification to any open detail/history
+     * dialogs for the affected entities.
+     *
+     * Called by the base class's onNotificationReceived() after marking the
+     * list window stale. The base does nothing here — it has no visibility
+     * into the entity-specific dialog types tracked in managed_windows_.
+     * Override in derived classes to qobject_cast each tracked window's
+     * widget and call markAsStale() on the ones matching entityIds (or all,
+     * if entityIds is empty).
+     *
+     * @param entityIds IDs of the changed entities, or empty for "all".
+     */
+    virtual void notifyOpenDialogs(const QStringList& entityIds) {
+        (void)entityIds;
+    }
+
+    /**
      * @brief Reloads the list window.
      * Must be implemented by derived classes.
      */

@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: AA3A7511-3E3D-4D5A-A335-6B80FB1E69A5
+:END:
+#+title: Task: Spot Relative and End of Month should be Yes/No badges
+#+description: Currency Pair Conventions' Spot Relative and End of Month columns/fields render as plain true/false text; use the Yes/No badge widget (same as Currency Pairs' Deliverable) in both list and detail.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Currency Pair Conventions' =Spot Relative= and =End Of Month=
+columns/fields render as plain =true=/=false= text. Use the Yes/No
+badge widget (same one introduced for Currency Pairs' =Deliverable=
+in [[id:44F95CF2-738B-49C8-8EF4-19FEF0833A2A][Deliverable column should use a Yes/No badge]]) in both the list
+and the detail dialog.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- [ ] =Spot Relative= renders as a Yes/No badge in both list and
+  detail.
+- [ ] =End Of Month= renders as a Yes/No badge in both list and
+  detail.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 1F43998E-BD20-4CBC-8C05-509F1ABF0E0C
+:END:
+#+title: Task: Model the calendar entity for codegen
+#+description: Model a calendar domain entity enumerating valid ORE/QuantLib calendar codes (name, optional flag image, etc.) ready to drive ores.codegen.entity.
+#+type: task
+#+level: s1
+#+filetags: :calendar-reference-data:next:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Model a =calendar= domain entity in =ores.refdata= enumerating
+valid ORE/QuantLib calendar codes (e.g. =TARGET=, =UnitedStates=,
+=UnitedKingdom=, =Japan=, ...), with a proper primary key (the
+calendar code itself, text), a display name, and an optional flag
+image reference — ready to drive =ores.codegen.entity=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- [ ] A =calendar= domain_entity org model exists with primary key,
+  columns (name, optional image_id), following the codebase's
+  established entity-modeling conventions.
+- [ ] Generated via =ores.codegen.entity= (domain/SQL/repository/
+  service/messaging).
+- [ ] Seeded with the full set of calendar codes already referenced as
+  free text today (TARGET, UnitedStates, UnitedKingdom, Japan,
+  Switzerland, Australia, NewZealand, Canada, Norway, Sweden, Denmark,
+  China, HongKong, Singapore, SouthAfrica, India, SouthKorea, Mexico,
+  Brazil, ...).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

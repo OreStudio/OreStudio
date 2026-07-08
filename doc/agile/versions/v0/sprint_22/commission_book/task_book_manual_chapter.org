@@ -8,7 +8,7 @@
 #+filetags: :product:refdata:commissioning:book:manual:sprint_22:v0:commission_book:
 #+owner: marco
 #+branch: feature/book-manual-chapter-task
-#+pr:
+#+pr: 1466
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1466][#1466]] | [doc,ores.qt] Books manual chapter and domain knowledge cluster |
 
 * Review
 

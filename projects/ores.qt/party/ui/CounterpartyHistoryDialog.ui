@@ -298,6 +298,41 @@
            </item>
           </layout>
          </widget>
+         <widget class="QWidget" name="compositeTab">
+          <attribute name="title">
+           <string>Composite (as of this version)</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="compositeTabLayout">
+           <item>
+            <widget class="QLabel" name="compositeIdentifiersLabel">
+             <property name="text">
+              <string>Identifiers:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QListWidget" name="compositeIdentifiersListWidget">
+             <property name="editTriggers">
+              <set>QAbstractItemView::NoEditTriggers</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="compositeContactsLabel">
+             <property name="text">
+              <string>Contact information:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QListWidget" name="compositeContactsListWidget">
+             <property name="editTriggers">
+              <set>QAbstractItemView::NoEditTriggers</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </widget>
        </item>
       </layout>

@@ -149,7 +149,7 @@ public:
      * parent version's own [valid_from, valid_to) window.
      */
     std::vector<domain::party_identifier>
-    list_party_identifiers_by_party_as_of(const std::string& party_id,
+    list_party_identifiers_by_party_id_as_of(const std::string& party_id,
                                          std::chrono::system_clock::time_point valid_from_bound,
                                          std::chrono::system_clock::time_point valid_to_bound);
 

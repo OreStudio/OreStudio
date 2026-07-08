@@ -7,43 +7,83 @@
 #+level: s1
 #+filetags: :composite_entity:versioning:qt:implement-temporal-composite-entity-versioning:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-composite-versioning-architecture-doc
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-07
 #+updated: 2026-07-07
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Extend the party/counterparty History dialog with a "Composite (as of
+this version)" tab showing the identifiers and contact information
+that composed the entity as of a selected historical version, reaching
+all the way through NATS to the already-proven repository/service
+layer from the previous task.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-07                               |
+| Now          | Implemented and building cleanly; awaiting the author's live click-through in the running Qt client. |
+| Waiting on   | Visual confirmation from the author (party + counterparty history dialogs, multiple version rows). |
+| Next         | Close once confirmed; fix anything found. |
+| Last touched | 2026-07-08                               |
 
 * Acceptance
 
--
+- New NATS message pair (=get_party_composite_as_of_request/response=,
+  =get_counterparty_composite_as_of_request/response=) reaches the
+  already-proven repository/service as-of methods and returns the
+  parent + its identifiers + its contacts as of a given version.
+- =PartyHistoryDialog=/=CounterpartyHistoryDialog= gain a "Composite
+  (as of this version)" tab, populated whenever a version row is
+  selected, listing identifiers and contacts as they stood then.
+- Builds cleanly end to end (refdata core lib, Qt party lib, full
+  build, controller/refdata services, Qt client all rebuilt).
+- Confirmed live in the running client (pending).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added one hand-written composite NATS message per parent (not a
+generic per-child message) since the Qt dialog needs "parent + all its
+children as of a version" in one round trip, not separate calls per
+child type — the handler internally reuses the exact
+=get_<entity>_at_version=/=list_<entity>_by_<fk>_as_of= service calls
+proven in the previous task. Window end for the requested version is
+derived by fetching version+1 and using its =recorded_at= (windows are
+contiguous by construction); the current/latest version's still-open
+end is bounded with a safely-far-future instant, same approach as the
+proof test in the previous task.
+
+Wired: protocol structs (=party_protocol.hpp=/=counterparty_protocol.hpp=),
+handler methods (=party_handler::composite_as_of=/
+=counterparty_handler::composite_as_of=), registrar subscriptions, and
+the Qt side — a new tab in each history dialog's =.ui=, populated via
+the existing generic =runHistoryRequest= async helper (already used
+for =loadHistory=), triggered from =displayFullDetails= (already the
+hook point for "a version row was selected").
 
 * Notes
+
+Did not attempt a raw live NATS round-trip test outside the Qt client
+(the handler requires JWT auth via =make_request_context=, and faking
+that from a shell/CLI script for a one-off check wasn't worth the
+detour) — instead relied on: (1) the underlying repository/service
+calls already being proven correct with real data in the previous
+task, (2) clean compilation of the handler/registrar wiring (which
+would fail to compile if the message types weren't properly
+reflectable or the service signatures didn't match), and (3) a full
+rebuild of every affected binary (refdata core lib, controller
+service, refdata service, Qt client) succeeding. Live visual
+confirmation in the running client is the remaining verification step.
 
 * PRs
 

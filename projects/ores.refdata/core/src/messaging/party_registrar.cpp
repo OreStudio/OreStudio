@@ -56,6 +56,10 @@ register_party_handlers(ores::nats::service::client& nats,
         get_party_hierarchy_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->hierarchy(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        get_party_composite_as_of_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->composite_as_of(std::move(msg)); }));
     return subs;
 }
 

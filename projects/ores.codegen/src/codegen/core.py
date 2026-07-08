@@ -2245,6 +2245,34 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['has_static_combo_fields'] = any(
                 f.get('type') == 'static_combo' for f in detail_fields
             )
+            # Deduplicated <customwidgets> entries for any promoted combo
+            # widget class a detail field resolved to above (e.g. every
+            # currency-flag combo needs the same OreCurrencyComboBox
+            # registration once, however many currency fields the entity
+            # has). Computed here, not in org_loader.py: it depends on
+            # combo_widget_class values that is_flagged_combo/is_dynamic_combo
+            # handling above defaults in, which runs after org_loader.py.
+            seen_widget_classes = set()
+            combo_customs = []
+            for f in detail_fields:
+                cls = f.get('combo_widget_class')
+                if not cls or cls in seen_widget_classes:
+                    continue
+                seen_widget_classes.add(cls)
+                combo_customs.append({
+                    'class': cls,
+                    'extends': f.get('combo_widget_extends', 'QComboBox'),
+                    'header': f.get('combo_widget_header', ''),
+                })
+            if combo_customs:
+                qt['combo_widget_customs'] = combo_customs
+            # Whether any static_combo detail field renders its items as
+            # badges (via the badge system) — gates BadgeCache wiring into
+            # the detail dialog itself (has_badge_columns only wires it
+            # into the list/MDI window).
+            qt['has_combo_badge_source'] = any(
+                f.get('badge_key') for f in detail_fields if f.get('type') == 'static_combo'
+            )
             qt['has_uuid_detail_fields'] = any(
                 f.get('is_uuid') or f.get('is_optional_uuid') for f in detail_fields
             )

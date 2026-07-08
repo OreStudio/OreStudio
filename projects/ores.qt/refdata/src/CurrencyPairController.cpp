@@ -155,6 +155,7 @@ void CurrencyPairController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void CurrencyPairController::onShowHistory(const refdata::domain::currency_pair& pair) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << pair.pair_code;
     showHistoryWindow(QString::fromStdString(pair.pair_code));
@@ -322,6 +323,7 @@ void CurrencyPairController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Currency Pair History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);

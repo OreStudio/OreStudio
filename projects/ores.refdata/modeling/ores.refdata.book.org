@@ -308,14 +308,14 @@ Basel III/IV classification.
 
 *** Detail fields
 
-| field           | label           | widget            | type          | is_key | is_required | placeholder                 | references_entity | combo_values                              | badge_key   |
-|-----------------+-----------------+-------------------+---------------+--------+-------------+------------------------------+--------------------+--------------------------------------------+-------------|
-| id              | Id              | idEdit            | line_edit     | true   | true        | Book id                     |                    |                                            |             |
-| name            | Name            | nameEdit          | line_edit     |        | true        | Enter book name              |                    |                                            |             |
-| ledger_ccy      | Ledger Currency | ledgerCcyEdit     | dynamic_combo |        |             |                              | currency           |                                            |             |
-| gl_account_ref  | GL Account Ref  | glAccountRefEdit  | line_edit     |        |             | Enter GL account reference   |                    |                                            |             |
-| cost_center     | Cost Center     | costCenterEdit    | line_edit     |        |             | Enter cost center            |                    |                                            |             |
-| book_status     | Status          | bookStatusCombo   | static_combo  |        |             |                              |                    | Active,Inactive,Closed,Frozen,Pending      | book_status |
+| field           | label           | widget            | type          | is_key | is_required | placeholder                 | flag_source | combo_values                              | badge_key   |
+|-----------------+-----------------+-------------------+---------------+--------+-------------+------------------------------+--------------+--------------------------------------------+-------------|
+| id              | Id              | idEdit            | line_edit     | true   | true        | Book id                     |              |                                            |             |
+| name            | Name            | nameEdit          | line_edit     |        | true        | Enter book name              |              |                                            |             |
+| ledger_ccy      | Ledger Currency | ledgerCcyEdit     | flagged_combo |        |             |                              | currency     |                                            |             |
+| gl_account_ref  | GL Account Ref  | glAccountRefEdit  | line_edit     |        |             | Enter GL account reference   |              |                                            |             |
+| cost_center     | Cost Center     | costCenterEdit    | line_edit     |        |             | Enter cost center            |              |                                            |             |
+| book_status     | Status          | bookStatusCombo   | static_combo  |        |             |                              |              | Active,Inactive,Closed,Frozen,Pending      | book_status |
 | is_trading_book | Trading Book    | isTradingBookCheck | check_box     |        |             |                              |                    |                                            |             |
 
 *** Columns (Qt model)

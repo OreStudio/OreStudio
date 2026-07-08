@@ -266,6 +266,21 @@ void {{domain_entity.entity_pascal}}DetailDialog::setClientManager(ClientManager
 }
 {{#domain_entity.qt.detail_fields}}
 {{#is_flagged_combo}}
+{{#combo_helper}}
+
+void {{domain_entity.entity_pascal}}DetailDialog::populate{{field_pascal}}Combo() {
+    {{combo_helper}}(ui_->{{widget}}, this, clientManager_, imageCache(), [this]() {
+{{#is_optional_string}}
+        const auto& v = {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}};
+        return v ? QString::fromStdString(*v) : QString();
+{{/is_optional_string}}
+{{^is_optional_string}}
+        return QString::fromStdString({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
+{{/is_optional_string}}
+    });
+}
+{{/combo_helper}}
+{{^combo_helper}}
 
 void {{domain_entity.entity_pascal}}DetailDialog::populate{{field_pascal}}Combo() {
     if (!clientManager_ || !clientManager_->isConnected())
@@ -315,6 +330,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{field_pascal}}Combo(
     auto* cm = clientManager_;
     watcher->setFuture(QtConcurrent::run([cm]() { return {{combo_fetch}}(cm); }));
 }
+{{/combo_helper}}
 {{/is_flagged_combo}}
 {{/domain_entity.qt.detail_fields}}
 

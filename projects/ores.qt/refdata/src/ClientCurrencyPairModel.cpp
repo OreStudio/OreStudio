@@ -300,6 +300,7 @@ const refdata::domain::currency_pair* ClientCurrencyPairModel::getPair(int row) 
     return &pairs_[idx];
 }
 
+
 QVariant ClientCurrencyPairModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;

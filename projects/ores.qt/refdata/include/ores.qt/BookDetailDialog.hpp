@@ -23,10 +23,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include <vector>
-
 
 namespace Ui {
 class BookDetailDialog;
@@ -100,7 +100,8 @@ private:
     void updateSaveButtonState();
     bool validateInput();
 
-    void populateLedgerCcy();
+
+    void populateLedgerCcyCombo();
 
 
     Ui::BookDetailDialog* ui_;

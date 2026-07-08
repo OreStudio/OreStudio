@@ -94,7 +94,7 @@
            </widget>
 {{/is_dynamic_combo}}
 {{#is_flagged_combo}}
-           <widget class="QComboBox" name="{{widget}}">
+           <widget class="{{#combo_widget_class}}{{combo_widget_class}}{{/combo_widget_class}}{{^combo_widget_class}}QComboBox{{/combo_widget_class}}" name="{{widget}}">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>

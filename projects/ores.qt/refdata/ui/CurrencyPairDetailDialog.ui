@@ -50,6 +50,9 @@
             <property name="placeholderText">
              <string>e.g. EUR/USD</string>
             </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="1" column="0">
@@ -60,7 +63,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QComboBox" name="baseCurrencyCombo">
+           <widget class="ores::qt::OreCurrencyComboBox" name="baseCurrencyCombo">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
@@ -74,7 +77,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QComboBox" name="quoteCurrencyCombo">
+           <widget class="ores::qt::OreCurrencyComboBox" name="quoteCurrencyCombo">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
@@ -102,7 +105,7 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QComboBox" name="settlementCurrencyCombo">
+           <widget class="ores::qt::OreCurrencyComboBox" name="settlementCurrencyCombo">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
@@ -212,6 +215,11 @@
    <class>ores::qt::ProvenanceWidget</class>
    <extends>QWidget</extends>
    <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>ores::qt::OreCurrencyComboBox</class>
+   <extends>QComboBox</extends>
+   <header>ores.qt/OreCurrencyComboBox.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

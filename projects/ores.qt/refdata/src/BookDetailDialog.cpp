@@ -114,8 +114,14 @@ void BookDetailDialog::setupConnections() {
 
 void BookDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
-    populateLedgerCcy();
     setup_badge_combo(this, ui_->bookStatusCombo, badgeCache(), "book_status");
+    populateLedgerCcyCombo();
+}
+
+void BookDetailDialog::populateLedgerCcyCombo() {
+    setup_currency_combo(ui_->ledgerCcyEdit, this, clientManager_, imageCache(), [this]() {
+        return QString::fromStdString(book_.ledger_ccy);
+    });
 }
 
 void BookDetailDialog::setUsername(const std::string& username) {
@@ -155,15 +161,14 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
     ui_->deleteButton->setVisible(!readOnly);
 }
 
-void BookDetailDialog::populateLedgerCcy() {
-    setup_currency_combo(ui_->ledgerCcyEdit, this, clientManager_, imageCache(), [this]() {
-        return QString::fromStdString(book_.ledger_ccy);
-    });
-}
 void BookDetailDialog::updateUiFromBook() {
     ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(book_.id)));
     ui_->nameEdit->setText(QString::fromStdString(book_.name));
-    ui_->ledgerCcyEdit->setCurrentText(QString::fromStdString(book_.ledger_ccy));
+    {
+        const auto val = QString::fromStdString(book_.ledger_ccy);
+        const int idx = ui_->ledgerCcyEdit->findText(val);
+        ui_->ledgerCcyEdit->setCurrentIndex(idx);
+    }
     ui_->glAccountRefEdit->setText(QString::fromStdString(book_.gl_account_ref));
     ui_->costCenterEdit->setText(QString::fromStdString(book_.cost_center));
     {

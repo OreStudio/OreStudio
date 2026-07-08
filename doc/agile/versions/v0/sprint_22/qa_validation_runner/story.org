@@ -148,6 +148,29 @@ how the Qt panel surfaces it without duplicating compass's data model.
   the =ores.orgmode= component from the prerequisite story in this
   epic, so the parsing investment is made once and shared with
   =ores.shell= and anything else that needs it.
+- The panel lives in =ores.qt.admin='s =AdminPlugin= (contributing
+  =System > Testing= via =setup_menus()=), not hardcoded into
+  =MainWindow= — it's an administrative/testing tool, the same kind of
+  feature as =System > Configuration=/=Administration=.
+- Visibility is a runtime system setting
+  (=system.qa_validation_runner_enabled=), not a compile-time
+  =#ifdef=: a fleet-wide manual-testing tool shouldn't be stripped from
+  release builds, and whether it's available is an
+  operator/deployment decision. Required widening
+  =shared_menus_context= with =main_window=/=mdi_area=/=client_manager=
+  (already constructed before =setup_menus()= runs) since this is the
+  first plugin feature that needs to work *before* login — narrowing
+  the pre-login gate for that surfaced a separate pre-existing gap
+  (=System > Configuration=/=Administration= were never independently
+  login-gated, only protected by the old blanket =System=-menu
+  disable), fixed alongside it.
+- Each scenario step is its own org heading (not a bullet checklist)
+  with its own =*** Result= child heading, not one aggregate results
+  table — steps need per-item PASS/FAIL/PENDING/notes, and a heading
+  gives each step a natural place to carry both its instructions and
+  its own result. The panel is a regular MDI window (via
+  =DetachableMdiSubWindow=), not a dock, since testers need to move it
+  around freely while operating another dialog under test.
 
 * Out of scope
 

@@ -69,6 +69,7 @@ target_link_libraries(${lib_target_name}
         ores.trading.api.lib
         ores.workspace.api.lib
         ores.variability.api.lib
+        ores.orgmode.lib
         ores.logging.lib
         ores.utility.lib
         ores.platform.lib

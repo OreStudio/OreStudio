@@ -49,7 +49,17 @@ set(parse_src
 set(hierarchy_src
     "${ORES_QT_API_DIR}/src/HierarchyModelBuilder.cpp")
 
-add_executable(${tests_target_name} ${files} ${parse_src} ${hierarchy_src})
+# OrgDocRenderer/TestScenarioResultsWriter/EnvironmentMetadata only need
+# Qt6::Core (QString, QRegularExpression, QFile, QProcess, QDateTime) — same
+# headless-friendly reasoning as parse_src/hierarchy_src above, so they're
+# compiled in directly rather than pulling the full ores.qt.api.lib (Widgets,
+# display environment).
+set(orgmode_src
+    "${ORES_QT_API_DIR}/src/OrgDocRenderer.cpp"
+    "${ORES_QT_API_DIR}/src/TestScenarioResultsWriter.cpp"
+    "${ORES_QT_API_DIR}/src/EnvironmentMetadata.cpp")
+
+add_executable(${tests_target_name} ${files} ${parse_src} ${hierarchy_src} ${orgmode_src})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 
@@ -59,11 +69,13 @@ target_include_directories(${tests_target_name}
 target_link_libraries(${tests_target_name}
     PRIVATE
         ores.trading.api.lib
+        ores.orgmode.lib
         ores.logging.lib
         ores.utility.lib
         ores.testing.lib
         Catch2::Catch2
         Qt6::Gui
+        Qt6::Core
         ${CMAKE_THREAD_LIBS_INIT})
 
 add_custom_target(test_${tests_target_name}

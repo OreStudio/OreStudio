@@ -22,11 +22,23 @@ This page documents a test scenario verifying [[id:{{parent_id}}][{{parent_title
 | Verifies task | [[id:{{parent_id}}][{{parent_title}}]] |
 | Parent story  | [[id:{{story_id}}][{{story_title}}]]   |
 | Target dialog | (Qt dialog class under test, if any.)   |
+| Clients       | (Leave empty for a single client. For a scenario that needs several running clients at once — e.g. checking a NATS notification lands on a second instance — list the instance colours/labels here, e.g. "blue, red".) |
 | State         | {{state}}                               |
 
 * Steps
 
 - [ ] (First manual step the tester should perform.)
+
+# For a multi-client scenario (Clients field above is non-empty),
+# replace the flat list above with one sub-heading per client and that
+# client's own steps underneath instead, e.g.:
+#
+#   ** blue
+#   - [ ] Open the counterparty lookup and search
+#   ** red
+#   - [ ] Confirm the notification arrived and the list refreshed
+#
+# Single-client scenarios (the common case) keep the flat list above.
 
 * Results
 

@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <memory>
 
@@ -47,9 +48,12 @@ using namespace ores::logging;
  * @brief NATS handler for market feed config start/stop control messages.
  *
  * These are internal control-plane messages: no JWT auth or DB context is
- * required. The handler delegates the full multi-feed lifecycle to
- * feed_controller — keyed by source_name, with the market series resolved
- * per feed inside the controller (not pre-resolved at startup).
+ * required to start/stop/list a feed. The handler delegates the full
+ * multi-feed lifecycle to feed_controller — keyed by source_name, with the
+ * market series resolved per feed inside the controller (not pre-resolved at
+ * startup). start()/validate() do forward the caller's bearer token (if any,
+ * via X-Delegated-Authorization) so the vintage-availability check runs in
+ * the caller's own tenant/party context rather than this service's.
  */
 class market_feed_config_handler {
 public:
@@ -76,6 +80,7 @@ public:
 
         start_market_feed_config_response resp;
         std::string error_detail;
+        const auto bearer = ores::nats::service::extract_bearer(msg);
         const auto result = ctrl_->start(req->ore_key,
                                          req->source_name,
                                          req->gmm_means,
@@ -86,7 +91,8 @@ public:
                                          req->process_type,
                                          req->vintage_source,
                                          req->vintage_date,
-                                         &error_detail);
+                                         &error_detail,
+                                         bearer);
 
         const std::string id = req->source_name.empty() ? req->ore_key : req->source_name;
         using sr = feed_controller::start_result;
@@ -133,8 +139,9 @@ public:
         validate_market_feed_config_response resp;
         resp.success = true;
         std::string error_detail;
-        resp.available =
-            ctrl_->validate(req->ore_key, req->vintage_source, req->vintage_date, error_detail);
+        const auto bearer = ores::nats::service::extract_bearer(msg);
+        resp.available = ctrl_->validate(
+            req->ore_key, req->vintage_source, req->vintage_date, error_detail, bearer);
         resp.message = resp.available ? "Vintage data available" : error_detail;
         reply(nats_, msg, resp);
     }

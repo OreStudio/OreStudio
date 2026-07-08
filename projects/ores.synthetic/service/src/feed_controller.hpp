@@ -101,6 +101,12 @@ public:
      * started; a missing vintage returns vintage_data_missing with @p
      * error_detail set to an actionable message, and no feed is spawned. An
      * empty vintage_source skips the check (e.g. ad-hoc/default requests).
+     *
+     * @p caller_bearer_token, when non-empty, is forwarded as
+     * X-Delegated-Authorization on the vintage lookup so it runs in the
+     * calling user's tenant/party context — market_observation is
+     * tenant-scoped (RLS), and this service's own service-account token is
+     * bound to the system tenant, which cannot see another tenant's data.
      */
     start_result start(const std::string& ore_key,
                        const std::string& source_name,
@@ -112,10 +118,12 @@ public:
                        const std::string& process_type = "geometric",
                        const std::string& vintage_source = {},
                        const std::string& vintage_date = {},
-                       std::string* error_detail = nullptr) {
+                       std::string* error_detail = nullptr,
+                       const std::string& caller_bearer_token = {}) {
         if (!vintage_source.empty()) {
             std::string detail;
-            if (!vintage_data_available(ore_key, vintage_source, vintage_date, detail)) {
+            if (!vintage_data_available(
+                    ore_key, vintage_source, vintage_date, detail, caller_bearer_token)) {
                 if (error_detail)
                     *error_detail = std::move(detail);
                 return start_result::vintage_data_missing;
@@ -215,8 +223,10 @@ public:
     bool validate(const std::string& ore_key,
                  const std::string& vintage_source,
                  const std::string& vintage_date,
-                 std::string& error_detail) {
-        return vintage_data_available(ore_key, vintage_source, vintage_date, error_detail);
+                 std::string& error_detail,
+                 const std::string& caller_bearer_token = {}) {
+        return vintage_data_available(
+            ore_key, vintage_source, vintage_date, error_detail, caller_bearer_token);
     }
 
 private:
@@ -249,14 +259,21 @@ private:
         return std::format("{:%F}", days);
     }
 
-    // Core vintage-availability check shared by start() and validate().
+    // Core vintage-availability check shared by start() and validate(). Uses a
+    // market_data_client delegated with the caller's own bearer token when
+    // available, so the lookup runs in the caller's tenant/party context
+    // rather than this service's own (system-tenant) service account, which
+    // cannot see another tenant's market_observation rows under RLS. Falls
+    // back to the service's own client if no token is supplied (e.g. an
+    // internal/ad-hoc call with no end-user session).
     bool vintage_data_available(const std::string& ore_key,
                                const std::string& vintage_source,
                                const std::string& vintage_date,
-                               std::string& error_detail) {
+                               std::string& error_detail,
+                               const std::string& caller_bearer_token = {}) {
         const auto missing_message = [&] {
             return "No vintage data found for source=" + vintage_source +
-                   ", date=" + vintage_date + " — run the reference-data import first";
+                   ", date=" + vintage_date + ".";
         };
 
         std::string series_type, metric, qualifier;
@@ -265,7 +282,10 @@ private:
             return false;
         }
 
-        auto series = md_client_.find_series(series_type, metric, qualifier);
+        auto delegated_nats = auth_nats_.with_delegation(caller_bearer_token);
+        ores::marketdata::client::market_data_client md_client(delegated_nats);
+
+        auto series = md_client.find_series(series_type, metric, qualifier);
         if (!series) {
             error_detail = "Failed to look up series for '" + ore_key + "': " + series.error();
             return false;
@@ -275,7 +295,7 @@ private:
             return false;
         }
 
-        auto observations = md_client_.list_observations(boost::uuids::to_string((*series)->id));
+        auto observations = md_client.list_observations(boost::uuids::to_string((*series)->id));
         if (!observations) {
             error_detail =
                 "Failed to look up observations for '" + ore_key + "': " + observations.error();

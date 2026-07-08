@@ -19,6 +19,8 @@
  */
 #include "ores.synthetic.core/service/organisation_generator_service.hpp"
 #include "data/financial_names.hpp"
+#include "ores.refdata.api/domain/book_status_constants.hpp"
+#include "ores.refdata.api/domain/regulatory_book_type_constants.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/generation/tree_builder.hpp"
@@ -791,8 +793,10 @@ void generate_books(const domain::organisation_generation_options& options,
             bk.parent_portfolio_id = portfolio.id;
             bk.owner_unit_id = portfolio.owner_unit_id;
             bk.ledger_ccy = portfolio.aggregation_ccy;
-            bk.book_status = "Active";
-            bk.is_trading_book = 1;
+            bk.book_status =
+                std::string(ores::refdata::domain::book_status_constants::codes::active);
+            bk.regulatory_book_type = std::string(
+                ores::refdata::domain::regulatory_book_type_constants::codes::trading);
             bk.modified_by = modified_by;
             bk.performed_by = modified_by;
             bk.change_reason_code = "system.new_record";

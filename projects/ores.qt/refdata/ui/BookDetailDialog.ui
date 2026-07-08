@@ -126,16 +126,16 @@
            </widget>
           </item>
           <item row="6" column="0">
-           <widget class="QLabel" name="labelIsTradingBook">
+           <widget class="QLabel" name="labelRegulatoryBookType">
             <property name="text">
-             <string>Trading Book:</string>
+             <string>Regulatory Book Type:</string>
             </property>
            </widget>
           </item>
           <item row="6" column="1">
-           <widget class="QCheckBox" name="isTradingBookCheck">
-            <property name="text">
-             <string/>
+           <widget class="ores::qt::OreBadgeComboBox" name="regulatoryBookTypeCombo">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>

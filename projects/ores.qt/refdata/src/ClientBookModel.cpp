@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/ClientBookModel.hpp"
-#include "ores.qt/BoolYesNoLabel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -89,8 +88,8 @@ QVariant ClientBookModel::data(const QModelIndex& index, int role) const {
                 return QString::fromStdString(book.book_status);
             case CostCenter:
                 return QString::fromStdString(book.cost_center);
-            case IsTradingBook:
-                return boolYesNoLabel(book.is_trading_book);
+            case RegulatoryBookType:
+                return QString::fromStdString(book.regulatory_book_type);
             case Version:
                 return static_cast<qlonglong>(book.version);
             case ModifiedBy:
@@ -127,8 +126,8 @@ QVariant ClientBookModel::headerData(int section, Qt::Orientation orientation, i
             return tr("Status");
         case CostCenter:
             return tr("Cost Center");
-        case IsTradingBook:
-            return tr("Trading");
+        case RegulatoryBookType:
+            return tr("Regulatory Book Type");
         case Version:
             return tr("Version");
         case ModifiedBy:

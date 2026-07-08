@@ -76,6 +76,8 @@
 \ir ./refdata_contact_types_drop.sql
 \ir ./refdata_book_statuses_notify_trigger_drop.sql
 \ir ./refdata_book_statuses_drop.sql
+\ir ./refdata_regulatory_book_types_notify_trigger_drop.sql
+\ir ./refdata_regulatory_book_types_drop.sql
 \ir ./refdata_purpose_types_notify_trigger_drop.sql
 \ir ./refdata_purpose_types_drop.sql
 \ir ./refdata_party_id_schemes_notify_trigger_drop.sql

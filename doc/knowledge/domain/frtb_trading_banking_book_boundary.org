@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 36B8F463-121F-42D6-8048-3C62C21AF557
+:END:
+#+title: FRTB trading book / banking book boundary
+#+description: The Basel III/IV regulatory classification of instruments into the trading book or banking book: intent-based assignment, the presumptive lists, capital treatment differences, and the FRTB reforms that tightened the boundary and restrict switching.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:trading:book:finance:regulatory:basel:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+
+* Summary
+
+Every instrument a bank holds must be classified into the *trading
+book* or the *banking book* — the single most consequential
+classification a [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] carries, since it determines which capital
+regime applies: market risk capital (trading book) versus credit risk
+capital (banking book), computed under entirely different rules. The
+boundary is defined by the Basel Committee on Banking Supervision
+(BCBS) and, since the *Fundamental Review of the Trading Book*
+(FRTB, finalised January 2019, part of Basel III/IV), is
+intent-based, desk-structured, and deliberately hard to move
+instruments across after the fact.
+
+* Detail
+
+** What the classification governs
+
+- *Trading book* — instruments held with trading intent: to benefit
+  from short-term price movements, to hedge other trading book
+  positions, or as market-making/arbitrage positions. Held on the
+  presumption of liquid markets; positions are marked to market (MtM)
+  daily, and market risk capital is computed under the FRTB rules
+  (the standardised approach, SA, or an approved internal models
+  approach, IMA).
+- *Banking book* — everything else: instruments held to maturity or
+  for balance-sheet management, such as most loans, deposits, and
+  hold-to-collect securities. Accounted for on an accrual basis, not
+  MtM. Subject to credit risk capital rules (and, since Basel III/IV,
+  a market risk charge too for certain positions such as FX and
+  commodities exposure in the banking book).
+- Derivatives are, in practice, always trading book — the presumptive
+  lists below place them there by default, and banking-book treatment
+  of a derivative would be an exceptional, heavily scrutinised case.
+
+** Assignment: intent, not asset class
+
+Classification is based on *management intent* at the point a
+position is taken on, not on the instrument type alone. A bond can
+sit in either book depending on why it is held. To constrain
+discretion, FRTB defines *presumptive lists*:
+
+- Instruments *presumed trading book* unless a bank can justify
+  otherwise to its supervisor: positions resulting from market-making,
+  positions in the correlation trading portfolio, positions that
+  would be trading book under a bank's own accounting classification
+  as held-for-trading, and instruments held as hedges of other trading
+  book positions.
+- Instruments *presumed banking book* unless a bank can justify
+  otherwise: unlisted equities, positions intended for securitisation
+  warehousing, real estate holdings, retail and SME credit exposures,
+  and instruments held for hedging banking book credit risk.
+
+Supervisors can override a bank's self-classification, and a bank
+must be able to demonstrate the classification is consistent with its
+own internal risk management of the position — the boundary is not
+self-certifying.
+
+** Trading desk structure
+
+FRTB requires classification at the level of a formally defined
+*trading desk* — a coherent unit with its own risk management
+structure, a clear reporting line, and a trading mandate approved by
+senior management — not merely at the individual instrument level.
+Each desk is itself in or out of scope for the trading book, and desk
+definitions must be validated by supervisors before internal-models
+capital treatment is permitted for that desk.
+
+** Capital treatment consequences
+
+The boundary is consequential precisely because the two capital
+regimes are computed so differently:
+
+- *Trading book*: market risk capital under FRTB SA/IMA, driven by
+  sensitivities (delta, vega, curvature) under the SA, or by
+  Expected Shortfall (replacing VaR) under IMA, subject to a
+  standalone Profit and Loss Attribution (PLA) test that a desk must
+  pass to remain on IMA.
+- *Banking book*: credit risk capital under the standardised or
+  internal ratings-based (IRB) approaches, plus (since Basel III/IV)
+  a market risk capital charge on FX and commodity exposures
+  specifically, even though the bulk of the book is accrual-accounted.
+
+Because the two regimes can produce very different capital numbers
+for economically similar exposures, the boundary is a well-known
+locus of *regulatory arbitrage* pressure — the reason FRTB tightened
+it so heavily compared to the pre-2019 rules.
+
+** Switching restrictions
+
+Moving an instrument between books after initial designation is
+deliberately restricted and heavily disincentivised: a switch
+generally requires supervisory approval, must be justified by a
+genuine change in intent (not a capital-driven decision), and — if
+approved — the capital benefit of a favourable switch is typically
+required to be held as a capital surcharge rather than released,
+removing the incentive to reclassify purely to reduce capital.
+
+* See also
+
+- [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] — the wider set of classification dimensions a
+  book carries; this note is the detailed treatment of just the
+  trading/banking book split it summarises.
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — hub note.
+- [[https://www.bis.org/bcbs/publ/d457.htm][BCBS d457: Minimum capital requirements for market risk (January 2019)]] — the finalised FRTB standard, including the boundary and presumptive lists.

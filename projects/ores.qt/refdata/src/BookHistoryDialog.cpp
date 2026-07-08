@@ -112,7 +112,8 @@ HistoryDialogBase::DiffResult BookHistoryDialog::calculateDiffAt(int ci, int pi)
     checkString(diffs, tr("GL Account Ref"), curr.gl_account_ref, prev.gl_account_ref);
     checkString(diffs, tr("Cost Center"), curr.cost_center, prev.cost_center);
     checkString(diffs, tr("Status"), curr.book_status, prev.book_status);
-    checkBool(diffs, tr("Trading Book"), curr.is_trading_book, prev.is_trading_book);
+    checkString(
+        diffs, tr("Regulatory Book Type"), curr.regulatory_book_type, prev.regulatory_book_type);
     return diffs;
 }
 
@@ -128,7 +129,7 @@ void BookHistoryDialog::displayFullDetails(int index) {
     ui_->glAccountRefValue->setText(QString::fromStdString(version.gl_account_ref));
     ui_->costCenterValue->setText(QString::fromStdString(version.cost_center));
     ui_->bookStatusValue->setText(QString::fromStdString(version.book_status));
-    ui_->isTradingBookCheck->setText(version.is_trading_book ? tr("true") : tr("false"));
+    ui_->regulatoryBookTypeValue->setText(QString::fromStdString(version.regulatory_book_type));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: 03728847-1C53-4B1D-AFB1-E83B2C3F3E14
+:END:
+#+title: ores.refdata.regulatory_book_type
+#+description: Codegen entity model for the refdata =regulatory_book_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Basel III/IV FRTB trading book / banking book classification.
+#+entity_singular: regulatory_book_type
+#+entity_plural: regulatory_book_types
+#+entity_title: Regulatory Book Type
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-07-08
+#+updated: 2026-07-08
+
+Reference data table defining the Basel III/IV FRTB trading book /
+banking book classification a book carries. Examples: 'Trading',
+'Banking'.
+
+Regulatory book types are managed by the system tenant and determine
+which capital regime (market risk vs credit risk) applies to a book.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique regulatory book type code.
+
+Examples: 'Trading', 'Banking'.
+
+#+begin_src cpp :name generator
+std::string("RegulatoryBookType")
+#+end_src
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the regulatory book type.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Book Type"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the regulatory book type, including its
+Basel III/IV FRTB capital treatment.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_regulatory_book_types_tbl
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: regulatory book type
+:entity_plural_words:   regulatory book types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rbt
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/regulatory_book_type.hpp
+:domain_class:           refdata::domain::regulatory_book_type
+:protocol_include:       ores.refdata.api/messaging/regulatory_book_type_protocol.hpp
+:collection_name:        types
+:item_var:               type
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      refdata::messaging::get_regulatory_book_types_request
+:get_response_class:     refdata::messaging::get_regulatory_book_types_response
+:get_message_type:       get_regulatory_book_types_request
+:save_request_class:     refdata::messaging::save_regulatory_book_type_request
+:save_response_class:    refdata::messaging::save_regulatory_book_type_response
+:save_message_type:      save_regulatory_book_type_request
+:delete_request_class:   refdata::messaging::delete_regulatory_book_type_request
+:delete_response_class:  refdata::messaging::delete_regulatory_book_type_response
+:delete_message_type:    delete_regulatory_book_type_request
+:history_request_class:  refdata::messaging::get_regulatory_book_type_history_request
+:history_response_class: refdata::messaging::get_regulatory_book_type_history_response
+:history_message_type:   get_regulatory_book_type_history_request
+:settings_group:         RegulatoryBookTypeListWindow
+:window_title:           Regulatory Book Types
+:icon:                   Tag
+:END:
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | auto  |
+| Name         | name          | Name          | string    | auto  |
+| Description  | description   | Description   | string    | auto  |
+| DisplayOrder | display_order | Display Order | int       | 70    |
+| Version      | version       | Version       | int       | 70    |
+| ModifiedBy   | modified_by   | Modified By   | string    | auto  |
+| RecordedAt   | recorded_at   | Recorded At   | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:36B8F463-121F-42D6-8048-3C62C21AF557][FRTB trading book / banking book boundary]] — the regulatory
+  concept this entity codifies.

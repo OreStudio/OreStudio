@@ -32,6 +32,7 @@ class OreImportController;
 class PortfolioController;
 class BookController;
 class BookStatusController;
+class RegulatoryBookTypeController;
 class TradeController;
 
 /**
@@ -91,6 +92,7 @@ private:
     std::unique_ptr<PortfolioController> portfolioController_;
     std::unique_ptr<BookController> bookController_;
     std::unique_ptr<BookStatusController> bookStatusController_;
+    std::unique_ptr<RegulatoryBookTypeController> regulatoryBookTypeController_;
     std::unique_ptr<TradeController> tradeController_;
 };
 

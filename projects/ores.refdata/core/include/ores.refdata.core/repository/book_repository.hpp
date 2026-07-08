@@ -73,6 +73,7 @@ public:
      */
     std::vector<domain::book> read_all(context ctx, const std::string& id);
 
+
     /**
      * @brief Reads latest books with pagination support.
      * @param ctx Repository context with database connection

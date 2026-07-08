@@ -100,6 +100,10 @@ private:
     void updateSaveButtonState();
     bool validateInput();
 
+    void populateBookStatus();
+
+    void populateRegulatoryBookType();
+
 
     void populateLedgerCcyCombo();
 

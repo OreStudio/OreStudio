@@ -123,11 +123,11 @@ struct book final {
     std::string book_status;
 
     /**
-     * @brief Basel III/IV classification.
+     * @brief Basel III/IV FRTB trading book / banking book classification.
      *
-     * 1 = Trading Book, 0 = Banking Book.
+     * References regulatory_book_types lookup (Trading, Banking).
      */
-    int is_trading_book = 0;
+    std::string regulatory_book_type;
 
     /**
      * @brief Username of the person who last modified this book.

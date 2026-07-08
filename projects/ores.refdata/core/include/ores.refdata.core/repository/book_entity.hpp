@@ -53,7 +53,7 @@ struct book_entity {
     std::optional<std::string> gl_account_ref;
     std::optional<std::string> cost_center;
     std::string book_status;
-    int is_trading_book = 0;
+    std::string regulatory_book_type;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

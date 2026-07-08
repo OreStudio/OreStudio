@@ -90,6 +90,10 @@ Finance concepts the codebase relies on, grouped by topic.
   the book/portfolio distinction, dynamic books, book groups
   and rates centres, lifecycle, ledger connection, and access
   and permissions.
+- [[id:36B8F463-121F-42D6-8048-3C62C21AF557][FRTB trading book / banking book boundary]] — the Basel III/IV
+  regulatory classification: intent-based assignment, presumptive
+  lists, trading desk structure, capital treatment, switching
+  restrictions.
 
 ** Data quality
 

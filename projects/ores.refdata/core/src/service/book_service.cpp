@@ -41,6 +41,7 @@ std::uint32_t book_service::count_books() {
     return repo_.get_total_book_count(ctx_);
 }
 
+
 std::optional<domain::book> book_service::get_book(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting book: " << id;
     auto results = repo_.read_latest(ctx_, id);

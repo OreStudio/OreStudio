@@ -24,17 +24,11 @@ flags rather than one type enum.
 
 ** Trading book vs banking book
 
-This is an accounting/regulatory distinction, not a trading-desk one:
-
-- *Trading book* — assets held on the presumption of liquid markets.
-  Market value changes are reflected immediately via daily
-  mark-to-market (MtM). Required to be marked to market under Basel
-  III. The *Fundamental Review of the Trading Book* (FRTB) revises the
-  regulatory boundary between trading and banking books.
-- *Banking book* — assets held on the presumption of holding to
-  maturity, accounted for on an accrual basis rather than MtM.
-  Trading systems generally do not carry banking books, and
-  derivatives cannot sit in the banking book.
+The most consequential classification a book carries — market risk
+capital vs credit risk capital hinge on it. See
+[[id:36B8F463-121F-42D6-8048-3C62C21AF557][FRTB trading book / banking book boundary]] for the full regulatory
+treatment: intent-based assignment, the presumptive lists, trading
+desk structure, capital treatment, and switching restrictions.
 
 ** Ledger books vs source books
 
@@ -110,6 +104,8 @@ is framed as a book-scoped netting set.
 * See also
 
 - [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — hub note.
+- [[id:36B8F463-121F-42D6-8048-3C62C21AF557][FRTB trading book / banking book boundary]] — the full regulatory
+  treatment of the trading/banking book split.
 - [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]] — how classified books sit within the
   book/portfolio hierarchy.
 - [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] — regional aggregation of

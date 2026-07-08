@@ -172,19 +172,19 @@ References book_statuses lookup (Active, Closed, Frozen).
 std::string("Active")
 #+end_src
 
-** is_trading_book
+** regulatory_book_type
 :PROPERTIES:
-:type:     integer
-:cpp_type: int
+:type:     text
+:cpp_type: std::string
 :nullable: false
 :END:
 
-Basel III/IV classification.
+Basel III/IV FRTB trading book / banking book classification.
 
-1 = Trading Book, 0 = Banking Book.
+References regulatory_book_types lookup (Trading, Banking).
 
 #+begin_src cpp :name generator
-1
+std::string("Trading")
 #+end_src
 
 * SQL
@@ -221,10 +221,11 @@ Basel III/IV classification.
 
 ** Validations
 
-| column      | validation_function                |
-|-------------+-------------------------------------|
-| ledger_ccy  | ores_refdata_validate_currency_fn   |
-| book_status | ores_refdata_validate_book_status_fn |
+| column               | validation_function                       |
+|----------------------+--------------------------------------------|
+| ledger_ccy           | ores_refdata_validate_currency_fn         |
+| book_status          | ores_refdata_validate_book_status_fn      |
+| regulatory_book_type | ores_refdata_validate_regulatory_book_type_fn |
 
 * C++
 
@@ -265,15 +266,15 @@ Basel III/IV classification.
 
 ** Table display
 
-| column          | header       |
-|-----------------+--------------|
-| name            | Name         |
-| party_id        | Party        |
-| ledger_ccy      | Currency     |
-| book_status     | Status       |
-| is_trading_book | Trading Book |
-| modified_by     | Modified By  |
-| version         | Version      |
+| column               | header              |
+|----------------------+---------------------|
+| name                 | Name                |
+| party_id             | Party               |
+| ledger_ccy           | Currency            |
+| book_status          | Status              |
+| regulatory_book_type | Regulatory Book Type |
+| modified_by          | Modified By         |
+| version              | Version             |
 
 ** Qt
 :PROPERTIES:
@@ -308,28 +309,28 @@ Basel III/IV classification.
 
 *** Detail fields
 
-| field           | label           | widget            | type          | is_key | is_required | placeholder                 | flag_source | combo_values                              | badge_key   |
-|-----------------+-----------------+-------------------+---------------+--------+-------------+------------------------------+--------------+--------------------------------------------+-------------|
-| id              | Id              | idEdit            | line_edit     | true   | true        | Book id                     |              |                                            |             |
-| name            | Name            | nameEdit          | line_edit     |        | true        | Enter book name              |              |                                            |             |
-| ledger_ccy      | Ledger Currency | ledgerCcyEdit     | flagged_combo |        |             |                              | currency     |                                            |             |
-| gl_account_ref  | GL Account Ref  | glAccountRefEdit  | line_edit     |        |             | Enter GL account reference   |              |                                            |             |
-| cost_center     | Cost Center     | costCenterEdit    | line_edit     |        |             | Enter cost center            |              |                                            |             |
-| book_status     | Status          | bookStatusCombo   | static_combo  |        |             |                              |              | Active,Inactive,Closed,Frozen,Pending      | book_status |
-| is_trading_book | Trading Book    | isTradingBookCheck | check_box     |        |             |                              |                    |                                            |             |
+| field                | label                | widget                   | type          | is_key | is_required | placeholder                | flag_source | combo_fetch_fn                | combo_fetch_include       | combo_type                              | combo_value | combo_display | badge_key            |
+|----------------------+----------------------+--------------------------+---------------+--------+-------------+-----------------------------+--------------+---------------------------------+----------------------------+-------------------------------------------+-------------+---------------+-----------------------|
+| id                   | Id                   | idEdit                   | line_edit     | true   | true        | Book id                     |              |                                |                            |                                          |             |               |                       |
+| name                 | Name                 | nameEdit                 | line_edit     |        | true        | Enter book name              |              |                                |                            |                                          |             |               |                       |
+| ledger_ccy           | Ledger Currency      | ledgerCcyEdit            | flagged_combo |        |             |                              | currency     |                                |                            |                                          |             |               |                       |
+| gl_account_ref       | GL Account Ref       | glAccountRefEdit         | line_edit     |        |             | Enter GL account reference   |              |                                |                            |                                          |             |               |                       |
+| cost_center          | Cost Center          | costCenterEdit           | line_edit     |        |             | Enter cost center            |              |                                |                            |                                          |             |               |                       |
+| book_status          | Status               | bookStatusCombo          | dynamic_combo |        |             |                              |              | fetch_book_statuses            | ores.qt/LookupFetcher.hpp | refdata::domain::book_status            | code        | code          | book_status           |
+| regulatory_book_type | Regulatory Book Type | regulatoryBookTypeCombo  | dynamic_combo |        |             |                              |              | fetch_regulatory_book_types    | ores.qt/LookupFetcher.hpp | refdata::domain::regulatory_book_type   | code        | code          | regulatory_book_type |
 
 *** Columns (Qt model)
 
-| enum_name     | field           | header      | type      | width | is_badge | badge_key       | formatter      | formatter_include            |
-|---------------+-----------------+-------------+-----------+-------+----------+-----------------+----------------+-------------------------------|
-| Name          | name            | Name        | string    | 200   |          |                 |                |                               |
-| LedgerCcy     | ledger_ccy      | Ledger Ccy  | string    | 100   |          |                 |                |                               |
-| BookStatus    | book_status     | Status      | string    | 100   | true     | book_status     |                |                               |
-| CostCenter    | cost_center     | Cost Center | string    | 120   |          |                 |                |                               |
-| IsTradingBook | is_trading_book | Trading     | int       | 70    | true     | book_is_trading | boolYesNoLabel | ores.qt/BoolYesNoLabel.hpp    |
-| Version       | version         | Version     | int       | 80    |          |                 |                |                               |
-| ModifiedBy    | modified_by     | Modified By | string    | 120   |          |                 |                |                               |
-| RecordedAt    | recorded_at     | Recorded At | timestamp | 150   |          |                 |                |                               |
+| enum_name          | field                | header               | type      | width | is_badge | badge_key            | formatter | formatter_include |
+|--------------------+----------------------+----------------------+-----------+-------+----------+-----------------------+-----------+--------------------|
+| Name               | name                 | Name                 | string    | 200   |          |                       |           |                    |
+| LedgerCcy          | ledger_ccy           | Ledger Ccy           | string    | 100   |          |                       |           |                    |
+| BookStatus         | book_status          | Status               | string    | 100   | true     | book_status           |           |                    |
+| CostCenter         | cost_center          | Cost Center          | string    | 120   |          |                       |           |                    |
+| RegulatoryBookType | regulatory_book_type | Regulatory Book Type | string    | 130   | true     | regulatory_book_type |           |                    |
+| Version            | version              | Version              | int       | 80    |          |                       |           |                    |
+| ModifiedBy         | modified_by          | Modified By          | string    | 120   |          |                       |           |                    |
+| RecordedAt         | recorded_at          | Recorded At          | timestamp | 150   |          |                       |           |                    |
 
 *** Icon columns (Qt model)
 

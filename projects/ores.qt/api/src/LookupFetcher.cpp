@@ -21,7 +21,9 @@
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.refdata.api/messaging/book_status_protocol.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
+#include "ores.refdata.api/messaging/regulatory_book_type_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
@@ -182,6 +184,30 @@ std::vector<business_unit_entry> fetch_business_unit_entries(ClientManager* cm) 
         }
     }
     return entries;
+}
+
+std::expected<std::vector<refdata::domain::book_status>, QString>
+fetch_book_statuses(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_book_statuses_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->statuses);
+}
+
+std::expected<std::vector<refdata::domain::regulatory_book_type>, QString>
+fetch_regulatory_book_types(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_regulatory_book_types_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->types);
 }
 
 std::expected<std::vector<refdata::domain::rounding_type>, QString>

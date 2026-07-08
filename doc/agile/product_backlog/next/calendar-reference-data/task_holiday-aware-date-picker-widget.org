@@ -2,7 +2,7 @@
 :ID: 1D064DDB-0C57-43C6-B17C-07003BC644C1
 :END:
 #+title: Task: Holiday-aware date picker widget
-#+description: A reusable Qt date-picker widget that takes one or more calendars as input, highlights their holidays, and is used everywhere a date sensitive to holidays needs to be picked.
+#+description: A reusable Qt date-picker widget that takes one or more calendars as input, highlights their holidays (with a tooltip naming the source calendar), and is used everywhere a date sensitive to holidays needs to be picked.
 #+type: task
 #+level: s1
 #+filetags: :calendar-reference-data:next:product_backlog:
@@ -26,10 +26,13 @@ which dates are holidays, given one or more calendars as input
 [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]]). Holidays for
 the union of the input calendars are visually highlighted in the date
 grid (weekends included, following the same convention QuantLib's
-calendar classes use). This widget becomes the standard way to pick
-any date that is calendar-sensitive across the app (e.g. trade dates,
-fixing dates, spot dates) — not just within currency/currency-pair
-screens.
+calendar classes use). When multiple calendars are given, it must be
+clear which calendar(s) a given highlighted date's holiday is coming
+from — e.g. a tooltip on hover naming the source calendar(s) — not
+just an undifferentiated highlight. This widget becomes the standard
+way to pick any date that is calendar-sensitive across the app (e.g.
+trade dates, fixing dates, spot dates) — not just within
+currency/currency-pair screens.
 
 Depends on [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] existing first, since
 the widget needs a real calendar → holiday-dates data source, not free
@@ -53,6 +56,10 @@ text.
   in the date grid.
 - [ ] Weekends are highlighted using the same convention as holidays
   (or visually distinguished, matching QuantLib calendar semantics).
+- [ ] Hovering a highlighted holiday date shows a tooltip naming which
+  input calendar(s) it's a holiday in — clear attribution when
+  multiple calendars are given, not just an undifferentiated
+  highlight.
 - [ ] Widget is documented (Qt UI patterns doc) so other screens know
   to reuse it instead of a plain date picker for calendar-sensitive
   dates.

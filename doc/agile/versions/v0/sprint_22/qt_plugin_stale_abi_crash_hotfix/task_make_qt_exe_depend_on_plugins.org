@@ -68,7 +68,8 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | CMake list is correct; plugin-list drift risk flagged as a non-blocking follow-up | CMakeLists.txt | Declined (as-is) | Pre-existing risk in the cherry-picked commit, not introduced by this PR; could file a capture if wanted |
+| 2 | story.org left as unfilled scaffold, disagreed with task/sprint state | story.org, sprint.org | Fixed | 7f58b3385 |
 
 * Result
 

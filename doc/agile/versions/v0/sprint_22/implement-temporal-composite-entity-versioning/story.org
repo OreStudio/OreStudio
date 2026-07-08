@@ -54,6 +54,25 @@ Land the SQL/codegen mechanism for child writes to bump a parent's version in th
   function call from the trigger and delete rule, the as-of query).
   Party is hand-patched first only because party itself isn't yet
   under codegen; counterparty gets it purely by flipping the flags.
+- Composite tab UX finding (from the test scenario's first step,
+  marked FAIL by the author): showing a flat "identifiers/contacts as
+  of this version" list is not the right end-state UX — a tester
+  wants to know *which* child changed at a version and drill into
+  *that child's own history* (old value → new value), not re-derive
+  the diff by eye against the previous version's flat list.
+  - That drill-down needs a per-child-entity history dialog
+    (=PartyIdentifierHistoryDialog=, =PartyContactInformationHistoryDialog=,
+    and counterparty equivalents), which doesn't exist yet.
+  - Per-child history dialogs must be codegen-generated (the same
+    facet that generates =HistoryDialogBase=-derived dialogs for
+    top-level entities today), not hand-built one-off for this task.
+  - That commissioning is exactly task 3 ("Bind composite
+    child-entity and hierarchy widgets to party and counterparty") of
+    the sibling [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for
+    codegen]] story — so the Composite tab's flat-list view here is a
+    deliberate interim, blocked from reaching its real end-state UX
+    until that story's task 3 lands. Not a defect to chase further in
+    this task.
 
 * Out of scope
 

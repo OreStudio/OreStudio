@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:9561F122-A25D-4CE5-8AF4-404266925857][Composite history dialog shows children as of a version]] | PENDING | Party BRCLYS + counterparty SNTRCH, v1-v4, identifiers as-of scoping. |
+| [[id:9561F122-A25D-4CE5-8AF4-404266925857][Composite history dialog shows children as of a version]] | RUNNING | Steps 2-4 PASS (as-of scoping correct). Step 1 marked FAIL by design review, not a functional defect — see story Decisions: the flat list is the wrong end-state UX, needs a per-child history dialog drill-down, blocked on the sibling story's task 3. Steps 5-7 (live v4 bump, counterparty) still pending. |
 
 * PRs
 

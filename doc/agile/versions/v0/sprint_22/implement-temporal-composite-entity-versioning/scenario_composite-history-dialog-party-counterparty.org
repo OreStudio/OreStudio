@@ -21,7 +21,7 @@ This page documents a test scenario verifying [[id:F41DC692-99AE-4F0C-9D6E-76BA7
 | Verifies task | [[id:F41DC692-99AE-4F0C-9D6E-76BA767BB93E][Qt composite history/version dialog]] |
 | Parent story  | [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]]   |
 | Target dialog | PartyHistoryDialog and CounterpartyHistoryDialog (new "Composite (as of this version)" tab) |
-| Clients       | (single client)                        |
+| Clients       |                                          |
 | State         | PENDING                               |
 
 * Context
@@ -58,6 +58,13 @@ In the Qt client: Reference Data (or Party menu) → Parties → find
 the version list shows 3 rows (v1, v2, v3), with v2's commentary
 reading "Bumped by child party_identifier: ...".
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | so we can see composite as of this version but I wonder if this is the right thing. should we not just say "the component changed at this version" and then open the component history dialog? |
+
 ** Select v1 and check the Composite tab shows no identifiers
 
 Click the v1 row. Open the "Composite (as of this version)" tab.
@@ -65,16 +72,34 @@ Expected: the Identifiers list shows "(none as of this version)" (the
 LEI identifier didn't exist yet at v1's instant) and Contacts shows
 "(none as of this version)".
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Select v2 and check the Composite tab shows the LEI identifier
 
 Click the v2 row, same tab. Expected: the Identifiers list shows one
 entry — =LEI: 213800LBQA1Y9L22JB70 (v1)=. Contacts still empty.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Select v3 (current) and check the Composite tab is unchanged
 
 Click the v3 row (the latest). Expected: identical to v2's view — one
 LEI identifier, no contacts — since nothing has added/removed a child
 since v2.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Add a second identifier via SQL and confirm the party bumps to v4
 
@@ -86,6 +111,12 @@ Back in the Qt client, reopen (or refresh) BRCLYS's history dialog.
 Expected: a new v4 row appears, with commentary "Bumped by child
 party_identifier: Manual test BIC".
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Select the new v4 and check the Composite tab shows both identifiers
 
 Click the v4 row. Expected: Identifiers list shows *two* entries — the
@@ -94,19 +125,31 @@ should still show only the LEI (proving the as-of window is correctly
 scoped to what existed at that version, not "everything that exists
 now").
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Repeat the v1→v2 check for counterparty SNTRCH
 
 Open Counterparties → =SNTRCH= (Sonatrach) → History. Confirm the same
 pattern: v1 has no identifiers in the Composite tab, v2 has the LEI.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-08T12:02:46Z |
+| Branch        | feature/write-composite-versioning-architecture-doc |
+| Commit        | de0fb9605 |
+| Worktree      | solid_dirac |
 
 * Notes

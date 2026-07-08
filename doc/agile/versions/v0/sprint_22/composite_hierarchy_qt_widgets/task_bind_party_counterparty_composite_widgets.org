@@ -35,7 +35,14 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Per-child-entity history dialogs (=PartyIdentifierHistoryDialog=,
+  =PartyContactInformationHistoryDialog=, and counterparty
+  equivalents), codegen-generated the same way top-level entities get
+  =HistoryDialogBase=-derived dialogs today — needed by
+  [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]]'s Composite tab,
+  which currently shows a flat as-of-version list as an interim
+  measure pending this task. See that story's =* Decisions= for the
+  full finding (from a test scenario run against the interim UI).
 
 * Plan
 

@@ -18,16 +18,21 @@
  *
  */
 #include "ores.qt/BookDetailDialog.hpp"
+#include "ores.qt/BadgeComboHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ui_BookDetailDialog.h"
+#include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -39,8 +44,15 @@ BookDetailDialog::BookDetailDialog(QWidget* parent)
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
+    setupCombos();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 BookDetailDialog::~BookDetailDialog() {
@@ -71,6 +83,15 @@ void BookDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
+void BookDetailDialog::setupCombos() {
+    ui_->bookStatusCombo->clear();
+    ui_->bookStatusCombo->addItem(tr("Active"), QString("Active"));
+    ui_->bookStatusCombo->addItem(tr("Inactive"), QString("Inactive"));
+    ui_->bookStatusCombo->addItem(tr("Closed"), QString("Closed"));
+    ui_->bookStatusCombo->addItem(tr("Frozen"), QString("Frozen"));
+    ui_->bookStatusCombo->addItem(tr("Pending"), QString("Pending"));
+}
+
 void BookDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this, &BookDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this, &BookDetailDialog::onDeleteClicked);
@@ -78,15 +99,29 @@ void BookDetailDialog::setupConnections() {
 
     connect(ui_->idEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
-    connect(ui_->ledgerCcyEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
+    connect(ui_->ledgerCcyEdit,
+            &QComboBox::currentIndexChanged,
+            this,
+            &BookDetailDialog::onFieldChanged);
     connect(
         ui_->glAccountRefEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
     connect(ui_->costCenterEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
-    connect(ui_->bookStatusEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
+    connect(ui_->bookStatusCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &BookDetailDialog::onFieldChanged);
 }
 
 void BookDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    setup_badge_combo(this, ui_->bookStatusCombo, badgeCache(), "book_status");
+    populateLedgerCcyCombo();
+}
+
+void BookDetailDialog::populateLedgerCcyCombo() {
+    setup_currency_combo(ui_->ledgerCcyEdit, this, clientManager_, imageCache(), [this]() {
+        return QString::fromStdString(book_.ledger_ccy);
+    });
 }
 
 void BookDetailDialog::setUsername(const std::string& username) {
@@ -118,10 +153,10 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->idEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->ledgerCcyEdit->setReadOnly(readOnly);
+    ui_->ledgerCcyEdit->setEnabled(!readOnly);
     ui_->glAccountRefEdit->setReadOnly(readOnly);
     ui_->costCenterEdit->setReadOnly(readOnly);
-    ui_->bookStatusEdit->setReadOnly(readOnly);
+    ui_->bookStatusCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -129,10 +164,19 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
 void BookDetailDialog::updateUiFromBook() {
     ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(book_.id)));
     ui_->nameEdit->setText(QString::fromStdString(book_.name));
-    ui_->ledgerCcyEdit->setText(QString::fromStdString(book_.ledger_ccy));
+    {
+        const auto val = QString::fromStdString(book_.ledger_ccy);
+        const int idx = ui_->ledgerCcyEdit->findText(val);
+        ui_->ledgerCcyEdit->setCurrentIndex(idx);
+    }
     ui_->glAccountRefEdit->setText(QString::fromStdString(book_.gl_account_ref));
     ui_->costCenterEdit->setText(QString::fromStdString(book_.cost_center));
-    ui_->bookStatusEdit->setText(QString::fromStdString(book_.book_status));
+    {
+        const int idx = ui_->bookStatusCombo->findData(QString::fromStdString(book_.book_status));
+        if (idx >= 0)
+            ui_->bookStatusCombo->setCurrentIndex(idx);
+    }
+    ui_->isTradingBookCheck->setChecked(book_.is_trading_book);
 
     populateProvenance(book_.version,
                        book_.modified_by,
@@ -147,10 +191,11 @@ void BookDetailDialog::updateUiFromBook() {
 
 void BookDetailDialog::updateBookFromUi() {
     book_.name = ui_->nameEdit->text().trimmed().toStdString();
-    book_.ledger_ccy = ui_->ledgerCcyEdit->text().trimmed().toStdString();
+    book_.ledger_ccy = ui_->ledgerCcyEdit->currentText().toStdString();
     book_.gl_account_ref = ui_->glAccountRefEdit->text().trimmed().toStdString();
     book_.cost_center = ui_->costCenterEdit->text().trimmed().toStdString();
-    book_.book_status = ui_->bookStatusEdit->text().trimmed().toStdString();
+    book_.book_status = ui_->bookStatusCombo->currentData().toString().toStdString();
+    book_.is_trading_book = ui_->isTradingBookCheck->isChecked();
     book_.modified_by = username_;
 }
 
@@ -266,7 +311,8 @@ void BookDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 

@@ -231,6 +231,9 @@ void {{domain_entity.entity_pascal}}Controller::showAddWindow() {
 {{#domain_entity.qt.needs_image_cache}}
     detailDialog->setImageCache(imageCache_);
 {{/domain_entity.qt.needs_image_cache}}
+{{#domain_entity.qt.has_combo_badge_source}}
+    detailDialog->setBadgeCache(badgeCache_);
+{{/domain_entity.qt.has_combo_badge_source}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
 {{#domain_entity.qt.has_parent_relationship}}
@@ -287,6 +290,9 @@ void {{domain_entity.entity_pascal}}Controller::showDetailWindow(
 {{#domain_entity.qt.needs_image_cache}}
     detailDialog->setImageCache(imageCache_);
 {{/domain_entity.qt.needs_image_cache}}
+{{#domain_entity.qt.has_combo_badge_source}}
+    detailDialog->setBadgeCache(badgeCache_);
+{{/domain_entity.qt.has_combo_badge_source}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -440,6 +446,9 @@ void {{domain_entity.entity_pascal}}Controller::onOpenVersion(
 {{#domain_entity.qt.needs_image_cache}}
     detailDialog->setImageCache(imageCache_);
 {{/domain_entity.qt.needs_image_cache}}
+{{#domain_entity.qt.has_combo_badge_source}}
+    detailDialog->setBadgeCache(badgeCache_);
+{{/domain_entity.qt.has_combo_badge_source}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->set{{domain_entity.entity_pascal_short}}({{domain_entity.qt.item_var}});
@@ -533,6 +542,9 @@ void {{domain_entity.entity_pascal}}Controller::onRevertVersion(
 {{#domain_entity.qt.needs_image_cache}}
     detailDialog->setImageCache(imageCache_);
 {{/domain_entity.qt.needs_image_cache}}
+{{#domain_entity.qt.has_combo_badge_source}}
+    detailDialog->setBadgeCache(badgeCache_);
+{{/domain_entity.qt.has_combo_badge_source}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_{{domain_entity.qt.item_var}} = {{domain_entity.qt.item_var}};

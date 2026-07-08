@@ -75,6 +75,15 @@ public:
     QVariant
     headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
+protected:
+    /** @brief Columns whose Qt::DecorationRole shows an icon (flag, etc.). */
+    std::vector<int> iconColumns() const override {
+        return {
+            Column::LedgerCcy,
+        };
+    }
+
+public:
     /**
      * @brief Refresh book data from server asynchronously.
      */
@@ -87,6 +96,7 @@ public:
      * @return The book, or nullptr if row is invalid.
      */
     const refdata::domain::book* getBook(int row) const;
+
 
     /**
      * @brief Load a specific page of data.

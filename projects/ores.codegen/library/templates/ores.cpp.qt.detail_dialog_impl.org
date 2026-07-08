@@ -35,6 +35,7 @@ The full template source. Edit here and re-tangle with
 #include <QPlainTextEdit>
 {{/domain_entity.qt.has_text_edit_fields}}
 {{#domain_entity.qt.has_combo_fields}}
+#include "ores.qt/WidgetUtils.hpp"
 #include <QComboBox>
 {{/domain_entity.qt.has_combo_fields}}
 {{#domain_entity.qt.has_uuid_primary_key}}
@@ -53,6 +54,13 @@ The full template source. Edit here and re-tangle with
 #include <QIcon>
 #include <QLineEdit>
 {{/domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.has_combo_flag_source}}
+#include "ores.qt/FlagIconHelper.hpp"
+#include <algorithm>
+{{/domain_entity.qt.has_combo_flag_source}}
+{{#domain_entity.qt.has_combo_badge_source}}
+#include "ores.qt/BadgeComboHelper.hpp"
+{{/domain_entity.qt.has_combo_badge_source}}
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "{{domain_entity.qt.protocol_include}}"
@@ -71,6 +79,9 @@ using namespace ores::logging;
       settingGatedActions_(nullptr){{/domain_entity.qt.has_setting_gated_actions}} {
 
     ui_->setupUi(this);
+{{#domain_entity.qt.has_combo_fields}}
+    WidgetUtils::setupComboBoxes(this);
+{{/domain_entity.qt.has_combo_fields}}
     setupUi();
 {{#domain_entity.qt.has_combo_fields}}
     setupCombos();
@@ -248,6 +259,18 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
 
 void {{domain_entity.entity_pascal}}DetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+{{#domain_entity.qt.detail_fields}}
+{{#is_dynamic_combo}}
+{{#combo_fetch_fn}}
+    populate{{combo_setter_pascal}}();
+{{/combo_fetch_fn}}
+{{/is_dynamic_combo}}
+{{#is_static_combo}}
+{{#badge_key}}
+    setup_badge_combo(this, ui_->{{widget}}, badgeCache(), "{{badge_key}}");
+{{/badge_key}}
+{{/is_static_combo}}
+{{/domain_entity.qt.detail_fields}}
 {{#domain_entity.qt.has_setting_gated_actions}}
 
     if (clientManager_) {
@@ -268,6 +291,21 @@ void {{domain_entity.entity_pascal}}DetailDialog::setClientManager(ClientManager
 }
 {{#domain_entity.qt.detail_fields}}
 {{#is_flagged_combo}}
+{{#combo_helper}}
+
+void {{domain_entity.entity_pascal}}DetailDialog::populate{{field_pascal}}Combo() {
+    {{combo_helper}}(ui_->{{widget}}, this, clientManager_, imageCache(), [this]() {
+{{#is_optional_string}}
+        const auto& v = {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}};
+        return v ? QString::fromStdString(*v) : QString();
+{{/is_optional_string}}
+{{^is_optional_string}}
+        return QString::fromStdString({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
+{{/is_optional_string}}
+    });
+}
+{{/combo_helper}}
+{{^combo_helper}}
 
 void {{domain_entity.entity_pascal}}DetailDialog::populate{{field_pascal}}Combo() {
     if (!clientManager_ || !clientManager_->isConnected())
@@ -317,6 +355,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{field_pascal}}Combo(
     auto* cm = clientManager_;
     watcher->setFuture(QtConcurrent::run([cm]() { return {{combo_fetch}}(cm); }));
 }
+{{/combo_helper}}
 {{/is_flagged_combo}}
 {{/domain_entity.qt.detail_fields}}
 
@@ -514,6 +553,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onRevertClicked() {
 
 {{#domain_entity.qt.detail_fields}}
 {{#is_dynamic_combo}}
+{{^combo_fetch_fn}}
 void {{domain_entity.entity_pascal}}DetailDialog::{{combo_setter}}(
     const std::vector<{{combo_type}}>& items) {
     {{combo_items_member}}_ = items;
@@ -536,7 +576,52 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}
         if (idx >= 0) ui_->{{widget}}->setCurrentIndex(idx);
     }
 }
+{{/combo_fetch_fn}}
+{{#combo_fetch_fn}}
+{{#combo_helper}}
+void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}}() {
+    {{combo_helper}}(ui_->{{widget}}, this, clientManager_, imageCache(), [this]() {
+        return QString::fromStdString({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
+    });
+}
+{{/combo_helper}}
+{{^combo_helper}}
+void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}}() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+    if (findChild<QFutureWatcherBase*>("{{combo_items_member}}FetchWatcher"))
+        return;
 
+    QPointer<{{domain_entity.entity_pascal}}DetailDialog> self = this;
+    auto* cm = clientManager_;
+    QFuture<std::vector<{{combo_type}}>> future =
+        QtConcurrent::run([cm]() { return {{combo_fetch_fn}}(cm); });
+
+    auto* watcher = new QFutureWatcher<std::vector<{{combo_type}}>>(this);
+    watcher->setObjectName("{{combo_items_member}}FetchWatcher");
+    connect(watcher, &QFutureWatcher<std::vector<{{combo_type}}>>::finished, this, [self, watcher]() {
+        auto items = watcher->result();
+        watcher->deleteLater();
+        if (!self)
+            return;
+
+        std::sort(items.begin(), items.end());
+        const auto current = self->ui_->{{widget}}->currentText();
+        self->ui_->{{widget}}->clear();
+        for (const auto& v : items)
+            self->ui_->{{widget}}->addItem(QString::fromStdString(v));
+        const auto to_select = !current.isEmpty() ? current :
+            QString::fromStdString(self->{{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
+        if (!to_select.isEmpty())
+            self->ui_->{{widget}}->setCurrentText(to_select);
+{{#flag_source}}
+        apply_flag_icons(self->ui_->{{widget}}, self->imageCache(), FlagSource::{{flag_source}});
+{{/flag_source}}
+    });
+    watcher->setFuture(future);
+}
+{{/combo_helper}}
+{{/combo_fetch_fn}}
 {{/is_dynamic_combo}}
 {{/domain_entity.qt.detail_fields}}
 void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.entity_pascal_short}}() {
@@ -609,11 +694,17 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
     }
 {{/is_static_combo}}
 {{#is_dynamic_combo}}
+{{#combo_fetch_fn}}
+    ui_->{{widget}}->setCurrentText(QString::fromStdString(
+        {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
+{{/combo_fetch_fn}}
+{{^combo_fetch_fn}}
     {
         const auto val = QString::fromStdString({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
         const int idx = ui_->{{widget}}->findData(val);
         if (idx >= 0) ui_->{{widget}}->setCurrentIndex(idx);
     }
+{{/combo_fetch_fn}}
 {{/is_dynamic_combo}}
 {{#is_flagged_combo}}
     {
@@ -727,8 +818,14 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
         ui_->{{widget}}->currentData().toString().toStdString();
 {{/is_static_combo}}
 {{#is_dynamic_combo}}
+{{#combo_fetch_fn}}
+    {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
+        ui_->{{widget}}->currentText().toStdString();
+{{/combo_fetch_fn}}
+{{^combo_fetch_fn}}
     {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
         ui_->{{widget}}->currentData().toString().toStdString();
+{{/combo_fetch_fn}}
 {{/is_dynamic_combo}}
 {{#is_flagged_combo}}
 {{#is_optional_string}}

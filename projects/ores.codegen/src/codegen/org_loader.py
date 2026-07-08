@@ -755,6 +755,24 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             df = _section(qt, "Detail fields")
             if df:
                 qt_out["detail_fields"] = _detail_fields(df)
+                # static_combo fields declare their fixed option set as a
+                # comma-separated :combo_values: string (e.g. "Active,
+                # Inactive,Closed") — parsed here into the {label, value}
+                # dicts the template iterates. label == value; if a field
+                # ever needs them to differ, extend this to accept
+                # "label:value" pairs.
+                for f in qt_out["detail_fields"]:
+                    raw = f.get('combo_values')
+                    if f.get('type') == 'static_combo' and isinstance(raw, str) and raw:
+                        f['combo_values'] = [
+                            {'label': v.strip(), 'value': v.strip()}
+                            for v in raw.split(',') if v.strip()
+                        ]
+                # combo_widget_customs/has_combo_badge_source are computed in
+                # core.py, not here: they depend on combo_widget_class /
+                # badge_key values that core.py's is_flagged_combo /
+                # is_static_combo handling defaults in, which runs after
+                # this module.
             qc = _section(qt, "Columns (Qt model)")
             if qc:
                 qt_out["columns"] = _qt_columns(qc)
@@ -795,8 +813,16 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             # code in the client model itself) so that a model using only
             # the newer multi-column mechanism still gets ImageCache wired
             # through everywhere it's needed.
-            qt_out["needs_image_cache"] = qt_out["has_flag_icon"] or qt_out.get(
-                "has_icon_columns", False
+            # Whether any dynamic-combo detail field decorates its items with
+            # flag icons (e.g. a currency combo) via FlagIconHelper —
+            # gates the include and the ImageCache wiring below.
+            qt_out["has_combo_flag_source"] = any(
+                f.get("flag_source") for f in qt_out.get("detail_fields", [])
+            )
+            qt_out["needs_image_cache"] = (
+                qt_out["has_flag_icon"]
+                or qt_out.get("has_icon_columns", False)
+                or qt_out["has_combo_flag_source"]
             )
             de["qt"] = qt_out
 

@@ -18,8 +18,11 @@
  *
  */
 #include "ores.qt/BookMdiWindow.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include <QFutureWatcher>
@@ -33,10 +36,16 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-BookMdiWindow::BookMdiWindow(ClientManager* clientManager, const QString& username, QWidget* parent)
+BookMdiWindow::BookMdiWindow(ClientManager* clientManager,
+                             const QString& username,
+                             BadgeCache* badgeCache,
+                             ImageCache* imageCache,
+                             QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
     , username_(username)
+    , badgeCache_(badgeCache)
+    , imageCache_(imageCache)
     , toolbar_(nullptr)
     , tableView_(nullptr)
     , model_(nullptr)
@@ -108,6 +117,7 @@ void BookMdiWindow::setupToolbar() {
 
 void BookMdiWindow::setupTable() {
     model_ = new ClientBookModel(clientManager_, this);
+    model_->setImageCache(imageCache_);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -120,6 +130,42 @@ void BookMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+    using cs = column_style;
+    auto* delegate = new EntityItemDelegate(
+        {
+            cs::text_left,
+            cs::text_left,
+            cs::badge_centered,
+            cs::text_left,
+            cs::badge_centered,
+            cs::mono_center,
+            cs::text_left,
+            cs::text_left,
+        },
+        tableView_);
+    delegate->set_badge_color_resolver(
+        2, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+            if (!cache)
+                return default_gray;
+            auto* def = cache->resolve("book_status", value.toStdString());
+            if (!def)
+                return default_gray;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    delegate->set_badge_color_resolver(
+        4, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+            if (!cache)
+                return default_gray;
+            auto* def = cache->resolve("book_is_trading", value.toStdString());
+            if (!def)
+                return default_gray;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    tableView_->setItemDelegate(delegate);
 
     initializeTableSettings(tableView_, model_, "BookListWindow", {}, {900, 400}, 1);
 }
@@ -357,5 +403,6 @@ void BookMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

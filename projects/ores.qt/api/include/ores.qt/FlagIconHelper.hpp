@@ -26,12 +26,17 @@
 #include <QIcon>
 #include <QLineEdit>
 #include <QObject>
+#include <QPointer>
 #include <QSignalBlocker>
 #include <QSize>
+#include <QString>
+#include <functional>
 #include <string>
+#include <vector>
 
 namespace ores::qt {
 
+class ClientManager;
 class ImageCache;
 
 /**
@@ -164,6 +169,38 @@ inline void set_line_edit_flag_icon(QLineEdit* edit, const QIcon& icon, QAction*
         action_ptr = edit->addAction(icon, QLineEdit::LeadingPosition);
     }
 }
+
+/**
+ * @brief Populate a combo box with ISO currency codes and flag icons.
+ *
+ * The one function every currency-picker combo in the app should go
+ * through — fetches the current code list asynchronously, repopulates
+ * the combo (preserving the current selection if still present), then
+ * applies flag icons via apply_flag_icons(). Re-entrant: a fetch already
+ * in flight for @p combo is not duplicated.
+ *
+ * @param combo             The combo box to populate (no-op if null).
+ * @param owner             Object outliving the async operation; also
+ * used as the re-entrancy guard (a child QFutureWatcher named after
+ * @p combo already existing on it means a fetch is already in flight).
+ * @param client_manager    Used to run the fetch; no-op if null or
+ * disconnected.
+ * @param image_cache       Passed to apply_flag_icons() once populated.
+ * @param fallback_selection Evaluated at fetch-completion time (not at
+ * call time) to get the selection to restore if the combo had none —
+ * e.g. the entity's currently-stored value for this field, which may
+ * not be set on the widget yet when setup_currency_combo is called
+ * (a controller's setClientManager() call, which triggers this fetch,
+ * always runs before its set<Entity>() call, which is what actually
+ * populates the widget from the loaded record). Optional; omit for a
+ * combo with no entity value to restore (e.g. a filter/picker).
+ */
+ORES_QT_API void setup_currency_combo(
+    QComboBox* combo,
+    QObject* owner,
+    ClientManager* client_manager,
+    ImageCache* image_cache,
+    std::function<QString()> fallback_selection = {});
 
 }
 

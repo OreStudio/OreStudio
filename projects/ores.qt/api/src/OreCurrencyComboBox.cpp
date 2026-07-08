@@ -18,5 +18,9 @@
  */
 #include "ores.qt/OreCurrencyComboBox.hpp"
 
+namespace ores::qt {
+
 OreCurrencyComboBox::OreCurrencyComboBox(QWidget* parent)
     : QComboBox(parent) {}
+
+}

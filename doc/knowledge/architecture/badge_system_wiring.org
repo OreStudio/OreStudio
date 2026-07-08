@@ -118,6 +118,35 @@ returns a display name (=tr("Online")=), the badge mapping key must
 use that display name. If the model returns the raw DB code (="user"=),
 the mapping key must use the raw code.
 
+** Available badge collections (code domains)
+
+Every =code_domain= currently seeded by
+=dq_badge_system_populate.sql=, in =display_order=. Check here before
+adding a new domain — an existing one (or its =badge_definition=
+colours) may already fit.
+
+| Domain                      | Order | Purpose                                                                   |
+|------------------------------+-------+----------------------------------------------------------------------------|
+| =party_status=              |     1 | Lifecycle status codes for party and counterparty records.               |
+| =book_status=               |     2 | Lifecycle status codes for book records.                                 |
+| =portfolio_status=          |     3 | Lifecycle status codes for portfolio records.                            |
+| =portfolio_type=            |     4 | Type codes for portfolio records (Virtual, Physical).                    |
+| =book_type=                 |     5 | Type codes for book records (Trading, Banking).                          |
+| =login_status=              |     6 | Login activity status for user accounts (Never, Old, Recent, Online).    |
+| =account_locked=            |     7 | Account lock status (Locked, Unlocked).                                  |
+| =compute_task_state=        |     8 | State codes for compute task records.                                    |
+| =compute_task_outcome=      |     9 | Outcome codes for completed compute tasks.                               |
+| =report_concurrency_policy= |    10 | Concurrency policy codes for report definitions (Skip, Queue, Fail).     |
+| =report_fsm_state=          |    11 | FSM lifecycle state codes for report definitions.                        |
+| =dq_origin=                 |    12 | Data quality origin dimension codes.                                     |
+| =dq_nature=                 |    13 | Data quality nature dimension codes.                                     |
+| =dq_treatment=              |    14 | Data quality treatment dimension codes.                                  |
+| =tenant_status=             |    15 | Lifecycle status codes for tenant records.                              |
+| =workspace_status=          |    16 | Lifecycle status codes for workspace records.                            |
+| =account_type=              |    17 | Classification of account types (user, service, algorithm, llm).         |
+| =account_online=            |    18 | Boolean online indicator for accounts (Yes, No).                        |
+| =book_is_trading=           |    19 | Whether a book is a trading book (Yes/No), reuses =account_online='s colours. |
+
 ** Worked example — account_type
 
 =account_type= badge (added in sprint 19):

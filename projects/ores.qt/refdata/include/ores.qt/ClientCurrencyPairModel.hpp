@@ -99,6 +99,7 @@ public:
      */
     const refdata::domain::currency_pair* getPair(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

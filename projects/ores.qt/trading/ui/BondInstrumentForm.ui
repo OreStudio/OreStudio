@@ -47,7 +47,7 @@
            <widget class="QLabel"><property name="text"><string>Currency:</string></property></widget>
           </item>
           <item row="2" column="1">
-           <widget class="OreCurrencyComboBox" name="currencyCombo"/>
+           <widget class="ores::qt::OreCurrencyComboBox" name="currencyCombo"/>
           </item>
           <item row="3" column="0">
            <widget class="QLabel"><property name="text"><string>Face Value:</string></property></widget>
@@ -264,7 +264,7 @@
   <header>ores.qt/OreDateEdit.hpp</header>
  </customwidget>
  <customwidget>
-  <class>OreCurrencyComboBox</class>
+  <class>ores::qt::OreCurrencyComboBox</class>
   <extends>QComboBox</extends>
   <header>ores.qt/OreCurrencyComboBox.hpp</header>
  </customwidget>

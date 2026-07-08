@@ -364,4 +364,5 @@ void CurrencyPairMdiWindow::deleteSelected() {
     watcher->setFuture(future);
 }
 
+
 }

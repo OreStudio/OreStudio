@@ -19,14 +19,17 @@
  */
 #include "ores.qt/CurrencyPairDetailDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
 #include "ui_CurrencyPairDetailDialog.h"
 #include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -38,9 +41,15 @@ CurrencyPairDetailDialog::CurrencyPairDetailDialog(QWidget* parent)
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupCombos();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 CurrencyPairDetailDialog::~CurrencyPairDetailDialog() {
@@ -112,123 +121,23 @@ void CurrencyPairDetailDialog::setClientManager(ClientManager* clientManager) {
 }
 
 void CurrencyPairDetailDialog::populateBaseCurrencyCombo() {
-    if (!clientManager_ || !clientManager_->isConnected())
-        return;
-
-    QPointer<CurrencyPairDetailDialog> self = this;
-    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
-    QObject::connect(
-        watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
-            auto codes = watcher->result();
-            watcher->deleteLater();
-            if (!self)
-                return;
-
-            auto* combo = self->ui_->baseCurrencyCombo;
-            const QString previous = combo->currentText();
-            combo->blockSignals(true);
-            combo->clear();
-            for (const auto& c : codes)
-                combo->addItem(QString::fromStdString(c));
-            // fallback_selection is evaluated here (fetch-completion time), not
-            // at populate-call time, since setPair() may run before or
-            // after setClientManager() triggers this fetch.
-            const QString fallback = QString::fromStdString(self->pair_.base_currency);
-            const QString to_select = !previous.isEmpty() ? previous : fallback;
-            if (!to_select.isEmpty()) {
-                const int idx = combo->findText(to_select);
-                if (idx >= 0)
-                    combo->setCurrentIndex(idx);
-            }
-            combo->blockSignals(false);
-
-            if (self->imageCache())
-                apply_flag_icons(combo, self->imageCache(), FlagSource::Currency);
-        });
-
-    auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run([cm]() { return fetch_currency_codes(cm); }));
+    setup_currency_combo(ui_->baseCurrencyCombo, this, clientManager_, imageCache(), [this]() {
+        return QString::fromStdString(pair_.base_currency);
+    });
 }
 
 void CurrencyPairDetailDialog::populateQuoteCurrencyCombo() {
-    if (!clientManager_ || !clientManager_->isConnected())
-        return;
-
-    QPointer<CurrencyPairDetailDialog> self = this;
-    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
-    QObject::connect(
-        watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
-            auto codes = watcher->result();
-            watcher->deleteLater();
-            if (!self)
-                return;
-
-            auto* combo = self->ui_->quoteCurrencyCombo;
-            const QString previous = combo->currentText();
-            combo->blockSignals(true);
-            combo->clear();
-            for (const auto& c : codes)
-                combo->addItem(QString::fromStdString(c));
-            // fallback_selection is evaluated here (fetch-completion time), not
-            // at populate-call time, since setPair() may run before or
-            // after setClientManager() triggers this fetch.
-            const QString fallback = QString::fromStdString(self->pair_.quote_currency);
-            const QString to_select = !previous.isEmpty() ? previous : fallback;
-            if (!to_select.isEmpty()) {
-                const int idx = combo->findText(to_select);
-                if (idx >= 0)
-                    combo->setCurrentIndex(idx);
-            }
-            combo->blockSignals(false);
-
-            if (self->imageCache())
-                apply_flag_icons(combo, self->imageCache(), FlagSource::Currency);
-        });
-
-    auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run([cm]() { return fetch_currency_codes(cm); }));
+    setup_currency_combo(ui_->quoteCurrencyCombo, this, clientManager_, imageCache(), [this]() {
+        return QString::fromStdString(pair_.quote_currency);
+    });
 }
 
 void CurrencyPairDetailDialog::populateSettlementCurrencyCombo() {
-    if (!clientManager_ || !clientManager_->isConnected())
-        return;
-
-    QPointer<CurrencyPairDetailDialog> self = this;
-    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
-    QObject::connect(
-        watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
-            auto codes = watcher->result();
-            watcher->deleteLater();
-            if (!self)
-                return;
-
-            auto* combo = self->ui_->settlementCurrencyCombo;
-            const QString previous = combo->currentText();
-            combo->blockSignals(true);
-            combo->clear();
-            combo->addItem(QString());
-            for (const auto& c : codes)
-                combo->addItem(QString::fromStdString(c));
-            // fallback_selection is evaluated here (fetch-completion time), not
-            // at populate-call time, since setPair() may run before or
-            // after setClientManager() triggers this fetch.
-            const QString fallback = self->pair_.settlement_currency ?
-                                         QString::fromStdString(*self->pair_.settlement_currency) :
-                                         QString{};
-            const QString to_select = !previous.isEmpty() ? previous : fallback;
-            if (!to_select.isEmpty()) {
-                const int idx = combo->findText(to_select);
-                if (idx >= 0)
-                    combo->setCurrentIndex(idx);
-            }
-            combo->blockSignals(false);
-
-            if (self->imageCache())
-                apply_flag_icons(combo, self->imageCache(), FlagSource::Currency);
+    setup_currency_combo(
+        ui_->settlementCurrencyCombo, this, clientManager_, imageCache(), [this]() {
+            const auto& v = pair_.settlement_currency;
+            return v ? QString::fromStdString(*v) : QString();
         });
-
-    auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run([cm]() { return fetch_currency_codes(cm); }));
 }
 
 void CurrencyPairDetailDialog::setUsername(const std::string& username) {
@@ -437,7 +346,8 @@ void CurrencyPairDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 

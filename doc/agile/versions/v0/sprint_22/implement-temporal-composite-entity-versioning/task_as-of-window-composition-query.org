@@ -8,7 +8,7 @@
 #+filetags: :composite_entity:versioning:sql:codegen:implement-temporal-composite-entity-versioning:sprint_22:v0:
 #+owner: marco
 #+branch: feature/write-composite-versioning-architecture-doc
-#+pr:
+#+pr: 1469
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-07
@@ -101,7 +101,7 @@ real infinity sentinel (domain objects don't carry that either).
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 1469 | [sql,codegen,qt] Temporal composite entity versioning |
 
 * Review
 

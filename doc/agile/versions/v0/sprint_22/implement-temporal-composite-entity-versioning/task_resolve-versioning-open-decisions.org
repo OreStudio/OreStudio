@@ -8,7 +8,7 @@
 #+filetags: :composite_entity:versioning:implement-temporal-composite-entity-versioning:sprint_22:v0:
 #+owner: marco
 #+branch: feature/write-composite-versioning-architecture-doc
-#+pr:
+#+pr: 1469
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-07
@@ -55,7 +55,7 @@ Decisions (all recommended defaults confirmed):
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 1469 | [sql,codegen,qt] Temporal composite entity versioning |
 
 * Review
 

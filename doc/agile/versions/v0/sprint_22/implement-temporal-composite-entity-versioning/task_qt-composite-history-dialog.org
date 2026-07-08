@@ -8,7 +8,7 @@
 #+filetags: :composite_entity:versioning:qt:implement-temporal-composite-entity-versioning:sprint_22:v0:
 #+owner: marco
 #+branch: feature/write-composite-versioning-architecture-doc
-#+pr:
+#+pr: 1469
 #+blocked_on: [[id:2AC41A6E-3F18-48FF-B389-D5CC0E1AAC8F][Bind composite child-entity and hierarchy widgets to party and counterparty]] — the Composite tab's real end-state UX (drill into which child changed) needs per-child history dialogs from that task.
 #+blocked_since: 2026-07-08
 #+created: 2026-07-07
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 1469 | [sql,codegen,qt] Temporal composite entity versioning |
 
 * Review
 

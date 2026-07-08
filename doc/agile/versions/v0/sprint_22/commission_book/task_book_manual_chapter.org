@@ -26,16 +26,16 @@ Add a chapter for Book to the user manual documenting the Qt list, detail, and h
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-07-08                               |
 
 * Acceptance
 
-- Manual chapter exists for Book covering list/detail/history windows; site builds cleanly.
+- [X] Manual chapter exists for Book covering list/detail/history windows; site builds cleanly.
 
 * Plan
 
@@ -58,3 +58,13 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Added chapter_7_books.org (list/detail/history windows, 5 screenshots),
+wired into user_manual.org. While capturing screenshots, found and
+fixed a real gap: the badge item delegate only coloured popup rows, not
+the closed-box display -- added OreBadgeComboBox (promoted marker class
+whose paintEvent renders the current selection as a badge pill too).
+Also split the freeform Book domain notes into an 8-doc Zettelkasten
+knowledge cluster under doc/knowledge/domain/, reviewed book.org
+against it, and filed the Book data model cleanup story/tasks plus 4
+product-backlog captures for what that review surfaced.

@@ -68,6 +68,12 @@ signals:
     void addNewRequested();
     void pairDeleted(const QString& code);
     void showPairHistory(const refdata::domain::currency_pair& pair);
+    // Extra signal declarations seam: a future
+    // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
+    // to declare any entity-specific signals (e.g. a cross-navigation
+    // request to a related entity's list window) — see
+    // paste_blocks_in_codegen.org. Left empty when no entity implements
+    // this kind.
     void showConventionsRequested();
 
 public slots:
@@ -114,7 +120,6 @@ private:
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
-    QAction* conventionsAction_;
 };
 
 }

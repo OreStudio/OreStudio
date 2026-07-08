@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 03FDF102-2379-4C73-BFD8-FA71BF670BF5
+:END:
+#+title: Task: Creating a Currency Pair with an already-used pair_code silently versions the existing row
+#+description: The insert trigger treats a colliding pair_code as a new version of the existing record (the same create-vs-update-by-natural-key pattern used everywhere in this codebase), not a rejected duplicate. Now that pair_code is derived and immutable, a user picking an already-used base/quote combo in Add mode gets no error and silently overwrites the unrelated existing pair's data.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Reproduced: creating a new Currency Pair (Add mode) with base/quote
+matching an already-existing pair silently succeeds and shows no
+error — the insert trigger
+(=ores_refdata_currency_pairs_insert_fn=, projects/ores.sql/create/refdata/refdata_currency_pairs_create.sql)
+finds an existing row for that =pair_code=, treats the new record as
+its next *version* (retiring the old one), rather than rejecting it
+as a duplicate create. This is the same create-vs-update-by-natural-key
+pattern every bitemporal entity in this codebase uses — not unique to
+currency_pair — but it's more likely to bite here now that =pair_code=
+is derived and immutable (see [[id:BBB450FD-845D-4D6D-AA54-07589FDC1DFF][Pair code doesn't recompute when
+base/quote currency changes]]): a user has no way to type a
+different pair_code by mistake, but picking an already-used base/quote
+combination is easy to do accidentally, and the result is silently
+overwriting an unrelated existing pair's data with whatever else was
+in the "new" record's fields.
+
+Needs a design decision before implementing, since a real fix likely
+means distinguishing create-intent from update-intent somewhere in
+the stack (client, protocol, or trigger), which could touch the
+broader natural-key-versioning pattern used by other entities too —
+scope that out before committing to an approach.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

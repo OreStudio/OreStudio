@@ -290,6 +290,7 @@ const refdata::domain::country* ClientCountryModel::getCountry(int row) const {
     return &countries_[idx];
 }
 
+
 QVariant ClientCountryModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;

@@ -43,6 +43,41 @@ canonical IDs live in [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta
 | =F2EB1914-5E94-42CA-9C77-46BDB364BF9E= | Near the end of =_repository.cpp=, before =}= of namespace | [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][ores.cpp.repository.repository_impl]]    |
 | =6141050C-0ED4-4680-B387-7DDDA3A69806= | Top of =_repository.cpp=, after the generated includes | [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][ores.cpp.repository.repository_impl]]    |
 
+** Qt detail dialog injection points
+
+The following paste UUIDs are defined for the Qt detail dialog profile,
+for entity-specific dialog logic that doesn't fit the generic
+=is_locked_after_create=/=locked_fields=-style declarative flags (e.g. a
+derived field computed live from two others, or a field whose
+availability depends on another field's value at runtime). Their
+canonical IDs live in [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta model]].
+
+| UUID                                    | Where injected                                                    | Template                                                                     |
+|-----------------------------------------+---------------------------------------------------------------------+--------------------------------------------------------------------------------|
+| =3F8B6C1D-4E2A-4F9B-8C3D-1A5E7F2B9D4C= | Top of =_DetailDialog.cpp=, after the generated includes            | [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]] |
+| =F55CB64E-165A-4E15-A50A-5723C0320E97= | Inside the class, in =private:=, after the generated declarations   | [[id:0264FF98-86B8-4C43-AFE5-DF93567C63D2][ores.cpp.qt.detail_dialog_header]] |
+| =EC97923E-BC8D-4A50-9970-CBC5CBD4B732= | Near the end of =_DetailDialog.cpp=, after the generated methods    | [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]] |
+| =B6F2748A-9896-4B9C-BEAC-38436FD1CA79= | End of =setupConnections()=, before its closing =}=                 | [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]] |
+| =9A719585-3AB1-47DE-B0B0-99AFDFE7180E= | End of =setCreateMode()=, after the generated locked_fields loop    | [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]] |
+| =7A4AE8D5-A22D-4912-B4BF-D58215681CD2= | End of =setReadOnly()=, after the generated is_locked_after_create loop | [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]] |
+| =69F22F14-6701-4E73-AFCC-78AC1B1FDDDF= | Inside =validateInput()='s =return= chain, before the closing =;= | [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]] |
+| =67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A= | In =signals:=, after the generated signals                          | [[id:0FC76068-16A8-430F-8A15-2E765B562046][ores.cpp.qt.mdi_window_header]] |
+| =18B9ED63-78C2-4259-93AC-CCDFBC88EFBD= | End of =setupToolbar()=, after the generated History action         | [[id:B903843F-9A8D-4B47-BB80-16F701525E3F][ores.cpp.qt.mdi_window_impl]] |
+| =66E078FB-D6A6-4DF6-814B-65995D948090= | In =signals:=, after the generated signals                          | [[id:CA7F5DA4-73D8-418D-BF31-C65E1F2DBCE1][ores.cpp.qt.controller_header]] |
+| =52E70F3B-5903-4359-91FB-B533054A18AC= | End of =showListWindow()=, after the generated signal connections   | [[id:6FB90527-AAD1-431D-B45E-6A023699050A][ores.cpp.qt.controller_impl]] |
+
+The create-mode and read-only seams run *last*, after the generated
+per-field lock logic — a paste block there can override what the
+generated code just did (e.g. replace a =setEnabled(false)=-based lock
+with =WidgetUtils::set_combo_locked()= for a field that should stay
+visually normal, flag icon included, while locked).
+
+The mdi_window/controller header+impl pairs follow the same shape as
+the repository profile's declaration/implementation pairing above: an
+entity declares a signal via the header seam, then wires it via the
+matching impl seam — e.g. a cross-navigation button on one entity's
+list window that opens a related entity's list window.
+
 ** Recipe: adding a custom repository method
 
 Given an entity org model, add a heading under =** Repository= with a

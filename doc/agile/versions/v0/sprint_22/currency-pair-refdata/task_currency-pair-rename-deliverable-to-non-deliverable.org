@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 42636589-644C-43B2-BB02-63F102D2DB3E
+:END:
+#+title: Task: Rename deliverable flag to non_deliverable (idiomatic FX trading term)
+#+description: currency_pair.deliverable should be renamed to non_deliverable (and the boolean sense inverted) to match the idiomatic FX trading term 'non-deliverable forward' (NDF) -- avoids the double-negative confusion of deliverable=false meaning NDF.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Rename =currency_pair.deliverable= (bool, default true) to
+=non_deliverable= (bool, default false), inverting the sense to match
+"non-deliverable forward" (NDF), the idiomatic FX trading term — the
+current name reads backwards (=deliverable=false= to mean "this is an
+NDF" is a double negative that isn't how traders talk about it).
+
+Touches: SQL column + default + insert trigger, C++ domain struct,
+generator, Qt Columns/Detail fields (list badge, checkbox, badge_key
+=currency_pair_deliverable= → rename to
+=currency_pair_non_deliverable= and flip its Yes/No badge mapping
+sense), the =settlement_currency= toggle logic
+(=updateSettlementCurrencyAvailability= currently keys off
+=!deliverable=, becomes =non_deliverable= directly), seed/populate
+data (=iso_currencies_artefact_populate.sql=,
+=refdata_currency_pairs_seed_populate.sql=), and the manual/knowledge
+docs that reference "deliverable".
+
+* Acceptance
+
+- Column, domain field, Qt label/checkbox/badge, and all seed data
+  consistently use =non_deliverable= with the inverted sense.
+- Badge colours/labels still read correctly (Yes = NDF/non-deliverable,
+  No = deliverable) — re-verify against
+  [[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge Catalogue]].
+- No leftover references to the old =deliverable= name/sense in code,
+  SQL, or docs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -16,6 +16,18 @@ Dialog lifecycle and service calls.  Qt UI component: model/view class or dialog
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
 
+* Extension points
+
+=<<paste:UUID>>= markers in this template are paste-block injection
+points — see [[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][paste blocks: injecting custom code into generated files]]
+for the full mechanism. This template defines one:
+
+- =52E70F3B-5903-4359-91FB-B533054A18AC= — end of =showListWindow()=,
+  after the generated signal connections. Extra =connect()= wiring,
+  e.g. relaying a cross-navigation signal declared via the header seam
+  (=66E078FB-D6A6-4DF6-814B-65995D948090= in
+  [[id:CA7F5DA4-73D8-418D-BF31-C65E1F2DBCE1][ores.cpp.qt.controller_header]]).
+
 * Template
 
 The full template source. Edit here and re-tangle with
@@ -116,6 +128,8 @@ void {{domain_entity.entity_pascal}}Controller::showListWindow() {
             this, &{{domain_entity.entity_pascal}}Controller::onAddNewRequested);
     connect(listWindow_, &{{domain_entity.entity_pascal}}MdiWindow::show{{domain_entity.entity_pascal_short}}History,
             this, &{{domain_entity.entity_pascal}}Controller::onShowHistory);
+{{! see * Extension points above }}
+<<paste:52E70F3B-5903-4359-91FB-B533054A18AC>>
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);

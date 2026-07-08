@@ -88,7 +88,7 @@ QIcon currency_flag_icon_from_pair_code(ImageCache& imageCache, const std::strin
         imageCache, pairCode.substr(0, sep), pairCode.substr(sep + 1));
 }
 
-void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source) {
+void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source, QSize iconSize) {
     if (!combo || !cache)
         return;
 
@@ -96,7 +96,7 @@ void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source) {
     // iconSize falls back to a style-dependent default that isn't
     // guaranteed to render at a usable/visible size — every flag-bearing
     // combo must set this explicitly, not just table views.
-    combo->setIconSize(single_flag_icon_size());
+    combo->setIconSize(iconSize);
 
     auto resolver = [cache, source](const std::string& code) -> QIcon {
         switch (source) {
@@ -113,15 +113,16 @@ void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source) {
     set_combo_flag_icons(combo, resolver);
 }
 
-void setup_flag_combo(QObject* context, QComboBox* combo, ImageCache* cache, FlagSource source) {
+void setup_flag_combo(
+    QObject* context, QComboBox* combo, ImageCache* cache, FlagSource source, QSize iconSize) {
     if (!combo || !cache)
         return;
 
-    apply_flag_icons(combo, cache, source);
+    apply_flag_icons(combo, cache, source, iconSize);
 
     // Re-apply when the full image set arrives from the server.
-    QObject::connect(cache, &ImageCache::allLoaded, context, [combo, cache, source]() {
-        apply_flag_icons(combo, cache, source);
+    QObject::connect(cache, &ImageCache::allLoaded, context, [combo, cache, source, iconSize]() {
+        apply_flag_icons(combo, cache, source, iconSize);
     });
 }
 
@@ -129,7 +130,8 @@ void setup_currency_combo(QComboBox* combo,
                           QObject* owner,
                           ClientManager* client_manager,
                           ImageCache* image_cache,
-                          std::function<QString()> fallback_selection) {
+                          std::function<QString()> fallback_selection,
+                          QSize iconSize) {
     if (!combo || !owner || !client_manager || !client_manager->isConnected())
         return;
 
@@ -147,7 +149,7 @@ void setup_currency_combo(QComboBox* combo,
     QObject::connect(watcher,
                      &QFutureWatcher<std::vector<std::string>>::finished,
                      owner,
-                     [comboPtr, ownerPtr, watcher, image_cache, fallback_selection]() {
+                     [comboPtr, ownerPtr, watcher, image_cache, fallback_selection, iconSize]() {
                          auto codes = watcher->result();
                          watcher->deleteLater();
                          if (!comboPtr || !ownerPtr)
@@ -178,7 +180,8 @@ void setup_currency_combo(QComboBox* combo,
                          // resolve empty and never be revisited), so this also
                          // reconnects on ImageCache::allLoaded to re-apply once the
                          // full set has downloaded.
-                         setup_flag_combo(ownerPtr, comboPtr, image_cache, FlagSource::Currency);
+                         setup_flag_combo(
+                             ownerPtr, comboPtr, image_cache, FlagSource::Currency, iconSize);
                      });
     watcher->setFuture(future);
 }

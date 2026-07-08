@@ -2213,6 +2213,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     f['is_key'] = False
                 if not f.get('is_required'):
                     f['is_required'] = False
+                # immutable: an identity-defining field that isn't the
+                # primary key itself (e.g. currency_pair's base_currency/
+                # quote_currency) but must never change after creation --
+                # locked the same way as is_key: editable while
+                # createMode_ is true, disabled and excluded from
+                # update...FromUi() otherwise.
+                f['is_immutable'] = bool(f.get('immutable'))
+                f['is_locked_after_create'] = f['is_key'] or f['is_immutable']
                 # Derive value_widget for history dialog (e.g. codeEdit->codeValue, nameCombo->nameValue)
                 widget = f.get('widget', f['field'] + 'Edit')
                 f['value_widget'] = widget.replace('Edit', 'Value').replace('Combo', 'Value')
@@ -2241,6 +2249,24 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Expose the key field's widget name for setCreateMode
             key_field_data = next((f for f in detail_fields if f.get('is_key')), None)
             qt['key_widget'] = key_field_data['widget'] if key_field_data else 'codeEdit'
+            # Every field locked after create (is_key or immutable):
+            # setCreateMode() disables each by its own widget kind
+            # (setReadOnly for a text field, setEnabled(false) for a
+            # combo) rather than assuming every locked field is the
+            # single QLineEdit key_widget above.
+            locked_fields = [
+                {
+                    'widget': f['widget'],
+                    'is_line_edit': f['is_line_edit'],
+                    'is_text_edit': f['is_text_edit'],
+                    'is_static_combo': f['is_static_combo'],
+                    'is_dynamic_combo': f['is_dynamic_combo'],
+                    'is_flagged_combo': f['is_flagged_combo'],
+                }
+                for f in detail_fields if f['is_locked_after_create']
+            ]
+            qt['locked_fields'] = locked_fields
+            qt['has_locked_fields'] = bool(locked_fields)
             # Default has_pagination to False if not set
             qt['has_pagination'] = qt.get('has_pagination', False)
             qt['has_text_edit_fields'] = any(

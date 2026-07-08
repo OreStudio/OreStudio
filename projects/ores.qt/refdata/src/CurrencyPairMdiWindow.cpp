@@ -55,8 +55,7 @@ CurrencyPairMdiWindow::CurrencyPairMdiWindow(ClientManager* clientManager,
     , addAction_(nullptr)
     , editAction_(nullptr)
     , deleteAction_(nullptr)
-    , historyAction_(nullptr)
-    , conventionsAction_(nullptr) {
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -114,15 +113,17 @@ void CurrencyPairMdiWindow::setupToolbar() {
     historyAction_->setToolTip(tr("View currency pair history"));
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this, &CurrencyPairMdiWindow::viewHistorySelected);
-
-    toolbar_->addSeparator();
-    conventionsAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor), tr("Conventions"));
-    conventionsAction_->setToolTip(tr("Open Currency Pair Conventions"));
-    connect(conventionsAction_,
-           &QAction::triggered,
-           this,
-           &CurrencyPairMdiWindow::showConventionsRequested);
+    {
+        toolbar_->addSeparator();
+        auto* conventionsAction = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor),
+            tr("Conventions"));
+        conventionsAction->setToolTip(tr("Open Currency Pair Conventions"));
+        connect(conventionsAction,
+                &QAction::triggered,
+                this,
+                &CurrencyPairMdiWindow::showConventionsRequested);
+    }
 }
 
 void CurrencyPairMdiWindow::setupTable() {

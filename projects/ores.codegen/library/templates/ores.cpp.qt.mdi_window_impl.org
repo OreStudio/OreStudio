@@ -16,6 +16,16 @@ List view window hosted in the main MDI area.  Qt UI component: model/view class
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
 
+* Extension points
+
+=<<paste:UUID>>= markers in this template are paste-block injection
+points — see [[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][paste blocks: injecting custom code into generated files]]
+for the full mechanism. This template defines one:
+
+- =18B9ED63-78C2-4259-93AC-CCDFBC88EFBD= — end of =setupToolbar()=,
+  after the generated History action. Extra toolbar actions, e.g. a
+  cross-navigation button to a related entity's list window.
+
 * Template
 
 The full template source. Edit here and re-tangle with
@@ -183,6 +193,8 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this,
             &{{domain_entity.entity_pascal}}MdiWindow::viewHistorySelected);
+{{! see * Extension points above }}
+<<paste:18B9ED63-78C2-4259-93AC-CCDFBC88EFBD>>
 
 {{#domain_entity.qt.has_csv_xml_io}}
     toolbar_->addSeparator();

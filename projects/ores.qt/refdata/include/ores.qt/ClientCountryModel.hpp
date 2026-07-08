@@ -95,6 +95,7 @@ public:
      */
     const refdata::domain::country* getCountry(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

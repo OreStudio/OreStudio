@@ -27,6 +27,7 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
 #include "ui_CurrencyPairDetailDialog.h"
+#include <QCheckBox>
 #include <QComboBox>
 #include <QFutureWatcher>
 #include <QIcon>
@@ -100,6 +101,10 @@ QIcon CurrencyPairDetailDialog::keyFlagIcon(const std::string& key) const {
     return imageCache() ? currency_flag_icon_from_pair_code(*imageCache(), key) : QIcon();
 }
 
+QSize CurrencyPairDetailDialog::keyFlagIconSize() const {
+    return currency_pair_icon_size();
+}
+
 void CurrencyPairDetailDialog::setupCombos() {
     ui_->classificationCombo->clear();
     ui_->classificationCombo->addItem(tr("major"), QString("major"));
@@ -137,6 +142,18 @@ void CurrencyPairDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &CurrencyPairDetailDialog::onFieldChanged);
+    connect(ui_->baseCurrencyCombo,
+            &QComboBox::currentTextChanged,
+            this,
+            &CurrencyPairDetailDialog::updatePairCodeFromCurrencies);
+    connect(ui_->quoteCurrencyCombo,
+            &QComboBox::currentTextChanged,
+            this,
+            &CurrencyPairDetailDialog::updatePairCodeFromCurrencies);
+    connect(ui_->deliverableCheckBox,
+            &QCheckBox::toggled,
+            this,
+            &CurrencyPairDetailDialog::updateSettlementCurrencyAvailability);
 }
 
 void CurrencyPairDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -179,10 +196,20 @@ void CurrencyPairDetailDialog::setPair(const refdata::domain::currency_pair& pai
 void CurrencyPairDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->pairCodeEdit->setReadOnly(!createMode);
+    ui_->baseCurrencyCombo->setEnabled(createMode);
+    ui_->quoteCurrencyCombo->setEnabled(createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
     updateSaveButtonState();
+    WidgetUtils::set_combo_locked(ui_->baseCurrencyCombo, !createMode);
+    WidgetUtils::set_combo_locked(ui_->quoteCurrencyCombo, !createMode);
+    // pair_code is always derived (see updatePairCodeFromCurrencies()),
+    // never independently typed -- the generated locked_fields loop above
+    // left it as setReadOnly(!createMode) (is_key's normal, editable-at-
+    // create behaviour), which is wrong for a field that's never directly
+    // entered even at create time.
+    ui_->pairCodeEdit->setReadOnly(true);
 }
 
 void CurrencyPairDetailDialog::markDirty() {
@@ -193,13 +220,16 @@ void CurrencyPairDetailDialog::markDirty() {
 void CurrencyPairDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->pairCodeEdit->setReadOnly(true);
-    ui_->baseCurrencyCombo->setEnabled(!readOnly);
-    ui_->quoteCurrencyCombo->setEnabled(!readOnly);
+    ui_->baseCurrencyCombo->setEnabled(false);
+    ui_->quoteCurrencyCombo->setEnabled(false);
     ui_->settlementCurrencyCombo->setEnabled(!readOnly);
     ui_->classificationCombo->setEnabled(!readOnly);
     ui_->fixingSourceEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
+    WidgetUtils::set_combo_locked(ui_->baseCurrencyCombo, true);
+    WidgetUtils::set_combo_locked(ui_->quoteCurrencyCombo, true);
+    updateSettlementCurrencyAvailability(pair_.deliverable);
 }
 
 void CurrencyPairDetailDialog::updateUiFromPair() {
@@ -246,8 +276,12 @@ void CurrencyPairDetailDialog::updatePairFromUi() {
     if (createMode_) {
         pair_.pair_code = ui_->pairCodeEdit->text().trimmed().toStdString();
     }
-    pair_.base_currency = ui_->baseCurrencyCombo->currentText().toStdString();
-    pair_.quote_currency = ui_->quoteCurrencyCombo->currentText().toStdString();
+    if (createMode_) {
+        pair_.base_currency = ui_->baseCurrencyCombo->currentText().trimmed().toStdString();
+    }
+    if (createMode_) {
+        pair_.quote_currency = ui_->quoteCurrencyCombo->currentText().trimmed().toStdString();
+    }
     pair_.deliverable = ui_->deliverableCheckBox->isChecked();
     {
         const auto _txt = ui_->settlementCurrencyCombo->currentText().trimmed().toStdString();
@@ -283,7 +317,8 @@ bool CurrencyPairDetailDialog::validateInput() {
     const bool base_currency_selected = ui_->baseCurrencyCombo->currentIndex() >= 0;
     const bool quote_currency_selected = ui_->quoteCurrencyCombo->currentIndex() >= 0;
 
-    return true && !pair_code_val.isEmpty() && base_currency_selected && quote_currency_selected;
+    return true && !pair_code_val.isEmpty() && base_currency_selected && quote_currency_selected &&
+           ui_->baseCurrencyCombo->currentText() != ui_->quoteCurrencyCombo->currentText();
 }
 
 void CurrencyPairDetailDialog::onSaveClicked() {
@@ -427,6 +462,17 @@ void CurrencyPairDetailDialog::onDeleteClicked() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
+}
+
+void CurrencyPairDetailDialog::updatePairCodeFromCurrencies() {
+    if (!createMode_)
+        return;
+    ui_->pairCodeEdit->setText(ui_->baseCurrencyCombo->currentText() + "/" +
+                               ui_->quoteCurrencyCombo->currentText());
+}
+
+void CurrencyPairDetailDialog::updateSettlementCurrencyAvailability(bool deliverable) {
+    WidgetUtils::set_combo_unavailable(ui_->settlementCurrencyCombo, deliverable || readOnly_);
 }
 
 }

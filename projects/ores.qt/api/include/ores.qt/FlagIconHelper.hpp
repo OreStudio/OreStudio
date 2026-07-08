@@ -30,6 +30,7 @@
 #include <QSignalBlocker>
 #include <QSize>
 #include <QString>
+#include <QToolButton>
 #include <functional>
 #include <optional>
 #include <string>
@@ -142,8 +143,16 @@ ORES_QT_API QSize currency_pair_icon_size(int flagHeight = standard_flag_height)
  * @param combo   The combo box to decorate (no-op if null)
  * @param cache   The image cache (no-op if null)
  * @param source  Which flag type to use
+ * @param iconSize Combo iconSize to apply (defaults to
+ * single_flag_icon_size()) — override when a specific combo needs a
+ * larger, more legible flag than the app-wide default, e.g. a
+ * detail-dialog picker with few enough items that extra icon size costs
+ * no layout room.
  */
-ORES_QT_API void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source);
+ORES_QT_API void apply_flag_icons(QComboBox* combo,
+                                  ImageCache* cache,
+                                  FlagSource source,
+                                  QSize iconSize = single_flag_icon_size());
 
 /**
  * @brief Wire up a combo box for flag icons and keep them current.
@@ -157,8 +166,11 @@ ORES_QT_API void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSourc
  * @param cache    The image cache (no-op if null)
  * @param source   Which flag type to use
  */
-ORES_QT_API void
-setup_flag_combo(QObject* context, QComboBox* combo, ImageCache* cache, FlagSource source);
+ORES_QT_API void setup_flag_combo(QObject* context,
+                                  QComboBox* combo,
+                                  ImageCache* cache,
+                                  FlagSource source,
+                                  QSize iconSize = single_flag_icon_size());
 
 /**
  * @brief Set flag icons on every item in a QComboBox.
@@ -205,7 +217,10 @@ void set_combo_flag_icons(QComboBox* combo, Resolver&& resolver) {
  * @param icon        The icon to display (empty icon removes the action)
  * @param action_ptr  Reference to the caller-owned QAction pointer
  */
-inline void set_line_edit_flag_icon(QLineEdit* edit, const QIcon& icon, QAction*& action_ptr) {
+inline void set_line_edit_flag_icon(QLineEdit* edit,
+                                    const QIcon& icon,
+                                    QAction*& action_ptr,
+                                    QSize iconSize = single_flag_icon_size()) {
     if (action_ptr) {
         edit->removeAction(action_ptr);
         delete action_ptr;
@@ -213,6 +228,14 @@ inline void set_line_edit_flag_icon(QLineEdit* edit, const QIcon& icon, QAction*
     }
     if (!icon.isNull()) {
         action_ptr = edit->addAction(icon, QLineEdit::LeadingPosition);
+        // QLineEdit renders an action via an internal QToolButton, which
+        // has its own default icon size unrelated to the QIcon's actual
+        // pixmap sizes. setIconSize() is the documented way to influence
+        // it; attempts to force the button's frame size directly on top
+        // of that didn't move the rendered size in practice — parked,
+        // see task B4526411-7FDC-48E8-A346-DA69B5F66BDD.
+        if (auto* button = edit->findChild<QToolButton*>())
+            button->setIconSize(iconSize);
     }
 }
 
@@ -245,7 +268,8 @@ ORES_QT_API void setup_currency_combo(QComboBox* combo,
                                       QObject* owner,
                                       ClientManager* client_manager,
                                       ImageCache* image_cache,
-                                      std::function<QString()> fallback_selection = {});
+                                      std::function<QString()> fallback_selection = {},
+                                      QSize iconSize = single_flag_icon_size());
 
 }
 

@@ -83,6 +83,21 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+The currency-pair pair_code work ([[id:BBB450FD-845D-4D6D-AA54-07589FDC1DFF][Pair code doesn't recompute when base/quote currency changes]])
+added 6 new paste-block seams to =ores.cpp.qt.detail_dialog_impl.org=/
+=ores.cpp.qt.detail_dialog_header.org= (extra includes, declarations,
+connections, create-mode override, read-only override, extra methods)
+and 1 to =ores.cpp.qt.mdi_window_header.org= (extra signal
+declarations) — each currently documented only as a single
+=* Extension points= prose summary near the top of the file, with a
+one-line non-emitted =\{\{! see * Extension points above \}\}=
+=mustache= comment at each marker (comment-free generated output, but
+not yet split into the same-target-block-per-seam pattern this task
+calls for). Good concrete starting point when this task is picked up:
+retrofit those 7 seams as the first same-target-block splits, following
+the =\*\* Reverting to a historical version= exemplar in
+=ores.cpp.qt.controller_impl.org=.
+
 * PRs
 
 | PR | Title |

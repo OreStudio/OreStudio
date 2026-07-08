@@ -16,6 +16,17 @@ Controller declarations.  Qt UI component: model/view class or dialog wired to t
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
 
+* Extension points
+
+=<<paste:UUID>>= markers in this template are paste-block injection
+points — see [[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][paste blocks: injecting custom code into generated files]]
+for the full mechanism. This template defines one:
+
+- =66E078FB-D6A6-4DF6-814B-65995D948090= — in =signals:=, after the
+  generated signals. Extra entity-specific signals, e.g. a
+  cross-navigation request relayed from the list window (see the
+  matching seam in [[id:B903843F-9A8D-4B47-BB80-16F701525E3F][ores.cpp.qt.mdi_window_impl]]).
+
 * Template
 
 The full template source. Edit here and re-tangle with
@@ -106,6 +117,8 @@ public:
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
+{{! see * Extension points above }}
+<<paste:66E078FB-D6A6-4DF6-814B-65995D948090>>
 
 protected:
     EntityListMdiWindow* listWindow() const override;

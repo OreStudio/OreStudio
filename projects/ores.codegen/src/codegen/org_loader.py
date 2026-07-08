@@ -628,9 +628,16 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     # under any one facet's namespace.
     fk_section = _section(doc.root, "Foreign keys")
     if fk_section and fk_section.children:
-        de["foreign_keys"] = [
-            _soft_fk_validation_node_to_dict(c) for c in fk_section.children
-        ]
+        fks = [_soft_fk_validation_node_to_dict(c) for c in fk_section.children]
+        for fk in fks:
+            # :bump_parent_version: true asks the child's insert trigger and
+            # delete rule to call the parent's generated touch function
+            # (see the "Temporal composite entity versioning" architecture
+            # doc). Derive the function name from the FK's target table
+            # rather than requiring it spelled out per FK.
+            if fk.get("bump_parent_version"):
+                fk["touch_function"] = re.sub(r"_tbl$", "_touch_version_fn", fk["table"])
+        de["foreign_keys"] = fks
 
     # SQL section: SQL-specific flags + structured sub-sections.
     sql_section = _section(doc.root, "SQL")

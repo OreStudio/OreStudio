@@ -7,43 +7,121 @@
 #+level: s1
 #+filetags: :composite_entity:versioning:sql:codegen:implement-temporal-composite-entity-versioning:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-composite-versioning-architecture-doc
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-07
 #+updated: 2026-07-07
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Make child writes (party_identifier, party_contact_information,
+counterparty_identifier, counterparty_contact_information) bump their
+parent's version in the same transaction, codegen-driven via a new FK
+flag so any future entity gets this by flipping a flag rather than
+hand-writing SQL.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-07                               |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                       |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-08                               |
 
 * Acceptance
 
--
+- Adding/updating/deleting a party_identifier, party_contact_information,
+  counterparty_identifier, or counterparty_contact_information bumps
+  the parent's version in the same transaction, with a
+  distinguishing change_commentary.
+- Codegen-driven for counterparty (the reference case already on the
+  unified template): enabling =:bump_parent_version:= on a child FK
+  and =:generate_touch_function:= on the parent is sufficient, no
+  hand-written SQL.
+- Party hand-patched to match exactly what codegen would produce
+  (party is not yet under codegen).
+- Verified live: full Barclays GLEIF provisioning run end-to-end with
+  no errors; party and counterparty repository test suites (17 test
+  cases, 25 assertions) pass unchanged.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add =:bump_parent_version:= FK flag (child side) and
+   =:generate_touch_function:= flag (parent side) to
+   =org_loader.py=/the FK dict — both are generic top-level/FK
+   PROPERTIES already passed through, only =touch_function=（the
+   target function name)needed deriving from the FK's =:table:=.
+2. Edit the literate =.org= twin of =sql_schema_domain_entity_create.mustache=
+   (never the tangled =.mustache= directly): emit the touch-function
+   call from the child's insert trigger and delete rule; emit the
+   touch function itself on the parent side.
+3. Tangle, flip the flags on counterparty's =.org= models, regenerate
+   via =compass codegen regenerate --component refdata --profile sql=,
+   and manually scope the diff down to just the 3 counterparty files
+   (the regen run also picked up large amounts of pre-existing,
+   unrelated drift on ~20 other entities — reverted those; not this
+   task's concern).
+4. Hand-patch the equivalent into party's 3 SQL files (not under
+   codegen yet), matching the counterparty pattern exactly.
 
 * Notes
+
+Two real bugs found and fixed while proving this against a live
+GLEIF provisioning run (not caught by design review — needed an
+actual same-transaction multi-write to surface):
+
+1. *Recursive double version-management.* First implementation had
+   the touch function do the close-current/insert-new-version dance
+   itself, then =insert into parent_tbl select (rec).*= — but that
+   insert re-fires the parent's own insert trigger, which redundantly
+   redoes version management from scratch (finds the row already
+   closed by the touch function, so takes the "not found" branch and
+   resets version to 1, discarding the correct value). Fixed by
+   *not* duplicating the dance: the touch function only resets
+   =version= to the =0= sentinel and re-inserts; the parent's
+   existing, already-correct trigger does the actual bump, exactly as
+   a normal application save would.
+2. =current_timestamp= *is frozen for the whole transaction* in
+   Postgres — nothing in this codebase had ever written to the same
+   row twice in one transaction before, so this was a dormant
+   correctness gap. GLEIF provisioning creates a party/counterparty
+   and its LEI identifier within the same transaction, so the
+   identifier's touch-triggered close-update collided exactly with
+   the parent row's own =valid_from= (same instant), first failing
+   the =valid_from < valid_to= check, then (after removing the guard
+   that masked it) the primary-key/exclude constraint. Fixed by
+   switching every =valid_from=/=valid_to= management statement in
+   the has_audit_columns trigger branch (and the matching delete
+   rule) from =current_timestamp= to =clock_timestamp()= (true
+   wall-clock, always advances). Scoped to just the branch party and
+   counterparty use, not the whole template, to avoid unrelated
+   blast radius — the other branch (=bitemporal_soft_update=, used by
+   different entities) still uses =current_timestamp= and doesn't yet
+   need this fix.
+
+Live verification: party BRCLYS went v1 (create) → v2 (LEI identifier
+bumped it, commentary "Bumped by child party_identifier: ...") → v3
+(a direct edit) → v4 (a second LEI added via raw SQL, confirming
+repeat bumps and the delete-side path both work, tested by deleting
+that identifier and observing v4's commentary and the identifier's
+own valid_to closing correctly). Counterparty SNTRCH showed the
+identical pattern, generated purely from the codegen flags with zero
+hand-written SQL.
+
+=party_contact_information='s FK validation is hand-written inline
+SQL (not driven by a =Foreign keys= org section at all, unlike
+=party_identifier=) since party predates the generic FK-block
+convention — patched the touch-function call directly into that
+inline validation rather than via a (nonexistent) FK flag.
 
 * PRs
 
@@ -58,3 +136,14 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Landed and proven live: child writes to party/counterparty
+identifiers and contact information bump the parent's version in the
+same transaction, codegen-driven for counterparty (2 new FK/parent
+flags) and hand-patched to match for party. Found and fixed 2 latent
+bugs along the way (recursive double version-management;
+=current_timestamp= transaction-freezing colliding on same-transaction
+multi-writes) — the second is a general correctness fix to the shared
+trigger template, not specific to this feature, but only this feature
+ever exercised the code path that exposed it. Full GLEIF provisioning
+run and the party/counterparty repository test suites pass.

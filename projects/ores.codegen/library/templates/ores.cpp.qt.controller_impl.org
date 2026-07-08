@@ -585,13 +585,13 @@ void {{domain_entity.entity_pascal}}Controller::notifyOpenDialogs(const QStringL
         if (!window)
             continue;
 
-        if (it.key().startsWith("details:")) {
+        if (it.key().startsWith("details.")) {
             if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
                 if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
                     dialog->markAsStale();
                 }
             }
-        } else if (it.key().startsWith("history:")) {
+        } else if (it.key().startsWith("history.")) {
             if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
                 if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
                     dialog->markAsStale();

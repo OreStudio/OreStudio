@@ -452,7 +452,7 @@ void CurrencyController::onNotificationReceived(const QString& eventType,
         if (!window)
             continue;
 
-        if (key.startsWith("details:")) {
+        if (key.startsWith("details.")) {
             if (auto* detailDialog = qobject_cast<CurrencyDetailDialog*>(window->widget())) {
                 if (entityIds.isEmpty() || entityIds.contains(detailDialog->isoCode())) {
                     detailDialog->markAsStale();
@@ -460,7 +460,7 @@ void CurrencyController::onNotificationReceived(const QString& eventType,
                                                << detailDialog->isoCode().toStdString();
                 }
             }
-        } else if (key.startsWith("history:")) {
+        } else if (key.startsWith("history.")) {
             if (auto* historyDialog = qobject_cast<CurrencyHistoryDialog*>(window->widget())) {
                 if (entityIds.isEmpty() || entityIds.contains(historyDialog->code())) {
                     historyDialog->markAsStale();

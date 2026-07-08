@@ -134,7 +134,12 @@ void setup_currency_combo(QComboBox* combo, QObject* owner, ClientManager* clien
             if (!to_select.isEmpty())
                 comboPtr->setCurrentText(to_select);
 
-            apply_flag_icons(comboPtr, image_cache, FlagSource::Currency);
+            // setup_flag_combo, not apply_flag_icons: the image cache may
+            // still be loading when the combo first populates (icons would
+            // resolve empty and never be revisited), so this also
+            // reconnects on ImageCache::allLoaded to re-apply once the
+            // full set has downloaded.
+            setup_flag_combo(ownerPtr, comboPtr, image_cache, FlagSource::Currency);
         });
     watcher->setFuture(future);
 }

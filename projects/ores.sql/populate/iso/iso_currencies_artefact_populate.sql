@@ -116,7 +116,7 @@ begin
         c.holiday_calendar
     from (values
         -- Americas
-        ('USD', 'US Dollar', '840', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.g10', 'us', 1, true, 'ACT/360', 5, 'US'),
+        ('USD', 'US Dollar', '840', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.g10', 'us', 1, true, 'ACT/360', 5, 'UnitedStates'),
         ('CAD', 'Canadian Dollar', '124', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.g10', 'ca', 2, true, 'ACT/365', 6, 'Canada'),
         ('MXN', 'Mexican Peso', '484', '$', '¢', 100, 'Closest', 2, '$#,##0.00', 'fiat.emerging', 'mx', 2, true, 'ACT/360', 100, 'Mexico'),
         ('BRL', 'Brazilian Real', '986', 'R$', '¢', 100, 'Closest', 2, 'R$#,##0.00', 'fiat.emerging', 'br', 2, false, 'ACT/360', 100, 'Brazil'),
@@ -151,7 +151,7 @@ begin
         ('FKP', 'Falkland Islands Pound', '238', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.emerging', 'fk', 2, true, 'ACT/365', 100, null),
         -- Europe
         ('EUR', 'Euro', '978', '€', 'c', 100, 'Closest', 2, '€#,##0.00', 'fiat.g10', 'eu', 2, true, 'ACT/360', 1, 'TARGET'),
-        ('GBP', 'British Pound Sterling', '826', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.g10', 'gb', 2, true, 'ACT/365', 2, 'UK'),
+        ('GBP', 'British Pound Sterling', '826', '£', 'p', 100, 'Closest', 2, '£#,##0.00', 'fiat.g10', 'gb', 2, true, 'ACT/365', 2, 'UnitedKingdom'),
         ('CHF', 'Swiss Franc', '756', 'CHF', 'c', 100, 'Closest', 2, 'CHF #,##0.00', 'fiat.g10', 'ch', 2, true, 'ACT/360', 7, 'Switzerland'),
         ('NOK', 'Norwegian Krone', '578', 'kr', 'ø', 100, 'Closest', 2, 'kr #,##0.00', 'fiat.g10', 'no', 2, true, 'ACT/360', 9, 'Norway'),
         ('SEK', 'Swedish Krona', '752', 'kr', 'ö', 100, 'Closest', 2, '#,##0.00 kr', 'fiat.g10', 'se', 2, true, 'ACT/360', 10, 'Sweden'),

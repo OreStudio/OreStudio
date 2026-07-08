@@ -27,8 +27,9 @@
  * use 2 decimal places / 0.01 pip; everything else uses 4 decimal places /
  * 0.0001 pip), tick_size defaults to 1.0 (one pip, per
  * doc/knowledge/domain/fx_pip_tick_and_pip_factor.org — tick_size is a pip
- * count, not an absolute rate move), advance_calendar combines both legs'
- * currency.holiday_calendar (comma-joined) where both are known, and
+ * count, not an absolute rate move), advance_calendar comma-joins both
+ * legs' currency.holiday_calendar (only the known ones — falls back to a
+ * single calendar, or null, when one or both legs have none set), and
  * business_day_convention/spot_relative/end_of_month use the standard FX
  * spot defaults (Modified Following, spot-relative, no end-of-month roll).
  *
@@ -123,6 +124,8 @@ begin
     from ores_dq_currency_pairs_artefact_tbl p
     join ores_dq_datasets_tbl iso_ds
         on iso_ds.name = 'ISO 4217 Currency Codes'
+        and iso_ds.subject_area_name = 'Currencies'
+        and iso_ds.domain_name = 'Reference Data'
     left join ores_dq_currencies_artefact_tbl base
         on base.dataset_id = iso_ds.id
         and base.tenant_id = v_tenant_id

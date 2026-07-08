@@ -18,12 +18,19 @@
  *
  */
 #include "ores.qt/CurrencyPairConventionDetailDialog.hpp"
+#include "ores.qt/BadgeComboHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
 #include "ui_CurrencyPairConventionDetailDialog.h"
+#include <QComboBox>
 #include <QFutureWatcher>
+#include <QIcon>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 
@@ -37,8 +44,15 @@ CurrencyPairConventionDetailDialog::CurrencyPairConventionDetailDialog(QWidget* 
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
+    setupCombos();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 CurrencyPairConventionDetailDialog::~CurrencyPairConventionDetailDialog() {
@@ -57,6 +71,10 @@ ProvenanceWidget* CurrencyPairConventionDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
 }
 
+QString CurrencyPairConventionDetailDialog::code() const {
+    return QString::fromStdString(convention_.pair_code);
+}
+
 void CurrencyPairConventionDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
@@ -67,6 +85,30 @@ void CurrencyPairConventionDetailDialog::setupUi() {
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
+    // No uploadable flag image of its own — just the derived, read-only
+    // inline icon on the key field.
+    initKeyFlagField();
+}
+
+QLineEdit* CurrencyPairConventionDetailDialog::keyFlagField() const {
+    return ui_->pairCodeEdit;
+}
+
+QIcon CurrencyPairConventionDetailDialog::keyFlagIcon(const std::string& key) const {
+    return imageCache() ? currency_flag_icon_from_pair_code(*imageCache(), key) : QIcon();
+}
+
+void CurrencyPairConventionDetailDialog::setupCombos() {
+    ui_->businessDayConventionCombo->clear();
+    ui_->businessDayConventionCombo->addItem(tr("Following"), QString("Following"));
+    ui_->businessDayConventionCombo->addItem(tr("ModifiedFollowing"), QString("ModifiedFollowing"));
+    ui_->businessDayConventionCombo->addItem(tr("Preceding"), QString("Preceding"));
+    ui_->businessDayConventionCombo->addItem(tr("ModifiedPreceding"), QString("ModifiedPreceding"));
+    ui_->businessDayConventionCombo->addItem(tr("Unadjusted"), QString("Unadjusted"));
+    ui_->businessDayConventionCombo->addItem(tr("HalfMonthModifiedFollowing"),
+                                             QString("HalfMonthModifiedFollowing"));
+    ui_->businessDayConventionCombo->addItem(tr("Nearest"), QString("Nearest"));
 }
 
 void CurrencyPairConventionDetailDialog::setupConnections() {
@@ -99,14 +141,18 @@ void CurrencyPairConventionDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &CurrencyPairConventionDetailDialog::onFieldChanged);
-    connect(ui_->businessDayConventionEdit,
-            &QLineEdit::textChanged,
+    connect(ui_->businessDayConventionCombo,
+            &QComboBox::currentIndexChanged,
             this,
             &CurrencyPairConventionDetailDialog::onFieldChanged);
 }
 
 void CurrencyPairConventionDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    setup_badge_combo(this,
+                      ui_->businessDayConventionCombo,
+                      badgeCache(),
+                      "currency_pair_convention_business_day_convention");
 }
 
 void CurrencyPairConventionDetailDialog::setUsername(const std::string& username) {
@@ -139,7 +185,7 @@ void CurrencyPairConventionDetailDialog::setReadOnly(bool readOnly) {
     ui_->pipFactorEdit->setReadOnly(readOnly);
     ui_->tickSizeEdit->setReadOnly(readOnly);
     ui_->advanceCalendarEdit->setReadOnly(readOnly);
-    ui_->businessDayConventionEdit->setReadOnly(readOnly);
+    ui_->businessDayConventionCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -152,10 +198,14 @@ void CurrencyPairConventionDetailDialog::updateUiFromConvention() {
     ui_->advanceCalendarEdit->setText(convention_.advance_calendar ?
                                           QString::fromStdString(*convention_.advance_calendar) :
                                           QString{});
-    ui_->businessDayConventionEdit->setText(
-        convention_.business_day_convention ?
-            QString::fromStdString(*convention_.business_day_convention) :
-            QString{});
+    {
+        const auto val = convention_.business_day_convention ?
+                             QString::fromStdString(*convention_.business_day_convention) :
+                             QString{};
+        const int idx = ui_->businessDayConventionCombo->findData(val);
+        if (idx >= 0)
+            ui_->businessDayConventionCombo->setCurrentIndex(idx);
+    }
     ui_->spotRelativeCheckBox->setCheckState(
         convention_.spot_relative ? (*convention_.spot_relative ? Qt::Checked : Qt::Unchecked) :
                                     Qt::PartiallyChecked);
@@ -187,14 +237,8 @@ void CurrencyPairConventionDetailDialog::updateConventionFromUi() {
                                            std::nullopt :
                                            std::optional<std::string>(advance_calendar_str);
     }
-    {
-        const auto business_day_convention_str =
-            ui_->businessDayConventionEdit->text().trimmed().toStdString();
-        convention_.business_day_convention =
-            business_day_convention_str.empty() ?
-                std::nullopt :
-                std::optional<std::string>(business_day_convention_str);
-    }
+    convention_.business_day_convention =
+        ui_->businessDayConventionCombo->currentData().toString().toStdString();
     switch (ui_->spotRelativeCheckBox->checkState()) {
         case Qt::Checked:
             convention_.spot_relative = std::optional<bool>(true);
@@ -338,7 +382,8 @@ void CurrencyPairConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 

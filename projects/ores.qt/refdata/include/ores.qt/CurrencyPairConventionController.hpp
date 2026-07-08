@@ -32,7 +32,9 @@ namespace ores::qt {
 
 class CurrencyPairConventionMdiWindow;
 class DetachableMdiSubWindow;
+class BadgeCache;
 class ChangeReasonCache;
+class ImageCache;
 
 /**
  * @brief Controller for managing currency pair convention windows and operations.
@@ -56,13 +58,16 @@ public:
     CurrencyPairConventionController(QMainWindow* mainWindow,
                                      QMdiArea* mdiArea,
                                      ClientManager* clientManager,
+                                     ImageCache* imageCache,
                                      ChangeReasonCache* changeReasonCache,
                                      const QString& username,
+                                     BadgeCache* badgeCache,
                                      QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
     void reloadListWindow() override;
+
 
 signals:
     void statusMessage(const QString& message);
@@ -70,6 +75,7 @@ signals:
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::currency_pair_convention& convention);
@@ -85,6 +91,7 @@ private:
     void showHistoryWindow(const QString& code);
 
     ChangeReasonCache* changeReasonCache_;
+    BadgeCache* badgeCache_;
     CurrencyPairConventionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

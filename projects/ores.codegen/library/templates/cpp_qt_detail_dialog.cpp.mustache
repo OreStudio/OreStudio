@@ -33,6 +33,16 @@
 #include <QIcon>
 #include <QLineEdit>
 {{/domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.has_key_flag_icon}}
+{{^domain_entity.qt.has_flag_icon}}
+#include "ores.qt/ImageCache.hpp"
+#include <QIcon>
+#include <QLineEdit>
+{{/domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.key_flag_accessor_is_free_fn}}
+#include "ores.qt/FlagIconHelper.hpp"
+{{/domain_entity.qt.key_flag_accessor_is_free_fn}}
+{{/domain_entity.qt.has_key_flag_icon}}
 {{#domain_entity.qt.has_combo_flag_source}}
 #include "ores.qt/FlagIconHelper.hpp"
 #include <algorithm>
@@ -106,8 +116,17 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 {{#domain_entity.qt.has_flag_icon}}
 
-    // Flag editor hosted in the .ui flagGroup; base class owns the button.
+    // Flag editor hosted in the .ui flagGroup; base class owns the button
+    // (also wires the inline key-field icon — see initKeyFlagField()).
     initFlagButton(ui_->flagGroup->layout());
+{{/domain_entity.qt.has_flag_icon}}
+{{^domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.has_key_flag_icon}}
+
+    // No uploadable flag image of its own — just the derived, read-only
+    // inline icon on the key field.
+    initKeyFlagField();
+{{/domain_entity.qt.has_key_flag_icon}}
 {{/domain_entity.qt.has_flag_icon}}
 {{#domain_entity.qt.has_version_navigation}}
 
@@ -173,15 +192,22 @@ std::optional<boost::uuids::uuid>
 {{domain_entity.entity_pascal}}DetailDialog::entityImageId() const {
     return {{domain_entity.qt.item_var}}_.image_id;
 }
+{{/domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.has_key_flag_icon}}
 
 QLineEdit* {{domain_entity.entity_pascal}}DetailDialog::keyFlagField() const {
-    return ui_->{{domain_entity.qt.flag_inline_widget}};
+    return ui_->{{domain_entity.qt.key_flag_field}};
 }
 
 QIcon {{domain_entity.entity_pascal}}DetailDialog::keyFlagIcon(const std::string& key) const {
-    return imageCache() ? imageCache()->{{domain_entity.qt.flag_accessor}}(key) : QIcon();
+{{#domain_entity.qt.key_flag_accessor_is_free_fn}}
+    return imageCache() ? {{domain_entity.qt.key_flag_accessor}}(*imageCache(), key) : QIcon();
+{{/domain_entity.qt.key_flag_accessor_is_free_fn}}
+{{^domain_entity.qt.key_flag_accessor_is_free_fn}}
+    return imageCache() ? imageCache()->{{domain_entity.qt.key_flag_accessor}}(key) : QIcon();
+{{/domain_entity.qt.key_flag_accessor_is_free_fn}}
 }
-{{/domain_entity.qt.has_flag_icon}}
+{{/domain_entity.qt.has_key_flag_icon}}
 
 {{#domain_entity.qt.has_combo_fields}}
 void {{domain_entity.entity_pascal}}DetailDialog::setupCombos() {
@@ -691,8 +717,16 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
 {{/is_spin_box}}
 {{#is_static_combo}}
     {
-        const int idx = ui_->{{widget}}->findData(
-            QString::fromStdString({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
+{{#is_optional_string}}
+        const auto val = {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}
+            ? QString::fromStdString(*{{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}})
+            : QString{};
+{{/is_optional_string}}
+{{^is_optional_string}}
+        const auto val = QString::fromStdString(
+            {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
+{{/is_optional_string}}
+        const int idx = ui_->{{widget}}->findData(val);
         if (idx >= 0) ui_->{{widget}}->setCurrentIndex(idx);
     }
 {{/is_static_combo}}

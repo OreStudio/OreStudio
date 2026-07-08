@@ -14,6 +14,14 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+{{#domain_entity.qt.has_pair_icon_column}}
+#include "ores.qt/FlagIconHelper.hpp"
+{{/domain_entity.qt.has_pair_icon_column}}
+{{^domain_entity.qt.has_pair_icon_column}}
+{{#domain_entity.qt.has_any_flag_icon}}
+#include "ores.qt/FlagIconHelper.hpp"
+{{/domain_entity.qt.has_any_flag_icon}}
+{{/domain_entity.qt.has_pair_icon_column}}
 {{#domain_entity.qt.has_csv_xml_io}}
 #include "ores.qt/ImportEntityDialog.hpp"
 #include <QDesktopServices>
@@ -196,6 +204,14 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
+{{#domain_entity.qt.has_pair_icon_column}}
+    tableView_->setIconSize(currency_pair_icon_size());
+{{/domain_entity.qt.has_pair_icon_column}}
+{{^domain_entity.qt.has_pair_icon_column}}
+{{#domain_entity.qt.has_any_flag_icon}}
+    tableView_->setIconSize(single_flag_icon_size());
+{{/domain_entity.qt.has_any_flag_icon}}
+{{/domain_entity.qt.has_pair_icon_column}}
 
 {{#domain_entity.qt.has_badge_columns}}
     using cs = column_style;

@@ -18,15 +18,19 @@
  *
  */
 #include "ores.qt/CurrencyPairDetailDialog.hpp"
+#include "ores.qt/BadgeComboHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
 #include "ui_CurrencyPairDetailDialog.h"
 #include <QComboBox>
 #include <QFutureWatcher>
+#include <QIcon>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <algorithm>
@@ -68,6 +72,10 @@ ProvenanceWidget* CurrencyPairDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
 }
 
+QString CurrencyPairDetailDialog::code() const {
+    return QString::fromStdString(pair_.pair_code);
+}
+
 void CurrencyPairDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
@@ -78,9 +86,27 @@ void CurrencyPairDetailDialog::setupUi() {
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
+    // No uploadable flag image of its own — just the derived, read-only
+    // inline icon on the key field.
+    initKeyFlagField();
 }
 
-void CurrencyPairDetailDialog::setupCombos() {}
+QLineEdit* CurrencyPairDetailDialog::keyFlagField() const {
+    return ui_->pairCodeEdit;
+}
+
+QIcon CurrencyPairDetailDialog::keyFlagIcon(const std::string& key) const {
+    return imageCache() ? currency_flag_icon_from_pair_code(*imageCache(), key) : QIcon();
+}
+
+void CurrencyPairDetailDialog::setupCombos() {
+    ui_->classificationCombo->clear();
+    ui_->classificationCombo->addItem(tr("major"), QString("major"));
+    ui_->classificationCombo->addItem(tr("minor"), QString("minor"));
+    ui_->classificationCombo->addItem(tr("exotic"), QString("exotic"));
+    ui_->classificationCombo->addItem(tr("commodity"), QString("commodity"));
+}
 
 void CurrencyPairDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this, &CurrencyPairDetailDialog::onSaveClicked);
@@ -103,8 +129,8 @@ void CurrencyPairDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &CurrencyPairDetailDialog::onFieldChanged);
-    connect(ui_->classificationEdit,
-            &QLineEdit::textChanged,
+    connect(ui_->classificationCombo,
+            &QComboBox::currentIndexChanged,
             this,
             &CurrencyPairDetailDialog::onFieldChanged);
     connect(ui_->fixingSourceEdit,
@@ -115,6 +141,7 @@ void CurrencyPairDetailDialog::setupConnections() {
 
 void CurrencyPairDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    setup_badge_combo(this, ui_->classificationCombo, badgeCache(), "currency_pair_classification");
     populateBaseCurrencyCombo();
     populateQuoteCurrencyCombo();
     populateSettlementCurrencyCombo();
@@ -169,7 +196,7 @@ void CurrencyPairDetailDialog::setReadOnly(bool readOnly) {
     ui_->baseCurrencyCombo->setEnabled(!readOnly);
     ui_->quoteCurrencyCombo->setEnabled(!readOnly);
     ui_->settlementCurrencyCombo->setEnabled(!readOnly);
-    ui_->classificationEdit->setReadOnly(readOnly);
+    ui_->classificationCombo->setEnabled(!readOnly);
     ui_->fixingSourceEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
@@ -195,7 +222,12 @@ void CurrencyPairDetailDialog::updateUiFromPair() {
         const int idx = ui_->settlementCurrencyCombo->findText(val);
         ui_->settlementCurrencyCombo->setCurrentIndex(idx);
     }
-    ui_->classificationEdit->setText(QString::fromStdString(pair_.classification));
+    {
+        const auto val = QString::fromStdString(pair_.classification);
+        const int idx = ui_->classificationCombo->findData(val);
+        if (idx >= 0)
+            ui_->classificationCombo->setCurrentIndex(idx);
+    }
     ui_->fixingSourceEdit->setText(
         pair_.fixing_source ? QString::fromStdString(*pair_.fixing_source) : QString{});
 
@@ -221,7 +253,7 @@ void CurrencyPairDetailDialog::updatePairFromUi() {
         const auto _txt = ui_->settlementCurrencyCombo->currentText().trimmed().toStdString();
         pair_.settlement_currency = _txt.empty() ? std::nullopt : std::optional<std::string>(_txt);
     }
-    pair_.classification = ui_->classificationEdit->text().trimmed().toStdString();
+    pair_.classification = ui_->classificationCombo->currentData().toString().toStdString();
     {
         const auto fixing_source_str = ui_->fixingSourceEdit->text().trimmed().toStdString();
         pair_.fixing_source = fixing_source_str.empty() ?
@@ -248,12 +280,10 @@ void CurrencyPairDetailDialog::updateSaveButtonState() {
 
 bool CurrencyPairDetailDialog::validateInput() {
     const QString pair_code_val = ui_->pairCodeEdit->text().trimmed();
-    const QString classification_val = ui_->classificationEdit->text().trimmed();
     const bool base_currency_selected = ui_->baseCurrencyCombo->currentIndex() >= 0;
     const bool quote_currency_selected = ui_->quoteCurrencyCombo->currentIndex() >= 0;
 
-    return true && !pair_code_val.isEmpty() && !classification_val.isEmpty() &&
-           base_currency_selected && quote_currency_selected;
+    return true && !pair_code_val.isEmpty() && base_currency_selected && quote_currency_selected;
 }
 
 void CurrencyPairDetailDialog::onSaveClicked() {

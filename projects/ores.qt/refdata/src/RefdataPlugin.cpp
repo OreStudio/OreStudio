@@ -275,15 +275,25 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                        ctx_.image_cache,
                                                                        ctx_.change_reason_cache,
                                                                        ctx_.username,
+                                                                       ctx_.badge_cache,
                                                                        this);
     connectControllerSignals(currencyPairController_.get());
+    connect(currencyPairController_.get(),
+           &CurrencyPairController::showConventionsRequested,
+           this,
+           [this]() {
+               if (currencyPairConventionController_)
+                   currencyPairConventionController_->showListWindow();
+           });
 
     currencyPairConventionController_ =
         std::make_unique<CurrencyPairConventionController>(ctx_.main_window,
                                                            ctx_.mdi_area,
                                                            ctx_.client_manager,
+                                                           ctx_.image_cache,
                                                            ctx_.change_reason_cache,
                                                            ctx_.username,
+                                                           ctx_.badge_cache,
                                                            this);
     connectControllerSignals(currencyPairConventionController_.get());
 
@@ -384,8 +394,8 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (countryController_)
                 countryController_->showListWindow();
         });
-        auto* actCurrencyPairs = ref->addAction(ico(Icon::Currency), tr("Currency &Pairs"));
-        connect(actCurrencyPairs, &QAction::triggered, this, [this]() {
+        act_currency_pairs_ = ref->addAction(ico(Icon::Currency), tr("Currency &Pairs"));
+        connect(act_currency_pairs_, &QAction::triggered, this, [this]() {
             if (currencyPairController_)
                 currencyPairController_->showListWindow();
         });
@@ -679,9 +689,9 @@ QList<QMenu*> RefdataPlugin::create_menus() {
 }
 
 QList<QAction*> RefdataPlugin::toolbar_actions() {
-    if (!act_currencies_ || !act_countries_)
+    if (!act_currencies_ || !act_countries_ || !act_currency_pairs_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
-    return {act_currencies_, act_countries_};
+    return {act_currencies_, act_countries_, act_currency_pairs_};
 }
 
 // ---------------------------------------------------------------------------

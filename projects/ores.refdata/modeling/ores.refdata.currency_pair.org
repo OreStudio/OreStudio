@@ -238,6 +238,9 @@ drop function if exists ores_refdata_validate_currency_pair_fn;
 :history_message_type:        get_currency_pair_history_request
 :history_request_id_field:    pair_code
 :history_response_data_field: history
+:key_flag_field:              pairCodeEdit
+:key_flag_accessor:           currency_flag_icon_from_pair_code
+:key_flag_accessor_is_free_fn: true
 :settings_group:         CurrencyPairListWindow
 :window_title:           Currency Pairs
 :icon:                   Currency
@@ -245,18 +248,18 @@ drop function if exists ores_refdata_validate_currency_pair_fn;
 
 *** Columns (Qt model)
 
-| enum_name          | field                | header              | type      | width |
-|--------------------+----------------------+---------------------+-----------+-------|
-| PairCode           | pair_code            | Pair                | string    | 100   |
-| BaseCurrency       | base_currency        | Base                | string    | 80    |
-| QuoteCurrency      | quote_currency       | Quote               | string    | 80    |
-| Deliverable        | deliverable          | Deliverable         | bool      | 90    |
-| SettlementCurrency | settlement_currency  | Settlement Currency | string    | 130   |
-| Classification     | classification       | Classification      | string    | 100   |
-| FixingSource       | fixing_source        | Fixing Source       | string    | 100   |
-| Version            | version              | Version             | int       | 70    |
-| ModifiedBy         | modified_by          | Modified By         | string    | auto  |
-| RecordedAt         | recorded_at          | Recorded At         | timestamp | auto  |
+| enum_name          | field                | header              | type      | width | is_badge | badge_key                     | formatter      | formatter_include         |
+|--------------------+----------------------+---------------------+-----------+-------+----------+--------------------------------+----------------+----------------------------|
+| PairCode           | pair_code            | Pair                | string    | 100   |          |                                |                |                            |
+| BaseCurrency       | base_currency        | Base                | string    | 80    |          |                                |                |                            |
+| QuoteCurrency      | quote_currency       | Quote               | string    | 80    |          |                                |                |                            |
+| Deliverable        | deliverable          | Deliverable         | bool      | 90    | true     | currency_pair_deliverable     | boolYesNoLabel | ores.qt/BoolYesNoLabel.hpp |
+| SettlementCurrency | settlement_currency  | Settlement Currency | string    | 130   |          |                                |                |                            |
+| Classification     | classification       | Classification      | string    | 100   | true     | currency_pair_classification  |                |                            |
+| FixingSource       | fixing_source        | Fixing Source       | string    | 100   |          |                                |                |                            |
+| Version            | version              | Version             | int       | 70    |          |                                |                |                            |
+| ModifiedBy         | modified_by          | Modified By         | string    | auto  |          |                                |                |                            |
+| RecordedAt         | recorded_at          | Recorded At         | timestamp | auto  |          |                                |                |                            |
 
 *** Icon columns (Qt model)
 
@@ -265,21 +268,24 @@ Composites base+quote flags into the =PairCode= column's decoration
 existing hand-written pattern (see =currency_flag_icon()= in
 =FlagIconHelper.hpp=).
 
-| column   | accessor            | field1        | field2         |
-|----------+----------------------+---------------+----------------|
-| PairCode | currency_flag_icon  | base_currency | quote_currency |
+| column             | accessor           | field1              | field2         |
+|--------------------+---------------------+---------------------+----------------|
+| PairCode           | currency_flag_icon | base_currency       | quote_currency |
+| BaseCurrency       | currency_flag_icon | base_currency       |                |
+| QuoteCurrency      | currency_flag_icon | quote_currency      |                |
+| SettlementCurrency | currency_flag_icon | settlement_currency |                |
 
 *** Detail fields
 
-| field                | label                | widget                   | type          | is_key | is_required | placeholder                              | flag_source | combo_fetch          | combo_fetch_include              | combo_allow_blank |
-|----------------------+----------------------+---------------------------+---------------+--------+-------------+-------------------------------------------+--------------+-----------------------+-----------------------------------+-------------------|
-| pair_code            | Pair Code            | pairCodeEdit              | line_edit     | true   | true        | e.g. EUR/USD                              |              |                        |                                    |                   |
-| base_currency        | Base Currency        | baseCurrencyCombo         | flagged_combo |        | true        |                                           | currency     | fetch_currency_codes  | ores.qt/LookupFetcher.hpp         | false             |
-| quote_currency       | Quote Currency       | quoteCurrencyCombo        | flagged_combo |        | true        |                                           | currency     | fetch_currency_codes  | ores.qt/LookupFetcher.hpp         | false             |
-| deliverable          | Deliverable          | deliverableCheckBox       | check_box     |        |             |                                           |              |                        |                                    |                   |
-| settlement_currency  | Settlement Currency  | settlementCurrencyCombo   | flagged_combo |        |             |                                           | currency     | fetch_currency_codes  | ores.qt/LookupFetcher.hpp         | true              |
-| classification       | Classification       | classificationEdit        | line_edit     |        | true        | e.g. major, minor, exotic                 |              |                        |                                    |                   |
-| fixing_source        | Fixing Source        | fixingSourceEdit          | line_edit     |        |             | Default fixing source                     |              |                        |                                    |                   |
+| field                | label                | widget                   | type          | is_key | is_required | placeholder                              | flag_source | combo_fetch          | combo_fetch_include              | combo_allow_blank | combo_values                        | badge_key                    |
+|----------------------+----------------------+---------------------------+---------------+--------+-------------+-------------------------------------------+--------------+-----------------------+-----------------------------------+-------------------+---------------------------------------+-------------------------------|
+| pair_code            | Pair Code            | pairCodeEdit              | line_edit     | true   | true        | e.g. EUR/USD                              |              |                        |                                    |                   |                                        |                               |
+| base_currency        | Base Currency        | baseCurrencyCombo         | flagged_combo |        | true        |                                           | currency     | fetch_currency_codes  | ores.qt/LookupFetcher.hpp         | false             |                                        |                               |
+| quote_currency       | Quote Currency       | quoteCurrencyCombo        | flagged_combo |        | true        |                                           | currency     | fetch_currency_codes  | ores.qt/LookupFetcher.hpp         | false             |                                        |                               |
+| deliverable          | Deliverable          | deliverableCheckBox       | check_box     |        |             |                                           |              |                        |                                    |                   |                                        |                               |
+| settlement_currency  | Settlement Currency  | settlementCurrencyCombo   | flagged_combo |        |             |                                           | currency     | fetch_currency_codes  | ores.qt/LookupFetcher.hpp         | true              |                                        |                               |
+| classification       | Classification       | classificationCombo       | static_combo  |        |             |                                           |              |                        |                                    |                   | major,minor,exotic,commodity          | currency_pair_classification |
+| fixing_source        | Fixing Source        | fixingSourceEdit          | line_edit     |        |             | Default fixing source                     |              |                        |                                    |                   |                                        |                               |
 
 ** Custom repository methods
 

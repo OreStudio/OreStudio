@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: 253FC820-E757-4502-8C8C-AC3F96B02A92
+:END:
+#+title: Test Scenario: Currency Pairs UI polish: flags, badges, dirty-flag fix, toolbar navigation
+#+description: Verify the flag-icon, badge, dirty-flag, and toolbar fixes across Currency Pairs and Currency Pair Conventions list/detail dialogs.
+#+type: test_scenario
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+target_dialog:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:DAE530F1-46FB-4901-80F3-8959EE683840][Currency pair flag icons in list are too small]] in [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:DAE530F1-46FB-4901-80F3-8959EE683840][Currency pair flag icons in list are too small]] |
+| Parent story  | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]   |
+| Target dialog | CurrencyPairMdiWindow, CurrencyPairDetailDialog, CurrencyPairConventionMdiWindow, CurrencyPairConventionDetailDialog |
+| Clients       |                                         |
+| State         | PENDING                               |
+
+Retest round 2 (after the flag-sizing/conventions-detail-flag fixes below).
+Badge closed-box rendering (item 3 and part of item 6's notes) is a known,
+already-fixed-elsewhere issue (=OreBadgeComboBox= on PR #1466) — deferred
+until that PR merges; don't re-fail on it this round, note it instead.
+
+New/changed since round 1:
+- Every list view (Currencies, Countries, Currency Pairs, Currency Pair
+  Conventions) now sets an explicit, shared icon size — single flags should
+  look identical across all four.
+- Currency Pair Conventions list flags were entirely unsized before (bug);
+  should now match.
+- Currency Pair Conventions detail dialog now shows an inline pair-code
+  flag (previously none at all).
+
+* Context
+
+Background needed before running this — you don't need to re-derive
+any of this, it's already true in the current environment:
+
+- Log in as =tenant_admin@barclays_plc= (password
+  =Secure-Password-123=) and select the BARCLAYS PLC party. If the DB
+  was recreated since, re-run
+  =compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+  to restore this exact starting state — it seeds 179 currency pairs
+  and 179 conventions via the Librarian.
+- Services and the Qt client should already be running (=compass
+  services status=, =compass client start= if not).
+
+* Steps
+
+** Open Currency Pairs from the main toolbar
+
+Confirm a "Currency Pairs" button now exists on the application's main
+toolbar (not just the Reference Data menu) and opens the Currency
+Pairs list window.
+
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check the Pair column's flag icon size and the Base/Quote/Settlement Currency flags
+
+In the Currency Pairs list, confirm the combined base+quote flag in
+the =Pair= column reads clearly (not squished — roughly twice as wide
+as tall). Confirm =Base=, =Quote=, and =Settlement Currency= each show
+their own single flag icon (Settlement Currency's flag should only
+appear on non-deliverable rows, e.g. =USD/CNY=; it should be blank for
+deliverable rows).
+
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check the Deliverable and Classification badges in the list
+
+Confirm =Deliverable= renders as a coloured Yes/No badge (not literal
+"true"/"false" text) and =Classification= renders as a coloured badge
+(major/minor/exotic/commodity), not plain text.
+
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open a currency pair's detail dialog and check the badges there
+
+Double-click any row (e.g. =EUR/USD=) to open its detail dialog.
+Confirm =Classification= is a badge-styled combo (not a free-text
+field) and =Deliverable= remains an editable checkbox. Close the
+dialog *without changing anything*.
+
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | - badges not showing on combo selection, but show in list.; - no flags on currency pair in details. we have it in currency pair convention details.; - if i change the base or quote currency, the pair code is unchanged. we should show the GUID for the pair and recompute the pair code. but we should not allow duplicate pair codes. |
+
+** Confirm closing an unedited detail dialog does NOT prompt to save
+
+Re-open the same (or another) currency pair's detail dialog and
+immediately click Close, without touching any field. Expected: the
+dialog closes directly — no "You have unsaved changes" prompt. (This
+was a real bug: an async currency-combo repopulation was falsely
+marking the form dirty after opening.)
+
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open Currency Pair Conventions from the Currency Pairs toolbar
+
+Back in the Currency Pairs list window's own toolbar (not the main
+app toolbar), confirm a new "Conventions" button exists and opens the
+Currency Pair Conventions list window.
+
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check flags and badges in the Currency Pair Conventions list
+
+Confirm the =Pair= column now shows a base+quote flag icon (previously
+plain text, e.g. "USD/KWD"). Confirm =Business Day Convention= renders
+as a coloured badge, and =Spot Relative=/=End Of Month= render as
+Yes/No badges (not plain true/false text).
+
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | combo box for business day convention does not show the badge but list does |
+
+** Open a convention's detail dialog and repeat the dirty-flag check
+
+Double-click any row (e.g. =EUR/USD=). Confirm =Business Day
+Convention= is a badge-styled combo, and that the =Pair Code= field now
+shows an inline base+quote flag icon (new — was entirely absent
+before). Close without editing — confirm no unsaved-changes prompt
+(same fix as the currency pair dialog, shared code path).
+
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-07-08T12:34:38Z |
+| Branch        | feature/currency-pair-list-flag-icon-size |
+| Commit        | b359a9a59 |
+| Worktree      | prime_origin |
+
+* Notes
+
+Round 1 (2026-07-08, commit b359a9a59) failed on: flag sizes
+inconsistent across dialogs, badge combos not showing selection in
+closed state, and Currency Pair Conventions list/detail missing
+flags entirely. This round retests after the fixes described in the
+Scenario Info section above.

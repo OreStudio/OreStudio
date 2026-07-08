@@ -160,11 +160,19 @@ void DetailDialogBase::initFlagButton(QLayout* container) {
     layout->addStretch();
     container->addWidget(wrapper);
 
-    // Inline flag inside the key field tracks the typed value live.
+    initKeyFlagField();
+    updateFlagDisplay();
+}
+
+void DetailDialogBase::initKeyFlagField() {
+    // Inline flag inside the key field tracks the typed value live. Safe to
+    // call standalone (no flag button): an entity with only a derived,
+    // read-only key-field icon and no uploadable image_id of its own (e.g.
+    // currency_pair_convention) calls just this; initFlagButton() (above)
+    // calls it too for entities with both.
     if (auto* edit = keyFlagField()) {
         connect(edit, &QLineEdit::textChanged, this, &DetailDialogBase::updateFlagDisplay);
     }
-
     updateFlagDisplay();
 }
 
@@ -192,30 +200,32 @@ void DetailDialogBase::onSelectFlagClicked() {
 }
 
 void DetailDialogBase::updateFlagDisplay() {
-    if (!flagButton_)
-        return;
+    if (flagButton_) {
+        flagButton_->setStyleSheet(flagChanged_ ? kFlagStyleChanged : kFlagStyleDefault);
+        flagButton_->setToolTip(flagChanged_ ? tr("Flag changed (unsaved)") :
+                                               tr("Click to select flag"));
+        if (imageCache_) {
+            QString idStr;
+            if (flagChanged_)
+                idStr = pendingImageId_;
+            else if (const auto id = entityImageId())
+                idStr = QString::fromStdString(boost::uuids::to_string(*id));
 
-    flagButton_->setStyleSheet(flagChanged_ ? kFlagStyleChanged : kFlagStyleDefault);
-    flagButton_->setToolTip(flagChanged_ ? tr("Flag changed (unsaved)") :
-                                           tr("Click to select flag"));
+            QIcon buttonIcon;
+            if (!idStr.isEmpty())
+                buttonIcon = imageCache_->getIcon(idStr.toStdString());
+            if (buttonIcon.isNull())
+                buttonIcon = imageCache_->getNoFlagIcon();
+            if (!buttonIcon.isNull())
+                flagButton_->setIcon(buttonIcon);
+        }
+    }
+
+    // Inline flag inside the key line-edit (entity-specific accessor) —
+    // independent of flagButton_: a derived, read-only icon needs no
+    // uploadable image_id of its own.
     if (!imageCache_)
         return;
-
-    QString idStr;
-    if (flagChanged_)
-        idStr = pendingImageId_;
-    else if (const auto id = entityImageId())
-        idStr = QString::fromStdString(boost::uuids::to_string(*id));
-
-    QIcon buttonIcon;
-    if (!idStr.isEmpty())
-        buttonIcon = imageCache_->getIcon(idStr.toStdString());
-    if (buttonIcon.isNull())
-        buttonIcon = imageCache_->getNoFlagIcon();
-    if (!buttonIcon.isNull())
-        flagButton_->setIcon(buttonIcon);
-
-    // Inline flag inside the key line-edit (entity-specific accessor).
     if (auto* edit = keyFlagField()) {
         const auto key = edit->text().trimmed().toStdString();
         set_line_edit_flag_icon(edit, keyFlagIcon(key), keyFlagAction_);

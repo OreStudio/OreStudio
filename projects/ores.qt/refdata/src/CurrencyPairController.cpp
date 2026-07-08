@@ -46,9 +46,11 @@ CurrencyPairController::CurrencyPairController(QMainWindow* mainWindow,
                                                ImageCache* imageCache,
                                                ChangeReasonCache* changeReasonCache,
                                                const QString& username,
+                                               BadgeCache* badgeCache,
                                                QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, pair_event_name, parent)
     , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
     setImageCache(imageCache);
@@ -66,7 +68,7 @@ void CurrencyPairController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new CurrencyPairMdiWindow(clientManager_, username_, imageCache_);
+    listWindow_ = new CurrencyPairMdiWindow(clientManager_, username_, badgeCache_, imageCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -89,6 +91,10 @@ void CurrencyPairController::showListWindow() {
             &CurrencyPairMdiWindow::showPairHistory,
             this,
             &CurrencyPairController::onShowHistory);
+    connect(listWindow_,
+            &CurrencyPairMdiWindow::showConventionsRequested,
+            this,
+            &CurrencyPairController::showConventionsRequested);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
@@ -168,6 +174,7 @@ void CurrencyPairController::showAddWindow() {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -219,6 +226,7 @@ void CurrencyPairController::showDetailWindow(const refdata::domain::currency_pa
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -359,6 +367,7 @@ void CurrencyPairController::onOpenVersion(const refdata::domain::currency_pair&
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setPair(pair);
@@ -411,6 +420,7 @@ void CurrencyPairController::onRevertVersion(const refdata::domain::currency_pai
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_pair = pair;
@@ -455,6 +465,28 @@ void CurrencyPairController::onRevertVersion(const refdata::domain::currency_pai
 
 EntityListMdiWindow* CurrencyPairController::listWindow() const {
     return listWindow_;
+}
+
+void CurrencyPairController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

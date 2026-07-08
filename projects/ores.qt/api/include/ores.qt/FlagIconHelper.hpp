@@ -31,6 +31,7 @@
 #include <QSize>
 #include <QString>
 #include <functional>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -67,22 +68,67 @@ ORES_QT_API QIcon currency_flag_icon(ImageCache& imageCache,
                                      const std::string& quoteIsoCode = {});
 
 /**
+ * @brief Overload for an optional ISO code (e.g. currency_pair's nullable
+ * settlement_currency): an empty icon when unset, otherwise identical to
+ * the non-optional overload.
+ */
+ORES_QT_API QIcon currency_flag_icon(ImageCache& imageCache,
+                                     const std::optional<std::string>& isoCode);
+
+/**
+ * @brief Flag pair icon from a single "BASE/QUOTE"-style combined code (e.g.
+ * currency_pair_convention's pair_code), splitting on '/' and delegating to
+ * currency_flag_icon(). Returns an empty icon if the code doesn't contain a
+ * '/'.
+ */
+ORES_QT_API QIcon currency_flag_icon_from_pair_code(ImageCache& imageCache,
+                                                    const std::string& pairCode);
+
+/**
+ * @brief Standard single-flag height (device-independent pixels) every list
+ * view showing a currency/country/business-centre flag should use.
+ *
+ * A view with no explicit QAbstractItemView::iconSize falls back to a
+ * Qt/style-dependent default that isn't guaranteed to match another view's
+ * default — which is exactly how a table mixing single-flag columns with a
+ * currency_pair_icon() pair-icon column (e.g. Currency Pairs' Base/Quote/
+ * Settlement Currency columns next to its Pair column) ends up rendering
+ * single flags at a visibly different size than a plain single-flag table
+ * (e.g. Currencies' own code column). Every view showing any currency-style
+ * flag — single or paired — must call setIconSize() explicitly with a size
+ * derived from this same constant (single_flag_icon_size() or
+ * currency_pair_icon_size()), never rely on the implicit default.
+ */
+inline constexpr int standard_flag_height = 16;
+
+/**
+ * @brief The iconSize a view should use to display a single
+ * currency_flag_icon() (no pair). Pass to QAbstractItemView::setIconSize()
+ * wherever a lone flag column is shown, e.g. Currencies' code column.
+ */
+ORES_QT_API QSize single_flag_icon_size(int flagHeight = standard_flag_height);
+
+/**
  * @brief The iconSize a view should use to display a currency_flag_icon()
  * pair icon without distortion.
  *
- * A view with no explicit iconSize reserves a roughly *square* box (Qt's
- * default) and scales whatever icon it's given to fit inside it — for a
- * single flag (already close to square) that looks fine, but a pair icon is
- * roughly twice as wide as it is tall, so it gets squeezed down to fit the
- * square box and reads as squished. Pass this to
- * QAbstractItemView::setIconSize() wherever a pair icon (not a single flag)
- * is shown, e.g. a "GBP/USD"-style cell with no separate base/quote columns.
+ * A pair icon is roughly twice as wide as it is tall, so squeezing it into
+ * the same square box a single flag uses reads as squished. Pass this to
+ * QAbstractItemView::setIconSize() wherever a pair icon is shown, e.g. a
+ * "GBP/USD"-style cell with no separate base/quote columns — or, for a view
+ * that mixes pair and single-flag columns (e.g. Currency Pairs), pass this
+ * for the whole view so the pair column isn't squished; the single-flag
+ * columns still render at @p flagHeight, identical to a single-flag-only
+ * view, since both this and single_flag_icon_size() share the same
+ * height.
  *
- * @param flagHeight Height of each flag in device-independent pixels — keep
- * close to whatever height Qt's own default renders a single flag at (so the
- * pair icon reads at the same scale as a single-flag column, not bigger).
+ * @param flagHeight Height of each flag in device-independent pixels — must
+ * match whatever height single_flag_icon_size() was called with
+ * elsewhere in the app (default standard_flag_height for both), or single
+ * flags in this view will render at a different size than single-flag-only
+ * views.
  */
-ORES_QT_API QSize currency_pair_icon_size(int flagHeight = 16);
+ORES_QT_API QSize currency_pair_icon_size(int flagHeight = standard_flag_height);
 
 /**
  * @brief Apply flag icons to a combo box using the given image cache.

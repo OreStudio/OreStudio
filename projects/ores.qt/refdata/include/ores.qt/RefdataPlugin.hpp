@@ -102,6 +102,7 @@ private:
 
     QAction* act_currencies_{nullptr};
     QAction* act_countries_{nullptr};
+    QAction* act_currency_pairs_{nullptr};
     QAction* act_data_librarian_{nullptr};
 
     // Singleton MDI sub-window for Data Librarian (nullptr when not open)

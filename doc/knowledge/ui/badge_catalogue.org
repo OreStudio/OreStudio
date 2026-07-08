@@ -1,0 +1,210 @@
+:PROPERTIES:
+:ID: 257F3E59-8A08-4B49-B95F-7A956483D3D7
+:END:
+#+title: Badge Catalogue
+#+description: Complete reference of every badge definition in the system: code, colour, hex, and semantic meaning, grouped by code domain. Source of truth is dq_badge_system_populate.sql; this document mirrors it for browsing.
+#+type: knowledge
+#+level: cross
+#+filetags: :badges:ux:reference:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+
+* Summary
+
+Every badge shown anywhere in ORE Studio is one of the 39 definitions
+below, mapped to a code-domain value via
+[[proj:projects/ores.sql/populate/dq/dq_badge_system_populate.sql][=dq_badge_system_populate.sql=]] — *that script is the source of truth*;
+this page mirrors it for browsing. The colour rules the definitions
+themselves must follow (gray = inactive only, orange = missing
+definition, RAG reserved for genuine status) live in
+[[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] §Colour semantics — read that first. This page is the
+exhaustive per-badge and per-code-domain listing.
+
+* Detail
+
+** Badge definitions
+
+One row per distinct badge; a badge is reused across multiple code
+domains where its meaning genuinely transfers (e.g. =active= across
+every lifecycle-status domain), and given a dedicated, unshared
+definition where it doesn't (e.g. the =classification_*= badges,
+which must not accidentally inherit another domain's colour later).
+
+| Badge                     | Colour | Hex       | Meaning                                       |
+|---------------------------+--------+-----------+------------------------------------------------|
+| =active=                  | Green  | =#22c55e= | Active and operational                         |
+| =inactive=                | Gray   | =#6b7280= | Inactive/not operational (rule 1)              |
+| =frozen=                  | Amber  | =#eab308= | Frozen; no changes permitted                   |
+| =pending=                 | Blue   | =#3b82f6= | Awaiting processing or approval                |
+| =type_virtual=            | Violet | =#7c3aed= | Virtual construct                              |
+| =type_physical=           | Blue   | =#3b82f6= | Physical construct                             |
+| =login_online=            | Green  | =#22c55e= | Currently logged in                            |
+| =login_recent=            | Blue   | =#3b82f6= | Logged in recently                             |
+| =login_old=                | Amber  | =#eab308= | Not logged in for a long time                  |
+| =login_never=             | Gray   | =#6b7280= | Never logged in (rule 1)                       |
+| =account_locked=          | Red    | =#ef4444= | Account locked                                 |
+| =account_unlocked=        | Green  | =#22c55e= | Account accessible (positive)                  |
+| =outcome_success=         | Green  | =#22c55e= | Task completed successfully                    |
+| =outcome_failed=          | Red    | =#ef4444= | Task failed                                    |
+| =outcome_no_reply=        | Amber  | =#eab308= | No reply from worker                           |
+| =state_running=           | Sky    | =#0ea5e9= | Task executing                                 |
+| =state_done=               | Green  | =#22c55e= | Task completed (positive)                      |
+| =policy_skip=             | Amber  | =#eab308= | Skip overlapping executions                    |
+| =policy_queue=            | Blue   | =#3b82f6= | Queue overlapping executions                   |
+| =policy_fail=              | Red    | =#ef4444= | Fail on overlapping executions                 |
+| =fsm_draft=                | Gray   | =#6b7280= | Draft, not yet active (rule 1)                 |
+| =fsm_suspended=           | Amber  | =#eab308= | Suspended                                      |
+| =archived=                 | Red    | =#ef4444= | Archived, no longer active                     |
+| =origin_primary=          | Blue   | =#3b82f6= | Primary data source                            |
+| =origin_derived=          | Violet | =#8b5cf6= | Derived from another source                    |
+| =nature_actual=           | Green  | =#22c55e= | Real-world data                                |
+| =nature_estimated=        | Amber  | =#eab308= | Estimated data                                 |
+| =nature_simulated=        | Pink   | =#ec4899= | Simulated data                                 |
+| =treatment_raw=           | Gray   | =#6b7280= | Unprocessed (rule 1)                           |
+| =treatment_cleaned=       | Sky    | =#0ea5e9= | Cleaned                                        |
+| =treatment_enriched=      | Violet | =#a855f7= | Enriched                                       |
+| =tenant_bootstrapping=    | Sky    | =#0ea5e9= | Awaiting provisioning wizard                   |
+| =account_type_user=       | Blue   | =#3b82f6= | Human user account                             |
+| =account_type_service=    | Teal   | =#14b8a6= | Service account                                |
+| =account_type_algorithm=  | Amber  | =#eab308= | Algorithm account                              |
+| =account_type_llm=        | Violet | =#7c3aed= | LLM agent account                              |
+| =classification_major=     | Blue   | =#3b82f6= | Major currency pair (most liquid tier) — descriptive, not RAG    |
+| =classification_minor=     | Teal   | =#14b8a6= | Minor currency pair (mid liquidity tier) — descriptive, not RAG  |
+| =classification_exotic=    | Violet | =#7c3aed= | Exotic currency pair (least liquid tier) — descriptive, not RAG  |
+| =classification_commodity= | Sky    | =#0ea5e9= | Commodity-linked currency pair — descriptive, not RAG            |
+
+All text colour is white (=#ffffff=) except where a definition's
+background is itself very light (none currently in the palette).
+
+** Code domains and mappings
+
+One subsection per code domain; each row maps an entity's raw code
+value to the badge it renders.
+
+*** Party / book / portfolio status (=party_status=, =book_status=, =portfolio_status=)
+
+Identical mapping across all three:
+
+| Value    | Badge      |
+|----------+-------------|
+| Active   | =active=    |
+| Inactive | =inactive=  |
+| Closed   | =inactive=  |
+| Frozen   | =frozen=    |
+| Pending  | =pending=   |
+
+*** Trading/banking type (=portfolio_type=, =book_type=)
+
+| Value                | Badge           |
+|-----------------------+------------------|
+| Virtual / Trading     | =type_virtual=  |
+| Physical / Banking    | =type_physical= |
+
+*** Boolean yes/no domains
+
+Every =*_is_trading=, =*_online=, =currency_pair_deliverable=,
+=currency_pair_convention_spot_relative=,
+=currency_pair_convention_end_of_month= domain shares this mapping:
+
+| Value | Badge          |
+|-------+-----------------|
+| Yes   | =login_online=  |
+| No    | =inactive=      |
+
+*** Login status (=login_status=)
+
+| Value  | Badge          |
+|--------+-----------------|
+| Online | =login_online=  |
+| Recent | =login_recent=  |
+| Old    | =login_old=     |
+| Never  | =login_never=   |
+
+*** Account locked (=account_locked=)
+
+| Value    | Badge               |
+|----------+----------------------|
+| Locked   | =account_locked=    |
+| Unlocked | =account_unlocked=  |
+
+*** Currency pair classification (=currency_pair_classification=)
+
+Deliberately *not* RAG — see [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] §Colour semantics rule 3. A
+liquidity tier is a category, not a status; "exotic" does not mean
+"bad".
+
+| Value     | Badge                    |
+|-----------+---------------------------|
+| major     | =classification_major=     |
+| minor     | =classification_minor=     |
+| exotic    | =classification_exotic=    |
+| commodity | =classification_commodity= |
+
+*** Currency pair convention business day convention (=currency_pair_convention_business_day_convention=)
+
+| Value                      | Badge                  |
+|-----------------------------+-------------------------|
+| Following                  | =active=               |
+| ModifiedFollowing          | =origin_primary=       |
+| Preceding                  | =nature_simulated=     |
+| ModifiedPreceding          | =account_type_service= |
+| Unadjusted                 | =inactive=             |
+| HalfMonthModifiedFollowing | =tenant_bootstrapping= |
+| Nearest                    | =treatment_enriched=   |
+
+Reused-badge colours here are purely to give each of the 7 conventions
+a visually distinct badge, not to convey status — with one deliberate
+exception: =active= (green) for "Following" is intentional, since it's
+the default/most-common convention and green reads correctly here as
+"this is the expected/preferred one" (reviewed and confirmed, not an
+oversight).
+
+*** Compute task outcome / state (=compute_task_outcome=, =compute_task_state=)
+
+| Value (outcome) | Badge              | Value (state) | Badge            |
+|-------------------+--------------------+-----------------+-------------------|
+| Success           | =outcome_success=  | Running         | =state_running=  |
+| Failed             | =outcome_failed=   | Unsent          | =pending=        |
+| No Reply          | =outcome_no_reply= | Done            | =state_done=     |
+| Pending            | =pending=          | Inactive        | =inactive=       |
+
+*** Report concurrency policy / FSM state (=report_concurrency_policy=, =report_fsm_state=)
+
+| Value (policy) | Badge          | Value (FSM state) | Badge         |
+|------------------+-----------------+---------------------+----------------|
+| Skip             | =policy_skip=  | Active              | =active=      |
+| Queue            | =policy_queue= | Draft               | =fsm_draft=   |
+| Fail              | =policy_fail=  | Suspended           | =fsm_suspended= |
+|                   |                | Archived            | =archived=    |
+
+*** DQ origin / nature / treatment (=dq_origin=, =dq_nature=, =dq_treatment=)
+
+| Value (origin) | Badge             | Value (nature) | Badge              | Value (treatment) | Badge                |
+|------------------+--------------------+------------------+---------------------+----------------------+------------------------|
+| Primary          | =origin_primary=  | Actual          | =nature_actual=    | Raw                 | =treatment_raw=      |
+| Derived           | =origin_derived=  | Estimated       | =nature_estimated= | Cleaned             | =treatment_cleaned=  |
+|                   |                    | Simulated       | =nature_simulated= | Enriched            | =treatment_enriched= |
+
+*** Workspace / tenant status (=workspace_status=, =tenant_status=)
+
+| Value (workspace) | Badge       | Value (tenant) | Badge                  |
+|----------------------+--------------+-------------------+--------------------------|
+| active               | =active=    | bootstrapping     | =tenant_bootstrapping=  |
+| archived              | =archived=  | active             | =active=                |
+|                       |              | suspended          | =frozen=                |
+|                       |              | terminated         | =archived=              |
+
+*** Account type (=account_type=)
+
+| Value     | Badge                     |
+|-----------+----------------------------|
+| user      | =account_type_user=       |
+| service   | =account_type_service=    |
+| algorithm | =account_type_algorithm=  |
+| llm       | =account_type_llm=        |
+
+* See also
+
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the colour-semantics rules this catalogue instantiates.
+- [[id:7E4B1C93-2F8A-4D56-B3E7-9A0C5F812D6E][Badge system design]] — the mechanism (schema, =BadgeCache=, delegate resolution).
+- [[proj:projects/ores.sql/populate/dq/dq_badge_system_populate.sql][=dq_badge_system_populate.sql=]] — the source of truth this page mirrors.

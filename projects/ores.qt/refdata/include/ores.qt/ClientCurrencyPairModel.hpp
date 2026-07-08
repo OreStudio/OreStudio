@@ -82,6 +82,9 @@ protected:
     std::vector<int> iconColumns() const override {
         return {
             Column::PairCode,
+            Column::BaseCurrency,
+            Column::QuoteCurrency,
+            Column::SettlementCurrency,
         };
     }
 

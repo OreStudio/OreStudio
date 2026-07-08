@@ -79,6 +79,15 @@ public:
     QVariant
     headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
+protected:
+    /** @brief Columns whose Qt::DecorationRole shows an icon (flag, etc.). */
+    std::vector<int> iconColumns() const override {
+        return {
+            Column::PairCode,
+        };
+    }
+
+public:
     /**
      * @brief Refresh currency pair convention data from server asynchronously.
      */
@@ -91,6 +100,7 @@ public:
      * @return The currency pair convention, or nullptr if row is invalid.
      */
     const refdata::domain::currency_pair_convention* getConvention(int row) const;
+
 
     /**
      * @brief Load a specific page of data.

@@ -66,13 +66,37 @@ QIcon currency_flag_icon(ImageCache& imageCache,
     return combined;
 }
 
+QSize single_flag_icon_size(int flagHeight) {
+    return {flagHeight, flagHeight};
+}
+
 QSize currency_pair_icon_size(int flagHeight) {
     return {flagHeight * 2 + flag_spacing, flagHeight};
+}
+
+QIcon currency_flag_icon(ImageCache& imageCache, const std::optional<std::string>& isoCode) {
+    if (!isoCode)
+        return {};
+    return currency_flag_icon(imageCache, *isoCode);
+}
+
+QIcon currency_flag_icon_from_pair_code(ImageCache& imageCache, const std::string& pairCode) {
+    const auto sep = pairCode.find('/');
+    if (sep == std::string::npos)
+        return {};
+    return currency_flag_icon(
+        imageCache, pairCode.substr(0, sep), pairCode.substr(sep + 1));
 }
 
 void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source) {
     if (!combo || !cache)
         return;
+
+    // Same reasoning as single_flag_icon_size()'s doc comment: an unset
+    // iconSize falls back to a style-dependent default that isn't
+    // guaranteed to render at a usable/visible size — every flag-bearing
+    // combo must set this explicitly, not just table views.
+    combo->setIconSize(single_flag_icon_size());
 
     auto resolver = [cache, source](const std::string& code) -> QIcon {
         switch (source) {
@@ -131,6 +155,13 @@ void setup_currency_combo(QComboBox* combo,
 
                          std::sort(codes.begin(), codes.end());
                          const auto current = comboPtr->currentText();
+                         // The initial async population races the dialog's own
+                         // setEntity()-driven UI population: without blocking
+                         // signals here, clear()/addItem()/setCurrentText() fire
+                         // currentIndexChanged after the dialog has already reset
+                         // its dirty flag, falsely marking an untouched form as
+                         // having unsaved changes.
+                         const QSignalBlocker blocker(comboPtr);
                          comboPtr->clear();
                          for (const auto& code : codes)
                              comboPtr->addItem(QString::fromStdString(code));

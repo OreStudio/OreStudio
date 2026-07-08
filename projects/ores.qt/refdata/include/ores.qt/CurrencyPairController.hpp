@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class CurrencyPairMdiWindow;
 class DetachableMdiSubWindow;
+class BadgeCache;
 class ChangeReasonCache;
 class ImageCache;
 
@@ -60,6 +61,7 @@ public:
                            ImageCache* imageCache,
                            ChangeReasonCache* changeReasonCache,
                            const QString& username,
+                           BadgeCache* badgeCache,
                            QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -70,9 +72,11 @@ public:
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
+    void showConventionsRequested();
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::currency_pair& pair);
@@ -87,6 +91,7 @@ private:
     void showHistoryWindow(const QString& code);
 
     ChangeReasonCache* changeReasonCache_;
+    BadgeCache* badgeCache_;
     CurrencyPairMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

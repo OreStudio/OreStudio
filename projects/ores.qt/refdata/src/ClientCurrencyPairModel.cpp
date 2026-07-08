@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ClientCurrencyPairModel.hpp"
+#include "ores.qt/BoolYesNoLabel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -88,7 +89,7 @@ QVariant ClientCurrencyPairModel::data(const QModelIndex& index, int role) const
             case QuoteCurrency:
                 return QString::fromStdString(pair.quote_currency);
             case Deliverable:
-                return pair.deliverable ? tr("true") : tr("false");
+                return boolYesNoLabel(pair.deliverable);
             case SettlementCurrency:
                 return pair.settlement_currency ?
                            QString::fromStdString(*pair.settlement_currency) :
@@ -111,6 +112,12 @@ QVariant ClientCurrencyPairModel::data(const QModelIndex& index, int role) const
     if (role == Qt::DecorationRole && imageCache_) {
         if (index.column() == Column::PairCode)
             return currency_flag_icon(*imageCache_, pair.base_currency, pair.quote_currency);
+        if (index.column() == Column::BaseCurrency)
+            return currency_flag_icon(*imageCache_, pair.base_currency);
+        if (index.column() == Column::QuoteCurrency)
+            return currency_flag_icon(*imageCache_, pair.quote_currency);
+        if (index.column() == Column::SettlementCurrency)
+            return currency_flag_icon(*imageCache_, pair.settlement_currency);
     }
 
     if (role == Qt::ForegroundRole) {

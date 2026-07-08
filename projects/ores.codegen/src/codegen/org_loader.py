@@ -484,6 +484,14 @@ def _qt_icon_columns(node: OrgNode) -> list[dict[str, Any]]:
     second row field for a composited two-field icon, e.g. a currency pair).
     `has_field2` is computed so the template can conditionally emit the
     second argument without any templating logic beyond section presence.
+
+    `is_pair` marks a *visually* wide (roughly 2:1) composited icon that
+    needs the view's iconSize widened past the single-flag default —
+    defaults to true when field2 is set (the two-field case, e.g.
+    currency_pair's own base_currency/quote_currency), but must be set
+    explicitly for a single-field accessor that still produces a pair icon
+    internally (e.g. currency_flag_icon_from_pair_code splitting one
+    "BASE/QUOTE" field) — has_field2 alone can't detect that case.
     """
     if not node.tables:
         return []
@@ -493,6 +501,8 @@ def _qt_icon_columns(node: OrgNode) -> list[dict[str, Any]]:
         for k, v in row.items():
             entry[k] = _parse_typed(v)
         entry["has_field2"] = bool(entry.get("field2"))
+        if "is_pair" not in entry:
+            entry["is_pair"] = entry["has_field2"]
         out.append(entry)
     return out
 
@@ -796,6 +806,13 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             if ic:
                 qt_out["icon_columns"] = _qt_icon_columns(ic)
                 qt_out["has_icon_columns"] = bool(qt_out["icon_columns"])
+                # Any pair (roughly 2:1) composited icon needs the view's
+                # iconSize widened past Qt's default square box — see
+                # currency_pair_icon_size() in FlagIconHelper.hpp — or it
+                # renders squished.
+                qt_out["has_pair_icon_column"] = any(
+                    entry.get("is_pair") for entry in qt_out["icon_columns"]
+                )
             sga = _section(qt, "Setting-gated actions")
             if sga:
                 qt_out["setting_gated_actions"] = _qt_setting_gated_actions(sga)
@@ -806,6 +823,34 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             # :has_flag_icon: in the .org file is ignored/overwritten here —
             # it was always redundant with :flag_icon_column: being present.
             qt_out["has_flag_icon"] = bool(qt_out.get("flag_icon_column"))
+            # has_key_flag_icon gates ONLY the detail dialog's inline
+            # leading-icon-on-a-line-edit display (keyFlagField()/
+            # keyFlagIcon(), via set_line_edit_flag_icon() —
+            # FlagIconHelper.hpp) — a purely derived, read-only decoration
+            # requiring no image_id field of its own. Deliberately split
+            # from has_flag_icon (the entity's own uploadable flag image:
+            # entityImageId(), initFlagButton(), image_id save-back) since
+            # an entity can want one without the other — e.g.
+            # currency_pair_convention shows a flag derived from its
+            # pair_code text field but owns no image_id at all. Defaults
+            # key_flag_field/key_flag_accessor from flag_inline_widget/
+            # flag_accessor when has_flag_icon is set and neither was given
+            # explicitly, so existing has_flag_icon entities (Country,
+            # Currency) are unaffected.
+            if not qt_out.get("key_flag_field") and qt_out.get("flag_inline_widget"):
+                qt_out["key_flag_field"] = qt_out["flag_inline_widget"]
+            if not qt_out.get("key_flag_accessor") and qt_out.get("flag_accessor"):
+                qt_out["key_flag_accessor"] = qt_out["flag_accessor"]
+            qt_out["has_key_flag_icon"] = bool(qt_out.get("key_flag_field"))
+            # Any list view showing a flag at all (own image_id-backed
+            # column, or a derived icon_columns entry) must set an explicit
+            # iconSize rather than rely on Qt's implicit per-style default —
+            # see single_flag_icon_size()/currency_pair_icon_size() in
+            # FlagIconHelper.hpp: two views relying on the implicit default
+            # aren't guaranteed to render the same flag at the same size.
+            qt_out["has_any_flag_icon"] = (
+                qt_out["has_flag_icon"] or qt_out.get("has_icon_columns", False)
+            )
             # Whether an ImageCache reference needs threading through the
             # controller/window/detail-dialog layers at all — true for either
             # icon mechanism. Kept distinct from has_flag_icon (which also
@@ -829,6 +874,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             )
             qt_out["needs_image_cache"] = (
                 qt_out["has_flag_icon"]
+                or qt_out["has_key_flag_icon"]
                 or qt_out.get("has_icon_columns", False)
                 or qt_out["has_combo_flag_source"]
             )

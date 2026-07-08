@@ -8,7 +8,7 @@
 #+filetags: :qt_plugin_stale_abi_crash_hotfix:sprint_22:v0:
 #+owner: marco
 #+branch: feature/qt-plugin-rebuild-dependency
-#+pr:
+#+pr: 1474
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -62,7 +62,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1474][#1474]] | [build] Make ores.qt.exe depend on every Qt plugin lib |
 
 * Review
 

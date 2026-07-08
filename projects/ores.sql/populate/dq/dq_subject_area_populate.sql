@@ -54,6 +54,12 @@ BEGIN
 
     PERFORM ores_dq_subject_areas_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Reference Data',
+        'Currency Pairs',
+        'Currency pair reference data: standard FX pairs and their conventions.'
+    );
+
+    PERFORM ores_dq_subject_areas_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'Reference Data',
         'Countries',
         'Country reference data.'
     );

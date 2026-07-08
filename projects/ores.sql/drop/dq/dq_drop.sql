@@ -39,6 +39,7 @@
 \ir ./dq_business_units_artefact_drop.sql
 \ir ./dq_ip2country_artefact_drop.sql
 \ir ./dq_countries_artefact_drop.sql
+\ir ./dq_currency_pairs_artefact_drop.sql
 
 -- Datasets
 \ir ./dq_datasets_notify_trigger_drop.sql

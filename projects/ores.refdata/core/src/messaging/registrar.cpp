@@ -225,7 +225,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
 
     // ----------------------------------------------------------------
-    // Publish-from-DQ workflow step handlers (22 subjects, one handler).
+    // Publish-from-DQ workflow step handlers (23 subjects, one handler).
     // ----------------------------------------------------------------
     {
         auto h = std::make_shared<publish_from_dq_handler>(nats, ctx);
@@ -241,6 +241,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             "refdata.v1.cashflow-types.publish-from-dq",
             "refdata.v1.countries.publish-from-dq",
             "refdata.v1.currencies.publish-from-dq",
+            "refdata.v1.currency-pairs.publish-from-dq",
             "refdata.v1.entity-classifications.publish-from-dq",
             "refdata.v1.lei-counterparties.publish-from-dq",
             "refdata.v1.lei-parties.publish-from-dq",

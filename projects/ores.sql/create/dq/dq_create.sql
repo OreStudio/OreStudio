@@ -75,6 +75,7 @@
 -- Core artefact tables
 \ir ./dq_countries_artefact_create.sql
 \ir ./dq_currencies_artefact_create.sql
+\ir ./dq_currency_pairs_artefact_create.sql
 \ir ./dq_images_artefact_create.sql
 \ir ./dq_tags_artefact_create.sql
 \ir ./dq_image_tags_artefact_create.sql

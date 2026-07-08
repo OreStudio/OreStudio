@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :book_data_model_cleanup:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/fix-book-status-and-trading-flag
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

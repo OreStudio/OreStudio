@@ -48,7 +48,8 @@ class BadgeCache;
  * resolvable definition.
  * @param badge_key The code_domain to resolve items against.
  */
-ORES_QT_API void apply_combo_badges(QComboBox* combo, BadgeCache* cache, const std::string& badge_key);
+ORES_QT_API void
+apply_combo_badges(QComboBox* combo, BadgeCache* cache, const std::string& badge_key);
 
 /**
  * @brief Wire up a combo box to render its items as badges — currently
@@ -61,8 +62,10 @@ ORES_QT_API void apply_combo_badges(QComboBox* combo, BadgeCache* cache, const s
  * @param cache     The badge cache (no-op if null).
  * @param badge_key The code_domain to resolve items against.
  */
-ORES_QT_API void
-setup_badge_combo(QObject* context, QComboBox* combo, BadgeCache* cache, const std::string& badge_key);
+ORES_QT_API void setup_badge_combo(QObject* context,
+                                   QComboBox* combo,
+                                   BadgeCache* cache,
+                                   const std::string& badge_key);
 
 }
 

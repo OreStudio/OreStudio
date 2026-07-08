@@ -18,10 +18,10 @@
  *
  */
 #include "ores.qt/BadgeComboHelper.hpp"
+#include "ores.dq.api/domain/badge_definition.hpp"
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
-#include "ores.dq.api/domain/badge_definition.hpp"
 #include <QApplication>
 #include <QPainter>
 #include <QPointer>
@@ -38,8 +38,9 @@ public:
         , cache_(std::move(cache))
         , badge_key_(std::move(badge_key)) {}
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
-              const QModelIndex& index) const override {
+    void paint(QPainter* painter,
+               const QStyleOptionViewItem& option,
+               const QModelIndex& index) const override {
         QStyleOptionViewItem opt = option;
         initStyleOption(&opt, index);
         opt.text.clear();
@@ -78,7 +79,9 @@ void apply_combo_badges(QComboBox* combo, BadgeCache* cache, const std::string& 
     combo->setItemDelegate(new BadgeItemDelegate(combo, cache, badge_key));
 }
 
-void setup_badge_combo(QObject* context, QComboBox* combo, BadgeCache* cache,
+void setup_badge_combo(QObject* context,
+                       QComboBox* combo,
+                       BadgeCache* cache,
                        const std::string& badge_key) {
     (void)context;
     apply_combo_badges(combo, cache, badge_key);

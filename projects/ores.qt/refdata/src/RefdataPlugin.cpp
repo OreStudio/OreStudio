@@ -278,9 +278,13 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                        this);
     connectControllerSignals(currencyPairController_.get());
 
-    currencyPairConventionController_ = std::make_unique<CurrencyPairConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.change_reason_cache,
-        ctx_.username, this);
+    currencyPairConventionController_ =
+        std::make_unique<CurrencyPairConventionController>(ctx_.main_window,
+                                                           ctx_.mdi_area,
+                                                           ctx_.client_manager,
+                                                           ctx_.change_reason_cache,
+                                                           ctx_.username,
+                                                           this);
     connectControllerSignals(currencyPairConventionController_.get());
 
     cdsConventionController_ = std::make_unique<CdsConventionController>(

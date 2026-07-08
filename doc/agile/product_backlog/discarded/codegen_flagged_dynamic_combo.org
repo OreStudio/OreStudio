@@ -9,7 +9,17 @@
 #+created: 2026-07-06
 #+updated: 2026-07-06
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Fulfilled, not promoted*: [[id:D8C2D3DF-433A-4350-9916-73327EB90999][Task: Add a generic FK-combo-with-flag-icons facet to ores.codegen.entity]]
+landed the =flagged_combo= detail-field type this capture asked for
+(=is_dynamic_combo= extended with a per-item flag decorator reusing
+=FlagIconHelper::apply_flag_icons=). [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Story: Commission: book]] then adopted
+it for =ledger_ccy= and reconciled =Book='s parallel =references_entity=
+mechanism onto it, adding =setup_currency_combo()= as the shared
+implementation and promoting the widget class
+(=ores::qt::OreCurrencyComboBox=) so a =flagged_combo= field gets the
+project's standard combo popup sizing/positioning for free.
 
 * What
 

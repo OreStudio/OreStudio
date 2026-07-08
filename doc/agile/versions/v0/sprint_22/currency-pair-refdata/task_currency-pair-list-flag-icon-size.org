@@ -8,7 +8,7 @@
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
 #+branch: feature/currency-pair-list-flag-icon-size
-#+pr:
+#+pr: 1472
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -56,7 +56,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1472][#1472]] | [refdata,qt,codegen] Fix currency pair flag sizing, badges, and dirty-flag bug |
 
 * Review
 

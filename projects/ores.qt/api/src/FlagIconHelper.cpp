@@ -18,9 +18,14 @@
  *
  */
 #include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
+#include "ores.qt/LookupFetcher.hpp"
+#include <QFutureWatcher>
 #include <QPainter>
 #include <QPixmap>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -94,6 +99,44 @@ void setup_flag_combo(QObject* context, QComboBox* combo, ImageCache* cache, Fla
     QObject::connect(cache, &ImageCache::allLoaded, context, [combo, cache, source]() {
         apply_flag_icons(combo, cache, source);
     });
+}
+
+void setup_currency_combo(QComboBox* combo, QObject* owner, ClientManager* client_manager,
+                          ImageCache* image_cache, std::function<QString()> fallback_selection) {
+    if (!combo || !owner || !client_manager || !client_manager->isConnected())
+        return;
+
+    const QString watcher_name = combo->objectName() + "CurrencyFetchWatcher";
+    if (owner->findChild<QFutureWatcherBase*>(watcher_name))
+        return;
+
+    QPointer<QComboBox> comboPtr = combo;
+    QPointer<QObject> ownerPtr = owner;
+    auto future = QtConcurrent::run([client_manager]() { return fetch_currency_codes(client_manager); });
+
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(owner);
+    watcher->setObjectName(watcher_name);
+    QObject::connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, owner,
+        [comboPtr, ownerPtr, watcher, image_cache, fallback_selection]() {
+            auto codes = watcher->result();
+            watcher->deleteLater();
+            if (!comboPtr || !ownerPtr)
+                return;
+
+            std::sort(codes.begin(), codes.end());
+            const auto current = comboPtr->currentText();
+            comboPtr->clear();
+            for (const auto& code : codes)
+                comboPtr->addItem(QString::fromStdString(code));
+
+            const QString to_select =
+                !current.isEmpty() ? current : (fallback_selection ? fallback_selection() : QString());
+            if (!to_select.isEmpty())
+                comboPtr->setCurrentText(to_select);
+
+            apply_flag_icons(comboPtr, image_cache, FlagSource::Currency);
+        });
+    watcher->setFuture(future);
 }
 
 }

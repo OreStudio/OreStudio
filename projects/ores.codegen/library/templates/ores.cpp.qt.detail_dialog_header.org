@@ -45,7 +45,12 @@ The full template source. Edit here and re-tangle with
 #include <QToolBar>
 {{/domain_entity.qt.has_version_navigation}}
 {{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}
+{{^combo_fetch_fn}}
 #include "{{combo_include}}"
+{{/combo_fetch_fn}}
+{{#combo_fetch_fn}}
+#include "{{combo_fetch_include}}"
+{{/combo_fetch_fn}}
 {{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
 {{#domain_entity.qt.has_flagged_combo_fields}}
 #include "ores.qt/FlagIconHelper.hpp"
@@ -113,9 +118,9 @@ public:
      * the act of loading a past version's values is itself the change.
      */
     void markDirty();
-{{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}
+{{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}{{^combo_fetch_fn}}
     void {{combo_setter}}(const std::vector<{{combo_type}}>& items);
-{{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
+{{/combo_fetch_fn}}{{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
 
 signals:
     void {{domain_entity.qt.item_var}}Saved(const QString& code);
@@ -182,9 +187,9 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
-{{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}
+{{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}{{^combo_fetch_fn}}
     std::vector<{{combo_type}}> {{combo_items_member}}_;
-{{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
+{{/combo_fetch_fn}}{{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
 {{#domain_entity.qt.has_setting_gated_actions}}
 {{#domain_entity.qt.setting_gated_actions}}
     QAction* {{action}}_;

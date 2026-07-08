@@ -31,6 +31,29 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+# Known soft-FK "reference entity" lookups a dynamic_combo detail field
+# can point at via :references_entity:, instead of spelling out
+# combo_type/combo_fetch_fn/combo_fetch_include/flag_source by hand. Add
+# an entry here (and, if it needs flags, a matching setup_<entity>_combo
+# helper alongside FlagIconHelper::setup_currency_combo) to support a new
+# reference entity — no template changes required.
+REFERENCE_ENTITY_LOOKUPS = {
+    'currency': {
+        'combo_type': 'std::string',
+        'combo_fetch_fn': 'fetch_currency_codes',
+        'combo_fetch_include': 'ores.qt/LookupFetcher.hpp',
+        'flag_source': 'Currency',
+        'combo_helper': 'setup_currency_combo',
+        # Promoted widget class: uic needs this in the .ui's <customwidgets>
+        # to generate the right member type instead of falling back to a
+        # plain QComboBox that setup_currency_combo() still populates but
+        # that lacks whatever styling/behaviour the marker class carries.
+        'combo_widget_class': 'ores::qt::OreCurrencyComboBox',
+        'combo_widget_extends': 'QComboBox',
+        'combo_widget_header': 'ores.qt/OreCurrencyComboBox.hpp',
+    },
+}
+
 
 # --------------------------------------------------------------------------
 # Low-level parsing: org file -> tree of nodes
@@ -755,6 +778,61 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             df = _section(qt, "Detail fields")
             if df:
                 qt_out["detail_fields"] = _detail_fields(df)
+                for f in qt_out["detail_fields"]:
+                    ref_entity = f.get('references_entity')
+                    if not ref_entity:
+                        continue
+                    lookup = REFERENCE_ENTITY_LOOKUPS.get(ref_entity)
+                    if not lookup:
+                        raise ValueError(
+                            f"detail field '{f.get('field')}' sets "
+                            f"references_entity: {ref_entity}, but no such "
+                            f"entry exists in REFERENCE_ENTITY_LOOKUPS "
+                            f"(org_loader.py). Known entities: "
+                            f"{sorted(REFERENCE_ENTITY_LOOKUPS)}"
+                        )
+                    for k, v in lookup.items():
+                        f.setdefault(k, v)
+                # static_combo fields declare their fixed option set as a
+                # comma-separated :combo_values: string (e.g. "Active,
+                # Inactive,Closed") — parsed here into the {label, value}
+                # dicts the template iterates. label == value; if a field
+                # ever needs them to differ, extend this to accept
+                # "label:value" pairs.
+                for f in qt_out["detail_fields"]:
+                    raw = f.get('combo_values')
+                    if f.get('type') == 'static_combo' and isinstance(raw, str) and raw:
+                        f['combo_values'] = [
+                            {'label': v.strip(), 'value': v.strip()}
+                            for v in raw.split(',') if v.strip()
+                        ]
+                # Deduplicated <customwidgets> entries for any promoted combo
+                # widget class a detail field resolved to above (e.g. every
+                # currency-flag combo needs the same OreCurrencyComboBox
+                # registration once, however many currency fields the
+                # entity has).
+                seen_widget_classes: set[str] = set()
+                combo_customs = []
+                for f in qt_out["detail_fields"]:
+                    cls = f.get('combo_widget_class')
+                    if not cls or cls in seen_widget_classes:
+                        continue
+                    seen_widget_classes.add(cls)
+                    combo_customs.append({
+                        'class': cls,
+                        'extends': f.get('combo_widget_extends', 'QComboBox'),
+                        'header': f.get('combo_widget_header', ''),
+                    })
+                if combo_customs:
+                    qt_out["combo_widget_customs"] = combo_customs
+                # Whether any static_combo detail field renders its items as
+                # badges (via the badge system) — gates BadgeCache wiring
+                # into the detail dialog itself (has_badge_columns only
+                # wires it into the list/MDI window).
+                qt_out["has_combo_badge_source"] = any(
+                    f.get('badge_key') for f in qt_out["detail_fields"]
+                    if f.get('type') == 'static_combo'
+                )
             qc = _section(qt, "Columns (Qt model)")
             if qc:
                 qt_out["columns"] = _qt_columns(qc)
@@ -795,8 +873,16 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             # code in the client model itself) so that a model using only
             # the newer multi-column mechanism still gets ImageCache wired
             # through everywhere it's needed.
-            qt_out["needs_image_cache"] = qt_out["has_flag_icon"] or qt_out.get(
-                "has_icon_columns", False
+            # Whether any dynamic-combo detail field decorates its items with
+            # flag icons (e.g. a currency combo) via FlagIconHelper —
+            # gates the include and the ImageCache wiring below.
+            qt_out["has_combo_flag_source"] = any(
+                f.get("flag_source") for f in qt_out.get("detail_fields", [])
+            )
+            qt_out["needs_image_cache"] = (
+                qt_out["has_flag_icon"]
+                or qt_out.get("has_icon_columns", False)
+                or qt_out["has_combo_flag_source"]
             )
             de["qt"] = qt_out
 

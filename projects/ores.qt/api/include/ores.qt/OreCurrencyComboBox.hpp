@@ -19,19 +19,24 @@
 #ifndef ORES_QT_ORE_CURRENCY_COMBO_BOX_HPP
 #define ORES_QT_ORE_CURRENCY_COMBO_BOX_HPP
 
+#include "ores.qt/export.hpp"
 #include <QComboBox>
+
+namespace ores::qt {
 
 /**
  * @brief QComboBox subclass for ISO currency selection with flag icons.
  *
  * Acts as a typed marker so uic generates the right widget class and
- * includes the correct header. Currency codes are populated asynchronously
- * by the owning form via LookupFetcher::fetch_currency_codes(); flag icons
- * are applied via FlagIconHelper::setup_flag_combo().
+ * includes the correct header. Populate with setup_currency_combo()
+ * (FlagIconHelper.hpp), which fetches currency codes asynchronously and
+ * applies flag icons.
  */
-class OreCurrencyComboBox : public QComboBox {
+class ORES_QT_API OreCurrencyComboBox : public QComboBox {
 public:
     explicit OreCurrencyComboBox(QWidget* parent = nullptr);
 };
+
+}
 
 #endif

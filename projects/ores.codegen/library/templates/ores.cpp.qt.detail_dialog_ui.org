@@ -112,7 +112,7 @@ The full template source. Edit here and re-tangle with
            </widget>
 {{/is_static_combo}}
 {{#is_dynamic_combo}}
-           <widget class="QComboBox" name="{{widget}}">
+           <widget class="{{#combo_widget_class}}{{combo_widget_class}}{{/combo_widget_class}}{{^combo_widget_class}}QComboBox{{/combo_widget_class}}" name="{{widget}}">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
@@ -241,6 +241,13 @@ The full template source. Edit here and re-tangle with
    <extends>QWidget</extends>
    <header>ores.qt/ProvenanceWidget.hpp</header>
   </customwidget>
+{{#domain_entity.qt.combo_widget_customs}}
+  <customwidget>
+   <class>{{class}}</class>
+   <extends>{{extends}}</extends>
+   <header>{{header}}</header>
+  </customwidget>
+{{/domain_entity.qt.combo_widget_customs}}
  </customwidgets>
  <resources/>
  <connections/>

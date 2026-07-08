@@ -2072,9 +2072,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                             qt_col['column_style'] = 'cs::mono_center'
                         else:
                             qt_col['column_style'] = 'cs::text_left'
-                # Compute has_badge_columns flag
-                qt['has_badge_columns'] = any(
-                    c.get('is_badge') for c in qt['columns']
+                # Compute has_badge_columns flag — also true when a detail
+                # field's static_combo uses the badge system (needs the same
+                # BadgeCache threaded to the controller even with no badge
+                # list columns), not just list-view is_badge columns.
+                qt['has_badge_columns'] = (
+                    any(c.get('is_badge') for c in qt['columns'])
+                    or qt.get('has_combo_badge_source', False)
                 )
             # has_explorer_api opts a controller into the public
             # openAdd()/openEdit()/openHistory() surface a sibling explorer
@@ -2129,6 +2133,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f['is_text_edit'] = f.get('type') in ('text_edit', 'plain_text_edit')
                 f['is_static_combo'] = f.get('type') == 'static_combo'
                 f['is_dynamic_combo'] = f.get('type') == 'dynamic_combo'
+                if f['is_dynamic_combo'] and f.get('combo_fetch_fn'):
+                    field_pascal = snake_to_pascal(f.get('field', ''))
+                    f.setdefault('combo_setter_pascal', field_pascal)
+                    f.setdefault('combo_items_member', field_pascal[0].lower() + field_pascal[1:])
                 # A flagged_combo is a single-select combo asynchronously
                 # populated from a plain code list (e.g. fetch_currency_codes),
                 # with an optional per-item flag icon. Generalises the
@@ -2142,6 +2150,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     f.setdefault('combo_allow_blank', False)
                     flag_source = f.get('flag_source', 'currency')
                     f['flag_source_pascal'] = snake_to_pascal(flag_source)
+                    # A currency flagged_combo has a ready-made shared
+                    # implementation (setup_currency_combo) and promoted
+                    # widget class (OreCurrencyComboBox, for uic's standard
+                    # combo-popup sizing/positioning) -- reuse both instead
+                    # of falling back to the generic per-entity inlined
+                    # fetch and a plain QComboBox. Other flag sources
+                    # (country, business_centre) have no such helper yet
+                    # and keep the generic inline path.
+                    if flag_source == 'currency':
+                        f.setdefault('combo_helper', 'setup_currency_combo')
+                        f.setdefault('combo_widget_class', 'ores::qt::OreCurrencyComboBox')
+                        f.setdefault('combo_widget_extends', 'QComboBox')
+                        f.setdefault('combo_widget_header', 'ores.qt/OreCurrencyComboBox.hpp')
                 f['is_check_box'] = f.get('type') == 'check_box'
                 f['is_spin_box'] = f.get('type') == 'spin_box'
                 field_cpp = domain_col_types.get(f.get('field'), '')

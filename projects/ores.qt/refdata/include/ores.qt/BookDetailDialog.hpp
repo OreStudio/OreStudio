@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include <vector>
 
@@ -93,10 +94,13 @@ protected:
 private:
     void setupUi();
     void setupConnections();
+    void setupCombos();
     void updateUiFromBook();
     void updateBookFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
+    void populateLedgerCcy();
 
 
     Ui::BookDetailDialog* ui_;

@@ -98,6 +98,11 @@ public:
      */
     [[nodiscard]] std::string httpBaseUrl() const;
 
+    /**
+     * @brief Path to a test_scenario .org doc to open in the Scenario
+     * Runner on startup, via --open-scenario. Empty if not specified.
+     */
+    [[nodiscard]] QString openScenario() const;
 
 private:
     void setupOptions();

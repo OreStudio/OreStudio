@@ -77,7 +77,7 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-MainWindow::MainWindow(QWidget* parent)
+MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     : QMainWindow(parent)
     , ui_(new Ui::MainWindow)
     , mdiArea_(nullptr)
@@ -101,6 +101,7 @@ MainWindow::MainWindow(QWidget* parent)
     , partyStatusNameLabel_(nullptr)
     , envLabelWidget_(nullptr)
     , envLabelNameLabel_(nullptr) {
+    pendingScenarioPath_ = openScenarioPath;
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
@@ -519,6 +520,7 @@ MainWindow::MainWindow(QWidget* parent)
     smc.main_window = this;
     smc.mdi_area = mdiArea_;
     smc.client_manager = clientManager_;
+    smc.open_scenario_path = pendingScenarioPath_;
     smc.system_menu = ui_->menuSystem;
     smc.reference_data_menu = referenceDataMenu;
     smc.market_data_menu = marketDataMenu;

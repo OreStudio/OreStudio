@@ -23,6 +23,8 @@
 #include "ores.orgmode/domain/document.hpp"
 #include "ores.qt/export.hpp"
 #include <QString>
+#include <string>
+#include <vector>
 
 namespace ores::qt {
 
@@ -47,6 +49,16 @@ ORES_QT_API QString render_org_doc_to_html(const orgmode::domain::document& doc)
  * used when only part of a document needs showing.
  */
 ORES_QT_API QString render_heading_to_html(const orgmode::domain::heading& heading);
+
+/**
+ * @brief Render a heading's raw =body_lines= (paragraphs and bullet
+ * lists, wrapped-line-joined and inline-marked-up the same way
+ * =render_heading_to_html= renders its own body) without the heading
+ * itself — used for the QA Validation Runner's step detail view, which
+ * shows a step's instructional text but not a redundant heading title
+ * (already shown as the dialog's own title).
+ */
+ORES_QT_API QString render_body_lines_to_html(const std::vector<std::string>& lines);
 
 }
 

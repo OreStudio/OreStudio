@@ -80,7 +80,15 @@ public:
      * @brief Constructs the main window.
      * @param parent Parent widget (typically nullptr for main window)
      */
-    explicit MainWindow(QWidget* parent = nullptr);
+    /**
+     * @param openScenarioPath If non-empty, a =test_scenario= doc to
+     * load into the Scenario Runner on startup (=--open-scenario=).
+     * Taken as a constructor parameter, not a post-construction
+     * setter, because =AdminPlugin::setup_menus()= — where the
+     * Scenario Runner is actually built — runs synchronously inside
+     * this constructor, before any caller could call a setter.
+     */
+    explicit MainWindow(QWidget* parent = nullptr, const QString& openScenarioPath = {});
 
     /**
      * @brief Destroys the main window.
@@ -220,6 +228,7 @@ private:
     QString instanceName_;
     QColor instanceColor_;
     QString envType_;
+    QString pendingScenarioPath_;
     QLabel* instanceColorIndicator_;
 
     DetachableMdiSubWindow* eventViewerWindow_;

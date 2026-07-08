@@ -18,12 +18,17 @@
  *
  */
 #include "ores.qt/QaValidationRunnerWidget.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.orgmode/indexing/resolver.hpp"
 #include "ores.orgmode/parser/parser.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/EnvironmentMetadata.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/OrgDocRenderer.hpp"
+#include "ores.qt/OrgDocViewerWindow.hpp"
+#include "ores.qt/RepoFileFinder.hpp"
 #include "ores.qt/TestScenarioResultsWriter.hpp"
 #include <QColor>
-#include <QDialog>
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QFileDialog>
@@ -33,16 +38,29 @@
 #include <QIcon>
 #include <QLabel>
 #include <QListWidget>
+#include <QMdiArea>
+#include <QRegularExpression>
 #include <QPlainTextEdit>
 #include <QProcess>
 #include <QPushButton>
+#include <QTabWidget>
+#include <QTextBrowser>
 #include <QToolBar>
+#include <QUrl>
 #include <QVBoxLayout>
 #include <algorithm>
+#include <memory>
 
 namespace ores::qt {
 
+using namespace ores::logging;
+
 namespace {
+
+auto& lg() {
+    static auto instance = make_logger("ores.qt.qa_validation_runner_widget");
+    return instance;
+}
 
 /**
  * @brief Find a top-level heading by exact title, or nullptr.
@@ -57,29 +75,6 @@ find_heading(const orgmode::domain::document& doc, const std::string& title) {
 }
 
 /**
- * @brief Walk up from @p reference_path looking for compass.sh at the
- * repo root. Empty if not found within a handful of levels.
- */
-QString find_compass_sh(const QString& reference_path) {
-    QDir dir(QFileInfo(reference_path).absolutePath());
-    for (int i = 0; i < 10; ++i) {
-        const QString candidate = dir.filePath("compass.sh");
-        if (QFileInfo::exists(candidate))
-            return candidate;
-        if (!dir.cdUp())
-            break;
-    }
-    return {};
-}
-
-QString join_body(const std::vector<std::string>& lines) {
-    QStringList out;
-    for (const auto& line : lines)
-        out << QString::fromStdString(line);
-    return out.join("\n");
-}
-
-/**
  * @brief Look up a Field/Value table row by field name, across all of
  * @p heading's own tables (not its children's).
  */
@@ -91,6 +86,27 @@ QString find_field_value(const orgmode::domain::heading& heading, const std::str
         }
     }
     return {};
+}
+
+/**
+ * @brief Extract the id from a raw =[[id:UUID][text]]= (or bare
+ * =[[id:UUID]]=) cell value, or empty if it doesn't contain one.
+ */
+QString extract_link_id(const QString& cellValue) {
+    static const QRegularExpression re(R"(\[\[id:([^\]]+)\])");
+    const auto match = re.match(cellValue);
+    return match.hasMatch() ? match.captured(1) : QString();
+}
+
+/**
+ * @brief Find the =Verifies task=/=Parent story= link by field name
+ * rather than table-row position — a scenario doc's Scenario Info
+ * table happens to always list task before story today, but nothing
+ * enforces that order, and a future third link would silently shift
+ * =info->links= positionally.
+ */
+QString find_link_field_id(const orgmode::domain::heading& heading, const std::string& field) {
+    return extract_link_id(find_field_value(heading, field));
 }
 
 step_status parse_step_status(const QString& text) {
@@ -109,7 +125,7 @@ step_status parse_step_status(const QString& text) {
 qa_step make_step(const orgmode::domain::heading& step_heading, const QString& client) {
     qa_step step;
     step.title = QString::fromStdString(step_heading.title);
-    step.body = join_body(step_heading.body_lines);
+    step.bodyLines = step_heading.body_lines;
     step.client = client;
     for (const auto& child : step_heading.children) {
         if (child.title != "Result")
@@ -161,7 +177,13 @@ QaValidationRunnerWidget::QaValidationRunnerWidget(QWidget* parent) : QWidget(pa
     saveAction_->setEnabled(false);
     layout->addWidget(toolBar_);
 
-    auto* infoBox = new QGroupBox(tr("Scenario Info"), this);
+    tabWidget_ = new QTabWidget(this);
+    layout->addWidget(tabWidget_, /*stretch=*/1);
+
+    stepsTab_ = new QWidget(tabWidget_);
+    auto* stepsTabLayout = new QVBoxLayout(stepsTab_);
+
+    auto* infoBox = new QGroupBox(tr("Scenario Info"), stepsTab_);
     auto* infoLayout = new QVBoxLayout(infoBox);
     titleLabel_ = new QLabel(tr("No scenario loaded."), infoBox);
     targetDialogLabel_ = new QLabel(infoBox);
@@ -169,13 +191,34 @@ QaValidationRunnerWidget::QaValidationRunnerWidget(QWidget* parent) : QWidget(pa
     infoLayout->addWidget(titleLabel_);
     infoLayout->addWidget(targetDialogLabel_);
     infoLayout->addWidget(overallStatusLabel_);
-    layout->addWidget(infoBox);
+    stepsTabLayout->addWidget(infoBox);
 
-    auto* stepsBox = new QGroupBox(tr("Steps"), this);
+    auto* stepsBox = new QGroupBox(tr("Steps"), stepsTab_);
     auto* stepsLayout = new QVBoxLayout(stepsBox);
     stepsList_ = new QListWidget(stepsBox);
     stepsLayout->addWidget(stepsList_);
-    layout->addWidget(stepsBox, /*stretch=*/1);
+    stepsTabLayout->addWidget(stepsBox, /*stretch=*/1);
+
+    tabWidget_->addTab(stepsTab_, tr("Steps"));
+
+    // Story/Task tabs: the driving docs, rendered read-only via
+    // OrgDocRenderer, so the tester doesn't have to leave the app to
+    // recover what the scenario is actually verifying. Separate tabs
+    // (not stacked panes) since both docs are typically long enough
+    // that stacking them left little room for either.
+    auto make_context_tab = [this](const QString& tabTitle) {
+        auto* tab = new QWidget(tabWidget_);
+        auto* tabLayout = new QVBoxLayout(tab);
+        auto* browser = new QTextBrowser(tab);
+        browser->setOpenLinks(false);
+        connect(browser, &QTextBrowser::anchorClicked, this,
+            [this](const QUrl& url) { followContextLink(url); });
+        tabLayout->addWidget(browser);
+        tabWidget_->addTab(tab, tabTitle);
+        return browser;
+    };
+    storyBrowser_ = make_context_tab(tr("Story"));
+    taskBrowser_ = make_context_tab(tr("Task"));
 
     connect(openAction_, &QAction::triggered, this, &QaValidationRunnerWidget::promptAndLoadScenario);
     connect(saveAction_, &QAction::triggered, this, [this]() { save(); });
@@ -209,12 +252,8 @@ bool QaValidationRunnerWidget::loadScenario(const QString& path) {
     }
 
     scenarioPath_ = path;
-    taskId_.clear();
-    storyId_.clear();
-    if (!info->links.empty())
-        taskId_ = QString::fromStdString(info->links.front().target_id);
-    if (info->links.size() > 1)
-        storyId_ = QString::fromStdString(info->links[1].target_id);
+    taskId_ = find_link_field_id(*info, "Verifies task");
+    storyId_ = find_link_field_id(*info, "Parent story");
 
     titleLabel_->setText(QString::fromStdString(doc.find_keyword("title").value_or(path.toStdString())));
     const QString targetDialog = QString::fromStdString(doc.find_keyword("target_dialog").value_or(""));
@@ -229,6 +268,7 @@ bool QaValidationRunnerWidget::loadScenario(const QString& path) {
     // (a step's own *** Result child, once it's been run, would
     // otherwise be indistinguishable from a per-client grouping).
     const bool multi_client = !find_field_value(*info, "Clients").isEmpty();
+    ++loadGeneration_;
     steps_.clear();
     for (const auto& child : steps->children) {
         if (multi_client) {
@@ -241,6 +281,7 @@ bool QaValidationRunnerWidget::loadScenario(const QString& path) {
     }
     rebuildStepList();
     updateOverallStatusLabel();
+    loadContextTab(taskId_, storyId_);
 
     saveAction_->setEnabled(!steps_.empty());
     emit statusMessage(tr("Loaded %1").arg(path));
@@ -294,23 +335,38 @@ void QaValidationRunnerWidget::openStepDetail(QListWidgetItem* item) {
     const int index = stepsList_->row(item);
     if (index < 0 || index >= static_cast<int>(steps_.size()))
         return;
-    auto& step = steps_[static_cast<std::size_t>(index)];
+    const auto& step = steps_[static_cast<std::size_t>(index)];
+    const int generation = loadGeneration_;
 
-    QDialog dialog(this);
-    dialog.setWindowTitle(tr("Step: %1").arg(step.title));
-    auto* layout = new QVBoxLayout(&dialog);
+    if (!mdiArea_) {
+        emit errorOccurred(tr("No MDI area available to open the step in."));
+        return;
+    }
 
-    auto* bodyLabel = new QLabel(step.body.isEmpty() ? tr("(no further instructions)") : step.body,
-        &dialog);
-    bodyLabel->setWordWrap(true);
-    layout->addWidget(bodyLabel);
+    // A plain content widget hosted in a DetachableMdiSubWindow — the
+    // same convention every detail dialog in this app follows (see
+    // AccountController etc.) — not a top-level QDialog/QWidget: those
+    // get a window-manager "utility/always-above" hint (from QDialog's
+    // default window type, or the WM's own transient-for handling)
+    // regardless of modality, which pinned it above the main window
+    // and even unrelated applications. An MDI subwindow has none of
+    // that — it's just another window inside the app's own MDI area,
+    // movable and non-blocking, letting the tester tick off several
+    // steps side by side while running through a test.
+    auto* content = new QWidget();
+    auto* layout = new QVBoxLayout(content);
 
-    auto* notesLabel = new QLabel(tr("Notes"), &dialog);
+    auto* bodyBrowser = new QTextBrowser(content);
+    const QString bodyHtml = render_body_lines_to_html(step.bodyLines);
+    bodyBrowser->setHtml(bodyHtml.isEmpty() ? tr("<p>(no further instructions)</p>") : bodyHtml);
+    layout->addWidget(bodyBrowser);
+
+    auto* notesLabel = new QLabel(tr("Notes"), content);
     layout->addWidget(notesLabel);
-    auto* notesEdit = new QPlainTextEdit(step.notes, &dialog);
+    auto* notesEdit = new QPlainTextEdit(step.notes, content);
     layout->addWidget(notesEdit, /*stretch=*/1);
 
-    auto* box = new QDialogButtonBox(QDialogButtonBox::Close, &dialog);
+    auto* box = new QDialogButtonBox(QDialogButtonBox::Close, content);
     if (auto* closeButton = box->button(QDialogButtonBox::Close)) {
         closeButton->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
         closeButton->setText(tr("Close"));
@@ -322,25 +378,48 @@ void QaValidationRunnerWidget::openStepDetail(QListWidgetItem* item) {
     auto* pendingButton = box->addButton(tr("Pending"), QDialogButtonBox::ActionRole);
     pendingButton->setIcon(status_icon(step_status::pending));
     layout->addWidget(box);
-    connect(box, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
-    auto apply = [&](step_status status) {
-        step.notes = notesEdit->toPlainText();
-        step.status = status;
-        updateStepItem(index);
-        updateOverallStatusLabel();
-        dialog.accept();
+    auto* subWindow = new DetachableMdiSubWindow();
+    subWindow->setAttribute(Qt::WA_DeleteOnClose);
+    subWindow->setWidget(content);
+    subWindow->setWindowTitle(tr("Step: %1").arg(step.title));
+    connect(box, &QDialogButtonBox::rejected, subWindow, &QMdiSubWindow::close);
+
+    // index is captured by value and re-validated at click time, not a
+    // reference into steps_: the tester could load a different scenario
+    // (reallocating/shrinking steps_) while this subwindow is still open.
+    // generation guards against the more insidious case — a *same-size*
+    // reload where index would still be in bounds but now refers to an
+    // entirely different scenario's step.
+    auto apply = [this, index, generation, notesEdit, subWindow](step_status status) {
+        if (generation == loadGeneration_ && index >= 0 &&
+            index < static_cast<int>(steps_.size())) {
+            auto& s = steps_[static_cast<std::size_t>(index)];
+            s.notes = notesEdit->toPlainText();
+            s.status = status;
+            updateStepItem(index);
+            updateOverallStatusLabel();
+        }
+        subWindow->close();
     };
-    connect(passButton, &QPushButton::clicked, &dialog, [&]() { apply(step_status::pass); });
-    connect(failButton, &QPushButton::clicked, &dialog, [&]() { apply(step_status::fail); });
-    connect(pendingButton, &QPushButton::clicked, &dialog, [&]() { apply(step_status::pending); });
-
-    dialog.resize(480, 360);
-    dialog.exec();
+    connect(passButton, &QPushButton::clicked, subWindow, [apply]() { apply(step_status::pass); });
+    connect(failButton, &QPushButton::clicked, subWindow, [apply]() { apply(step_status::fail); });
+    connect(pendingButton, &QPushButton::clicked, subWindow,
+        [apply]() { apply(step_status::pending); });
 
     // Notes typed but not confirmed via a status button are still worth
-    // keeping — persist them even if the dialog was closed via Close/Esc.
-    step.notes = notesEdit->toPlainText();
+    // keeping — persist on every edit rather than tying it to a
+    // close/destroyed signal, which would risk running after the
+    // widget tree (including notesEdit itself) has started tearing
+    // down.
+    connect(notesEdit, &QPlainTextEdit::textChanged, this, [this, index, generation, notesEdit]() {
+        if (generation == loadGeneration_ && index >= 0 && index < static_cast<int>(steps_.size()))
+            steps_[static_cast<std::size_t>(index)].notes = notesEdit->toPlainText();
+    });
+
+    mdiArea_->addSubWindow(subWindow);
+    subWindow->resize(480, 360);
+    subWindow->show();
 }
 
 bool QaValidationRunnerWidget::save() {
@@ -378,7 +457,7 @@ void QaValidationRunnerWidget::stampJournal(const QString& status) {
     // than surface a second, confusing error after "Saved results".
     if (taskId_.isEmpty() || storyId_.isEmpty())
         return;
-    const QString compass_sh = find_compass_sh(scenarioPath_);
+    const QString compass_sh = find_repo_file(scenarioPath_, "compass.sh");
     if (compass_sh.isEmpty())
         return;
 
@@ -388,6 +467,84 @@ void QaValidationRunnerWidget::stampJournal(const QString& status) {
         {"journal", "update", "--story", storyId_, "--task", taskId_, "--branch",
             capture_environment_metadata(scenarioPath_).branch, "--state", status});
     process.waitForFinished(5000);
+}
+
+std::unique_ptr<orgmode::indexing::resolver> QaValidationRunnerWidget::openResolver() const {
+    const QString db_path = find_repo_file(scenarioPath_, ".org-roam.db");
+    if (db_path.isEmpty())
+        return nullptr;
+    try {
+        return std::make_unique<orgmode::indexing::resolver>(db_path.toStdString());
+    } catch (const std::exception&) {
+        return nullptr;
+    }
+}
+
+void QaValidationRunnerWidget::renderIdInto(orgmode::indexing::resolver* resolver,
+                                            const QString& id,
+                                            QTextBrowser* browser) {
+    if (id.isEmpty()) {
+        browser->setPlainText(tr("(No link found.)"));
+        return;
+    }
+    if (!resolver) {
+        browser->setPlainText(
+            tr("(Could not resolve — is the repo's org-roam index built? Run 'compass index'.)"));
+        return;
+    }
+    const auto target = resolver->resolve(id.toStdString());
+    if (!target) {
+        browser->setPlainText(
+            tr("(Dangling link: id:%1 not found in the org-roam index.)").arg(id));
+        return;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Resolved id:" << id.toStdString() << " -> " << target->path
+                               << " (" << target->title << ")";
+    try {
+        const auto doc = orgmode::parser::parse_file(target->path);
+        browser->setHtml(render_org_doc_to_html(doc));
+    } catch (const std::exception& e) {
+        browser->setPlainText(tr("(Could not parse '%1': %2)")
+                                   .arg(QString::fromStdString(target->path),
+                                        QString::fromStdString(e.what())));
+    }
+}
+
+void QaValidationRunnerWidget::loadContextTab(const QString& taskId, const QString& storyId) {
+    BOOST_LOG_SEV(lg(), debug) << "Loading context tab: taskId=" << taskId.toStdString()
+                               << " storyId=" << storyId.toStdString();
+    const auto resolver = openResolver();
+    renderIdInto(resolver.get(), storyId, storyBrowser_);
+    renderIdInto(resolver.get(), taskId, taskBrowser_);
+}
+
+void QaValidationRunnerWidget::followContextLink(const QUrl& url) {
+    const QString target = url.toString();
+    if (!target.startsWith("id:"))
+        return;
+
+    if (!mdiArea_) {
+        emit errorOccurred(tr("No MDI area available to open the link in."));
+        return;
+    }
+
+    // Opens a separate viewer (its own MDI subwindow, same as every
+    // other detail window in the app — see openStepDetail()'s comment)
+    // rather than navigating the Story/Task tab itself in place — the
+    // tester doesn't lose what they were originally looking at, and
+    // the new window's own Back/Forward lets them follow a whole trail
+    // of further links.
+    auto* viewer = new OrgDocViewerWindow(scenarioPath_);
+    viewer->navigateToId(target.mid(3));
+
+    auto* subWindow = new DetachableMdiSubWindow();
+    subWindow->setAttribute(Qt::WA_DeleteOnClose);
+    subWindow->setWidget(viewer);
+    connect(viewer, &OrgDocViewerWindow::windowTitleChanged, subWindow,
+        &QWidget::setWindowTitle);
+    mdiArea_->addSubWindow(subWindow);
+    subWindow->resize(600, 500);
+    subWindow->show();
 }
 
 }

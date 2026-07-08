@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :qt:rendering:dx:qa_validation_runner:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/scenario-runner-context-viewer
+#+pr: 1471
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-07
 #+updated: 2026-07-07
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,35 +31,127 @@ checklist itself.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-07                               |
 
 * Acceptance
 
--
+- [X] Scenario Runner gains "Story" and "Task" tabs (separate, not
+  stacked) rendering the driving story/task docs via the shared
+  =OrgDocRenderer=, resolved through the org-roam index from the
+  scenario's =Verifies task=/=Parent story= links.
+- [X] A paragraph's wrapped source lines render as one logical line,
+  not one =<p>= per source line (=ores.orgmode= gains a
+  =join_paragraph_lines= utility for this, reusable beyond this one
+  renderer).
+- [X] =[[id:...][...]]= links render as real, clickable links, and
+  clicking one opens a separate viewer with its own Back/Forward
+  history — not in-place navigation that would lose the tab's original
+  content.
+- [X] Inline =code=/~verbatim~= markup renders in the same monospace
+  font as =ores.shell='s terminal (shared via =FontUtils=), not the
+  proportional UI font.
+- [X] The step detail view is non-modal and lets the tester interact
+  with the rest of the app while it's open, and does not stay pinned
+  above other windows (including unrelated applications).
+- [X] =--open-scenario <path>= launches the client straight into a
+  scenario, for faster edit/rebuild/retest cycles.
+- [X] Every fix verified live via dogfooding against real scenario
+  docs, not just code review — see =* Test Scenarios= below.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Landed in several rounds, each driven by actually running the panel
+against a real scenario doc rather than by inspection alone:
+
+1. Added a "Context" tab (Story+Task stacked) resolving links via the
+   org-roam index and rendering with the existing =OrgDocRenderer=.
+
+2. Dogfooding surfaced three real problems: paragraphs rendered one
+   line per wrapped source line, links rendered as raw text, and the
+   two docs read better as separate tabs. Fixed by: adding
+   =ores.orgmode::domain::join_paragraph_lines()= (grouping consecutive
+   non-blank, non-bullet =body_lines= into one logical line before
+   rendering — a small, reusable domain utility, not something
+   hand-rolled in the renderer); extending =OrgDocRenderer='s single-
+   pass inline regex to recognise =[[target][text]]= as an anchor;
+   splitting "Context" into "Story" and "Task" tabs.
+
+3. Further dogfooding: a flat =QLabel= showing a step's raw body text
+   meant =*bold*=/==code==/=~verbatim~= never rendered — fixed by
+   exporting =render_body_lines_to_html()= and using a =QTextBrowser=
+   instead. Added the shared monospace font (via =FontUtils=, the same
+   resolution =ores.shell='s terminal uses) to =<code>= spans. Added
+   =--open-scenario= to =CommandLineParser= (and a =compass client
+   start --open-scenario= passthrough) so a rebuild-and-retest cycle
+   doesn't need manual clicking through the UI every time.
+
+4. Two more dogfooding rounds on link/window behaviour: (a) clicking a
+   link was navigating the Story/Task tab in place, losing the
+   original content — fixed by spawning a separate
+   =OrgDocViewerWindow= with its own Back/Forward history instead; (b)
+   the step detail dialog and that new link viewer both kept
+   "detaching" — first diagnosed as a modality/parenting issue (fixed
+   by constructing with no parent and =Qt::Window= passed to the
+   constructor, since =QDialog='s default window *type* carries a
+   window-manager "always-above" hint independent of modality), but
+   that still wasn't enough — the tester wanted them *inside* the app's
+   MDI area, not detached at all. Final fix: both are now plain content
+   widgets hosted in a =DetachableMdiSubWindow=, the exact convention
+   every other detail dialog in the app already follows (confirmed by
+   checking =CurrencyDetailDialog=/=DetailDialogBase=) — required
+   threading =QMdiArea*= through to =QaValidationRunnerWidget= via a
+   new =setMdiArea()= setter, called by =AdminPlugin= right after
+   construction (the same widget/mdi_area already available in
+   =shared_menus_context= from the panel task).
+
+5. Also fixed a real bug found via dogfooding rather than review: a
+   step-detail dialog reachable while the tester never clicked a
+   PASS/FAIL/Pending button would lose typed notes on close — replaced
+   the "persist on close" signal with "persist on every edit"
+   (=QPlainTextEdit::textChanged=), which is both simpler and immune to
+   any widget-teardown-ordering risk.
 
 * Notes
+
+* Test Scenarios
+
+| Scenario                                                                                          | Outcome | Notes                                                                                          |
+|-----------------------------------------------------------------------------------------------------+---------+--------------------------------------------------------------------------------------------------|
+| [[id:B6713414-1A7D-4430-AE1E-F2260BD437F4][Verify the Story/Task context viewer and Scenario Runner UI polish]] | FAILED  | First pass: found the Story/Task tab mixup, links navigating in-place instead of a new window, and the step dialog staying pinned on top. |
+| [[id:2492DBB7-E953-4D33-BEA2-8008326FC90B][Verify Story/Task tab correctness, link viewer window, and step dialog stacking]] | PASSED  | Confirmed the tab mixup was a stale-binary artifact (diagnostic logging added); the link viewer window works. Step dialog needed two more fixes to stop staying on top: (1) constructing with no parent + Qt::Window passed to the constructor wasn't enough — still pinned above unrelated apps; (2) the real fix was dropping the top-level-window approach entirely and hosting both the step-detail and link-viewer content as =DetachableMdiSubWindow=s in the app's own MDI area, the same convention every other detail dialog in the app already follows. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1471][#1471]] | [qt,orgmode] Add the story/task context viewer, with UI polish from dogfooding |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                              | File                        | Decision | Notes                    |
+|---+---------------------------------------------------------------------------------+-------------------------------+----------+--------------------------|
+| 1 | Unused =browser= parameter on =followContextLink=                                | QaValidationRunnerWidget.*  | Accepted | Fixed in 4092aaaa6 — dropped the parameter. |
+| 2 | Stale step index across a scenario reload could silently write into the wrong scenario's step | QaValidationRunnerWidget.cpp | Accepted | Fixed in 4092aaaa6 — added =loadGeneration_=, captured at subwindow-open time. |
+| 3 | =find_repo_file()= duplicated in two files                                       | QaValidationRunnerWidget.cpp, OrgDocViewerWindow.cpp | Accepted | Fixed in 4092aaaa6 — extracted to shared =RepoFileFinder.hpp/cpp=. |
+| 4 | =taskId_=/=storyId_= derived positionally from =info->links[0]=/=[1]= rather than by field name | QaValidationRunnerWidget.cpp | Accepted | Fixed in 4092aaaa6 — now looked up by "Verifies task"/"Parent story" field name. |
+| 5 | =OrgDocViewerWindow='s doc comment said each instance "opens its own read-only handle" but a fresh one opens per navigation | OrgDocViewerWindow.hpp | Accepted | Fixed in 4092aaaa6 — comment corrected; not worth caching for a manual-testing tool's handful of navigations. |
 
 * Result
+
+Scenario Runner now has Story and Task tabs rendering the driving docs
+read-only, with real paragraphs, clickable links (opening a separate
+Back/Forward viewer), and monospace inline code — all matching the
+app's existing conventions rather than one-off styling. The step
+detail view and link viewer are both =DetachableMdiSubWindow=s in the
+app's own MDI area, non-modal and never pinned above other windows.
+=--open-scenario= speeds up the edit/rebuild/retest loop. Every fix
+was found and verified by actually dogfooding the panel against real
+scenario docs (two rounds, recorded in =* Test Scenarios= above), not
+by code review alone — including two real bugs (notes lost on close,
+=join_paragraph_lines= reusable domain utility) that inspection alone
+would likely have missed.

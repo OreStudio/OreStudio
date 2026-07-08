@@ -23,6 +23,7 @@
 #include "ores.orgmode/domain/link.hpp"
 #include "ores.orgmode/domain/property.hpp"
 #include "ores.orgmode/domain/table.hpp"
+#include "ores.orgmode/export.hpp"
 #include <optional>
 #include <string>
 #include <vector>
@@ -92,6 +93,20 @@ struct heading final {
 
     friend bool operator==(const heading&, const heading&) = default;
 };
+
+/**
+ * @brief Join one paragraph's wrapped source lines into a single
+ * logical line — org (like most plain-text markup) wraps a paragraph's
+ * prose across several physical lines purely for source readability;
+ * that wrapping isn't a real line break and shouldn't render as one.
+ *
+ * Each line is trimmed and joined with a single space. Callers are
+ * responsible for grouping =body_lines= into per-paragraph runs first
+ * (splitting on blank lines, bullet-list lines, etc.) — this function
+ * only does the "join" half, since what counts as a paragraph boundary
+ * is a rendering decision, not something this domain type dictates.
+ */
+ORES_ORGMODE_EXPORT std::string join_paragraph_lines(const std::vector<std::string>& lines);
 
 }
 

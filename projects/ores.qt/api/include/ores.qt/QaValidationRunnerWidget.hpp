@@ -24,27 +24,38 @@
 #include <QList>
 #include <QString>
 #include <QWidget>
+#include <memory>
+#include <string>
 #include <vector>
 
 class QLabel;
 class QListWidget;
 class QListWidgetItem;
+class QMdiArea;
 class QToolBar;
 class QAction;
+class QTabWidget;
+class QTextBrowser;
+class QUrl;
+
+namespace ores::orgmode::indexing {
+class resolver;
+}
 
 namespace ores::qt {
 
 /**
  * @brief One step's in-memory state while a scenario is loaded. Each
  * step is its own org heading under =* Steps= (see the =test_scenario=
- * template) — @p title is that heading's title, @p body its
- * instructional text, rendered read-only in the step detail dialog.
+ * template) — @p title is that heading's title, @p bodyLines its raw
+ * instructional text (rendered — markup and all, via =OrgDocRenderer=
+ * — in the step detail dialog, not shown as plain unprocessed text).
  */
 enum class step_status { pending, pass, fail };
 
 struct qa_step final {
     QString title;
-    QString body;
+    std::vector<std::string> bodyLines;
     step_status status = step_status::pending;
     QString notes;
 
@@ -65,18 +76,36 @@ struct qa_step final {
  * =* Results= and each step's =*** Result= child heading in place via
  * =write_scenario_results()= and stamping the compass journal. The
  * scenario's overall outcome is inferred from the step results, not
- * set directly by the tester.
+ * set directly by the tester. Sibling "Story" and "Task" tabs render
+ * the driving docs (resolved via the org-roam index and rendered with
+ * =OrgDocRenderer=) so the tester doesn't need to leave the app to
+ * recover context — =[[id:...][...]]= links inside them are clickable
+ * and navigate to whatever they point to, resolved the same way.
  *
  * A regular widget — hosted in an MDI subwindow (via
  * =DetachableMdiSubWindow=) by the plugin that owns it, not a
  * dock, so the tester can freely move/resize it like every other
- * window while running through a test.
+ * window while running through a test. Step-detail and link-viewer
+ * pop-ups follow the same convention (see setMdiArea()) — MDI
+ * subwindows, like every other detail dialog in this app, not
+ * detached top-level windows.
  */
 class ORES_QT_API QaValidationRunnerWidget final : public QWidget {
     Q_OBJECT
 
 public:
     explicit QaValidationRunnerWidget(QWidget* parent = nullptr);
+
+    /**
+     * @brief Inject the shared MDI area. Step-detail and link-viewer
+     * pop-ups are hosted as MDI subwindows in it, the same as every
+     * other detail dialog in the app — not detached top-level windows,
+     * which several window managers pin above the whole application
+     * (including unrelated ones) regardless of modality.
+     */
+    void setMdiArea(QMdiArea* mdiArea) {
+        mdiArea_ = mdiArea;
+    }
 
 public slots:
     /**
@@ -106,16 +135,44 @@ signals:
 
 private slots:
     void openStepDetail(QListWidgetItem* item);
+    void followContextLink(const QUrl& url);
 
 private:
     void rebuildStepList();
     void updateStepItem(int index);
     void updateOverallStatusLabel();
     void stampJournal(const QString& status);
+    void loadContextTab(const QString& taskId, const QString& storyId);
+
+    /**
+     * @brief Open the org-roam index (=.org-roam.db=, found by walking
+     * up from the loaded scenario's path), or nullptr if it isn't
+     * found or can't be opened.
+     */
+    std::unique_ptr<orgmode::indexing::resolver> openResolver() const;
+
+    /**
+     * @brief Resolve @p id via @p resolver and render the target doc
+     * into @p browser, or a plain-text explanation if @p resolver is
+     * null, @p id is empty, or the id doesn't resolve.
+     */
+    static void renderIdInto(orgmode::indexing::resolver* resolver,
+                            const QString& id,
+                            QTextBrowser* browser);
 
     QString scenarioPath_;
     QString taskId_;
     QString storyId_;
+
+    /**
+     * @brief Bumped every time loadScenario() runs. A step-detail
+     * subwindow captures this at open time and checks it before
+     * writing back into steps_ — if the tester loads a different
+     * scenario while a subwindow from the old one is still open, its
+     * writes become no-ops instead of silently landing on the new
+     * scenario's step at the same index.
+     */
+    int loadGeneration_ = 0;
 
     std::vector<qa_step> steps_;
 
@@ -126,6 +183,13 @@ private:
     QLabel* targetDialogLabel_;
     QLabel* overallStatusLabel_;
     QListWidget* stepsList_;
+
+    QTabWidget* tabWidget_;
+    QWidget* stepsTab_;
+    QTextBrowser* storyBrowser_;
+    QTextBrowser* taskBrowser_;
+
+    QMdiArea* mdiArea_ = nullptr;
 };
 
 }

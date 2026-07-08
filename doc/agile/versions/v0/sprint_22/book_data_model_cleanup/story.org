@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: EA22E78F-E4CB-4E76-B854-F85EB4E6AF48
+:END:
+#+title: Story: Book data model cleanup
+#+description: Fix book_status/is_trading_book modeling bugs, add missing classification flags, rename ledger_ccy to functional_currency, investigate legal-entity/branch fields, add rates centre, analyse allowed-currency/allowed-product lists, and enrich the Books manual chapter with domain concepts -- surfaced by the Book domain knowledge write-up.
+#+type: story
+#+level: s2
+#+filetags: :sprint_22:v0:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-08                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2F3BD151-754F-4E9B-B5AB-DC1E15E04C79][Fix book_status to reference the book_statuses lookup table]] | BACKLOG | | | book_status is currently a static_combo with a hand-typed 5-value list (Active/Inactive/Closed/Frozen/Pending) that does not match the real ores_refdata_book_statuses_tbl (seeded with only Active/Closed/Frozen). Once out of bootstrap mode, saving Inactive or Pending is rejected by ores_refdata_validate_book_status_fn. Fix by referencing the lookup table properly (FK-style combo, like currency's rounding_type/market_tier), and keep badge colours in sync with the real values. |
+| [[id:CAC82ABE-5306-4B01-841A-0A98B25CD674][Fix is_trading_book domain type from int to bool]] | BACKLOG | | | is_trading_book is modeled as type: integer / cpp_type: int even though it is semantically boolean; type: boolean/cpp_type: bool is natively supported elsewhere (e.g. zero_convention, market_series). Fix across domain/SQL/repository/protocol layers. |
+| [[id:5C89033D-224E-4105-A8CF-B0336C2A9014][Add book classification flags: is_reserve_book, is_ledger_book, is_funding_book, is_sweepable, is_manual_ledger_book]] | BACKLOG | | | The domain notes describe a book carrying independent boolean classification flags rather than a single type enum, and mention 5 not yet modeled: Is Reserve Book, Is Ledger Book, Is Funding Book, Sweepable (only Sweepable books participate in cash sweeping), and manual ledger book (not fed from a source book, updated by hand). Add all 5 as boolean fields, following the exact same pattern as the existing is_trading_book field (detail field checkbox, list column, generator). |
+| [[id:2AB4A475-B883-4FE6-BC27-3D6742F9E2C8][Document that book-to-book hierarchy is not supported; hierarchy is via portfolios]] | BACKLOG | | | The domain notes describe an accounting-side book hierarchy (a book containing child books via ledger setup, a single Root Book). ORE Studio does not model this: Book has no self-referencing parent field. This is a deliberate design decision, not a gap -- hierarchy is expressed entirely via the portfolio tree (Portfolio has self-referencing parent_portfolio_id; Book links to exactly one portfolio). Update the Book domain knowledge docs (books_and_portfolios.org) and the manual chapter to state this explicitly as a design choice, not an open gap. |
+| [[id:18E04DB0-B55C-4D3D-8CCE-3A58C490807C][Investigate legal entity and branch fields for book]] | BACKLOG | | | The domain notes state a book belongs to exactly one legal entity, business, and branch. Book currently has party_id and an optional owner_unit_id (business unit) but no legal entity or branch field, and no Legal Entity or Branch entity exists in the codebase at all. Investigate whether party/business_unit already cover this semantically, or whether new fields/entities are needed, and produce a recommendation. |
+| [[id:DE683A9D-4FBC-45CB-94B8-30ABBE2DD04F][Add rates centre to book, reusing business_centre]] | BACKLOG | | | Each book should be assigned a rates centre so books sharing a centre revalue against consistent market data (see book_groups_and_rates_centres.org). Check whether the existing business_centre entity (Commission: business_centre story) is the right fit to reuse for this, rather than modeling a new rates-centre entity, and add the FK to book. |
+| [[id:A4F81E5E-6795-4533-AD3A-371EE4F01D41][Rename ledger_ccy to functional_currency]] | BACKLOG | | | ledger_ccy is described in the domain notes as the book's functional/accounting currency, designated by the ledger. Rename the field (and its Qt label, column header, etc.) to functional_currency to match domain terminology precisely. |
+| [[id:ACB04B8D-06E6-4776-8396-0A9279BF200D][Analyse allowed-currency and allowed-product lists for book (needs further design)]] | BACKLOG | | | Book Currencies (domain notes): each book has a set of allowed currencies; only instruments whose currency intersects that set may be booked into it. Likely also needs an allowed-product-type list (books carry trading rules restricting which deals may be booked). Both probably need an explicit 'All' wildcard state distinct from an enumerated set. Needs further design analysis before implementation -- data shape (multi-value column vs junction table), UI (multi-select vs checkbox-per-value), and how 'All' interacts with an otherwise-enumerated list. |
+| [[id:3BD2AE6A-6B8F-4254-AD47-37F3797A1B75][Enrich the Books manual chapter with domain concepts]] | BACKLOG | | | chapter_7_books.org currently documents only the Qt UI mechanics. Weave in the domain concepts from the new Book knowledge cluster (classification, books vs portfolios, lifecycle, ledger connection) so the manual explains what a book represents and why, not just how to click through its dialogs. |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -151,7 +151,7 @@ template, and the =DynamicComboSetup=/=LookupFetcher= API changes).
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Debug log lines use human-readable field names ("rounding type") but the codegen template emits snake_case ("rounding_type") — checked-in code doesn't byte-match what regeneration produces | =CurrencyDetailDialog.cpp= | Fixed | Fixed in 48b1b0b0f. Three independent review passes found no other issues. |
 
 * Result
 

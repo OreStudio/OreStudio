@@ -63,8 +63,11 @@ compile-definition workaround.
   build and link clean; full test suite passes (198 assertions); the
   QA Validation Runner panel (the feature that most exercises this
   code) verified live end-to-end via =--open-scenario=.
-- [ ] Windows CI confirms the fix (pending — this is the whole point
-  of the task).
+- [ ] Windows CI confirms the fix. A manual =workflow_dispatch= run
+  was triggered on the PR branch before merging (=Continuous Windows=
+  takes hours; merged without waiting on explicit instruction, since
+  the change was otherwise fully verified on Linux and reviewed).
+  Follow up once that run completes.
 
 * Plan
 

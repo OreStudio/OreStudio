@@ -137,6 +137,18 @@ and of the toolbar action, in a running Qt client.
 Manual test scenario: [[id:AA4E3003-BA42-4885-915D-D85C1841A5DB][Test Scenario: Vintage-availability guard and fixed/vintage price source]]
 (=doc/agile/versions/v0/sprint_22/synthetic-data-collections/scenario_vintage_guard_price_source.org=).
 
+While seeding the guard's reference vintage, found that Legacy/
+Example_56's =market.txt= stores GBP/USD under the reversed key
+=FX/RATE/USD/GBP= (confirmed by triangulation: EUR/GBP÷EUR/USD =
+0.717157, and the given value 1.394610179594994 is its reciprocal to
+6 significant figures) — a real upstream vendor bug, not an import
+decomposition bug. Patched around it for now with a direct SQL
+special-case and a one-off bitemporal update of the already-seeded
+=synthetic.gbpusd= row; the generic fix (detect and auto-correct any
+such reversed key at import time, using refdata's =currency_pair=
+canonical order) is tracked separately as
+[[id:F3CB17FB-6472-4DEB-BC5B-EC764C1368F8][Detect and correct reversed FX spot quotes during market data import]].
+
 * PRs
 
 | PR | Title |

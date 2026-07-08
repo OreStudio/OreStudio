@@ -140,9 +140,15 @@ public:
         resp.success = true;
         std::string error_detail;
         const auto bearer = ores::nats::service::extract_bearer(msg);
-        resp.available = ctrl_->validate(
-            req->ore_key, req->vintage_source, req->vintage_date, error_detail, bearer);
-        resp.message = resp.available ? "Vintage data available" : error_detail;
+        resp.available = ctrl_->validate(req->ore_key,
+                                         req->vintage_source,
+                                         req->vintage_date,
+                                         error_detail,
+                                         bearer,
+                                         &resp.resolved_price);
+        resp.message = resp.available ? "Vintage data available (" +
+                                            std::to_string(resp.resolved_price) + ")" :
+                                        error_detail;
         reply(nats_, msg, resp);
     }
 

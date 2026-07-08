@@ -36,7 +36,7 @@ generate_synthetic_fx_spot_generation_config(utility::generation::generation_con
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::fx_spot_generation_config r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
@@ -47,7 +47,8 @@ generate_synthetic_fx_spot_generation_config(utility::generation::generation_con
     r.quote_currency_code = std::string("USD") + "-" + std::to_string(idx);
     r.source_name = std::string("synthetic.") + std::string(faker::finance::currencyCode());
     r.ore_key = std::string("FX/RATE/EUR/USD");
-    r.gmm_initial_price = faker::number::decimal(0.5, 2.0);
+    r.price_source = std::string("vintage");
+    r.gmm_initial_price = 0.0;
     r.ticks_per_hour = faker::number::integer(1, 3600);
     r.process_type = std::string("geometric");
     r.enabled = faker::datatype::boolean();

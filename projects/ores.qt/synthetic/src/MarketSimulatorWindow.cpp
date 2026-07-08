@@ -1552,17 +1552,25 @@ void MarketSimulatorWindow::onValidateVintageClicked() {
     BOOST_LOG_SEV(lg(), info) << "Validating vintage data for " << all.size() << " FX rate(s).";
     QPointer<MarketSimulatorWindow> self = this;
     auto* cm = clientManager_;
-    // ok=true, message=available reason or missing-data detail
+    // ok=true (pass/not-applicable), message
     using Results = std::vector<std::tuple<std::string, bool, QString>>;
     auto task = [cm, all]() -> Results {
         Results results;
         for (const auto& fx : all) {
+            const std::string label = fx.source_name.empty() ? fx.ore_key : fx.source_name;
+
+            // price_source "fixed" has no vintage to check — not a failure,
+            // just not applicable.
+            if (fx.price_source != "vintage") {
+                results.push_back({label, true, QLatin1String("fixed spot — no vintage to check")});
+                continue;
+            }
+
             ores::marketdata::messaging::validate_market_feed_config_request req;
             req.ore_key = fx.ore_key;
             req.source_name = fx.source_name;
             req.vintage_source = fx.vintage_source;
             req.vintage_date = fx.vintage_date;
-            const std::string label = fx.source_name.empty() ? fx.ore_key : fx.source_name;
             auto resp = cm->process_authenticated_request(req);
             if (!resp) {
                 results.push_back({label, false, QString::fromStdString(resp.error())});
@@ -1588,13 +1596,13 @@ void MarketSimulatorWindow::onValidateVintageClicked() {
         for (const auto& [label, ok, message] : results) {
             if (ok)
                 ++okCount;
-            lines << (ok ? tr("✓ %1").arg(QString::fromStdString(label))
+            lines << (ok ? tr("✓ %1 — %2").arg(QString::fromStdString(label), message)
                         : tr("✗ %1 — %2").arg(QString::fromStdString(label), message));
         }
         QMessageBox::information(
             self,
             tr("Validate Vintage"),
-            tr("%1 of %2 FX rate(s) have their vintage data available:\n\n")
+            tr("%1 of %2 FX rate(s) pass (or don't need) vintage validation:\n\n")
                     .arg(okCount)
                     .arg(results.size()) +
                 lines.join("\n"));

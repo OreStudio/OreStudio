@@ -58,6 +58,7 @@ public:
         QuoteCurrencyCode,
         SourceName,
         OreKey,
+        PriceSource,
         GmmInitialPrice,
         TicksPerHour,
         ProcessType,
@@ -103,6 +104,7 @@ public:
      * @return The FX spot generation config, or nullptr if row is invalid.
      */
     const synthetic::domain::fx_spot_generation_config* getConfig(int row) const;
+
 
     /**
      * @brief Load a specific page of data.

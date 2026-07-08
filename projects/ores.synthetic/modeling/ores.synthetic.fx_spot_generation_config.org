@@ -116,6 +116,25 @@ Derived from the currency pair; not entered directly.
 std::string("FX/RATE/EUR/USD")
 #+end_src
 
+** price_source
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "vintage"
+:END:
+
+Where this feed's initial spot price comes from: "fixed" (use
+=gmm_initial_price= as entered) or "vintage" (derive it from the
+=vintage_source=/=vintage_date= market-data observation, guarded by
+availability). Exactly one of =gmm_initial_price= or
+=vintage_source=/=vintage_date= is populated, matching this
+discriminator — see the SQL check.
+
+#+begin_src cpp :name generator
+std::string("vintage")
+#+end_src
+
 ** gmm_initial_price
 :PROPERTIES:
 :type:          double precision
@@ -124,10 +143,14 @@ std::string("FX/RATE/EUR/USD")
 :default_value: 0.0
 :END:
 
-Initial spot price the generated process starts from.
+Initial spot price the generated process starts from. Only used (and
+required, => 0=) when =price_source= is "fixed"; =0= when "vintage" —
+the codegen used here has no true-nullable numeric support, so this
+is a sentinel enforced by the SQL check alongside =price_source=,
+not real SQL NULL.
 
 #+begin_src cpp :name generator
-faker::number::decimal(0.5, 2.0)
+0.0
 #+end_src
 
 ** ticks_per_hour
@@ -180,9 +203,10 @@ faker::datatype::boolean()
 
 Source tag of the market-data vintage this feed's initial spot and
 availability guard are validated against (e.g. "ore.reference"),
-matching =market_observation.source=. Empty means "fixed spot": skip
-the guard and use =gmm_initial_price= as entered, for testing or when
-no reference vintage applies.
+matching =market_observation.source=. Only populated (and required)
+when =price_source= is "vintage"; empty when "fixed" — see
+=price_source=. (Empty string, not SQL NULL: the codegen used here
+has no true-nullable text support.)
 
 #+begin_src cpp :name generator
 std::string("ore.reference")
@@ -198,8 +222,8 @@ std::string("ore.reference")
 Observation date of the market-data vintage this feed's initial spot
 and availability guard are validated against, ISO format (e.g.
 "2016-02-05"), matching =market_observation.observation_datetime=.
-Empty (with vintage_source empty) means "fixed spot" — see
-vintage_source.
+Only populated (and required) when =price_source= is "vintage"; empty
+when "fixed" — see =price_source=.
 
 #+begin_src cpp :name generator
 std::string("2016-02-05")
@@ -221,10 +245,10 @@ std::string("2016-02-05")
 | "base_currency_code" <> "quote_currency_code"         |
 | "source_name" <> ''                                   |
 | "ore_key" <> ''                                       |
-| "gmm_initial_price" > 0                               |
 | "ticks_per_hour" > 0                                  |
 | "process_type" in ('geometric', 'arithmetic', 'ou')   |
-| ("vintage_source" = '' and "vintage_date" = '') or ("vintage_source" <> '' and "vintage_date" <> '') |
+| "price_source" in ('fixed', 'vintage')                |
+| ("price_source" = 'fixed' and "gmm_initial_price" > 0 and "vintage_source" = '' and "vintage_date" = '') or ("price_source" = 'vintage' and "gmm_initial_price" = 0 and "vintage_source" <> '' and "vintage_date" <> '') |
 
 * Foreign keys
 
@@ -312,12 +336,13 @@ std::string("2016-02-05")
 |---------------------+---------------------+----------------------+-----------+--------+-------------+---------------------------------|
 | base_currency_code  | Base Currency       | baseCurrencyEdit     | line_edit |        | true        | Enter base currency code        |
 | quote_currency_code | Quote Currency      | quoteCurrencyEdit    | line_edit |        | true        | Enter quote currency code       |
-| gmm_initial_price   | Initial Price       | gmmInitialPriceEdit  | line_edit |        | true        | Enter initial price             |
+| price_source        | Price Source        | priceSourceEdit      | line_edit |        | true        | fixed, or vintage                |
+| gmm_initial_price   | Initial Price       | gmmInitialPriceEdit  | line_edit |        |             | Required if Price Source is fixed |
 | ticks_per_hour      | Ticks per Hour      | ticksPerHourEdit     | spin_box  |        | true        |                                 |
 | process_type        | Process Type        | processTypeEdit      | line_edit |        | true        | geometric, arithmetic, or ou    |
 | enabled             | Enabled             | enabledCheck         | check_box |        |             |                                 |
-| vintage_source      | Vintage Source      | vintageSourceEdit    | line_edit |        |             | Leave blank for a fixed spot, or e.g. ore.reference |
-| vintage_date        | Vintage Date        | vintageDateEdit      | line_edit |        |             | Leave blank for a fixed spot, or YYYY-MM-DD |
+| vintage_source      | Vintage Source      | vintageSourceEdit    | line_edit |        |             | Required if Price Source is vintage, e.g. ore.reference |
+| vintage_date        | Vintage Date        | vintageDateEdit      | line_edit |        |             | Required if Price Source is vintage, YYYY-MM-DD |
 
 *** Columns (Qt model)
 
@@ -334,6 +359,7 @@ the formatter function needs, if any.
 | QuoteCurrencyCode  | quote_currency_code | Quote Currency      | string    | 100   |                   |                                |
 | SourceName         | source_name         | Source Name         | string    | 180   |                   |                                |
 | OreKey             | ore_key             | ORE Key             | string    | 180   |                   |                                |
+| PriceSource        | price_source        | Price Source        | string    | 100   |                   |                                |
 | GmmInitialPrice    | gmm_initial_price   | Initial Price       | double    | 100   |                   |                                |
 | TicksPerHour       | ticks_per_hour      | Ticks/Hr            | int       | 80    |                   |                                |
 | ProcessType        | process_type        | Process Type        | string    | 100   | processTypeLabel  | ores.qt/ProcessTypeLabel.hpp   |

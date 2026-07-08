@@ -41,6 +41,11 @@ FxSpotGenerationConfigDetailDialog::FxSpotGenerationConfigDetailDialog(QWidget* 
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 FxSpotGenerationConfigDetailDialog::~FxSpotGenerationConfigDetailDialog() {
@@ -90,6 +95,10 @@ void FxSpotGenerationConfigDetailDialog::setupConnections() {
             this,
             &FxSpotGenerationConfigDetailDialog::onFieldChanged);
     connect(ui_->quoteCurrencyEdit,
+            &QLineEdit::textChanged,
+            this,
+            &FxSpotGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->priceSourceEdit,
             &QLineEdit::textChanged,
             this,
             &FxSpotGenerationConfigDetailDialog::onFieldChanged);
@@ -145,6 +154,7 @@ void FxSpotGenerationConfigDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->baseCurrencyEdit->setReadOnly(readOnly);
     ui_->quoteCurrencyEdit->setReadOnly(readOnly);
+    ui_->priceSourceEdit->setReadOnly(readOnly);
     ui_->gmmInitialPriceEdit->setReadOnly(readOnly);
     ui_->processTypeEdit->setReadOnly(readOnly);
     ui_->vintageSourceEdit->setReadOnly(readOnly);
@@ -158,6 +168,7 @@ void FxSpotGenerationConfigDetailDialog::updateUiFromConfig() {
         QString::fromStdString(fx_spot_generation_config_.base_currency_code));
     ui_->quoteCurrencyEdit->setText(
         QString::fromStdString(fx_spot_generation_config_.quote_currency_code));
+    ui_->priceSourceEdit->setText(QString::fromStdString(fx_spot_generation_config_.price_source));
     ui_->gmmInitialPriceEdit->setText(
         QString::number(fx_spot_generation_config_.gmm_initial_price));
     ui_->ticksPerHourEdit->setValue(fx_spot_generation_config_.ticks_per_hour);
@@ -183,6 +194,7 @@ void FxSpotGenerationConfigDetailDialog::updateConfigFromUi() {
         ui_->baseCurrencyEdit->text().trimmed().toStdString();
     fx_spot_generation_config_.quote_currency_code =
         ui_->quoteCurrencyEdit->text().trimmed().toStdString();
+    fx_spot_generation_config_.price_source = ui_->priceSourceEdit->text().trimmed().toStdString();
     fx_spot_generation_config_.gmm_initial_price =
         ui_->gmmInitialPriceEdit->text().trimmed().toDouble();
     fx_spot_generation_config_.ticks_per_hour = ui_->ticksPerHourEdit->value();
@@ -212,20 +224,28 @@ void FxSpotGenerationConfigDetailDialog::updateSaveButtonState() {
 bool FxSpotGenerationConfigDetailDialog::validateInput() {
     const QString base_currency_code_val = ui_->baseCurrencyEdit->text().trimmed();
     const QString quote_currency_code_val = ui_->quoteCurrencyEdit->text().trimmed();
-    const QString gmm_initial_price_val = ui_->gmmInitialPriceEdit->text().trimmed();
+    const QString price_source_val = ui_->priceSourceEdit->text().trimmed();
     const QString process_type_val = ui_->processTypeEdit->text().trimmed();
+    const QString gmm_initial_price_val = ui_->gmmInitialPriceEdit->text().trimmed();
     const QString vintage_source_val = ui_->vintageSourceEdit->text().trimmed();
     const QString vintage_date_val = ui_->vintageDateEdit->text().trimmed();
 
-    // Vintage Source/Date are optional (empty = fixed spot, skip the guard),
-    // but must be both empty or both set — a half-filled pair can't be
-    // resolved to either mode.
-    const bool vintage_consistent =
-        (vintage_source_val.isEmpty() && vintage_date_val.isEmpty()) ||
-        (!vintage_source_val.isEmpty() && !vintage_date_val.isEmpty());
+    // price_source is a discriminator: "fixed" requires an initial price and
+    // no vintage; "vintage" requires both vintage fields and no initial
+    // price. Matches the DB check constraint.
+    bool price_mode_valid = false;
+    if (price_source_val == "fixed") {
+        price_mode_valid = !gmm_initial_price_val.isEmpty() &&
+                           gmm_initial_price_val.toDouble() > 0 && vintage_source_val.isEmpty() &&
+                           vintage_date_val.isEmpty();
+    } else if (price_source_val == "vintage") {
+        price_mode_valid =
+            (gmm_initial_price_val.isEmpty() || gmm_initial_price_val.toDouble() == 0) &&
+            !vintage_source_val.isEmpty() && !vintage_date_val.isEmpty();
+    }
 
     return true && !base_currency_code_val.isEmpty() && !quote_currency_code_val.isEmpty() &&
-           !gmm_initial_price_val.isEmpty() && !process_type_val.isEmpty() && vintage_consistent;
+           !process_type_val.isEmpty() && price_mode_valid;
 }
 
 void FxSpotGenerationConfigDetailDialog::onSaveClicked() {
@@ -324,7 +344,8 @@ void FxSpotGenerationConfigDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 

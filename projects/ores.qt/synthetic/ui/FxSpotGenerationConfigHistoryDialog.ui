@@ -178,139 +178,153 @@
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="gmm_initial_priceLabel">
+                <widget class="QLabel" name="price_sourceLabel">
                  <property name="text">
-                  <string>Initial Price:</string>
+                  <string>Price Source:</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QLabel" name="gmmInitialPriceValue">
+                <widget class="QLabel" name="priceSourceValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="ticks_per_hourLabel">
+                <widget class="QLabel" name="gmm_initial_priceLabel">
                  <property name="text">
-                  <string>Ticks per Hour:</string>
+                  <string>Initial Price:</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="QLabel" name="ticksPerHourValue">
+                <widget class="QLabel" name="gmmInitialPriceValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="process_typeLabel">
+                <widget class="QLabel" name="ticks_per_hourLabel">
                  <property name="text">
-                  <string>Process Type:</string>
+                  <string>Ticks per Hour:</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="QLabel" name="processTypeValue">
+                <widget class="QLabel" name="ticksPerHourValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="5" column="0">
-                <widget class="QLabel" name="enabledLabel">
+                <widget class="QLabel" name="process_typeLabel">
                  <property name="text">
-                  <string>Enabled:</string>
+                  <string>Process Type:</string>
                  </property>
                 </widget>
                </item>
                <item row="5" column="1">
-                <widget class="QLabel" name="enabledCheck">
+                <widget class="QLabel" name="processTypeValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="6" column="0">
-                <widget class="QLabel" name="vintage_sourceLabel">
+                <widget class="QLabel" name="enabledLabel">
                  <property name="text">
-                  <string>Vintage Source:</string>
+                  <string>Enabled:</string>
                  </property>
                 </widget>
                </item>
                <item row="6" column="1">
-                <widget class="QLabel" name="vintageSourceValue">
+                <widget class="QLabel" name="enabledCheck">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="7" column="0">
-                <widget class="QLabel" name="vintage_dateLabel">
+                <widget class="QLabel" name="vintage_sourceLabel">
                  <property name="text">
-                  <string>Vintage Date:</string>
+                  <string>Vintage Source:</string>
                  </property>
                 </widget>
                </item>
                <item row="7" column="1">
-                <widget class="QLabel" name="vintageDateValue">
+                <widget class="QLabel" name="vintageSourceValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="8" column="0">
-                <widget class="QLabel" name="versionNumberLabel">
+                <widget class="QLabel" name="vintage_dateLabel">
                  <property name="text">
-                  <string>Version:</string>
+                  <string>Vintage Date:</string>
                  </property>
                 </widget>
                </item>
                <item row="8" column="1">
-                <widget class="QLabel" name="versionNumberValue">
+                <widget class="QLabel" name="vintageDateValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="9" column="0">
-                <widget class="QLabel" name="modifiedByLabel">
+                <widget class="QLabel" name="versionNumberLabel">
                  <property name="text">
-                  <string>Modified By:</string>
+                  <string>Version:</string>
                  </property>
                 </widget>
                </item>
                <item row="9" column="1">
-                <widget class="QLabel" name="modifiedByValue">
+                <widget class="QLabel" name="versionNumberValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="10" column="0">
-                <widget class="QLabel" name="recordedAtLabel">
+                <widget class="QLabel" name="modifiedByLabel">
                  <property name="text">
-                  <string>Recorded At:</string>
+                  <string>Modified By:</string>
                  </property>
                 </widget>
                </item>
                <item row="10" column="1">
-                <widget class="QLabel" name="recordedAtValue">
+                <widget class="QLabel" name="modifiedByValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="11" column="0">
+                <widget class="QLabel" name="recordedAtLabel">
+                 <property name="text">
+                  <string>Recorded At:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="1">
+                <widget class="QLabel" name="recordedAtValue">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="12" column="0">
                 <widget class="QLabel" name="changeCommentaryLabel">
                  <property name="text">
                   <string>Change Commentary:</string>
                  </property>
                 </widget>
                </item>
-               <item row="11" column="1">
+               <item row="12" column="1">
                 <widget class="QLabel" name="changeCommentaryValue">
                  <property name="text">
                   <string/>

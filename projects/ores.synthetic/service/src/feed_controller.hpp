@@ -96,11 +96,16 @@ public:
      * marketdata ingest loop on first tick arrival — the synthetic service has
      * no marketdata writes to perform.
      *
-     * If @p vintage_source is non-empty, the feed's required vintage data
-     * (source, date) is checked in market_observation before anything is
-     * started; a missing vintage returns vintage_data_missing with @p
-     * error_detail set to an actionable message, and no feed is spawned. An
-     * empty vintage_source skips the check (e.g. ad-hoc/default requests).
+     * If @p vintage_source is non-empty ("vintage" price_source), the feed's
+     * required vintage data (source, date) is checked in market_observation
+     * before anything is started; a missing vintage returns
+     * vintage_data_missing with @p error_detail set to an actionable message,
+     * and no feed is spawned. On success, the feed is seeded from the real
+     * imported spot value rather than @p initial_price (which is a sentinel
+     * 0 in vintage mode — see fx_spot_generation_config.price_source). An
+     * empty vintage_source skips the check entirely and uses @p
+     * initial_price as-is ("fixed" price_source, or an ad-hoc/default
+     * request).
      *
      * @p caller_bearer_token, when non-empty, is forwarded as
      * X-Delegated-Authorization on the vintage lookup so it runs in the
@@ -122,12 +127,18 @@ public:
                        const std::string& caller_bearer_token = {}) {
         if (!vintage_source.empty()) {
             std::string detail;
-            if (!vintage_data_available(
-                    ore_key, vintage_source, vintage_date, detail, caller_bearer_token)) {
+            double resolved_price = 0.0;
+            if (!vintage_data_available(ore_key,
+                                        vintage_source,
+                                        vintage_date,
+                                        detail,
+                                        caller_bearer_token,
+                                        &resolved_price)) {
                 if (error_detail)
                     *error_detail = std::move(detail);
                 return start_result::vintage_data_missing;
             }
+            initial_price = resolved_price;
         }
 
         std::lock_guard lock(mu_);
@@ -219,14 +230,21 @@ public:
      *
      * @param error_detail Set to an actionable message when unavailable;
      * untouched otherwise.
+     * @param resolved_price Set to the found observation's value on success;
+     * untouched otherwise.
      */
     bool validate(const std::string& ore_key,
                  const std::string& vintage_source,
                  const std::string& vintage_date,
                  std::string& error_detail,
-                 const std::string& caller_bearer_token = {}) {
-        return vintage_data_available(
-            ore_key, vintage_source, vintage_date, error_detail, caller_bearer_token);
+                 const std::string& caller_bearer_token = {},
+                 double* resolved_price = nullptr) {
+        return vintage_data_available(ore_key,
+                                      vintage_source,
+                                      vintage_date,
+                                      error_detail,
+                                      caller_bearer_token,
+                                      resolved_price);
     }
 
 private:
@@ -266,11 +284,17 @@ private:
     // cannot see another tenant's market_observation rows under RLS. Falls
     // back to the service's own client if no token is supplied (e.g. an
     // internal/ad-hoc call with no end-user session).
+    //
+    // On success, @p resolved_price (if non-null) is set to the matching
+    // observation's value — the real imported spot, not a placeholder — so
+    // callers in "vintage" mode can seed the process from it instead of an
+    // arbitrary/zero initial price.
     bool vintage_data_available(const std::string& ore_key,
                                const std::string& vintage_source,
                                const std::string& vintage_date,
                                std::string& error_detail,
-                               const std::string& caller_bearer_token = {}) {
+                               const std::string& caller_bearer_token = {},
+                               double* resolved_price = nullptr) {
         const auto missing_message = [&] {
             return "No vintage data found for source=" + vintage_source +
                    ", date=" + vintage_date + ".";
@@ -303,8 +327,18 @@ private:
         }
         for (const auto& obs : *observations) {
             if (obs.source == vintage_source && obs.point_id == "SPOT" &&
-                date_part(obs.observation_datetime) == vintage_date)
+                date_part(obs.observation_datetime) == vintage_date) {
+                if (resolved_price) {
+                    try {
+                        *resolved_price = std::stod(obs.value);
+                    } catch (const std::exception& e) {
+                        error_detail = "Vintage observation value '" + obs.value +
+                                      "' is not a valid number: " + e.what();
+                        return false;
+                    }
+                }
                 return true;
+            }
         }
         error_detail = missing_message();
         return false;

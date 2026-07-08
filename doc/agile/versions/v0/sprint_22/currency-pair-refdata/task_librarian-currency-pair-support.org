@@ -141,7 +141,11 @@ populates or transports them:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | USD/GBP =holiday_calendar= used non-ORE names ('US'/'UK') | iso_currencies_artefact_populate.sql | Fixed | b1d70d1b — changed to 'UnitedStates'/'UnitedKingdom' per the calendar-reference-data convention |
+| 2 | PR description claimed a Qt menu change not in this PR's diff | PR body | Fixed | Edited PR body — that change was from #1455 |
+| 3 | Conventions seed script's dataset join looser than the currencies populate pattern | refdata_currency_pair_conventions_seed_populate.sql | Fixed | b1d70d1b — added subject_area_name/domain_name to the join |
+| 4 | =advance_calendar= doc comment imprecise about comma-joining | refdata_currency_pair_conventions_seed_populate.sql | Fixed | b1d70d1b — clarified fallback-to-single/null wording |
+| 5 | Commodity pairs (XAU/USD etc.) use generic FX pip_factor/decimal_places, not bullion-specific | refdata_currency_pair_conventions_seed_populate.sql | Declined | Deliberate seed-default simplification, not an oversight |
 
 * Result
 

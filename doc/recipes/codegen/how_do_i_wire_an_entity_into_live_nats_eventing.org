@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 397C3822-25A2-49BB-9D4E-827EB8F47267
+:END:
+#+title: How do I wire an entity into live NATS eventing?
+#+description: Generate the per-entity event-mapping registrar and add it to the component's aggregator, replacing hand-wired application.cpp code.
+#+type: recipe
+#+level: cross
+#+filetags: :codegen:recipe:nats:eventing:cpp:registrar:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+
+The Postgres LISTEN/NOTIFY-to-NATS pipeline (a row change fires a channel notification, the service re-publishes it as a NATS event) used to be wired by hand per entity in each component's service/src/app/application.cpp: one #include, one register_mapping<T>() call, one event_bus.subscribe<T>() lambda. Codegen now generates that wiring; see [[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]] for the facet and [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] for the architecture pattern it mirrors.
+
+* Question
+
+How do I wire a domain_entity into live NATS eventing instead of hand-wiring application.cpp?
+
+* Answer
+
+Generate the per-entity event-mapping registrar:
+
+#+begin_src sh
+./compass.sh codegen entity generate <entity-slug> --address ores.cpp.nats-event-registrar
+#+end_src
+
+This produces =<entity>_event_registrar.hpp/cpp= in the component's =.service= layer (not =.core=, since the pipeline depends on =ores.eventing.core=), declaring and defining =register_<entity>_event_mapping(event_source, event_bus, nats)=. It registers the entity's Postgres channel (=product_component_entity_plural=, matching what the =notify_trigger= SQL archetype already emits) and republishes the resulting event to NATS via the shared =ores::eventing::service::publish_entity_event= helper.
+
+Then wire it into the component's aggregator (e.g. =ores::refdata::service::messaging::event_registrar::register_event_mappings=, colocated with =application.cpp=) — a single hand-maintained line per entity, mirroring the request/response counterpart (=ores::refdata::core::messaging::registrar::register_handlers=):
+
+#+begin_src cpp
+subs.push_back(register_<entity>_event_mapping(event_source, event_bus, nats));
+#+end_src
+
+If =application.cpp= still hand-wires the entity (an =#include= + =register_mapping<T>()= call + =event_bus.subscribe<T>()= lambda), remove that block — the generated registrar replaces it exactly.
+
+*Before regenerating*, check the entity's =nats-eventing= output isn't stale (=compass codegen entity generate <entity-slug> --address ores.cpp.nats-eventing --diff=). If it drifts, the changed-event's id field may rename (e.g. =ids= -> =<entity>_ids=), breaking any existing consumer of the old name — audit those first.
+
+* Script
+
+=./compass.sh codegen entity generate <entity-slug> --address ores.cpp.nats-event-registrar= — thin wrapper over =ores.codegen='s =generate.py= resolving the entity model, the =ores.cpp.nats-event-registrar= facet's two archetypes, and the =component_service_dir= output path.
+
+* Tested by
+
+Manual: cross-client NATS eventing verified for purpose_type (PR #1451, #1459) — edit in one Qt client, confirm the other client's list updates live without a manual refresh.
+
+* See also
+
+- [[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]] — the facet this recipe drives.
+- [[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]] — the request/response counterpart.
+- [[id:F4BA8D44-6940-487D-B38D-9DD27556B80A][How do I regenerate the NATS eventing layer for an entity?]] — regenerating the changed-event struct itself.

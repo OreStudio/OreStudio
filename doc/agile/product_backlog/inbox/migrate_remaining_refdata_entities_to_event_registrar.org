@@ -46,3 +46,4 @@ unrelated registrar migration.
 * See also
 
 - [[id:9763FBBF-7912-4EA2-A544-67E90EA27882][Codegen: generate per-entity NATS event-mapping registrar]]
+- [[id:397C3822-25A2-49BB-9D4E-827EB8F47267][How do I wire an entity into live NATS eventing?]] — the recipe to follow once each entity's nats-eventing drift is fixed.

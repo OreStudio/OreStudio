@@ -43,6 +43,22 @@ Every domain entity's live NATS change-event pipeline (Postgres NOTIFY channel -
 
 * Decisions
 
+- The generated per-entity registrar lives in the =.service= layer (new
+  =component_service=/=component_service_dir= template variables), not
+  =.core= like the request/response sub-registrar, because the eventing
+  pipeline depends on =ores.eventing.core= (=postgres_event_source=,
+  =event_bus=), which no =.core= component links.
+- Only 6 of 16 currently hand-wired refdata entities were migrated
+  (book, business_day_convention_type, country, currency, party_type,
+  purpose_type); the other 10 have stale =nats-eventing= output (a
+  breaking id-field rename risk) and stay hand-wired pending a
+  follow-up. See [[id:BA5BCF3B-8953-455D-85F9-1E05A49D9623][Migrate remaining refdata entities to generated event-mapping registrar]].
+- Pattern documented in [[id:397C3822-25A2-49BB-9D4E-827EB8F47267][How do I wire an entity into live NATS eventing?]].
+
 * Out of scope
 
--
+- Migrating the other 10 refdata entities (tracked separately, see Decisions).
+- Migrating other components (trading, marketdata, etc.) to the pattern.
+- Removing the remaining per-component duplicates of publish_entity_event
+  (ores.analytics, ores.compute, ores.trading, ores.workspace) — only
+  ores.refdata's copy was removed.

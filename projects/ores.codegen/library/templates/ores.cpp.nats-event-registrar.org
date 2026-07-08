@@ -69,3 +69,4 @@ One subheading per template, in the archetype docs below.
 - [[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]] — the request/response counterpart; lives in =.core=, not =.service=.
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
 - [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.
+- [[id:397C3822-25A2-49BB-9D4E-827EB8F47267][How do I wire an entity into live NATS eventing?]] — the operational recipe.

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/librarian-currency-pair-support
+#+pr: 1461
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -40,23 +40,23 @@ first.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | The =currency_pair= codegen implementation (not yet a task in this story). |
-| Next         | Scaffold the codegen implementation task, then begin this one. |
+| Next         | Nothing. |
 | Last touched | 2026-07-04                               |
 
 * Acceptance
 
-- [ ] Provisioning a party via the standard =ores.shell= recipe (and/or
+- [X] Provisioning a party via the standard =ores.shell= recipe (and/or
   the Qt Party Setup wizard, scope to be confirmed) results in a usable
   set of currency pairs being available for it, with zero manual steps.
-- [ ] The mechanism reuses an existing publish-from-dq bundle rather
+- [X] The mechanism reuses an existing publish-from-dq bundle rather
   than adding a new bundle or a new wizard phase, unless investigation
   during this task shows that assumption is wrong (as happened for the
   FX foundation story).
-- [ ] Verified end-to-end: provision a party and confirm the expected
+- [X] Verified end-to-end: provision a party and confirm the expected
   currency pairs exist for it.
 
 * Plan
@@ -65,18 +65,114 @@ first.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Investigation found a prerequisite gap: =currency='s five new fields
+(=spot_days=, =deliverable=, =day_basis=, =base_precedence=,
+=holiday_calendar=, all added for =currency_pair= derivation) are
+carried on the domain/table, but the DQ librarian pipeline never
+populates or transports them:
+
+- =ores_dq_currencies_artefact_tbl= has no columns for them.
+- =iso_currencies_artefact_populate.sql= doesn't set them.
+- =ores_refdata_publish_currencies_from_dq_fn='s SELECT/INSERT column
+  lists omit them, so every published currency silently gets the raw
+  table defaults (=spot_days=2=, =deliverable=true=,
+  =day_basis='ACT/360'=, =base_precedence=100=,
+  =holiday_calendar=null=) regardless of the actual currency (e.g. USD
+  should be =spot_days=1=; CNY/INR/KRW/... should be
+  =deliverable=false=).
+
+1. Wire the five fields through the currency DQ pipeline: artefact
+   table columns, curated per-currency values in the ISO populate
+   script (G10 + known NDF/day-basis/precedence data, sane defaults
+   for the long tail), and the publish-from-dq SQL function's
+   select/insert lists.
+2. Build the =currency_pairs= (and =currency_pair_conventions=) DQ
+   artefact pipeline from scratch — it doesn't exist yet: artefact
+   table(s), a populate script generating pairs from the curated
+   currency data (base/quote via =base_precedence=, =spot_days= as the
+   max of both legs, deliverability, calendar), and a
+   publish-from-dq SQL function, following the =report_definitions=/
+   synthetic-FX-config pattern (hand-written, no codegen facet — see
+   [[id:44030333-A650-4EBF-9674-5819B8496114][Model synthetic FX spot config as a DQ artefact type]]).
+3. Register =currency_pairs= as a member of the existing =base=
+   bundle (the one already used for GLEIF/ISO provisioning) rather
+   than inventing a new bundle, per the Goal.
+4. Verify end-to-end: recreate the DB, provision a party via the
+   =barclays_system_provision.ores= shell script, confirm currencies
+   carry correct =spot_days=/=deliverable=/etc. and that a usable set
+   of =currency_pairs= exists for the tenant.
+5. Extend the same pipeline to =currency_pair_conventions= (pip
+   factor, tick size, calendars, business day convention) — the user
+   flagged mid-review that conventions belong in the same Currency
+   Pairs subject, not deferred to a follow-up task.
+6. Fix data-quality issues found during manual Qt-client validation:
+   an under-broad non-deliverable currency list (BRL, CLP, COP, PEN,
+   UAH, GHS, ZMW were wrongly =deliverable=true=) and a stray
+   hand-curated =USD/BRL= row with a literal =true=.
+
 * Notes
+
+- Real, pre-existing bugs found and fixed along the way (not part of
+  this task's own new code, but blocking it):
+  - =ores.refdata.currency_pair_convention.org='s insert-trigger
+    validation table pointed =business_day_convention= at
+    =ores_trading_validate_business_day_convention_type_fn=, which
+    doesn't exist — wrong component prefix; the real function is
+    =ores_refdata_validate_business_day_convention_type_fn=. Fixed the
+    org model and regenerated.
+- Codegen gap filed as a capture: =lookup_entity= org models
+  (=#+type: ores.codegen.lookup_entity=) route to no template mapping
+  in the current address/facet system, so the DQ artefact-table facet
+  is dead code today. Built =currency_pairs='/=currency_pair_conventions='
+  artefact tables by hand instead, consistent with how
+  =currencies=/=countries=/=report_definitions=/synthetic FX spot
+  configs already work.
+- UI niggles and modeling snags surfaced during manual validation are
+  explicitly deferred to follow-up work, per the user — not folded
+  into this task.
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1461][#1461]] | [refdata,sql] Add currency_pairs and currency_pair_conventions to the DQ librarian |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | USD/GBP =holiday_calendar= used non-ORE names ('US'/'UK') | iso_currencies_artefact_populate.sql | Fixed | b1d70d1b — changed to 'UnitedStates'/'UnitedKingdom' per the calendar-reference-data convention |
+| 2 | PR description claimed a Qt menu change not in this PR's diff | PR body | Fixed | Edited PR body — that change was from #1455 |
+| 3 | Conventions seed script's dataset join looser than the currencies populate pattern | refdata_currency_pair_conventions_seed_populate.sql | Fixed | b1d70d1b — added subject_area_name/domain_name to the join |
+| 4 | =advance_calendar= doc comment imprecise about comma-joining | refdata_currency_pair_conventions_seed_populate.sql | Fixed | b1d70d1b — clarified fallback-to-single/null wording |
+| 5 | Commodity pairs (XAU/USD etc.) use generic FX pip_factor/decimal_places, not bullion-specific | refdata_currency_pair_conventions_seed_populate.sql | Declined | Deliberate seed-default simplification, not an oversight |
 
 * Result
+
+Currency pairs and their conventions now publish end-to-end through
+the DQ librarian's existing =base= bundle, in a new "Currency Pairs"
+subject area:
+
+- =refdata.currency_pairs=: 179 pairs (7 hand-curated majors, 26 G10
+  crosses, then a mechanical pass pairing every remaining ISO 4217
+  currency against USD — metals as =<metal>/USD= — so coverage isn't
+  limited to a hand-picked subset). =deliverable=/=settlement_currency=
+  are derived from each currency's own curated flag (a pair is
+  non-deliverable if either leg is); only XDR has no pair
+  (not spot-traded).
+- =refdata.currency_pair_conventions=: one row per pair, deriving
+  =pip_factor=/=decimal_places= (JPY-quoted pairs use 0.01/2dp,
+  everything else 0.0001/4dp), =tick_size=1.0= (a pip count),
+  =advance_calendar= (both legs' =currency.holiday_calendar=,
+  comma-joined), and =business_day_convention='ModifiedFollowing'=
+  (standard FX spot convention).
+- Both wired via a new =ores_refdata_publish_<x>_from_dq_fn= SQL
+  function each, registered as new =artefact_types=, and added to
+  =registrar.cpp='s publish-from-dq subject list (the actual missing
+  piece — the first attempt hung on "in_progress" because the NATS
+  subject had no subscriber).
+
+Verified end-to-end multiple times via =db recreate= +
+=barclays_system_provision.ores= + manual Qt client inspection; the
+manual pass caught the non-deliverable-currency gap fixed in the final
+commit.

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: F39D2239-1398-42AE-8272-78FED3C2C9FE
+:END:
+#+title: lookup_entity codegen path can't generate DQ artefact tables
+#+description: The ores.codegen.lookup_entity model type routes to no template mappings in the current address/facet system, so its artefact-table facet is dead code.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:dq:gap:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores.codegen.lookup_entity= org models (e.g.
+=projects/ores.dq/modeling/ores.dq.report_definition_lookup_entity.org=)
+declare a =* Primary key=/=* Columns=/=* Artefact indexes= shape whose
+archetype doc (=sql_schema_artefact_create.org=) claims to be
+"invoked directly by generator.py on the dataset path". In the current
+CLI (=codegen.sh generate=), the model's #+type: resolves to model-type
+='enum'=, and 'enum' models dispatch to =get_enum_template_mappings()=
+— unrelated to =sql_schema_artefact_create.mustache=. Running
+=codegen.sh generate --model
+ores.dq.report_definition_lookup_entity.org= produces "nothing to
+generate for 'sql' (model type 'enum')". The artefact table already in
+the tree (=dq_report_definitions_artefact_create.sql=, carries an
+AUTO-GENERATED header) must have been produced by an older, since
+refactored generator — the facet is dead for the present tooling.
+Either wire =lookup_entity= models into the address/facet system (a
+new facet route mapping model-type ='enum'= or a renamed dedicated
+type to =sql_schema_artefact_create.mustache= +
+=sql_populate_function_refdata.mustache=), or retire the
+=lookup_entity= archetype docs/templates if the pattern is no longer
+intended to be live.
+
+* Why
+
+Discovered while scoping [[id:155FA378-9953-4EA0-8495-7C61E40BE81C][Add librarian support for currency pairs]]: wanted
+to codegen =currency_pairs='s DQ artefact staging table the same way
+=report_definitions='s was (apparently) generated, and found the path
+non-functional. Ended up hand-writing the artefact table/populate/
+publish-from-dq instead, consistent with how =currencies=, =countries=,
+and the synthetic FX spot config (task
+=44030333-A650-4EBF-9674-5819B8496114=, "no codegen facet, that work is
+deferred") are already hand-written. If a future entity's DQ artefact
+pipeline is expected to be codegen-driven, this gap needs closing
+first.
+
+* References
+
+- =projects/ores.codegen/library/templates/sql_schema_artefact_create.org=
+- =projects/ores.dq/modeling/ores.dq.report_definition_lookup_entity.org=
+- =projects/ores.codegen/src/codegen/core.py= — =get_model_type=, the
+  =is_enum= dispatch branch, =get_enum_template_mappings=
+
+* See also
+
+- [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]
+- [[id:44030333-A650-4EBF-9674-5819B8496114][Model synthetic FX spot config as a DQ artefact type]]

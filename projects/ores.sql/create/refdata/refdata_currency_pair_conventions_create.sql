@@ -87,10 +87,7 @@ begin
     NEW.pair_code := ores_refdata_validate_currency_pair_fn(NEW.tenant_id, NEW.pair_code);
 
     -- Validate business_day_convention
-    NEW.business_day_convention := ores_trading_validate_business_day_convention_type_fn(NEW.tenant_id, NEW.business_day_convention);
-
-    -- Validate change_reason_code
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+    NEW.business_day_convention := ores_refdata_validate_business_day_convention_type_fn(NEW.tenant_id, NEW.business_day_convention);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -146,6 +143,7 @@ on delete to "ores_refdata_currency_pair_conventions_tbl" do instead
 -- Validation function for currency_pair_convention
 -- Validates that a pair_code exists in the currency_pair_conventions table.
 -- Returns the validated value, or default if null/empty.
+-- Validates against both the tenant's own data and the system tenant's canonical set.
 -- =============================================================================
 create or replace function ores_refdata_validate_currency_pair_convention_fn(
     p_tenant_id uuid,
@@ -158,6 +156,30 @@ begin
             using errcode = '23502';
     end if;
 
+    -- Allow pass-through if neither this tenant nor the system tenant has
+    -- seeded active currency_pair_conventions yet (freshly provisioned tenant).
+    if not exists (
+        select 1 from ores_refdata_currency_pair_conventions_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against this tenant's values and the system tenant's canonical set.
+    if not exists (
+        select 1 from ores_refdata_currency_pair_conventions_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+          and pair_code = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid currency_pair_convention: %. Must be one of: %', p_value, (
+            select string_agg(pair_code::text, ', ' order by pair_code)
+            from ores_refdata_currency_pair_conventions_tbl
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
 
     return p_value;
 end;

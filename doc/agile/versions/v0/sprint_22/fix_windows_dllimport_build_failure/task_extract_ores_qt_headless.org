@@ -109,8 +109,11 @@ same-macro-name clash it was designed to avoid.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                                  | File                                       | Decision | Notes |
+|---+-----------------------------------------------------------------------------------+-----------------------------------------------+----------+-------|
+| 1 | =set_test_module_name= and the new =.puml= diagram node both still said the retired =ores.qt.api.tests= target | main.cpp, ores.qt.headless.puml            | Accepted | Fixed in ecbab6fe9. |
+| 2 | =parse_trade_instrument()= declared with no =ORES_QT_HEADLESS_API= — would be an unresolved external symbol on MSVC, the exact bug class this PR fixes | parse_trade_instrument.hpp                  | Accepted | Fixed in ecbab6fe9. |
+| 3 | Stale =FontUtils= entry left in =ores.qt.api='s own =.puml=/=component_overview.org= after the move | ores.qt.api.puml, component_overview.org    | Accepted | Fixed in ecbab6fe9. |
+| 4 | =continuous-windows.yml= only runs on schedule/dispatch, won't exercise this PR automatically | (process, no file)                          | Accepted | Will trigger =workflow_dispatch= before merging to actually confirm the fix on MSVC. |
 
 * Result

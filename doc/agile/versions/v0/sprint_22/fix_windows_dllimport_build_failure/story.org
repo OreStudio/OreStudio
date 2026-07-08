@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 62034F29-D2EB-4BA4-9291-9B35D33A724A
+:END:
+#+title: Story: Fix Windows dllimport build failure via ores.qt.headless extraction
+#+description: MSVC C4273 (dllimport on a definition, fatal under /WX) broke Windows CI; root cause was Widgets-free logic living inside ores.qt.api (which requires Widgets/display) and being duplicate-compiled into a test binary to dodge that. Fixed by extracting a proper ores.qt.headless component.
+#+type: story
+#+level: s2
+#+filetags: :qt:build:windows:hotfix:sprint_22:v0:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Get the Windows build green again, and do it by fixing the actual
+architectural mismatch that caused the failure rather than papering
+over the compiler warning that surfaced it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Nothing.                                |
+| Waiting on    | Manual Windows CI run to finish (merged ahead of it, per explicit instruction — build takes hours). |
+| Next          | Nothing — follow up separately if the Windows run surfaces anything. |
+| Last touched  | 2026-07-09                               |
+
+* Acceptance
+
+- [X] Windows build failure root-caused, not just reproduced.
+- [ ] Windows CI green on the fix PR — merged ahead of the manually-
+  triggered run per explicit instruction; everything else (Linux
+  build/link/tests across every affected target, live smoke test,
+  three review passes) was clean.
+- [X] Fix is a real component split (ores.qt.headless), not a
+  compile-definition workaround — verified this was the right call by
+  checking whether any existing ores.qt.* sub-component was already
+  Widgets-free (none were) before creating a new one.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9370492E-E752-4BBD-BEA4-15C474117C53][Extract ores.qt.headless to fix the Windows build]] | DONE | 2026-07-08 | 2026-07-09 | Move Widgets-free logic (OrgDocRenderer, TestScenarioResultsWriter, EnvironmentMetadata, HierarchyModelBuilder, FontUtils, RepoFileFinder, parse_trade_instrument/IInstrumentFormPopulator) out of ores.qt.api into a new ores.qt.headless component, fixing the MSVC C4273 dllimport-on-a-definition error at the root instead of patching it. |
+
+* Decisions
+
+- Fix the root cause (Widgets-free logic living inside a
+  Widgets-requiring component, forcing duplicate compilation into a
+  test binary) rather than the symptom (defining
+  =ORES_QT_API_LIBRARY= for the test target too, which would have
+  silenced the specific MSVC warning in minutes). The quick fix was
+  explicitly proposed and rejected in favour of tracing the smell.
+- New component's header namespace and export macro
+  (=ores.qt.headless/=, =ORES_QT_HEADLESS_API=) are deliberately
+  distinct from =ores.qt.api='s own (=ores.qt/=, =ORES_QT_API=), even
+  though every other =ores.qt.*= plugin shares the =ores.qt/= header
+  namespace by convention — because =ores.qt.api= consumes this
+  component's headers directly, so both export.hpp headers can end up
+  included in the same translation unit, and a shared macro name would
+  silently clash (last =#define= wins) instead of failing loudly.
+
+* Out of scope
+
+- Splitting any other =ores.qt.*= sub-component the same way — this
+  story only extracted the files that were *already* being
+  duplicate-compiled into a test binary (the actual source of the
+  bug), not a general Widgets/non-Widgets audit of the rest of the
+  codebase.

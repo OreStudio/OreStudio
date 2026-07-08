@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: A030D485-31ED-4383-859F-F80A1D6FDB05
+:END:
+#+title: ores.qt.headless
+#+description: Qt6::Core/Gui-only logic used by ores.qt.api and testable without a QApplication or display: org-mode doc rendering, test-scenario result writing, font resolution, environment metadata, hierarchy tree model building, and trade-instrument parsing.
+#+type: component
+#+level: cross
+#+filetags: 
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+name: qt.headless
+#+full_name: ores.qt.headless
+#+brief: Widgets-free, headless-testable Qt logic beneath ores.qt.api
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.headless component diagram
+#+caption: ores.qt.headless
+[[file:ores.qt.headless.png][file:ores.qt.headless.png]]
+
+* Summary
+
+Everything in this component uses only =Qt6::Core=/=Qt6::Gui= value
+types (=QString=, =QRegularExpression=, =QFont=, =QStandardItemModel=,
+=QProcess=, =QDir=) — never =Qt6::Widgets=, never a =QApplication= or
+display. That single property is why it exists as its own component
+rather than living inside =ores.qt.api= (which does require Widgets/a
+display): it lets its logic be exercised directly by unit tests
+without a display environment, and lets =ores.qt.api= (and the
+per-domain plugins built on it) consume it as an ordinary shared
+library dependency. It was split out after a Windows-only build
+failure (MSVC's =/WX= treating "dllimport on a definition", C4273, as
+fatal) traced back to some of these files being compiled a second
+time directly into the =ores.qt.api= test binary to dodge the display
+requirement — the real problem was architectural, not a missing
+compiler flag: Widgets-free logic had been living inside a
+Widgets-requiring component.
+
+* Inputs
+
+- Parsed =ores.orgmode= documents (for =OrgDocRenderer=).
+- Trade/instrument domain objects from =ores.trading.api= (for
+  =parse_trade_instrument=/=IInstrumentFormPopulator=).
+- Filesystem paths (=EnvironmentMetadata=, =RepoFileFinder=,
+  =TestScenarioResultsWriter=).
+
+* Outputs
+
+- Rendered HTML fragments (=OrgDocRenderer=) for display in a
+  =QTextBrowser=.
+- A =QStandardItemModel= tree (=HierarchyModelBuilder=) for display in
+  a =QTreeView=.
+- Rewritten =test_scenario= org docs (=TestScenarioResultsWriter=).
+- Resolved monospace font family (=FontUtils=).
+
+* Entry points
+
+- =render_org_doc_to_html=/=render_heading_to_html=/=render_body_lines_to_html=
+  (=OrgDocRenderer.hpp=)
+- =write_scenario_results= (=TestScenarioResultsWriter.hpp=)
+- =capture_environment_metadata= (=EnvironmentMetadata.hpp=)
+- =HierarchyModelBuilder::build= (=HierarchyModelBuilder.hpp=)
+- =find_repo_file= (=RepoFileFinder.hpp=)
+- =FontUtils::resolvedMonospaceFamily=/=applicationFont= (header-only)
+- =parse_trade_instrument= (=parse_trade_instrument.hpp=)
+
+* Dependencies
+
+- =ores.orgmode.lib= (parsed document domain types)
+- =ores.trading.api.lib= (trade/instrument domain types)
+- =ores.logging.lib=, =ores.utility.lib=
+- =Qt6::Core=, =Qt6::Gui= — deliberately not =Qt6::Widgets=
+
+* See also
+
+- [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] — the Widgets-requiring shared framework that links this
+  component =PUBLIC= and re-exports it transitively to every domain
+  plugin built on it.

@@ -23,7 +23,7 @@
 #include "ores.ore.core/hierarchy/ore_hierarchy_builder.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.ore.core/scanner/ore_directory_scanner.hpp"
-#include "ores.qt/FontUtils.hpp"
+#include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"

@@ -28,7 +28,7 @@
 // never enter this compilation context.
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.qt/IInstrumentFormPopulator.hpp"
+#include "ores.qt.headless/IInstrumentFormPopulator.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "parse_swap_impl.hpp"
 #include <optional>

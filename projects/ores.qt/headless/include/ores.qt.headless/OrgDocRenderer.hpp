@@ -21,7 +21,7 @@
 #define ORES_QT_ORG_DOC_RENDERER_HPP
 
 #include "ores.orgmode/domain/document.hpp"
-#include "ores.qt/export.hpp"
+#include "ores.qt.headless/export.hpp"
 #include <QString>
 #include <string>
 #include <vector>
@@ -42,13 +42,13 @@ namespace ores::qt {
  * Shared by the story/task context viewer and the QA Validation
  * Runner panel — one renderer, not two.
  */
-ORES_QT_API QString render_org_doc_to_html(const orgmode::domain::document& doc);
+ORES_QT_HEADLESS_API QString render_org_doc_to_html(const orgmode::domain::document& doc);
 
 /**
  * @brief Render a single heading (and its children, recursively) —
  * used when only part of a document needs showing.
  */
-ORES_QT_API QString render_heading_to_html(const orgmode::domain::heading& heading);
+ORES_QT_HEADLESS_API QString render_heading_to_html(const orgmode::domain::heading& heading);
 
 /**
  * @brief Render a heading's raw =body_lines= (paragraphs and bullet
@@ -58,7 +58,7 @@ ORES_QT_API QString render_heading_to_html(const orgmode::domain::heading& headi
  * shows a step's instructional text but not a redundant heading title
  * (already shown as the dialog's own title).
  */
-ORES_QT_API QString render_body_lines_to_html(const std::vector<std::string>& lines);
+ORES_QT_HEADLESS_API QString render_body_lines_to_html(const std::vector<std::string>& lines);
 
 }
 

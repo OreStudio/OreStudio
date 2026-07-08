@@ -21,7 +21,7 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.platform/environment/environment.hpp"
-#include "ores.qt/FontUtils.hpp"
+#include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include <QLabel>
 #include <QSplitter>

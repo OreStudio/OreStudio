@@ -20,7 +20,7 @@
 #ifndef ORES_QT_HIERARCHY_MODEL_BUILDER_HPP
 #define ORES_QT_HIERARCHY_MODEL_BUILDER_HPP
 
-#include "ores.qt/export.hpp"
+#include "ores.qt.headless/export.hpp"
 #include "ores.utility/domain/hierarchy.hpp"
 #include <vector>
 
@@ -40,7 +40,7 @@ namespace ores::qt {
  * This class has no knowledge of party, counterparty, or any other domain
  * entity; it operates purely on hierarchy_node values.
  */
-class ORES_QT_API HierarchyModelBuilder final {
+class ORES_QT_HEADLESS_API HierarchyModelBuilder final {
 public:
     /**
      * @brief Build a tree model from a forest of nested hierarchy nodes.

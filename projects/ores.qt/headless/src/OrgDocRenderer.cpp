@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/OrgDocRenderer.hpp"
-#include "ores.qt/FontUtils.hpp"
+#include "ores.qt.headless/OrgDocRenderer.hpp"
+#include "ores.qt.headless/FontUtils.hpp"
 #include <QRegularExpression>
 #include <algorithm>
 

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/TestScenarioResultsWriter.hpp"
+#include "ores.qt.headless/TestScenarioResultsWriter.hpp"
 #include <QDir>
 #include <QFile>
 #include <QTemporaryDir>

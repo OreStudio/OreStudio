@@ -43,7 +43,8 @@ used across all plugins.
   =AbstractClientModel= — base classes for the entity UI pattern.
 - =ClientManager= — typed NATS request/response wrapper for all domain calls.
 - =BadgeCache=, =ChangeReasonCache=, =ImageCache= — session-scoped caches.
-- Utility headers: =IconUtils=, =MdiUtils=, =FontUtils=, =TextUtils=, etc.
+- Utility headers: =IconUtils=, =MdiUtils=, =TextUtils=, etc. (=FontUtils=
+  moved to [[id:A030D485-31ED-4383-859F-F80A1D6FDB05][ores.qt.headless]].)
 
 * Entry points
 

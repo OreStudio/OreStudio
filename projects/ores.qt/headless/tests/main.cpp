@@ -17,22 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/RepoFileFinder.hpp"
-#include <QDir>
-#include <QFileInfo>
+#include "ores.testing/logging_listener.hpp"
+#include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
 
-namespace ores::qt {
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
 
-QString find_repo_file(const QString& referencePath, const QString& filename) {
-    QDir dir(QFileInfo(referencePath).absolutePath());
-    for (int i = 0; i < 10; ++i) {
-        const QString candidate = dir.filePath(filename);
-        if (QFileInfo::exists(candidate))
-            return candidate;
-        if (!dir.cdUp())
-            break;
-    }
-    return {};
-}
-
+int main(int argc, char* argv[]) {
+    ores::testing::logging_listener::set_test_module_name("ores.qt.headless.tests");
+    return Catch::Session().run(argc, argv);
 }

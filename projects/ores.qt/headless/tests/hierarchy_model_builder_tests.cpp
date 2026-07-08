@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/HierarchyModelBuilder.hpp"
+#include "ores.qt.headless/HierarchyModelBuilder.hpp"
 #include <QStandardItemModel>
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>

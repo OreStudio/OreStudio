@@ -21,8 +21,8 @@
 #include "ores.orgmode/indexing/resolver.hpp"
 #include "ores.orgmode/parser/parser.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/OrgDocRenderer.hpp"
-#include "ores.qt/RepoFileFinder.hpp"
+#include "ores.qt.headless/OrgDocRenderer.hpp"
+#include "ores.qt.headless/RepoFileFinder.hpp"
 #include <QAction>
 #include <QTextBrowser>
 #include <QToolBar>

@@ -21,7 +21,7 @@ This page documents a test scenario verifying [[id:2F3BD151-754F-4E9B-B5AB-DC1E1
 | Verifies task | [[id:2F3BD151-754F-4E9B-B5AB-DC1E15E04C79][Fix book_status to reference the book_statuses lookup table]] |
 | Parent story  | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]   |
 | Target dialog | BookDetailDialog                        |
-| Clients       | (Leave empty for a single client. For a scenario that needs several running clients at once — e.g. checking a NATS notification lands on a second instance — list the instance colours/labels here, e.g. "blue, red".) |
+| Clients       |                                          |
 | State         | PENDING                               |
 
 * Steps

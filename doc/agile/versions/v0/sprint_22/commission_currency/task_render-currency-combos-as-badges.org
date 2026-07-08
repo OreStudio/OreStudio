@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: AEEDE877-C48C-4CE1-A5FA-9CB6D023CC28
+:END:
+#+title: Task: Render currency's monetary_nature and market_tier combos as badges
+#+description: Currency's monetary_nature and market_tier detail-dialog fields are soft-FK dynamic combos populated via populateDynamicCombo<Entity>; render them as colored badges like Book's book_status field does (setup_badge_combo/BadgeCache), instead of plain text combo items.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Currency's =monetary_nature= and =market_tier= combos currently show
+plain text (via the =populateDynamicCombo<Entity>= mechanism landed
+in task 318EE3EB). Render them as colored badges instead, matching
+=Book='s =book_status= field (=setup_badge_combo=/=BadgeCache=, see
+=clever_dijkstra= worktree's book-status work if not yet merged into
+main).
+
+=book_status= is a =static_combo= field with a fixed value set and a
+=badge_key= property — =BadgeCache= presumably keys off a small, known
+enum. =monetary_nature=/=market_tier= are *dynamic*, server-fetched
+reference-table combos (=populateDynamicCombo<Entity>=, not
+=static_combo=), so the existing badge mechanism doesn't apply
+as-is. This task needs to either:
+- extend the badge mechanism to work with dynamically-fetched combo
+  items (badge color keyed off each item's =code=, not a static enum), or
+- find that the fetched reference-table rows already carry a badge
+  color mapping the server can express, or
+- conclude it's not a good fit and document why.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- =monetary_nature= and =market_tier= combos render colored badges
+  matching =book_status='s visual pattern, OR a documented reason
+  they can't/shouldn't (e.g. mechanism mismatch, no natural badge
+  color source) with the decision recorded here.
+- Build passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

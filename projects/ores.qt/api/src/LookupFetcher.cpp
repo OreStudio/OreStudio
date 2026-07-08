@@ -184,40 +184,40 @@ std::vector<business_unit_entry> fetch_business_unit_entries(ClientManager* cm) 
     return entries;
 }
 
-std::vector<refdata::domain::rounding_type> fetch_rounding_types(ClientManager* cm) {
-    std::vector<refdata::domain::rounding_type> types;
+std::expected<std::vector<refdata::domain::rounding_type>, QString>
+fetch_rounding_types(ClientManager* cm) {
     if (!cm)
-        return types;
+        return std::unexpected(QStringLiteral("Not connected to server."));
 
     refdata::messaging::get_rounding_types_request request;
     auto response = cm->process_authenticated_request(std::move(request));
-    if (response)
-        types = std::move(response->rounding_types);
-    return types;
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->rounding_types);
 }
 
-std::vector<refdata::domain::monetary_nature> fetch_monetary_natures(ClientManager* cm) {
-    std::vector<refdata::domain::monetary_nature> natures;
+std::expected<std::vector<refdata::domain::monetary_nature>, QString>
+fetch_monetary_natures(ClientManager* cm) {
     if (!cm)
-        return natures;
+        return std::unexpected(QStringLiteral("Not connected to server."));
 
     refdata::messaging::get_monetary_natures_request request;
     auto response = cm->process_authenticated_request(std::move(request));
-    if (response)
-        natures = std::move(response->monetary_natures);
-    return natures;
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->monetary_natures);
 }
 
-std::vector<refdata::domain::currency_market_tier> fetch_currency_market_tiers(ClientManager* cm) {
-    std::vector<refdata::domain::currency_market_tier> tiers;
+std::expected<std::vector<refdata::domain::currency_market_tier>, QString>
+fetch_currency_market_tiers(ClientManager* cm) {
     if (!cm)
-        return tiers;
+        return std::unexpected(QStringLiteral("Not connected to server."));
 
     refdata::messaging::get_currency_market_tiers_request request;
     auto response = cm->process_authenticated_request(std::move(request));
-    if (response)
-        tiers = std::move(response->currency_market_tiers);
-    return tiers;
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->currency_market_tiers);
 }
 
 }

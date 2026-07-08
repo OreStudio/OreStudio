@@ -819,6 +819,14 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             qt_out["has_combo_flag_source"] = any(
                 f.get("flag_source") for f in qt_out.get("detail_fields", [])
             )
+            # Whether any dynamic-combo detail field uses the
+            # populateDynamicCombo<Entity> helper (fetch/sort/tooltip/
+            # placeholder/restore-selection, piloted on currency's
+            # rounding_type/monetary_nature/market_tier combos) — gates
+            # the DynamicComboSetup.hpp/LookupFetcher.hpp includes.
+            qt_out["has_dynamic_combo_helper_fields"] = any(
+                f.get("combo_domain_type") for f in qt_out.get("detail_fields", [])
+            )
             qt_out["needs_image_cache"] = (
                 qt_out["has_flag_icon"]
                 or qt_out.get("has_icon_columns", False)

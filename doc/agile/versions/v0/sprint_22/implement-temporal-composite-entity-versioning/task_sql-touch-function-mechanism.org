@@ -134,7 +134,7 @@ inline validation rather than via a (nonexistent) FK flag.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | touch_version_fn's SELECT INTO rec didn't take a for-update lock, per the architecture doc's Concurrency section — could silently revert a concurrent direct edit to the parent's business columns | ores.sql.schema.domain_entity_create.org, refdata_parties_create.sql, refdata_counterparties_create.sql | Fixed | Fixed in 2b8c329df; re-verified by a follow-up review pass (no deadlock introduced, matches the doc exactly). |
-| 2 | Site build failure: literal [[id:...]] used as illustrative placeholder text, parsed by org-mode as a real unresolvable link | story.org, task_document-composite-versioning-approach.org | Fixed | Fixed in cdc8613b5. |
+| 2 | Site build failure: literal =[[id:...]]= used as illustrative placeholder text, parsed by org-mode as a real unresolvable link | story.org, task_document-composite-versioning-approach.org | Fixed | Fixed in cdc8613b5. |
 
 * Result
 

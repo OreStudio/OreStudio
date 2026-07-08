@@ -29,10 +29,10 @@ box. It stays open across all of that — it is not a design-only story.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Codegen implementation done (5 entities, builds cleanly); migration off fx_convention unblocked and picked up next. Librarian support and the ORE import/export test remain BACKLOG. |
+| Now           | Codegen, librarian support, and UI polish (flags, badges, dirty-flag fix, toolbar nav) all shipped (PR #1472). 4 tasks remain: ORE import/export test, generic FK-combo facet, tooltips, manual chapter, and one new design question (pair_code recompute/GUID). |
 | Waiting on    | Nothing.                               |
-| Next          | Migrate fx_convention consumers to currency_pair.       |
-| Last touched  | 2026-07-06                               |
+| Next          | Pick up the ORE import/export test, or any of the remaining backlog tasks. |
+| Last touched  | 2026-07-08                               |
 
 * Acceptance
 
@@ -46,7 +46,7 @@ box. It stays open across all of that — it is not a design-only story.
 - [X] The currency pair entity (and supporting currency fields) is
   modelled with all fields identified in the knowledge cluster, ready
   to drive =ores.codegen=.
-- [ ] Creating a party (via librarian) results in a usable set of
+- [X] Creating a party (via librarian) results in a usable set of
   currency pairs being available for it, following the same
   publish-from-dq pattern used by the synthetic FX foundation.
 

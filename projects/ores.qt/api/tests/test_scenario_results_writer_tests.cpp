@@ -154,6 +154,51 @@ TEST_CASE("write_scenario_results nests a step's Result one level deeper for a m
     REQUIRE(written.contains("| Notes  | Never showed up. |"));
 }
 
+TEST_CASE("write_scenario_results disambiguates a step title shared by two clients", tags) {
+    QTemporaryDir tmp;
+    REQUIRE(tmp.isValid());
+    const QString doc = "* Scenario Info\n"
+                        "\n"
+                        "* Steps\n"
+                        "\n"
+                        "** blue\n"
+                        "*** Log in\n"
+                        "** red\n"
+                        "*** Log in\n"
+                        "\n"
+                        "* Results\n"
+                        "\n"
+                        "| Field | Value |\n"
+                        "|-------+-------|\n";
+    const QString path = write_temp_doc(tmp.path(), doc);
+
+    ores::qt::scenario_result result;
+    result.status = "FAILED";
+    result.steps = {
+        {"Log in", "PASS", "Blue logged in fine.", "blue"},
+        {"Log in", "FAIL", "Red couldn't log in.", "red"},
+    };
+
+    REQUIRE(ores::qt::write_scenario_results(path, result, {}));
+
+    QFile file(path);
+    REQUIRE(file.open(QIODevice::ReadOnly | QIODevice::Text));
+    const QString written = QTextStream(&file).readAll();
+
+    // Both steps get their own Result, correctly attributed — not
+    // collapsed onto the same (first) "Log in" match.
+    REQUIRE(written.count(QStringLiteral("**** Result")) == 2);
+    REQUIRE(written.contains("| Notes  | Blue logged in fine. |"));
+    REQUIRE(written.contains("| Notes  | Red couldn't log in. |"));
+
+    // Blue's Result comes before red's own "Log in" heading.
+    const int blueResult = written.indexOf("Blue logged in fine.");
+    const int redHeading = written.indexOf("** red");
+    const int redResult = written.indexOf("Red couldn't log in.");
+    REQUIRE(blueResult < redHeading);
+    REQUIRE(redHeading < redResult);
+}
+
 TEST_CASE("write_scenario_results re-running a step replaces its previous Result, not duplicates it",
           tags) {
     QTemporaryDir tmp;

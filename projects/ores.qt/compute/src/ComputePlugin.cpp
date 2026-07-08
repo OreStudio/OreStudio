@@ -66,6 +66,9 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
+    if (messageQueueMenu_)
+        messageQueueMenu_->setEnabled(true);
+
     BOOST_LOG_SEV(lg(), info) << "on_login ctx http_base_url='"
                               << (ctx_.http_base_url.empty() ? "(empty)" : ctx_.http_base_url)
                               << "'";
@@ -268,6 +271,8 @@ void ComputePlugin::setup_menus(const shared_menus_context& smc) {
 
         auto* msgQueue = new QMenu(tr("&Message Queue"), smc.system_menu);
         smc.system_menu->insertMenu(telemetryAction, msgQueue);
+        messageQueueMenu_ = msgQueue;
+        messageQueueMenu_->setEnabled(false); // enabled on login
 
         auto* actQueueMonitor = msgQueue->addAction(ico(Icon::Server), tr("&Queue Monitor"));
         connect(actQueueMonitor, &QAction::triggered, this, [this]() {
@@ -322,6 +327,9 @@ void ComputePlugin::on_logout() {
     appVersionController_.reset();
     appController_.reset();
     ctx_ = {};
+
+    if (messageQueueMenu_)
+        messageQueueMenu_->setEnabled(false);
 }
 
 } // namespace ores::qt

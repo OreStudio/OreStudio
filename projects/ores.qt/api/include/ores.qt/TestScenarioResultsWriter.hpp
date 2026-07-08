@@ -30,15 +30,23 @@ namespace ores::qt {
 /**
  * @brief One step's outcome. Each step is its own org heading (see the
  * =test_scenario= template); the result is written as a =*** Result=
- * child heading directly under it, found by exact title match, not by
- * position — so steps may be nested arbitrarily (e.g. under
- * per-client sub-headings) without the writer needing to know the
- * tree shape.
+ * child heading directly under it, found by exact title match — scoped
+ * to @p client's own sub-heading first when set, so a multi-client
+ * scenario where two clients happen to use the same step title doesn't
+ * collide (both would otherwise resolve to the same, first, match).
  */
 struct step_result final {
     QString step_title;
     QString status; // "PASS", "FAIL", or "PENDING"
     QString notes;
+
+    /**
+     * @brief Which client's sub-heading (e.g. "blue") this step is
+     * nested under, for a multi-client scenario. Empty for the common
+     * single-client case, where the step title is searched for across
+     * the whole document.
+     */
+    QString client;
 };
 
 /**

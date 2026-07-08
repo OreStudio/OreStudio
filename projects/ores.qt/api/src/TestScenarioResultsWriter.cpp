@@ -145,7 +145,20 @@ bool write_scenario_results(const QString& path,
         {results_span.begin, results_span.end, render_results_section(result, environment)});
 
     for (const auto& step : result.steps) {
-        const auto step_span = find_heading(lines, step.step_title, 0, lines.size());
+        // Scope the search to the step's own client sub-heading first,
+        // when set — otherwise two clients sharing a step title would
+        // both resolve to the same (first) match in the whole document.
+        int search_begin = 0;
+        int search_end = lines.size();
+        if (!step.client.isEmpty()) {
+            const auto client_span = find_heading(lines, step.client, 0, lines.size());
+            if (!client_span.found())
+                continue; // stale/renamed client heading — skip.
+            search_begin = client_span.begin + 1;
+            search_end = client_span.end;
+        }
+
+        const auto step_span = find_heading(lines, step.step_title, search_begin, search_end);
         if (!step_span.found())
             continue; // stale/renamed step — skip, don't fail the whole write.
 

@@ -71,6 +71,12 @@ AdminPlugin::~AdminPlugin() {
 }
 
 void AdminPlugin::show_onboarding_wizard() {
+    if (!ctx_.client_manager || !ctx_.client_manager->isConnected()) {
+        MessageBoxHelper::warning(
+            ctx_.main_window, "Disconnected", "Cannot onboard a tenant while disconnected.");
+        return;
+    }
+
     auto* wizard = new TenantOnboardingWizard(ctx_.client_manager, ctx_.main_window);
     wizard->setWindowModality(Qt::ApplicationModal);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
@@ -90,6 +96,13 @@ void AdminPlugin::show_onboarding_wizard() {
 void AdminPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
+
+    if (configMenu_)
+        configMenu_->setEnabled(true);
+    if (adminMenu_)
+        adminMenu_->setEnabled(true);
+    if (act_reset_system_)
+        act_reset_system_->setEnabled(true);
 
     accountController_ = std::make_unique<AccountController>(ctx_.main_window,
                                                              ctx_.mdi_area,
@@ -155,6 +168,8 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     auto* telemetryAction = smc.telemetry_menu->menuAction();
     auto* config = new QMenu(tr("&Configuration"), smc.system_menu);
     smc.system_menu->insertMenu(telemetryAction, config);
+    configMenu_ = config;
+    configMenu_->setEnabled(false); // enabled on login, like everything below it
 
     act_system_settings_ = config->addAction(ico(Icon::Flag), tr("&System Settings"));
     connect(act_system_settings_, &QAction::triggered, this, [this]() {
@@ -180,6 +195,8 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     smc.system_menu->addSeparator();
 
     auto* admin = smc.system_menu->addMenu(tr("&Administration"));
+    adminMenu_ = admin;
+    adminMenu_->setEnabled(false); // enabled on login
 
     act_accounts_ = admin->addAction(ico(Icon::PersonAccounts), tr("&Accounts"));
     connect(act_accounts_, &QAction::triggered, this, [this]() {
@@ -218,6 +235,7 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     act_reset_system_ = smc.system_menu->addAction(ico(Icon::Warning), tr("Reset &System..."));
     act_reset_system_->setToolTip(
         tr("Reset the entire system to pre-bootstrap state (SuperAdmin only)"));
+    act_reset_system_->setEnabled(false); // enabled on login
     connect(act_reset_system_, &QAction::triggered, this, &AdminPlugin::on_reset_system);
 
     // ---- System > Testing > QA Validation Runner --------------------------
@@ -374,6 +392,13 @@ void AdminPlugin::on_logout() {
     roleController_.reset();
     accountController_.reset();
     ctx_ = {};
+
+    if (configMenu_)
+        configMenu_->setEnabled(false);
+    if (adminMenu_)
+        adminMenu_->setEnabled(false);
+    if (act_reset_system_)
+        act_reset_system_->setEnabled(false);
 }
 
 } // namespace ores::qt

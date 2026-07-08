@@ -357,7 +357,7 @@ bool QaValidationRunnerWidget::save() {
     result.status = any_fail ? "FAILED" : (all_pass ? "PASSED" : "PENDING");
 
     for (const auto& step : steps_)
-        result.steps.push_back({step.title, status_text(step.status), step.notes});
+        result.steps.push_back({step.title, status_text(step.status), step.notes, step.client});
 
     const auto environment = capture_environment_metadata(scenarioPath_);
     if (!write_scenario_results(scenarioPath_, result, environment)) {

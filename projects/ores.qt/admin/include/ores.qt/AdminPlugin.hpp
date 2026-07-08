@@ -24,6 +24,7 @@
 #include <memory>
 
 class QAction;
+class QMenu;
 
 namespace ores::qt {
 
@@ -76,6 +77,15 @@ private:
     QAction* act_tenants_{nullptr};
     QAction* act_system_settings_{nullptr};
     QAction* act_reset_system_{nullptr};
+
+    /**
+     * @brief The Configuration/Administration submenus, disabled until
+     * login (unlike &Testing, everything under these needs a live
+     * session — see updateMenuState()'s comment on why the top-level
+     * &System menu itself no longer carries a blanket pre-login gate).
+     */
+    QMenu* configMenu_{nullptr};
+    QMenu* adminMenu_{nullptr};
 
     std::unique_ptr<AccountController> accountController_;
     std::unique_ptr<RoleController> roleController_;

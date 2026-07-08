@@ -90,6 +90,63 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupUi() {
     // Flag editor hosted in the .ui flagGroup; base class owns the button.
     initFlagButton(ui_->flagGroup->layout());
 {{/domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.has_version_navigation}}
+
+    toolBar_ = new QToolBar(this);
+    toolBar_->setMovable(false);
+    toolBar_->setFloatable(false);
+
+    revertAction_ = new QAction(tr("Revert"), this);
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    revertAction_->setToolTip(
+        tr("Revert {{domain_entity.entity_singular_words}} to this historical version"));
+    connect(revertAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onRevertClicked);
+    toolBar_->addAction(revertAction_);
+    revertAction_->setVisible(false);
+
+    toolBar_->addSeparator();
+
+    firstVersionAction_ = new QAction(tr("First"), this);
+    firstVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowPrevious, IconUtils::DefaultIconColor));
+    firstVersionAction_->setToolTip(tr("First version"));
+    connect(firstVersionAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onFirstVersionClicked);
+    toolBar_->addAction(firstVersionAction_);
+    firstVersionAction_->setVisible(false);
+
+    prevVersionAction_ = new QAction(tr("Previous"), this);
+    prevVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowLeft, IconUtils::DefaultIconColor));
+    prevVersionAction_->setToolTip(tr("Previous version"));
+    connect(prevVersionAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onPrevVersionClicked);
+    toolBar_->addAction(prevVersionAction_);
+    prevVersionAction_->setVisible(false);
+
+    nextVersionAction_ = new QAction(tr("Next"), this);
+    nextVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowRight, IconUtils::DefaultIconColor));
+    nextVersionAction_->setToolTip(tr("Next version"));
+    connect(nextVersionAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onNextVersionClicked);
+    toolBar_->addAction(nextVersionAction_);
+    nextVersionAction_->setVisible(false);
+
+    lastVersionAction_ = new QAction(tr("Last"), this);
+    lastVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowNext, IconUtils::DefaultIconColor));
+    lastVersionAction_->setToolTip(tr("Last version"));
+    connect(lastVersionAction_, &QAction::triggered, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onLastVersionClicked);
+    toolBar_->addAction(lastVersionAction_);
+    lastVersionAction_->setVisible(false);
+
+    if (auto* mainLayout = qobject_cast<QVBoxLayout*>(layout()))
+        mainLayout->insertWidget(0, toolBar_);
+{{/domain_entity.qt.has_version_navigation}}
 }
 {{#domain_entity.qt.has_flag_icon}}
 
@@ -269,7 +326,13 @@ void {{domain_entity.entity_pascal}}DetailDialog::markDirty() {
     updateSaveButtonState();
 }
 
+{{^domain_entity.qt.has_version_navigation}}
 void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly) {
+{{/domain_entity.qt.has_version_navigation}}
+{{#domain_entity.qt.has_version_navigation}}
+void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly, int versionNumber) {
+    historicalVersion_ = versionNumber;
+{{/domain_entity.qt.has_version_navigation}}
     readOnly_ = readOnly;
 {{#domain_entity.qt.detail_fields}}
 {{#is_key}}
@@ -309,7 +372,120 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly) {
 {{/domain_entity.qt.detail_fields}}
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
+{{#domain_entity.qt.has_version_navigation}}
+    if (revertAction_)
+        revertAction_->setVisible(readOnly);
+{{/domain_entity.qt.has_version_navigation}}
 }
+{{#domain_entity.qt.has_version_navigation}}
+
+void {{domain_entity.entity_pascal}}DetailDialog::setHistory(
+    const {{domain_entity.qt.version_history_type}}& history, int versionNumber) {
+    history_ = history;
+
+    // Find index of the requested version (history is newest-first)
+    currentHistoryIndex_ = 0;
+    for (size_t i = 0; i < history_.versions.size(); ++i) {
+        if (history_.versions[i].version_number == versionNumber) {
+            currentHistoryIndex_ = static_cast<int>(i);
+            break;
+        }
+    }
+
+    displayCurrentVersion();
+    showVersionNavActions(true);
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::displayCurrentVersion() {
+    if (history_.versions.empty() || currentHistoryIndex_ < 0 ||
+        currentHistoryIndex_ >= static_cast<int>(history_.versions.size())) {
+        return;
+    }
+
+    const auto& version = history_.versions[currentHistoryIndex_];
+    set{{domain_entity.entity_pascal_short}}(version.data);
+    setReadOnly(true, version.version_number);
+    updateVersionNavButtonStates();
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::updateVersionNavButtonStates() {
+    if (history_.versions.empty()) {
+        showVersionNavActions(false);
+        return;
+    }
+
+    bool atOldest = (currentHistoryIndex_ == static_cast<int>(history_.versions.size()) - 1);
+    bool atNewest = (currentHistoryIndex_ == 0);
+
+    if (firstVersionAction_)
+        firstVersionAction_->setEnabled(!atOldest); // Go to oldest
+    if (prevVersionAction_)
+        prevVersionAction_->setEnabled(!atOldest); // Go to older
+    if (nextVersionAction_)
+        nextVersionAction_->setEnabled(!atNewest); // Go to newer
+    if (lastVersionAction_)
+        lastVersionAction_->setEnabled(!atNewest); // Go to latest
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::showVersionNavActions(bool visible) {
+    if (firstVersionAction_)
+        firstVersionAction_->setVisible(visible);
+    if (prevVersionAction_)
+        prevVersionAction_->setVisible(visible);
+    if (nextVersionAction_)
+        nextVersionAction_->setVisible(visible);
+    if (lastVersionAction_)
+        lastVersionAction_->setVisible(visible);
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::onFirstVersionClicked() {
+    if (history_.versions.empty())
+        return;
+    currentHistoryIndex_ = static_cast<int>(history_.versions.size()) - 1;
+    displayCurrentVersion();
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::onPrevVersionClicked() {
+    if (history_.versions.empty())
+        return;
+    if (currentHistoryIndex_ < static_cast<int>(history_.versions.size()) - 1) {
+        ++currentHistoryIndex_;
+        displayCurrentVersion();
+    }
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::onNextVersionClicked() {
+    if (history_.versions.empty())
+        return;
+    if (currentHistoryIndex_ > 0) {
+        --currentHistoryIndex_;
+        displayCurrentVersion();
+    }
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::onLastVersionClicked() {
+    if (history_.versions.empty())
+        return;
+    currentHistoryIndex_ = 0;
+    displayCurrentVersion();
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::onRevertClicked() {
+    auto reply = MessageBoxHelper::question(
+        this,
+        tr("Revert {{domain_entity.entity_title}}"),
+        tr("Are you sure you want to revert '%1' to version %2?\n\n"
+           "This will create a new version with the data from version %2.")
+            .arg(QString::fromStdString({{domain_entity.qt.item_var}}_.{{domain_entity.key_field}}))
+            .arg(historicalVersion_),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes)
+        return;
+
+    emit revertRequested({{domain_entity.qt.item_var}}_);
+}
+{{/domain_entity.qt.has_version_navigation}}
 
 {{#domain_entity.qt.detail_fields}}
 {{#is_dynamic_combo}}

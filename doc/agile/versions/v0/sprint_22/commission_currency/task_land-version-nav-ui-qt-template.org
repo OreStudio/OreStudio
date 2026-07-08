@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/land-version-nav-ui-qt-template
+#+pr: 1458
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,12 +30,12 @@ regenerate plan (task 6E0CD16E).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-07                               |
 
 * Acceptance
 
@@ -47,17 +47,53 @@ regenerate plan (task 6E0CD16E).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Followed the same minimal-footprint pattern as the setting-gated-actions
+capability (task D9CB6853): add an opt-in =has_version_navigation=
+mustache section to the =detail_dialog= hpp/cpp templates (and their
+=ores.cpp.qt.detail_dialog_{header,impl}.org= literate sources), flip
+it on for currency's model, regenerate, diff against the hand-written
+file to verify equivalence, then discard the regenerated currency
+files — currency itself stays hand-written until the final mechanical
+sync task (EA647CBC, step 9).
+
+Landed capability, gated by =domain_entity.qt.has_version_navigation=
+(plus =version_history_include= / =version_history_type= properties):
+
+- Header: =setReadOnly(bool, int = 0)= overload (replaces the 1-arg
+  form), =setHistory=, revert signal, 5 nav/revert slots, 3 private
+  helpers (=displayCurrentVersion=, =updateVersionNavButtonStates=,
+  =showVersionNavActions=), and the toolbar/action/history members.
+- Impl: toolbar + 5 QActions built in =setupUi()= (mirrors currency's
+  hand-rolled toolbar construction verbatim, entity-name substituted),
+  =setReadOnly= extended to toggle =revertAction_= visibility,
+  =setHistory=/=displayCurrentVersion=/nav slots/=onRevertClicked=
+  implemented generically off =history_.versions[i].{data,version_number}=
+  (the shape currency's hand-written =currency_version= struct already
+  uses).
+
+Verified via =./codegen.sh generate --model .../currency.org --address
+ores.cpp.qt= then diffing the regenerated =CurrencyDetailDialog.{hpp,cpp}=
+against the repo: the generated version-nav/revert methods reproduce
+the hand-written behaviour exactly (same toolbar order, same
+enable/disable logic, same slot bodies) modulo formatting; the rest of
+the diff is pre-existing unrelated Qt-layer drift tracked by the sync
+task. Also regenerated a peer without the flag (party_status) and
+confirmed zero version-nav leakage. Discarded both regenerated trees
+after verification (=git checkout=/=git clean=) — no C++ source
+changed by this task, only templates/org-model/org-docs.
 
 * Notes
+
+Currency's actual =setReadOnly(bool, int)= signature was already
+2-argument (matching what this capability now generates); the
+template's prior 1-argument =setReadOnly(bool)= was the outlier,
+confirming the divergence this capability was meant to close.
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1458][#1458]] | [codegen] Land has_version_navigation as a qt-profile capability |
 
 * Review
 
@@ -66,3 +102,11 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Version-navigation UI (first/prev/next/last/revert) landed as an
+opt-in =has_version_navigation= capability in the =detail_dialog=
+qt-profile template, currency flipped on as first consumer. Verified
+by regenerating and diffing against the hand-written file — behaviour
+matches exactly. Currency's own file is untouched (mechanical
+reconciliation is the sync task's job); 4 of 6 prerequisites for
+"Sync Qt codegen for currency" (EA647CBC) are now DONE.

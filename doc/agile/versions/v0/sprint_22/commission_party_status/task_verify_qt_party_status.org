@@ -69,7 +69,10 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | LGTM, no issues found (x3 review passes) | - | Accepted | No changes needed |
+| 2 | org table padding nit | task_verify_qt_party_status.org | Declined | Cosmetic, auto-realigns on next edit |
+| 3 | 7 other controllers missing connect_dialog_close | PartyStatusController.cpp (pattern) | Accepted | Out of scope; filed capture 8E266A23-F282-4142-93B5-CECEEA3FE380 |
+| 4 | Other refdata *_changed_event types unregistered | application.cpp (pattern) | Accepted | Out of scope; filed capture 6908F023-0F48-4BB7-B0D8-E05CE63E5033 |
 
 * Result
 

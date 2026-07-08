@@ -51,7 +51,7 @@ plan itself stays — it is the historical record of what we did.)
 * Notes
 
 - History window close button was not wired up; fixed by connecting
-  =connect_dialog_close= in [[PartyStatusController.cpp]].
+  =connect_dialog_close= in =PartyStatusController.cpp=.
 - party_status was missing NATS event registration/subscription in
   =ores.refdata.service= application; added mapping and publish
   subscription for =party_status_changed_event=.

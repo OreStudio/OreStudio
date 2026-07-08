@@ -8,7 +8,7 @@
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
 #+branch: feature/currency-pair-code-recompute-on-currency-change
-#+pr:
+#+pr: 1476
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -107,7 +107,7 @@ Generalizing rather than hand-scoping to this one entity:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1476][#1476]] | [refdata,qt,codegen] Pair code derives from base/quote, locked after create |
 
 * Review
 

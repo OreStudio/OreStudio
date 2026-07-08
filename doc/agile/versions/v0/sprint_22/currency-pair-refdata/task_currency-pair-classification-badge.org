@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: book badge widget precedent (clever_dijkstra worktree, not yet merged)
+#+blocked_since: 2026-07-08
 #+created: 2026-07-08
 #+updated: 2026-07-08
 #+environment:
@@ -33,7 +33,7 @@ merged).
 | State        | BACKLOG                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | book badge widget precedent merging (clever_dijkstra worktree). |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-07-08                               |
 

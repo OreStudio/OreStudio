@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: 1F43998E-BD20-4CBC-8C05-509F1ABF0E0C
+#+blocked_since: 2026-07-08
 #+created: 2026-07-08
 #+updated: 2026-07-08
 #+environment:
@@ -45,7 +45,7 @@ text.
 | State        | BACKLOG                              |
 | Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] landing first. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-07-08                               |
 

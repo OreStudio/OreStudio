@@ -633,11 +633,19 @@ create or replace function {{domain_entity.product}}_{{domain_entity.component}}
 declare
     rec {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl%rowtype;
 begin
+    -- for update: takes the same row lock the parent's own insert
+    -- trigger takes, so the snapshot in rec can't be based on a
+    -- business-column value a concurrent direct edit is about to
+    -- change — without this, that concurrent edit could be silently
+    -- reverted once this function's later insert proceeds. See the
+    -- "Temporal composite entity versioning" architecture doc,
+    -- Concurrency section.
     select * into rec
     from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
     where tenant_id = p_tenant_id
       and {{domain_entity.primary_key.column}} = p_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
 
     if not found then
         return;

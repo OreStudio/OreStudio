@@ -474,6 +474,13 @@ def cmd_client_start(ctx, args):
     # The colour is only a window marker; the display name comes from
     # --instance-name, else ORES_CHECKOUT_LABEL — so the status bar shows
     # which checkout (e.g. local2) this client is bound to.
+    if args.instance_name and args.instance_name != ctx.label:
+        print(f"warning: --instance-name '{args.instance_name}' overrides this "
+              f"environment's label ('{ctx.label}') — the client will no "
+              f"longer be identifiable as belonging to this checkout in the "
+              f"fleet/status view. Prefer --colour to distinguish parallel "
+              f"clients from the same environment; leave --instance-name unset.",
+              file=sys.stderr)
     instance_name = args.instance_name or ctx.label
     if instance_name:
         client_args += ["--instance-name", instance_name]

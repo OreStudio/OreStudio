@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch: feature/write-composite-versioning-architecture-doc
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: [[id:2AC41A6E-3F18-48FF-B389-D5CC0E1AAC8F][Bind composite child-entity and hierarchy widgets to party and counterparty]] — the Composite tab's real end-state UX (drill into which child changed) needs per-child history dialogs from that task.
+#+blocked_since: 2026-07-08
 #+created: 2026-07-07
-#+updated: 2026-07-07
+#+updated: 2026-07-08
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -30,11 +30,11 @@ layer from the previous task.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] |
-| Now          | Implemented and building cleanly; awaiting the author's live click-through in the running Qt client. |
-| Waiting on   | Visual confirmation from the author (party + counterparty history dialogs, multiple version rows). |
-| Next         | Close once confirmed; fix anything found. |
+| Now          | Interim flat-list Composite tab implemented, built, and partially verified live (steps 2-4 of the test scenario pass — as-of scoping is correct). Paused pending children commissioning. |
+| Waiting on   | [[id:2AC41A6E-3F18-48FF-B389-D5CC0E1AAC8F][Bind composite child-entity and hierarchy widgets to party and counterparty]] to land per-child history dialogs. |
+| Next         | Once that task lands, resume the test scenario (steps 5-7) and revisit the Composite tab's UX to drill into per-child history instead of a flat list. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance

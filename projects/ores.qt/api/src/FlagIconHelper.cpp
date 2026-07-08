@@ -101,8 +101,11 @@ void setup_flag_combo(QObject* context, QComboBox* combo, ImageCache* cache, Fla
     });
 }
 
-void setup_currency_combo(QComboBox* combo, QObject* owner, ClientManager* client_manager,
-                          ImageCache* image_cache, std::function<QString()> fallback_selection) {
+void setup_currency_combo(QComboBox* combo,
+                          QObject* owner,
+                          ClientManager* client_manager,
+                          ImageCache* image_cache,
+                          std::function<QString()> fallback_selection) {
     if (!combo || !owner || !client_manager || !client_manager->isConnected())
         return;
 
@@ -112,35 +115,40 @@ void setup_currency_combo(QComboBox* combo, QObject* owner, ClientManager* clien
 
     QPointer<QComboBox> comboPtr = combo;
     QPointer<QObject> ownerPtr = owner;
-    auto future = QtConcurrent::run([client_manager]() { return fetch_currency_codes(client_manager); });
+    auto future =
+        QtConcurrent::run([client_manager]() { return fetch_currency_codes(client_manager); });
 
     auto* watcher = new QFutureWatcher<std::vector<std::string>>(owner);
     watcher->setObjectName(watcher_name);
-    QObject::connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, owner,
-        [comboPtr, ownerPtr, watcher, image_cache, fallback_selection]() {
-            auto codes = watcher->result();
-            watcher->deleteLater();
-            if (!comboPtr || !ownerPtr)
-                return;
+    QObject::connect(watcher,
+                     &QFutureWatcher<std::vector<std::string>>::finished,
+                     owner,
+                     [comboPtr, ownerPtr, watcher, image_cache, fallback_selection]() {
+                         auto codes = watcher->result();
+                         watcher->deleteLater();
+                         if (!comboPtr || !ownerPtr)
+                             return;
 
-            std::sort(codes.begin(), codes.end());
-            const auto current = comboPtr->currentText();
-            comboPtr->clear();
-            for (const auto& code : codes)
-                comboPtr->addItem(QString::fromStdString(code));
+                         std::sort(codes.begin(), codes.end());
+                         const auto current = comboPtr->currentText();
+                         comboPtr->clear();
+                         for (const auto& code : codes)
+                             comboPtr->addItem(QString::fromStdString(code));
 
-            const QString to_select =
-                !current.isEmpty() ? current : (fallback_selection ? fallback_selection() : QString());
-            if (!to_select.isEmpty())
-                comboPtr->setCurrentText(to_select);
+                         const QString to_select =
+                             !current.isEmpty() ?
+                                 current :
+                                 (fallback_selection ? fallback_selection() : QString());
+                         if (!to_select.isEmpty())
+                             comboPtr->setCurrentText(to_select);
 
-            // setup_flag_combo, not apply_flag_icons: the image cache may
-            // still be loading when the combo first populates (icons would
-            // resolve empty and never be revisited), so this also
-            // reconnects on ImageCache::allLoaded to re-apply once the
-            // full set has downloaded.
-            setup_flag_combo(ownerPtr, comboPtr, image_cache, FlagSource::Currency);
-        });
+                         // setup_flag_combo, not apply_flag_icons: the image cache may
+                         // still be loading when the combo first populates (icons would
+                         // resolve empty and never be revisited), so this also
+                         // reconnects on ImageCache::allLoaded to re-apply once the
+                         // full set has downloaded.
+                         setup_flag_combo(ownerPtr, comboPtr, image_cache, FlagSource::Currency);
+                     });
     watcher->setFuture(future);
 }
 

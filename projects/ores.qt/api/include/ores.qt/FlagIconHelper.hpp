@@ -195,12 +195,11 @@ inline void set_line_edit_flag_icon(QLineEdit* edit, const QIcon& icon, QAction*
  * populates the widget from the loaded record). Optional; omit for a
  * combo with no entity value to restore (e.g. a filter/picker).
  */
-ORES_QT_API void setup_currency_combo(
-    QComboBox* combo,
-    QObject* owner,
-    ClientManager* client_manager,
-    ImageCache* image_cache,
-    std::function<QString()> fallback_selection = {});
+ORES_QT_API void setup_currency_combo(QComboBox* combo,
+                                      QObject* owner,
+                                      ClientManager* client_manager,
+                                      ImageCache* image_cache,
+                                      std::function<QString()> fallback_selection = {});
 
 }
 

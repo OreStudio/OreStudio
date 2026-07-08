@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -95,6 +96,31 @@ public:
      */
     std::uint32_t
     count_counterparty_identifiers_by_counterparty_id(const std::string& counterparty_id);
+    /**
+     * @brief Lists counterparty identifiers filtered by counterparty_id that were live at
+     * any point during a parent version's own [valid_from, valid_to) window.
+     * See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param counterparty_id The counterparty_id to filter by.
+     * @param valid_from_bound The parent version's own valid_from.
+     * @param valid_to_bound The parent version's own valid_to.
+     * @return Vector of matching counterparty identifiers.
+     */
+    std::vector<domain::counterparty_identifier>
+    list_counterparty_identifiers_by_counterparty_id_as_of(
+        const std::string& counterparty_id,
+        std::chrono::system_clock::time_point valid_from_bound,
+        std::chrono::system_clock::time_point valid_to_bound);
+    /**
+     * @brief Retrieves a single counterparty identifier as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param id The id of the counterparty identifier.
+     * @param version The version to fetch.
+     * @return The counterparty identifier at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::counterparty_identifier>
+    get_counterparty_identifier_at_version(const std::string& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single counterparty identifier by its id.

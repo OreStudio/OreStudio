@@ -258,6 +258,27 @@ std::vector<domain::party> party_repository::read_all(const boost::uuids::uuid& 
         "Reading all party versions by id.");
 }
 
+std::optional<domain::party> party_repository::read_at_version(const boost::uuids::uuid& id,
+                                                               std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading party at version. Id: " << id
+                               << " version: " << version;
+
+    const auto id_str = boost::uuids::to_string(id);
+    const auto query = sqlgen::read<std::vector<party_entity>> |
+                       where("id"_c == id_str && "version"_c == version) | sqlgen::limit(1);
+
+    const auto entities = execute_read_query<party_entity, domain::party>(
+        ctx_,
+        query,
+        [](const auto& entities) { return party_mapper::map(entities); },
+        lg(),
+        "Reading party at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
 void party_repository::remove(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party from database: " << id;
 

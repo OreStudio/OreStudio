@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.core/repository/counterparty_contact_information_repository.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
@@ -114,6 +115,25 @@ public:
      */
     std::vector<domain::counterparty_contact_information>
     get_counterparty_contact_information_history(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single counterparty contact information as it stood
+     * at a specific version. See the "Temporal composite entity versioning"
+     * architecture doc.
+     */
+    std::optional<domain::counterparty_contact_information>
+    get_counterparty_contact_information_at_version(const boost::uuids::uuid& id,
+                                                    std::uint32_t version);
+
+    /**
+     * @brief Lists counterparty contact informations for a counterparty that
+     * were live during a parent version's own [valid_from, valid_to) window.
+     */
+    std::vector<domain::counterparty_contact_information>
+    list_counterparty_contact_informations_by_counterparty_as_of(
+        const boost::uuids::uuid& counterparty_id,
+        std::chrono::system_clock::time_point valid_from_bound,
+        std::chrono::system_clock::time_point valid_to_bound);
 
 private:
     context ctx_;

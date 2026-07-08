@@ -23,6 +23,7 @@
 #include "ores.refdata.api/domain/party_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/party_identifier_entity.hpp"
 #include "ores.refdata.core/repository/party_identifier_mapper.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
@@ -195,5 +196,49 @@ void party_identifier_repository::remove(context ctx, const std::vector<std::str
     execute_delete_query(ctx, query, lg(), "Batch removing party identifiers.");
 }
 
+std::optional<domain::party_identifier> party_identifier_repository::read_at_version(
+    context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading party identifier at version. id: " << id
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<party_identifier_entity, domain::party_identifier>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_identifier_mapper::map(entities); },
+        lg(),
+        "Reading party identifier at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+std::vector<domain::party_identifier> party_identifier_repository::read_by_party_id_as_of(
+    context ctx, const std::string& party_id,
+    std::chrono::system_clock::time_point valid_from_bound,
+    std::chrono::system_clock::time_point valid_to_bound) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading party identifiers as of window. party_id: " << party_id;
+
+    const auto vf(
+        make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
+    const auto vt(
+        make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
+                       where("tenant_id"_c == tid && "party_id"_c == party_id &&
+                             "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<party_identifier_entity, domain::party_identifier>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_identifier_mapper::map(entities); },
+        lg(),
+        "Reading party identifiers as of window by party_id.");
+}
 
 }

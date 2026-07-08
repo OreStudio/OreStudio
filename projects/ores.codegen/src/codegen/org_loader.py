@@ -674,6 +674,13 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                 for r in rows if r.get("name")
             ]
 
+    # Used by the C++ repository facet to conditionally include the
+    # datetime header only when at least one FK opts into the as-of
+    # window query (:list_by_as_of: true). Computed after the SQL
+    # section above so it survives that block's de["sql"] reassignment.
+    if any(fk.get("list_by_as_of") for fk in de.get("foreign_keys", [])):
+        de.setdefault("sql", {})["has_list_by_as_of"] = True
+
     # Optional sections carried over from the table pathway; present in unified
     # entity org files after Step 5 content migration.
     vfn_section = _section(doc.root, "Validation function")

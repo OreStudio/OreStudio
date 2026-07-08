@@ -24,7 +24,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_identifier.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <chrono>
 #include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -117,6 +119,24 @@ public:
      * @brief Deletes party identifiers by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& ids);
+
+    /**
+     * @brief Reads a single party identifier as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     */
+    std::optional<domain::party_identifier>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Reads party identifiers filtered by party_id that were live at
+     * any point during [valid_from_bound, valid_to_bound) — the set that
+     * composes a parent party's state as of one of its own historical
+     * versions.
+     */
+    std::vector<domain::party_identifier>
+    read_by_party_id_as_of(context ctx, const std::string& party_id,
+                          std::chrono::system_clock::time_point valid_from_bound,
+                          std::chrono::system_clock::time_point valid_to_bound);
 };
 
 }

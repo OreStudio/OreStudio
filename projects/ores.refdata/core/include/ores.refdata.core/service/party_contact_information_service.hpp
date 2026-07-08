@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/party_contact_information.hpp"
 #include "ores.refdata.core/repository/party_contact_information_repository.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
@@ -112,6 +113,23 @@ public:
      */
     std::vector<domain::party_contact_information>
     get_party_contact_information_history(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single party contact information as it stood at a
+     * specific version. See the "Temporal composite entity versioning"
+     * architecture doc.
+     */
+    std::optional<domain::party_contact_information>
+    get_party_contact_information_at_version(const boost::uuids::uuid& id, std::uint32_t version);
+
+    /**
+     * @brief Lists party contact informations for a party that were live
+     * during a parent version's own [valid_from, valid_to) window.
+     */
+    std::vector<domain::party_contact_information> list_party_contact_informations_by_party_as_of(
+        const boost::uuids::uuid& party_id,
+        std::chrono::system_clock::time_point valid_from_bound,
+        std::chrono::system_clock::time_point valid_to_bound);
 
 private:
     context ctx_;

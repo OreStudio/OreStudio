@@ -187,3 +187,62 @@ TEST_CASE("read_nonexistent_party_identifier_id", tags) {
 
     CHECK(read_party_identifiers.size() == 0);
 }
+
+TEST_CASE("as_of_composition_reflects_party_version_history", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    party_repository party_repo(h.context());
+    auto party = generate_synthetic_party(ctx);
+    party.change_reason_code = "system.test";
+    auto existing = party_repo.read_latest();
+    for (const auto& e : existing) {
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
+    }
+    party_repo.write(party);
+    h.set_party(party.id);
+
+    // Fetch v1 of the party — created above, no identifiers yet.
+    const auto v1 = party_repo.read_at_version(party.id, 1);
+    REQUIRE(v1.has_value());
+    CHECK(v1->version == 1);
+
+    // Adding an identifier bumps the party to v2 (composite versioning —
+    // see the "Temporal composite entity versioning" architecture doc).
+    auto pi = generate_synthetic_party_identifier(ctx);
+    pi.change_reason_code = "system.test";
+    pi.party_id = party.id;
+    party_identifier_repository identifier_repo;
+    identifier_repo.write(h.context(), pi);
+
+    const auto v2 = party_repo.read_at_version(party.id, 2);
+    REQUIRE(v2.has_value());
+    CHECK(v2->version == 2);
+
+    // domain::party only surfaces recorded_at (= valid_from), not valid_to;
+    // windows are contiguous by construction, so v1's window ends exactly
+    // when v2's begins. v2 is still current, so bound its open end with a
+    // safely-far-future instant rather than the real infinity sentinel.
+    const auto far_future = std::chrono::system_clock::now() + std::chrono::hours(24 * 365 * 100);
+
+    // v1's window predates the identifier: composing "as of v1" must not
+    // include it.
+    const auto identifiers_at_v1 = identifier_repo.read_by_party_id_as_of(
+        h.context(), boost::uuids::to_string(party.id), v1->recorded_at, v2->recorded_at);
+    CHECK(identifiers_at_v1.empty());
+
+    // v2's window is exactly when the identifier was created: composing
+    // "as of v2" must include it.
+    const auto identifiers_at_v2 = identifier_repo.read_by_party_id_as_of(
+        h.context(), boost::uuids::to_string(party.id), v2->recorded_at, far_future);
+    REQUIRE(identifiers_at_v2.size() == 1);
+    CHECK(identifiers_at_v2[0].id == pi.id);
+
+    // Fetching a nonexistent version returns nullopt rather than throwing.
+    const auto missing = party_repo.read_at_version(party.id, 999);
+    CHECK_FALSE(missing.has_value());
+}

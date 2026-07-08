@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/party_identifier.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/party_identifier_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -135,6 +136,22 @@ public:
      * @brief Retrieves all historical versions of a party identifier.
      */
     std::vector<domain::party_identifier> get_party_identifier_history(const std::string& id);
+
+    /**
+     * @brief Retrieves a single party identifier as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     */
+    std::optional<domain::party_identifier>
+    get_party_identifier_at_version(const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Lists party identifiers for a party that were live during a
+     * parent version's own [valid_from, valid_to) window.
+     */
+    std::vector<domain::party_identifier>
+    list_party_identifiers_by_party_as_of(const std::string& party_id,
+                                         std::chrono::system_clock::time_point valid_from_bound,
+                                         std::chrono::system_clock::time_point valid_to_bound);
 
 private:
     context ctx_;

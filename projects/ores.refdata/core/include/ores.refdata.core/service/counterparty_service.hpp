@@ -27,6 +27,7 @@
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
 #include "ores.utility/domain/hierarchy.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -77,6 +78,16 @@ public:
      */
     std::uint32_t count_counterparties();
 
+    /**
+     * @brief Retrieves a single counterparty as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param id The id of the counterparty.
+     * @param version The version to fetch.
+     * @return The counterparty at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::counterparty> get_counterparty_at_version(const std::string& id,
+                                                                    std::uint32_t version);
 
     /**
      * @brief Retrieves a single counterparty by its id.

@@ -25,6 +25,8 @@
 #include "ores.refdata.api/domain/party_contact_information.hpp"
 #include "ores.refdata.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -63,6 +65,25 @@ public:
 
     std::vector<domain::party_contact_information> read_all(const boost::uuids::uuid& id);
     void remove(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Reads a single party contact information as it stood at a
+     * specific version. See the "Temporal composite entity versioning"
+     * architecture doc.
+     */
+    std::optional<domain::party_contact_information>
+    read_at_version(const boost::uuids::uuid& id, std::uint32_t version);
+
+    /**
+     * @brief Reads party contact informations filtered by party_id that were
+     * live at any point during [valid_from_bound, valid_to_bound) — the set
+     * that composes a parent party's state as of one of its own historical
+     * versions.
+     */
+    std::vector<domain::party_contact_information>
+    read_by_party_id_as_of(const boost::uuids::uuid& party_id,
+                          std::chrono::system_clock::time_point valid_from_bound,
+                          std::chrono::system_clock::time_point valid_to_bound);
 
 private:
     context ctx_;

@@ -24,7 +24,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <chrono>
 #include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -75,6 +77,19 @@ public:
     std::vector<domain::counterparty_identifier> read_all(context ctx, const std::string& id);
 
     /**
+     * @brief Reads a single counterparty identifier as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param id The id to look up
+     * @param version The version to fetch
+     */
+    std::optional<domain::counterparty_identifier>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+    /**
      * @brief Reads latest counterparty identifiers filtered by counterparty_id, with pagination.
      * @param ctx Repository context with database connection
      * @param counterparty_id The counterparty_id to filter by
@@ -90,6 +105,22 @@ public:
     std::uint32_t
     get_total_counterparty_identifier_count_by_counterparty_id(context ctx,
                                                                const std::string& counterparty_id);
+    /**
+     * @brief Reads counterparty identifiers filtered by counterparty_id that were live at
+     * any point during [valid_from_bound, valid_to_bound) — i.e. the set of
+     * counterparty identifiers that compose a parent entity's state as of one of
+     * its own historical versions. See the "Temporal composite entity
+     * versioning" architecture doc.
+     * @param ctx Repository context with database connection
+     * @param counterparty_id The counterparty_id to filter by
+     * @param valid_from_bound The parent version's own valid_from
+     * @param valid_to_bound The parent version's own valid_to
+     */
+    std::vector<domain::counterparty_identifier>
+    read_by_counterparty_id_as_of(context ctx,
+                                  const std::string& counterparty_id,
+                                  std::chrono::system_clock::time_point valid_from_bound,
+                                  std::chrono::system_clock::time_point valid_to_bound);
 
     /**
      * @brief Reads latest counterparty identifiers with pagination support.

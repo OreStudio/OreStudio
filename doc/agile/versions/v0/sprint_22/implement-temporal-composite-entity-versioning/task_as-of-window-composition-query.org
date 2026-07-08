@@ -7,43 +7,95 @@
 #+level: s1
 #+filetags: :composite_entity:versioning:sql:codegen:implement-temporal-composite-entity-versioning:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-composite-versioning-architecture-doc
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-07
 #+updated: 2026-07-07
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a read-side query so a caller can fetch a parent entity as it
+stood at a specific version, and its children filtered to that same
+version's [valid_from, valid_to) window — reaching all the way to the
+repository and service layers, codegen-driven for any future entity.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-07                               |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                       |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-08                               |
 
 * Acceptance
 
--
+- Any versioned entity gets a generic =read_at_version=/=get_<entity>_at_version=
+  repository+service method (gated on =has_audit_columns=, not a new
+  opt-in flag — genuinely applies to every entity, per the author's
+  direction).
+- Any child FK opted into =:list_by_as_of: true= gets a
+  =read_by_<fk>_as_of=/=list_<entity>_by_<fk>_as_of= repository+service
+  method doing the interval-overlap query against a caller-supplied
+  window.
+- Codegen-driven for counterparty; hand-patched to match for party
+  (2 of its 3 entities use an older, pre-generic-facet hand-written
+  repository/service shape — patched to match their own existing
+  conventions rather than pulled onto the modern shape, which is a
+  separate, larger modernization out of scope here).
+- Proven with a new repository test
+  (=as_of_composition_reflects_party_version_history=) exercising the
+  full mechanism against a real party+identifier; full
+  party/counterparty test suite (28 test cases, 47 assertions) passes.
+- NATS messaging/protocol layer deliberately deferred to the Qt
+  composite history dialog task, which needs it anyway.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Extended the FK-flag mechanism from the touch-function task with a
+mirror pair: =:list_by_as_of:= (child FK, read side) alongside
+=:bump_parent_version:= (child FK, write side), and made
+=read_at_version=/=get_<entity>_at_version= unconditional for any
+=has_audit_columns= entity rather than a new flag, since a single-entity
+as-of fetch is useful standalone, not just for composite parents.
+
+Regenerated counterparty's repository+service layers via
+=compass codegen regenerate --component refdata-cpp --profile
+repository|service=, then manually scoped the diff to only the
+entities actually touched — the regen run picks up large amounts of
+unrelated pre-existing drift across ~20+ other refdata entities each
+time (a known, separate gap — some entities are stuck on an older
+hand-written shape: constructor-held context, =boost::uuids::uuid=
+params instead of =std::string=+per-call =context=). Reverted those;
+not this task's concern.
 
 * Notes
+
+=counterparty_contact_information= and =party_identifier='s sibling
+=party_contact_information= (plus =party= itself) are on that older
+shape — regenerating them wholesale would have required also updating
+their service/handler/test layers to the modern interface, well
+beyond this task. Hand-patched the 2 new methods into each file
+matching its *own* existing convention (context-in-constructor,
+=boost::uuids::uuid= params) rather than the modern generated shape,
+exactly as done for party's SQL in the touch-function task.
+
+=domain::party= (and siblings) only surface =recorded_at= (=
+=valid_from=), not =valid_to=, on the domain struct — discovered while
+writing the proof test. Windows are contiguous by construction
+(closing one version's =valid_to= is the next version's =valid_from=),
+so the test derives v1's window end from v2's =recorded_at= rather
+than needing a =valid_to= field; the still-open latest version's
+open end is bounded with a safely-far-future instant instead of the
+real infinity sentinel (domain objects don't carry that either).
 
 * PRs
 
@@ -58,3 +110,12 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Landed and proven: =read_at_version=/=get_<entity>_at_version= for any
+versioned entity, =read_by_<fk>_as_of=/=list_<entity>_by_<fk>_as_of=
+for any =:list_by_as_of:=-opted-in child FK, reaching repository and
+service layers. Codegen-driven for counterparty; hand-patched to
+match party's (and 2 other stale entities') existing conventions.
+NATS/protocol layer deferred to the Qt composite history dialog task.
+New test proves the composition end-to-end against real data; full
+party/counterparty suite (28 cases, 47 assertions) passes.

@@ -116,6 +116,7 @@ std::string("Test identifier")
 :error_message: Invalid counterparty_id: %. No active counterparty found with this id.
 :list_by:       true
 :bump_parent_version: true
+:list_by_as_of: true
 :END:
 
 * Insert trigger

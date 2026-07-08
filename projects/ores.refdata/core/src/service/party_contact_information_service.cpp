@@ -107,4 +107,22 @@ party_contact_information_service::get_party_contact_information_history(
     return repo_.read_all(id);
 }
 
+std::optional<domain::party_contact_information>
+party_contact_information_service::get_party_contact_information_at_version(
+    const boost::uuids::uuid& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting party contact information at version: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(id, version);
+}
+
+std::vector<domain::party_contact_information>
+party_contact_information_service::list_party_contact_informations_by_party_as_of(
+    const boost::uuids::uuid& party_id,
+    std::chrono::system_clock::time_point valid_from_bound,
+    std::chrono::system_clock::time_point valid_to_bound) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing party contact informations by party as of window: "
+                               << party_id;
+    return repo_.read_by_party_id_as_of(party_id, valid_from_bound, valid_to_bound);
+}
+
 }

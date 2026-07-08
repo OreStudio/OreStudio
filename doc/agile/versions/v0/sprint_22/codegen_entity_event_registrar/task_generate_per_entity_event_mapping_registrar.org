@@ -58,6 +58,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | facet_catalogue.org missing a nats-event-registrar entry (siblings all have one) | facet_catalogue.org | Fixed — 2d42bb059 | Added entry mirroring nats-eventing/nats-handler/nats-sub-registrar. |
+| 2 | PR description overstates publish_entity_event dedup (only refdata's copy removed; 4 other components still duplicate it) | PR description | Fixed — edited PR body | Corrected wording; migrating the other 4 is a separate follow-up, not attempted here. |
 
 * Result

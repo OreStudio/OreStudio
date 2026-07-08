@@ -8,7 +8,7 @@
 #+filetags: :qt:testing:ui:qa_validation_runner:sprint_22:v0:
 #+owner: marco
 #+branch: feature/qa-validation-runner-panel
-#+pr:
+#+pr: 1463
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-07
@@ -125,7 +125,7 @@ running the panel (dogfooding), not just code review:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1463][#1463]] | [qt,admin] Build the QA Validation Runner (Scenario Runner) panel |
 
 * Review
 

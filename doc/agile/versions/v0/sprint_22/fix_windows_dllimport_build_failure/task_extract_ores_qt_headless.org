@@ -8,7 +8,7 @@
 #+filetags: :qt:build:windows:hotfix:sprint_22:v0:fix_windows_dllimport_build_failure:
 #+owner: marco
 #+branch: hotfix/windows-dllimport-inconsistent-linkage
-#+pr:
+#+pr: 1475
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -105,7 +105,7 @@ same-macro-name clash it was designed to avoid.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1475][#1475]] | [qt] Extract ores.qt.headless: fix Windows dllimport build failure |
 
 * Review
 

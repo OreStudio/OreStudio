@@ -220,7 +220,13 @@ private:
     QComboBox* quoteCombo_;
     QLabel* oreKeyLabel_;
     QLineEdit* sourceNameEdit_;
+    // Price source: "fixed" (priceSpin_ is authoritative) or "vintage" (spot is
+    // derived server-side from vintageSourceEdit_/vintageDateEdit_, guarded by
+    // availability — see fx_spot_generation_config.price_source).
+    QButtonGroup* priceSourceGroup_;
     QDoubleSpinBox* priceSpin_;
+    QLineEdit* vintageSourceEdit_;
+    QLineEdit* vintageDateEdit_;
     QCheckBox* enabledCheck_;
 
     // Frequency tab.

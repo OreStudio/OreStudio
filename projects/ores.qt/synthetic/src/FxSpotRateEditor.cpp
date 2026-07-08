@@ -45,6 +45,7 @@
 #include <QPalette>
 #include <QPointer>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QSignalBlocker>
 #include <QSizePolicy>
 #include <QSlider>
@@ -210,6 +211,7 @@ FxSpotRateEditor::FxSpotRateEditor(ClientManager* cm,
     fx_.id = boost::uuids::random_generator()();
     fx_.config_id = parentFeedId;
     fx_.party_id = cm->currentPartyId();
+    fx_.price_source = "fixed";
     fx_.gmm_initial_price = 1.0;
     fx_.ticks_per_hour = 3600; // default: a new price every second
     fx_.enabled = true;
@@ -362,6 +364,37 @@ void FxSpotRateEditor::buildInstrumentTab() {
         refreshCharts();
     });
 
+    vintageSourceEdit_ = new QLineEdit(tab);
+    vintageSourceEdit_->setText(QString::fromStdString(fx_.vintage_source));
+    vintageSourceEdit_->setPlaceholderText(tr("e.g. ore.reference"));
+    vintageDateEdit_ = new QLineEdit(tab);
+    vintageDateEdit_->setText(QString::fromStdString(fx_.vintage_date));
+    vintageDateEdit_->setPlaceholderText(tr("YYYY-MM-DD"));
+
+    auto* fixedRadio = new QRadioButton(tr("Fixed"), tab);
+    auto* vintageRadio = new QRadioButton(tr("From vintage data"), tab);
+    priceSourceGroup_ = new QButtonGroup(this);
+    priceSourceGroup_->setExclusive(true);
+    priceSourceGroup_->addButton(fixedRadio, 0);
+    priceSourceGroup_->addButton(vintageRadio, 1);
+    (fx_.price_source == "vintage" ? vintageRadio : fixedRadio)->setChecked(true);
+    auto* priceSourceRow = new QHBoxLayout();
+    priceSourceRow->addWidget(fixedRadio);
+    priceSourceRow->addWidget(vintageRadio);
+    priceSourceRow->addStretch(1);
+
+    const auto updatePriceSourceEnablement = [this]() {
+        const bool vintage = priceSourceGroup_->checkedId() == 1;
+        priceSpin_->setEnabled(!vintage);
+        vintageSourceEdit_->setEnabled(vintage);
+        vintageDateEdit_->setEnabled(vintage);
+    };
+    updatePriceSourceEnablement();
+    connect(priceSourceGroup_,
+           &QButtonGroup::idClicked,
+           this,
+           [updatePriceSourceEnablement](int) { updatePriceSourceEnablement(); });
+
     enabledCheck_ = new QCheckBox(tr("Enabled"), tab);
     enabledCheck_->setChecked(fx_.enabled);
 
@@ -369,7 +402,10 @@ void FxSpotRateEditor::buildInstrumentTab() {
     form->addRow(tr("Quote currency"), quoteCombo_);
     form->addRow(tr("ORE key"), oreKeyLabel_);
     form->addRow(tr("Source name"), sourceNameEdit_);
+    form->addRow(tr("Price source"), priceSourceRow);
     form->addRow(tr("Initial price"), priceSpin_);
+    form->addRow(tr("Vintage source"), vintageSourceEdit_);
+    form->addRow(tr("Vintage date"), vintageDateEdit_);
     form->addRow(QString(), enabledCheck_);
     layout->addLayout(form);
     layout->addStretch(1);
@@ -1577,6 +1613,16 @@ void FxSpotRateEditor::onSaveClicked() {
         return;
     }
 
+    const bool vintageMode = priceSourceGroup_->checkedId() == 1;
+    if (vintageMode && (vintageSourceEdit_->text().trimmed().isEmpty() ||
+                       vintageDateEdit_->text().trimmed().isEmpty())) {
+        QMessageBox::warning(this,
+                             tr("Incomplete"),
+                             tr("Vintage source and date are both required when the price source "
+                                "is \"From vintage data\"."));
+        return;
+    }
+
     const auto crOpType = isNew_ ? ChangeReasonDialog::OperationType::Create :
                                    ChangeReasonDialog::OperationType::Amend;
     const auto crSel = promptChangeReason(crOpType, true, isNew_ ? "system" : "common");
@@ -1617,7 +1663,17 @@ void FxSpotRateEditor::onSaveClicked() {
     if (fx.source_name.empty())
         fx.source_name = defaultSourceName().toStdString();
     fx.process_type = currentEngine();
-    fx.gmm_initial_price = priceSpin_->value();
+    if (vintageMode) {
+        fx.price_source = "vintage";
+        fx.gmm_initial_price = 0.0;
+        fx.vintage_source = vintageSourceEdit_->text().trimmed().toStdString();
+        fx.vintage_date = vintageDateEdit_->text().trimmed().toStdString();
+    } else {
+        fx.price_source = "fixed";
+        fx.gmm_initial_price = priceSpin_->value();
+        fx.vintage_source.clear();
+        fx.vintage_date.clear();
+    }
     fx.ticks_per_hour =
         std::max(1, static_cast<int>(std::lround(3600.0 / std::max(1, secondsSpin_->value()))));
     fx.enabled = enabledCheck_->isChecked();

@@ -25,7 +25,9 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/QaValidationRunnerWidget.hpp"
 #include "ores.qt/RoleController.hpp"
+#include "ores.qt/SettingGatedActionController.hpp"
 #include "ores.qt/SystemSettingController.hpp"
 #include "ores.qt/TenantController.hpp"
 #include "ores.qt/TenantOnboardingWizard.hpp"
@@ -69,6 +71,12 @@ AdminPlugin::~AdminPlugin() {
 }
 
 void AdminPlugin::show_onboarding_wizard() {
+    if (!ctx_.client_manager || !ctx_.client_manager->isConnected()) {
+        MessageBoxHelper::warning(
+            ctx_.main_window, "Disconnected", "Cannot onboard a tenant while disconnected.");
+        return;
+    }
+
     auto* wizard = new TenantOnboardingWizard(ctx_.client_manager, ctx_.main_window);
     wizard->setWindowModality(Qt::ApplicationModal);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
@@ -88,6 +96,13 @@ void AdminPlugin::show_onboarding_wizard() {
 void AdminPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
+
+    if (configMenu_)
+        configMenu_->setEnabled(true);
+    if (adminMenu_)
+        adminMenu_->setEnabled(true);
+    if (act_reset_system_)
+        act_reset_system_->setEnabled(true);
 
     accountController_ = std::make_unique<AccountController>(ctx_.main_window,
                                                              ctx_.mdi_area,
@@ -153,6 +168,8 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     auto* telemetryAction = smc.telemetry_menu->menuAction();
     auto* config = new QMenu(tr("&Configuration"), smc.system_menu);
     smc.system_menu->insertMenu(telemetryAction, config);
+    configMenu_ = config;
+    configMenu_->setEnabled(false); // enabled on login, like everything below it
 
     act_system_settings_ = config->addAction(ico(Icon::Flag), tr("&System Settings"));
     connect(act_system_settings_, &QAction::triggered, this, [this]() {
@@ -178,6 +195,8 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     smc.system_menu->addSeparator();
 
     auto* admin = smc.system_menu->addMenu(tr("&Administration"));
+    adminMenu_ = admin;
+    adminMenu_->setEnabled(false); // enabled on login
 
     act_accounts_ = admin->addAction(ico(Icon::PersonAccounts), tr("&Accounts"));
     connect(act_accounts_, &QAction::triggered, this, [this]() {
@@ -216,7 +235,68 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     act_reset_system_ = smc.system_menu->addAction(ico(Icon::Warning), tr("Reset &System..."));
     act_reset_system_->setToolTip(
         tr("Reset the entire system to pre-bootstrap state (SuperAdmin only)"));
+    act_reset_system_->setEnabled(false); // enabled on login
     connect(act_reset_system_, &QAction::triggered, this, &AdminPlugin::on_reset_system);
+
+    // ---- System > Testing > QA Validation Runner --------------------------
+    // A local, file-based testing tool (parses/rewrites test_scenario org
+    // docs directly, no domain data) — unlike everything else this plugin
+    // wires up, it needs neither a session nor NATS, so it's built here in
+    // setup_menus() using main_window/mdi_area/client_manager rather than
+    // waiting for on_login(), which would hide it before login. A regular
+    // MDI subwindow (like every other window in the app), not a dock —
+    // the tester needs to move/resize it freely while working through a
+    // scenario alongside the dialog under test.
+    if (smc.main_window && smc.mdi_area) {
+        qaValidationRunnerWidget_ = new QaValidationRunnerWidget(smc.main_window);
+        qaValidationRunnerWindow_ = new DetachableMdiSubWindow();
+        qaValidationRunnerWindow_->setWidget(qaValidationRunnerWidget_);
+        qaValidationRunnerWindow_->setWindowTitle(tr("Scenario Runner"));
+        qaValidationRunnerWindow_->setWindowIcon(ico(Icon::TasksApp));
+        smc.mdi_area->addSubWindow(qaValidationRunnerWindow_);
+        qaValidationRunnerWindow_->hide();
+
+        connect(qaValidationRunnerWidget_,
+                &QaValidationRunnerWidget::statusMessage,
+                smc.main_window,
+                [main_window = smc.main_window](const QString& message) {
+                    if (auto* bar = main_window->statusBar())
+                        bar->showMessage(message, 5000);
+                });
+        connect(qaValidationRunnerWidget_,
+                &QaValidationRunnerWidget::errorOccurred,
+                smc.main_window,
+                [main_window = smc.main_window](const QString& message) {
+                    QMessageBox::warning(main_window, tr("Scenario Runner"), message);
+                });
+
+        auto* testingMenu = smc.system_menu->addMenu(tr("&Testing"));
+        auto* actQaRunner = testingMenu->addAction(tr("Scenario Runner"));
+        connect(actQaRunner, &QAction::triggered, this, [this, mdi_area = smc.mdi_area]() {
+            if (!qaValidationRunnerWindow_)
+                return;
+            qaValidationRunnerWindow_->setVisible(true);
+            mdi_area->setActiveSubWindow(qaValidationRunnerWindow_);
+            qaValidationRunnerWindow_->show();
+            qaValidationRunnerWindow_->raise();
+        });
+
+        // Gated by a runtime system setting (not a compile-time macro): a
+        // fleet-wide manual-testing tool, not something to strip from
+        // release builds — same mechanism as the synthetic-data-generation
+        // gating elsewhere. registerAction() defaults new actions to hidden
+        // until it can confirm the setting via an authenticated request —
+        // override that here so the action stays visible before login too;
+        // refresh() (on login/reconnect) then corrects it if the setting is
+        // explicitly false.
+        qaValidationRunnerSettingGate_ =
+            new SettingGatedActionController(smc.client_manager, this);
+        qaValidationRunnerSettingGate_->registerAction(actQaRunner,
+                                                       QStringLiteral("system.qa_validation_runner_enabled"),
+                                                       /*guard=*/{},
+                                                       /*default_when_missing=*/true);
+        actQaRunner->setVisible(true);
+    }
 }
 
 QList<QMenu*> AdminPlugin::create_menus() {
@@ -312,6 +392,13 @@ void AdminPlugin::on_logout() {
     roleController_.reset();
     accountController_.reset();
     ctx_ = {};
+
+    if (configMenu_)
+        configMenu_->setEnabled(false);
+    if (adminMenu_)
+        adminMenu_->setEnabled(false);
+    if (act_reset_system_)
+        act_reset_system_->setEnabled(false);
 }
 
 } // namespace ores::qt

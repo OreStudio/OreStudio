@@ -24,6 +24,7 @@
 #include <memory>
 
 class QAction;
+class QMenu;
 
 namespace ores::qt {
 
@@ -34,6 +35,9 @@ class TenantTypeController;
 class SystemSettingController;
 class BadgeDefinitionController;
 class BadgeSeverityController;
+class QaValidationRunnerWidget;
+class SettingGatedActionController;
+class DetachableMdiSubWindow;
 
 /**
  * @brief Plugin owning all admin-domain entity controllers.
@@ -74,6 +78,15 @@ private:
     QAction* act_system_settings_{nullptr};
     QAction* act_reset_system_{nullptr};
 
+    /**
+     * @brief The Configuration/Administration submenus, disabled until
+     * login (unlike &Testing, everything under these needs a live
+     * session — see updateMenuState()'s comment on why the top-level
+     * &System menu itself no longer carries a blanket pre-login gate).
+     */
+    QMenu* configMenu_{nullptr};
+    QMenu* adminMenu_{nullptr};
+
     std::unique_ptr<AccountController> accountController_;
     std::unique_ptr<RoleController> roleController_;
     std::unique_ptr<TenantController> tenantController_;
@@ -81,6 +94,15 @@ private:
     std::unique_ptr<SystemSettingController> systemSettingController_;
     std::unique_ptr<BadgeDefinitionController> badgeDefinitionController_;
     std::unique_ptr<BadgeSeverityController> badgeSeverityController_;
+
+    /**
+     * @brief The QA Validation Runner's dock, built in setup_menus()
+     * (not on_login()) since it must stay usable before login — see
+     * shared_menus_context::main_window/client_manager.
+     */
+    DetachableMdiSubWindow* qaValidationRunnerWindow_{nullptr};
+    QaValidationRunnerWidget* qaValidationRunnerWidget_{nullptr};
+    SettingGatedActionController* qaValidationRunnerSettingGate_{nullptr};
 };
 
 }

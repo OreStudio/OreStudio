@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: CA082AA3-614F-466D-93E3-20AF10968FC2
+:END:
+#+title: Task: Pilot end-to-end on a real sprint story
+#+description: Run the full workflow on at least one real story from this sprint: instantiate a test_scenario doc, run it through the panel, verify the Results section, journal stamp, and site rendering all come out correctly.
+#+type: task
+#+level: s1
+#+filetags: :testing:pilot:qa_validation_runner:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run the full workflow on at least one real story from this sprint:
+instantiate a =test_scenario= doc, run it through the panel, verify
+the =* Results= section, journal stamp, and site rendering all come
+out correctly. Proves the epic delivers before declaring the story
+done — the acceptance criterion every other task's work has to satisfy
+in practice, not just in isolation.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-07                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -34,6 +34,7 @@ TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "library" / "templates"
 TYPE_TO_TEMPLATE = {
     "task": "doc_task.org.mustache",
     "story": "doc_story.org.mustache",
+    "test_scenario": "doc_test_scenario.org.mustache",
     "sprint": "doc_sprint.org.mustache",
     "version": "doc_version.org.mustache",
     "component": "doc_component.org.mustache",
@@ -63,6 +64,7 @@ TYPE_TO_TEMPLATE = {
 DEFAULT_INITIAL_STATE = {
     "task": "BACKLOG",
     "story": "BACKLOG",
+    "test_scenario": "PENDING",
     "sprint": "STARTED",
     "version": "STARTED",
     "component": "",
@@ -94,6 +96,9 @@ PARENT_OF_TYPE = {
     "task": "story",
     "story": "sprint",
     "sprint": "version",
+    # A test_scenario verifies a task, so its composition parent is the
+    # task doc, not the story — it links back to whichever task drove it.
+    "test_scenario": "task",
     # version, component, recipe, knowledge, skill, product_identity,
     # investigation have no composition parent.
 }
@@ -150,7 +155,9 @@ def derive_ancestor_slugs(doc_type, parent_dir):
     Relies on the path convention versions/<version>/<sprint>/<story>/.
     """
     pd = Path(parent_dir)
-    if doc_type == "task":
+    if doc_type in ("task", "test_scenario"):
+        # test_scenario lives alongside its verifying task, directly in
+        # the story folder — same ancestor shape as task.
         return [pd.name, pd.parent.name, pd.parent.parent.name]
     if doc_type == "story":
         return [pd.name, pd.parent.name]
@@ -257,6 +264,13 @@ def parse_args(argv=None):
                         help="Story only. UUID of a predecessor story (cross-sprint continuation).")
     parser.add_argument("--predecessor-title", default="",
                         help="Story only. Title of the predecessor for the inline link.")
+    parser.add_argument("--story-id", default="",
+                        help="For --type test_scenario: UUID of the driving story "
+                             "(mandatory alongside --parent-id, the task). "
+                             "Auto-detected from <parent-dir>/story.org if omitted.")
+    parser.add_argument("--story-title", default="",
+                        help="For --type test_scenario: title of the driving story. "
+                             "Auto-detected from <parent-dir>/story.org if omitted.")
     parser.add_argument("--state", default="",
                         help="Initial TODO state. Defaults per type.")
     parser.add_argument("--id", default="",
@@ -421,6 +435,22 @@ def main(argv=None):
         args.parent_title = fill_required("parent-title", args.parent_title,
                                           prompt_label=f"Parent {parent_type} title")
 
+    # test_scenario mandatorily links both the task it verifies
+    # (--parent-id/--parent-title, above) *and* the driving story — the
+    # story is trivially auto-detectable since test_scenario lives
+    # directly in the story folder (parent_dir/story.org always exists),
+    # unlike the task parent, which has no fixed filename to guess.
+    if args.type == "test_scenario":
+        story_info = read_parent_info(parent_dir / "story.org")
+        if not args.story_id and "id" in story_info:
+            args.story_id = story_info["id"]
+        if not args.story_title and "title" in story_info:
+            args.story_title = story_info["title"]
+        args.story_id = fill_required("story-id", args.story_id,
+                                      prompt_label="Story ID")
+        args.story_title = fill_required("story-title", args.story_title,
+                                         prompt_label="Story title")
+
     # Required content fields. All component-scoped types derive title from
     # component + slug.
     if args.type in _COMPONENT_TYPES and not args.title:
@@ -438,6 +468,8 @@ def main(argv=None):
         args.title = "Story: " + args.title
     elif args.type == "investigation" and not args.title.lower().startswith("investigation:"):
         args.title = "Investigation: " + args.title
+    elif args.type == "test_scenario" and not args.title.lower().startswith("test scenario:"):
+        args.title = "Test Scenario: " + args.title
 
     # Optional fields.
     args.tags = fill_optional("tags", args.tags,
@@ -580,6 +612,8 @@ def main(argv=None):
         "parent_title": args.parent_title,
         "predecessor_id": (args.predecessor_id or "").upper(),
         "predecessor_title": args.predecessor_title or "",
+        "story_id": (args.story_id or "").upper(),
+        "story_title": args.story_title or "",
         "bucket": bucket,
         "memory_subtype": memory_subtype,
         "statement": args.statement or "(One short paragraph stating the "
@@ -630,6 +664,12 @@ def main(argv=None):
     if args.type == "task":
         # Don't double-prefix if the caller already passed task_<slug>.
         leaf = args.slug if args.slug.startswith("task_") else f"task_{args.slug}"
+        out_dir = parent_dir
+        out_file = out_dir / f"{leaf}.org"
+    elif args.type == "test_scenario":
+        # Same prefix-and-place-in-the-story-folder convention as task,
+        # under its own "scenario_" prefix so the two sort separately.
+        leaf = args.slug if args.slug.startswith("scenario_") else f"scenario_{args.slug}"
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
     elif args.type == "entity_org":

@@ -443,6 +443,21 @@ begin
         'Indicates whether the tenant is in bootstrap mode (waiting for initial setup).'
     );
 
+    -- System settings are tenant-scoped (system_settings_service.get_all()
+    -- reads only the caller's tenant), so a "system."-prefixed setting
+    -- meant to be a global default must still be seeded per-tenant here —
+    -- otherwise SettingGatedActionController silently hides the feature
+    -- for every tenant except the system tenant. Seeded here (before any
+    -- tenant account exists) so it hits the same bootstrap allowance
+    -- system.bootstrap_mode above relies on.
+    perform ores_variability_system_settings_upsert_fn(
+        v_tenant_id,
+        'system.qa_validation_runner_enabled',
+        'true',
+        'boolean',
+        'Shows the QA Validation Runner panel in ores.qt, used to run test_scenario docs and record results. Enabled by default; this is a fleet-wide manual-testing tool, not something to hide behind a build flag.'
+    );
+
     raise notice 'Seeded bootstrap mode system setting for tenant: %', p_code;
 
     -- =========================================================================

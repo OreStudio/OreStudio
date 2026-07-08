@@ -27,8 +27,12 @@
 
 class QMenu;
 class QAction;
+class QMainWindow;
+class QMdiArea;
 
 namespace ores::qt {
+
+class ClientManager;
 
 /**
  * @brief Context passed to setup_menus() containing all host-owned shared menus.
@@ -37,6 +41,19 @@ namespace ores::qt {
  * Pointers may be null if the host has not created that menu yet.
  */
 struct shared_menus_context {
+    /**
+     * @brief The host window, MDI area, and client manager, all already
+     * constructed by the time setup_menus() runs (before any login).
+     * Most plugin UI is built lazily in on_login() instead, since it
+     * needs a live session — these fields exist for the rare feature
+     * that must work before login too (e.g. a local, file-based tool),
+     * so it isn't forced to wait for on_login() just to get a place to
+     * put its window.
+     */
+    QMainWindow* main_window = nullptr;
+    QMdiArea* mdi_area = nullptr;
+    ClientManager* client_manager = nullptr;
+
     QMenu* system_menu = nullptr;
     QMenu* reference_data_menu = nullptr;
     QMenu* market_data_menu = nullptr;

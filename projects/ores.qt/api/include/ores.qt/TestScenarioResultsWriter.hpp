@@ -1,0 +1,97 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_QT_TEST_SCENARIO_RESULTS_WRITER_HPP
+#define ORES_QT_TEST_SCENARIO_RESULTS_WRITER_HPP
+
+#include "ores.qt/EnvironmentMetadata.hpp"
+#include "ores.qt/export.hpp"
+#include <QString>
+#include <vector>
+
+namespace ores::qt {
+
+/**
+ * @brief One step's outcome. Each step is its own org heading (see the
+ * =test_scenario= template); the result is written as a =*** Result=
+ * child heading directly under it, found by exact title match — scoped
+ * to @p client's own sub-heading first when set, so a multi-client
+ * scenario where two clients happen to use the same step title doesn't
+ * collide (both would otherwise resolve to the same, first, match).
+ */
+struct step_result final {
+    QString step_title;
+    QString status; // "PASS", "FAIL", or "PENDING"
+    QString notes;
+
+    /**
+     * @brief Which client's sub-heading (e.g. "blue") this step is
+     * nested under, for a multi-client scenario. Empty for the common
+     * single-client case, where the step title is searched for across
+     * the whole document.
+     */
+    QString client;
+};
+
+/**
+ * @brief Everything the QA Validation Runner panel collects from the
+ * tester for one run. =status= is the scenario's overall outcome,
+ * inferred by the caller from the individual step results (FAIL if
+ * any step failed, PASS if every step passed, PENDING otherwise) —
+ * this writer just records whatever it's given.
+ */
+struct scenario_result final {
+    QString status;
+    std::vector<step_result> steps;
+};
+
+/**
+ * @brief Rewrite a =test_scenario= doc's =* Results= section (overall
+ * status + environment metadata) and each step's =*** Result= child
+ * heading in place — the *only* things this touches; every other line
+ * in the file (Scenario Info, Steps' own instructional text,
+ * frontmatter, ...) is left byte-identical.
+ *
+ * This is a targeted text splice, not a round-trip
+ * parse-then-re-serialize: it finds each heading's line span (up to
+ * the next heading at the same or a shallower level, or EOF) by exact
+ * title match and replaces (or, for a step's first run, inserts) just
+ * that span. Deliberately not a capability =ores.orgmode='s reader
+ * needs to support generically — a generic writer would need to
+ * preserve every byte of everything it *doesn't* touch, which is a
+ * much larger problem than this one targeted rewrite.
+ *
+ * A step whose title isn't found in the doc is skipped silently
+ * (best-effort per step) rather than failing the whole write — a
+ * stale/renamed step shouldn't block recording the rest.
+ *
+ * @param path Path to the =test_scenario= =.org= file.
+ * @param result What to write.
+ * @param environment Branch/commit/worktree, normally from
+ * =capture_environment_metadata()=.
+ * @return true on success; false if the file couldn't be read/written
+ * or didn't contain a =* Results= heading to rewrite.
+ */
+ORES_QT_API bool write_scenario_results(const QString& path,
+                                        const scenario_result& result,
+                                        const environment_metadata& environment);
+
+}
+
+#endif

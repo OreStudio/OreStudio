@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: B0348B15-F862-41ED-AA18-7660FE466A92
+:END:
+#+title: Task: Wire ores.qt to ores.orgmode and add the Results-rewrite + doc renderer
+#+description: Add ores.orgmode as a Qt dependency; implement the targeted * Results section rewrite-on-save for test_scenario docs, and a simple structure-aware renderer (headings/lists/tables/basic emphasis) shared by the scenario panel and the story/task viewer.
+#+type: task
+#+level: s1
+#+filetags: :qt:org:rendering:qa_validation_runner:sprint_22:v0:
+#+owner: marco
+#+branch: feature/qa-validation-runner-panel
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =ores.orgmode= as a Qt dependency; implement the targeted =*
+Results= section rewrite-on-save for =test_scenario= docs, and a
+simple structure-aware renderer (headings/lists/tables/basic emphasis)
+shared by the scenario panel and the story/task viewer. Foundation
+both later Qt tasks build on — no UI here yet.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-07                               |
+
+* Acceptance
+
+- [X] =ores.qt.api= links =ores.orgmode.lib= and can parse an org doc.
+- [X] A shared HTML renderer (=render_org_doc_to_html=/
+  =render_heading_to_html=) turns a parsed =ores.orgmode= document into
+  rich text for a =QTextBrowser=: headings, paragraphs, bullet lists,
+  tables, and the four common org inline markers (=*bold*=,
+  =/italic/=, ===code==, =~verbatim~=).
+- [X] =write_scenario_results()= rewrites a =test_scenario= doc's =*
+  Results= (status, environment metadata, per-step pass/fail) and =*
+  Notes= sections in place — every other line in the file is
+  untouched.
+- [X] Environment metadata (branch, commit, worktree) is captured from
+  the running checkout (=git=, =ORES_CHECKOUT_LABEL=), never
+  hand-entered.
+- [X] Multi-client scenarios (per the =Clients= field added to
+  =Scenario Info=) get a =Client= column in the step-results table;
+  single-client scenarios don't.
+- [X] Unit tests cover the renderer (headings/lists/tables/inline
+  markup, HTML-escaping, a cross-contamination regression) and the
+  writer (rewrite + untouched-lines check, multi-client column,
+  missing-=Results=-heading and missing-file failure paths).
+
+* Plan
+
+Linked =ores.orgmode.lib= into =ores.qt.api= (both the shared lib and,
+for the headless-friendly test target, the three new =.cpp= files
+compiled in directly — same pattern already used for
+=parse_trade_instrument.cpp=/=HierarchyModelBuilder.cpp= to avoid
+pulling in Qt Widgets/a display environment just to test Qt6::Core-only
+logic).
+
+Three new pieces, all in =ores.qt.api=:
+
+- *=OrgDocRenderer=*: turns an =ores.orgmode= document into HTML. Hit a
+  real bug during testing — doing the four inline-marker substitutions
+  (bold/italic/code/verbatim) as four sequential
+  find-and-replace passes corrupts the output, because a tag emitted
+  by an earlier pass can contain a character a later pass's regex
+  matches on (e.g. the =/= inside a =</b>= closing tag gets consumed by
+  the italic pattern). Fixed with a single left-to-right scan over the
+  *original* text using one alternation regex, escaping plain spans
+  and emitting tags as we go — never re-scanning already-emitted HTML.
+  Caught by a dedicated regression test, not by inspection.
+- *=TestScenarioResultsWriter=*: a targeted text splice, not a
+  round-trip parse-then-reserialize — find each heading's line span
+  (up to the next same-or-shallower heading, or EOF) and replace just
+  that span, so everything else in the file survives byte-identical.
+  Deliberately not built into =ores.orgmode= itself (per the story's
+  decision) since no other consumer needs this narrow, scenario-
+  specific capability.
+- *=EnvironmentMetadata=*: branch/commit via shelling out to =git
+  rev-parse= (best-effort — empty fields, not an error, if =git= isn't
+  on PATH or it's not a repo), worktree identity from the
+  =ORES_CHECKOUT_LABEL= environment variable the shell/client launchers
+  already set (confirmed via =ores.qt.application/src/main.cpp=, which
+  reads the same variable for the instance-label feature).
+
+Also addressed a requirement raised mid-task: some scenarios need
+several running clients at once (e.g. verifying a NATS notification
+propagates to a second instance). Rather than change anything in
+=ores.orgmode= or the writer's core shape, extended the
+=test_scenario= template (from the prior task) with an optional
+=Clients= field in =Scenario Info= and a documented convention
+(comment, hidden from site export) for structuring =* Steps= as one
+sub-heading per client when needed — ores.orgmode's existing generic
+heading-nesting already handles this with no parser changes. The
+writer's step-results table gains a =Client= column only when at least
+one step actually sets one, so single-client scenarios (the common
+case) stay exactly as simple as before.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=ores.qt.api= now has three new building blocks the panel task builds
+on: =OrgDocRenderer= (org doc → HTML, with a caught-and-fixed inline-
+markup cross-contamination bug), =TestScenarioResultsWriter=
+(targeted Results/Notes rewrite-in-place, optional multi-client
+=Client= column), and =EnvironmentMetadata= (live branch/commit/
+worktree capture). Also retrofitted the =test_scenario= template with
+a =Clients= field and a documented sub-heading convention for
+multi-client scenarios, addressing a requirement raised mid-task. 15
+new test cases / 116 assertions total in =ores.qt.api.tests=, all
+passing; =ores.qt.exe= builds and links clean; full site rebuild
+clean.

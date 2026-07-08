@@ -326,6 +326,14 @@ Each type's contract lives on its own page:
 - [[id:CE9E4F7C-D14B-46C4-AD3D-39881C466914][retrospective, release_note, audit_report]]
 - [[id:1366553A-4E0F-496F-91DD-19171C003631][investigation]]
 - [[id:973591F1-F2B5-40FF-9B2D-A198D4BB4903][meta]]
+- =test_scenario= — a manual test checklist tied to a task, verified in
+  the Qt QA Validation Runner and rewritten in place with results on
+  save (no standalone contract page yet — the type is new and still
+  settling through its first pilot; see
+  [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner]]).
+  Lives directly in its story's folder as =scenario_<slug>.org=, same
+  placement convention as =task=. Mandatorily links both the task it
+  verifies and the driving story. Scaffold: =compass add test_scenario=.
 
 Codegen model types live with their component under
 =projects/ores.<component>/modeling/= and are consumed by

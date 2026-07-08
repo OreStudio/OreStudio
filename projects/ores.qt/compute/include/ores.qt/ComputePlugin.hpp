@@ -24,6 +24,7 @@
 #include <memory>
 
 class QAction;
+class QMenu;
 
 namespace ores::qt {
 
@@ -72,6 +73,14 @@ private:
 
     QAction* act_report_definitions_{nullptr};
     QAction* act_report_instances_{nullptr};
+
+    /**
+     * @brief System > Message Queue, disabled until login — this menu
+     * needs a live session same as everything else this plugin
+     * contributes, and (unlike ores.qt.admin's &Testing) isn't meant
+     * to work before login.
+     */
+    QMenu* messageQueueMenu_{nullptr};
 
     std::unique_ptr<AppController> appController_;
     std::unique_ptr<AppVersionController> appVersionController_;

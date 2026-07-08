@@ -131,7 +131,7 @@ how the Qt panel surfaces it without duplicating compass's data model.
 | [[id:2E1B2069-1851-4230-991F-DC2C7C53BA86][Define the test_scenario org doc type]] | DONE | 2026-07-07 | 2026-07-07 | Define and scaffold a new test_scenario org doc type (frontmatter, Scenario Info/Steps/Results sections), following the same doc-type-registration path as story/task, so it's creatable, indexable, and site-renderable like any other agile doc. |
 | [[id:B0348B15-F862-41ED-AA18-7660FE466A92][Wire ores.qt to ores.orgmode and add the Results-rewrite + doc renderer]] | DONE | 2026-07-08 | 2026-07-08 | Add ores.orgmode as a Qt dependency; implement the targeted * Results section rewrite-on-save for test_scenario docs, and a simple structure-aware renderer (headings/lists/tables/basic emphasis) shared by the scenario panel and the story/task viewer. |
 | [[id:1844F421-2D4C-4E9A-8608-0E0AAD38DFEE][Build the QA Validation Runner dockable panel]] | DONE | 2026-07-08 | 2026-07-08 | Qt dockable panel (debug builds only): open a test_scenario doc, show its info and checklist, let the tester tick steps/write notes/set PASS-FAIL, and save (rewriting the doc's Results section and stamping the compass journal). |
-| [[id:37A04B38-497D-4140-94A9-F8292BCC43F8][Add the story/task context viewer]] | BACKLOG | | | Render the driving story/task docs (goal, acceptance, status, tasks table) in the same panel or a sibling tab, using the shared structure-aware renderer, so the tester doesn't need to leave the app to recover context. |
+| [[id:37A04B38-497D-4140-94A9-F8292BCC43F8][Add the story/task context viewer]] | DONE | 2026-07-08 | 2026-07-08 | Render the driving story/task docs (goal, acceptance, status, tasks table) in the same panel or a sibling tab, using the shared structure-aware renderer, so the tester doesn't need to leave the app to recover context. |
 | [[id:CB112432-917A-46DC-99F2-00251CC91559][Surface pending scenarios across the fleet]] | BACKLOG | | | Show which worktrees/tasks in the fleet currently have a scenario waiting, sourced from compass's existing fleet/task data (not duplicated) — a companion list or panel section. |
 | [[id:CA082AA3-614F-466D-93E3-20AF10968FC2][Pilot end-to-end on a real sprint story]] | BACKLOG | | | Run the full workflow on at least one real story from this sprint: instantiate a test_scenario doc, run it through the panel, verify the Results section, journal stamp, and site rendering all come out correctly. |
 | [[id:3CB90054-9B0C-45CC-B955-2EDBB93F9EB2][Add the qa_validation_runner_enabled system setting]] | DONE | 2026-07-08 | 2026-07-08 | Seed system.qa_validation_runner_enabled as a boolean system setting so the QA Validation Runner's visibility is a runtime, operator-controlled decision, not a compile-time macro. |
@@ -171,6 +171,28 @@ how the Qt panel surfaces it without duplicating compass's data model.
   its own result. The panel is a regular MDI window (via
   =DetachableMdiSubWindow=), not a dock, since testers need to move it
   around freely while operating another dialog under test.
+- All pop-up content spawned from within the panel (step detail, the
+  link viewer) follows the exact same =DetachableMdiSubWindow=
+  convention as the panel itself, not top-level windows — tried
+  first as detached =QDialog=/=QWidget= windows with various window-flag
+  workarounds, but window managers kept pinning them "always above"
+  regardless of modality; hosting them as MDI subwindows (matching
+  every existing detail dialog in the app) was both the correct fix
+  and the simpler one.
+- Reflowing a paragraph's wrapped source lines into one logical line
+  is a small, reusable domain utility in =ores.orgmode=
+  (=join_paragraph_lines=), not something hand-rolled in the Qt
+  renderer — the raw =body_lines= already retain blank-line boundaries,
+  so any future consumer needing "real paragraphs, not source-wrapped
+  lines" gets this for free.
+- =[[id:...][...]]= links inside a rendered doc open in a *separate*
+  viewer window with its own Back/Forward history, rather than
+  navigating the tab the tester clicked from — following a trail of
+  links shouldn't cost the tester what they were originally looking at.
+- =--open-scenario <path>= (both on =ores.qt= directly and via
+  =compass client start=) exists specifically to make the
+  edit/rebuild/retest loop faster while iterating on this panel — a
+  small tool investment that paid for itself within this one story.
 
 * Out of scope
 

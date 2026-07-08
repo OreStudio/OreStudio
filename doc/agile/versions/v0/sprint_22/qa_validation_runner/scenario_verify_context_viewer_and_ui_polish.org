@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: B6713414-1A7D-4430-AE1E-F2260BD437F4
+:END:
+#+title: Test Scenario: Verify the Story/Task context viewer and Scenario Runner UI polish
+#+description: Manual verification of the Context tab (paragraph reflow, clickable id: links, monospace code), the non-modal step detail dialog, and the --open-scenario CLI flag.
+#+type: test_scenario
+#+level: s1
+#+filetags: :qt:testing:rendering:qa_validation_runner:sprint_22:v0:
+#+target_dialog:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:37A04B38-497D-4140-94A9-F8292BCC43F8][Add the story/task context viewer]] in [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:37A04B38-497D-4140-94A9-F8292BCC43F8][Add the story/task context viewer]] |
+| Parent story  | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]   |
+| Target dialog | QaValidationRunnerWidget (Context tab)  |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Launch straight into this scenario via --open-scenario
+
+Stop the client if it's running, then start it again with:
+
+=./compass.sh client start --colour blue --instance-name bright_faraday --open-scenario "$(pwd)/doc/agile/versions/v0/sprint_22/qa_validation_runner/scenario_verify_context_viewer_and_ui_polish.org"=
+
+Confirm the Scenario Runner window opens automatically with this scenario already loaded — no need to click Open.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check the Story and Task are separate tabs
+
+Confirm the window has *four* tabs: Steps, Story, Task — not a single stacked "Context" tab.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | story and task are separate tabs but both show the story. |
+
+** Check paragraphs reflow correctly in the Story tab
+
+Open the Story tab. Find the Goal section and confirm its prose reads as normal wrapped paragraphs — *not* one line break after every source line. Compare against the raw file if unsure: the source wraps around 70-80 characters but that shouldn't produce a visible line break in the rendered text.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check a [[id:37A04B38-497D-4140-94A9-F8292BCC43F8][clickable link]] navigates correctly
+
+The previous sentence contains a real link to this scenario's own driving task. In the rendered Task tab (or Story tab, wherever a real =[[id:...][...]]= link appears in the actual doc text), click a link and confirm the browser navigates to the linked doc's content in place, rather than showing raw =[[id:...][text]]= text.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | Links do work, but we are following on the same window. we need to spawn a new window that also have a back and forward button so we can go back. |
+
+** Check =monospace_text= renders in a fixed-width font
+
+This sentence contains =monospace_text= and ~verbatim_text~ — confirm both render in the same monospace font used by =ores.shell='s terminal (not the proportional UI font).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open a step and confirm the dialog is non-modal
+
+Double-click this very step to open its detail dialog. With the dialog still open, try clicking back on the main Scenario Runner window (e.g. select a different step in the list, or switch tabs) — confirm you *can* interact with it; the dialog should not be blocking/modal.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | It is not model but its still on top |
+
+** Confirm step body markup renders, not raw text
+
+Still inside a step's detail dialog: this step's own body (below) contains *bold*, /italic/, and =code= markup — confirm all three render correctly (bold, italic, monospace) rather than showing the literal asterisks/slashes/equals signs.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-07-08T12:07:57Z |
+| Branch        | feature/scenario-runner-context-viewer |
+| Commit        | b359a9a59 |
+| Worktree      | bright_faraday |
+
+* Notes

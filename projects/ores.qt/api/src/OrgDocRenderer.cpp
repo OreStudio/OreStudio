@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/OrgDocRenderer.hpp"
+#include "ores.qt/FontUtils.hpp"
 #include <QRegularExpression>
 #include <algorithm>
 
@@ -26,18 +27,40 @@ namespace ores::qt {
 namespace {
 
 /**
+ * @brief The inline style attribute applying the app's shared
+ * monospace font (same resolution as =ores.shell='s terminal) to
+ * =<code>= spans, computed once — =FontUtils::resolvedMonospaceFamily()=
+ * needs a running =QApplication=, which isn't available yet the very
+ * first time a static initializer might run, but always is by the
+ * time any doc actually gets rendered.
+ */
+QString code_style() {
+    // Not cached here: FontUtils::resolvedMonospaceFamily() already caches
+    // its result once a QApplication exists, but deliberately returns
+    // empty (uncached) before one does — caching that empty result
+    // ourselves would keep it wrong for the process's whole lifetime.
+    const QString family = FontUtils::resolvedMonospaceFamily();
+    return family.isEmpty() ? QString()
+                            : QStringLiteral(" style=\"font-family: '%1', monospace;\"").arg(family);
+}
+
+/**
  * @brief Apply org-mode's four common inline markers as light HTML
- * tags, escaping HTML special characters in the surrounding plain
- * text as we go.
+ * tags, plus =[[target][text]]= links as =<a href="target">=, escaping
+ * HTML special characters in the surrounding plain text as we go.
  *
  * This must be a single left-to-right pass over the *original* text,
- * not four sequential find-and-replace passes: a tag emitted by an
- * earlier pass (e.g. the `/` inside `</b>`) would otherwise get
- * reinterpreted as markup by a later pass (e.g. italic's `/.../`),
- * corrupting the output.
+ * not sequential find-and-replace passes: a tag emitted by an earlier
+ * pass (e.g. the `/` inside `</b>`) would otherwise get reinterpreted
+ * as markup by a later pass (e.g. italic's `/.../`), corrupting the
+ * output. The link target is intentionally passed through verbatim
+ * (e.g. `id:UUID`, `file:some/path.org`) rather than resolved here —
+ * resolving org-roam `id:` links needs the index and is the caller's
+ * job (see QaValidationRunnerWidget's anchorClicked handling).
  */
 QString render_inline(const QString& text) {
-    static const QRegularExpression marker(R"(\*([^*\n]+)\*|/([^/\n]+)/|=([^=\n]+)=|~([^~\n]+)~)");
+    static const QRegularExpression marker(
+        R"(\*([^*\n]+)\*|/([^/\n]+)/|=([^=\n]+)=|~([^~\n]+)~|\[\[([^\]\n]+)\]\[([^\]\n]+)\]\])");
 
     QString out;
     int last = 0;
@@ -50,9 +73,13 @@ QString render_inline(const QString& text) {
         else if (!m.captured(2).isNull())
             out += "<i>" + m.captured(2).toHtmlEscaped() + "</i>";
         else if (!m.captured(3).isNull())
-            out += "<code>" + m.captured(3).toHtmlEscaped() + "</code>";
+            out += "<code" + code_style() + ">" + m.captured(3).toHtmlEscaped() + "</code>";
         else if (!m.captured(4).isNull())
-            out += "<code>" + m.captured(4).toHtmlEscaped() + "</code>";
+            out += "<code" + code_style() + ">" + m.captured(4).toHtmlEscaped() + "</code>";
+        else if (!m.captured(5).isNull()) {
+            out += "<a href=\"" + m.captured(5).toHtmlEscaped() + "\">" +
+                   m.captured(6).toHtmlEscaped() + "</a>";
+        }
         last = m.capturedEnd();
     }
     out += text.mid(last).toHtmlEscaped();
@@ -64,16 +91,33 @@ QString render_inline(const QString& text) {
  * paragraphs, and consecutive bullet-list runs as =<ul>=. Tables are
  * rendered separately (see render_table) since the parser keeps them
  * structurally distinct from body_lines.
+ *
+ * A paragraph's source lines are wrapped purely for readability in the
+ * =.org= file — that wrapping isn't a real line break, so consecutive
+ * non-blank, non-bullet lines are grouped and joined into one logical
+ * line (via =ores.orgmode='s =join_paragraph_lines=) before rendering,
+ * rather than emitting one =<p>= per source line.
  */
 QString render_body_lines(const std::vector<std::string>& lines) {
     QString html;
     bool in_list = false;
+    std::vector<std::string> paragraph_lines;
+
+    auto flush_paragraph = [&]() {
+        if (paragraph_lines.empty())
+            return;
+        const auto joined = orgmode::domain::join_paragraph_lines(paragraph_lines);
+        html += "<p>" + render_inline(QString::fromStdString(joined)) + "</p>";
+        paragraph_lines.clear();
+    };
+
     for (const auto& raw_line : lines) {
         const QString line = QString::fromStdString(raw_line);
         const QString trimmed = line.trimmed();
         const bool is_bullet = trimmed.startsWith("- ");
 
         if (is_bullet) {
+            flush_paragraph();
             if (!in_list) {
                 html += "<ul>";
                 in_list = true;
@@ -85,10 +129,13 @@ QString render_body_lines(const std::vector<std::string>& lines) {
             html += "</ul>";
             in_list = false;
         }
-        if (trimmed.isEmpty())
+        if (trimmed.isEmpty()) {
+            flush_paragraph();
             continue;
-        html += "<p>" + render_inline(trimmed) + "</p>";
+        }
+        paragraph_lines.push_back(raw_line);
     }
+    flush_paragraph();
     if (in_list)
         html += "</ul>";
     return html;
@@ -131,6 +178,10 @@ QString render_heading_to_html(const orgmode::domain::heading& heading) {
     for (const auto& child : heading.children)
         html += render_heading_to_html(child);
     return html;
+}
+
+QString render_body_lines_to_html(const std::vector<std::string>& lines) {
+    return render_body_lines(lines);
 }
 
 QString render_org_doc_to_html(const orgmode::domain::document& doc) {

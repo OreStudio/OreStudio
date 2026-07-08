@@ -249,6 +249,7 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     // scenario alongside the dialog under test.
     if (smc.main_window && smc.mdi_area) {
         qaValidationRunnerWidget_ = new QaValidationRunnerWidget(smc.main_window);
+        qaValidationRunnerWidget_->setMdiArea(smc.mdi_area);
         qaValidationRunnerWindow_ = new DetachableMdiSubWindow();
         qaValidationRunnerWindow_->setWidget(qaValidationRunnerWidget_);
         qaValidationRunnerWindow_->setWindowTitle(tr("Scenario Runner"));
@@ -296,6 +297,17 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
                                                        /*guard=*/{},
                                                        /*default_when_missing=*/true);
         actQaRunner->setVisible(true);
+
+        // --open-scenario: launch straight into a scenario, so the tester
+        // doesn't have to click through System > Testing and Open every
+        // time they restart the client to pick up a rebuild.
+        if (!smc.open_scenario_path.isEmpty()) {
+            qaValidationRunnerWidget_->loadScenario(smc.open_scenario_path);
+            qaValidationRunnerWindow_->setVisible(true);
+            smc.mdi_area->setActiveSubWindow(qaValidationRunnerWindow_);
+            qaValidationRunnerWindow_->show();
+            qaValidationRunnerWindow_->raise();
+        }
     }
 }
 

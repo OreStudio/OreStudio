@@ -84,3 +84,34 @@ TEST_CASE("nested headings render recursively", tags) {
     REQUIRE(html.contains("<h2>Sub goal</h2>"));
     REQUIRE(html.contains("Nested prose."));
 }
+
+TEST_CASE("a paragraph's wrapped source lines render as one <p>, not one per line", tags) {
+    const auto doc = ores::orgmode::parser::parse(
+        "* Goal\nThis is a paragraph that\nwraps across several\nsource lines.\n");
+    const auto html = ores::qt::render_org_doc_to_html(doc);
+    REQUIRE(html.contains(
+        "<p>This is a paragraph that wraps across several source lines.</p>"));
+}
+
+TEST_CASE("a blank line still separates two distinct paragraphs", tags) {
+    const auto doc = ores::orgmode::parser::parse("* Goal\nFirst paragraph.\n\nSecond paragraph.\n");
+    const auto html = ores::qt::render_org_doc_to_html(doc);
+    REQUIRE(html.contains("<p>First paragraph.</p>"));
+    REQUIRE(html.contains("<p>Second paragraph.</p>"));
+}
+
+TEST_CASE("a [[target][text]] link renders as an anchor with the raw target preserved", tags) {
+    const auto doc =
+        ores::orgmode::parser::parse("* Goal\nSee [[id:AAAA-BBBB][the linked doc]] for details.\n");
+    const auto html = ores::qt::render_org_doc_to_html(doc);
+    REQUIRE(html.contains("<a href=\"id:AAAA-BBBB\">the linked doc</a>"));
+}
+
+TEST_CASE("render_body_lines_to_html renders a heading's body without the heading itself", tags) {
+    const auto doc = ores::orgmode::parser::parse("* Some step\nDo *this* and =that=.\n- a bullet\n");
+    const auto html = ores::qt::render_body_lines_to_html(doc.headings.front().body_lines);
+    REQUIRE_FALSE(html.contains("Some step"));
+    REQUIRE(html.contains("<b>this</b>"));
+    REQUIRE(html.contains("that</code>"));
+    REQUIRE(html.contains("<li>a bullet</li>"));
+}

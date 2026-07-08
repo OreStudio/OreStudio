@@ -479,6 +479,8 @@ def cmd_client_start(ctx, args):
         client_args += ["--instance-name", instance_name]
     if colour_hex:
         client_args += ["--instance-color", colour_hex]
+    if args.open_scenario:
+        client_args += ["--open-scenario", args.open_scenario]
 
     _launch(ctx, pid_name, "ores.qt", client_args)
     print(f"\nLogs : {ctx.log_dir / log_file}")
@@ -550,6 +552,9 @@ def run_client(argv, project_root: Path) -> int:
                     help="red, green, blue, or 6-digit hex — instance accent")
     st.add_argument("--instance-name", default=None)
     st.add_argument("--log-level", default="debug")
+    st.add_argument("--open-scenario", default=None,
+                    help="Path to a test_scenario .org doc to open in the "
+                         "Scenario Runner on startup (System > Testing)")
 
     sp = sub.add_parser("stop", help="Stop a running Qt client instance")
     _common(sp)

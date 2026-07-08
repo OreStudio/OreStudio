@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
         QString("v%1 %2").arg(ORES_VERSION).arg(ores::utility::version::build_info());
     splash.setMessage(buildInfo);
 
-    ores::qt::MainWindow mainWindow;
+    ores::qt::MainWindow mainWindow(nullptr, parser.openScenario());
 
     // Instance name: CLI arg wins, then fall back to ORES_CHECKOUT_LABEL env var.
     QString instanceName = parser.instanceName();

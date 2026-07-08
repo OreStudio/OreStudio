@@ -69,6 +69,12 @@ void CommandLineParser::setupOptions() {
     parser_.addOption({"http-base-url",
                        "HTTP base URL for the ORE compute service (e.g., http://localhost:8080).",
                        "url"});
+
+    // QA Validation Runner: launch straight into a scenario
+    parser_.addOption({"open-scenario",
+                       "Path to a test_scenario .org doc to open in the Scenario Runner "
+                       "on startup (System > Testing).",
+                       "path"});
 }
 
 void CommandLineParser::process(const QCoreApplication& app) {
@@ -142,6 +148,10 @@ QString CommandLineParser::envType() const {
 
 std::string CommandLineParser::httpBaseUrl() const {
     return parser_.value("http-base-url").toStdString();
+}
+
+QString CommandLineParser::openScenario() const {
+    return parser_.value("open-scenario");
 }
 
 QColor CommandLineParser::instanceColor() const {

@@ -54,6 +54,14 @@ struct shared_menus_context {
     QMdiArea* mdi_area = nullptr;
     ClientManager* client_manager = nullptr;
 
+    /**
+     * @brief Path to a test_scenario doc to open in the Scenario
+     * Runner on startup (=--open-scenario= on the command line), or
+     * empty. Lives here, not in plugin_context, for the same
+     * before-login reason as the three fields above.
+     */
+    QString open_scenario_path;
+
     QMenu* system_menu = nullptr;
     QMenu* reference_data_menu = nullptr;
     QMenu* market_data_menu = nullptr;

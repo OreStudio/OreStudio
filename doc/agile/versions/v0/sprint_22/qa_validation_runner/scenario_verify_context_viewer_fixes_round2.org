@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 2492DBB7-E953-4D33-BEA2-8008326FC90B
+:END:
+#+title: Test Scenario: Verify Story/Task tab correctness, link viewer window, and step dialog stacking
+#+description: Second round of manual verification after fixing the Story/Task tab mixup (diagnostic logging added), spawning a separate Back/Forward viewer window for links, and fixing the step detail dialog staying pinned above the main window.
+#+type: test_scenario
+#+level: s1
+#+filetags: :qt:testing:rendering:qa_validation_runner:sprint_22:v0:
+#+target_dialog:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:37A04B38-497D-4140-94A9-F8292BCC43F8][Add the story/task context viewer]] in [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:37A04B38-497D-4140-94A9-F8292BCC43F8][Add the story/task context viewer]] |
+| Parent story  | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]   |
+| Target dialog | QaValidationRunnerWidget (Context tab)  |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Check the Story tab shows the story, not the task
+
+Open the Story tab. Confirm the title reads "Story: QA Validation Runner: in-app test tracking for the multi-worktree fleet" and the content is the story's Goal/Acceptance, *not* the task's.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check the Task tab shows the task, not the story
+
+Open the Task tab. Confirm the title reads "Task: Add the story/task context viewer" and the content is that task's own Goal/Acceptance — different from the Story tab.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Click a [[id:37A04B38-497D-4140-94A9-F8292BCC43F8][link]] and confirm a separate window opens
+
+Click the link in the previous sentence. Confirm a *new, separate* window opens showing that doc — the Story/Task tab you clicked from should stay exactly as it was, not navigate away.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check the new window's Back/Forward buttons work
+
+In the window that just opened, find another =[[id:...][...]]= link inside its content (or reuse the one above) and click it to navigate again. Confirm the toolbar's Back button becomes enabled and takes you to the previous doc; Forward re-enables and takes you forward again.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open a step and confirm it doesn't stay pinned on top
+
+Double-click this step to open its detail dialog. Click on the main Scenario Runner window behind it (e.g. click the Steps tab). Confirm the main window comes to the front normally — the step dialog should *not* stubbornly stay above it.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Still on top, can't interact with scenario runner, and also if i open up shell step is always on top |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-08T12:52:15Z |
+| Branch        | feature/scenario-runner-context-viewer |
+| Commit        | b359a9a59 |
+| Worktree      | bright_faraday |
+
+* Notes

@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
 #+branch: feature/sync-qt-codegen-currency
-#+pr:
+#+pr: 1470
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
@@ -132,7 +132,7 @@ can finally be regenerated too and pick up the new list-view columns.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1470][#1470]] | [codegen,qt] Sync Qt codegen for currency |
 
 * Review
 

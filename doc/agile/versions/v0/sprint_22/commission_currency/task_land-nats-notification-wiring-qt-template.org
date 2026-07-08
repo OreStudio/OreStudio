@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
 #+branch: feature/land-nats-notification-wiring-qt-template
-#+pr:
+#+pr: 1460
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -116,7 +116,7 @@ correct dialog staleness-propagation with zero extra per-entity code.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1460][#1460]] | [codegen,qt] Land NATS notification-wiring capability in qt-profile controller |
 
 * Review
 

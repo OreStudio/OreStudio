@@ -32,6 +32,7 @@
 
 namespace ores::qt {
 
+class BadgeCache;
 class ImageCache;
 
 /**
@@ -55,6 +56,7 @@ private:
 public:
     explicit CurrencyPairMdiWindow(ClientManager* clientManager,
                                    const QString& username,
+                                   BadgeCache* badgeCache,
                                    ImageCache* imageCache,
                                    QWidget* parent = nullptr);
     ~CurrencyPairMdiWindow() override = default;
@@ -66,6 +68,7 @@ signals:
     void addNewRequested();
     void pairDeleted(const QString& code);
     void showPairHistory(const refdata::domain::currency_pair& pair);
+    void showConventionsRequested();
 
 public slots:
     void addNew();
@@ -96,6 +99,7 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
+    BadgeCache* badgeCache_;
     ImageCache* imageCache_;
 
     QToolBar* toolbar_;
@@ -110,6 +114,7 @@ private:
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
+    QAction* conventionsAction_;
 };
 
 }

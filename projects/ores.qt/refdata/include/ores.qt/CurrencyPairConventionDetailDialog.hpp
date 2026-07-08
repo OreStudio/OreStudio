@@ -89,10 +89,14 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    QString code() const override;
+    QLineEdit* keyFlagField() const override;
+    QIcon keyFlagIcon(const std::string& key) const override;
 
 private:
     void setupUi();
     void setupConnections();
+    void setupCombos();
     void updateUiFromConvention();
     void updateConventionFromUi();
     void updateSaveButtonState();

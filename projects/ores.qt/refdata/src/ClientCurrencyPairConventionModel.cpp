@@ -18,8 +18,10 @@
  *
  */
 #include "ores.qt/ClientCurrencyPairConventionModel.hpp"
+#include "ores.qt/BoolYesNoLabel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
 #include <QtConcurrent>
@@ -99,9 +101,9 @@ QVariant ClientCurrencyPairConventionModel::data(const QModelIndex& index, int r
                            QString::fromStdString(*convention.business_day_convention) :
                            QString{};
             case SpotRelative:
-                return convention.spot_relative ? tr("true") : tr("false");
+                return boolYesNoLabel(convention.spot_relative);
             case EndOfMonth:
-                return convention.end_of_month ? tr("true") : tr("false");
+                return boolYesNoLabel(convention.end_of_month);
             case Version:
                 return static_cast<qlonglong>(convention.version);
             case ModifiedBy:
@@ -111,6 +113,11 @@ QVariant ClientCurrencyPairConventionModel::data(const QModelIndex& index, int r
             default:
                 return {};
         }
+    }
+
+    if (role == Qt::DecorationRole && imageCache_) {
+        if (index.column() == Column::PairCode)
+            return currency_flag_icon_from_pair_code(*imageCache_, convention.pair_code);
     }
 
     if (role == Qt::ForegroundRole) {
@@ -305,6 +312,7 @@ ClientCurrencyPairConventionModel::getConvention(int row) const {
         return nullptr;
     return &conventions_[idx];
 }
+
 
 QVariant
 ClientCurrencyPairConventionModel::recency_foreground_color(const std::string& code) const {

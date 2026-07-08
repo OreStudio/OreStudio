@@ -130,9 +130,11 @@ protected:
     QString code() const override;
 {{#domain_entity.qt.has_flag_icon}}
     std::optional<boost::uuids::uuid> entityImageId() const override;
+{{/domain_entity.qt.has_flag_icon}}
+{{#domain_entity.qt.has_key_flag_icon}}
     QLineEdit* keyFlagField() const override;
     QIcon keyFlagIcon(const std::string& key) const override;
-{{/domain_entity.qt.has_flag_icon}}
+{{/domain_entity.qt.has_key_flag_icon}}
 
 private:
     void setupUi();

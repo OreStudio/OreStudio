@@ -22,6 +22,7 @@
 
 #include <QCoreApplication>
 #include <QString>
+#include <optional>
 
 namespace ores::qt {
 
@@ -37,6 +38,15 @@ namespace ores::qt {
 inline QString boolYesNoLabel(int value) {
     return value != 0 ? QCoreApplication::translate("BoolYesNoLabel", "Yes") :
                         QCoreApplication::translate("BoolYesNoLabel", "No");
+}
+
+/**
+ * @brief Overload for a nullable boolean column (e.g.
+ * currency_pair_convention.spot_relative/end_of_month); an unset value
+ * reads as "No".
+ */
+inline QString boolYesNoLabel(std::optional<bool> value) {
+    return boolYesNoLabel(value.value_or(false) ? 1 : 0);
 }
 
 }

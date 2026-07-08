@@ -13,7 +13,7 @@
 #+blocked_since: 2026-07-08
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,11 +30,11 @@ widget/style to reuse or port).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | book badge widget precedent merging (clever_dijkstra worktree). |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance
@@ -64,3 +64,8 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Delivered as part of PR #1472 (task DAE530F1). Deliverable now
+renders as a Yes/No badge (=currency_pair_deliverable= code domain,
+mapped to =login_online=/=inactive=) in both the Currency Pairs list
+and detail dialog.

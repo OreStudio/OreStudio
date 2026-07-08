@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +29,11 @@ window that opens the Currency Pair Conventions window.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance
@@ -63,3 +63,13 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Delivered as part of PR #1472 (task DAE530F1). Added a "Conventions"
+toolbar button to =CurrencyPairMdiWindow= that relays
+=showConventionsRequested= through =CurrencyPairController= to
+=RefdataPlugin=, which opens the Conventions list window. This is a
+hand-maintained addition on top of codegen output (the MdiWindow file
+is regenerated wholesale on codegen changes, so this had to be
+re-applied twice this session after unrelated regenerations —
+consistent with the "generate once, then own" pattern already used
+elsewhere for this file).

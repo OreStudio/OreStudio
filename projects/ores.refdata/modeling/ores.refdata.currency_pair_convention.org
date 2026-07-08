@@ -248,6 +248,9 @@ drop function if exists ores_refdata_validate_currency_pair_convention_fn;
 :history_message_type:        get_currency_pair_convention_history_request
 :history_request_id_field:    pair_code
 :history_response_data_field: history
+:key_flag_field:              pairCodeEdit
+:key_flag_accessor:           currency_flag_icon_from_pair_code
+:key_flag_accessor_is_free_fn: true
 :settings_group:         CurrencyPairConventionListWindow
 :window_title:           Currency Pair Conventions
 :icon:                   Currency
@@ -255,32 +258,42 @@ drop function if exists ores_refdata_validate_currency_pair_convention_fn;
 
 *** Columns (Qt model)
 
-| enum_name              | field                   | header                   | type      | width |
-|------------------------+--------------------------+---------------------------+-----------+-------|
-| PairCode               | pair_code                | Pair                     | string    | 100   |
-| PipFactor              | pip_factor                | Pip Factor               | double    | 90    |
-| TickSize                | tick_size                 | Tick Size                | double    | 90    |
-| DecimalPlaces           | decimal_places             | Decimal Places           | int       | 100   |
-| AdvanceCalendar         | advance_calendar           | Advance Calendar         | string    | 130   |
-| BusinessDayConvention   | business_day_convention    | Business Day Convention | string    | 150   |
-| SpotRelative            | spot_relative              | Spot Relative             | bool      | 100   |
-| EndOfMonth              | end_of_month               | End Of Month              | bool      | 100   |
-| Version                 | version                    | Version                   | int       | 70    |
-| ModifiedBy              | modified_by                | Modified By               | string    | auto  |
-| RecordedAt              | recorded_at                 | Recorded At               | timestamp | auto  |
+| enum_name              | field                   | header                   | type      | width | is_badge | badge_key                                          | formatter      | formatter_include         |
+|------------------------+--------------------------+---------------------------+-----------+-------+----------+-----------------------------------------------------+----------------+----------------------------|
+| PairCode               | pair_code                | Pair                     | string    | 100   |          |                                                     |                |                            |
+| PipFactor              | pip_factor                | Pip Factor               | double    | 90    |          |                                                     |                |                            |
+| TickSize                | tick_size                 | Tick Size                | double    | 90    |          |                                                     |                |                            |
+| DecimalPlaces           | decimal_places             | Decimal Places           | int       | 100   |          |                                                     |                |                            |
+| AdvanceCalendar         | advance_calendar           | Advance Calendar         | string    | 130   |          |                                                     |                |                            |
+| BusinessDayConvention   | business_day_convention    | Business Day Convention | string    | 150   | true     | currency_pair_convention_business_day_convention   |                |                            |
+| SpotRelative            | spot_relative              | Spot Relative             | bool      | 100   | true     | currency_pair_convention_spot_relative             | boolYesNoLabel | ores.qt/BoolYesNoLabel.hpp |
+| EndOfMonth              | end_of_month               | End Of Month              | bool      | 100   | true     | currency_pair_convention_end_of_month              | boolYesNoLabel | ores.qt/BoolYesNoLabel.hpp |
+| Version                 | version                    | Version                   | int       | 70    |          |                                                     |                |                            |
+| ModifiedBy              | modified_by                | Modified By               | string    | auto  |          |                                                     |                |                            |
+| RecordedAt              | recorded_at                 | Recorded At               | timestamp | auto  |          |                                                     |                |                            |
+
+*** Icon columns (Qt model)
+
+Composites base+quote flags into the =PairCode= column's decoration,
+splitting the combined =pair_code= string (e.g. "EUR/USD") since this
+entity has no separate base/quote fields of its own.
+
+| column   | accessor                          | field1    | is_pair |
+|----------+------------------------------------+-----------+---------|
+| PairCode | currency_flag_icon_from_pair_code | pair_code | true    |
 
 *** Detail fields
 
-| field                    | label                    | widget                     | type      | is_key | is_required | placeholder                        |
-|--------------------------+---------------------------+-----------------------------+-----------+--------+-------------+--------------------------------------|
-| pair_code                | Pair Code                | pairCodeEdit                | line_edit | true   | true        | e.g. EUR/USD                        |
-| pip_factor               | Pip Factor                | pipFactorEdit               | line_edit |        | true        | e.g. 0.0001                          |
-| tick_size                | Tick Size                 | tickSizeEdit                 | line_edit |        | true        | e.g. 0.1                             |
-| decimal_places           | Decimal Places            | decimalPlacesSpinBox         | spin_box  |        | true        |                                       |
-| advance_calendar         | Advance Calendar          | advanceCalendarEdit          | line_edit |        |             | e.g. TARGET                          |
-| business_day_convention  | Business Day Convention   | businessDayConventionEdit    | line_edit |        |             | e.g. Following                       |
-| spot_relative            | Spot Relative              | spotRelativeCheckBox         | check_box |        |             |                                       |
-| end_of_month             | End Of Month               | endOfMonthCheckBox           | check_box |        |             |                                       |
+| field                    | label                    | widget                     | type      | is_key | is_required | placeholder                        | combo_values                                                                               | badge_key                                          |
+|--------------------------+---------------------------+-----------------------------+-----------+--------+-------------+--------------------------------------+----------------------------------------------------------------------------------------------+-----------------------------------------------------|
+| pair_code                | Pair Code                | pairCodeEdit                | line_edit | true   | true        | e.g. EUR/USD                        |                                                                                                |                                                       |
+| pip_factor               | Pip Factor                | pipFactorEdit               | line_edit |        | true        | e.g. 0.0001                          |                                                                                                |                                                       |
+| tick_size                | Tick Size                 | tickSizeEdit                 | line_edit |        | true        | e.g. 0.1                             |                                                                                                |                                                       |
+| decimal_places           | Decimal Places            | decimalPlacesSpinBox         | spin_box  |        | true        |                                       |                                                                                                |                                                       |
+| advance_calendar         | Advance Calendar          | advanceCalendarEdit          | line_edit |        |             | e.g. TARGET                          |                                                                                                |                                                       |
+| business_day_convention  | Business Day Convention   | businessDayConventionCombo  | static_combo |     |             |                                       | Following,ModifiedFollowing,Preceding,ModifiedPreceding,Unadjusted,HalfMonthModifiedFollowing,Nearest | currency_pair_convention_business_day_convention |
+| spot_relative            | Spot Relative              | spotRelativeCheckBox         | check_box |        |             |                                       |                                                                                                |                                                       |
+| end_of_month             | End Of Month               | endOfMonthCheckBox           | check_box |        |             |                                       |                                                                                                |                                                       |
 
 ** Custom repository methods
 

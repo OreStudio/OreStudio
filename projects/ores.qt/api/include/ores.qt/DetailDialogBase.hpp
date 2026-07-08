@@ -314,6 +314,17 @@ protected:
     void initFlagButton(QLayout* container);
 
     /**
+     * @brief Wire up keyFlagField()'s inline icon on its own, with no flag
+     * button — for an entity that shows a *derived, read-only* flag on a
+     * key field (e.g. currency_pair_convention's pair_code, split into
+     * base/quote via keyFlagIcon()) but owns no editable image_id of its
+     * own. initFlagButton() calls this too, so an entity with both an
+     * uploadable flag and an inline key-field icon (e.g. Country, Currency)
+     * only needs to call initFlagButton().
+     */
+    void initKeyFlagField();
+
+    /**
      * @brief Current entity's image_id, or nullopt for new / no-flag entities.
      *
      * Derived dialogs with a flag override this to return their entity's

@@ -45,6 +45,22 @@ carry fixed, application-wide meanings. The two load-bearing rules:
    badge seed data to be fixed, deliberately visible rather than
    camouflaged as "inactive".
 
+3. /Green, Red and Amber ("RAG") are reserved for true status
+   semantics — never for a plain category./ Green means healthy/
+   positive/succeeded, red means broken/failed/dangerous, amber means
+   caution/needs-attention. Reserve this triad for badges that
+   genuinely carry one of those three meanings (=active=/=inactive=,
+   =outcome_success=/=outcome_failed=, =account_locked=,
+   =login_old=/=frozen=/=fsm_suspended=). A code domain that is purely
+   /descriptive/ — a category with no inherent "good/bad/caution"
+   connotation, such as a currency pair's liquidity tier
+   (major/minor/exotic/commodity) — must *not* borrow RAG colours even
+   if a naive reading suggests one ("exotic" is not "bad"; it is a
+   different tier). Use the Blue/Violet/Teal/Pink "classification"
+   family instead, so a red or amber badge in the UI reliably means
+   "something needs attention," never "this happens to be one
+   particular category."
+
 The full colour vocabulary:
 
 | Colour | Hex       | Meaning                                            |
@@ -65,48 +81,12 @@ The full colour vocabulary:
 Badges are database-driven: severities, code domains, definitions and
 mappings live in the =dq= schema, seeded by
 [[proj:projects/ores.sql/populate/dq/dq_badge_system_populate.sql][=projects/ores.sql/populate/dq/dq_badge_system_populate.sql=]] — *the
-populate script is the source of truth*; this table documents intent.
-The mechanism (schema, BadgeCache, delegate resolution) is described in
-the [[id:7E4B1C93-2F8A-4D56-B3E7-9A0C5F812D6E][badge system design]].
-
-| Badge                  | Colour | Semantics                          |
-|------------------------+--------+------------------------------------|
-| =active=               | Green  | Record is active and operational   |
-| =inactive=             | Gray   | Record is inactive (rule 1)        |
-| =frozen=               | Amber  | No changes permitted               |
-| =pending=              | Blue   | Awaiting processing or approval    |
-| =type_virtual=         | Violet | Virtual construct                  |
-| =type_physical=        | Blue   | Physical construct                 |
-| =login_online=         | Green  | User currently logged in           |
-| =login_recent=         | Blue   | Logged in recently                 |
-| =login_old=            | Amber  | Not logged in for a long time      |
-| =login_never=          | Gray   | Never logged in (rule 1)           |
-| =account_locked=       | Red    | Account locked                     |
-| =account_unlocked=     | Green  | Account accessible (positive)      |
-| =account_type_user=    | Blue   | Human user account                 |
-| =account_type_service= | Teal   | Service account                    |
-| =account_type_algorithm= | Amber | Algorithm account                 |
-| =account_type_llm=     | Violet | LLM agent account                  |
-| =outcome_success=      | Green  | Task completed successfully        |
-| =outcome_failed=       | Red    | Task failed                        |
-| =outcome_no_reply=     | Amber  | No reply from worker               |
-| =state_running=        | Sky    | Task executing                     |
-| =state_done=           | Green  | Task completed (positive)          |
-| =policy_skip=          | Amber  | Skip overlapping executions        |
-| =policy_queue=         | Blue   | Queue overlapping executions       |
-| =policy_fail=          | Red    | Fail on overlapping executions     |
-| =fsm_draft=            | Gray   | Draft, not yet active (rule 1)     |
-| =fsm_suspended=        | Amber  | Suspended                          |
-| =archived=             | Red    | Archived, no longer active         |
-| =origin_primary=       | Blue   | Primary data source                |
-| =origin_derived=       | Violet | Derived from another source        |
-| =nature_actual=        | Green  | Real-world data                    |
-| =nature_estimated=     | Amber  | Estimated data                     |
-| =nature_simulated=     | Pink   | Simulated data                     |
-| =treatment_raw=        | Gray   | Unprocessed (rule 1)               |
-| =treatment_cleaned=    | Sky    | Cleaned                            |
-| =treatment_enriched=   | Violet | Enriched                           |
-| =tenant_bootstrapping= | Sky    | Awaiting provisioning wizard       |
+populate script is the source of truth*. The mechanism (schema,
+BadgeCache, delegate resolution) is described in the
+[[id:7E4B1C93-2F8A-4D56-B3E7-9A0C5F812D6E][badge system design]]. The full per-badge and per-code-domain listing
+— every definition's hex colour, and every code domain's value→badge
+mapping — is [[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge Catalogue]], kept as its own page since it is long
+and grows with every new code domain.
 
 Badges render through two code paths, both resolving via =BadgeCache=:
 =DelegatePaintUtils::draw_centered_badge= in table delegates, and

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/currency-pair-list-flag-icon-size
+#+pr: 1472
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,18 +30,18 @@ existing base-then-quote layout.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance
 
-- [ ] The combined base/quote flag icon in the Currency Pairs list is
+- [X] The combined base/quote flag icon in the Currency Pairs list is
   sized to (single-flag width × 2) by (single-flag height × 1).
-- [ ] Verified visually against the Currencies list's single-flag
+- [X] Verified visually against the Currencies list's single-flag
   sizing for comparison.
 
 * Plan
@@ -56,12 +56,50 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1472][#1472]] | [refdata,qt,codegen] Fix currency pair flag sizing, badges, and dirty-flag bug |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Backlog tasks this PR implements still marked BACKLOG | story.org | Accepted | Closed 4 tasks (D1F20726, 44F95CF2, BB347C3E, AA3A7511), fixed in 1a31babab |
+| 2 | Stale comment: commodity claimed to reuse nature_simulated | dq_badge_system_populate.sql | Accepted | Fixed in 1a31babab |
+| 3 | Badge count "39" should be "40" | badge_catalogue.org | Accepted (differently) | Dropped the count entirely rather than fix the number — would drift again |
+| 4 | Unset bool: "No" in list vs PartiallyChecked in detail | BoolYesNoLabel.hpp | Declined | Intentional — table cell wants binary read, detail needs tri-state for editing |
+| 5 | AdminPlugin.cpp Scenario Runner fix out of stated scope | AdminPlugin.cpp | Declined | In scope — needed to run the test scenario verifying this PR's own fixes |
+| 6 | notifyOpenDialogs duplication across controllers | CurrencyPairController.cpp / CurrencyPairConventionController.cpp | Declined | Matches established codegen boilerplate shape; dedup is a template-level change, separate PR |
+| 7 | Combo defaults to non-empty value on create (classification/BDC) | CurrencyPairDetailDialog.cpp | Declined | Intentional — static_combo can't represent unset; validateInput() change is correct |
 
 * Result
+
+Shipped in PR #1472, along with the rest of the Currency Pairs UI
+polish it grew to cover during implementation (see task's Plan/Review
+sections and the sibling tasks it closed out: D1F20726, 44F95CF2,
+BB347C3E, AA3A7511):
+
+- Explicit shared icon size for every flag-bearing list view and
+  combo box (=single_flag_icon_size()=/=currency_pair_icon_size()= in
+  =FlagIconHelper=), replacing Qt's inconsistent implicit default —
+  root cause of both the original squished pair-icon bug and several
+  bugs found during manual QA (Currency Pair Conventions list flags
+  entirely unsized; Base/Quote/Settlement combo flags missing).
+- Currency Pair and Currency Pair Convention detail dialogs gained an
+  inline pair-code flag, via a new =DetailDialogBase::has_key_flag_icon=
+  capability independent of the existing uploadable-image
+  =has_flag_icon= path.
+- Fixed a real, previously-undiscovered spurious dirty-flag bug
+  (async combo repopulation racing the dialog's own dirty-state
+  reset) — affects every entity using =flagged_combo= fields, not
+  just currency pairs.
+- Currency Pairs gained a main-toolbar button and cross-navigation to
+  Currency Pair Conventions.
+- Classification badge colours went through two revisions after
+  review feedback (first briefly used RAG by mistake, then reused
+  badges that bled colour meaning into unrelated domains) before
+  landing on four dedicated non-RAG hues; documented a new UX
+  Language rule (RAG reserved for genuine status, never a category)
+  and a new [[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge Catalogue]] reference doc.
+
+Verified via manual QA scenario
+[[id:253FC820-E757-4502-8C8C-AC3F96B02A92][Currency Pairs UI polish: flags, badges, dirty-flag fix, toolbar navigation]]
+across two rounds, both driven through the Scenario Runner.

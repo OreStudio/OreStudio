@@ -318,6 +318,27 @@ BEGIN
         'account_type_llm', 'LLM', 'Account for Large Language Model agents.',
         '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 36);
 
+    -- Currency pair classification: a purely descriptive liquidity tier,
+    -- not a status -- deliberately NOT green/amber/red (RAG is reserved for
+    -- genuine health/outcome/caution semantics; see ux_language.org rule 3).
+    -- Dedicated (not shared with other domains) so this stays true even if
+    -- an unrelated domain's badge colour changes later. Four clearly
+    -- separated hues (blue/teal/violet/sky), not adjacent shades of the
+    -- same hue (an earlier version used two violets that read as
+    -- near-identical) and not pink (too close to red at this saturation).
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'classification_major', 'Major', 'Major currency pair (most liquid tier).',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 37);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'classification_minor', 'Minor', 'Minor currency pair (mid liquidity tier).',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 38);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'classification_exotic', 'Exotic', 'Exotic currency pair (least liquid tier).',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 39);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'classification_commodity', 'Commodity', 'Commodity-linked currency pair.',
+        '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 40);
+
     -- =============================================================================
     -- Code Domains (workspace)
     -- =============================================================================
@@ -333,6 +354,26 @@ BEGIN
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'account_online', 'Account Online',
         'Boolean online indicator for accounts (Yes, No).', 18);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_deliverable', 'Currency Pair Deliverable',
+        'Whether a currency pair settles physically or cash-only (Yes/No badge).', 20);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_classification', 'Currency Pair Classification',
+        'Liquidity classification codes for currency pairs (major, minor, exotic, commodity).', 21);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_business_day_convention', 'Currency Pair Convention Business Day Convention',
+        'Business day adjustment convention codes for currency pair conventions.', 22);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_spot_relative', 'Currency Pair Convention Spot Relative',
+        'Whether forward dates are generated relative to the spot date (Yes/No badge).', 23);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_end_of_month', 'Currency Pair Convention End Of Month',
+        'Whether end-of-month convention applies (Yes/No badge).', 24);
 
     -- =============================================================================
     -- Badge Mappings
@@ -417,6 +458,54 @@ BEGIN
         'account_online', 'Yes', 'login_online');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'account_online', 'No', 'inactive');
+
+    -- currency_pair_deliverable (reuses login_online/inactive — same
+    -- generic positive/negative palette as account_online/book_is_trading)
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_deliverable', 'Yes', 'login_online');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_deliverable', 'No', 'inactive');
+
+    -- currency_pair_classification: a liquidity tier, not a status -- no
+    -- RAG colours (see ux_language.org rule 3). Four dedicated,
+    -- non-adjacent hues (blue/teal/violet/sky), one per tier -- see the
+    -- classification_* definitions above.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_classification', 'major', 'classification_major');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_classification', 'minor', 'classification_minor');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_classification', 'exotic', 'classification_exotic');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_classification', 'commodity', 'classification_commodity');
+
+    -- currency_pair_convention_business_day_convention
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_business_day_convention', 'Following', 'active');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_business_day_convention', 'ModifiedFollowing', 'origin_primary');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_business_day_convention', 'Preceding', 'nature_simulated');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_business_day_convention', 'ModifiedPreceding', 'account_type_service');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_business_day_convention', 'Unadjusted', 'inactive');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_business_day_convention', 'HalfMonthModifiedFollowing', 'tenant_bootstrapping');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_business_day_convention', 'Nearest', 'treatment_enriched');
+
+    -- currency_pair_convention_spot_relative
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_spot_relative', 'Yes', 'login_online');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_spot_relative', 'No', 'inactive');
+
+    -- currency_pair_convention_end_of_month
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_end_of_month', 'Yes', 'login_online');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_pair_convention_end_of_month', 'No', 'inactive');
 
     -- compute_task_outcome
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),

@@ -44,13 +44,17 @@ CurrencyPairConventionController::CurrencyPairConventionController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ImageCache* imageCache,
     ChangeReasonCache* changeReasonCache,
     const QString& username,
+    BadgeCache* badgeCache,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, convention_event_name, parent)
     , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
+    setImageCache(imageCache);
 
     BOOST_LOG_SEV(lg(), debug) << "CurrencyPairConventionController created";
 }
@@ -65,7 +69,8 @@ void CurrencyPairConventionController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new CurrencyPairConventionMdiWindow(clientManager_, username_);
+    listWindow_ =
+        new CurrencyPairConventionMdiWindow(clientManager_, username_, badgeCache_, imageCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -155,6 +160,7 @@ void CurrencyPairConventionController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void CurrencyPairConventionController::onShowHistory(
     const refdata::domain::currency_pair_convention& convention) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << convention.pair_code;
@@ -167,6 +173,8 @@ void CurrencyPairConventionController::showAddWindow() {
     auto* detailDialog = new CurrencyPairConventionDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -219,6 +227,8 @@ void CurrencyPairConventionController::showDetailWindow(
     auto* detailDialog = new CurrencyPairConventionDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -327,6 +337,7 @@ void CurrencyPairConventionController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Currency Pair Convention History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -361,6 +372,8 @@ void CurrencyPairConventionController::onOpenVersion(
     auto* detailDialog = new CurrencyPairConventionDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setConvention(convention);
@@ -414,6 +427,8 @@ void CurrencyPairConventionController::onRevertVersion(
     auto* detailDialog = new CurrencyPairConventionDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_convention = convention;
@@ -459,6 +474,28 @@ void CurrencyPairConventionController::onRevertVersion(
 
 EntityListMdiWindow* CurrencyPairConventionController::listWindow() const {
     return listWindow_;
+}
+
+void CurrencyPairConventionController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: BBB450FD-845D-4D6D-AA54-07589FDC1DFF
+:END:
+#+title: Task: Pair code doesn't recompute when base/quote currency changes
+#+description: Changing Base or Quote Currency in the Currency Pair detail dialog doesn't update pair_code; raises a design question of whether the entity should be keyed by a GUID instead, with duplicate-pair_code prevention.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+In the Currency Pair detail dialog, changing Base Currency or Quote
+Currency does not update =pair_code= (still shows the pair's original
+"BASE/QUOTE" value) — the key field is stale relative to the fields
+that determine it.
+
+Before implementing a fix, resolve the underlying design question:
+=currency_pair= is currently keyed by =pair_code= itself (no
+surrogate id), so editing base/quote in place either (a) recomputes
+=pair_code= live and must reject a value that collides with an
+existing pair, or (b) the entity should be keyed by a GUID instead,
+with =pair_code= becoming a derived, uniquely-constrained display
+column. (b) is the more standard shape for this codebase (most
+entities use a UUID primary key) but is a bigger migration — decide
+with the user before implementing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- Design decision made and recorded (GUID primary key vs. live
+  recompute-and-validate) before implementation starts.
+- Editing Base/Quote Currency in the detail dialog keeps =pair_code=
+  consistent with the current selection.
+- Duplicate =pair_code= (e.g. user edits USD/GBP into an existing
+  EUR/USD) is rejected with a clear error, not silently allowed or
+  silently overwriting the other pair.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

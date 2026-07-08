@@ -18,8 +18,12 @@
  *
  */
 #include "ores.qt/CurrencyPairConventionMdiWindow.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
 #include <QFutureWatcher>
@@ -34,10 +38,14 @@ using namespace ores::logging;
 
 CurrencyPairConventionMdiWindow::CurrencyPairConventionMdiWindow(ClientManager* clientManager,
                                                                  const QString& username,
+                                                                 BadgeCache* badgeCache,
+                                                                 ImageCache* imageCache,
                                                                  QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
     , username_(username)
+    , badgeCache_(badgeCache)
+    , imageCache_(imageCache)
     , toolbar_(nullptr)
     , tableView_(nullptr)
     , model_(nullptr)
@@ -113,6 +121,7 @@ void CurrencyPairConventionMdiWindow::setupToolbar() {
 
 void CurrencyPairConventionMdiWindow::setupTable() {
     model_ = new ClientCurrencyPairConventionModel(clientManager_, this);
+    model_->setImageCache(imageCache_);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -124,7 +133,61 @@ void CurrencyPairConventionMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
+    tableView_->setIconSize(currency_pair_icon_size());
 
+    using cs = column_style;
+    auto* delegate = new EntityItemDelegate(
+        {
+            cs::text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::mono_center,
+            cs::text_left,
+            cs::badge_centered,
+            cs::badge_centered,
+            cs::badge_centered,
+            cs::mono_center,
+            cs::text_left,
+            cs::text_left,
+        },
+        tableView_);
+    delegate->set_badge_color_resolver(
+        5, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+            if (!cache)
+                return default_gray;
+            auto* def = cache->resolve("currency_pair_convention_business_day_convention",
+                                       value.toStdString());
+            if (!def)
+                return default_gray;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    delegate->set_badge_color_resolver(
+        6, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+            if (!cache)
+                return default_gray;
+            auto* def =
+                cache->resolve("currency_pair_convention_spot_relative", value.toStdString());
+            if (!def)
+                return default_gray;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    delegate->set_badge_color_resolver(
+        7, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+            if (!cache)
+                return default_gray;
+            auto* def =
+                cache->resolve("currency_pair_convention_end_of_month", value.toStdString());
+            if (!def)
+                return default_gray;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    tableView_->setItemDelegate(delegate);
 
     initializeTableSettings(
         tableView_, model_, "CurrencyPairConventionListWindow", {}, {900, 400}, 1);
@@ -380,5 +443,6 @@ void CurrencyPairConventionMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

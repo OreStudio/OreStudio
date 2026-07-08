@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
 #+branch: feature/reconcile-currency-qt-flag-image-and-combos
-#+pr:
+#+pr: 1468
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
@@ -145,7 +145,7 @@ template, and the =DynamicComboSetup=/=LookupFetcher= API changes).
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1468][#1468]] | [codegen,qt] Reconcile currency flag/combo handling |
 
 * Review
 

@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 8E266A23-F282-4142-93B5-CECEEA3FE380
+:END:
+#+title: Fix missing history-window close button wiring in 7 controllers
+#+description: Apply the connect_dialog_close fix from PR #1462 to the other 7 Qt controllers whose showHistoryWindow() is missing the same wiring.
+#+type: capture
+#+level: cross
+#+filetags: :ores.qt:qt-ui:bug:codegen:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+PR #1462 fixed party_status's history window close button by adding
+=connect_dialog_close(historyDialog, historyWindow);= in
+=PartyStatusController::showHistoryWindow()=. A review of the PR found
+7 other controllers with the identical gap in their
+=showHistoryWindow()= methods (they build =historyDialog=/=historyWindow=
+and call =track_window=/=register_detachable_window= but never
+=connect_dialog_close=, unlike their own =showDetailWindow= counterparts
+which do call it): =BusinessCentreController=, =BusinessUnitController=,
+=BusinessUnitTypeController=, =ContactTypeController=,
+=CounterpartyController=, =PartyController=, =PartyIdSchemeController=.
+Apply the same one-line fix to each.
+
+* Why
+
+Their history windows' close buttons are likely non-functional, same
+as the party_status regression. This is probably a gap in the
+underlying Qt codegen template (=cpp_qt_controller.cpp.mustache=) that
+predates the fix, so it's worth checking the template too.
+
+* References
+
+- PR #1462: https://github.com/OreStudio/OreStudio/pull/1462
+
+* See also
+
+-

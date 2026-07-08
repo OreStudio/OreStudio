@@ -52,7 +52,7 @@
       (setq org-roam-directory (expand-file-name "./"))
       (setq org-roam-db-location (expand-file-name "./.org-roam.db"))
       (setq org-roam-file-exclude-regexp
-            "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|projects/ores.org-js")
+            "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/\\|projects/ores.org-js")
       (require 'org-roam)
       (org-roam-db-sync)
       (message "org-roam DB sync succeeded: %s" org-roam-db-location)

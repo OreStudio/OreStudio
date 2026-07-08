@@ -85,6 +85,9 @@ rebuild of every affected binary (refdata core lib, controller
 service, refdata service, Qt client) succeeding. Live visual
 confirmation in the running client is the remaining verification step.
 
+Test scenario for that live check, run via the QA Validation Runner
+panel: [[id:9561F122-A25D-4CE5-8AF4-404266925857][Composite history dialog shows children as of a version]].
+
 * PRs
 
 | PR | Title |

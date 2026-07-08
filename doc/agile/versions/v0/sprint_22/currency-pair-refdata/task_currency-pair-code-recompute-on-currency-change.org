@@ -39,11 +39,11 @@ with the user before implementing.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance
@@ -116,3 +116,41 @@ Generalizing rather than hand-scoping to this one entity:
 |   |                 |      |          |       |
 
 * Result
+
+Shipped: Base and Quote Currency are now immutable identity fields
+(new =:immutable:= detail-field property, generalized alongside
+=is_key= into =is_locked_after_create=/=locked_fields= in codegen).
+=pair_code= derives live from Base/Quote at create time and is always
+read-only; Base/Quote themselves are fully editable at create and
+locked — but visually normal, not grayed out — after save, via a new
+=WidgetUtils::set_combo_locked()= helper. Base == Quote is rejected
+at validation time. Settlement Currency toggles with Deliverable and
+clears (rather than showing a stale value) via a new
+=WidgetUtils::set_combo_unavailable()= helper. All of this
+entity-specific logic is wired through 10 new paste-block seams
+added to the shared detail_dialog/mdi_window/controller templates
+(documented in =paste_blocks_in_codegen.org=), so it survives
+regeneration — verified regenerating =currency_pair.org= needs zero
+manual re-application.
+
+QA scenario ([[id:6E3AE4EB-FEDE-4901-933D-9D9D2BCE86B9][scenario_currency-pair-code-derivation]]) run to green
+after several fix rounds, including two real regressions found and
+fixed along the way: a crash in =AdminPlugin::setup_menus()= when
+=--open-scenario= was combined with the Scenario Runner's earlier
+switch to lazy window construction, and a stale-ccache-object link
+failure (=CountryController::notifyOpenDialogs= undefined symbol).
+
+Not resolved in this PR — filed as separate follow-up tasks instead,
+since each needs its own design/investigation:
+- [[id:03FDF102-2379-4C73-BFD8-FA71BF670BF5][Creating a Currency Pair with an already-used pair_code silently
+  versions the existing row]] — the DB's create-vs-update-by-natural-key
+  pattern (used by every bitemporal entity, not currency_pair-specific)
+  means a colliding =pair_code= on create silently overwrites the
+  existing row rather than erroring.
+- [[id:B4526411-7FDC-48E8-A346-DA69B5F66BDD][pair_code inline flag icon renders tiny regardless of
+  keyFlagIconSize()]] — the =QLineEdit=-hosted flag doesn't respect
+  icon-size the way =QComboBox=/=QTableView= icons do; two rounds of
+  attempted fixes had no visible effect and were reverted per explicit
+  instruction rather than keep adding unproven complexity.
+- [[id:42636589-644C-43B2-BB02-63F102D2DB3E][Rename deliverable flag to non_deliverable]] — separately requested
+  rename to the idiomatic FX trading term, out of scope for this task.

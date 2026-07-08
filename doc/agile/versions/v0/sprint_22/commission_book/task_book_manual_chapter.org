@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :product:refdata:commissioning:book:manual:sprint_22:v0:commission_book:
 #+owner: marco
-#+branch:
+#+branch: feature/book-manual-chapter-task
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Add a chapter for Book to the user manual documenting the Qt list, detail, and h
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

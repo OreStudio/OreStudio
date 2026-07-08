@@ -10,17 +10,17 @@
     <height>500</height>
    </rect>
   </property>
-  <property name="minimumSize">
-   <size>
-    <width>600</width>
-    <height>500</height>
-   </size>
-  </property>
   <property name="sizePolicy">
    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>600</width>
+    <height>500</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Currency Details</string>
@@ -41,12 +41,15 @@
           <item row="0" column="0">
            <widget class="QLabel" name="labelIsoCode">
             <property name="text">
-             <string>ISO Code:</string>
+             <string>:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QLineEdit" name="isoCodeEdit">
+            <property name="placeholderText">
+             <string>Enter ISO 4217 code</string>
+            </property>
             <property name="readOnly">
              <bool>true</bool>
             </property>
@@ -55,35 +58,40 @@
           <item row="1" column="0">
            <widget class="QLabel" name="labelName">
             <property name="text">
-             <string>Name:</string>
+             <string>:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="nameEdit"/>
+           <widget class="QLineEdit" name="nameEdit">
+            <property name="placeholderText">
+             <string>Enter currency name</string>
+            </property>
+           </widget>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="labelNumericCode">
             <property name="text">
-             <string>Numeric Code:</string>
+             <string>:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="numericCodeEdit"/>
+           <widget class="QLineEdit" name="numericCodeEdit">
+            <property name="placeholderText">
+             <string>Enter numeric code</string>
+            </property>
+           </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="labelAssetClass">
+           <widget class="QLabel" name="labelMonetaryNature">
             <property name="text">
-             <string>Asset Class:</string>
+             <string>:</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
            <widget class="QComboBox" name="monetaryNatureCombo">
-            <property name="editable">
-             <bool>true</bool>
-            </property>
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
@@ -92,152 +100,98 @@
           <item row="4" column="0">
            <widget class="QLabel" name="labelMarketTier">
             <property name="text">
-             <string>Market Tier:</string>
+             <string>:</string>
             </property>
            </widget>
           </item>
           <item row="4" column="1">
            <widget class="QComboBox" name="marketTierCombo">
-            <property name="editable">
-             <bool>true</bool>
-            </property>
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="iconGroup">
-         <property name="title">
-          <string>Icon</string>
-         </property>
-         <layout class="QVBoxLayout" name="iconGroupLayout">
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="formattingTab">
-      <attribute name="title"><string>Formatting</string></attribute>
-      <layout class="QVBoxLayout" name="formattingLayout">
-       <item>
-        <widget class="QGroupBox" name="formattingGroup">
-         <property name="title">
-          <string>Formatting</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="labelSymbol">
             <property name="text">
-             <string>Symbol:</string>
+             <string>:</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="symbolEdit"/>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="symbolEdit">
+            <property name="placeholderText">
+             <string>Enter currency symbol</string>
+            </property>
+           </widget>
           </item>
-          <item row="1" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="labelFractionSymbol">
             <property name="text">
-             <string>Fraction Symbol:</string>
+             <string>:</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="fractionSymbolEdit"/>
+          <item row="6" column="1">
+           <widget class="QLineEdit" name="fractionSymbolEdit">
+            <property name="placeholderText">
+             <string>Enter fraction symbol</string>
+            </property>
+           </widget>
           </item>
-          <item row="2" column="0">
+          <item row="7" column="0">
            <widget class="QLabel" name="labelFractionsPerUnit">
             <property name="text">
-             <string>Fractions Per Unit:</string>
+             <string>:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="7" column="1">
            <widget class="QSpinBox" name="fractionsPerUnitSpinBox">
+            <property name="minimum">
+             <number>0</number>
+            </property>
             <property name="maximum">
              <number>10000</number>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="8" column="0">
            <widget class="QLabel" name="labelFormat">
             <property name="text">
-             <string>Format:</string>
+             <string>:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="formatEdit"/>
+          <item row="8" column="1">
+           <widget class="QLineEdit" name="formatEdit">
+            <property name="placeholderText">
+             <string>Enter display format</string>
+            </property>
+           </widget>
           </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="roundingTab">
-      <attribute name="title"><string>Rounding</string></attribute>
-      <layout class="QVBoxLayout" name="roundingLayout">
-       <item>
-        <widget class="QGroupBox" name="roundingGroup">
-         <property name="title">
-          <string>Rounding</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout_3">
-          <item row="0" column="0">
+          <item row="9" column="0">
            <widget class="QLabel" name="labelRoundingType">
             <property name="text">
-             <string>Rounding Type:</string>
+             <string>:</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="9" column="1">
            <widget class="QComboBox" name="roundingTypeCombo">
-            <property name="editable">
-             <bool>true</bool>
-            </property>
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
+          <item row="10" column="0">
            <widget class="QLabel" name="labelRoundingPrecision">
             <property name="text">
-             <string>Rounding Precision:</string>
+             <string>:</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="10" column="1">
            <widget class="QSpinBox" name="roundingPrecisionSpinBox">
             <property name="minimum">
              <number>0</number>
@@ -251,7 +205,15 @@
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_3">
+        <widget class="QGroupBox" name="flagGroup">
+         <property name="title">
+          <string>Icon</string>
+         </property>
+         <layout class="QVBoxLayout" name="flagGroupLayout"/>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -283,7 +245,10 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
-        <size><width>40</width><height>20</height></size>
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
        </property>
       </spacer>
      </item>

@@ -415,12 +415,16 @@ version-navigation UI that consumes this richer shape.
 :delete_request_class:        refdata::messaging::delete_currency_request
 :delete_response_class:       refdata::messaging::delete_currency_response
 :delete_message_type:         delete_currency_request
-:delete_request_id_field:     iso_code
+:delete_request_id_field:     iso_codes
 :history_request_class:       refdata::messaging::get_currency_history_request
 :history_response_class:      refdata::messaging::get_currency_history_response
 :history_message_type:        get_currency_history_request
 :history_request_id_field:    iso_code
 :history_response_data_field: history
+:history_protocol_include:    ores.refdata.api/messaging/currency_history_protocol.hpp
+:flag_icon_column:            IsoCode
+:flag_inline_widget:          isoCodeEdit
+:flag_accessor:               getCurrencyFlagIcon
 :settings_group:              CurrencyListWindow
 :window_title:                Currencies
 :icon:                        Currency
@@ -444,17 +448,26 @@ version-navigation UI that consumes this richer shape.
 
 *** Detail fields
 
-Only currency's 3 soft-FK dynamic-combo fields are modelled here — the
-=populateDynamicCombo<Entity>= mechanism (task 318EE3EB), verified by
-regenerate+diff against the hand-migrated =CurrencyDetailDialog.cpp=.
-The remaining 11 fields stay unmodelled until the final "Sync Qt
-codegen for currency" task populates the full table.
+All 11 fields currently exposed in =CurrencyDetailDialog.ui= (5 new
+domain columns — =spot_days=, =deliverable=, =day_basis=,
+=base_precedence=, =holiday_calendar= — aren't in the UI yet; out of
+scope for this sync, tracked separately). =image_id= isn't a detail
+field either (handled generically via =has_flag_icon=, matching
+every other flag entity).
 
-| field           | widget               | type          | combo_domain_type                     | combo_fetch_include                                    | combo_fetch_fn              | combo_watcher_name    | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label          | combo_setter_pascal |
-|-----------------+----------------------+---------------+----------------------------------------+-------------------------------------------------------+------------------------------+-----------------------+------------------+----------------------+------------------+----------------------+----------------------|
-| rounding_type   | roundingTypeCombo    | dynamic_combo | refdata::domain::rounding_type         | ores.qt/LookupFetcher.hpp                              | fetch_rounding_types         | roundingTypeWatcher   | code             | description          | display_order    | rounding types        | RoundingTypeCombo    |
-| monetary_nature | monetaryNatureCombo  | dynamic_combo | refdata::domain::monetary_nature       | ores.qt/LookupFetcher.hpp                              | fetch_monetary_natures       | monetaryNatureWatcher | code             | description          | display_order    | monetary natures      | MonetaryNatureCombo  |
-| market_tier     | marketTierCombo      | dynamic_combo | refdata::domain::currency_market_tier  | ores.qt/LookupFetcher.hpp                              | fetch_currency_market_tiers  | marketTierWatcher     | code             | description          | display_order    | currency market tiers | MarketTierCombo      |
+| field              | widget                   | type          | is_key | is_required | placeholder                    | spin_min | spin_max | combo_domain_type                     | combo_fetch_include        | combo_fetch_fn              | combo_watcher_name    | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label            | combo_setter_pascal |
+|--------------------+---------------------------+---------------+--------+-------------+---------------------------------+----------+----------+----------------------------------------+-----------------------------+------------------------------+-----------------------+------------------+----------------------+------------------+------------------------+----------------------|
+| iso_code           | isoCodeEdit               | line_edit     | true   | true        | Enter ISO 4217 code             |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
+| name               | nameEdit                  | line_edit     |        | true        | Enter currency name             |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
+| numeric_code       | numericCodeEdit           | line_edit     |        | true        | Enter numeric code              |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
+| monetary_nature    | monetaryNatureCombo       | dynamic_combo |        |             |                                  |          |          | refdata::domain::monetary_nature       | ores.qt/LookupFetcher.hpp   | fetch_monetary_natures       | monetaryNatureWatcher | code             | description          | display_order    | monetary natures       | MonetaryNatureCombo  |
+| market_tier        | marketTierCombo           | dynamic_combo |        |             |                                  |          |          | refdata::domain::currency_market_tier  | ores.qt/LookupFetcher.hpp   | fetch_currency_market_tiers  | marketTierWatcher     | code             | description          | display_order    | currency market tiers  | MarketTierCombo      |
+| symbol             | symbolEdit                | line_edit     |        | true        | Enter currency symbol           |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
+| fraction_symbol    | fractionSymbolEdit        | line_edit     |        | true        | Enter fraction symbol           |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
+| fractions_per_unit | fractionsPerUnitSpinBox   | spin_box      |        |             |                                  | 0        | 10000    |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
+| format             | formatEdit                | line_edit     |        | true        | Enter display format            |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
+| rounding_type      | roundingTypeCombo         | dynamic_combo |        |             |                                  |          |          | refdata::domain::rounding_type         | ores.qt/LookupFetcher.hpp   | fetch_rounding_types         | roundingTypeWatcher   | code             | description          | display_order    | rounding types         | RoundingTypeCombo    |
+| rounding_precision | roundingPrecisionSpinBox  | spin_box      |        |             |                                  | 0        | 10       |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
 
 *** Columns (Qt model)
 

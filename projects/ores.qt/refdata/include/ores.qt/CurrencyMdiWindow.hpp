@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,25 +21,30 @@
 #define ORES_QT_CURRENCY_MDI_WINDOW_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/xml/exporter.hpp"
+#include "ores.ore.core/xml/importer.hpp"
 #include "ores.qt/ClientCurrencyModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.qt/SettingGatedActionController.hpp"
+#include "ores.refdata.api/csv/exporter.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
 #include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolBar>
-#include <QVBoxLayout>
-#include <memory>
 
 namespace ores::qt {
 
 class ImageCache;
 
 /**
- * @brief MDI window for displaying currencies.
+ * @brief MDI window for displaying and managing currencies.
+ *
+ * Provides a table view of currencies with toolbar actions
+ * for reload, add, edit, delete, and viewing history.
  */
-class CurrencyMdiWindow : public EntityListMdiWindow {
+class CurrencyMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
@@ -53,44 +58,49 @@ private:
 
 public:
     explicit CurrencyMdiWindow(ClientManager* clientManager,
-                               ImageCache* imageCache,
                                const QString& username,
+                               ImageCache* imageCache,
                                QWidget* parent = nullptr);
-    ~CurrencyMdiWindow() override;
-
-    ClientCurrencyModel* currencyModel() const {
-        return currencyModel_.get();
-    }
+    ~CurrencyMdiWindow() override = default;
 
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void selectionChanged(int selection_count);
-    void addNewRequested();
     void showCurrencyDetails(const refdata::domain::currency& currency);
-    void currencyDeleted(const QString& iso_code);
-    void showCurrencyHistory(const QString& iso_code);
+    void addNewRequested();
+    void currencyDeleted(const QString& code);
+    void showCurrencyHistory(const refdata::domain::currency& currency);
+
+    /**
+     * @brief Emitted to request opening the auxiliary Rounding Types /
+     * Monetary Natures / Currency Market Tiers list windows.
+     *
+     * Cross-domain navigation, currency-specific: not part of the qt-profile
+     * codegen template, wired by RefdataPlugin to the corresponding
+     * auxiliary controller's showListWindow().
+     */
     void showRoundingTypesRequested();
     void showMonetaryNaturesRequested();
     void showMarketTiersRequested();
 
 public slots:
-    void doReload() override;
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
-    void importFromXML();
     void exportToCSV();
     void exportToXML();
+    void importFromXML();
     void generateSynthetic();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
-    void onRowDoubleClicked(const QModelIndex& index);
     void onSelectionChanged();
-    void onConnectionStateChanged();
+    void onDoubleClicked(const QModelIndex& index);
 
 protected:
     QString normalRefreshTooltip() const override {
@@ -98,30 +108,33 @@ protected:
     }
 
 private:
+    void setupUi();
+    void setupToolbar();
+    void setupTable();
+    void setupConnections();
     void updateActionStates();
-    void setupReloadAction();
     void setupGenerateAction();
 
-private:
-    QVBoxLayout* verticalLayout_;
-    QTableView* currencyTableView_;
-    QToolBar* toolBar_;
-    PaginationWidget* pagination_widget_;
+    ClientManager* clientManager_;
+    QString username_;
+    ImageCache* imageCache_;
 
-    // Reload action with stale indicator
+    QToolBar* toolbar_;
+    QTableView* tableView_;
+    ClientCurrencyModel* model_;
+    QSortFilterProxyModel* proxyModel_;
+    PaginationWidget* paginationWidget_;
+
+    // Toolbar actions
     QAction* reloadAction_;
-
     QAction* addAction_;
     QAction* editAction_;
     QAction* deleteAction_;
+    QAction* importXMLAction_;
+    QAction* exportCSVAction_;
+    QAction* exportXMLAction_;
     QAction* historyAction_;
     QAction* generateAction_;
-
-    std::unique_ptr<ClientCurrencyModel> currencyModel_;
-    QSortFilterProxyModel* proxyModel_;
-    ClientManager* clientManager_;
-    ImageCache* imageCache_;
-    QString username_;
     SettingGatedActionController* settingGatedActions_;
 };
 

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,36 +21,27 @@
 #define ORES_QT_CURRENCY_CONTROLLER_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
-#include <QDateTime>
-#include <QPointer>
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
+class CurrencyMdiWindow;
 class DetachableMdiSubWindow;
-class ImageCache;
 class ChangeReasonCache;
+class ImageCache;
 
 /**
- * @brief Controller managing all currency-related windows and operations.
+ * @brief Controller for managing currency windows and operations.
  *
- * The CurrencyController encapsulates all currency-specific functionality,
- * including:
- *
- * - Currency list window showing all currencies in the system
- * - Currency detail dialogs for creating/editing currencies
- * - Currency history dialogs showing version history
- * - Window lifecycle management (creation, tracking, cleanup)
- *
- * This controller follows the entity controller pattern where MainWindow
- * delegates all currency operations to this controller, keeping the main window
- * clean and entity-agnostic.
- *
- * @note The controller maintains weak references (QPointer) to windows to allow
- * them to be closed independently without leaving dangling pointers.
+ * Manages the lifecycle of currency list, detail, and history windows.
+ * Handles event subscriptions and coordinates between windows.
  */
-class CurrencyController : public EntityController {
+class CurrencyController final : public EntityController {
     Q_OBJECT
 
 private:
@@ -63,147 +54,51 @@ private:
     }
 
 public:
-    /**
-     * @brief Constructs the currency controller.
-     *
-     * @param mainWindow Parent main window (for dialog ownership)
-     * @param mdiArea MDI area where windows will be displayed
-     * @param clientManager Client manager for network operations
-     * @param imageCache Image cache for currency flag icons
-     * @param changeReasonCache Cache for change reasons
-     * @param username Username of logged-in user (for audit trails)
-     * @param parent QObject parent (for Qt ownership)
-     */
-    explicit CurrencyController(QMainWindow* mainWindow,
-                                QMdiArea* mdiArea,
-                                ClientManager* clientManager,
-                                ImageCache* imageCache,
-                                ChangeReasonCache* changeReasonCache,
-                                const QString& username,
-                                QObject* parent = nullptr);
+    CurrencyController(QMainWindow* mainWindow,
+                       QMdiArea* mdiArea,
+                       ClientManager* clientManager,
+                       ImageCache* imageCache,
+                       ChangeReasonCache* changeReasonCache,
+                       const QString& username,
+                       QObject* parent = nullptr);
 
-    /**
-     * @brief Destroys the currency controller.
-     *
-     * All windows owned by this controller are automatically cleaned up through
-     * Qt's parent-child ownership.
-     */
-    ~CurrencyController() override;
-
-    /**
-     * @brief Shows the currency list window.
-     *
-     * If the window already exists, brings it to front. Otherwise, creates a
-     * new currency list window displaying all currencies from the server.
-     *
-     * @note Inherited from EntityController
-     */
     void showListWindow() override;
-
-    /**
-     * @brief Closes all windows managed by this controller.
-     *
-     * Called when disconnecting from the server to clean up all currency
-     * windows before destroying the controller.
-     *
-     * @note Inherited from EntityController
-     */
     void closeAllWindows() override;
-
     void reloadListWindow() override;
 
+
 signals:
+    void statusMessage(const QString& message);
+    void errorMessage(const QString& error);
+
+    /**
+     * @brief Relayed from CurrencyMdiWindow; wired by RefdataPlugin to open
+     * the corresponding auxiliary list window. Currency-specific, not part
+     * of the qt-profile codegen template.
+     */
     void showRoundingTypesRequested();
     void showMonetaryNaturesRequested();
     void showMarketTiersRequested();
 
+protected:
+    EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
+
 private slots:
-    /**
-     * @brief Handles request to add a new currency.
-     *
-     * Creates and displays a currency detail dialog for entering a new
-     * currency. Connected to the currency list window's add button.
-     */
+    void onShowDetails(const refdata::domain::currency& currency);
     void onAddNewRequested();
-
-    /**
-     * @brief Handles request to show currency details.
-     *
-     * Creates and displays a currency detail dialog for viewing/editing an
-     * existing currency. Connected to the currency list window's edit button
-     * and double-click.
-     *
-     * @param currency The currency to display/edit
-     */
-    void onShowCurrencyDetails(const refdata::domain::currency& currency);
-
-    /**
-     * @brief Handles request to show currency version history.
-     *
-     * Creates and displays a currency history dialog showing all versions of
-     * the specified currency. Connected to the currency list window's history
-     * button.
-     *
-     * @param isoCode ISO code of the currency to show history for
-     */
-    void onShowCurrencyHistory(const QString& isoCode);
-
-    /**
-     * @brief Handles request to open a historical currency version in read-only mode.
-     *
-     * Creates a currency detail dialog showing the historical version with
-     * all fields read-only and a revert button available.
-     *
-     * @param currency The currency data at the historical version
-     * @param versionNumber The version number being viewed
-     */
-    void onOpenCurrencyVersion(const refdata::domain::currency& currency, int versionNumber);
-
-    /**
-     * @brief Handles request to revert a currency to a historical version.
-     *
-     * Saves the currency data from the historical version, creating a new
-     * version with that data.
-     *
-     * @param currency The currency data to revert to
-     */
-    void onRevertCurrency(const refdata::domain::currency& currency);
-
-    /**
-     * @brief Handles currency change notifications from the server.
-     *
-     * Called when a notification is received indicating currencies have changed.
-     * Marks the currency list window as stale to indicate data needs refreshing.
-     * Also notifies any open detail/history dialogs for affected currencies.
-     *
-     * @param eventType The event type name
-     * @param timestamp When the event occurred
-     * @param entityIds ISO codes of currencies that changed (may be empty)
-     */
-    void onNotificationReceived(const QString& eventType,
-                                const QDateTime& timestamp,
-                                const QStringList& entityIds,
-                                const QString& tenantId);
+    void onShowHistory(const refdata::domain::currency& currency);
+    void onRevertVersion(const refdata::domain::currency& currency);
+    void onOpenVersion(const refdata::domain::currency& currency, int versionNumber);
 
 private:
-    /**
-     * @brief Cache for currency flag icons.
-     */
-    ImageCache* imageCache_;
+    void showAddWindow();
+    void showDetailWindow(const refdata::domain::currency& currency);
+    void showHistoryWindow(const QString& code);
 
-    /**
-     * @brief Cache for change reasons.
-     */
     ChangeReasonCache* changeReasonCache_;
-
-    /**
-     * @brief Weak pointer to the currency list window.
-     *
-     * Uses QPointer to automatically become null if the window is closed
-     * externally. This allows reusing the existing window if it exists, or
-     * creating a new one if it was closed.
-     */
-    QPointer<DetachableMdiSubWindow> currencyListWindow_;
+    CurrencyMdiWindow* listWindow_;
+    DetachableMdiSubWindow* listMdiSubWindow_;
 };
 
 }

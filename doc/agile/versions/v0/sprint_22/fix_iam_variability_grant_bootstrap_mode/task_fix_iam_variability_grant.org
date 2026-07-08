@@ -58,6 +58,76 @@ footprint into another domain's tables.
 
 * Plan
 
+** Analysis
+
+=variability::messaging= already has a =save_setting_request= NATS
+protocol
+(=ores.variability.api/messaging/system_settings_protocol.hpp=,
+subject =variability.v1.settings.save=) that goes through
+=system_setting_handler::save()=
+(=ores.variability.core/src/messaging/system_setting_handler.hpp=).
+That handler enforces
+=has_permission(ctx, "variability::flags:create")= before writing.
+The current in-process call in =tenant_handler::complete_provisioning=
+bypasses NATS entirely (it constructs
+=variability::service::system_settings_service= directly against
+IAM's own DB context), which is *why* it deliberately doesn't hit that
+permission check — the code comment says clearing =bootstrap_mode= is
+meant to work "independent of the user having
+=variability::flags:create=". Whoever completes tenant provisioning
+(a super/tenant admin) is not guaranteed to hold that permission.
+
+Routing the write through the existing =save_setting_request= over
+NATS would reinstate that permission dependency (as well as reuse the
+*calling actor's* JWT — there is no service-to-service token minting;
+only IAM's =jwt_authenticator= mints tokens, and it mints them for
+users, not for other services acting as themselves; see
+=ores.security/jwt/jwt_authenticator.hpp=). That would trade one
+silent failure (permission denied on the wrong DB role) for another
+(forbidden, if the activating actor lacks the permission).
+
+** Recommended approach
+
+Add a narrowly-scoped, permission-check-free NATS request instead of
+reusing =save_setting_request=, mirroring how =list_settings_request=
+already has no permission check:
+
+- New protocol pair in =system_settings_protocol.hpp=, e.g.
+  =clear_bootstrap_mode_request { tenant_id }= /
+  =clear_bootstrap_mode_response { success, message }=, subject
+  e.g. =variability.v1.settings.clear_bootstrap_mode=.
+- New handler method on =system_setting_handler= that calls
+  =system_settings_service::set_bootstrap_mode(false, ...)= directly,
+  with *no* =has_permission= check (same trust model as =list=) —
+  authentication (valid JWT) is still required via
+  =make_request_context=, just not this specific permission, keeping
+  the "independent of user permission" property while running under
+  variability's own (correctly-granted) DB role.
+- Register the new subject in
+  =ores.variability.core/src/messaging/registrar.cpp=.
+- In =tenant_handler::complete_provisioning=, replace the direct
+  =system_settings_service= construction with an outbound
+  =nats_.request(...)= call to the new subject (the enclosing handler
+  is already a NATS handler; confirmed =complete_provisioning= is a
+  plain =void= method, not a coroutine, so use =nats_.request_sync(...)=
+  — same style as the Qt/shell client callers of =save_setting_request=
+  — rather than the coroutine =request()=), passing the tenant id, and
+  treat a failure as already handled (log + continue, same as today).
+- No changes needed to
+  =iam_service_db_grants_create.sql=/=sql_service_db_grants.mustache=
+  — IAM's DB role keeps its existing =ores_iam_*=-only scope.
+
+** Alternative (rejected)
+
+Add a targeted DML grant for IAM on
+=ores_variability_system_settings_tbl= in
+=iam_service_db_grants_create.sql=. Simpler, but widens IAM's DB
+footprint into another domain's table and keeps a same-process
+cross-crate repository call that bypasses the variability service
+entirely — the pattern this codebase is otherwise moving away from
+(cf. the NATS eventing migration). Rejected in favour of the NATS
+route above.
+
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)

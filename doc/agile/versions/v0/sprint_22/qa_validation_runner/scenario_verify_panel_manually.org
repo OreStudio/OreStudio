@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: F746BBE3-0A0F-4607-8B40-2B721000925A
+:END:
+#+title: Test Scenario: Verify the QA Validation Runner panel manually
+#+description: Manual verification of the QA Validation Runner dockable panel: open it, load a scenario, tick steps, save, and confirm the doc's Results section is rewritten correctly.
+#+type: test_scenario
+#+level: s1
+#+filetags: :qt:testing:pilot:qa_validation_runner:sprint_22:v0:
+#+target_dialog:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:1844F421-2D4C-4E9A-8608-0E0AAD38DFEE][Build the QA Validation Runner dockable panel]] in [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:1844F421-2D4C-4E9A-8608-0E0AAD38DFEE][Build the QA Validation Runner dockable panel]] |
+| Parent story  | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]   |
+| Target dialog | QaValidationRunnerWidget                |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in and confirm the Testing menu appears
+
+Log in and confirm a "System > Testing" submenu appears, with a "QA Validation Runner" action — visible even before login too.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Menu appeared. |
+
+** Open the QA Validation Runner window
+
+Click the action; confirm a regular MDI window titled "QA Validation Runner" appears (movable/resizable like any other window, not a fixed dock).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Window looks fine, provided feedback on niggles. |
+
+** Open this scenario file
+
+Click the toolbar's Open icon and pick this very file (=scenario_verify_panel_manually.org=).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | File opened correctly. |
+
+** Confirm the panel shows this scenario's info and step list
+
+Confirm the window shows this scenario's title and target dialog, and a step list matching these Steps (one short entry per step, each with a pending/yellow icon).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open a step and mark it PASS
+
+Double-click a step to open its detail; confirm you see its instructions, a Notes box, and Mark PASS/Mark FAIL/Reset to Pending buttons. Write a note and click Mark PASS; confirm the step's list icon turns green.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open another step and mark it FAIL
+
+Same as above but click Mark FAIL; confirm the step's list icon turns red, and the overall status label turns to FAILED (since any failed step means an overall FAIL).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+
+** Save the results
+
+Click the toolbar's Save icon.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Verify the saved file
+
+Re-open this file (outside the app, e.g. in an editor or =git diff=) and confirm: the =* Results= table shows Status/Completed at/Branch/Commit/Worktree filled in correctly, each step above now has its own =*** Result= child heading with the right Status/Notes, and the Scenario Info/Steps instructional text is completely unchanged.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-07-08T03:18:51Z |
+| Branch        | feature/qa-validation-runner-panel |
+| Commit        | 33355897d |
+| Worktree      | bright_faraday |
+
+* Notes

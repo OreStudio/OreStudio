@@ -66,6 +66,13 @@ BEGIN
         'Enables synthetic test data generation in the UI. FOR TESTING/DEVELOPMENT ONLY.'
     );
 
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.qa_validation_runner_enabled',
+        'true',
+        'boolean',
+        'Shows the QA Validation Runner panel in ores.qt, used to run test_scenario docs and record results. Enabled by default; this is a fleet-wide manual-testing tool, not something to hide behind a build flag.'
+    );
+
     -- -----------------------------------------------------------------------------
     -- IAM token lifetime settings
     -- -----------------------------------------------------------------------------

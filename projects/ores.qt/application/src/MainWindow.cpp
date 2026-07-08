@@ -516,6 +516,9 @@ MainWindow::MainWindow(QWidget* parent)
     BOOST_LOG_SEV(lg(), info) << plugins.size() << " plugin(s) registered.";
 
     shared_menus_context smc;
+    smc.main_window = this;
+    smc.mdi_area = mdiArea_;
+    smc.client_manager = clientManager_;
     smc.system_menu = ui_->menuSystem;
     smc.reference_data_menu = referenceDataMenu;
     smc.market_data_menu = marketDataMenu;
@@ -819,8 +822,10 @@ void MainWindow::updateMenuState() {
     for (auto* action : plugin_toolbar_actions_)
         action->setEnabled(isLoggedIn);
 
-    // System menu enabled when logged in
-    ui_->menuSystem->menuAction()->setEnabled(isLoggedIn);
+    // The System menu itself stays enabled regardless of login (it now
+    // also hosts the always-available &Testing submenu); only its
+    // Telemetry submenu actually needs a live session.
+    ui_->menuTelemetry->menuAction()->setEnabled(isLoggedIn);
     // File menu items requiring authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
     ui_->ActionMySessions->setEnabled(isLoggedIn);

@@ -2,18 +2,18 @@
 :ID: 1844F421-2D4C-4E9A-8608-0E0AAD38DFEE
 :END:
 #+title: Task: Build the QA Validation Runner dockable panel
-#+description: Qt dockable panel (debug builds only): open a test_scenario doc, show its info and checklist, let the tester tick steps/write notes/set PASS-FAIL, and save (rewriting the doc's Results section and stamping the compass journal).
+#+description: Qt panel: open a test_scenario doc, show its info and step list, let the tester open a step to mark it PASS/FAIL/PENDING and write notes, then save (rewriting the doc's Results in place and stamping the compass journal). Runtime-gated by a system setting, not a build flag.
 #+type: task
 #+level: s1
 #+filetags: :qt:testing:ui:qa_validation_runner:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/qa-validation-runner-panel
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-07
 #+updated: 2026-07-07
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,22 +31,93 @@ epic.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-07                               |
 
 * Acceptance
 
--
+- [X] =ores.qt= gains a "Scenario Runner" window (opened via =System >
+  Testing=, in =ores.qt.admin='s =AdminPlugin=) that opens a
+  =test_scenario= doc and shows its info and a list of steps.
+- [X] Each step is its own org heading (not a bullet checklist); the
+  tester double-clicks a step to open a detail dialog showing its
+  instructions, sets Pass/Fail/Pending, and writes a note.
+- [X] Step status renders as a coloured icon (green/red/yellow) in the
+  list; the scenario's overall status is *inferred* from the step
+  results (FAIL if any step failed, PASS if all passed, else PENDING),
+  never set directly by the tester.
+- [X] Saving rewrites the doc's =* Results= (overall status +
+  environment metadata) and each step's own =*** Result= child heading
+  in place, and stamps the compass journal — real MDI window, regular
+  toolbar (Open/Save icons, no dock, no ad hoc buttons).
+- [X] Visible and usable before login (a local, file-based tool with no
+  domain-data dependency), gated by a runtime system setting
+  (=system.qa_validation_runner_enabled=) rather than a compile-time
+  =#ifdef=, defaulting to enabled if the setting is ever missing for a
+  tenant.
+- [X] Dogfooded end-to-end against a real scenario doc, including a
+  deliberate FAIL step, confirming the inferred overall status and the
+  per-step =*** Result= write-back both work correctly.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Landed in three rounds, each driven by direct feedback from actually
+running the panel (dogfooding), not just code review:
+
+1. *Initial build*: =QaValidationRunnerWidget= (in =ores.qt.api=,
+   shared/testable) wired into =MainWindow= directly, behind
+   =#ifdef QT_DEBUG=, as a =QDockWidget=, with a flat checklist
+   (bullet-list steps), a single global Notes box, and a manual
+   PASS/FAIL radio.
+
+2. *Corrected placement and gating*: moved out of =MainWindow= entirely
+   into =AdminPlugin::setup_menus()= — the same plugin that already owns
+   =System > Configuration=/=Administration= — since this is exactly the
+   kind of "contribute to the shared System menu" feature the plugin
+   architecture exists for. Replaced the compile-time macro with a
+   runtime system setting via =SettingGatedActionController=, which
+   required widening =shared_menus_context= with =main_window=/
+   =mdi_area=/=client_manager= (all already constructed before
+   =setup_menus()= runs, unlike the rest of that struct's plugin-visible
+   state which only becomes valid at =on_login()=) — the first plugin
+   feature that needs to work *before* login, not after. Also uncovered
+   and worked around a real gap: system settings are tenant-scoped, and
+   tenant provisioning only seeded =system.bootstrap_mode= per-tenant, so
+   a fresh tenant never saw the new setting at all — seeded it into
+   =iam_tenant_provisioner_create.sql= alongside =bootstrap_mode=, and
+   added a =default_when_missing= parameter to
+   =SettingGatedActionController::registerAction()= so this class of
+   gated feature fails open rather than silently vanishing. Filed the
+   broader architectural gap (affects =synthetic_data_generation= too)
+   as a capture rather than fixing it inline.
+
+3. *Redesigned around real feedback*: dogfooding surfaced that a flat
+   =- [ ]= checklist rendered its literal =[ ]= in the UI, results needed
+   per-step granularity (PASS/FAIL/PENDING + notes) rather than one
+   global PASS/FAIL and one global Notes box, and a dock widget was the
+   wrong shape (needs to be moved around freely while testing another
+   dialog). Redesigned: each step became its own org heading (parsed
+   generically — no =ores.orgmode= changes needed); the widget became a
+   step list with coloured status icons and a detail dialog per step,
+   hosted in a =DetachableMdiSubWindow= like every other window in the
+   app; =TestScenarioResultsWriter= rewritten to splice a =*** Result=
+   child heading under each step (found by exact title, one level
+   deeper than the step — deeper still for a multi-client step nested
+   under a per-client sub-heading) instead of one aggregate table.
+   Multi-client detection switched from "does this heading have
+   children" (which broke the moment a step gained its own =Result=
+   child on a second run) to the =Clients= field in Scenario Info — the
+   one place that signal was already unambiguous. Re-opening a
+   previously-run scenario now pre-populates each step's status/notes
+   from its existing =Result= heading. UI polish (button text/icons,
+   dialog conventions) matched to existing patterns in the codebase
+   (=FxSpotRateEditor='s =QDialogButtonBox= icon/text conventions,
+   =EventViewerDialog='s action-buttons-inside-the-close-box layout)
+   rather than invented ad hoc.
 
 * Notes
 
@@ -63,3 +134,18 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+The QA Validation Runner ships as "Scenario Runner" under =System >
+Testing= in =ores.qt.admin= — a real MDI window (not a dock), with a
+toolbar (Open/Save), a coloured step list, and a per-step detail dialog
+for marking Pass/Fail/Pending and writing notes. Saving rewrites the
+scenario doc's overall =* Results= and each step's own =*** Result=
+child heading in place, and stamps the compass journal. Visible before
+login, gated by a runtime system setting that fails open if missing.
+Dogfooded end-to-end (including a deliberate FAIL step) against
+=scenario_verify_panel_manually.org= — every acceptance criterion
+confirmed working directly, not just by inspection. Along the way, found
+and fixed a real gap in system-setting tenant-scoping (captured
+separately for the general case) and rewrote the step-detection logic
+around the =Clients= field after discovering the original
+children-based heuristic broke on a second run.

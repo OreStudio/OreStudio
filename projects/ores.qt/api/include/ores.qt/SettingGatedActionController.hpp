@@ -76,9 +76,18 @@ public:
      * read-only historical version, regardless of the setting.
      * Re-evaluated on every refresh(), including ones triggered by a
      * live setting-change notification.
+     * @param default_when_missing Visibility to fall back to if the
+     * setting isn't found at all for the caller's tenant (e.g. it
+     * predates that tenant's provisioning, or provisioning simply
+     * forgot to seed it) — opt-in features (like synthetic data
+     * generation) should stay hidden (the default, `false`); a feature
+     * meant to be on everywhere unless explicitly disabled should pass
+     * `true`.
      */
-    void
-    registerAction(QAction* action, const QString& setting_name, std::function<bool()> guard = {});
+    void registerAction(QAction* action,
+                       const QString& setting_name,
+                       std::function<bool()> guard = {},
+                       bool default_when_missing = false);
 
     /**
      * @brief Re-checks every registered action's visibility.
@@ -98,6 +107,7 @@ private:
         QPointer<QAction> action;
         QString setting_name;
         std::function<bool()> guard;
+        bool default_when_missing = false;
     };
 
     ClientManager* clientManager_;

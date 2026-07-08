@@ -64,12 +64,14 @@ SettingGatedActionController::SettingGatedActionController(ClientManager* client
 
 void SettingGatedActionController::registerAction(QAction* action,
                                                   const QString& setting_name,
-                                                  std::function<bool()> guard) {
+                                                  std::function<bool()> guard,
+                                                  bool default_when_missing) {
     if (!action)
         return;
 
     action->setVisible(false);
-    actions_.push_back({QPointer<QAction>(action), setting_name, std::move(guard)});
+    actions_.push_back(
+        {QPointer<QAction>(action), setting_name, std::move(guard), default_when_missing});
 }
 
 void SettingGatedActionController::refresh() {
@@ -110,10 +112,12 @@ void SettingGatedActionController::refresh() {
                             return s.name == gated.setting_name.toStdString();
                         });
 
-                    bool enabled = it != settings.end() && it->value == "true";
+                    bool enabled = it != settings.end() ? it->value == "true"
+                                                        : gated.default_when_missing;
                     if (it == settings.end()) {
                         BOOST_LOG_SEV(lg(), debug)
-                            << "System setting not found: " << gated.setting_name.toStdString();
+                            << "System setting not found: " << gated.setting_name.toStdString()
+                            << ", defaulting visibility to " << enabled;
                     }
                     if (enabled && gated.guard && !gated.guard())
                         enabled = false;

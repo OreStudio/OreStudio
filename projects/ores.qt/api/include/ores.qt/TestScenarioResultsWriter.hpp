@@ -27,47 +27,54 @@
 
 namespace ores::qt {
 
-struct step_result final {
-    QString step_text;
-    bool passed = false;
-
-    /**
-     * @brief Which client instance this step ran on (e.g. "blue",
-     * "red"), for a multi-client scenario (see the =Clients= field in
-     * =Scenario Info=). Empty for the common single-client case — the
-     * rendered table only gains a =Client= column when at least one
-     * step in the run has this set.
-     */
-    QString client;
-};
-
 /**
- * @brief Everything the QA Validation Runner panel collects from the
- * tester for one run.
+ * @brief One step's outcome. Each step is its own org heading (see the
+ * =test_scenario= template); the result is written as a =*** Result=
+ * child heading directly under it, found by exact title match, not by
+ * position — so steps may be nested arbitrarily (e.g. under
+ * per-client sub-headings) without the writer needing to know the
+ * tree shape.
  */
-struct scenario_result final {
-    QString status; // "PASSED" or "FAILED"
-    std::vector<step_result> steps;
+struct step_result final {
+    QString step_title;
+    QString status; // "PASS", "FAIL", or "PENDING"
     QString notes;
 };
 
 /**
- * @brief Rewrite a =test_scenario= doc's =* Results= and =* Notes=
- * sections in place — the *only* two sections this touches; every
- * other line in the file (Scenario Info, Steps, frontmatter, ...) is
- * left byte-identical.
+ * @brief Everything the QA Validation Runner panel collects from the
+ * tester for one run. =status= is the scenario's overall outcome,
+ * inferred by the caller from the individual step results (FAIL if
+ * any step failed, PASS if every step passed, PENDING otherwise) —
+ * this writer just records whatever it's given.
+ */
+struct scenario_result final {
+    QString status;
+    std::vector<step_result> steps;
+};
+
+/**
+ * @brief Rewrite a =test_scenario= doc's =* Results= section (overall
+ * status + environment metadata) and each step's =*** Result= child
+ * heading in place — the *only* things this touches; every other line
+ * in the file (Scenario Info, Steps' own instructional text,
+ * frontmatter, ...) is left byte-identical.
  *
  * This is a targeted text splice, not a round-trip
  * parse-then-re-serialize: it finds each heading's line span (up to
- * the next heading at the same or a shallower level, or EOF) and
- * replaces just that span. Deliberately not a capability
- * =ores.orgmode='s reader needs to support generically — a generic
- * writer would need to preserve every byte of everything it *doesn't*
- * touch, which is a much larger problem than this one targeted
- * rewrite.
+ * the next heading at the same or a shallower level, or EOF) by exact
+ * title match and replaces (or, for a step's first run, inserts) just
+ * that span. Deliberately not a capability =ores.orgmode='s reader
+ * needs to support generically — a generic writer would need to
+ * preserve every byte of everything it *doesn't* touch, which is a
+ * much larger problem than this one targeted rewrite.
+ *
+ * A step whose title isn't found in the doc is skipped silently
+ * (best-effort per step) rather than failing the whole write — a
+ * stale/renamed step shouldn't block recording the rest.
  *
  * @param path Path to the =test_scenario= =.org= file.
- * @param result What to write into =* Results=/=* Notes=.
+ * @param result What to write.
  * @param environment Branch/commit/worktree, normally from
  * =capture_environment_metadata()=.
  * @return true on success; false if the file couldn't be read/written

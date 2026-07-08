@@ -34,6 +34,9 @@ class TenantTypeController;
 class SystemSettingController;
 class BadgeDefinitionController;
 class BadgeSeverityController;
+class QaValidationRunnerWidget;
+class SettingGatedActionController;
+class DetachableMdiSubWindow;
 
 /**
  * @brief Plugin owning all admin-domain entity controllers.
@@ -81,6 +84,15 @@ private:
     std::unique_ptr<SystemSettingController> systemSettingController_;
     std::unique_ptr<BadgeDefinitionController> badgeDefinitionController_;
     std::unique_ptr<BadgeSeverityController> badgeSeverityController_;
+
+    /**
+     * @brief The QA Validation Runner's dock, built in setup_menus()
+     * (not on_login()) since it must stay usable before login — see
+     * shared_menus_context::main_window/client_manager.
+     */
+    DetachableMdiSubWindow* qaValidationRunnerWindow_{nullptr};
+    QaValidationRunnerWidget* qaValidationRunnerWidget_{nullptr};
+    SettingGatedActionController* qaValidationRunnerSettingGate_{nullptr};
 };
 
 }

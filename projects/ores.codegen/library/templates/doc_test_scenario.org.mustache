@@ -27,18 +27,27 @@ This page documents a test scenario verifying [[id:{{parent_id}}][{{parent_title
 
 * Steps
 
-- [ ] (First manual step the tester should perform.)
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** (First manual step the tester should perform.)
+
+(Optional longer instructions for this step.)
 
 # For a multi-client scenario (Clients field above is non-empty),
-# replace the flat list above with one sub-heading per client and that
-# client's own steps underneath instead, e.g.:
+# nest steps one level deeper instead, under one sub-heading per
+# client, e.g.:
 #
 #   ** blue
-#   - [ ] Open the counterparty lookup and search
+#   *** Open the counterparty lookup and search
 #   ** red
-#   - [ ] Confirm the notification arrived and the list refreshed
+#   *** Confirm the notification arrived and the list refreshed
 #
-# Single-client scenarios (the common case) keep the flat list above.
+# Single-client scenarios (the common case) keep steps as direct
+# children of * Steps, as above.
 
 * Results
 
@@ -49,10 +58,5 @@ This page documents a test scenario verifying [[id:{{parent_id}}][{{parent_title
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |
-
-** Step results
-
-| Step | Passed |
-|------+--------|
 
 * Notes

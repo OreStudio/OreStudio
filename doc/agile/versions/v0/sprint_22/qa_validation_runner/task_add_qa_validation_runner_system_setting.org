@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 3CB90054-9B0C-45CC-B955-2EDBB93F9EB2
+:END:
+#+title: Task: Add the qa_validation_runner_enabled system setting
+#+description: Seed system.qa_validation_runner_enabled as a boolean system setting so the QA Validation Runner's visibility is a runtime, operator-controlled decision, not a compile-time macro.
+#+type: task
+#+level: s1
+#+filetags: :sql:variability:testing:qa_validation_runner:sprint_22:v0:
+#+owner: marco
+#+branch: feature/qa-validation-runner-panel
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Seed =system.qa_validation_runner_enabled= as a boolean system setting
+(default =true=) so the QA Validation Runner's visibility is a
+runtime, operator-controlled decision, not a compile-time macro.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- [X] =system.qa_validation_runner_enabled= (boolean, default =true=)
+  seeded in =variability_system_settings_populate.sql= for the system
+  tenant.
+- [X] Same setting seeded per-tenant in
+  =iam_tenant_provisioner_create.sql= (alongside =system.bootstrap_mode=)
+  so every newly-provisioned tenant gets it too.
+- [X] =SettingGatedActionController::registerAction()= gains a
+  =default_when_missing= parameter, used here so the feature fails open
+  (visible) rather than silently hiding if the setting is ever absent
+  for a tenant.
+
+* Plan
+
+Straightforward seeding, plus one real discovery along the way: system
+settings turned out to be tenant-scoped end to end
+(=system_settings_service::get_all()= only reads the caller's own
+tenant, no fallback to the system tenant), and tenant provisioning only
+ever seeded =system.bootstrap_mode= per-tenant. Confirmed live against
+the =barclays= tenant — the setting existed (and was =true=) under
+=system= but was completely absent under =barclays=, so the Testing
+menu item was silently invisible after login despite the "system"-wide
+setting saying otherwise.
+
+Fixed at two levels: seeded the setting for =barclays= directly (via
+=ores.shell='s =variability save-setting=, since a raw SQL upsert
+requires =current_user= to resolve to a valid account username, which a
+superuser psql connection doesn't satisfy once a tenant is past
+bootstrap) and added it to the tenant provisioner's seeding block so
+future tenants get it automatically. Also added
+=SettingGatedActionController='s =default_when_missing= parameter as a
+second line of defence — a feature meant to be on-by-default should
+degrade gracefully if a setting row is ever missing, not vanish.
+
+The broader gap (any =system.*= setting seeded only for =system=, not
+per-tenant, silently breaks for every other tenant — almost certainly
+also true of =system.synthetic_data_generation=) is out of scope for
+this task and captured separately:
+=doc/agile/product_backlog/inbox/system_settings_not_seeded_for_new_tenants.org=.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=system.qa_validation_runner_enabled= is seeded for the system tenant
+and for every tenant provisioned from here on, defaulting to =true=.
+=SettingGatedActionController= now supports failing open on a missing
+setting. Verified live: barclays initially lacked the row (tenant
+provisioning only seeds =bootstrap_mode=), the menu item was
+confirmed invisible, then confirmed visible after seeding it via
+=ores.shell='s =variability save-setting=. The general tenant-scoping
+gap is filed as a capture for a future story.

@@ -34,33 +34,46 @@ const QRegularExpression& heading_re() {
 }
 
 /**
- * @brief Find the line span [begin, end) of the top-level heading
- * whose title matches @p title exactly, where `end` is the first
- * subsequent line that is a heading of level <= the found heading's
- * level (or the file's line count, at EOF).
- *
- * Returns {-1, -1} if no such heading exists.
+ * @brief A heading's line span [begin, end) — up to the next heading
+ * at the same or a shallower level, or EOF — and its star-count level.
+ * Default-constructed (begin < 0) means "not found".
  */
-std::pair<int, int> find_section_span(const QStringList& lines, const QString& title) {
+struct heading_match final {
+    int begin = -1;
+    int end = -1;
+    int level = 0;
+
+    bool found() const {
+        return begin >= 0;
+    }
+};
+
+/**
+ * @brief Find the span of the first heading titled exactly @p title
+ * within lines[range_begin, range_end).
+ */
+heading_match
+find_heading(const QStringList& lines, const QString& title, int range_begin, int range_end) {
     int begin = -1;
     int level = 0;
-    for (int i = 0; i < lines.size(); ++i) {
+    for (int i = range_begin; i < range_end; ++i) {
         const auto match = heading_re().match(lines[i]);
         if (!match.hasMatch())
             continue;
+        const int lvl = static_cast<int>(match.captured(1).size());
         if (begin < 0) {
             if (match.captured(2) == title) {
                 begin = i;
-                level = static_cast<int>(match.captured(1).size());
+                level = lvl;
             }
             continue;
         }
-        if (static_cast<int>(match.captured(1).size()) <= level)
-            return {begin, i};
+        if (lvl <= level)
+            return {begin, i, level};
     }
     if (begin < 0)
-        return {-1, -1};
-    return {begin, lines.size()};
+        return {};
+    return {begin, range_end, level};
 }
 
 QStringList render_results_section(const scenario_result& result,
@@ -74,33 +87,31 @@ QStringList render_results_section(const scenario_result& result,
     out << ("| Commit        | " + environment.commit + " |");
     out << ("| Worktree      | " + environment.worktree + " |");
     out << "";
-    out << "** Step results" << "";
-    // The Client column only appears when at least one step actually
-    // used it — a single-client run's table stays exactly as simple
-    // as the common case needs.
-    const bool has_clients = std::any_of(result.steps.begin(),
-                                         result.steps.end(),
-                                         [](const step_result& s) { return !s.client.isEmpty(); });
-    if (has_clients) {
-        out << "| Step | Client | Passed |" << "|------+--------+--------|";
-        for (const auto& step : result.steps) {
-            out << ("| " + step.step_text + " | " + step.client + " | " +
-                    QString(step.passed ? "Yes" : "No") + " |");
-        }
-    } else {
-        out << "| Step | Passed |" << "|------+--------|";
-        for (const auto& step : result.steps)
-            out << ("| " + step.step_text + " | " + QString(step.passed ? "Yes" : "No") + " |");
-    }
-    out << "";
     return out;
 }
 
-QStringList render_notes_section(const scenario_result& result) {
+/**
+ * @brief Render a step's =*** Result= child heading. @p level is the
+ * step heading's own level plus one, so it nests correctly whether the
+ * step is a direct child of =* Steps= or, for a multi-client scenario,
+ * nested one level deeper under a per-client sub-heading.
+ */
+QStringList render_step_result(int level, const QString& status, const QString& notes) {
+    const QString stars(level, QChar('*'));
     QStringList out;
-    out << "* Notes" << "";
-    if (!result.notes.isEmpty())
-        out << result.notes;
+    out << (stars + " Result") << "";
+    out << "| Field  | Value |" << "|--------+-------|";
+    out << ("| Status | " + status + " |");
+    if (!notes.isEmpty()) {
+        // Notes render as a single table row/cell — collapse embedded
+        // newlines and pipes so they can't be mistaken for row/column
+        // separators.
+        QString flattened = notes;
+        flattened.replace(QChar('\n'), QStringLiteral("; "));
+        flattened.replace(QChar('|'), QStringLiteral("/"));
+        out << ("| Notes  | " + flattened + " |");
+    }
+    out << "";
     return out;
 }
 
@@ -120,14 +131,9 @@ bool write_scenario_results(const QString& path,
     }
     file.close();
 
-    const auto results_span = find_section_span(lines, "Results");
-    if (results_span.first < 0)
+    const auto results_span = find_heading(lines, "Results", 0, lines.size());
+    if (!results_span.found())
         return false;
-
-    // Splice Notes first if it comes after Results (so Results' span
-    // indices, computed against the original list, aren't invalidated
-    // by an earlier splice shifting later line numbers).
-    const auto notes_span = find_section_span(lines, "Notes");
 
     struct splice final {
         int begin;
@@ -136,10 +142,26 @@ bool write_scenario_results(const QString& path,
     };
     std::vector<splice> splices;
     splices.push_back(
-        {results_span.first, results_span.second, render_results_section(result, environment)});
-    if (notes_span.first >= 0)
-        splices.push_back({notes_span.first, notes_span.second, render_notes_section(result)});
+        {results_span.begin, results_span.end, render_results_section(result, environment)});
 
+    for (const auto& step : result.steps) {
+        const auto step_span = find_heading(lines, step.step_title, 0, lines.size());
+        if (!step_span.found())
+            continue; // stale/renamed step — skip, don't fail the whole write.
+
+        const int child_level = step_span.level + 1;
+        const auto existing_result =
+            find_heading(lines, "Result", step_span.begin + 1, step_span.end);
+        const auto content = render_step_result(child_level, step.status, step.notes);
+
+        if (existing_result.found())
+            splices.push_back({existing_result.begin, existing_result.end, content});
+        else
+            splices.push_back({step_span.end, step_span.end, content});
+    }
+
+    // Splice bottom-up (descending by start index) so each earlier
+    // splice's indices are still valid when it's applied.
     std::sort(splices.begin(), splices.end(), [](const splice& a, const splice& b) {
         return a.begin > b.begin;
     });

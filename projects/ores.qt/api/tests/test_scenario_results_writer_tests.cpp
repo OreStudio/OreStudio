@@ -20,7 +20,6 @@
 #include "ores.qt/TestScenarioResultsWriter.hpp"
 #include <QDir>
 #include <QFile>
-#include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QTextStream>
 #include <catch2/catch_test_macros.hpp>
@@ -40,19 +39,19 @@ const QString sample_doc = "#+title: Test Scenario: Sample\n"
                            "\n"
                            "* Steps\n"
                            "\n"
-                           "- [ ] Open the dialog\n"
-                           "- [ ] Click save\n"
+                           "** Open the dialog\n"
+                           "\n"
+                           "Click the toolbar's Open icon and pick a file.\n"
+                           "\n"
+                           "** Click save\n"
+                           "\n"
+                           "Click the Save icon and confirm no error appears.\n"
                            "\n"
                            "* Results\n"
                            "\n"
                            "| Field | Value |\n"
                            "|-------+-------|\n"
                            "| Status |  |\n"
-                           "\n"
-                           "** Step results\n"
-                           "\n"
-                           "| Step | Passed |\n"
-                           "|------+--------|\n"
                            "\n"
                            "* Notes\n"
                            "\n"
@@ -70,7 +69,7 @@ QString write_temp_doc(const QString& dir, const QString& content) {
 
 }
 
-TEST_CASE("write_scenario_results rewrites Results and Notes, leaving everything else untouched",
+TEST_CASE("write_scenario_results rewrites Results and each step's Result, leaving the rest untouched",
           tags) {
     QTemporaryDir tmp;
     REQUIRE(tmp.isValid());
@@ -79,10 +78,9 @@ TEST_CASE("write_scenario_results rewrites Results and Notes, leaving everything
     ores::qt::scenario_result result;
     result.status = "PASSED";
     result.steps = {
-        {"Open the dialog", true, {}},
-        {"Click save", true, {}},
+        {"Open the dialog", "PASS", "Opened fine."},
+        {"Click save", "PASS", {}},
     };
-    result.notes = "Everything worked as expected.";
 
     ores::qt::environment_metadata env;
     env.branch = "feature/qa-validation-runner-panel";
@@ -95,35 +93,53 @@ TEST_CASE("write_scenario_results rewrites Results and Notes, leaving everything
     REQUIRE(file.open(QIODevice::ReadOnly | QIODevice::Text));
     const QString written = QTextStream(&file).readAll();
 
-    // Untouched sections still present verbatim.
+    // Untouched sections/step instructions still present verbatim.
     REQUIRE(written.contains("#+title: Test Scenario: Sample"));
-    REQUIRE(written.contains("- [ ] Open the dialog"));
-    REQUIRE(written.contains("- [ ] Click save"));
+    REQUIRE(written.contains("Click the toolbar's Open icon and pick a file."));
+    REQUIRE(written.contains("Click the Save icon and confirm no error appears."));
     REQUIRE(written.contains("[[id:AAAA][Some task]]"));
 
-    // Results rewritten.
+    // Overall Results rewritten.
     REQUIRE(written.contains("| Status        | PASSED |"));
     REQUIRE(written.contains("| Branch        | feature/qa-validation-runner-panel |"));
     REQUIRE(written.contains("| Commit        | abc1234 |"));
     REQUIRE(written.contains("| Worktree      | bright_faraday |"));
-    REQUIRE(written.contains("| Open the dialog | Yes |"));
-    REQUIRE(written.contains("| Click save | Yes |"));
 
-    // Notes rewritten, old placeholder text gone.
-    REQUIRE(written.contains("Everything worked as expected."));
-    REQUIRE_FALSE(written.contains("Pre-existing notes text"));
+    // Each step gets its own *** Result child heading, nested one level
+    // deeper than the step itself (** -> ***).
+    REQUIRE(written.contains("*** Result"));
+    REQUIRE(written.contains("| Status | PASS |"));
+    REQUIRE(written.contains("| Notes  | Opened fine. |"));
+
+    // The scenario-level * Notes section is no longer touched by this
+    // writer — per-step notes replaced it — so its content survives.
+    REQUIRE(written.contains("Pre-existing notes text"));
 }
 
-TEST_CASE("write_scenario_results adds a Client column only for multi-client runs", tags) {
+TEST_CASE("write_scenario_results nests a step's Result one level deeper for a multi-client step",
+          tags) {
     QTemporaryDir tmp;
     REQUIRE(tmp.isValid());
-    const QString path = write_temp_doc(tmp.path(), sample_doc);
+    const QString doc = "* Scenario Info\n"
+                        "\n"
+                        "* Steps\n"
+                        "\n"
+                        "** blue\n"
+                        "*** Open the counterparty lookup\n"
+                        "** red\n"
+                        "*** Confirm the notification arrived\n"
+                        "\n"
+                        "* Results\n"
+                        "\n"
+                        "| Field | Value |\n"
+                        "|-------+-------|\n";
+    const QString path = write_temp_doc(tmp.path(), doc);
 
     ores::qt::scenario_result result;
     result.status = "PASSED";
     result.steps = {
-        {"Open the dialog on blue", true, "blue"},
-        {"Confirm notification on red", true, "red"},
+        {"Open the counterparty lookup", "PASS", {}},
+        {"Confirm the notification arrived", "FAIL", "Never showed up."},
     };
 
     REQUIRE(ores::qt::write_scenario_results(path, result, {}));
@@ -132,9 +148,52 @@ TEST_CASE("write_scenario_results adds a Client column only for multi-client run
     REQUIRE(file.open(QIODevice::ReadOnly | QIODevice::Text));
     const QString written = QTextStream(&file).readAll();
 
-    REQUIRE(written.contains("| Step | Client | Passed |"));
-    REQUIRE(written.contains("| Open the dialog on blue | blue | Yes |"));
-    REQUIRE(written.contains("| Confirm notification on red | red | Yes |"));
+    // Nested one level deeper than the *** step heading: ****.
+    REQUIRE(written.contains("**** Result"));
+    REQUIRE(written.contains("| Status | FAIL |"));
+    REQUIRE(written.contains("| Notes  | Never showed up. |"));
+}
+
+TEST_CASE("write_scenario_results re-running a step replaces its previous Result, not duplicates it",
+          tags) {
+    QTemporaryDir tmp;
+    REQUIRE(tmp.isValid());
+    const QString path = write_temp_doc(tmp.path(), sample_doc);
+
+    ores::qt::scenario_result first;
+    first.status = "FAILED";
+    first.steps = {{"Open the dialog", "FAIL", "First attempt failed."}};
+    REQUIRE(ores::qt::write_scenario_results(path, first, {}));
+
+    ores::qt::scenario_result second;
+    second.status = "PASSED";
+    second.steps = {{"Open the dialog", "PASS", "Second attempt worked."}};
+    REQUIRE(ores::qt::write_scenario_results(path, second, {}));
+
+    QFile file(path);
+    REQUIRE(file.open(QIODevice::ReadOnly | QIODevice::Text));
+    const QString written = QTextStream(&file).readAll();
+
+    REQUIRE(written.contains("Second attempt worked."));
+    REQUIRE_FALSE(written.contains("First attempt failed."));
+    REQUIRE(written.count(QStringLiteral("*** Result")) == 1);
+}
+
+TEST_CASE("write_scenario_results skips a step whose title isn't found in the doc", tags) {
+    QTemporaryDir tmp;
+    REQUIRE(tmp.isValid());
+    const QString path = write_temp_doc(tmp.path(), sample_doc);
+
+    ores::qt::scenario_result result;
+    result.status = "PASSED";
+    result.steps = {{"This step does not exist", "PASS", {}}};
+
+    REQUIRE(ores::qt::write_scenario_results(path, result, {}));
+
+    QFile file(path);
+    REQUIRE(file.open(QIODevice::ReadOnly | QIODevice::Text));
+    const QString written = QTextStream(&file).readAll();
+    REQUIRE_FALSE(written.contains("This step does not exist"));
 }
 
 TEST_CASE("write_scenario_results returns false when the doc has no Results heading", tags) {

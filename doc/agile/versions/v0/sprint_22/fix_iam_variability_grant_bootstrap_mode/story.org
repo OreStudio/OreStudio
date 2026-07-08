@@ -8,7 +8,7 @@
 #+filetags: :sprint_22:v0:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -42,7 +42,7 @@ Observed while provisioning the Barclays Plc tenant via
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -63,7 +63,7 @@ Observed while provisioning the Barclays Plc tenant via
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:95F83186-36A6-4F73-9A8A-85FBB02453FA][System settings are tenant-scoped but only bootstrap_mode is seeded per-tenant]] | BACKLOG | | | SettingGatedActionController-gated features (e.g. synthetic data generation) silently hide for every tenant except the system tenant, since system_settings_service.get_all() only reads the caller's own tenant and tenant provisioning only seeds system.bootstrap_mode. |
-| [[id:F1E5832D-F837-40AF-B0B3-32D787C3800A][Grant IAM service DML on variability system_settings table]] | BACKLOG | | | IAM's tenant_handler cross-domain-calls variability::service::system_settings_service to clear bootstrap_mode, but the IAM service DB role has no grant on ores_variability_* tables, so the write fails with permission denied and is silently swallowed. |
+| [[id:F1E5832D-F837-40AF-B0B3-32D787C3800A][Grant IAM service DML on variability system_settings table]] | STARTED | 2026-07-08 | | IAM's tenant_handler cross-domain-calls variability::service::system_settings_service to clear bootstrap_mode, but the IAM service DB role has no grant on ores_variability_* tables, so the write fails with permission denied and is silently swallowed. |
 
 * Decisions
 

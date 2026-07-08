@@ -8,7 +8,7 @@
 #+filetags: :commission_party_status:sprint_22:v0:
 #+owner: marco
 #+branch: feature/verify-qt-party-status
-#+pr:
+#+pr: 1462
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -63,7 +63,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1462][#1462]] | [ores.qt,ores.refdata.service] Verify party_status Qt UI post-NATS |
 
 * Review
 

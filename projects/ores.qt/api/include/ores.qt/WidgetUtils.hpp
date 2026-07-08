@@ -22,12 +22,14 @@
 
 #include <QApplication>
 #include <QComboBox>
+#include <QEvent>
 #include <QListView>
 #include <QPointer>
 #include <QScreen>
 #include <QShowEvent>
 #include <QSize>
 #include <QTimer>
+#include <QVariant>
 #include <QWidget>
 
 namespace ores::qt {
@@ -89,6 +91,32 @@ private:
 };
 
 /**
+ * @brief Swallows the interaction events that let a user change a
+ * QComboBox's selection, while leaving the widget fully enabled (normal
+ * colour, icon still visible) — unlike setEnabled(false), which grays the
+ * whole widget out and typically fades its icon too. Installed/removed via
+ * set_combo_locked() below.
+ */
+class ComboLockFilter final : public QObject {
+public:
+    using QObject::QObject;
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override {
+        switch (event->type()) {
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseButtonDblClick:
+        case QEvent::Wheel:
+        case QEvent::KeyPress:
+            return true; // swallow: block the interaction, keep the widget visually normal
+        default:
+            return QObject::eventFilter(watched, event);
+        }
+    }
+};
+
+/**
  * @brief Utility functions for common widget configuration.
  */
 struct WidgetUtils {
@@ -107,6 +135,66 @@ struct WidgetUtils {
             combo->setMaxVisibleItems(10);
             combo->setView(new BoundedListView(combo));
         }
+    }
+
+    /**
+     * @brief Lock or unlock a combo box's selection without graying it out.
+     *
+     * For an identity-defining field (e.g. currency_pair's base/quote
+     * currency once created) that should read as normal, fully-visible
+     * content — flag icon included — rather than the faded
+     * setEnabled(false) look. Safe to call repeatedly; only one filter is
+     * ever installed per combo.
+     *
+     * @param combo  The combo box to lock/unlock (no-op if null).
+     * @param locked True to block interaction, false to restore it.
+     */
+    static void set_combo_locked(QComboBox* combo, bool locked) {
+        if (!combo)
+            return;
+        // Always visually enabled — locking is entirely via the event
+        // filter below, so this also undoes a prior setEnabled(false)
+        // from generated code that ran before this call (the paste-block
+        // seams that call this always run after the generated per-field
+        // lock logic).
+        combo->setEnabled(true);
+        static const char* filter_property = "ores_combo_lock_filter";
+        auto* existing = combo->property(filter_property).value<QObject*>();
+        if (locked) {
+            if (existing)
+                return;
+            auto* filter = new ComboLockFilter(combo);
+            combo->installEventFilter(filter);
+            combo->setProperty(filter_property, QVariant::fromValue(filter));
+            combo->setFocusPolicy(Qt::NoFocus);
+        } else {
+            if (existing) {
+                combo->removeEventFilter(existing);
+                existing->deleteLater();
+                combo->setProperty(filter_property, QVariant());
+            }
+            combo->setFocusPolicy(Qt::WheelFocus);
+        }
+    }
+
+    /**
+     * @brief Disable a combo box for a field that's genuinely not
+     * applicable right now (as opposed to set_combo_locked(), for a field
+     * that's still relevant but not editable) — grays it out via the
+     * normal setEnabled(false) look *and* clears any stale selection, so
+     * a disabled combo never shows a leftover value the user might read
+     * as still in effect.
+     *
+     * @param combo        The combo box (no-op if null).
+     * @param unavailable  True to disable and clear; false to re-enable
+     * (leaves the selection empty — the caller repopulates as needed).
+     */
+    static void set_combo_unavailable(QComboBox* combo, bool unavailable) {
+        if (!combo)
+            return;
+        combo->setEnabled(!unavailable);
+        if (unavailable)
+            combo->setCurrentIndex(-1);
     }
 };
 

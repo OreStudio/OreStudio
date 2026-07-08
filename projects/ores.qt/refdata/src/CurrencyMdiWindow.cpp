@@ -22,6 +22,7 @@
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/ImportEntityDialog.hpp"
@@ -193,6 +194,7 @@ CurrencyMdiWindow::CurrencyMdiWindow(ClientManager* clientManager,
         new EntityItemDelegate(ClientCurrencyModel::columnStyles(), currencyTableView_));
 
     currencyTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    currencyTableView_->setIconSize(single_flag_icon_size());
 
     // Use column metadata for default hidden columns
     initializeTableSettings(currencyTableView_,

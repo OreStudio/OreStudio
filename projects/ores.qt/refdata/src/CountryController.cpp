@@ -149,6 +149,7 @@ void CountryController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void CountryController::onShowHistory(const refdata::domain::country& country) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << country.alpha2_code;
     showHistoryWindow(QString::fromStdString(country.alpha2_code));
@@ -308,6 +309,7 @@ void CountryController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Country History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -432,6 +434,28 @@ void CountryController::onRevertVersion(const refdata::domain::country& country)
 
 EntityListMdiWindow* CountryController::listWindow() const {
     return listWindow_;
+}
+
+void CountryController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

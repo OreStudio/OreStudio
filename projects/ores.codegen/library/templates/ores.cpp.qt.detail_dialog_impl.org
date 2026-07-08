@@ -16,6 +16,38 @@ Loads the generated =.ui=; field get/set per widget kind.  Qt UI component: mode
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
 
+* Extension points
+
+=<<paste:UUID>>= markers in this template are paste-block injection
+points — see [[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][paste blocks: injecting custom code into generated files]]
+for the full mechanism, and its Qt-specific table for the complete
+list. This template defines six:
+
+- =3F8B6C1D-4E2A-4F9B-8C3D-1A5E7F2B9D4C= — top of the file, after the
+  generated =#include= lines. Extra includes any of the other four
+  seams below need.
+- =B6F2748A-9896-4B9C-BEAC-38436FD1CA79= — end of =setupConnections()=.
+  Extra =connect()= wiring, e.g. a derived field kept live-synced from
+  the fields it's computed from.
+- =9A719585-3AB1-47DE-B0B0-99AFDFE7180E= — end of =setCreateMode()=,
+  after the generated =locked_fields= loop. Runs last, so a paste block
+  can override what the generated per-field lock logic just did — e.g.
+  replace a =setEnabled(false)=-based lock with
+  =WidgetUtils::set_combo_locked()= for a field that should stay
+  visually normal, flag icon included, while locked.
+- =7A4AE8D5-A22D-4912-B4BF-D58215681CD2= — end of =setReadOnly()=,
+  after the generated =is_locked_after_create= loop. Same rationale as
+  the =setCreateMode()= seam above.
+- =EC97923E-BC8D-4A50-9970-CBC5CBD4B732= — near the end of the file,
+  after the generated methods. Implementation bodies for whatever the
+  header seam (=F55CB64E-165A-4E15-A50A-5723C0320E97= in
+  [[id:0264FF98-86B8-4C43-AFE5-DF93567C63D2][ores.cpp.qt.detail_dialog_header]]) declared.
+- =69F22F14-6701-4E73-AFCC-78AC1B1FDDDF= — inside =validateInput()='s
+  =return= chain, after the generated required-field checks, before
+  the closing =;=. Extra =&& (...)= conditions, e.g. cross-field
+  validation the generic required-field mechanism can't express (two
+  fields must differ, a combination of values is invalid together).
+
 * Template
 
 The full template source. Edit here and re-tangle with
@@ -78,6 +110,8 @@ The full template source. Edit here and re-tangle with
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "{{domain_entity.qt.protocol_include}}"
+{{! see * Extension points above }}
+<<paste:3F8B6C1D-4E2A-4F9B-8C3D-1A5E7F2B9D4C>>
 
 namespace ores::qt {
 
@@ -232,6 +266,12 @@ QIcon {{domain_entity.entity_pascal}}DetailDialog::keyFlagIcon(const std::string
     return imageCache() ? imageCache()->{{domain_entity.qt.key_flag_accessor}}(key) : QIcon();
 {{/domain_entity.qt.key_flag_accessor_is_free_fn}}
 }
+{{#domain_entity.qt.key_flag_is_pair}}
+
+QSize {{domain_entity.entity_pascal}}DetailDialog::keyFlagIconSize() const {
+    return currency_pair_icon_size();
+}
+{{/domain_entity.qt.key_flag_is_pair}}
 {{/domain_entity.qt.has_key_flag_icon}}
 
 {{#domain_entity.qt.has_combo_fields}}
@@ -289,6 +329,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
 {{/is_flagged_combo}}
 {{/is_key}}
 {{/domain_entity.qt.detail_fields}}
+{{! see * Extension points above }}
+<<paste:B6F2748A-9896-4B9C-BEAC-38436FD1CA79>>
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::setClientManager(ClientManager* clientManager) {
@@ -336,7 +378,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{field_pascal}}Combo(
 {{^is_optional_string}}
         return QString::fromStdString({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
 {{/is_optional_string}}
-    });
+    }{{#flag_icon_height}}, single_flag_icon_size({{flag_icon_height}}){{/flag_icon_height}});
 }
 {{/combo_helper}}
 {{^combo_helper}}
@@ -405,9 +447,23 @@ void {{domain_entity.entity_pascal}}DetailDialog::set{{domain_entity.entity_pasc
 
 void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-{{^domain_entity.qt.has_uuid_primary_key}}
-    ui_->{{domain_entity.qt.key_widget}}->setReadOnly(!createMode);
-{{/domain_entity.qt.has_uuid_primary_key}}
+{{#domain_entity.qt.locked_fields}}
+{{#is_line_edit}}
+    ui_->{{widget}}->setReadOnly(!createMode);
+{{/is_line_edit}}
+{{#is_text_edit}}
+    ui_->{{widget}}->setReadOnly(!createMode);
+{{/is_text_edit}}
+{{#is_static_combo}}
+    ui_->{{widget}}->setEnabled(createMode);
+{{/is_static_combo}}
+{{#is_dynamic_combo}}
+    ui_->{{widget}}->setEnabled(createMode);
+{{/is_dynamic_combo}}
+{{#is_flagged_combo}}
+    ui_->{{widget}}->setEnabled(createMode);
+{{/is_flagged_combo}}
+{{/domain_entity.qt.locked_fields}}
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
 {{#domain_entity.qt.has_uuid_primary_key}}
@@ -417,6 +473,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode)
 {{/domain_entity.qt.has_uuid_primary_key}}
     hasChanges_ = false;
     updateSaveButtonState();
+{{! see * Extension points above }}
+<<paste:9A719585-3AB1-47DE-B0B0-99AFDFE7180E>>
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::markDirty() {
@@ -433,7 +491,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly, int
 {{/domain_entity.qt.has_version_navigation}}
     readOnly_ = readOnly;
 {{#domain_entity.qt.detail_fields}}
-{{#is_key}}
+{{#is_locked_after_create}}
 {{#is_line_edit}}
     ui_->{{widget}}->setReadOnly(true);
 {{/is_line_edit}}
@@ -449,8 +507,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly, int
 {{#is_flagged_combo}}
     ui_->{{widget}}->setEnabled(false);
 {{/is_flagged_combo}}
-{{/is_key}}
-{{^is_key}}
+{{/is_locked_after_create}}
+{{^is_locked_after_create}}
 {{#is_line_edit}}
     ui_->{{widget}}->setReadOnly(readOnly);
 {{/is_line_edit}}
@@ -466,7 +524,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly, int
 {{#is_flagged_combo}}
     ui_->{{widget}}->setEnabled(!readOnly);
 {{/is_flagged_combo}}
-{{/is_key}}
+{{/is_locked_after_create}}
 {{/domain_entity.qt.detail_fields}}
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
@@ -474,6 +532,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly, int
     if (revertAction_)
         revertAction_->setVisible(readOnly);
 {{/domain_entity.qt.has_version_navigation}}
+{{! see * Extension points above }}
+<<paste:7A4AE8D5-A22D-4912-B4BF-D58215681CD2>>
 }
 {{#domain_entity.qt.has_version_navigation}}
 
@@ -797,7 +857,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
 
 void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_pascal_short}}FromUi() {
 {{#domain_entity.qt.detail_fields}}
-{{#is_key}}
+{{#is_locked_after_create}}
 {{^is_uuid}}
     if (createMode_) {
 {{#is_line_edit}}
@@ -809,10 +869,13 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
 {{#is_dynamic_combo}}
         {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->currentData().toString().trimmed().toStdString();
 {{/is_dynamic_combo}}
+{{#is_flagged_combo}}
+        {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->currentText().trimmed().toStdString();
+{{/is_flagged_combo}}
     }
 {{/is_uuid}}
-{{/is_key}}
-{{^is_key}}
+{{/is_locked_after_create}}
+{{^is_locked_after_create}}
 {{#is_line_edit}}
 {{^is_uuid}}
 {{^is_optional_uuid}}
@@ -902,7 +965,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
         ui_->{{widget}}->currentText().toStdString();
 {{/is_optional_string}}
 {{/is_flagged_combo}}
-{{/is_key}}
+{{/is_locked_after_create}}
 {{/domain_entity.qt.detail_fields}}
     {{domain_entity.qt.item_var}}_.{{#domain_entity.qt.modified_by_access}}{{domain_entity.qt.modified_by_access}}{{/domain_entity.qt.modified_by_access}}{{^domain_entity.qt.modified_by_access}}modified_by{{/domain_entity.qt.modified_by_access}} = username_;
 }
@@ -937,6 +1000,8 @@ bool {{domain_entity.entity_pascal}}DetailDialog::validateInput() {
 {{#domain_entity.qt.required_dynamic_combo_fields}}
         && {{field}}_selected
 {{/domain_entity.qt.required_dynamic_combo_fields}}
+{{! see * Extension points above }}
+<<paste:69F22F14-6701-4E73-AFCC-78AC1B1FDDDF>>
     ;
 }
 
@@ -1130,6 +1195,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
+{{! see * Extension points above }}
+<<paste:EC97923E-BC8D-4A50-9970-CBC5CBD4B732>>
 
 }
 #+end_src

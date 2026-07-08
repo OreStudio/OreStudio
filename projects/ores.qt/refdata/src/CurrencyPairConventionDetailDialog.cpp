@@ -99,6 +99,10 @@ QIcon CurrencyPairConventionDetailDialog::keyFlagIcon(const std::string& key) co
     return imageCache() ? currency_flag_icon_from_pair_code(*imageCache(), key) : QIcon();
 }
 
+QSize CurrencyPairConventionDetailDialog::keyFlagIconSize() const {
+    return currency_pair_icon_size(24);
+}
+
 void CurrencyPairConventionDetailDialog::setupCombos() {
     ui_->businessDayConventionCombo->clear();
     ui_->businessDayConventionCombo->addItem(tr("Following"), QString("Following"));

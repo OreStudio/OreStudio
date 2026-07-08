@@ -42,6 +42,11 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 CountryDetailDialog::~CountryDetailDialog() {
@@ -60,6 +65,10 @@ ProvenanceWidget* CountryDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
 }
 
+QString CountryDetailDialog::code() const {
+    return QString::fromStdString(country_.alpha2_code);
+}
+
 void CountryDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
@@ -71,7 +80,8 @@ void CountryDetailDialog::setupUi() {
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
-    // Flag editor hosted in the .ui flagGroup; base class owns the button.
+    // Flag editor hosted in the .ui flagGroup; base class owns the button
+    // (also wires the inline key-field icon — see initKeyFlagField()).
     initFlagButton(ui_->flagGroup->layout());
 }
 
@@ -289,7 +299,8 @@ void CountryDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -340,5 +351,11 @@ void CountryDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
+// Extra method implementations seam: a future
+// :implements EC97923E-BC8D-4A50-9970-CBC5CBD4B732 block is expected to
+// define the bodies of any methods declared via the header seam at
+// F55CB64E-165A-4E15-A50A-5723C0320E97 — see paste_blocks_in_codegen.org.
+// Left empty when no entity implements this kind.
 
 }

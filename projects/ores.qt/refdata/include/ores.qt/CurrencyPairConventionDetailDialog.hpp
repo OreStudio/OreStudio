@@ -92,6 +92,7 @@ protected:
     QString code() const override;
     QLineEdit* keyFlagField() const override;
     QIcon keyFlagIcon(const std::string& key) const override;
+    QSize keyFlagIconSize() const override;
 
 private:
     void setupUi();

@@ -158,6 +158,8 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this,
             &{{domain_entity.entity_pascal}}MdiWindow::viewHistorySelected);
+{{! see * Extension points above }}
+<<paste:18B9ED63-78C2-4259-93AC-CCDFBC88EFBD>>
 
 {{#domain_entity.qt.has_csv_xml_io}}
     toolbar_->addSeparator();

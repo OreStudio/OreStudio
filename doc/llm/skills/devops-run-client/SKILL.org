@@ -20,7 +20,7 @@ license: Complete terms in LICENSE.txt
 
 * When to use this skill
 
-Launching the Qt client, detached so the terminal stays free; colour and instance name keep parallel runs apart.
+Launching the Qt client, detached so the terminal stays free; colour and instance name keep parallel runs apart. Whenever there's a UI test scenario to run through, always launch (or restart) with =--open-scenario= pointing at it — never make the user navigate to Scenario Runner and open the file by hand.
 
 * How to use this skill
 
@@ -30,7 +30,25 @@ Launching the Qt client, detached so the terminal stays free; colour and instanc
    ./projects/ores.compass/compass.sh client start --colour <colour> --instance-name <name>
    #+end_src
 
-2. /Stop/ (pass the same =--colour= the instance was started with):
+2. /Launch with a test scenario pre-loaded/ — whenever there's UI testing to do, always supply this instead of a bare launch. =--open-scenario= must be an *absolute* path — the client's working directory is not the repo root, so a relative path (even one that's correct from your own shell) fails with a filesystem error:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh client start --colour <colour> --open-scenario /absolute/path/to/scenario_*.org
+   #+end_src
+
+   Opens the Scenario Runner (System > Testing) with that =test_scenario=
+   doc already loaded, so the tester can start working through steps
+   immediately instead of using Scenario Runner's own Open button.
+
+3. /Always include a connect/login step in the scenario itself/ — every
+   =test_scenario= doc opened this way must state, in its =* Context=
+   section, the exact account to log in as and its password (e.g.
+   =tenant_admin@barclays_plc= / =Secure-Password-123=) and which party
+   to select, plus how to get back to that state if the DB was recreated
+   since (the provisioning script to re-run). Never leave the tester to
+   guess credentials or starting state.
+
+4. /Stop/ (pass the same =--colour= the instance was started with):
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh client stop --colour <colour>

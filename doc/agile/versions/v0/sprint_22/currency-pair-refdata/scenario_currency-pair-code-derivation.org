@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 6E3AE4EB-FEDE-4901-933D-9D9D2BCE86B9
+:END:
+#+title: Test Scenario: Currency Pair pair_code derivation, base/quote locking, settlement toggle
+#+description: Verify pair_code is derived from base/quote and read-only, base/quote lock after creation without graying, and settlement currency toggles with Deliverable.
+#+type: test_scenario
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+target_dialog:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:BBB450FD-845D-4D6D-AA54-07589FDC1DFF][Pair code doesn't recompute when base/quote currency changes]] in [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:BBB450FD-845D-4D6D-AA54-07589FDC1DFF][Pair code doesn't recompute when base/quote currency changes]] |
+| Parent story  | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]   |
+| Target dialog | CurrencyPairDetailDialog, CurrencyPairMdiWindow |
+| Clients       |                                         |
+| State         | PENDING                               |
+
+* Context
+
+- Log in as =tenant_admin@barclays_plc= (password
+  =Secure-Password-123=) and select the BARCLAYS PLC party. If the DB
+  was recreated since, re-run
+  =compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+  to restore this starting state.
+- Services and the Qt client should already be running.
+
+* Steps
+
+** Create a new Currency Pair: pair_code derives live from Base/Quote
+
+Open Currency Pairs, click Add. Confirm Pair Code starts blank/
+unfocusable (not directly typeable). Pick a Base Currency, then a
+Quote Currency — confirm Pair Code updates live to "BASE/QUOTE" as
+each combo changes, and that its inline flag icon updates too.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | the building of the pairs is fine but there are issues:; ; - pair code is derived but its editable.; - can create a pair AFN/AFN which is not legal; - flag sizes are still completely random. see ./tmp/Screenshot from 2026-07-08 23-23-12.png. we seem to have different sizes on every dialog. currency pairs are almost unreadble in details but current in grid. currency grid and currency details have the same size but its smaller than currency pair quote and base |
+
+** Create: Base/Quote combos are fully editable
+
+While still in create mode, confirm both Base Currency and Quote
+Currency combos are enabled, respond to clicks, and show flag icons
+at a clearly legible size (bigger than the list view's icons).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Create: Deliverable toggles Settlement Currency
+
+Uncheck Deliverable — confirm Settlement Currency becomes enabled.
+Check Deliverable again — confirm Settlement Currency becomes
+disabled and its selection clears.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Save the new pair, then reopen it for edit
+
+Pick distinct, currently-unused Base/Quote currencies, save. Reopen
+the same pair (double-click in the list). Confirm Base Currency and
+Quote Currency are locked (can't be changed — clicking/scrolling them
+does nothing) but are NOT grayed out — they should look like normal,
+fully-coloured fields with their flag icons clearly visible, not
+faded/disabled-looking.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | no eventing notification |
+
+** Edit: Settlement Currency still toggles correctly with Deliverable
+
+In the same edit-mode dialog, toggle Deliverable off/on again.
+Confirm Settlement Currency's enabled state still tracks it correctly
+(this exercises the same toggle logic as create mode, now with an
+existing entity's data loaded).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Currency Pairs main toolbar and Conventions button still work
+
+Confirm the Currency Pairs list still has its main-toolbar button and
+its own "Conventions" toolbar button (regression check — this task's
+codegen changes touched the same generated files).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Attempt to save a duplicate pair_code
+
+Create another new pair, deliberately picking the same Base/Quote as
+an existing pair (so pair_code collides). Save. Confirm the UI
+surfaces a clear error dialog — not a silent no-op.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | saved EURUSD, no error but nothing on update either. |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-07-08T22:29:30Z |
+| Branch        | feature/currency-pair-code-recompute-on-currency-change |
+| Commit        | dd04c6a54 |
+| Worktree      | prime_origin |
+
+* Notes

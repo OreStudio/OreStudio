@@ -21,6 +21,7 @@
 #define ORES_QT_DETAIL_DIALOG_BASE_HPP
 
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/export.hpp"
 #include <QIcon>
 #include <QWidget>
@@ -353,6 +354,16 @@ protected:
     virtual QIcon keyFlagIcon(const std::string& key) const {
         (void)key;
         return {};
+    }
+
+    /**
+     * @brief Icon size for the inline key-field flag. Default matches a
+     * single flag; override for a pair icon (e.g. currency_pair's own
+     * pair_code, wider than tall) so it doesn't render squished/tiny at
+     * the single-flag default.
+     */
+    virtual QSize keyFlagIconSize() const {
+        return single_flag_icon_size();
     }
 
     /** @brief The shared image cache, or nullptr when the entity has no flag. */

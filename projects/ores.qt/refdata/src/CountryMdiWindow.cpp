@@ -19,6 +19,7 @@
  */
 #include "ores.qt/CountryMdiWindow.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
@@ -123,6 +124,7 @@ void CountryMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
+    tableView_->setIconSize(single_flag_icon_size());
 
 
     initializeTableSettings(tableView_, model_, "CountryListWindow", {}, {900, 400}, 1);
@@ -361,5 +363,6 @@ void CountryMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

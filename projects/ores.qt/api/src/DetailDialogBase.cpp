@@ -228,7 +228,7 @@ void DetailDialogBase::updateFlagDisplay() {
         return;
     if (auto* edit = keyFlagField()) {
         const auto key = edit->text().trimmed().toStdString();
-        set_line_edit_flag_icon(edit, keyFlagIcon(key), keyFlagAction_);
+        set_line_edit_flag_icon(edit, keyFlagIcon(key), keyFlagAction_, keyFlagIconSize());
     }
 }
 

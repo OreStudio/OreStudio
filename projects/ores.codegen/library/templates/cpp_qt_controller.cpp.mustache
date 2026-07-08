@@ -91,6 +91,8 @@ void {{domain_entity.entity_pascal}}Controller::showListWindow() {
             this, &{{domain_entity.entity_pascal}}Controller::onAddNewRequested);
     connect(listWindow_, &{{domain_entity.entity_pascal}}MdiWindow::show{{domain_entity.entity_pascal_short}}History,
             this, &{{domain_entity.entity_pascal}}Controller::onShowHistory);
+{{! see * Extension points above }}
+<<paste:52E70F3B-5903-4359-91FB-B533054A18AC>>
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);

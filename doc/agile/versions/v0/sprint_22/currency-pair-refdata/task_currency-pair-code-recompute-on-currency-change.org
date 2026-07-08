@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/currency-pair-code-recompute-on-currency-change
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -39,7 +39,7 @@ with the user before implementing.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -48,19 +48,58 @@ with the user before implementing.
 
 * Acceptance
 
-- Design decision made and recorded (GUID primary key vs. live
-  recompute-and-validate) before implementation starts.
-- Editing Base/Quote Currency in the detail dialog keeps =pair_code=
-  consistent with the current selection.
-- Duplicate =pair_code= (e.g. user edits USD/GBP into an existing
-  EUR/USD) is rejected with a clear error, not silently allowed or
-  silently overwriting the other pair.
+- Design decision made and recorded: no GUID migration — Base and
+  Quote Currency are identity-defining and become read-only after
+  creation, so =pair_code= never needs to recompute or be
+  re-validated post-creation.
+- Base Currency and Quote Currency are editable when creating a new
+  Currency Pair, and locked (disabled) when editing an existing one.
+- Creating a new Currency Pair with a =pair_code= that collides with
+  an existing pair is rejected with a clear error (verify existing DB
+  primary-key behaviour is reasonable; improve only if the resulting
+  error is unclear).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Design decision (with user): no GUID migration. Base and Quote
+Currency are identity-defining properties of a currency_pair — once
+created, they (and therefore pair_code) never change. Make them
+read-only after creation instead of recomputing/re-validating
+pair_code live.
+
+Investigated the existing lock mechanism before implementing:
+=pair_code= (the =is_key= field) is *already* correctly locked in edit
+mode — =setCreateMode(false)= calls
+=ui_->pairCodeEdit->setReadOnly(true)= via a =key_widget= property
+computed once in =core.py= (=next(f for f in detail_fields if
+is_key)=), and =update...FromUi()= only writes the key field back to
+the entity when =createMode_= is true. No latent bug here — my
+earlier hypothesis (a "phantom editable pair_code" bug) was wrong;
+=setReadOnly()= just doesn't visually gray out a =QLineEdit=, so it
+*looks* editable even though it isn't. What's actually missing:
+=base_currency=/=quote_currency= (flagged_combo, not =is_key=) have
+no lock at all — fully editable in edit mode, and their edits *do*
+get saved, which is the real bug.
+
+Generalizing rather than hand-scoping to this one entity:
+- New detail-field property =:immutable:= (bool), mirroring =is_key=
+  semantics for a non-key identity field.
+- =core.py=: replace the single =key_widget= computation with a list
+  of *all* locked fields (=is_key= or =immutable=), each carrying its
+  widget name and type (so the template can pick =setReadOnly= vs.
+  =setEnabled= per widget kind — line_edit/text_edit vs. combo).
+- Template =ores.cpp.qt.detail_dialog_impl.org=: loop over that list
+  in =setCreateMode()= instead of the single hardcoded key-widget
+  line; rename the =update...FromUi()= gate from =is_key= to a
+  combined =is_locked_after_create= (is_key OR immutable) so immutable
+  fields also only write back during create.
+- =currency_pair.org=: mark =base_currency=/=quote_currency= as
+  =immutable: true=.
+- Duplicate =pair_code= on *create*: since editing is now blocked
+  entirely, this only matters at insert time — =pair_code= is already
+  the primary key, so a duplicate insert should already fail at the DB
+  layer; verify the resulting error is reasonably clear rather than
+  building new validation from scratch.
 
 * Notes
 

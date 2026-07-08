@@ -251,6 +251,7 @@ drop function if exists ores_refdata_validate_currency_pair_convention_fn;
 :key_flag_field:              pairCodeEdit
 :key_flag_accessor:           currency_flag_icon_from_pair_code
 :key_flag_accessor_is_free_fn: true
+:key_flag_is_pair:             true
 :settings_group:         CurrencyPairConventionListWindow
 :window_title:           Currency Pair Conventions
 :icon:                   Currency

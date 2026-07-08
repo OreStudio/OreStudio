@@ -248,54 +248,57 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     // the tester needs to move/resize it freely while working through a
     // scenario alongside the dialog under test.
     if (smc.main_window && smc.mdi_area) {
+        // Same lifecycle as every other list window in the app (see
+        // EntityController::bring_window_to_front): closing destroys it
+        // (WA_DeleteOnClose), so "ensure it exists" always either reuses
+        // the still-live window or builds a fresh one — never re-shows a
+        // widget that was hidden-not-destroyed. (An earlier version kept
+        // this one alive across close for convenience, which hit what
+        // looks like a Qt/QMdiSubWindow repaint bug on reshow; this
+        // sidesteps it entirely rather than working around it.) Shared
+        // between the menu action and --open-scenario startup below —
+        // both need a live widget/window before they can do anything.
+        auto ensure_qa_runner_window = [this, main_window = smc.main_window, mdi_area = smc.mdi_area]() {
+            if (qaValidationRunnerWindow_)
+                return;
+            qaValidationRunnerWidget_ = new QaValidationRunnerWidget(main_window);
+            qaValidationRunnerWidget_->setMdiArea(mdi_area);
+            qaValidationRunnerWindow_ = new DetachableMdiSubWindow();
+            qaValidationRunnerWindow_->setWidget(qaValidationRunnerWidget_);
+            qaValidationRunnerWindow_->setWindowTitle(tr("Scenario Runner"));
+            qaValidationRunnerWindow_->setWindowIcon(ico(Icon::TasksApp));
+            qaValidationRunnerWindow_->setAttribute(Qt::WA_DeleteOnClose);
+            mdi_area->addSubWindow(qaValidationRunnerWindow_);
+
+            connect(qaValidationRunnerWindow_,
+                   &QObject::destroyed,
+                   this,
+                   [this]() {
+                       qaValidationRunnerWindow_ = nullptr;
+                       qaValidationRunnerWidget_ = nullptr;
+                   });
+            connect(qaValidationRunnerWidget_,
+                   &QaValidationRunnerWidget::statusMessage,
+                   main_window,
+                   [main_window](const QString& message) {
+                       if (auto* bar = main_window->statusBar())
+                           bar->showMessage(message, 5000);
+                   });
+            connect(qaValidationRunnerWidget_,
+                   &QaValidationRunnerWidget::errorOccurred,
+                   main_window,
+                   [main_window](const QString& message) {
+                       QMessageBox::warning(main_window, tr("Scenario Runner"), message);
+                   });
+        };
+
         auto* testingMenu = smc.system_menu->addMenu(tr("&Testing"));
         auto* actQaRunner = testingMenu->addAction(tr("Scenario Runner"));
         connect(actQaRunner,
                &QAction::triggered,
                this,
-               [this, main_window = smc.main_window, mdi_area = smc.mdi_area]() {
-                   // Same lifecycle as every other list window in the app
-                   // (see EntityController::bring_window_to_front): closing
-                   // destroys it (WA_DeleteOnClose), so "open" always either
-                   // reuses the still-live window or builds a fresh one —
-                   // never re-shows a widget that was hidden-not-destroyed.
-                   // (An earlier version kept this one alive across close
-                   // for convenience, which hit what looks like a Qt/
-                   // QMdiSubWindow repaint bug on reshow; this sidesteps it
-                   // entirely rather than working around it.)
-                   if (!qaValidationRunnerWindow_) {
-                       qaValidationRunnerWidget_ = new QaValidationRunnerWidget(main_window);
-                       qaValidationRunnerWidget_->setMdiArea(mdi_area);
-                       qaValidationRunnerWindow_ = new DetachableMdiSubWindow();
-                       qaValidationRunnerWindow_->setWidget(qaValidationRunnerWidget_);
-                       qaValidationRunnerWindow_->setWindowTitle(tr("Scenario Runner"));
-                       qaValidationRunnerWindow_->setWindowIcon(ico(Icon::TasksApp));
-                       qaValidationRunnerWindow_->setAttribute(Qt::WA_DeleteOnClose);
-                       mdi_area->addSubWindow(qaValidationRunnerWindow_);
-
-                       connect(qaValidationRunnerWindow_,
-                              &QObject::destroyed,
-                              this,
-                              [this]() {
-                                  qaValidationRunnerWindow_ = nullptr;
-                                  qaValidationRunnerWidget_ = nullptr;
-                              });
-                       connect(qaValidationRunnerWidget_,
-                              &QaValidationRunnerWidget::statusMessage,
-                              main_window,
-                              [main_window](const QString& message) {
-                                  if (auto* bar = main_window->statusBar())
-                                      bar->showMessage(message, 5000);
-                              });
-                       connect(qaValidationRunnerWidget_,
-                              &QaValidationRunnerWidget::errorOccurred,
-                              main_window,
-                              [main_window](const QString& message) {
-                                  QMessageBox::warning(
-                                      main_window, tr("Scenario Runner"), message);
-                              });
-                   }
-
+               [this, ensure_qa_runner_window, mdi_area = smc.mdi_area]() {
+                   ensure_qa_runner_window();
                    qaValidationRunnerWindow_->setVisible(true);
                    mdi_area->setActiveSubWindow(qaValidationRunnerWindow_);
                    qaValidationRunnerWindow_->show();
@@ -323,6 +326,7 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
         // doesn't have to click through System > Testing and Open every
         // time they restart the client to pick up a rebuild.
         if (!smc.open_scenario_path.isEmpty()) {
+            ensure_qa_runner_window();
             qaValidationRunnerWidget_->loadScenario(smc.open_scenario_path);
             qaValidationRunnerWindow_->setVisible(true);
             smc.mdi_area->setActiveSubWindow(qaValidationRunnerWindow_);

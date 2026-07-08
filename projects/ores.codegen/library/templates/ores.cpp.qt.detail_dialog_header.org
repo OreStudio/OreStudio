@@ -16,6 +16,18 @@ Detail dialog declarations.  Qt UI component: model/view class or dialog wired t
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
 
+* Extension points
+
+=<<paste:UUID>>= markers in this template are paste-block injection
+points — see [[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][paste blocks: injecting custom code into generated files]]
+for the full mechanism. This header defines one:
+
+- =F55CB64E-165A-4E15-A50A-5723C0320E97= — in =private:=, after the
+  generated method declarations. Pairs with the implementation seam of
+  the same purpose in [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]]
+  (=EC97923E-BC8D-4A50-9970-CBC5CBD4B732=) — an entity declares any
+  extra private methods here that block implements.
+
 * Template
 
 The full template source. Edit here and re-tangle with
@@ -159,6 +171,9 @@ protected:
 {{#domain_entity.qt.has_key_flag_icon}}
     QLineEdit* keyFlagField() const override;
     QIcon keyFlagIcon(const std::string& key) const override;
+{{#domain_entity.qt.key_flag_is_pair}}
+    QSize keyFlagIconSize() const override;
+{{/domain_entity.qt.key_flag_is_pair}}
 {{/domain_entity.qt.has_key_flag_icon}}
 
 private:
@@ -182,6 +197,8 @@ private:
     void updateVersionNavButtonStates();
     void showVersionNavActions(bool visible);
 {{/domain_entity.qt.has_version_navigation}}
+{{! see * Extension points above }}
+<<paste:F55CB64E-165A-4E15-A50A-5723C0320E97>>
 
     Ui::{{domain_entity.entity_pascal}}DetailDialog* ui_;
     ClientManager* clientManager_;

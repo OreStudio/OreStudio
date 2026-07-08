@@ -8,7 +8,7 @@
 #+filetags: :architecture:composite_entity:versioning:party:counterparty:temporal-composite-entity-versioning:sprint_22:v0:
 #+owner: marco
 #+branch: feature/write-composite-versioning-architecture-doc
-#+pr:
+#+pr: 1469
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-06
@@ -86,7 +86,7 @@ to an implementation story.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1469][#1469]] | [sql,codegen,qt] Temporal composite entity versioning |
 
 * Review
 

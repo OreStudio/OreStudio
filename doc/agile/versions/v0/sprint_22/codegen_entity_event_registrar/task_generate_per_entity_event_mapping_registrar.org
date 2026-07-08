@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 061B4573-F0F5-4DA4-BB16-D186270BD30F
+:END:
+#+title: Task: Generate per-entity NATS event-mapping registrar
+#+description: Extend codegen to emit register_<entity>_event_mapping into the generated <entity>_registrar.hpp/cpp pair, add a service-layer aggregator, and migrate application.cpp's hand-wired entity change-event pipeline to call it.
+#+type: task
+#+level: s1
+#+filetags: :codegen:eventing:refdata:sprint_22:v0:codegen_entity_event_registrar:
+#+owner: marco
+#+branch: feature/generate-per-entity-event-mapping-registrar
+#+pr: 1459
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9763FBBF-7912-4EA2-A544-67E90EA27882][Codegen: generate per-entity NATS event-mapping registrar]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a register_<entity>_event_mapping(event_source, event_bus, nats) function to codegen's per-entity registrar output (same generated file pair as register_<entity>_handlers), add a small service-layer aggregator that calls it for every entity, and replace application.cpp's hand-wired register_mapping/event_bus.subscribe blocks with calls to the aggregator — starting with purpose_type, then migrating the rest of ores.refdata's entities.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9763FBBF-7912-4EA2-A544-67E90EA27882][Codegen: generate per-entity NATS event-mapping registrar]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-07                               |
+
+* Acceptance
+
+- Codegen emits register_<entity>_event_mapping into the existing generated <entity>_registrar.hpp/cpp pair for domain_entity models with eventing enabled.
+- A service-layer aggregator (colocated with application.cpp) calls each generated per-entity function; application.cpp's entity-change-event pipeline section collapses to a single aggregator call.
+- purpose_type migrated first and cross-client NATS eventing re-verified working; remaining ores.refdata entities in application.cpp migrated with zero loss of functionality.
+- Pattern documented (recipe or knowledge doc) so other components can adopt it.
+
+* Plan
+
+Promoted the duplicated =publish_entity_event= helper into
+=ores.eventing.core= first, so the generated registrar would have a
+shared function to call. Added =component_service=/=component_service_dir=
+template variables (mirroring the existing =component_core= pair) and a
+new =ores.cpp.nats-event-registrar= facet with two archetypes, output
+into the =.service= layer since the eventing pipeline types aren't
+available in =.core=. Verified against a UUID-keyed entity (=book=,
+=entity_singular_short=-prefixed id field) and a text-keyed one
+(=purpose_type=, =primary_key.column=-suffixed) to get the mustache
+branching right. Regenerated all 16 currently hand-wired refdata
+entities, found 10 had stale =nats-eventing= output (a breaking
+id-field rename), backed those out and deferred to a capture rather
+than risk the rename. Wrote the =event_registrar= aggregator and
+migrated the remaining 6 entities' =application.cpp= wiring to it.
+Along the way, discovered =purpose_type='s Qt facet had never been
+regenerated since a shared history-dialog Close-button fix landed on
+main — resynced it.
+
+Key decisions are distilled into the parent story's =* Decisions=.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1459][#1459]] | [codegen] Generate per-entity NATS event-mapping registrar |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | facet_catalogue.org missing a nats-event-registrar entry (siblings all have one) | facet_catalogue.org | Fixed — 2d42bb059 | Added entry mirroring nats-eventing/nats-handler/nats-sub-registrar. |
+| 2 | PR description overstates publish_entity_event dedup (only refdata's copy removed; 4 other components still duplicate it) | PR description | Fixed — edited PR body | Corrected wording; migrating the other 4 is a separate follow-up, not attempted here. |
+
+* Result
+
+Shipped in PR #1459. =ores.cpp.nats-event-registrar= facet generates
+=register_<entity>_event_mapping()= into the =.service= layer for any
+domain_entity; =ores::refdata::service::messaging::event_registrar=
+aggregates it. 6 of 16 currently hand-wired refdata entities migrated
+(book, business_day_convention_type, country, currency, party_type,
+purpose_type); the other 10 deferred to
+[[id:BA5BCF3B-8953-455D-85F9-1E05A49D9623][a capture]] pending a
+=nats-eventing= drift fix. Cross-client NATS eventing manually
+re-verified for =purpose_type= (create/edit/delete, both Qt clients
+update live). Pattern documented in
+[[id:397C3822-25A2-49BB-9D4E-827EB8F47267][a recipe]] and the
+[[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]]
+knowledge doc. Also fixed a pre-existing =purpose_type= Qt regression
+(history dialog Close button unresponsive) found during
+re-verification — its Qt facet had never been regenerated since the
+fix landed on main.

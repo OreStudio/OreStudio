@@ -8,7 +8,7 @@
 #+filetags: :codegen:eventing:refdata:commissioning:sprint_22:v0:
 #+created: 2026-07-06
 #+updated: 2026-07-06
-#+environment:
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,11 +21,11 @@ Every domain entity's live NATS change-event pipeline (Postgres NOTIFY channel -
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Shipped in PR #1459: 6/16 refdata entities migrated to the generated registrar; pattern documented; remaining 10 deferred to a capture. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-07-06                               |
 
 * Acceptance
@@ -39,10 +39,26 @@ Every domain entity's live NATS change-event pipeline (Postgres NOTIFY channel -
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:061B4573-F0F5-4DA4-BB16-D186270BD30F][Generate per-entity NATS event-mapping registrar]] | DONE | 2026-07-07 | 2026-07-08 | Extend codegen to emit register_<entity>_event_mapping into the generated <entity>_registrar.hpp/cpp pair, add a service-layer aggregator, and migrate application.cpp's hand-wired entity change-event pipeline to call it. |
 
 * Decisions
 
+- The generated per-entity registrar lives in the =.service= layer (new
+  =component_service=/=component_service_dir= template variables), not
+  =.core= like the request/response sub-registrar, because the eventing
+  pipeline depends on =ores.eventing.core= (=postgres_event_source=,
+  =event_bus=), which no =.core= component links.
+- Only 6 of 16 currently hand-wired refdata entities were migrated
+  (book, business_day_convention_type, country, currency, party_type,
+  purpose_type); the other 10 have stale =nats-eventing= output (a
+  breaking id-field rename risk) and stay hand-wired pending a
+  follow-up. See [[id:BA5BCF3B-8953-455D-85F9-1E05A49D9623][Migrate remaining refdata entities to generated event-mapping registrar]].
+- Pattern documented in [[id:397C3822-25A2-49BB-9D4E-827EB8F47267][How do I wire an entity into live NATS eventing?]].
+
 * Out of scope
 
--
+- Migrating the other 10 refdata entities (tracked separately, see Decisions).
+- Migrating other components (trading, marketdata, etc.) to the pattern.
+- Removing the remaining per-component duplicates of publish_entity_event
+  (ores.analytics, ores.compute, ores.trading, ores.workspace) — only
+  ores.refdata's copy was removed.

@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 9F996EA1-63C6-4D35-A681-5DBAB28BA15F
+:END:
+#+title: ores.cpp.nats-event-registrar
+#+description: Per-entity NATS event-mapping registrar pair wiring an entity's Postgres LISTEN/NOTIFY channel to its changed-event pipeline.
+#+type: facet
+#+model_types: domain_entity
+#+level: cross
+#+facet_group: ores.cpp
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+
+This page is the literate source for the =ores.cpp.nats-event-registrar= facet of the
+codegen template library. Each section documents one template and
+holds its source in a =mustache= block tangled to the sibling
+=.mustache= file consumed by =generator.py=. The =.mustache= files are
+generated artefacts — edit this document, then run the tangle
+(=compass build --direct tangle_codegen_templates= or
+=projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
+Output paths and profile membership come from
+[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+
+* Summary
+
+Two templates forming the per-entity NATS event-mapping registrar pair. The
+header declares =register_<entity>_event_mapping()=; the implementation
+registers the entity's Postgres NOTIFY channel with =postgres_event_source=
+and republishes the resulting event to NATS. Unlike the sibling
+[[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]] facet, this one generates into the =.service=
+layer, not =.core=, because the eventing pipeline types
+(=postgres_event_source=, =event_bus=) live in =ores.eventing.core=, which
+no =.core= component depends on. Consumed by the default (no
+=--address=/=--profile=) generation set for every =domain_entity=.
+
+* The ores.cpp.nats-event-registrar facet
+
+Projects the entity model onto its live-eventing registration surface: the
+Postgres LISTEN/NOTIFY channel a row change fires on, and the in-process
+=event_bus= subscription that republishes it as a NATS message. It consumes
+the same =domain_entity= model the [[id:55E74B24-DD8C-4810-A5FA-D15358234711][nats-eventing]] facet does (the
+={{entity}}_changed_event= struct this facet's implementation subscribes
+to), and derives its Postgres channel name identically to the
+[[id:3EAC73DC-6ECE-4DB3-8172-790A2C709AAC][notify_trigger]] SQL facet
+(=product_component_entity_plural=), so the two sides of the pipeline can
+never drift out of sync.
+
+Replaces the pattern of hand-wiring one =#include= + one
+=register_mapping<T>()= call + one =event_bus.subscribe<T>()= lambda per
+entity directly in each component's =application.cpp= — a hand-maintained
+surface that has already caused two missed-wiring regressions
+(=party_type=, =purpose_type=). A small per-component aggregator (not
+generated — mirrors =ores::refdata::core::messaging::registrar=) calls each
+generated per-entity function, so =application.cpp= collapses to one call.
+
+* Templates
+
+One subheading per template, in the archetype docs below.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:0C5953E1-3159-4A93-B0CE-51E30CB0FD61][ores.cpp.nats-event-registrar.nats_event_registrar_header]] | Per-entity event-mapping registrar header declaring =register_<entity>_event_mapping()=. =nats-event-registrar= profile. |
+| [[id:F1827F31-5E88-4058-994B-546A5CC10B9A][ores.cpp.nats-event-registrar.nats_event_registrar_implementation]] | Per-entity event-mapping registrar implementation wiring the entity's changed-event to its Postgres channel and republishing it to NATS. =nats-event-registrar= profile. |
+
+* See also
+
+- [[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]] — the request/response counterpart; lives in =.core=, not =.service=.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.
+- [[id:397C3822-25A2-49BB-9D4E-827EB8F47267][How do I wire an entity into live NATS eventing?]] — the operational recipe.

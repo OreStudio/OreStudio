@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 0C5953E1-3159-4A93-B0CE-51E30CB0FD61
+:END:
+#+title: ores.cpp.nats-event-registrar.nats_event_registrar_header
+#+description: Per-entity event-mapping registrar header declaring register_<entity>_event_mapping(). nats-event-registrar profile.
+#+type: archetype
+#+output: projects/{component_service_dir}/include/ores.{component_service}/messaging/{entity}_event_registrar.hpp
+#+facet: ores.cpp.nats-event-registrar
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-07-07
+#+updated: 2026-07-07
+
+This page is the node for the =ores.cpp.nats-event-registrar.nats_event_registrar_header= archetype in the codegen
+physical-space address graph. Its title is its MASD address; it generates one
+output artefact and owns the =mustache= source below, tangled to the sibling
+=.mustache= consumed by =generator.py=. Edit this document, then run the
+tangle (=compass build --direct tangle_codegen_templates=).
+
+* Summary
+
+Per-entity event-mapping registrar header declaring
+=register_<entity>_event_mapping()=. Lives in the =.service= layer (not
+=.core=, where the request/response sub-registrar lives) because the
+Postgres LISTEN/NOTIFY-to-NATS pipeline depends on =ores.eventing.core=
+(=postgres_event_source=, =event_bus=), which no =.core= component links.
+
+* The ores.cpp.nats-event-registrar.nats_event_registrar_header archetype
+
+#+begin_src mustache :tangle cpp_nats_event_registrar.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.nats-event-registrar.nats_event_registrar_header.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_service_upper}}_MESSAGING_{{entity_singular_upper}}_EVENT_REGISTRAR_HPP
+#define ORES_{{component_service_upper}}_MESSAGING_{{entity_singular_upper}}_EVENT_REGISTRAR_HPP
+
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
+
+namespace ores::{{component}}::service::messaging {
+
+[[nodiscard]] ores::eventing::service::subscription
+register_{{entity_singular}}_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                           ores::eventing::service::event_bus& event_bus,
+                                           ores::nats::service::client& nats);
+
+} // namespace ores::{{component}}::service::messaging
+
+#endif
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]
+- [[id:55E74B24-DD8C-4810-A5FA-D15358234711][ores.cpp.nats-eventing.nats_changed_event_header]] — the changed-event this registers.

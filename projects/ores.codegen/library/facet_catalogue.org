@@ -98,6 +98,17 @@ Consumed directly by =generator.py= via =_load_profiles_from_org()=. This file i
 |----------+--------|
 | [[id:55E74B24-DD8C-4810-A5FA-D15358234711][cpp_nats_changed_event.hpp.mustache]] | projects/{component_dir}/include/ores.{component_include}/eventing/{entity}_changed_event.hpp |
 
+** nats-event-registrar :facet:
+:PROPERTIES:
+:description: Per-entity NATS event-mapping registrar pair wiring an entity's Postgres channel to its changed-event pipeline
+:model_types: domain_entity
+:END:
+
+| Template | Output |
+|----------+--------|
+| [[id:0C5953E1-3159-4A93-B0CE-51E30CB0FD61][cpp_nats_event_registrar.hpp.mustache]] | projects/{component_service_dir}/include/ores.{component_service}/messaging/{entity}_event_registrar.hpp |
+| [[id:F1827F31-5E88-4058-994B-546A5CC10B9A][cpp_nats_event_registrar.cpp.mustache]] | projects/{component_service_dir}/src/messaging/{entity}_event_registrar.cpp |
+
 ** nats-handler :facet:
 :PROPERTIES:
 :description: NATS message handler class (header-only) for list/save/remove/history operations

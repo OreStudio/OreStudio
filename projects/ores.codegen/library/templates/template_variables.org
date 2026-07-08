@@ -46,6 +46,10 @@ Variables that identify the component being generated into.
 | =component_include_upper= | Include-guard prefix; component path uppercased with dots → _. | =ORES_ACCOUNTS=                  |
 | =component_core=          | Core sub-component name.                                        | =ores.accounts.core=             |
 | =component_core_upper=    | Core sub-component uppercased.                                  | =ORES_ACCOUNTS_CORE=             |
+| =component_core_dir=      | Core sub-component's on-disk directory.                         | =ores.accounts/core=             |
+| =component_service=       | Service sub-component name.                                     | =ores.accounts.service=          |
+| =component_service_upper= | Service sub-component uppercased.                                | =ORES_ACCOUNTS_SERVICE=          |
+| =component_service_dir=   | Service sub-component's on-disk directory.                      | =ores.accounts/service=          |
 | =component_name=          | Short component name without the product prefix.                | =accounts=                       |
 | =full_name=               | Full qualified name (component + optional suffix).              | =ores.accounts=                  |
 | =full_name_upper=         | =full_name= uppercased.                                         | =ORES_ACCOUNTS=                  |

@@ -365,4 +365,5 @@ void PurposeTypeMdiWindow::deleteSelected() {
     watcher->setFuture(future);
 }
 
+
 }

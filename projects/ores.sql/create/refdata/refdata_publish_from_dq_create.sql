@@ -218,7 +218,12 @@ begin
             dq.format,
             dq.monetary_nature,
             dq.market_tier,
-            dq.image_id
+            dq.image_id,
+            dq.spot_days,
+            dq.deliverable,
+            dq.day_basis,
+            dq.base_precedence,
+            dq.holiday_calendar
         from ores_dq_currencies_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_utility_system_tenant_id_fn()
@@ -257,12 +262,14 @@ begin
             iso_code, version, name, numeric_code, symbol, fraction_symbol,
             fractions_per_unit, rounding_type, rounding_precision, format, monetary_nature, market_tier,
             coding_scheme_code, image_id,
+            spot_days, deliverable, day_basis, base_precedence, holiday_calendar,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             p_target_tenant_id,
             r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
             r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.monetary_nature, r.market_tier,
             v_coding_scheme_code, v_resolved_image_id,
+            r.spot_days, r.deliverable, r.day_basis, r.base_precedence, r.holiday_calendar,
             coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )

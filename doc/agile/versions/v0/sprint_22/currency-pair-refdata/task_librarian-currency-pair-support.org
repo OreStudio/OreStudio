@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/librarian-currency-pair-support
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-04
 #+updated: 2026-07-04
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -40,7 +40,7 @@ first.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
 | Now          | Not yet started.                       |
 | Waiting on   | The =currency_pair= codegen implementation (not yet a task in this story). |
@@ -64,6 +64,43 @@ first.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Investigation found a prerequisite gap: =currency='s five new fields
+(=spot_days=, =deliverable=, =day_basis=, =base_precedence=,
+=holiday_calendar=, all added for =currency_pair= derivation) are
+carried on the domain/table, but the DQ librarian pipeline never
+populates or transports them:
+
+- =ores_dq_currencies_artefact_tbl= has no columns for them.
+- =iso_currencies_artefact_populate.sql= doesn't set them.
+- =ores_refdata_publish_currencies_from_dq_fn='s SELECT/INSERT column
+  lists omit them, so every published currency silently gets the raw
+  table defaults (=spot_days=2=, =deliverable=true=,
+  =day_basis='ACT/360'=, =base_precedence=100=,
+  =holiday_calendar=null=) regardless of the actual currency (e.g. USD
+  should be =spot_days=1=; CNY/INR/KRW/... should be
+  =deliverable=false=).
+
+1. Wire the five fields through the currency DQ pipeline: artefact
+   table columns, curated per-currency values in the ISO populate
+   script (G10 + known NDF/day-basis/precedence data, sane defaults
+   for the long tail), and the publish-from-dq SQL function's
+   select/insert lists.
+2. Build the =currency_pairs= (and =currency_pair_conventions=) DQ
+   artefact pipeline from scratch — it doesn't exist yet: artefact
+   table(s), a populate script generating pairs from the curated
+   currency data (base/quote via =base_precedence=, =spot_days= as the
+   max of both legs, deliverability, calendar), and a
+   publish-from-dq SQL function, following the =report_definitions=/
+   synthetic-FX-config pattern (hand-written, no codegen facet — see
+   [[id:44030333-A650-4EBF-9674-5819B8496114][Model synthetic FX spot config as a DQ artefact type]]).
+3. Register =currency_pairs= as a member of the existing =base=
+   bundle (the one already used for GLEIF/ISO provisioning) rather
+   than inventing a new bundle, per the Goal.
+4. Verify end-to-end: recreate the DB, provision a party via the
+   =barclays_system_provision.ores= shell script, confirm currencies
+   carry correct =spot_days=/=deliverable=/etc. and that a usable set
+   of =currency_pairs= exists for the tenant.
 
 * Notes
 

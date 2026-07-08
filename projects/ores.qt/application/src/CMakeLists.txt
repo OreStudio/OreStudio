@@ -119,6 +119,29 @@ if(NOT WIN32)
     target_link_options(${exe_target_name} PRIVATE -rdynamic)
 endif()
 
+# Domain plugins are loaded at runtime via QPluginLoader, not linked — so
+# CMake's own dependency graph has no reason to know ores.qt.exe needs them
+# rebuilt. Without this, a change to ores.qt.api.lib's ABI can leave a plugin
+# .so compiled against the old layout sitting next to a freshly-linked exe:
+# QPluginLoader loads it anyway (same .so name, no version check), and it
+# segfaults on first virtual call into the mismatched vtable — reproduced
+# twice while touching ores.qt.api during vintage-guard/price_source work.
+# Force every plugin to always be rebuilt alongside the exe so this can't
+# happen from an ordinary `cmake --build --target ores.qt.exe`.
+add_dependencies(${exe_target_name}
+    ores.qt.admin.lib
+    ores.qt.analytics.lib
+    ores.qt.compute.lib
+    ores.qt.data_transfer.lib
+    ores.qt.marketdata.lib
+    ores.qt.mktdata.lib
+    ores.qt.party.lib
+    ores.qt.refdata.lib
+    ores.qt.scheduler.lib
+    ores.qt.synthetic.lib
+    ores.qt.trading.lib
+    ores.qt.workspace.lib)
+
 # Copy main assets from assets/images directory
 file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 file(GLOB ORES_MAIN_ASSETS "${CMAKE_SOURCE_DIR}/assets/images/*.png")

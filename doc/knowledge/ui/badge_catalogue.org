@@ -11,7 +11,7 @@
 
 * Summary
 
-Every badge shown anywhere in ORE Studio is one of the 39 definitions
+Every badge shown anywhere in ORE Studio is one of the definitions
 below, mapped to a code-domain value via
 [[proj:projects/ores.sql/populate/dq/dq_badge_system_populate.sql][=dq_badge_system_populate.sql=]] — *that script is the source of truth*;
 this page mirrors it for browsing. The colour rules the definitions

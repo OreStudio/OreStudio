@@ -467,9 +467,9 @@ BEGIN
         'currency_pair_deliverable', 'No', 'inactive');
 
     -- currency_pair_classification: a liquidity tier, not a status -- no
-    -- RAG colours (see ux_language.org rule 3). Dedicated blue/violet
-    -- family for major/minor/exotic; commodity keeps the existing pink
-    -- "simulated nature" badge (also non-RAG).
+    -- RAG colours (see ux_language.org rule 3). Four dedicated,
+    -- non-adjacent hues (blue/teal/violet/sky), one per tier -- see the
+    -- classification_* definitions above.
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'currency_pair_classification', 'major', 'classification_major');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),

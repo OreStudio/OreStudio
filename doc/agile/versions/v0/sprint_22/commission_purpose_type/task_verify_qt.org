@@ -7,10 +7,10 @@
 #+level: s1
 #+filetags: :commission_purpose_type:sprint_22:v0:
 #+owner: marco
-#+branch: feature/commission-purpose-type
+#+branch: feature/finish-commission-purpose-type
 #+pr: 1451
-#+blocked_on: 9763FBBF-7912-4EA2-A544-67E90EA27882
-#+blocked_since: 2026-07-06
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-02
 #+updated: 2026-07-06
 #+environment: eager_maxwell

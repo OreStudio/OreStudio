@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/EnvironmentMetadata.hpp"
+#include "ores.qt.headless/EnvironmentMetadata.hpp"
 #include <QDir>
 #include <QFileInfo>
 #include <QProcess>

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/ScriptEditorMdiWindow.hpp"
-#include "ores.qt/FontUtils.hpp"
+#include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ScriptHighlighter.hpp"
 #include "ores.qt/ScriptLibraryPanel.hpp"

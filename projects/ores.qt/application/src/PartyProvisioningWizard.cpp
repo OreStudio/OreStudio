@@ -21,7 +21,7 @@
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
-#include "ores.qt/FontUtils.hpp"
+#include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"

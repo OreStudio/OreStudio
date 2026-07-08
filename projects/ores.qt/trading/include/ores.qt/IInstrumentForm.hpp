@@ -20,7 +20,7 @@
 #ifndef ORES_QT_I_INSTRUMENT_FORM_HPP
 #define ORES_QT_I_INSTRUMENT_FORM_HPP
 
-#include "ores.qt/IInstrumentFormPopulator.hpp"
+#include "ores.qt.headless/IInstrumentFormPopulator.hpp"
 #include <QString>
 #include <QWidget>
 #include <chrono>

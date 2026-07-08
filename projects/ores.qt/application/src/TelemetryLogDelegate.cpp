@@ -21,7 +21,7 @@
 #include "ores.qt/ClientTelemetryLogModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
-#include "ores.qt/FontUtils.hpp"
+#include "ores.qt.headless/FontUtils.hpp"
 #include <QApplication>
 #include <QPainter>
 #include <QStyleOptionViewItem>

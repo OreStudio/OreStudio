@@ -17,38 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/HierarchyModelBuilder.hpp"
-#include <QStandardItem>
-#include <QStandardItemModel>
-#include <QString>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.qt.headless/RepoFileFinder.hpp"
+#include <QDir>
+#include <QFileInfo>
 
 namespace ores::qt {
 
-namespace {
-
-QStandardItem* make_item(const ores::utility::domain::hierarchy_node& node) {
-    auto* item = new QStandardItem(QString::fromStdString(node.name));
-    item->setData(QString::fromStdString(boost::uuids::to_string(node.id)), Qt::UserRole);
-    item->setEditable(false);
-
-    for (const auto& child : node.children)
-        item->appendRow(make_item(child));
-
-    return item;
-}
-
-} // namespace
-
-QStandardItemModel*
-HierarchyModelBuilder::build(const std::vector<ores::utility::domain::hierarchy_node>& roots) {
-    auto* model = new QStandardItemModel();
-    model->setHorizontalHeaderLabels({QStringLiteral("Name")});
-
-    for (const auto& root : roots)
-        model->appendRow(make_item(root));
-
-    return model;
+QString find_repo_file(const QString& referencePath, const QString& filename) {
+    QDir dir(QFileInfo(referencePath).absolutePath());
+    for (int i = 0; i < 10; ++i) {
+        const QString candidate = dir.filePath(filename);
+        if (QFileInfo::exists(candidate))
+            return candidate;
+        if (!dir.cdUp())
+            break;
+    }
+    return {};
 }
 
 }

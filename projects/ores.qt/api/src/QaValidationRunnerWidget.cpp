@@ -22,12 +22,12 @@
 #include "ores.orgmode/indexing/resolver.hpp"
 #include "ores.orgmode/parser/parser.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/EnvironmentMetadata.hpp"
+#include "ores.qt.headless/EnvironmentMetadata.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/OrgDocRenderer.hpp"
+#include "ores.qt.headless/OrgDocRenderer.hpp"
 #include "ores.qt/OrgDocViewerWindow.hpp"
-#include "ores.qt/RepoFileFinder.hpp"
-#include "ores.qt/TestScenarioResultsWriter.hpp"
+#include "ores.qt.headless/RepoFileFinder.hpp"
+#include "ores.qt.headless/TestScenarioResultsWriter.hpp"
 #include <QColor>
 #include <QDialogButtonBox>
 #include <QDir>

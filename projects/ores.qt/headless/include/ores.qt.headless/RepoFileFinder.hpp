@@ -17,22 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/RepoFileFinder.hpp"
-#include <QDir>
-#include <QFileInfo>
+#ifndef ORES_QT_REPO_FILE_FINDER_HPP
+#define ORES_QT_REPO_FILE_FINDER_HPP
+
+#include "ores.qt.headless/export.hpp"
+#include <QString>
 
 namespace ores::qt {
 
-QString find_repo_file(const QString& referencePath, const QString& filename) {
-    QDir dir(QFileInfo(referencePath).absolutePath());
-    for (int i = 0; i < 10; ++i) {
-        const QString candidate = dir.filePath(filename);
-        if (QFileInfo::exists(candidate))
-            return candidate;
-        if (!dir.cdUp())
-            break;
-    }
-    return {};
-}
+/**
+ * @brief Walk up from @p referencePath looking for @p filename at the
+ * repo root (e.g. =.org-roam.db=, =compass.sh=). Empty if not found
+ * within a handful of levels.
+ *
+ * Shared by anything that needs to locate a repo-root file from an
+ * arbitrary doc/scenario path — e.g. =QaValidationRunnerWidget= and
+ * =OrgDocViewerWindow= both need the org-roam index this way.
+ */
+ORES_QT_HEADLESS_API QString find_repo_file(const QString& referencePath, const QString& filename);
 
 }
+
+#endif

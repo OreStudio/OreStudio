@@ -18,7 +18,7 @@
  *
  */
 #include "ores.orgmode/parser/parser.hpp"
-#include "ores.qt/OrgDocRenderer.hpp"
+#include "ores.qt.headless/OrgDocRenderer.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 namespace {

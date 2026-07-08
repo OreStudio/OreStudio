@@ -20,8 +20,8 @@
 #ifndef ORES_QT_TEST_SCENARIO_RESULTS_WRITER_HPP
 #define ORES_QT_TEST_SCENARIO_RESULTS_WRITER_HPP
 
-#include "ores.qt/EnvironmentMetadata.hpp"
-#include "ores.qt/export.hpp"
+#include "ores.qt.headless/EnvironmentMetadata.hpp"
+#include "ores.qt.headless/export.hpp"
 #include <QString>
 #include <vector>
 
@@ -88,7 +88,7 @@ struct scenario_result final {
  * @return true on success; false if the file couldn't be read/written
  * or didn't contain a =* Results= heading to rewrite.
  */
-ORES_QT_API bool write_scenario_results(const QString& path,
+ORES_QT_HEADLESS_API bool write_scenario_results(const QString& path,
                                         const scenario_result& result,
                                         const environment_metadata& environment);
 

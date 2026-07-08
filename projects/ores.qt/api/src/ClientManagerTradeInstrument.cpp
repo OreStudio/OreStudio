@@ -18,8 +18,8 @@
  *
  */
 #include "ores.qt/ClientManager.hpp"
-#include "ores.qt/IInstrumentFormPopulator.hpp"
-#include "ores.qt/parse_trade_instrument.hpp"
+#include "ores.qt.headless/IInstrumentFormPopulator.hpp"
+#include "ores.qt.headless/parse_trade_instrument.hpp"
 
 namespace ores::qt {
 

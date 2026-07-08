@@ -28,7 +28,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/FontUtils.hpp"
+#include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/OreLogViewerWidget.hpp"

@@ -19,7 +19,7 @@
  */
 #include "ores.qt/TenantOnboardingWizard.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
-#include "ores.qt/FontUtils.hpp"
+#include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/LeiEntityPicker.hpp"
 #include "ores.qt/PasswordMatchIndicator.hpp"
 #include "ores.qt/WidgetUtils.hpp"

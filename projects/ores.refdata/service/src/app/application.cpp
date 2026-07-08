@@ -38,6 +38,7 @@
 #include "ores.refdata.api/eventing/party_changed_event.hpp"
 #include "ores.refdata.api/eventing/party_contact_information_changed_event.hpp"
 #include "ores.refdata.api/eventing/party_identifier_changed_event.hpp"
+#include "ores.refdata.api/eventing/party_status_changed_event.hpp"
 #include "ores.refdata.api/eventing/party_type_changed_event.hpp"
 #include "ores.refdata.api/eventing/portfolio_changed_event.hpp"
 #include "ores.refdata.api/eventing/purpose_type_changed_event.hpp"
@@ -153,6 +154,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         "ores_refdata_party_contact_informations");
     ev::service::registrar::register_mapping<rdev::party_identifier_changed_event>(
         event_source, "ores.refdata.party_identifier", "ores_refdata_party_identifiers");
+    ev::service::registrar::register_mapping<rdev::party_status_changed_event>(
+        event_source, "ores.refdata.party_status", "ores_refdata_party_statuses");
     ev::service::registrar::register_mapping<rdev::party_type_changed_event>(
         event_source, "ores.refdata.party_type", "ores_refdata_party_types");
     ev::service::registrar::register_mapping<rdev::portfolio_changed_event>(
@@ -320,6 +323,17 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 ev::domain::entity_change_event{.entity = "ores.refdata.party_identifier",
                                                 .timestamp = e.timestamp,
                                                 .entity_ids = e.ids,
+                                                .tenant_id = e.tenant_id});
+        });
+
+    auto party_status_sub = event_bus.subscribe<rdev::party_status_changed_event>(
+        [&nats](const rdev::party_status_changed_event& e) {
+            publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<rdev::party_status_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.party_status",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.codes,
                                                 .tenant_id = e.tenant_id});
         });
 

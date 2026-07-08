@@ -169,7 +169,7 @@ begin
         ('USD', 'PHP', false, 'USD', 'exotic', null),
         ('USD', 'ZAR', true, null, 'exotic', null),
         ('USD', 'MXN', true, null, 'exotic', null),
-        ('USD', 'BRL', true, null, 'exotic', null),
+        ('USD', 'BRL', false, 'USD', 'exotic', null),
         ('USD', 'TRY', true, null, 'exotic', null),
         ('USD', 'RUB', false, 'USD', 'exotic', null),
         ('USD', 'ILS', true, null, 'exotic', null),

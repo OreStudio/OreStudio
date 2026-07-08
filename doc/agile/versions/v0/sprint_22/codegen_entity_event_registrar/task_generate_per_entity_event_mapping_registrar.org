@@ -8,7 +8,7 @@
 #+filetags: :codegen:eventing:refdata:sprint_22:v0:codegen_entity_event_registrar:
 #+owner: marco
 #+branch: feature/generate-per-entity-event-mapping-registrar
-#+pr:
+#+pr: 1459
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-07
@@ -52,7 +52,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1459][#1459]] | [codegen] Generate per-entity NATS event-mapping registrar |
 
 * Review
 

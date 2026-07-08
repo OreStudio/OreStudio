@@ -133,9 +133,13 @@ against a real scenario doc rather than by inspection alone:
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                              | File                        | Decision | Notes                    |
+|---+---------------------------------------------------------------------------------+-------------------------------+----------+--------------------------|
+| 1 | Unused =browser= parameter on =followContextLink=                                | QaValidationRunnerWidget.*  | Accepted | Fixed in 4092aaaa6 — dropped the parameter. |
+| 2 | Stale step index across a scenario reload could silently write into the wrong scenario's step | QaValidationRunnerWidget.cpp | Accepted | Fixed in 4092aaaa6 — added =loadGeneration_=, captured at subwindow-open time. |
+| 3 | =find_repo_file()= duplicated in two files                                       | QaValidationRunnerWidget.cpp, OrgDocViewerWindow.cpp | Accepted | Fixed in 4092aaaa6 — extracted to shared =RepoFileFinder.hpp/cpp=. |
+| 4 | =taskId_=/=storyId_= derived positionally from =info->links[0]=/=[1]= rather than by field name | QaValidationRunnerWidget.cpp | Accepted | Fixed in 4092aaaa6 — now looked up by "Verifies task"/"Parent story" field name. |
+| 5 | =OrgDocViewerWindow='s doc comment said each instance "opens its own read-only handle" but a fresh one opens per navigation | OrgDocViewerWindow.hpp | Accepted | Fixed in 4092aaaa6 — comment corrected; not worth caching for a manual-testing tool's handful of navigations. |
 
 * Result
 

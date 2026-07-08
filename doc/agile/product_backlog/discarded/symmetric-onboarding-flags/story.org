@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_19:v0:provisioner:variability:onboarding:
 #+created: 2026-06-03
-#+updated: 2026-06-03
+#+updated: 2026-07-08
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -36,12 +36,12 @@ Deliver a symmetric, cache-immune onboarding flag for all three wizards:
 
 | Field         | Value                                                        |
 |---------------+--------------------------------------------------------------|
-| State         | BACKLOG                                                      |
+| State         | ABANDONED                                                     |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                    |
-| Now           | Investigation complete; ready to implement.                  |
-| Waiting on    | PR for unify-entity-timestamps to merge.                     |
-| Next          | Task 1: schema + C++ layer for party_id in variability.      |
-| Last touched  | 2026-06-03                                                   |
+| Now           | Absorbed into sprint 22.                                     |
+| Waiting on    | Nothing.                                                     |
+| Next          | Nothing — see the replacement task.                          |
+| Last touched  | 2026-07-08                                                   |
 
 * Acceptance
 
@@ -65,10 +65,10 @@ Deliver a symmetric, cache-immune onboarding flag for all three wizards:
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2EBB23FC-48FE-41F1-BA1E-0DA8F70EE299][Add party_id column to variability settings]] | BACKLOG | | | Schema, entity, mapper, repository, service. |
-| [[id:2813929E-7F21-42D9-8807-02A500E55EF8][Introduce onboarding.* flag definitions]] | BACKLOG | | | system_setting_definitions + service accessors. |
-| [[id:828879E2-A988-43C9-A568-B330ACB18887][Wire wizards + fix login party_setup_required]] | BACKLOG | | | All three wizards write flag; auth bypasses party cache. |
-| [[id:F5C8D615-E4B7-4E51-B3C4-7BDE932AA820][Reduce NOTIFY listener max_backoff to 5s]] | BACKLOG | | | Mitigation for heavy-import notification lag. |
+| [[id:2EBB23FC-48FE-41F1-BA1E-0DA8F70EE299][Add party_id column to variability settings]] | ABANDONED | | | Schema, entity, mapper, repository, service. |
+| [[id:2813929E-7F21-42D9-8807-02A500E55EF8][Introduce onboarding.* flag definitions]] | ABANDONED | | | system_setting_definitions + service accessors. |
+| [[id:828879E2-A988-43C9-A568-B330ACB18887][Wire wizards + fix login party_setup_required]] | ABANDONED | | | All three wizards write flag; auth bypasses party cache. |
+| [[id:F5C8D615-E4B7-4E51-B3C4-7BDE932AA820][Reduce NOTIFY listener max_backoff to 5s]] | ABANDONED | | | Mitigation for heavy-import notification lag. |
 
 * Decisions
 
@@ -87,3 +87,14 @@ Deliver a symmetric, cache-immune onboarding flag for all three wizards:
   currently clears bootstrap mode implicitly; defer to a follow-on).
 - Fixing the root cause of NOTIFY thread starvation under import load (tracked
   separately; the max_backoff reduction is a mitigation).
+
+* Abandoned
+
+Never started (sat in the backlog inbox since sprint 19). Absorbed
+into sprint 22's
+[[id:7356C36E-2633-4043-9747-27E61593EA4F][Fix tenant-scoped variability system settings: permissions and per-tenant seeding]]
+as task
+[[id:97E2BB5F-2D7E-4713-AAB4-5B75048C4E18][Replace party.status Active/Inactive check with a party-level variability flag]],
+which folds in this story's goal, acceptance, decisions, and all 4
+tasks' content as its implementation plan. This story and its tasks
+are retired; do not pick up independently.

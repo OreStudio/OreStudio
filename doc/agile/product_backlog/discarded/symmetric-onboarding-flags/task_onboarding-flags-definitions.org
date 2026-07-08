@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: 828879E2-A988-43C9-A568-B330ACB18887
+:ID: 2813929E-7F21-42D9-8807-02A500E55EF8
 :END:
-#+title: Task: Wire provisioner wizards to write onboarding flags; fix login party_setup_required check
-#+description: TenantProvisioningWizard: write onboarding.tenant=true in complete_provisioning handler (server side). PartyProvisioningWizard: write onboarding.party=true in Phase 4 (server side, same pattern as bootstrap clear). Auth handler: replace party.status==Inactive check with onboarding.party flag read (direct DB, no cache). Add party_setup_warning to login response for the 'wizard ran but party still inactive' case.
+#+title: Task: Introduce onboarding.system, onboarding.tenant, onboarding.party flags in variability
+#+description: Add three entries to system_setting_definitions with clear descriptions. Register accessors on system_settings_service (is_onboarding_complete, set_onboarding_complete). Seed onboarding.tenant=false in tenant provisioner (system party scoped). Seed onboarding.party=false per party in party provisioner flow.
 #+type: task
 #+level: s1
-#+filetags: :sprint_19:v0:onboarding:provisioner:symmetric-onboarding-flags:
+#+filetags: :sprint_19:v0:onboarding:variability:symmetric-onboarding-flags:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-03
-#+updated: 2026-06-03
+#+updated: 2026-07-08
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2BC9C1E-4AAA-42FC-A62F-CE4E5C4FA160][Symmetric onboarding flags for provisioner wizards]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -25,7 +25,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:C2BC9C1E-4AAA-42FC-A62F-CE4E5C4FA160][Symmetric onboarding flags for provisioner wizards]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -122,7 +122,7 @@ correct dialog staleness-propagation with zero extra per-entity code.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =notifyOpenDialogs()= window-key check uses colon (=details:=/=history:=) but =build_window_key()= joins with a dot (=details.=), so it never matches — dead code | =cpp_qt_controller.cpp.mustache=, =ores.cpp.qt.controller_impl.org=, =CurrencyController.cpp= | Fixed | Fixed in 1c6e441: separator corrected in template + org source + currency's hand-maintained file (same bug, not yet regenerated). Verified via clean rebuild. Same bug in =WorkspaceController.cpp=/=SystemSettingController.cpp= left out of scope — capture filed separately. |
 
 * Result
 

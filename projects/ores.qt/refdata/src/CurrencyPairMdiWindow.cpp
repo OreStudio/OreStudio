@@ -166,6 +166,11 @@ void CurrencyPairMdiWindow::setupTable() {
                     QColor(QString::fromStdString(def->text_colour))};
         });
     tableView_->setItemDelegate(delegate);
+    if (badgeCache_) {
+        connect(badgeCache_, &BadgeCache::loaded, tableView_->viewport(), [this]() {
+            tableView_->viewport()->update();
+        });
+    }
 
     initializeTableSettings(tableView_, model_, "CurrencyPairListWindow", {}, {900, 400}, 1);
 }

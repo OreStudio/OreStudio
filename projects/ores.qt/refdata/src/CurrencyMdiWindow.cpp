@@ -231,8 +231,26 @@ void CurrencyMdiWindow::setupTable() {
                     QColor(QString::fromStdString(def->text_colour))};
         });
     tableView_->setItemDelegate(delegate);
+    if (badgeCache_) {
+        connect(badgeCache_, &BadgeCache::loaded, tableView_->viewport(), [this]() {
+            tableView_->viewport()->update();
+        });
+    }
 
-    initializeTableSettings(tableView_, model_, "CurrencyListWindow", {}, {900, 400}, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            "CurrencyListWindow",
+                            {
+                                ClientCurrencyModel::NumericCode,
+                                ClientCurrencyModel::FractionSymbol,
+                                ClientCurrencyModel::FractionsPerUnit,
+                                ClientCurrencyModel::RoundingType,
+                                ClientCurrencyModel::Format,
+                                ClientCurrencyModel::SpotDays,
+                                ClientCurrencyModel::HolidayCalendar,
+                            },
+                            {900, 400},
+                            1);
 }
 
 void CurrencyMdiWindow::setupConnections() {

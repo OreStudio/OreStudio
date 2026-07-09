@@ -422,24 +422,24 @@ generically via =has_flag_icon=, matching every other flag entity).
 
 *** Columns (Qt model)
 
-| enum_name          | field              | header          | type      | width | import_preview | is_badge | badge_key            |
-|--------------------+--------------------+-----------------+-----------+-------+----------------+----------+-----------------------|
-| IsoCode            | iso_code           | Code            | string    | auto  | true           |          |                       |
-| CurrencyName       | name               | Currency Name   | string    | auto  | true           |          |                       |
-| NumericCode        | numeric_code       | Numeric Code    | string    | 70    |                |          |                       |
-| Symbol             | symbol             | Symbol          | string    | 60    | true           |          |                       |
-| FractionSymbol     | fraction_symbol    | Fraction        | string    | 60    | true           |          |                       |
-| FractionsPerUnit   | fractions_per_unit | Per Unit        | int       | 70    | true           |          |                       |
-| RoundingType       | rounding_type      | Rounding Type   | string    | auto  |                |          |                       |
-| RoundingPrecision  | rounding_precision | Precision       | int       | 70    |                |          |                       |
-| Format             | format             | Format          | string    | auto  |                |          |                       |
-| MonetaryNature     | monetary_nature    | Monetary Nature | string    | auto  |                | true     | monetary_nature       |
-| MarketTier         | market_tier        | Market Tier     | string    | auto  |                | true     | currency_market_tier  |
-| SpotDays           | spot_days          | Spot Days       | int       | 70    |                |
-| DayBasis           | day_basis          | Day Basis       | string    | 80    |                |
-| BasePrecedence     | base_precedence    | Base Precedence | int       | 100   |                |
-| HolidayCalendar    | holiday_calendar   | Holiday Calendar| string    | auto  |                |
-| Version            | version            | Version         | int       | 70    |                |
+| enum_name          | field              | header          | type      | width | import_preview | is_badge | badge_key            | hidden_by_default |
+|--------------------+--------------------+-----------------+-----------+-------+----------------+----------+-----------------------+--------------------|
+| IsoCode            | iso_code           | Code            | string    | auto  | true           |          |                       |                    |
+| CurrencyName       | name               | Currency Name   | string    | auto  | true           |          |                       |                    |
+| NumericCode        | numeric_code       | Numeric Code    | string    | 70    |                |          |                       | true               |
+| Symbol             | symbol             | Symbol          | string    | 60    | true           |          |                       |                    |
+| FractionSymbol     | fraction_symbol    | Fraction        | string    | 60    | true           |          |                       | true               |
+| FractionsPerUnit   | fractions_per_unit | Per Unit        | int       | 70    | true           |          |                       | true               |
+| RoundingType       | rounding_type      | Rounding Type   | string    | auto  |                |          |                       | true               |
+| RoundingPrecision  | rounding_precision | Precision       | int       | 70    |                |          |                       |                    |
+| Format             | format             | Format          | string    | auto  |                |          |                       | true               |
+| MonetaryNature     | monetary_nature    | Monetary Nature | string    | auto  |                | true     | monetary_nature       |                    |
+| MarketTier         | market_tier        | Market Tier     | string    | auto  |                | true     | currency_market_tier  |                    |
+| SpotDays           | spot_days          | Spot Days       | int       | 70    |                |          |                       | true               |
+| DayBasis           | day_basis          | Day Basis       | string    | 80    |                |          |                       |                    |
+| BasePrecedence     | base_precedence    | Base Precedence | int       | 100   |                |          |                       |                    |
+| HolidayCalendar    | holiday_calendar   | Holiday Calendar| string    | auto  |                |          |                       | true               |
+| Version            | version            | Version         | int       | 70    |                |          |                       |                    |
 | ModifiedBy         | modified_by        | Modified By     | string    | auto  |                |
 | RecordedAt         | recorded_at        | Recorded At     | timestamp | auto  |                |
 

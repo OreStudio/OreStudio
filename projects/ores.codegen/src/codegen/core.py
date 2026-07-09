@@ -2062,6 +2062,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     c.get('enum_name') == 'Description'
                     for c in qt['columns']
                 )
+                # Columns hidden from the list view by default: any column
+                # explicitly marked hidden_by_default in the org model, plus
+                # Description (a long free-text field, hidden for every
+                # entity that has one — a generic rule, not a per-entity
+                # exception).
+                seen_enum_names = set()
+                hidden_columns = []
+                for c in qt['columns']:
+                    if c.get('enum_name') in seen_enum_names:
+                        continue
+                    if c.get('hidden_by_default') or c.get('enum_name') == 'Description':
+                        hidden_columns.append(c)
+                        seen_enum_names.add(c.get('enum_name'))
+                if hidden_columns:
+                    _mark_last_item(hidden_columns)
+                qt['hidden_columns'] = hidden_columns
                 # Cross-reference qt columns with domain columns to flag optionals:
                 # when the underlying domain column is std::optional<std::string>, the
                 # Qt model needs to unwrap before QString::fromStdString.

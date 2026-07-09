@@ -286,16 +286,20 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
 {{/is_badge}}
 {{/domain_entity.qt.columns}}
     tableView_->setItemDelegate(delegate);
+    if (badgeCache_) {
+        connect(badgeCache_, &BadgeCache::loaded, tableView_->viewport(), [this]() {
+            tableView_->viewport()->update();
+        });
+    }
 {{/domain_entity.qt.has_badge_columns}}
 
     initializeTableSettings(tableView_, model_,
         "{{domain_entity.qt.settings_group}}",
-{{#domain_entity.qt.has_description_column}}
-        {Client{{domain_entity.entity_pascal}}Model::Description},
-{{/domain_entity.qt.has_description_column}}
-{{^domain_entity.qt.has_description_column}}
-        {},
-{{/domain_entity.qt.has_description_column}}
+        {
+{{#domain_entity.qt.hidden_columns}}
+            Client{{domain_entity.entity_pascal}}Model::{{enum_name}}{{^is_last}},{{/is_last}}
+{{/domain_entity.qt.hidden_columns}}
+        },
         {900, 400}, 1);
 }
 

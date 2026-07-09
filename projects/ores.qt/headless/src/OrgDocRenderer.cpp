@@ -40,8 +40,9 @@ QString code_style() {
     // empty (uncached) before one does — caching that empty result
     // ourselves would keep it wrong for the process's whole lifetime.
     const QString family = FontUtils::resolvedMonospaceFamily();
-    return family.isEmpty() ? QString()
-                            : QStringLiteral(" style=\"font-family: '%1', monospace;\"").arg(family);
+    return family.isEmpty() ?
+               QString() :
+               QStringLiteral(" style=\"font-family: '%1', monospace;\"").arg(family);
 }
 
 /**

@@ -20,8 +20,8 @@
  */
 #include "ores.qt/EventViewerDialog.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.qt.headless/FontUtils.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include <QApplication>
 #include <QClipboard>

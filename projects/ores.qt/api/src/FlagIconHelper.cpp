@@ -84,8 +84,7 @@ QIcon currency_flag_icon_from_pair_code(ImageCache& imageCache, const std::strin
     const auto sep = pairCode.find('/');
     if (sep == std::string::npos)
         return {};
-    return currency_flag_icon(
-        imageCache, pairCode.substr(0, sep), pairCode.substr(sep + 1));
+    return currency_flag_icon(imageCache, pairCode.substr(0, sep), pairCode.substr(sep + 1));
 }
 
 void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source, QSize iconSize) {
@@ -146,43 +145,42 @@ void setup_currency_combo(QComboBox* combo,
 
     auto* watcher = new QFutureWatcher<std::vector<std::string>>(owner);
     watcher->setObjectName(watcher_name);
-    QObject::connect(watcher,
-                     &QFutureWatcher<std::vector<std::string>>::finished,
-                     owner,
-                     [comboPtr, ownerPtr, watcher, image_cache, fallback_selection, iconSize]() {
-                         auto codes = watcher->result();
-                         watcher->deleteLater();
-                         if (!comboPtr || !ownerPtr)
-                             return;
+    QObject::connect(
+        watcher,
+        &QFutureWatcher<std::vector<std::string>>::finished,
+        owner,
+        [comboPtr, ownerPtr, watcher, image_cache, fallback_selection, iconSize]() {
+            auto codes = watcher->result();
+            watcher->deleteLater();
+            if (!comboPtr || !ownerPtr)
+                return;
 
-                         std::sort(codes.begin(), codes.end());
-                         const auto current = comboPtr->currentText();
-                         // The initial async population races the dialog's own
-                         // setEntity()-driven UI population: without blocking
-                         // signals here, clear()/addItem()/setCurrentText() fire
-                         // currentIndexChanged after the dialog has already reset
-                         // its dirty flag, falsely marking an untouched form as
-                         // having unsaved changes.
-                         const QSignalBlocker blocker(comboPtr);
-                         comboPtr->clear();
-                         for (const auto& code : codes)
-                             comboPtr->addItem(QString::fromStdString(code));
+            std::sort(codes.begin(), codes.end());
+            const auto current = comboPtr->currentText();
+            // The initial async population races the dialog's own
+            // setEntity()-driven UI population: without blocking
+            // signals here, clear()/addItem()/setCurrentText() fire
+            // currentIndexChanged after the dialog has already reset
+            // its dirty flag, falsely marking an untouched form as
+            // having unsaved changes.
+            const QSignalBlocker blocker(comboPtr);
+            comboPtr->clear();
+            for (const auto& code : codes)
+                comboPtr->addItem(QString::fromStdString(code));
 
-                         const QString to_select =
-                             !current.isEmpty() ?
-                                 current :
-                                 (fallback_selection ? fallback_selection() : QString());
-                         if (!to_select.isEmpty())
-                             comboPtr->setCurrentText(to_select);
+            const QString to_select = !current.isEmpty() ?
+                                          current :
+                                          (fallback_selection ? fallback_selection() : QString());
+            if (!to_select.isEmpty())
+                comboPtr->setCurrentText(to_select);
 
-                         // setup_flag_combo, not apply_flag_icons: the image cache may
-                         // still be loading when the combo first populates (icons would
-                         // resolve empty and never be revisited), so this also
-                         // reconnects on ImageCache::allLoaded to re-apply once the
-                         // full set has downloaded.
-                         setup_flag_combo(
-                             ownerPtr, comboPtr, image_cache, FlagSource::Currency, iconSize);
-                     });
+            // setup_flag_combo, not apply_flag_icons: the image cache may
+            // still be loading when the combo first populates (icons would
+            // resolve empty and never be revisited), so this also
+            // reconnects on ImageCache::allLoaded to re-apply once the
+            // full set has downloaded.
+            setup_flag_combo(ownerPtr, comboPtr, image_cache, FlagSource::Currency, iconSize);
+        });
     watcher->setFuture(future);
 }
 

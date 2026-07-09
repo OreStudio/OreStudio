@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/ClientManager.hpp"
 #include "ores.qt.headless/IInstrumentFormPopulator.hpp"
 #include "ores.qt.headless/parse_trade_instrument.hpp"
+#include "ores.qt/ClientManager.hpp"
 
 namespace ores::qt {
 

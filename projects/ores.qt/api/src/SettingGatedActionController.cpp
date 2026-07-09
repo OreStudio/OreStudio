@@ -112,8 +112,8 @@ void SettingGatedActionController::refresh() {
                             return s.name == gated.setting_name.toStdString();
                         });
 
-                    bool enabled = it != settings.end() ? it->value == "true"
-                                                        : gated.default_when_missing;
+                    bool enabled =
+                        it != settings.end() ? it->value == "true" : gated.default_when_missing;
                     if (it == settings.end()) {
                         BOOST_LOG_SEV(lg(), debug)
                             << "System setting not found: " << gated.setting_name.toStdString()

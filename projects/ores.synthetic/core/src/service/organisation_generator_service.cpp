@@ -795,8 +795,8 @@ void generate_books(const domain::organisation_generation_options& options,
             bk.ledger_ccy = portfolio.aggregation_ccy;
             bk.book_status =
                 std::string(ores::refdata::domain::book_status_constants::codes::active);
-            bk.regulatory_book_type = std::string(
-                ores::refdata::domain::regulatory_book_type_constants::codes::trading);
+            bk.regulatory_book_type =
+                std::string(ores::refdata::domain::regulatory_book_type_constants::codes::trading);
             bk.modified_by = modified_by;
             bk.performed_by = modified_by;
             bk.change_reason_code = "system.new_record";

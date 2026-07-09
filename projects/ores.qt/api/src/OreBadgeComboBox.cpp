@@ -18,10 +18,10 @@
  *
  */
 #include "ores.qt/OreBadgeComboBox.hpp"
+#include "ores.dq.api/domain/badge_definition.hpp"
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
-#include "ores.dq.api/domain/badge_definition.hpp"
 #include <QStyleOptionComboBox>
 #include <QStylePainter>
 
@@ -49,7 +49,8 @@ void OreBadgeComboBox::paintEvent(QPaintEvent*) {
     if (text.isEmpty())
         return;
 
-    QRect textRect = style()->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxEditField, this);
+    QRect textRect =
+        style()->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxEditField, this);
 
     QColor bg = color_constants::badge_fallback;
     QColor fg = color_constants::badge_fallback_text;

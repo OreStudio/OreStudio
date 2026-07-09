@@ -206,8 +206,8 @@ void system_settings_service::set_bool_setting(std::string_view name,
     const auto& def = domain::get_setting_definition(name);
 
     domain::system_setting s{.tenant_id = tenant_id_,
-                             .party_id = party_id_.empty() ? std::nullopt
-                                                            : std::optional(party_id_),
+                             .party_id =
+                                 party_id_.empty() ? std::nullopt : std::optional(party_id_),
                              .name = std::string(name),
                              .value = value ? "true" : "false",
                              .data_type = std::string(def.data_type),

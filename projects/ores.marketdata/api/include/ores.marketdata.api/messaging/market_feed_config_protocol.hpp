@@ -78,8 +78,8 @@ struct validate_market_feed_config_request {
 };
 
 struct validate_market_feed_config_response {
-    bool success = false; // request-level success (malformed body, etc.)
-    bool available = false; // whether the vintage data was found
+    bool success = false;        // request-level success (malformed body, etc.)
+    bool available = false;      // whether the vintage data was found
     double resolved_price = 0.0; // the found observation's value; only meaningful if available
     std::string message;
 };

@@ -156,9 +156,8 @@ private:
      * into @p browser, or a plain-text explanation if @p resolver is
      * null, @p id is empty, or the id doesn't resolve.
      */
-    static void renderIdInto(orgmode::indexing::resolver* resolver,
-                            const QString& id,
-                            QTextBrowser* browser);
+    static void
+    renderIdInto(orgmode::indexing::resolver* resolver, const QString& id, QTextBrowser* browser);
 
     QString scenarioPath_;
     QString taskId_;

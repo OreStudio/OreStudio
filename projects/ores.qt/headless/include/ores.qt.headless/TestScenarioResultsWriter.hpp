@@ -89,8 +89,8 @@ struct scenario_result final {
  * or didn't contain a =* Results= heading to rewrite.
  */
 ORES_QT_HEADLESS_API bool write_scenario_results(const QString& path,
-                                        const scenario_result& result,
-                                        const environment_metadata& environment);
+                                                 const scenario_result& result,
+                                                 const environment_metadata& environment);
 
 }
 

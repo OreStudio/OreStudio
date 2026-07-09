@@ -18,9 +18,9 @@
  *
  */
 #include "ores.qt/SystemSettingItemDelegate.hpp"
+#include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/ClientSystemSettingModel.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
-#include "ores.qt.headless/FontUtils.hpp"
 #include <QApplication>
 #include <QPainter>
 #include <QStyleOptionViewItem>

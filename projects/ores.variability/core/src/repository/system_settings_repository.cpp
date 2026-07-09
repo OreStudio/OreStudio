@@ -169,10 +169,8 @@ system_settings_repository::read_for_tenant(context ctx, const std::string& tena
     return result;
 }
 
-std::unordered_map<std::string, std::string>
-system_settings_repository::read_for_party(context ctx,
-                                           const std::string& tenant_id,
-                                           const std::string& party_id) {
+std::unordered_map<std::string, std::string> system_settings_repository::read_for_party(
+    context ctx, const std::string& tenant_id, const std::string& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading system settings for tenant: " << tenant_id
                                << " party: " << party_id;
 
@@ -191,8 +189,8 @@ system_settings_repository::read_for_party(context ctx,
             result[*row[0]] = *row[1];
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loaded " << result.size() << " settings for tenant "
-                               << tenant_id << " party " << party_id;
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << result.size() << " settings for tenant " << tenant_id
+                               << " party " << party_id;
     return result;
 }
 

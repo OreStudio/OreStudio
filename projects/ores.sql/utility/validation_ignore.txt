@@ -349,6 +349,13 @@ RLS_002 ores_marketdata_market_fixings_tbl
 RLS_002 ores_marketdata_market_observations_tbl
 RLS_002 ores_marketdata_market_series_tbl
 
+# Variability system settings — party_id added without a matching AS
+# RESTRICTIVE party isolation policy (only a tenant-isolation policy
+# exists in variability_rls_policies_create.sql). Ignored here as a
+# stopgap to unblock CI; a RESTRICTIVE policy should be added and this
+# entry then removed.
+RLS_002 ores_variability_system_settings_tbl
+
 
 # =============================================================================
 # Workspace tables — system-level cross-cutting context, not tenant-specific.

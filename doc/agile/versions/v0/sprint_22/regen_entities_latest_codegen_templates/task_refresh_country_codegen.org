@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:6E2E18A3-DA33-4BBF-8BAE-E28E3D3668FA][Verify country regen against latest codegen templates]] | PENDING | |
 
 * PRs
 

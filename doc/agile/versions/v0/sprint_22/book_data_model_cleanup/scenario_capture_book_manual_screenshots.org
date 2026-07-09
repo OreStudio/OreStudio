@@ -2,7 +2,7 @@
 :ID: F08AB129-209C-4753-BE06-AD4F08DFAAEA
 :END:
 #+title: Test Scenario: Capture updated Book manual screenshots
-#+description: Recapture the Book manual chapter's screenshots (Books window, General tab, Status combo) which still show the retired Trading Book checkbox and 5-value status list, and capture the new Regulatory Book Type combo screenshot.
+#+description: Recapture the Book manual chapter's screenshots (Books window, General tab, Status combo) which still show the retired Trading Book checkbox and 5-value status list, capture the new Regulatory Book Type combo screenshot, and verify the new book lifecycle diagram renders legibly with its pastel palette.
 #+type: test_scenario
 #+level: s1
 #+filetags: :book_data_model_cleanup:sprint_22:v0:
@@ -72,6 +72,18 @@ as coloured badges. Save as
 =assets/images/regulatory_book_type_combo.png= (new file — add the
 =[[proj:...]]= image link to replace the placeholder note in
 chapter_7_books.org's General tab section once captured).
+
+** Verify the book lifecycle diagram in the built manual
+
+Not a screenshot capture — a rendering check on the already-embedded
+=doc/knowledge/domain/book_lifecycle.png= diagram in the Books
+chapter's =Book lifecycle= section. Rebuild the manual (=compass build
+--direct manual=), open =doc/manual/user_guide/user_manual.pdf=, and
+confirm on the page showing Figure "The book lifecycle": the diagram
+renders (not a broken/missing image), uses the light pastel palette
+(pale blue state boxes, pale yellow notes, dark readable text — not
+the old dark-background/light-text scheme), and every state name and
+transition label is legible at the PDF's normal zoom level.
 
 # For a multi-client scenario (Clients field above is non-empty),
 # nest steps one level deeper instead, under one sub-heading per

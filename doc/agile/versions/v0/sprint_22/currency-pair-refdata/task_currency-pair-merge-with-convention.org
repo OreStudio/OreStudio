@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 6F7358D7-C4D7-40B1-9C0F-9D2508DA049A
+:END:
+#+title: Task: Consider merging currency_pair_convention back into currency_pair
+#+description: With non_deliverable/settlement_currency/fixing_source dropped, currency_pair is down to 4 fields (pair_code, base_currency, quote_currency, classification) -- thin enough to reconsider the earlier deliberate split from currency_pair_convention. Needs a pros/cons decision before any migration.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Decide whether to merge =currency_pair_convention= back into
+=currency_pair=, now that =currency_pair= is down to 4 fields
+(=pair_code=, =base_currency=, =quote_currency=, =classification=)
+after dropping =non_deliverable=/=settlement_currency=/
+=fixing_source= — thin enough to reconsider the earlier deliberate
+split (task [[id:9D58E37B-797C-430D-8724-EE50737C6DE1][Split currency_pair into identity and convention
+entities]]).
+
+** Pros of merging
+
+- =currency_pair= alone is genuinely thin now (4 columns) — feels
+  like an artificial split.
+- Avoids a join for every read; almost every consumer (list grid,
+  detail dialog) needs both together anyway.
+- Removes the "Conventions" cross-navigation toolbar button added
+  this sprint — a workaround that only exists because they're
+  separate windows.
+- One list/detail dialog instead of two for what a user experiences
+  as a single "pair" concept.
+- Less total code (SQL, C++, Qt) — one entity stack instead of two.
+
+** Cons of merging
+
+- Breaks the established =*_convention= entity family pattern used
+  elsewhere in the codebase — the split was a *deliberate*
+  architectural decision, not an accident, mirroring how ORE
+  conceptually separates a pair from its conventions.
+- Identity (base/quote/classification) and conventions (pip factor,
+  calendars, business-day rules) are genuinely different concerns;
+  merging violates single-responsibility and makes the domain class
+  bigger and more volatile.
+- =currency_pair= should stay a stable, lean identity anchor other
+  entities FK against (trades, the future settlement-convention
+  model — see [[id:75252EFB-55B6-4B14-B00B-EA04B459CCD5][Model FX settlement type per currency pair]]); merging
+  makes it a bigger target that grows every time a new concern gets
+  added.
+- Some pairs (the mechanical-coverage-pass exotic pairs) have no
+  explicit convention row today — a merged table needs every
+  convention column nullable, blurring "not yet configured" vs.
+  "explicitly blank."
+- Real migration cost: SQL tables, C++ domain/repository/service, Qt
+  dialogs, and the ORE =conventions.xml= import/export mapper (which
+  targets the convention entity specifically) all need rework.
+- "Thin" identity entities aren't unusual in this codebase (e.g.
+  =currency_pair_classification=) — the thinness here is mostly an
+  artifact of the =non_deliverable=/=settlement_currency=/
+  =fixing_source= drop, not proof the split itself is wrong.
+
+** Lean
+
+Keep them split — the architectural rationale still holds, and
+merging trades real pattern-consistency and future-extensibility for
+a UI/join convenience the "Conventions" button already solves
+reasonably. Needs a second opinion before deciding either way.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Awaiting a merge/keep-split decision.  |
+| Waiting on   | Decision.                              |
+| Next         | Decide, then plan the migration if merging. |
+| Last touched | 2026-07-09                               |
+
+* Acceptance
+
+- Explicit decision recorded: merge or keep split, with rationale.
+- If merging: =currency_pair= and =currency_pair_convention= combined
+  into one entity across SQL, domain, Qt, and the ORE conventions.xml
+  mapper, with no data loss.
+- If keeping split: this task closed as a documented decision, no
+  code change required.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

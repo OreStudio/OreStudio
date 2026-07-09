@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :synthetic-data-collections:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/fx-quote-inversion-detection
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -47,7 +47,7 @@ is left alone rather than guessed at.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

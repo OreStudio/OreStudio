@@ -8,7 +8,7 @@
 #+filetags: :iam:variability:qt:party:onboarding:sprint_22:v0:fix_iam_variability_grant_bootstrap_mode:
 #+owner: marco
 #+branch: feature/system-settings-not-seeded-for-new-tenants
-#+pr:
+#+pr: 1478
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -206,7 +206,7 @@ did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1478][#1478]] | [ores.iam,ores.variability,ores.sql] Fix tenant-scoped variability system settings: permissions and per-tenant seeding |
 
 * Review
 

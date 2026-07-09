@@ -52,3 +52,8 @@ fixing the root cause.
 * See also
 
 - [[id:ED053F15-513A-4E3A-908A-7AE11A2B3316][Migrate fx_convention consumers to currency_pair and retire it]] — where this was discovered and the template was fixed.
+- [[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic Concurrency Versioning: the version=0 Overload and Why
+  It's a Problem]] — this bug (hardcoding =1= instead of =0=) is a
+  second, independent way to get the same undocumented sentinel
+  wrong; that document is the definitive writeup of what =version = 0=
+  is actually supposed to mean.

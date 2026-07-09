@@ -332,6 +332,13 @@ The target state for the =unify-entity-timestamps= story is:
 * See also
 
 - [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] — links to all architectural entry points.
+- [[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic Concurrency Versioning: the version=0 Overload and Why
+  It's a Problem]] — how the =version= column (bitemporal SCD2's
+  per-write sequence number) is checked at insert time, and an
+  undocumented bypass that conflates four different write intents.
+- [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — versioning a
+  parent when a child writes, the sibling gap in the same insert
+  trigger.
 - [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] — database schema, roles, session conventions,
   extensions, and utility functions including =ores_utility_infinity_timestamp_fn()=.
 - [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] — tenant isolation and service-role

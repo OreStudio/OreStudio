@@ -291,7 +291,10 @@ void CurrencyPairDetailDialog::onSaveClicked() {
         // pair_.pair_code isn't synced from the UI until updatePairFromUi()
         // runs, later in this function -- read the live combo-derived value
         // directly rather than the (still-stale/empty) domain object.
+        const QString baseCode = ui_->baseCurrencyCombo->currentText();
+        const QString quoteCode = ui_->quoteCurrencyCombo->currentText();
         const std::string derivedPairCode = ui_->pairCodeEdit->text().trimmed().toStdString();
+        const std::string invertedPairCode = (quoteCode + "/" + baseCode).toStdString();
 
         refdata::messaging::get_currency_pairs_request checkRequest;
         checkRequest.limit = 100000;
@@ -304,6 +307,24 @@ void CurrencyPairDetailDialog::onSaveClicked() {
                                           "Duplicate Pair",
                                           QString("A currency pair '%1' already exists.")
                                               .arg(QString::fromStdString(derivedPairCode)));
+                return;
+            }
+
+            // FX market convention quotes each pair in one canonical
+            // direction only -- EUR/USD and USD/EUR are not independent
+            // pairs, they're the same market inverted. Reject the inverse
+            // rather than silently allowing both to coexist.
+            const bool inverseExists = std::ranges::any_of(
+                checkResult->pairs, [&](const auto& p) { return p.pair_code == invertedPairCode; });
+            if (inverseExists) {
+                MessageBoxHelper::warning(
+                    this,
+                    "Inverted Pair",
+                    QString("'%1' is the inverse of the existing pair '%2'. FX market "
+                            "convention allows only one direction per currency pair.\n\n"
+                            "To use '%1' instead, delete '%2' first, then create '%1'.")
+                        .arg(QString::fromStdString(derivedPairCode))
+                        .arg(QString::fromStdString(invertedPairCode)));
                 return;
             }
         }

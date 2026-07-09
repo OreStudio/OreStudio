@@ -242,6 +242,11 @@ as-of composition above. Candidate shape (not yet decided in detail):
 - [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] — the bitemporal
   model, the infinity sentinel, and the as-of point-query pattern this
   document generalises to a window.
+- [[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic Concurrency Versioning: the version=0 Overload and Why
+  It's a Problem]] — a sibling gap in the *same* insert-trigger
+  template (the =version = 0= bypass this document's touch function
+  would need to reuse or replace, not duplicate); read together before
+  implementing either.
 - [[id:CDB0273E-8DBA-417D-A31E-0475BF7538B7][ores.refdata.party_identifier]] — the reference child entity model
   (=:list_by:= FK flag) this document's new flags extend.
 - =projects/ores.codegen/library/templates/sql_schema_domain_entity_create.mustache=

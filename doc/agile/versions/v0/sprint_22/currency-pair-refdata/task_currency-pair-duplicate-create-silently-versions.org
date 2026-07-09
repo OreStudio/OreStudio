@@ -92,6 +92,25 @@ have caught an actual duplicate. Fixed by reading
 
 * Notes
 
+Root cause is architectural, not currency_pair-specific — written up
+in full in [[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic Concurrency Versioning: the version=0 Overload
+and Why It's a Problem]]. The client-side pre-check implemented here
+(paste seam =4E83FA7A-742A-4102-90AF-D337F6FB1269=) is that
+document's mitigation (B) — a stopgap for this one entity/client, not
+a substitute for the proper DB-level fix (A), which is tracked as its
+own capture.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:AC6020E7-D5EB-477C-AE57-FB17DDF06021][Currency Pair: duplicate pair_code rejected on create]] | PENDING | |
+
 * PRs
 
 | PR | Title |

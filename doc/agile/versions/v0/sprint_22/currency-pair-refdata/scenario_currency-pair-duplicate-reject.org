@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: AC6020E7-D5EB-477C-AE57-FB17DDF06021
+:END:
+#+title: Test Scenario: Currency Pair: duplicate pair_code rejected on create
+#+description: Verify creating a Currency Pair whose derived pair_code collides with an existing one is blocked with a clear error, not silently versioned.
+#+type: test_scenario
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+target_dialog:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:03FDF102-2379-4C73-BFD8-FA71BF670BF5][Creating a Currency Pair with an already-used pair_code silently versions the existing row]] in [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:03FDF102-2379-4C73-BFD8-FA71BF670BF5][Creating a Currency Pair with an already-used pair_code silently versions the existing row]] |
+| Parent story  | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]   |
+| Target dialog | CurrencyPairDetailDialog                |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Connect and log in
+
+Log in as =tenant_admin@barclays_plc= (password =Secure-Password-123=)
+and select the BARCLAYS PLC party. If the DB was recreated since,
+re-run
+=compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+to restore this starting state first.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Attempt to create a duplicate pair via matching base/quote
+
+Open Currency Pairs. Note an existing pair's Base and Quote currency
+(e.g. the first row in the grid). Click Add, pick that *same*
+Base Currency and Quote Currency combination, fill in Classification,
+and click Save.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm the error is clear and the save is blocked
+
+Confirm a "Duplicate Pair" (or similarly clear) error dialog appears
+naming the colliding pair_code, and that the dialog stays open (save
+did not go through) rather than silently closing.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm the existing pair's data is unchanged
+
+Close the Add dialog (Cancel/Close). Reopen the pair you tried to
+duplicate (double-click it in the list). Confirm its data (Base,
+Quote, Classification, Version) is unchanged from before the attempt
+— no phantom version bump.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm a genuinely new pair still saves normally
+
+Click Add again, pick a Base/Quote combination that does *not* yet
+exist, fill in Classification, and Save. Confirm it saves
+successfully with no error, and appears in the list.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | Save worked but no eventing so could not know there was a new pair. |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-07-09T17:56:55Z |
+| Branch        | feature/test-ore-fx-convention-import |
+| Commit        | 5692279fb |
+| Worktree      | prime_origin |
+
+* Notes

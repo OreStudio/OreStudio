@@ -20,8 +20,10 @@
 #include "ores.qt/BookDetailDialog.hpp"
 #include "ores.qt/BadgeComboHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
@@ -71,6 +73,10 @@ ProvenanceWidget* BookDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
 }
 
+QString BookDetailDialog::code() const {
+    return QString::fromStdString(book_.name);
+}
+
 void BookDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
@@ -83,14 +89,7 @@ void BookDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
-void BookDetailDialog::setupCombos() {
-    ui_->bookStatusCombo->clear();
-    ui_->bookStatusCombo->addItem(tr("Active"), QString("Active"));
-    ui_->bookStatusCombo->addItem(tr("Inactive"), QString("Inactive"));
-    ui_->bookStatusCombo->addItem(tr("Closed"), QString("Closed"));
-    ui_->bookStatusCombo->addItem(tr("Frozen"), QString("Frozen"));
-    ui_->bookStatusCombo->addItem(tr("Pending"), QString("Pending"));
-}
+void BookDetailDialog::setupCombos() {}
 
 void BookDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this, &BookDetailDialog::onSaveClicked);
@@ -110,11 +109,16 @@ void BookDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &BookDetailDialog::onFieldChanged);
+    connect(ui_->regulatoryBookTypeCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &BookDetailDialog::onFieldChanged);
 }
 
 void BookDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
-    setup_badge_combo(this, ui_->bookStatusCombo, badgeCache(), "book_status");
+    populateBookStatusCombo();
+    populateRegulatoryBookTypeCombo();
     populateLedgerCcyCombo();
 }
 
@@ -157,10 +161,48 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
     ui_->glAccountRefEdit->setReadOnly(readOnly);
     ui_->costCenterEdit->setReadOnly(readOnly);
     ui_->bookStatusCombo->setEnabled(!readOnly);
+    ui_->regulatoryBookTypeCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
+void BookDetailDialog::populateBookStatusCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating book_status combo";
+    populateDynamicCombo<refdata::domain::book_status>(
+        ui_->bookStatusCombo,
+        this,
+        clientManager_,
+        &fetch_book_statuses,
+        "bookStatusWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        [this]() { return QString::fromStdString(book_.book_status); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load book statuses: %1").arg(error));
+        },
+        [this]() { setup_badge_combo(this, ui_->bookStatusCombo, badgeCache(), "book_status"); });
+}
+void BookDetailDialog::populateRegulatoryBookTypeCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating regulatory_book_type combo";
+    populateDynamicCombo<refdata::domain::regulatory_book_type>(
+        ui_->regulatoryBookTypeCombo,
+        this,
+        clientManager_,
+        &fetch_regulatory_book_types,
+        "regulatoryBookTypeWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        [this]() { return QString::fromStdString(book_.regulatory_book_type); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load regulatory book types: %1").arg(error));
+        },
+        [this]() {
+            setup_badge_combo(
+                this, ui_->regulatoryBookTypeCombo, badgeCache(), "regulatory_book_type");
+        });
+}
 void BookDetailDialog::updateUiFromBook() {
     ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(book_.id)));
     ui_->nameEdit->setText(QString::fromStdString(book_.name));
@@ -171,12 +213,9 @@ void BookDetailDialog::updateUiFromBook() {
     }
     ui_->glAccountRefEdit->setText(QString::fromStdString(book_.gl_account_ref));
     ui_->costCenterEdit->setText(QString::fromStdString(book_.cost_center));
-    {
-        const int idx = ui_->bookStatusCombo->findData(QString::fromStdString(book_.book_status));
-        if (idx >= 0)
-            ui_->bookStatusCombo->setCurrentIndex(idx);
-    }
-    ui_->isTradingBookCheck->setChecked(book_.is_trading_book);
+    ui_->bookStatusCombo->setCurrentText(QString::fromStdString(book_.book_status));
+    ui_->regulatoryBookTypeCombo->setCurrentText(
+        QString::fromStdString(book_.regulatory_book_type));
 
     populateProvenance(book_.version,
                        book_.modified_by,
@@ -194,8 +233,8 @@ void BookDetailDialog::updateBookFromUi() {
     book_.ledger_ccy = ui_->ledgerCcyEdit->currentText().toStdString();
     book_.gl_account_ref = ui_->glAccountRefEdit->text().trimmed().toStdString();
     book_.cost_center = ui_->costCenterEdit->text().trimmed().toStdString();
-    book_.book_status = ui_->bookStatusCombo->currentData().toString().toStdString();
-    book_.is_trading_book = ui_->isTradingBookCheck->isChecked();
+    book_.book_status = ui_->bookStatusCombo->currentText().toStdString();
+    book_.regulatory_book_type = ui_->regulatoryBookTypeCombo->currentText().toStdString();
     book_.modified_by = username_;
 }
 

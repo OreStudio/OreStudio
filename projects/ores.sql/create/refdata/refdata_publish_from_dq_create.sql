@@ -2840,14 +2840,14 @@ begin
     insert into ores_refdata_books_tbl (
         tenant_id, id, version, party_id, name,
         parent_portfolio_id, ledger_ccy, gl_account_ref, cost_center,
-        book_status, is_trading_book, owner_unit_id,
+        book_status, regulatory_book_type, owner_unit_id,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
         p_target_tenant_id,
         gen_random_uuid(), 0, v_root_party_id, a.name,
         pmap.published_id, a.ledger_ccy, a.gl_account_ref, a.cost_center,
-        a.book_status, a.is_trading_book, pmap.published_owner_unit_id,
+        a.book_status, a.regulatory_book_type, pmap.published_owner_unit_id,
         coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
         'Published from organisation dataset'
     from ores_dq_books_artefact_tbl a

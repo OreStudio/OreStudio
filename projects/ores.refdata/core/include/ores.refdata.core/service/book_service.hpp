@@ -74,6 +74,7 @@ public:
      */
     std::uint32_t count_books();
 
+
     /**
      * @brief Retrieves a single book by its id.
      *

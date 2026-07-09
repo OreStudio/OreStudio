@@ -28,7 +28,7 @@ create table if not exists "ores_dq_books_artefact_tbl" (
     "gl_account_ref" text null,
     "cost_center" text null,
     "book_status" text not null,
-    "is_trading_book" integer not null
+    "regulatory_book_type" text not null
 );
 
 create index if not exists books_artefact_dataset_idx

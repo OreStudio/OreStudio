@@ -174,6 +174,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_statuses:read',   'View book statuses');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_statuses:write',  'Create and modify book statuses');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_statuses:delete', 'Delete book statuses');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::regulatory_book_types:read',   'View regulatory book types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::regulatory_book_types:write',  'Create and modify regulatory book types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::regulatory_book_types:delete', 'Delete regulatory book types');
 
     -- Portfolio permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::portfolios:read',   'View portfolios');

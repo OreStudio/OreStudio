@@ -35,7 +35,7 @@ domain::book generate_synthetic_book(utility::generation::generation_context& ct
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::book r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.workspace_id = utility::uuid::live_workspace_id();
@@ -51,7 +51,7 @@ domain::book generate_synthetic_book(utility::generation::generation_context& ct
     r.gl_account_ref = std::string("GL-10150-TEST");
     r.cost_center = std::string("CC-001");
     r.book_status = std::string("Active");
-    r.is_trading_book = 1;
+    r.regulatory_book_type = std::string("Trading");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -19,6 +19,7 @@
  */
 #include "ores.qt/PortfolioExplorerTreeModel.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.refdata.api/domain/regulatory_book_type_constants.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <functional>
 
@@ -231,7 +232,7 @@ QVariant PortfolioExplorerTreeModel::data(const QModelIndex& index, int role) co
             return IconUtils::createRecoloredIcon(icon, IconUtils::DefaultIconColor);
         }
         // Book
-        if (node->book.is_trading_book == 1) {
+        if (ores::refdata::domain::regulatory_book_type_constants::is_trading_book(node->book)) {
             return IconUtils::createRecoloredIcon(Icon::BookOpenFilled,
                                                   IconUtils::DefaultIconColor);
         }

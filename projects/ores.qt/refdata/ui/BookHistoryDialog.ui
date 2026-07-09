@@ -234,14 +234,14 @@
                 </widget>
                </item>
                <item row="6" column="0">
-                <widget class="QLabel" name="is_trading_bookLabel">
+                <widget class="QLabel" name="regulatory_book_typeLabel">
                  <property name="text">
-                  <string>Trading Book:</string>
+                  <string>Regulatory Book Type:</string>
                  </property>
                 </widget>
                </item>
                <item row="6" column="1">
-                <widget class="QLabel" name="isTradingBookCheck">
+                <widget class="QLabel" name="regulatoryBookTypeValue">
                  <property name="text">
                   <string/>
                  </property>

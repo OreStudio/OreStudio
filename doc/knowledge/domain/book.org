@@ -35,6 +35,9 @@ accounting ledger.
 - *Classification* → [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] (trading vs banking, ledger vs
   source, risk-bearing vs wash/reserve/write-off/funding, and other
   special-purpose books).
+- *Regulatory boundary* → [[id:36B8F463-121F-42D6-8048-3C62C21AF557][FRTB trading book / banking book boundary]]
+  (Basel III/IV intent-based classification, presumptive lists,
+  capital treatment, switching restrictions).
 - *Portfolios* → [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]] (the accounting/trading split,
   the ledger-defined book hierarchy, global vs personal portfolios).
 - *Saved filters* → [[id:44C9D99B-979B-43AB-90BC-AF7E7D8BDE7C][Dynamic books]] (a live filter that behaves like a

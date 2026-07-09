@@ -145,7 +145,7 @@ colours) may already fit.
 | =workspace_status=          |    16 | Lifecycle status codes for workspace records.                            |
 | =account_type=              |    17 | Classification of account types (user, service, algorithm, llm).         |
 | =account_online=            |    18 | Boolean online indicator for accounts (Yes, No).                        |
-| =book_is_trading=           |    19 | Whether a book is a trading book (Yes/No), reuses =account_online='s colours. |
+| =regulatory_book_type=      |    19 | Basel III/IV FRTB trading book / banking book classification a book carries. |
 
 ** Worked example — account_type
 

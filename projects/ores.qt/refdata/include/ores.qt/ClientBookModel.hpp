@@ -58,7 +58,7 @@ public:
         LedgerCcy,
         BookStatus,
         CostCenter,
-        IsTradingBook,
+        RegulatoryBookType,
         Version,
         ModifiedBy,
         RecordedAt,

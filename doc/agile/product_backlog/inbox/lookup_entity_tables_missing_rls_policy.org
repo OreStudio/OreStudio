@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 1679C85E-E26B-4FDF-B5BA-68B0B6E25637
+:END:
+#+title: lookup_entity codegen tables never get an RLS policy
+#+description: Every ores.codegen.entity table gets tenant_id + an RLS policy, but the lookup_entity archetype (code/name lookup tables) never emits one -- 11 of 11 lookup tables checked are missing it.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:sql:rls:security:lookup_entity:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+`./projects/ores.sql/utility/validate_schemas.sh` flags
+`ores_refdata_regulatory_book_types_tbl` (has `tenant_id`, no
+`ENABLE ROW LEVEL SECURITY`). Checking every table with a `tenant_id`
+column under `projects/ores.sql/create/refdata/` against
+`refdata_rls_policies_create.sql` shows this is not an isolated miss:
+every table shaped like the `lookup_entity` archetype (a small
+`code`/`name`/`description`/`display_order` reference table) is
+missing its RLS policy —
+
+`book_statuses`, `business_day_convention_types`,
+`business_unit_types`, `contact_types`, `party_id_schemes`,
+`party_categories`, `party_statuses`, `party_types`, `purpose_types`,
+`regulatory_book_types`, `rounding_types` — 11 of 11 checked.
+
+Meanwhile every other `ores.codegen.entity` table with `tenant_id`
+(parties, books, currencies, counterparties, business_centres,
+portfolios, the various convention tables, ...) does have one in
+`refdata_rls_policies_create.sql`. Add RLS-policy generation as a
+codegen variability knob so it's emitted automatically for any
+`tenant_id`-bearing table, including `lookup_entity`, instead of
+depending on someone hand-adding it per table.
+
+* Why
+
+Tenant isolation depends on RLS; a lookup table without it is a
+same-tenant-invisible-cross-tenant-visible gap for every row in that
+table. The consistent 11/11 miss strongly suggests the `lookup_entity`
+codegen path (or whatever hand-authored process wires up
+`refdata_rls_policies_create.sql`) simply never covers that archetype,
+rather than 11 independent oversights.
+
+* References
+
+- `projects/ores.sql/utility/validate_schemas.sh` — the RLS_001 check
+  that surfaced this.
+- `projects/ores.sql/create/refdata/refdata_rls_policies_create.sql`
+  — the hand-maintained file that should include these 11 tables.
+
+* See also
+
+-

@@ -72,6 +72,11 @@ namespace ores::qt {
  * the combo shows a distinct "Failed to load" placeholder in that
  * case. Defaults to a no-op for callers that don't need to surface it
  * beyond the placeholder.
+ * @param on_success Called after items are populated and the selection
+ * restored, on the success path only. Defaults to a no-op; used by
+ * badge-coloured combos to (re)apply per-item badge colours once the
+ * real items exist, since a delegate/paintEvent installed before the
+ * fetch completes would have nothing to colour yet.
  * @param loading_placeholder Text shown while the fetch is in flight.
  * @param error_placeholder Text shown in the combo when the fetch fails.
  */
@@ -87,6 +92,7 @@ void populateDynamicCombo(
     std::function<int(const Entity&)> sort_key_of,
     std::function<QString()> fallback_selection,
     std::function<void(const QString&)> on_error = [](const QString&) {},
+    std::function<void()> on_success = []() {},
     const QString& loading_placeholder = QObject::tr("Loading…"),
     const QString& error_placeholder = QObject::tr("Failed to load")) {
     if (!combo || !owner || !client_manager || !client_manager->isConnected())
@@ -125,6 +131,7 @@ void populateDynamicCombo(
          tooltip_of,
          sort_key_of,
          on_error,
+         on_success,
          error_placeholder]() {
             auto result = watcher->result();
             watcher->deleteLater();
@@ -162,6 +169,8 @@ void populateDynamicCombo(
             const int current = combo->currentIndex();
             if (current >= 0)
                 combo->setToolTip(combo->itemData(current, Qt::ToolTipRole).toString());
+
+            on_success();
         });
 
     watcher->setFuture(future);

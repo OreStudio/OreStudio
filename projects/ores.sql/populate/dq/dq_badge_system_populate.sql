@@ -72,8 +72,8 @@ BEGIN
         'Lifecycle status codes for book records.', 2);
 
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'book_is_trading', 'Book Is Trading',
-        'Whether a book is a trading book (Yes/No badge).', 19);
+        'regulatory_book_type', 'Regulatory Book Type',
+        'Basel III/IV FRTB trading book / banking book classification a book carries.', 19);
 
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'portfolio_status', 'Portfolio Status',
@@ -393,24 +393,23 @@ BEGIN
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_status', 'Pending', 'pending');
 
-    -- book_status
+    -- book_status: only Active/Closed/Frozen exist in
+    -- ores_refdata_book_statuses_tbl (refdata_book_statuses_populate.sql);
+    -- Inactive/Pending were removed here as they didn't correspond to any
+    -- real row and would never actually be selectable.
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_status', 'Active', 'active');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'book_status', 'Inactive', 'inactive');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_status', 'Closed', 'inactive');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_status', 'Frozen', 'frozen');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'book_status', 'Pending', 'pending');
 
-    -- book_is_trading (reuses login_online/inactive colours — same
-    -- generic positive/negative palette as account_online)
+    -- regulatory_book_type (reuses pending/inactive colours as a neutral
+    -- distinct pair, same as elsewhere in this file)
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'book_is_trading', 'Yes', 'login_online');
+        'regulatory_book_type', 'Trading', 'pending');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'book_is_trading', 'No', 'inactive');
+        'regulatory_book_type', 'Banking', 'inactive');
 
     -- portfolio_status
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),

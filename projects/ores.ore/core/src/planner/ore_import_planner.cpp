@@ -20,6 +20,8 @@
 #include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.ore.core/hierarchy/ore_hierarchy_builder.hpp"
+#include "ores.refdata.api/domain/book_status_constants.hpp"
+#include "ores.refdata.api/domain/regulatory_book_type_constants.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -30,6 +32,8 @@ namespace ores::ore::planner {
 
 using namespace ores::logging;
 namespace reason = ores::dq::domain::change_reason_constants;
+namespace book_status_constants = ores::refdata::domain::book_status_constants;
+namespace regulatory_book_type_constants = ores::refdata::domain::regulatory_book_type_constants;
 
 ore_import_planner::ore_import_planner(scanner::scan_result scan_result,
                                        std::set<std::string> existing_iso_codes,
@@ -200,8 +204,8 @@ ore_import_plan ore_import_planner::plan() {
         b.name = node.name;
         b.parent_portfolio_id = book_parent_id;
         b.ledger_ccy = choices_.ledger_ccy;
-        b.book_status = "Active";
-        b.is_trading_book = 1;
+        b.book_status = std::string(book_status_constants::codes::active);
+        b.regulatory_book_type = std::string(regulatory_book_type_constants::codes::trading);
         b.change_reason_code = std::string(reason::codes::new_record);
         b.change_commentary = "Imported from ORE directory";
 

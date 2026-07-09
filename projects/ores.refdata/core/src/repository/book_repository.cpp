@@ -96,6 +96,7 @@ std::vector<domain::book> book_repository::read_all(context ctx, const std::stri
         "Reading all book versions by id.");
 }
 
+
 void book_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));

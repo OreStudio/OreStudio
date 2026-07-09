@@ -42,7 +42,7 @@ create table if not exists "ores_refdata_books_tbl" (
     "gl_account_ref" text null,
     "cost_center" text null,
     "book_status" text not null,
-    "is_trading_book" integer not null,
+    "regulatory_book_type" text not null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
@@ -133,6 +133,9 @@ begin
 
     -- Validate book_status
     NEW.book_status := ores_refdata_validate_book_status_fn(NEW.tenant_id, NEW.book_status);
+
+    -- Validate regulatory_book_type
+    NEW.regulatory_book_type := ores_refdata_validate_regulatory_book_type_fn(NEW.tenant_id, NEW.regulatory_book_type);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

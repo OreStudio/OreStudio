@@ -26,6 +26,7 @@
 #include "ores.qt/OrgExplorerMdiWindow.hpp"
 #include "ores.qt/PortfolioController.hpp"
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
+#include "ores.qt/RegulatoryBookTypeController.hpp"
 #include "ores.qt/TradeController.hpp"
 #include <QAction>
 #include <QMainWindow>
@@ -96,6 +97,10 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
                                                                    this);
     connectControllerSignals(bookStatusController_.get());
 
+    regulatoryBookTypeController_ = std::make_unique<RegulatoryBookTypeController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    connectControllerSignals(regulatoryBookTypeController_.get());
+
     tradeController_ = std::make_unique<TradeController>(ctx_.main_window,
                                                          ctx_.mdi_area,
                                                          ctx_.client_manager,
@@ -128,6 +133,13 @@ void TradingPlugin::setup_menus(const shared_menus_context& smc) {
         connect(actBookStatuses, &QAction::triggered, this, [this]() {
             if (bookStatusController_)
                 bookStatusController_->showListWindow();
+        });
+
+        auto* actRegulatoryBookTypes =
+            trading_codes_menu_->addAction(ico(Icon::Flag), tr("Regulatory Book &Types"));
+        connect(actRegulatoryBookTypes, &QAction::triggered, this, [this]() {
+            if (regulatoryBookTypeController_)
+                regulatoryBookTypeController_->showListWindow();
         });
     }
 
@@ -297,6 +309,7 @@ void TradingPlugin::on_logout() {
 
     tradeController_.reset();
     bookStatusController_.reset();
+    regulatoryBookTypeController_.reset();
     bookController_.reset();
     portfolioController_.reset();
     oreImportController_.reset();

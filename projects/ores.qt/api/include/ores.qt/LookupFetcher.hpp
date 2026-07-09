@@ -21,8 +21,10 @@
 #define ORES_QT_LOOKUP_FETCHER_HPP
 
 #include "ores.qt/export.hpp"
+#include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
+#include "ores.refdata.api/domain/regulatory_book_type.hpp"
 #include "ores.refdata.api/domain/rounding_type.hpp"
 #include <QString>
 #include <expected>
@@ -174,6 +176,26 @@ fetch_monetary_natures(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::currency_market_tier>, QString>
 fetch_currency_market_tiers(ClientManager* cm);
+
+/**
+ * @brief Fetches all book statuses from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Book's book_status combo. Returns an error message on
+ * failure, distinguishing it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::book_status>, QString>
+fetch_book_statuses(ClientManager* cm);
+
+/**
+ * @brief Fetches all regulatory book types from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Book's regulatory_book_type combo. Returns an error message
+ * on failure, distinguishing it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::regulatory_book_type>, QString>
+fetch_regulatory_book_types(ClientManager* cm);
 
 }
 

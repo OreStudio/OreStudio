@@ -21,6 +21,7 @@
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -129,6 +130,7 @@ void BookMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
+    tableView_->setIconSize(single_flag_icon_size());
 
     using cs = column_style;
     auto* delegate = new EntityItemDelegate(
@@ -159,7 +161,7 @@ void BookMdiWindow::setupTable() {
             static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
             if (!cache)
                 return default_gray;
-            auto* def = cache->resolve("book_is_trading", value.toStdString());
+            auto* def = cache->resolve("regulatory_book_type", value.toStdString());
             if (!def)
                 return default_gray;
             return {QColor(QString::fromStdString(def->background_colour)),

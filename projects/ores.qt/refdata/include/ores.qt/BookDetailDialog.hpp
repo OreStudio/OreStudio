@@ -90,6 +90,7 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    QString code() const override;
 
 private:
     void setupUi();
@@ -99,6 +100,10 @@ private:
     void updateBookFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
+    void populateBookStatusCombo();
+
+    void populateRegulatoryBookTypeCombo();
 
 
     void populateLedgerCcyCombo();

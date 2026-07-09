@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 2C1C628B-7C55-4CC7-B8F9-B3E52A0739A6
+:END:
+#+title: Task: Apply view_group tabs to the currency entity (pilot)
+#+description: Model currency's fields into view_groups (tabs) matching the pre-codegen hand-written dialog's grouping, regenerate, and verify the Qt detail dialog renders multiple tabs correctly.
+#+type: task
+#+level: s1
+#+filetags: :codegen:qt:currency:refdata:sprint_22:v0:codegen-view-groups:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore currency's original four-tab detail dialog (General,
+Formatting, Rounding, Provenance) using the new =view_group= codegen
+support, proving it out end-to-end on the entity that motivated it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] |
+| Now          | Blocked on the codegen schema/template task landing first. |
+| Waiting on   | [[id:A2DD82C0-0B8A-498D-8AA3-DA5C9A8355D2][Design and add view_group support to the entity_org schema and Qt codegen templates]] |
+| Next         | Add view_group values to currency's entity_org model once that's merged. |
+| Last touched | 2026-07-09                               |
+
+* Acceptance
+
+- [ ] Currency's =entity_org= model
+  (=projects/ores.refdata/modeling/ores.refdata.currency.org= —
+  confirm exact path) gets =view_group= values on its =*** Detail
+  fields= rows matching the recovered pre-codegen grouping exactly:
+  - *General*: ISO Code, Name, Numeric Code, Asset Class, Market Tier
+  - *Formatting*: Symbol, Fraction Symbol, Fractions Per Unit, Format
+  - *Rounding*: Rounding Type, Rounding Precision
+  - (Provenance is generic/already handled — not part of =Detail
+    fields=, no change needed there.)
+- [ ] Regenerated =CurrencyDetailDialog.{hpp,cpp,ui}= via codegen and
+  confirmed (live, in the running app) the dialog shows all four tabs
+  in the right order with the right fields, matching
+  =assets/images/currency_details_{general,formatting,rounding,provenance}.png=
+  (the pre-codegen screenshots, useful as a reference for what "right"
+  looks like — even though those exact images get retaken in the
+  manual task).
+- [ ] No other currency-adjacent generated file (repository, protocol,
+  Qt model, etc.) changes as a side effect — only the detail dialog's
+  =.ui=/generated widget wiring should differ from before this task.
+- [ ] A test_scenario doc created and run through the QA Validation
+  Runner to verify this live (per the project's established manual-QA
+  convention), not just eyeballed once.
+
+* Plan
+
+(Blocked until the codegen task above lands — nothing to plan in
+detail yet beyond: locate currency's exact entity_org model file,
+add the view_group column values, rerun the currency codegen
+profile, rebuild, and manually verify.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

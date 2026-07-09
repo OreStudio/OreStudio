@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: A2DD82C0-0B8A-498D-8AA3-DA5C9A8355D2
+:END:
+#+title: Task: Design and add view_group support to the entity_org schema and Qt codegen templates
+#+description: Initial task for: Codegen support for view groups (Qt detail-dialog tabs)
+#+type: task
+#+level: s1
+#+filetags: :codegen-view-groups:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a generic, backward-compatible =view_group= concept to the
+=entity_org= codegen schema and Qt detail-dialog templates, so an
+entity's fields can be grouped into separate dialog tabs instead of
+always landing in one flat form.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-09                               |
+
+* Acceptance
+
+- [ ] =codegen_input_org_schema.org= documents an optional =view_group=
+  column on the =*** Detail fields= table (=** Qt= section of
+  =entity_org=).
+- [ ] =org_loader.py= (or wherever =entity_org= is parsed into the
+  generator model) reads =view_group= per field, defaulting to a
+  single implicit group when absent — every entity without the column
+  today must generate byte-identical output to before.
+- [ ] The generator model exposes fields grouped by =view_group= in
+  first-appearance order (e.g. a =domain_entity.qt.view_groups= list,
+  each with a name and its ordered =detail_fields=) for the Mustache
+  templates to iterate.
+- [ ] =qt_detail_dialog_ui.mustache= iterates =view_groups= to emit one
+  =QWidget= tab per group (title = group name, one per
+  =domain_entity.qt.view_groups= entry) instead of the single hardcoded
+  =generalTab=; the existing =QFormLayout=-per-tab structure and
+  widget-type branches (=is_line_edit=, =is_text_edit=, combo/flag
+  variants, etc.) are reused unchanged inside each generated tab.
+- [ ] =cpp_qt_detail_dialog.{hpp,cpp}.mustache= need no changes if they
+  only reference fields by name (verify this holds — the =tabWidget()=
+  accessor already exists and returns =ui_->tabWidget= regardless of
+  how many pages it holds).
+- [ ] Regenerated a currently-single-tab entity (e.g. run the
+  currency_pair or another already-synced entity through codegen with
+  no =view_group= column added) and confirmed its generated =.ui=/=.cpp=
+  are unchanged — the backward-compatibility guarantee, checked
+  mechanically (diff), not just asserted.
+- [ ] Unit/scaffold test coverage in
+  =projects/ores.codegen/tests/component_scaffold/= (or wherever
+  entity_org → Qt generation is exercised) covers both the
+  no-view_group (single implicit tab) and multi-view_group cases.
+
+* Plan
+
+Design sketch (from investigating the codegen templates and schema
+directly — see =projects/ores.codegen/library/templates/qt_detail_dialog_ui.mustache=
+and =docs/codegen_input_org_schema.org=):
+
+1. Schema: add =view_group= as an optional cell in the existing
+   =*** Detail fields= table row (alongside =field=, =label=, =widget=,
+   =type=, =is_key=, …) — no new heading, minimal footprint, keeps one
+   source of truth for "does this field exist and where does it live".
+
+2. Loader: group parsed detail fields by =view_group= (stable,
+   first-appearance order — the order fields are declared in the table
+   determines both field order within a tab AND tab order), defaulting
+   every field with no =view_group= value to one implicit group (e.g.
+   named "General" or simply "" mapped to the current single-tab
+   behaviour) so untouched entities regenerate identically.
+
+3. Templates: replace the single hardcoded
+   =<widget class="QWidget" name="generalTab">= block in
+   =qt_detail_dialog_ui.mustache= with a Mustache section iterating
+   =domain_entity.qt.view_groups=, emitting one tab widget (unique
+   object name derived from the group name) per group, each containing
+   its own =QFormLayout= populated from that group's =detail_fields=
+   (reusing the existing per-field widget-type branches unchanged).
+
+4. Verify no other template needs the group breakdown — the C++
+   =.hpp=/=.cpp= detail-dialog templates operate on fields by name via
+   generated accessors, not by tab, so they likely need zero changes;
+   confirm this rather than assume it.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

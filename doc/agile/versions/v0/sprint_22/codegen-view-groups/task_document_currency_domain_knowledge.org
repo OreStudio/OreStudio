@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 43BF58C0-902A-4222-A9E5-86C67CE60C9A
+:END:
+#+title: Task: Document currency domain knowledge in the manual
+#+description: Update the currency chapter of the user manual with the domain knowledge behind its field grouping (view_groups) and any other currency concepts not yet documented.
+#+type: task
+#+level: s1
+#+filetags: :docs:currency:refdata:sprint_22:v0:codegen-view-groups:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bring =doc/manual/user_guide/chapter_5_currencies.org='s Currency
+Details section back in sync with the app once the four tabs are
+restored — its prose already describes the four-tab structure
+correctly (it was never updated when codegen collapsed it to one
+tab), but its screenshots are stale and one tab has no screenshot at
+all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] |
+| Now          | Blocked on the currency pilot task.    |
+| Waiting on   | [[id:2C1C628B-7C55-4CC7-B8F9-B3E52A0739A6][Apply view_group tabs to the currency entity (pilot)]] |
+| Next         | Retake screenshots once the regenerated dialog is verified. |
+| Last touched | 2026-07-09                               |
+
+* Acceptance
+
+- [ ] =assets/images/currency_details_general.png=,
+  =currency_details_formatting.png=, and
+  =currency_details_provenance.png= retaken against the regenerated
+  (codegen, view_group-based) dialog — they currently show the old
+  hand-written dialog, not the current single-tab codegen output, so
+  they're already inaccurate.
+- [ ] =assets/images/currency_details_rounding.png= (exists as an asset,
+  never embedded) added to the =*** Rounding= subsection of chapter 5
+  — a pre-existing gap, not caused by codegen, fix it while in there.
+- [ ] Chapter 5's prose re-verified field-by-field against the
+  regenerated dialog (labels, placeholder text, widget types) — it was
+  written against the pre-codegen dialog and should be re-checked
+  rather than assumed still accurate.
+- [ ] Any domain knowledge that surfaces while doing this (e.g. *why*
+  these particular fields were grouped this way, if that rationale
+  isn't already captured) is added to the relevant subsection.
+
+* Plan
+
+(Blocked until the currency pilot task lands and the regenerated
+dialog is verified — nothing to plan in detail yet beyond: retake the
+four screenshots, add the missing Rounding one, and re-read the
+existing prose against the live dialog field-by-field.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

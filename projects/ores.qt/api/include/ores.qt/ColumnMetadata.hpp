@@ -48,6 +48,7 @@ enum class column_style {
     mono_right,       ///< Monospace, right-aligned.
     mono_bold_center, ///< Monospace bold, centered.
     icon_centered,    ///< Centered DecorationRole icon (flag columns).
+    icon_text_left,   ///< Left-aligned icon followed by DisplayRole text.
     badge_centered    ///< Coloured badge pill, centered.
 };
 

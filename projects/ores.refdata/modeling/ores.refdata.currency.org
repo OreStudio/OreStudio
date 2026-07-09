@@ -380,6 +380,7 @@ drop function if exists ores_refdata_validate_currency_fn;
 :flag_inline_widget:          isoCodeEdit
 :flag_accessor:               getCurrencyFlagIcon
 :settings_group:              CurrencyListWindow
+:qt_settings_version:         3
 :window_title:                Currencies
 :icon:                        Currency
 :has_csv_xml_io:              true
@@ -437,7 +438,7 @@ generically via =has_flag_icon=, matching every other flag entity).
 | MarketTier         | market_tier        | Market Tier     | string    | auto  |                | true     | currency_market_tier  |                    |
 | SpotDays           | spot_days          | Spot Days       | int       | 70    |                |          |                       | true               |
 | DayBasis           | day_basis          | Day Basis       | string    | 80    |                |          |                       |                    |
-| BasePrecedence     | base_precedence    | Base Precedence | int       | 100   |                |          |                       |                    |
+| BasePrecedence     | base_precedence    | Base Precedence | int       | 100   |                |          |                       | true               |
 | HolidayCalendar    | holiday_calendar   | Holiday Calendar| string    | auto  |                |          |                       | true               |
 | Version            | version            | Version         | int       | 70    |                |          |                       |                    |
 | ModifiedBy         | modified_by        | Modified By     | string    | auto  |                |

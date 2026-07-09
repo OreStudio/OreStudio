@@ -2055,6 +2055,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 if 'export_header' not in qt:
                     qt['export_header'] = f'{component.capitalize()}Export.hpp'
             # Mark last item in columns for template iteration
+            qt.setdefault('qt_settings_version', 1)
             if 'columns' in qt:
                 _mark_last_item(qt['columns'])
                 # Compute has_description_column flag
@@ -2085,6 +2086,23 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     c.get('name'): c.get('cpp_type', '')
                     for c in domain_entity.get('columns', [])
                 }
+                # Columns that also carry a DecorationRole icon (per the
+                # "Icon columns (Qt model)" table) need icon-aware rendering
+                # even though they display text too — otherwise they fall
+                # through to the text_left default, which paints the icon
+                # via Qt's own QStyledItemDelegate path using the view's
+                # blanket iconSize() directly instead of the height-
+                # constrained, aspect-preserving sizing every other icon
+                # column gets. Harmless when a view has only one icon shape
+                # (e.g. currency's own single flag column), but visibly
+                # wrong the moment a view mixes shapes (e.g. currency_pair's
+                # narrow BaseCurrency/QuoteCurrency next to its wide
+                # composited PairCode column).
+                icon_column_names = {
+                    ic.get('column') for ic in qt.get('icon_columns', [])
+                }
+                if qt.get('flag_icon_column'):
+                    icon_column_names.add(qt['flag_icon_column'])
                 for idx, qt_col in enumerate(qt['columns']):
                     field = qt_col.get('field')
                     cpp_type = domain_col_types.get(field, '')
@@ -2097,6 +2115,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     if 'column_style' not in qt_col:
                         if qt_col.get('is_badge'):
                             qt_col['column_style'] = 'cs::badge_centered'
+                        elif qt_col.get('enum_name') in icon_column_names:
+                            qt_col['column_style'] = 'cs::icon_text_left'
                         elif qt_col.get('is_int'):
                             qt_col['column_style'] = 'cs::mono_center'
                         else:

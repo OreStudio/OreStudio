@@ -46,6 +46,9 @@ void EntityItemDelegate::paint(QPainter* painter,
         case column_style::icon_centered:
             DelegatePaintUtils::paint_centered_icon(painter, option, index);
             return;
+        case column_style::icon_text_left:
+            DelegatePaintUtils::paint_icon_and_text(painter, option, index);
+            return;
         case column_style::badge_centered: {
             // Draw selection/hover background first
             opt.text.clear();

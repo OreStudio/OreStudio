@@ -22,8 +22,38 @@
 #include <QIcon>
 #include <QPalette>
 #include <QPixmap>
+#include <QStyle>
 
 namespace ores::qt {
+
+namespace {
+
+// QAbstractItemView::iconSize() is one value for the whole view, but a
+// single grid can mix square single-flag columns with wide composited
+// pair-flag columns (e.g. currency_pair's BaseCurrency/QuoteCurrency vs its
+// PairCode column) — sized for the widest case. Trusting decorationSize's
+// width directly would stretch every column's icon to that width. Instead
+// take only its height as the target (the dimension every flag-bearing grid
+// actually standardizes on via single_flag_icon_size()/
+// currency_pair_icon_size()) and ask the icon for its own natural width at
+// that height via actualSize(), so a square icon stays square and a
+// composited pair icon keeps its own wider aspect ratio.
+QPixmap fit_icon_pixmap(const QIcon& icon, const QStyleOptionViewItem& option,
+                        const QSize& bound) {
+    int targetHeight = option.decorationSize.isValid() && option.decorationSize.height() > 0
+        ? option.decorationSize.height()
+        : bound.height();
+    QSize targetSize = icon.actualSize(QSize(bound.width(), targetHeight));
+    targetSize = targetSize.boundedTo(bound);
+
+    QPixmap pixmap = icon.pixmap(targetSize);
+    if (pixmap.width() > targetSize.width() || pixmap.height() > targetSize.height()) {
+        pixmap = pixmap.scaled(targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    }
+    return pixmap;
+}
+
+}
 
 void DelegatePaintUtils::paint_centered_icon(QPainter* painter,
                                              const QStyleOptionViewItem& option,
@@ -38,24 +68,7 @@ void DelegatePaintUtils::paint_centered_icon(QPainter* painter,
         return;
 
     QRect cellRect = option.rect.adjusted(padding, padding, -padding, -padding);
-
-    // Target the view's actual decoration size (populated from
-    // QAbstractItemView::iconSize(), e.g. single_flag_icon_size()/
-    // currency_pair_icon_size() — shared constants every flag-bearing grid
-    // sets) rather than blindly filling the cell: a column's width is
-    // driven by its header/content, not by the intended icon size, so
-    // filling the cell made the same flag render at a different size in
-    // every entity's grid depending on how wide its icon column happened
-    // to be.
-    QSize targetSize = option.decorationSize.isValid() && !option.decorationSize.isEmpty()
-        ? option.decorationSize
-        : cellRect.size();
-    targetSize = targetSize.boundedTo(cellRect.size());
-
-    QPixmap pixmap = icon.pixmap(targetSize);
-    if (pixmap.width() > targetSize.width() || pixmap.height() > targetSize.height()) {
-        pixmap = pixmap.scaled(targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
+    QPixmap pixmap = fit_icon_pixmap(icon, option, cellRect.size());
 
     QPoint center = option.rect.center() - pixmap.rect().center();
     if (center.x() < option.rect.left())
@@ -64,6 +77,35 @@ void DelegatePaintUtils::paint_centered_icon(QPainter* painter,
         center.setY(option.rect.top());
 
     painter->drawPixmap(center, pixmap);
+}
+
+void DelegatePaintUtils::paint_icon_and_text(QPainter* painter,
+                                             const QStyleOptionViewItem& option,
+                                             const QModelIndex& index,
+                                             int padding,
+                                             int spacing) {
+    QRect rect = option.rect.adjusted(padding, padding, -padding, -padding);
+
+    QVariant data = index.data(Qt::DecorationRole);
+    QIcon icon = data.isValid() ? qvariant_cast<QIcon>(data) : QIcon();
+    if (!icon.isNull()) {
+        QPixmap pixmap = fit_icon_pixmap(icon, option, rect.size());
+        QPoint pos(rect.left(), rect.center().y() - pixmap.height() / 2);
+        painter->drawPixmap(pos, pixmap);
+        rect.setLeft(rect.left() + pixmap.width() + spacing);
+    }
+
+    const QString text = index.data(Qt::DisplayRole).toString();
+    if (!text.isEmpty()) {
+        painter->save();
+        if (option.state & QStyle::State_Selected)
+            painter->setPen(option.palette.color(QPalette::HighlightedText));
+        else
+            painter->setPen(option.palette.color(QPalette::Text));
+        painter->setFont(option.font);
+        painter->drawText(rect, Qt::AlignLeft | Qt::AlignVCenter, text);
+        painter->restore();
+    }
 }
 
 void DelegatePaintUtils::apply_foreground_role(QStyleOptionViewItem& opt,

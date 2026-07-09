@@ -45,6 +45,24 @@ struct ORES_QT_API DelegatePaintUtils {
                                     int padding = 4);
 
     /**
+     * @brief Paints a left-aligned icon followed by DisplayRole text.
+     *
+     * For columns that carry both an icon (DecorationRole) and text
+     * (DisplayRole) in the same cell — e.g. a currency's own flag next to
+     * its ISO code. Sizes the icon the same way paint_centered_icon does
+     * (height-constrained, aspect-preserving via QIcon::actualSize — never
+     * stretched to the view's blanket iconSize()), so a square single-flag
+     * icon renders identically here and in a pure icon_centered column,
+     * regardless of what other, differently-shaped icon columns (e.g. a
+     * composited pair icon) share the same view's iconSize().
+     */
+    static void paint_icon_and_text(QPainter* painter,
+                                    const QStyleOptionViewItem& option,
+                                    const QModelIndex& index,
+                                    int padding = 4,
+                                    int spacing = 6);
+
+    /**
      * @brief Applies ForegroundRole color to both Text and HighlightedText.
      *
      * If the model provides a custom foreground color (e.g., recency coloring),

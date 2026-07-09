@@ -339,6 +339,35 @@ BEGIN
         'classification_commodity', 'Commodity', 'Commodity-linked currency pair.',
         '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 40);
 
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'nature_fiat', 'Fiat', 'Government-issued currency not backed by a commodity.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 41);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'nature_commodity_currency', 'Commodity Currency', 'Currency backed by or representing a physical commodity.',
+        '#eab308', '#ffffff', 'warning', 'badge bg-warning', 42);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'nature_synthetic', 'Synthetic', 'Artificially constructed currency or index.',
+        '#8b5cf6', '#ffffff', 'primary', 'badge bg-primary', 43);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'nature_supranational', 'Supranational', 'Currency issued by a multi-national authority.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 44);
+
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tier_g10', 'G10', 'Major currency with deep liquidity and tight spreads.',
+        '#22c55e', '#ffffff', 'success', 'badge bg-success', 45);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tier_emerging', 'Emerging', 'Currency from a developing economy with moderate liquidity.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 46);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tier_exotic', 'Exotic Tier', 'Thinly traded currency with wide spreads.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 47);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tier_frontier', 'Frontier', 'Currency from a frontier market with limited convertibility.',
+        '#eab308', '#ffffff', 'warning', 'badge bg-warning', 48);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tier_historical', 'Historical', 'Currency no longer in active use.',
+        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 49);
+
     -- =============================================================================
     -- Code Domains (workspace)
     -- =============================================================================
@@ -370,6 +399,14 @@ BEGIN
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'currency_pair_convention_end_of_month', 'Currency Pair Convention End Of Month',
         'Whether end-of-month convention applies (Yes/No badge).', 24);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'monetary_nature', 'Monetary Nature',
+        'Nature classification codes for currencies (fiat, commodity, synthetic, supranational).', 25);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_market_tier', 'Currency Market Tier',
+        'Liquidity tier classification codes for currencies (G10, emerging, exotic, frontier, historical).', 26);
 
     -- =============================================================================
     -- Badge Mappings
@@ -580,6 +617,26 @@ BEGIN
         'account_type', 'algorithm', 'account_type_algorithm');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'account_type', 'llm', 'account_type_llm');
+
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'monetary_nature', 'fiat', 'nature_fiat');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'monetary_nature', 'commodity', 'nature_commodity_currency');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'monetary_nature', 'synthetic', 'nature_synthetic');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'monetary_nature', 'supranational', 'nature_supranational');
+
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_market_tier', 'g10', 'tier_g10');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_market_tier', 'emerging', 'tier_emerging');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_market_tier', 'exotic', 'tier_exotic');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_market_tier', 'frontier', 'tier_frontier');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'currency_market_tier', 'historical', 'tier_historical');
 
     -- =============================================================================
     -- Summary

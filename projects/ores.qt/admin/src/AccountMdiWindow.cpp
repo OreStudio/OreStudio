@@ -149,6 +149,8 @@ AccountMdiWindow::AccountMdiWindow(ClientManager* clientManager,
     proxyModel_->setSourceModel(accountModel_.get());
     accountTableView_->setModel(proxyModel_);
     accountTableView_->setItemDelegate(new AccountItemDelegate(badgeCache_, this));
+    if (badgeCache_ && badgeCache_->isLoaded())
+        accountTableView_->viewport()->update();
     connect(badgeCache_, &BadgeCache::loaded, accountTableView_->viewport(), [this]() {
         accountTableView_->viewport()->update();
     });

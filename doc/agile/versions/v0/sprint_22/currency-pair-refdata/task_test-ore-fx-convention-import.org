@@ -39,11 +39,11 @@ for every field that carries over.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Test written and passing; awaiting bundling into a PR with other tasks. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                |
-| Next         | Bundle with other mop-up tasks, then raise PR. |
+| Next         | Nothing. |
 | Last touched | 2026-07-09                               |
 
 * Acceptance
@@ -120,3 +120,14 @@ Three test cases:
 |   |                 |      |          |       |
 
 * Result
+
+Shipped: =xml_fx_convention_mapper_roundtrip_tests.cpp= exercises
+=conventions_mapper::map_fx=/=reverse= directly (not just raw XSD
+round-trip) against the real =external/ore/examples/Input/
+conventions.xml=, all 24 =<FX>= entries, field-by-field. 225 assertions
+pass. Two real findings documented as explicit assertions rather than
+silently accepted: =Id= is regenerated on export (not preserved), and
+the source file has a genuine duplicate-pair collision (two =<FX>=
+entries for EUR/USD with different SpotDays) that
+=currency_pair_convention='s 1:1-by-=pair_code= design can only keep
+one of.

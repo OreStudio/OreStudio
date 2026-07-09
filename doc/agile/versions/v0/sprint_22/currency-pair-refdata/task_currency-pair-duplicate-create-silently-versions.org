@@ -46,11 +46,11 @@ scope that out before committing to an approach.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Implemented and building; needs manual QA. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Test, then bundle into the same PR as the FX convention test. |
+| Next         | Nothing. |
 | Last touched | 2026-07-09                               |
 
 * Acceptance
@@ -124,3 +124,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped: exact-duplicate and inverted-duplicate (e.g. USD/EUR when
+EUR/USD exists) =pair_code= collisions are both rejected on create,
+client-side, with clear messages explaining why and (for the inverted
+case) how to proceed if the inverse is really wanted. Verified via
+[[id:AC6020E7-D5EB-477C-AE57-FB17DDF06021][Currency Pair: duplicate and inverted pair_code rejected on create]]
+— all 6 steps pass.
+
+This is a mitigation, not the full fix — a proper DB-level fix needs
+a broader architectural change, written up separately in
+[[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic Concurrency Versioning: the version=0 Overload]] and
+tracked as its own capture,
+[[id:F1DCD4D8-B9B8-4B5F-976D-78E951C031FA][Enforce optimistic concurrency version checks at the DB layer]].

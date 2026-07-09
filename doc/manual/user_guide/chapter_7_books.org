@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:manual:books:trading:user_guide:
 #+created: 2026-07-08
-#+updated: 2026-07-08
+#+updated: 2026-07-09
 
 #+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /book/ as a reference-data
@@ -15,7 +15,7 @@ entity in OreStudio. A book is the internal ledger unit that owns
 positions; the chapter sets out what a book represents, the interface
 that governs its lifecycle, and the meaning of its fields — a
 flag-icon currency picker, an operational status with its own
-lifecycle, and a trading/non-trading flag.
+lifecycle, and its trading-book/banking-book classification.
 
 # Restore the heading gap that the lettrine paragraph suppresses.
 #+latex: \bigskip
@@ -41,23 +41,38 @@ point at which the bitemporal audit trail does its work. The
 A /book/ is the internal ledger unit that owns positions within a
 party's trading organisation. Every trade books into exactly one book;
 a book aggregates the trades it owns for risk, P&L, and reporting
-purposes. Books sit within a party's organisational structure
-alongside business units and portfolios — a portfolio groups related
-books for a trading strategy or desk, while a book is the leaf-level
-unit that actually carries positions.
+purposes. A book is, first and foremost, an accounting concept rather
+than a purely trading-system one: it must reconcile with the firm's
+general ledger, and OreStudio's own view of a book is downstream of
+that ledger rather than the other way round.
+
+Books sit within a party's organisational structure alongside business
+units and portfolios, and it helps to keep the two apart: a *portfolio*
+groups related books for a trading strategy or desk, and can itself be
+composed of other portfolios; a *book* is the leaf-level unit that
+actually carries positions. A useful shorthand is that books are the
+physical representation and portfolios the logical one — or, borrowing
+a filesystem analogy, a portfolio is a folder and a book is a file. A
+book can, in principle, have child books, but only through ledger
+setup, never created ad hoc from the trading system itself.
 
 A book carries a small set of identifying and operational fields:
 
-- A *ledger currency* — the currency positions in this book are
-  reported in.
+- A *ledger currency* — the functional/accounting currency this book's
+  positions are reported in, as designated by the ledger.
 - A *GL account reference* — the general ledger account this book maps
   to in the firm's accounting system.
 - A *cost centre* — the internal cost allocation this book's activity
   is charged to.
-- A *status* — whether the book is currently active, and if not, why.
-- A *trading flag* — whether this is a trading book (subject to
-  market-risk capital treatment) or a non-trading book (banking-book
-  treatment).
+- A *status* — the book's current operational state (e.g. active,
+  closed, frozen), chosen from the set of statuses configured for the
+  tenant.
+- A *regulatory book type* — whether this is a *trading book* (held
+  with trading intent, subject to market-risk capital treatment under
+  the FRTB framework) or a *banking book* (held to maturity, subject to
+  credit-risk capital treatment instead). This is one of the more
+  consequential classifications a book carries, since it determines
+  which capital regime the book's positions fall under.
 
 Unlike currencies or countries, a book has no external standards body;
 its identity is entirely OreStudio's own, scoped to the owning party.
@@ -67,7 +82,8 @@ its identity is entirely OreStudio's own, scoped to the owning party.
 Open the Books window from the /Trading/ menu. It lists all books
 defined in the tenant, with one row per book.
 
-#+caption[The Books window]: The Books window, showing the full list of books in the tenant. Each row shows the name, ledger currency (with flag icon), status (as a colour-coded badge), cost centre, whether the book is a trading book (as a Yes/No badge), version number, the identity of the last modifier, and when the record was last recorded. The status bar shows the current page and total record count.
+#+caption[SCREENSHOT OUTDATED — retake needed]: The Books window, showing the full list of books in the tenant. Each row shows the name, ledger currency (with flag icon), status (as a colour-coded badge), cost centre, regulatory book type (as a colour-coded Trading/Banking badge), version number, the identity of the last modifier, and when the record was last recorded. The status bar shows the current page and total record count.
+# Capture: open the Books window and screenshot the full list, including the Regulatory Book Type column.
 [[proj:assets/images/books_main_dialog.png]]
 
 The toolbar buttons reload the list and open the add, edit, delete, and
@@ -83,7 +99,8 @@ apply to the book as a whole.
 
 *** General
 
-#+caption[Book Details — General tab]: The General tab for a book. It shows the id, name, ledger currency, GL account reference, cost centre, status, and trading-book flag.
+#+caption[SCREENSHOT OUTDATED — retake needed]: The General tab for a book. It shows the id, name, ledger currency, GL account reference, cost centre, status, and regulatory book type.
+# Capture: open Book Details on any book and screenshot the General tab.
 [[proj:assets/images/book_details_general.png]]
 
 The General tab carries the fields of the book:
@@ -104,23 +121,80 @@ The General tab carries the fields of the book:
   this book maps to.
 - *Cost Center* — free-text internal cost allocation code.
 - *Status* — the book's position in its operational lifecycle, chosen
-  from a combo box. See [[*Book lifecycle][Book lifecycle]] below for what each value
-  means and how a book moves between them.
+  from a combo box populated from the tenant's configured book
+  statuses and shown as a colour-coded badge once selected. See
+  [[*Book lifecycle][Book lifecycle]] below for what each value means.
 
-  #+caption[The Status picker]: The Status combo box open, showing the five status values.
+  #+caption[SCREENSHOT OUTDATED — retake needed]: The Status combo box open, showing the badge-coloured status values.
+  # Capture: open Book Details, click the Status combo, and screenshot the open dropdown showing each status as a badge.
   [[proj:assets/images/book_status_combo.png]]
 
-- *Trading Book* — a checkbox marking whether this is a trading book.
-  Checked books are shown as a /Yes/ badge in the Books window's
-  Trading column; unchecked books as /No/.
+- *Regulatory Book Type* — a combo box choosing the book's Basel
+  classification, /Trading/ or /Banking/, also shown as a colour-coded
+  badge. See [[*Book lifecycle][Book lifecycle]] below, and the [[*What is a Book?][What is a Book?]]
+  section above, for what the distinction means.
+
+  #+caption[SCREENSHOT NEEDED]: The Regulatory Book Type combo box open, showing Trading and Banking as badges.
+  # Capture: open Book Details, click the Regulatory Book Type combo, and screenshot the open dropdown.
+  [[proj:assets/images/TODO_regulatory_book_type_combo.png]]
 
 *** Book lifecycle
 
-#+begin_note
-Content pending — awaiting lifecycle notes describing what each status
-means (=Active=, =Inactive=, =Pending=, =Frozen=, =Closed=) and the
-transitions a book goes through between them.
-#+end_note
+The *Status* field on the General tab is a simplified, editable
+reflection of a much heavier real-world process: opening, running, and
+closing a book. This section explains that wider process, so the
+meaning behind each status value is clear.
+
+**** Opening a book
+
+A new book is not something a desk sets up for itself. Bringing a book
+live is a deliberately heavyweight, multi-party process, with four
+separate functions involved:
+
+- The *desk* initiates the request — it knows it needs a new book (a
+  new product line, a new trading strategy) but cannot create or
+  enrich one itself.
+- A *controller* reviews and approves the initiation request — an
+  independent check that exists specifically to prevent a desk from
+  authorising its own new book.
+- Three functions then *enrich* the book in parallel, each contributing
+  the data their function owns: *Finance* wires the book into the
+  ledger — its ledger currency, cost centre, and monthly balance
+  carry-forward; *Market Risk* sets its regulatory book type (Trading
+  or Banking) and assigns it to a rates centre for consistent
+  revaluation data; *Operations* sets up the book's allowed-currency
+  and allowed-product constraints. Because all three enrich the book at
+  the same time rather than in sequence, each must independently
+  approve its own contribution before the book can move on.
+- Only once every approval is in does the book's access review begin;
+  once that completes, the book is set up on the booking systems and
+  becomes *Active*.
+
+#+caption[Book lifecycle]: The book lifecycle: the multi-party opening workflow, the live-book loop (deal moves, periodic access review), and the flat-check gate on closing.
+[[proj:doc/knowledge/domain/book_lifecycle.png]]
+
+**** While a book is active
+
+A live book is not static:
+
+- Deals move between books routinely — freely if the move stays within
+  the same legal entity and branch, or via a close-and-rebook if not.
+  An erroneous move can be undone.
+- Access to a book is not permanent: it must be periodically reviewed
+  (monthly or quarterly, depending on the tenant's policy). If nobody
+  renews a user's access, it lapses automatically and must be
+  re-requested.
+- A book can be temporarily *Frozen* — taken out of normal trading use
+  without being closed down entirely.
+
+**** Closing a book
+
+A book can only be closed once it is *flat* — every balance held
+against it is zero on that business date. Closure is executed through
+accounting: all remaining live deals are moved to a different book,
+after which the book's status moves to *Closed*. A closed book is
+never physically deleted; it is retained in the system for its audit
+history, exactly like any other historical version.
 
 *** Provenance
 

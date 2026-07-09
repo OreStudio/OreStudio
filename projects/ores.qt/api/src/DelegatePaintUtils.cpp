@@ -37,11 +37,24 @@ void DelegatePaintUtils::paint_centered_icon(QPainter* painter,
     if (icon.isNull())
         return;
 
-    QRect targetRect = option.rect.adjusted(padding, padding, -padding, -padding);
+    QRect cellRect = option.rect.adjusted(padding, padding, -padding, -padding);
 
-    QPixmap pixmap = icon.pixmap(targetRect.size());
-    if (pixmap.width() > targetRect.width() || pixmap.height() > targetRect.height()) {
-        pixmap = pixmap.scaled(targetRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    // Target the view's actual decoration size (populated from
+    // QAbstractItemView::iconSize(), e.g. single_flag_icon_size()/
+    // currency_pair_icon_size() — shared constants every flag-bearing grid
+    // sets) rather than blindly filling the cell: a column's width is
+    // driven by its header/content, not by the intended icon size, so
+    // filling the cell made the same flag render at a different size in
+    // every entity's grid depending on how wide its icon column happened
+    // to be.
+    QSize targetSize = option.decorationSize.isValid() && !option.decorationSize.isEmpty()
+        ? option.decorationSize
+        : cellRect.size();
+    targetSize = targetSize.boundedTo(cellRect.size());
+
+    QPixmap pixmap = icon.pixmap(targetSize);
+    if (pixmap.width() > targetSize.width() || pixmap.height() > targetSize.height()) {
+        pixmap = pixmap.scaled(targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
 
     QPoint center = option.rect.center() - pixmap.rect().center();

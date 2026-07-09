@@ -8,7 +8,7 @@
 #+filetags: :commission_purpose_type:sprint_22:v0:
 #+owner: marco
 #+branch: feature/finish-commission-purpose-type
-#+pr: 1451
+#+pr: 1479
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
@@ -49,6 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1479][#1479]] | [agile] Unblock and prepare final purpose_type Qt verification |
 | [[https://github.com/OreStudio/OreStudio/pull/1451][#1451]] | [refdata] Migrate purpose_type to ores.codegen.entity; fix codegen template bugs |
 
 * Review

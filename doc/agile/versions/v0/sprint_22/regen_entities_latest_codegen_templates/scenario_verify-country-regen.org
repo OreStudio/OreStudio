@@ -55,6 +55,12 @@ code path this task touched).
 |--------+-------|
 | Status | |
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Flag icon renders at the correct size
 
 Confirm the flag icon in the =Code= column (Alpha2Code) renders at
@@ -70,6 +76,12 @@ delegate entirely.
 |--------+-------|
 | Status | |
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Detail dialog: add and save a new country
 
 Open the detail dialog, fill in a new country (unique alpha2/alpha3
@@ -80,6 +92,12 @@ codes), save. Confirm it round-trips (reopen and the data persisted).
 | Field  | Value |
 |--------+-------|
 | Status | |
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Validation rejects an unknown country code elsewhere
 
@@ -95,6 +113,12 @@ active-rows-bootstrap-filter fix landed in this task.
 |--------+-------|
 | Status | |
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Delete and history preserved
 
 Delete a country (use one created in the "add and save" step above).
@@ -107,6 +131,12 @@ history, or verify via the shell/CLI history command).
 | Field  | Value |
 |--------+-------|
 | Status | |
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Synthetic-data generator produces valid data
 
@@ -122,14 +152,20 @@ this task).
 |--------+-------|
 | Status | |
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-09T19:05:42Z |
+| Branch        | feature/regen-entities-latest-codegen-templates |
+| Commit        | bf76a65c1 |
+| Worktree      | brave_hopper |
 
 * Notes

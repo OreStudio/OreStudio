@@ -19,13 +19,20 @@ How do I merge a green, approved PR and delete its feature branch?
 
 * Answer
 
-0. /Close the bookkeeping first/ if this PR delivers its task: run
+1. /Build and run tests locally first/, on the latest commit about to
+   be merged. CI does not run a full C++ build/test job on PRs (the
+   old "canary" job was removed — it took too long and slowed down
+   development), so this is the only build/test verification a merge
+   gets: =cmake --build --preset <preset>= then =ctest --preset
+   <preset>=, both clean, before merging.
+
+2. /Close the bookkeeping first/ if this PR delivers its task: run
    =compass task done <slug>=, write the =* Result=, and commit on
    the PR branch — the close-out rides the PR. Merge never touches
    task state; a task that is still STARTED only draws a warning
    (tasks may legitimately span several PRs).
 
-1. /Merge/ — the guard rails are built in: the command refuses while
+3. /Merge/ — the guard rails are built in: the command refuses while
    review threads are unresolved or CI is not green, merges (always
    a merge commit — never squash/rebase), retries GitHub's transient
    base-branch-modified race, and deletes the remote branch
@@ -37,10 +44,10 @@ How do I merge a green, approved PR and delete its feature branch?
    ./compass.sh pr merge --force       # override the guards, stating what was bypassed
    #+end_src
 
-2. If the task was left open on purpose, close it on the PR that
+4. If the task was left open on purpose, close it on the PR that
    really finishes it — never with a bookkeeping-only PR.
 
-3. /Sync local main/:
+5. /Sync local main/:
 
    #+begin_src sh :results verbatim
    git checkout main

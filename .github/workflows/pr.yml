@@ -15,10 +15,15 @@
 #
 # Single entry point for pull request CI. A classifier buckets the
 # changed paths and only the jobs the change warrants run: doc-only
-# PRs build the site, code PRs build the canary and run the domain
-# roundtrip, CI-config PRs run everything. The pr-gate job always
-# reports and is the repository's sole required check — path-filtered
-# standalone workflows would hang as "expected" instead.
+# PRs build the site, code PRs run the domain roundtrip, CI-config PRs
+# run everything. The pr-gate job always reports and is the
+# repository's sole required check — path-filtered standalone
+# workflows would hang as "expected" instead.
+#
+# There is no full C++ build/test job here (the old "canary" job was
+# removed — it took too long and slowed down development). Building
+# and running tests locally before raising or merging a PR is now a
+# required manual step — see the pr-raise/pr-merge skills.
 ---
 name: PR
 
@@ -59,8 +64,8 @@ jobs:
               doc/*|assets/*|.claude/*|.gemini/*|*.md|*.org)
                 docs=true ;;
               projects/ores.codegen/*)
-                # Codegen tooling: no C++ impact (canary has always
-                # ignored it); the site renders its modeling docs.
+                # Codegen tooling: no C++ impact; the site renders its
+                # modeling docs.
                 docs=true ;;
               projects/ores.compass/*)
                 # Compass CLI (Python): no C++ impact.
@@ -92,13 +97,6 @@ jobs:
     with:
       with_doxygen: false
 
-  canary:
-    name: canary
-    needs: classify
-    # yamllint disable-line rule:line-length
-    if: needs.classify.outputs.code == 'true' || needs.classify.outputs.ci == 'true'
-    uses: ./.github/workflows/canary-linux.yml
-
   roundtrip:
     name: roundtrip
     needs: classify
@@ -117,7 +115,7 @@ jobs:
 
   pr-gate:
     name: pr-gate
-    needs: [classify, site, canary, roundtrip]
+    needs: [classify, site, roundtrip]
     if: always()
     runs-on: ubuntu-24.04
     steps:
@@ -125,13 +123,12 @@ jobs:
         env:
           CLASSIFY: ${{ needs.classify.result }}
           SITE: ${{ needs.site.result }}
-          CANARY: ${{ needs.canary.result }}
           ROUNDTRIP: ${{ needs.roundtrip.result }}
         run: |
           echo "classify=$CLASSIFY site=$SITE"
-          echo "canary=$CANARY roundtrip=$ROUNDTRIP"
+          echo "roundtrip=$ROUNDTRIP"
           [ "$CLASSIFY" = "success" ] || { echo "classifier failed"; exit 1; }
-          for r in "$SITE" "$CANARY" "$ROUNDTRIP"; do
+          for r in "$SITE" "$ROUNDTRIP"; do
             case "$r" in
               success|skipped) ;;
               *) echo "a required job failed: $r"; exit 1 ;;

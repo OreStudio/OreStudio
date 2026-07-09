@@ -19,7 +19,14 @@ correctly-formatted title and a structured body?
 
 * Answer
 
-1. /Create the PR/ with =compass pr create=. It validates the title
+1. /Build and run tests locally first/. CI does not run a full C++
+   build/test job on PRs (the old "canary" job was removed — it took
+   too long and slowed down development), so this local step is the
+   only thing that catches a broken build before review: =cmake
+   --build --preset <preset>= then =ctest --preset <preset>=, both
+   clean, before proceeding.
+
+2. /Create the PR/ with =compass pr create=. It validates the title
    convention, assembles the body (Summary, Changes, and the
    =## Traceability= table derived from the branch's task and story
    docs, with an =Environment= row alongside Story and Task), pushes
@@ -39,7 +46,7 @@ correctly-formatted title and a structured body?
    =#+environment:= frontmatter field, e.g. =prime_origin=; falls
    back to =(none)= if the task doesn't record one).
 
-2. /Confirm the PR URL/ it prints. There is nothing else to do — the
+3. /Confirm the PR URL/ it prints. There is nothing else to do — the
    task-doc record is already committed and pushed.
 
 * Conventions

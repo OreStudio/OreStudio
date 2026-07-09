@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/currency_market_tier_repository.hpp"
 #include <optional>
 #include <string>
@@ -33,7 +34,7 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing currency market tiers.
  */
-class currency_market_tier_service {
+class ORES_REFDATA_CORE_EXPORT currency_market_tier_service {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.service.currency_market_tier_service";

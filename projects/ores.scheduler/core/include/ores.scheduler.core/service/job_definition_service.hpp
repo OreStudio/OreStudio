@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.core/export.hpp"
 #include "ores.scheduler.core/repository/job_definition_repository.hpp"
 #include <optional>
 #include <string>
@@ -33,7 +34,7 @@ namespace ores::scheduler::service {
 /**
  * @brief Service for managing job definitions.
  */
-class job_definition_service {
+class ORES_SCHEDULER_CORE_EXPORT job_definition_service {
 private:
     inline static std::string_view logger_name = "ores.scheduler.service.job_definition_service";
 

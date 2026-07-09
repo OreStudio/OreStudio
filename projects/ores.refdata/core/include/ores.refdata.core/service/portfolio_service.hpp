@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -37,7 +38,7 @@ namespace ores::refdata::service {
  * This service provides functionality for:
  * - Managing portfolios (CRUD operations)
  */
-class portfolio_service {
+class ORES_REFDATA_CORE_EXPORT portfolio_service {
 private:
     inline static std::string_view logger_name = "ores.refdata.service.portfolio_service";
 

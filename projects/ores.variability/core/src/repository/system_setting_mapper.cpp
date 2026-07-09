@@ -33,6 +33,7 @@ domain::system_setting system_setting_mapper::map(const system_setting_entity& v
     domain::system_setting r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
+    r.party_id = v.party_id;
     r.name = v.name.value();
     r.value = v.value;
     r.data_type = v.data_type;
@@ -53,6 +54,7 @@ system_setting_entity system_setting_mapper::map(const domain::system_setting& v
     system_setting_entity r;
     r.name = v.name;
     r.tenant_id = v.tenant_id;
+    r.party_id = v.party_id;
     r.version = v.version;
     r.value = v.value;
     r.data_type = v.data_type;

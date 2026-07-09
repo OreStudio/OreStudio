@@ -169,6 +169,33 @@ system_settings_repository::read_for_tenant(context ctx, const std::string& tena
     return result;
 }
 
+std::unordered_map<std::string, std::string>
+system_settings_repository::read_for_party(context ctx,
+                                           const std::string& tenant_id,
+                                           const std::string& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading system settings for tenant: " << tenant_id
+                               << " party: " << party_id;
+
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx,
+        "SELECT setting_name, setting_value"
+        " FROM ores_variability_get_system_settings_fn($1, $2)",
+        {tenant_id, party_id},
+        lg(),
+        "Reading system settings for tenant+party via SECURITY DEFINER");
+
+    std::unordered_map<std::string, std::string> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() >= 2 && row[0] && row[1])
+            result[*row[0]] = *row[1];
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << result.size() << " settings for tenant "
+                               << tenant_id << " party " << party_id;
+    return result;
+}
+
 void system_settings_repository::remove(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Removing system setting from database: " << name;
 

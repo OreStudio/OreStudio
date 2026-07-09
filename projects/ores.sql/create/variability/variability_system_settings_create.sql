@@ -21,13 +21,17 @@
 -- =============================================================================
 -- Unified typed system settings table.
 -- Supports boolean, integer, string, and json value types. Uses name as
--- natural key. System-wide settings use the system tenant; per-tenant
--- settings use the tenant's own tenant_id.
+-- natural key, scoped by (tenant_id, party_id). System- and tenant-wide
+-- settings use the tenant's system party (party_category='System');
+-- party-specific settings (e.g. onboarding.party) use the party's own id.
+-- party_id is not-null: a caller may omit it (send SQL NULL) and the insert
+-- trigger defaults it to the tenant's system party, same pattern as tenant_id.
 -- =============================================================================
 
 create table if not exists "ores_variability_system_settings_tbl" (
     "name" text not null,
     "tenant_id" uuid not null,
+    "party_id" uuid not null,
     "version" integer not null,
     "value" text not null,
     "data_type" text not null,
@@ -38,9 +42,10 @@ create table if not exists "ores_variability_system_settings_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, name, valid_from, valid_to),
+    primary key (tenant_id, party_id, name, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
+        party_id WITH =,
         name WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -50,17 +55,41 @@ create table if not exists "ores_variability_system_settings_tbl" (
 );
 
 create unique index if not exists system_settings_version_uniq_idx
-on "ores_variability_system_settings_tbl" (tenant_id, name, version)
+on "ores_variability_system_settings_tbl" (tenant_id, party_id, name, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
 create unique index if not exists system_settings_name_uniq_idx
-on "ores_variability_system_settings_tbl" (tenant_id, name)
+on "ores_variability_system_settings_tbl" (tenant_id, party_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists system_settings_tenant_idx
 on "ores_variability_system_settings_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists system_settings_party_idx
+on "ores_variability_system_settings_tbl" (party_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Resolves the party_id that scopes system-/tenant-wide settings for a
+-- tenant: its refdata system party, or the nil UUID for the sentinel system
+-- tenant (which has no refdata party — it never goes through tenant
+-- provisioning). Shared by the insert trigger (write-time default) and
+-- ores_variability_get_system_settings_fn (read-time default), so both
+-- sides resolve the same scope for an omitted party_id.
+create or replace function ores_variability_resolve_system_party_fn(
+    p_tenant_id uuid
+) returns uuid as $$
+declare
+    v_party_id uuid;
+begin
+    select id into v_party_id
+    from ores_refdata_read_system_party_fn(p_tenant_id)
+    limit 1;
+
+    return coalesce(v_party_id, '00000000-0000-0000-0000-000000000000'::uuid);
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
 
 create or replace function ores_variability_system_settings_insert_fn()
 returns trigger as $$
@@ -70,9 +99,19 @@ begin
     -- Validate tenant_id
     new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
 
+    -- Default party_id to the tenant's system party when omitted
+    -- (system- and tenant-scoped settings); party-specific settings pass
+    -- their own party_id explicitly and it is used as-is (soft FK — no
+    -- cross-schema constraint, consistent with other refdata
+    -- cross-references).
+    if new.party_id is null then
+        new.party_id := ores_variability_resolve_system_party_fn(new.tenant_id);
+    end if;
+
     select version into current_version
     from "ores_variability_system_settings_tbl"
     where tenant_id = new.tenant_id
+    and party_id = new.party_id
     and name = new.name
     and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
@@ -88,6 +127,7 @@ begin
         update "ores_variability_system_settings_tbl"
         set valid_to = current_timestamp
         where tenant_id = new.tenant_id
+        and party_id = new.party_id
         and name = new.name
         and valid_to = ores_utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;

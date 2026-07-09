@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: F1E5832D-F837-40AF-B0B3-32D787C3800A
+:END:
+#+title: Task: Grant IAM service DML on variability system_settings table
+#+description: IAM's tenant_handler cross-domain-calls variability::service::system_settings_service to clear bootstrap_mode, but the IAM service DB role has no grant on ores_variability_* tables, so the write fails with permission denied and is silently swallowed.
+#+type: task
+#+level: s1
+#+filetags: :sql:iam:variability:permissions:sprint_22:v0:fix_iam_variability_grant_bootstrap_mode:
+#+owner: marco
+#+branch: feature/system-settings-not-seeded-for-new-tenants
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7356C36E-2633-4043-9747-27E61593EA4F][Fix tenant-scoped variability system settings: permissions and per-tenant seeding]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Grant the IAM service's DB role the access it needs to write
+=ores_variability_system_settings_tbl= so that
+=complete_tenant_provisioning='s cross-domain call to
+=variability::service::system_settings_service::set_bootstrap_mode=
+stops failing with =permission denied= and =bootstrap_mode= actually
+clears to =false= on tenant activation. Decide between (a) a targeted
+grant on the specific table in
+=iam_service_db_grants_create.sql=/the mustache template that
+generates it, or (b) routing the write through
+=ores.variability.service= over NATS instead of a same-process
+cross-crate repository call using the wrong DB role — prefer (b) if it
+is not disproportionate effort, since it avoids widening IAM's DB
+footprint into another domain's tables.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7356C36E-2633-4043-9747-27E61593EA4F][Fix tenant-scoped variability system settings: permissions and per-tenant seeding]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- Provisioning a tenant (e.g. re-running the Barclays Plc scenario
+  against a fresh DB) no longer logs =permission denied for table
+  ores_variability_system_settings_tbl=.
+- The tenant's =bootstrap_mode= setting is =false= in the DB after
+  activation, verified via =ores.shell='s =variability get-setting= (or
+  equivalent) against the provisioned tenant.
+- No unrelated widening of IAM's DB grants beyond what's needed for
+  this write.
+
+* Plan
+
+** Analysis
+
+=variability::messaging= already has a =save_setting_request= NATS
+protocol
+(=ores.variability.api/messaging/system_settings_protocol.hpp=,
+subject =variability.v1.settings.save=) that goes through
+=system_setting_handler::save()=
+(=ores.variability.core/src/messaging/system_setting_handler.hpp=).
+That handler enforces
+=has_permission(ctx, "variability::flags:create")= before writing.
+The current in-process call in =tenant_handler::complete_provisioning=
+bypasses NATS entirely (it constructs
+=variability::service::system_settings_service= directly against
+IAM's own DB context), which is *why* it deliberately doesn't hit that
+permission check — the code comment says clearing =bootstrap_mode= is
+meant to work "independent of the user having
+=variability::flags:create=". Whoever completes tenant provisioning
+(a super/tenant admin) is not guaranteed to hold that permission.
+
+Routing the write through the existing =save_setting_request= over
+NATS would reinstate that permission dependency (as well as reuse the
+*calling actor's* JWT — there is no service-to-service token minting;
+only IAM's =jwt_authenticator= mints tokens, and it mints them for
+users, not for other services acting as themselves; see
+=ores.security/jwt/jwt_authenticator.hpp=). That would trade one
+silent failure (permission denied on the wrong DB role) for another
+(forbidden, if the activating actor lacks the permission).
+
+** Recommended approach
+
+Add a narrowly-scoped, permission-check-free NATS request instead of
+reusing =save_setting_request=, mirroring how =list_settings_request=
+already has no permission check:
+
+- New protocol pair in =system_settings_protocol.hpp=, e.g.
+  =clear_bootstrap_mode_request { tenant_id }= /
+  =clear_bootstrap_mode_response { success, message }=, subject
+  e.g. =variability.v1.settings.clear_bootstrap_mode=.
+- New handler method on =system_setting_handler= that calls
+  =system_settings_service::set_bootstrap_mode(false, ...)= directly,
+  with *no* =has_permission= check (same trust model as =list=) —
+  authentication (valid JWT) is still required via
+  =make_request_context=, just not this specific permission, keeping
+  the "independent of user permission" property while running under
+  variability's own (correctly-granted) DB role.
+- Register the new subject in
+  =ores.variability.core/src/messaging/registrar.cpp=.
+- In =tenant_handler::complete_provisioning=, replace the direct
+  =system_settings_service= construction with an outbound
+  =nats_.request(...)= call to the new subject (the enclosing handler
+  is already a NATS handler; confirmed =complete_provisioning= is a
+  plain =void= method, not a coroutine, so use =nats_.request_sync(...)=
+  — same style as the Qt/shell client callers of =save_setting_request=
+  — rather than the coroutine =request()=), passing the tenant id, and
+  treat a failure as already handled (log + continue, same as today).
+- No changes needed to
+  =iam_service_db_grants_create.sql=/=sql_service_db_grants.mustache=
+  — IAM's DB role keeps its existing =ores_iam_*=-only scope.
+
+** Alternative (rejected)
+
+Add a targeted DML grant for IAM on
+=ores_variability_system_settings_tbl= in
+=iam_service_db_grants_create.sql=. Simpler, but widens IAM's DB
+footprint into another domain's table and keeps a same-process
+cross-crate repository call that bypasses the variability service
+entirely — the pattern this codebase is otherwise moving away from
+(cf. the NATS eventing migration). Rejected in favour of the NATS
+route above.
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+- The =clear_bootstrap_mode_request= handler must construct
+  =system_settings_service(ctx, ctx.tenant_id().to_string())= —
+  omitting the explicit =tenant_id= constructor argument left
+  =set_bool_setting='s =tenant_id= field empty, causing =invalid
+  input syntax for type uuid: ''= on insert. Caught live during
+  verification, fixed, rebuilt, reverified.
+- Verified live against the Barclays Plc tenant: rebuilt all
+  services (also surfaced an unrelated stale-binary issue —
+  =ores.refdata.service= hadn't been rebuilt since the
+  =refdata.currency-pairs.publish-from-dq= subject was added, so a
+  full GLEIF provisioning run stalled at that step; a full rebuild
+  fixed it, confirming it wasn't a real regression), then re-ran
+  =tenants complete-provisioning= via =ores.shell=. Logs show
+  =Handling= → =Completed= on
+  =variability.v1.settings.clear_bootstrap_mode= and =Bootstrap mode
+  cleared for tenant: <id>= on the IAM side, no permission-denied or
+  UUID errors. DB check confirms =system.bootstrap_mode = false= for
+  both the tenant and system rows.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1478][#1478]] | [ores.iam,ores.variability,ores.sql] Fix tenant-scoped variability system settings: permissions and per-tenant seeding |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Fixed by routing the bootstrap_mode clear through a new, narrowly
+scoped =clear_bootstrap_mode= NATS request/handler pair in
+=ores.variability.service= (no permission check, same trust model as
+=list_settings_request=), replacing IAM's same-process cross-crate
+call that hit a permission-denied wall. IAM's DB grants are
+unchanged — no cross-domain widening. Verified live: full Barclays
+GLEIF provisioning run completes with =system.bootstrap_mode=
+clearing to =false= for the tenant, no permission-denied or UUID
+errors.

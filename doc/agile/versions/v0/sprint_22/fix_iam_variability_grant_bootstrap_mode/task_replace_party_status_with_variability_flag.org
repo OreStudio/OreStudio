@@ -1,0 +1,217 @@
+:PROPERTIES:
+:ID: 97E2BB5F-2D7E-4713-AAB4-5B75048C4E18
+:END:
+#+title: Task: Replace party.status Active/Inactive check with a party-level variability flag
+#+description: Login's party_setup_required is derived from party.status via IAM's in-memory party cache, which can be stale after import and re-fires the party provisioner wizard even when the party already completed setup. Replace with an onboarding.party variability flag (party-scoped via a new party_id column), checked with a direct DB read at login, immune to the cache.
+#+type: task
+#+level: s1
+#+filetags: :iam:variability:qt:party:onboarding:sprint_22:v0:fix_iam_variability_grant_bootstrap_mode:
+#+owner: marco
+#+branch: feature/system-settings-not-seeded-for-new-tenants
+#+pr: 1478
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7356C36E-2633-4043-9747-27E61593EA4F][Fix tenant-scoped variability system settings: permissions and per-tenant seeding]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Login's =party_setup_required= (=ores.iam.core/messaging/auth_handler.hpp:317=)
+is derived from =party.status == "Inactive"= via IAM's in-memory
+=party_cache_=, not a live DB read. If the cache is stale relative to
+a party activation (or the party's status legitimately hasn't
+flipped for some other reason), the party provisioner wizard
+re-fires on every login even though setup already completed.
+Independently of caching, using a domain-meaningful status field
+(Active/Inactive/Suspended) as a *provisioning-complete* signal
+conflates two different concerns.
+
+Replace it with a dedicated =onboarding.party= variability flag,
+scoped per-party via a new =party_id= column on
+=ores_variability_system_settings_tbl=, checked with a direct DB read
+at login (same pattern as the existing tenant =bootstrap_mode=
+check) — immune to the party cache and decoupled from the party's
+actual status.
+
+This absorbs the pre-existing, never-started backlog story
+[[id:C2BC9C1E-4AAA-42FC-A62F-CE4E5C4FA160][Symmetric onboarding flags for provisioner wizards]] (sprint 19
+inbox), which already designed this exact fix plus the symmetric
+=onboarding.system=/=onboarding.tenant= flags for the other two
+wizards. That story is retired in favour of this task; its 4 tasks'
+content is folded in below as the implementation plan.
+
+* Acceptance
+
+- =ores_variability_system_settings_tbl= has a non-nullable =party_id=
+  column; system/tenant-scoped settings use the system party's UUID.
+- =onboarding.system=, =onboarding.tenant=, =onboarding.party= exist
+  in =system_setting_definitions= with clear descriptions.
+- System, tenant, and party provisioner wizards each write their
+  =onboarding.*= flag =true= on completion (server side, same pattern
+  as the =bootstrap_mode= clear fixed in the sibling task).
+- Login's =party_setup_required= is derived from a direct DB read of
+  =onboarding.party=, not =party.status= and not the party cache.
+- If the party wizard ran (=onboarding.party = true=) but the party
+  is still =Inactive=, login returns =party_setup_required = false=
+  plus a new =party_setup_warning= field so the client shows a
+  message instead of re-launching the wizard.
+- =system.bootstrap_mode= is kept alongside =onboarding.tenant= for
+  this task (removal is an explicit follow-on, not in scope here).
+- NOTIFY listener =max_backoff= reduced from 30s to 5s (unrelated
+  mitigation carried over from the absorbed story; keep or split out
+  as a separate quick task if it muddies review).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:7356C36E-2633-4043-9747-27E61593EA4F][Fix tenant-scoped variability system settings: permissions and per-tenant seeding]] |
+| Now          | Slice 1 (schema + C++ data layer for party_id) done and merged; continuing in a follow-up PR/branch. |
+| Waiting on   | Nothing.                               |
+| Next         | Slice 2: onboarding.* flag definitions + service accessors + provisioner seeding. |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+Folded in from the 4 tasks of the absorbed story
+[[id:C2BC9C1E-4AAA-42FC-A62F-CE4E5C4FA160][Symmetric onboarding flags for provisioner wizards]]:
+
+** 1. Schema + C++ layer: party_id column on variability settings
+
+Alter =ores_variability_system_settings_tbl= to add a non-nullable
+=party_id= (uuid) column. Update =system_setting_entity=, its mapper,
+repository read/write/remove queries, =system_settings_service=, and
+provisioner seed calls to pass the system party's UUID for
+system/tenant-scoped settings (avoids a nullable FK, keeps index
+cardinality well-defined — same rationale the absorbed story used).
+
+** 2. onboarding.* flag definitions
+
+Add =onboarding.system=, =onboarding.tenant=, =onboarding.party= to
+=system_setting_definitions= with clear descriptions. Add
+=is_onboarding_complete=/=set_onboarding_complete= accessors on
+=system_settings_service=. Seed =onboarding.tenant = false= in the
+tenant provisioner (system-party scoped); seed =onboarding.party =
+false= per party in the party provisioner flow.
+
+** 3. Wire wizards + fix login's party_setup_required
+
+- =TenantProvisioningWizard=: write =onboarding.tenant = true= in the
+  =complete_provisioning= handler, server side — same NATS-routed
+  pattern as the =bootstrap_mode= clear fixed in the sibling task
+  (=clear_bootstrap_mode_request=), not a same-process cross-crate
+  call.
+- =PartyProvisioningWizard=: write =onboarding.party = true= in Phase
+  4, server side, same pattern.
+- =auth_handler.hpp=: replace the =party.status == "Inactive"= /
+  =party_cache_= check with a direct DB read of =onboarding.party=
+  (bypasses the cache entirely — same pattern as the existing
+  =auth_is_tenant_bootstrap_mode= check).
+- Add =party_setup_warning= to =login_response= for the "wizard ran
+  but party still Inactive" case, so the client shows a message
+  instead of re-launching the wizard.
+
+** 4. NOTIFY listener mutex contention + max_backoff (carried over, may split out)
+
+=listen_loop= currently holds the mutex for the entire
+=consume_input()= + =get_notifications()= + callback chain. Under a
+heavy bulk import (e.g. GLEIF party dataset — hundreds of NOTIFY-
+firing INSERTs), this causes contention that can block the 100ms
+poll cycle for up to ~30s, making the listener appear dead — which is
+exactly the kind of staleness this task is designed to make
+irrelevant for onboarding flags, but is a real underlying bug in its
+own right. Fix: drain notifications into a local vector under the
+lock, then process callbacks outside it:
+
+#+begin_src cpp
+std::vector<Notification> batch;
+{
+    std::lock_guard lock(mutex_);
+    if (!(*connection_)->consume_input()) { ... }
+    batch = (*connection_)->get_notifications();
+}
+for (const auto& n : batch)
+    handle_notification(n);
+#+end_src
+
+Also reduce =max_backoff= from 30s to 5s (30s suited a remote DB; local
+Postgres reconnects in under a second). Document the rationale in the
+PostgreSQL architecture doc. This sub-item is only loosely coupled to
+the rest of the task — split into its own task if it makes review
+unwieldy.
+
+(Key decisions are distilled into the parent story's =* Decisions= at
+close, but this plan stays — it is the historical record of what we
+did.)
+
+* Notes
+
+** Slice 1 done: schema + C++ data layer for party_id
+
+- =ores_variability_system_settings_tbl= gains a non-nullable
+  =party_id= column; PK, GIST exclusion, and both unique indexes now
+  include it. New shared function
+  =ores_variability_resolve_system_party_fn(tenant_id)= (calls
+  =ores_refdata_read_system_party_fn=, SECURITY DEFINER, falls back to
+  the nil UUID if a tenant has no refdata party — only the sentinel
+  system tenant hits that path in practice, and even it turned out to
+  have one) is used by both the insert trigger (write-time default)
+  and =ores_variability_get_system_settings_fn='s new
+  =p_party_id default null= parameter (read-time default), so omitting
+  party_id resolves identically on both sides.
+- =ores_variability_system_settings_upsert_fn= and =..._set_fn= gained
+  a trailing =p_party_id uuid default null= parameter; all existing
+  call sites (seed script, tenant provisioner, system reset, etc.)
+  are unaffected — they still omit it and get the system-party default.
+- C++: =domain::system_setting.party_id= is
+  =std::optional<std::string>=; entity/mapper mirror it;
+  =system_settings_service= gained a third constructor parameter
+  =party_id= and a =read_for_party()= repository path used when both
+  tenant_id and party_id are set (vs. the existing tenant-only path
+  when only tenant_id is set).
+- *Risk noted, not yet addressed*: =ores.service::messaging::stamp()=
+  generically populates any domain struct's =party_id= field from
+  =ctx.party_id()= (the JWT's selected-party claim) whenever the field
+  exists and is assignable — this now applies to
+  =domain::system_setting= too. =system_setting_handler::save()= calls
+  =stamp(req->data, ctx)= before writing, so a general
+  =save_setting_request= (e.g. via =ores.shell='s =variability
+  save-setting= or the admin UI) issued by a caller with an active
+  party selection will now scope the row to *that* party instead of
+  the tenant's system party — a behaviour change for the existing
+  general CRUD path, not just new onboarding flags. Not exercised by
+  this task (onboarding.party will be written through a dedicated
+  NATS endpoint, same pattern as =clear_bootstrap_mode=, bypassing
+  =save_setting_request= entirely), but flagged for verification
+  before this task closes: check whether typical admin sessions have
+  an active party selection when saving system-wide settings, and if
+  so, decide whether to exempt =system_setting= from generic
+  =stamp()= party derivation.
+- Verified live: full DB recreate (no SQL errors from the populate
+  script), all 24 services start clean, and a full Barclays GLEIF
+  provisioning run completes with =system.bootstrap_mode= clearing to
+  =false= and =party_id= populated correctly for both the system
+  tenant and the Barclays tenant.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1478][#1478]] | [ores.iam,ores.variability,ores.sql] Fix tenant-scoped variability system settings: permissions and per-tenant seeding |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -75,6 +75,26 @@ struct delete_setting_response {
 };
 
 // ---------------------------------------------------------------------------
+// Clear bootstrap mode
+// ---------------------------------------------------------------------------
+
+// Deliberately has no associated permission check server-side (unlike
+// save_setting_request) — clearing bootstrap mode on tenant activation must
+// work regardless of whether the activating actor holds
+// variability::flags:create. Authentication (a valid JWT) is still required;
+// the tenant is scoped from that JWT, never from client-supplied data.
+struct clear_bootstrap_mode_request {
+    using response_type = struct clear_bootstrap_mode_response;
+    static constexpr std::string_view nats_subject =
+        "variability.v1.settings.clear_bootstrap_mode";
+};
+
+struct clear_bootstrap_mode_response {
+    bool success = false;
+    std::string message;
+};
+
+// ---------------------------------------------------------------------------
 // History
 // ---------------------------------------------------------------------------
 

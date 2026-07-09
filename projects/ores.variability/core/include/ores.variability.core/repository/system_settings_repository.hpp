@@ -99,6 +99,17 @@ public:
                                                                  const std::string& tenant_id);
 
     /**
+     * @brief Reads active settings scoped to one (tenant, party) pair via a
+     * SECURITY DEFINER function.
+     *
+     * Unlike read_for_tenant (which defaults to the tenant's system party),
+     * this always scopes to the given party_id — used for party-specific
+     * flags such as onboarding.party.
+     */
+    std::unordered_map<std::string, std::string>
+    read_for_party(context ctx, const std::string& tenant_id, const std::string& party_id);
+
+    /**
      * @brief Logically deletes a setting by closing its temporal validity.
      */
     void remove(context ctx, const std::string& name);

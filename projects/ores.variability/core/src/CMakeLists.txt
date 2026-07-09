@@ -49,6 +49,7 @@ target_link_libraries(${lib_target_name}
         ores.service.lib
         ores.utility.lib
         ores.security.lib
+        ores.dq.api.lib
         libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

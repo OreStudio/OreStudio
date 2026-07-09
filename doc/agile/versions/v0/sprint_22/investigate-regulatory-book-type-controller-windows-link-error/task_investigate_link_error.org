@@ -111,9 +111,9 @@ via its "Verifies task" field.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                    | File                          | Decision | Notes |
+|---+-----------------------------------------------------------------------+---------------------------------+----------+-------|
+| 1 | Acceptance's last checkbox left unchecked despite State=DONE and Result confirming it | task_investigate_link_error.org | Accepted | Fixed in 22af40791. |
 
 * Result
 

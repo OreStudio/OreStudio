@@ -8,7 +8,7 @@
 #+filetags: :qt:fleet:dx:qa_validation_runner:sprint_22:v0:
 #+owner: marco
 #+branch: feature/fleet-pending-scenarios-abandon
-#+pr:
+#+pr: 1485
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-07
@@ -54,7 +54,7 @@ Started implementing a "Fleet" tab (data sourced from =compass fleet
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1485][#1485]] | [agile] Abandon: surface pending scenarios across the fleet |
 
 * Review
 

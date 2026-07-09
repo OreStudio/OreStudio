@@ -8,7 +8,7 @@
 #+filetags: :codegen-view-groups:sprint_22:v0:
 #+owner: marco
 #+branch: feature/codegen-view-groups
-#+pr:
+#+pr: 1488
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-09
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1488][#1488]] | [agile] Add story: Codegen support for view groups (Qt detail-dialog tabs) |
 
 * Review
 

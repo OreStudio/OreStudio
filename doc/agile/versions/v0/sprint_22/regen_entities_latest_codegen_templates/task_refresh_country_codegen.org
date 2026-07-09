@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 82BA40CA-3A4A-47B5-88ED-ADA0178E5695
+:END:
+#+title: Task: Regen country against latest codegen templates
+#+description: Country was last synced in sprint 21, before currency's commissioning landed substantial new shared-template capability. Re-run every codegen profile country participates in, diff against the repo, and reconcile drift.
+#+type: task
+#+level: s1
+#+filetags: :regen_entities_latest_codegen_templates:sprint_22:v0:
+#+owner: marco
+#+branch: feature/regen-entities-latest-codegen-templates
+#+pr: 1487
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AF0EFC5C-899A-4AE9-BD09-7B2D4E304543][Regen entities with latest codegen templates]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Country was last fully synced in sprint 21 (2026-06-29), before
+currency's commissioning (sprint 22, PR #1470 and the currency_pair
+work it merged with) landed substantial new shared codegen template
+capability: generic =hidden_by_default= list-column support,
+badge-repaint-on-cache-load fix, aspect-correct icon sizing
+(=icon_text_left= column style), =has_related_entity_shortcuts=,
+=has_generate_action=/=has_toolbar=, version-navigation UI, NATS
+notification-wiring, the paste-block extension-point mechanism, and
+SQL default-value auto-quoting (=_sql_quote_default=). None of these
+were present when country was synced, so country's generated files
+are increasingly stale relative to what the templates now produce for
+every other entity.
+
+Re-run every codegen profile country participates in (=ores.sql=,
+=ores.cpp.domain=, =ores.cpp.repository=, =ores.cpp.generator=,
+=ores.cpp.qt=, messaging profiles as applicable), diff each output
+file against the repo, and reconcile: adopt template-driven
+capabilities that fit (e.g. hidden-column defaults for any low-signal
+country columns, badge rendering if country has any =is_badge=
+fields), and document any deliberate divergence the same way currency
+did for its two permanently-hand-written files.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AF0EFC5C-899A-4AE9-BD09-7B2D4E304543][Regen entities with latest codegen templates]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-09                               |
+
+* Acceptance
+
+- Every codegen profile country participates in has been re-run and
+  each output file's diff against the repo reviewed.
+- Genuine drift (template capability that should apply to country but
+  doesn't yet) is adopted; deliberate divergence is documented in this
+  task's =* Result= (and the story's =* Decisions= if durable).
+- Full local build and test suite pass clean.
+- Verified live in the client, not just by diff/compile.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:6E2E18A3-DA33-4BBF-8BAE-E28E3D3668FA][Verify country regen against latest codegen templates]] | PASSED | All 6 steps passed live in the client (2026-07-09T19:05:42Z). |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1487][#1487]] | [codegen,refdata,sql,qt] Regen country against latest codegen templates |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Two independent Claude review passes: both verified every claim in the PR description against the diff, no blocking issues | (whole PR) | Accepted (no change needed) | Both passes confirmed the needs_item_delegate gate, SQL fixes, and generator fix are correct and match sibling entities' already-shipped patterns. |
+| 2 | Unused =#include <unordered_set>= in country_generator.cpp | country_generator.cpp | Declined | Emitted unconditionally by the shared generator template for every entity, not introduced by this PR — 2 other already-regenerated entities have the same unused include. Hand-patching the generated file would drift back on next regen; filed as a follow-up capture (gate_unordered_set_include_generator_template) instead. |
+
+* Result
+
+Regenerated all applicable profiles for country
+(=./compass.sh codegen entity generate country=, then =--address
+ores.cpp.qt= separately after the template fix below) and reviewed
+every diff before writing:
+
+- Fixed a real bug in the synthetic-data generator
+  (=r.alpha2_code = +"-" + std::to_string(idx)= — unary =+= on a
+  string literal, producing garbage — now generates a real random
+  code via =faker::word::noun()=), and picked up a previously-
+  unreflected =coding_scheme_code= field already declared in the org
+  model.
+- SQL: adopted =clock_timestamp()= (not =current_timestamp=, which is
+  transaction-frozen) in the insert trigger and delete rule; wrapped
+  the delete rule's =do instead= body in parens (multi-statement
+  fix); and the validate function now bootstrap-pass-throughs on
+  *no active rows* rather than *no rows at all* — directly fixing the
+  "Item 2" bug documented in this story's own historical =Commission:
+  country= analysis, which said the fix would "occur naturally
+  through the commissioning pipeline" once propagated. It just did.
+- Picked up =read_at_version()= (temporal composite entity versioning
+  capability, landed generically since country's last sync).
+- Found and fixed one more shared-template gap while at it:
+  =EntityItemDelegate= (the class housing all of currency's icon/badge
+  sizing fixes) was constructed only when =has_badge_columns= was
+  true, so country's own flag column (no badges, just
+  =flag_icon_column=) rendered via Qt's default item-view path
+  instead — the exact "bypasses the aspect-correct sizing" bug fixed
+  for currency_pair, just not yet visibly wrong since country only
+  has one icon column competing for one iconSize. Widened the gate to
+  a new =needs_item_delegate= flag (=has_badge_columns OR
+  has_any_flag_icon=); =badgeCache_= itself stays gated on
+  =has_badge_columns= only, since =EntityItemDelegate='s constructor
+  never required it. Zero diff on regenerating currency/currency_pair
+  confirms no regression for badge-bearing entities.
+
+Full local build (0 errors) and ctest suite (69/69, 100%) verified
+clean.

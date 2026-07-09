@@ -46,6 +46,13 @@ std::uint32_t country_service::count_countries() {
     return repo_.get_total_country_count(ctx_);
 }
 
+std::optional<domain::country>
+country_service::get_country_at_version(const std::string& alpha2_code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting country at version: " << alpha2_code
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, alpha2_code, version);
+}
+
 std::optional<domain::country> country_service::get_country(const std::string& alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting country: " << alpha2_code;
     auto results = repo_.read_latest(ctx_, alpha2_code);

@@ -81,6 +81,11 @@ struct country final {
     std::optional<boost::uuids::uuid> image_id;
 
     /**
+     * @brief Optional coding scheme code for the country.
+     */
+    std::optional<std::string> coding_scheme_code;
+
+    /**
      * @brief Username of the person who last modified this country.
      */
     std::string modified_by;

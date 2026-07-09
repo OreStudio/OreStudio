@@ -1,0 +1,171 @@
+:PROPERTIES:
+:ID: 6E2E18A3-DA33-4BBF-8BAE-E28E3D3668FA
+:END:
+#+title: Test Scenario: Verify country regen against latest codegen templates
+#+description: Manual verification that country's Qt UI, flag rendering, and SQL validation still work correctly after regenerating against the latest codegen templates (needs_item_delegate icon-sizing fix, SQL bootstrap-filter/clock_timestamp fixes).
+#+type: test_scenario
+#+level: s1
+#+filetags: :regen_entities_latest_codegen_templates:sprint_22:v0:
+#+target_dialog: CountryMdiWindow
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:82BA40CA-3A4A-47B5-88ED-ADA0178E5695][Regen country against latest codegen templates]] in [[id:AF0EFC5C-899A-4AE9-BD09-7B2D4E304543][Regen entities with latest codegen templates]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:82BA40CA-3A4A-47B5-88ED-ADA0178E5695][Regen country against latest codegen templates]] |
+| Parent story  | [[id:AF0EFC5C-899A-4AE9-BD09-7B2D4E304543][Regen entities with latest codegen templates]]   |
+| Target dialog | CountryMdiWindow                        |
+| Clients       | (Leave empty for a single client. For a scenario that needs several running clients at once — e.g. checking a NATS notification lands on a second instance — list the instance colours/labels here, e.g. "blue, red".) |
+| State         | PENDING                               |
+
+* Context
+
+Log in as =tenant_admin@barclays_plc= (master password as set up
+locally), select party *BARCLAYS PLC*. If the DB has been recreated
+since, re-run =./compass.sh shell -f
+projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+first.
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** List window loads without crashing
+
+Reference Data > Countries. Confirm the list loads (should show ~249
+countries), is sortable and paginated, and the client does not crash
+while fetching country image IDs (regression check for the crash
+observed during this task's own testing — traced to a stale cached
+object file, not a real bug, but confirm here since it's the exact
+code path this task touched).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Flag icon renders at the correct size
+
+Confirm the flag icon in the =Code= column (Alpha2Code) renders at
+the same 16px height as every other single-flag column in the app
+(e.g. compare against Currency's flag column) — not stretched or
+oversized. This is the =needs_item_delegate= fix: country has no
+badge columns, so previously its flag bypassed the shared sizing
+delegate entirely.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Detail dialog: add and save a new country
+
+Open the detail dialog, fill in a new country (unique alpha2/alpha3
+codes), save. Confirm it round-trips (reopen and the data persisted).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Validation rejects an unknown country code elsewhere
+
+Find a field that soft-FKs to country (e.g. a party's country) and
+confirm entering an invalid alpha2 code is rejected with a clear
+error listing valid codes — not a silent pass-through or an opaque
+"Invalid country: (empty list)" error. Regresses the SQL
+active-rows-bootstrap-filter fix landed in this task.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Delete and history preserved
+
+Delete a country (use one created in the "add and save" step above).
+Confirm it's removed from the list and its history is preserved
+(open History on it if the UI allows viewing a deleted record's
+history, or verify via the shell/CLI history command).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Synthetic-data generator produces valid data
+
+If the list window's Generate action is enabled (toggle
+=system.synthetic_data_generation= if needed), generate a few
+synthetic countries. Confirm alpha2_code is a real random value, not
+garbage (regression check for the =+"-" + idx= generator bug fixed in
+this task).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-09T19:05:42Z |
+| Branch        | feature/regen-entities-latest-codegen-templates |
+| Commit        | bf76a65c1 |
+| Worktree      | brave_hopper |
+
+* Notes

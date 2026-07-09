@@ -19,8 +19,10 @@
  */
 #include "ores.qt/CountryMdiWindow.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include <QFutureWatcher>
@@ -126,6 +128,20 @@ void CountryMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
     tableView_->setIconSize(single_flag_icon_size());
 
+    using cs = column_style;
+    auto* delegate = new EntityItemDelegate(
+        {
+            cs::icon_text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::mono_center,
+            cs::text_left,
+            cs::text_left,
+        },
+        tableView_);
+    tableView_->setItemDelegate(delegate);
 
     initializeTableSettings(tableView_, model_, "CountryListWindow", {}, {900, 400}, 1);
 }

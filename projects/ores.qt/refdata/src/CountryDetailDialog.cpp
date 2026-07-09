@@ -352,10 +352,5 @@ void CountryDetailDialog::onDeleteClicked() {
     watcher->setFuture(future);
 }
 
-// Extra method implementations seam: a future
-// :implements EC97923E-BC8D-4A50-9970-CBC5CBD4B732 block is expected to
-// define the bodies of any methods declared via the header seam at
-// F55CB64E-165A-4E15-A50A-5723C0320E97 — see paste_blocks_in_codegen.org.
-// Left empty when no entity implements this kind.
 
 }

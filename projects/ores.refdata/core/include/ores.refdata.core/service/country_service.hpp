@@ -27,6 +27,7 @@
 #include "ores.refdata.core/repository/country_repository.hpp"
 #include "ores.refdata.core/repository/party_country_repository.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -75,6 +76,17 @@ public:
      * @return Total number of active countries.
      */
     std::uint32_t count_countries();
+
+    /**
+     * @brief Retrieves a single country as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param alpha2_code The alpha2_code of the country.
+     * @param version The version to fetch.
+     * @return The country at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::country> get_country_at_version(const std::string& alpha2_code,
+                                                          std::uint32_t version);
 
     /**
      * @brief Retrieves a single country by its alpha2_code.

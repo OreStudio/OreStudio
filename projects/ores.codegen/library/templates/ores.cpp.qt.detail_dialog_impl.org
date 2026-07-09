@@ -489,7 +489,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{field_pascal}}Combo(
             combo->blockSignals(false);
 
             if (self->imageCache())
-                apply_flag_icons(combo, self->imageCache(), FlagSource::{{flag_source_pascal}});
+                apply_flag_icons(
+                    combo, self->imageCache(), FlagSource::{{flag_source_pascal}}, {{flag_icon_size_expr}});
         });
 
     auto* cm = clientManager_;

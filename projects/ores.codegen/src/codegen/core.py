@@ -2226,6 +2226,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     f.setdefault('combo_allow_blank', False)
                     flag_source = f.get('flag_source', 'currency')
                     f['flag_source_pascal'] = snake_to_pascal(flag_source)
+                    # currency_pair icons are twice as wide as a single flag
+                    # (two composited flags) -- squeezing one into the
+                    # square box single_flag_icon_size() gives every other
+                    # flag source would squash it. currency_pair_icon_size()
+                    # keeps the same height (so it still matches every other
+                    # flag-bearing widget in the app) but reserves the extra
+                    # width.
+                    f['flag_icon_size_expr'] = ('currency_pair_icon_size()'
+                                                if flag_source == 'currency_pair'
+                                                else 'single_flag_icon_size()')
                     # A currency flagged_combo has a ready-made shared
                     # implementation (setup_currency_combo) and promoted
                     # widget class (OreCurrencyComboBox, for uic's standard

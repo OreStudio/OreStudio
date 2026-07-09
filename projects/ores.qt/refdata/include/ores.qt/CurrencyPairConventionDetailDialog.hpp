@@ -23,9 +23,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include <vector>
-
 
 namespace Ui {
 class CurrencyPairConventionDetailDialog;
@@ -90,9 +91,6 @@ protected:
         return hasChanges_;
     }
     QString code() const override;
-    QLineEdit* keyFlagField() const override;
-    QIcon keyFlagIcon(const std::string& key) const override;
-    QSize keyFlagIconSize() const override;
 
 private:
     void setupUi();
@@ -102,6 +100,9 @@ private:
     void updateConventionFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
+
+    void populatePairCodeCombo();
 
 
     Ui::CurrencyPairConventionDetailDialog* ui_;

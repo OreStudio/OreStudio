@@ -46,12 +46,9 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="pairCodeEdit">
-            <property name="placeholderText">
-             <string>e.g. EUR/USD</string>
-            </property>
-            <property name="readOnly">
-             <bool>true</bool>
+           <widget class="QComboBox" name="pairCodeCombo">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>
@@ -122,7 +119,7 @@
            </widget>
           </item>
           <item row="5" column="1">
-           <widget class="QComboBox" name="businessDayConventionCombo">
+           <widget class="ores::qt::OreBadgeComboBox" name="businessDayConventionCombo">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
@@ -238,6 +235,11 @@
    <class>ores::qt::ProvenanceWidget</class>
    <extends>QWidget</extends>
    <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>ores::qt::OreBadgeComboBox</class>
+   <extends>QComboBox</extends>
+   <header>ores.qt/OreBadgeComboBox.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

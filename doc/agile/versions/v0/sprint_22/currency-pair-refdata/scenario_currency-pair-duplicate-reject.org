@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: AC6020E7-D5EB-477C-AE57-FB17DDF06021
 :END:
-#+title: Test Scenario: Currency Pair: duplicate pair_code rejected on create
-#+description: Verify creating a Currency Pair whose derived pair_code collides with an existing one is blocked with a clear error, not silently versioned.
+#+title: Test Scenario: Currency Pair: duplicate and inverted pair_code rejected on create
+#+description: Verify creating a Currency Pair whose derived pair_code collides with an existing one (exact or inverted, e.g. USD/EUR when EUR/USD exists) is blocked with a clear error, not silently versioned.
 #+type: test_scenario
 #+level: s1
 #+filetags: :currency-pair-refdata:sprint_22:v0:
@@ -53,11 +53,11 @@ and click Save.
 |--------+-------|
 | Status | PASS |
 
-** Confirm the error is clear and the save is blocked
+** Confirm the duplicate error is clear and the save is blocked
 
-Confirm a "Duplicate Pair" (or similarly clear) error dialog appears
-naming the colliding pair_code, and that the dialog stays open (save
-did not go through) rather than silently closing.
+Confirm a "Duplicate Pair" error dialog appears naming the colliding
+pair_code, and that the dialog stays open (save did not go through)
+rather than silently closing.
 
 *** Result
 
@@ -65,7 +65,7 @@ did not go through) rather than silently closing.
 |--------+-------|
 | Status | PASS |
 
-** Confirm the existing pair's data is unchanged
+** Confirm the existing pair's data is unchanged after the duplicate attempt
 
 Close the Add dialog (Cancel/Close). Reopen the pair you tried to
 duplicate (double-click it in the list). Confirm its data (Base,
@@ -78,27 +78,53 @@ Quote, Classification, Version) is unchanged from before the attempt
 |--------+-------|
 | Status | PASS |
 
+** Attempt to create the inverted pair (swap base/quote)
+
+Click Add again. This time pick the *swapped* Base/Quote for the same
+pair noted earlier (e.g. if EUR/USD exists, pick Base=USD,
+Quote=EUR). Fill in Classification and click Save.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm the inverted-pair error names both pairs and explains why
+
+Confirm an "Inverted Pair" error dialog appears, naming both the
+pair you tried to create and the existing pair it's the inverse of,
+and explaining that only one direction is allowed per FX market
+convention (with guidance to delete the existing pair first if the
+inverse is really wanted).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Confirm a genuinely new pair still saves normally
 
 Click Add again, pick a Base/Quote combination that does *not* yet
-exist, fill in Classification, and Save. Confirm it saves
-successfully with no error, and appears in the list.
+exist in either direction, fill in Classification, and Save. Confirm
+it saves successfully with no error, and appears in the list.
 
 *** Result
 
 | Field  | Value |
 |--------+-------|
 | Status | FAIL |
-| Notes  | Save worked but no eventing so could not know there was a new pair. |
+| Notes  | save works but no eventing. something is wrong with eventing. |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-07-09T17:56:55Z |
+| Completed at  | 2026-07-09T19:00:28Z |
 | Branch        | feature/test-ore-fx-convention-import |
-| Commit        | 5692279fb |
+| Commit        | 40740e790 |
 | Worktree      | prime_origin |
 
 * Notes

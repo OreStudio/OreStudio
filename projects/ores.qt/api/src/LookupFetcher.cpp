@@ -25,6 +25,7 @@
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata.api/messaging/party_status_protocol.hpp"
@@ -114,6 +115,22 @@ std::vector<std::string> fetch_currency_codes(ClientManager* cm) {
     if (response) {
         for (const auto& ccy : response->currencies) {
             codes.push_back(ccy.iso_code);
+        }
+    }
+    return codes;
+}
+
+std::vector<std::string> fetch_currency_pair_codes(ClientManager* cm) {
+    std::vector<std::string> codes;
+    if (!cm)
+        return codes;
+
+    refdata::messaging::get_currency_pairs_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& pair : response->pairs) {
+            codes.push_back(pair.pair_code);
         }
     }
     return codes;

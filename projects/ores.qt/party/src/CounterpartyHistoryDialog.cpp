@@ -155,10 +155,11 @@ void CounterpartyHistoryDialog::loadCompositeAsOf(int version_number) {
             ui_->compositeIdentifiersListWidget->addItem("(none as of this version)");
         }
         for (const auto& pi : response.identifiers) {
-            ui_->compositeIdentifiersListWidget->addItem(QString("%1: %2 (v%3)")
-                                                          .arg(QString::fromStdString(pi.id_scheme))
-                                                          .arg(QString::fromStdString(pi.id_value))
-                                                          .arg(pi.version));
+            ui_->compositeIdentifiersListWidget->addItem(
+                QString("%1: %2 (v%3)")
+                    .arg(QString::fromStdString(pi.id_scheme))
+                    .arg(QString::fromStdString(pi.id_value))
+                    .arg(pi.version));
         }
 
         if (response.contacts.empty()) {

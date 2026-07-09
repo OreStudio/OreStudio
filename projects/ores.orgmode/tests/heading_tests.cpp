@@ -29,7 +29,8 @@ TEST_CASE("join_paragraph_lines joins wrapped lines with a single space",
         "wraps across several",
         "source lines.",
     };
-    REQUIRE(join_paragraph_lines(lines) == "This is a paragraph that wraps across several source lines.");
+    REQUIRE(join_paragraph_lines(lines) ==
+            "This is a paragraph that wraps across several source lines.");
 }
 
 TEST_CASE("join_paragraph_lines trims each line before joining", "[ores.orgmode][heading]") {

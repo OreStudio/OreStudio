@@ -20,10 +20,10 @@
 #include "ores.refdata.core/repository/party_identifier_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/party_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/party_identifier_entity.hpp"
 #include "ores.refdata.core/repository/party_identifier_mapper.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
@@ -218,7 +218,8 @@ std::optional<domain::party_identifier> party_identifier_repository::read_at_ver
 }
 
 std::vector<domain::party_identifier> party_identifier_repository::read_by_party_id_as_of(
-    context ctx, const std::string& party_id,
+    context ctx,
+    const std::string& party_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
     BOOST_LOG_SEV(lg(), debug) << "Reading party identifiers as of window. party_id: " << party_id;

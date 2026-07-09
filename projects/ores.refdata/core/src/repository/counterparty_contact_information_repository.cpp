@@ -20,10 +20,10 @@
 #include "ores.refdata.core/repository/counterparty_contact_information_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/counterparty_contact_information_entity.hpp"
 #include "ores.refdata.core/repository/counterparty_contact_information_mapper.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <sqlgen/postgres.hpp>
 
@@ -156,7 +156,7 @@ counterparty_contact_information_repository::read_all(const boost::uuids::uuid& 
 
 std::optional<domain::counterparty_contact_information>
 counterparty_contact_information_repository::read_at_version(const boost::uuids::uuid& id,
-                                                              std::uint32_t version) {
+                                                             std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading counterparty contact information at version. Id: " << id
                                << " version: " << version;
 
@@ -164,14 +164,13 @@ counterparty_contact_information_repository::read_at_version(const boost::uuids:
     const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
                        where("id"_c == id_str && "version"_c == version) | sqlgen::limit(1);
 
-    const auto entities =
-        execute_read_query<counterparty_contact_information_entity,
-                           domain::counterparty_contact_information>(
-            ctx_,
-            query,
-            [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
-            lg(),
-            "Reading counterparty contact information at version.");
+    const auto entities = execute_read_query<counterparty_contact_information_entity,
+                                             domain::counterparty_contact_information>(
+        ctx_,
+        query,
+        [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
+        lg(),
+        "Reading counterparty contact information at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -188,13 +187,13 @@ counterparty_contact_information_repository::read_by_counterparty_id_as_of(
         << counterparty_id;
 
     const auto cpty_id_str = boost::uuids::to_string(counterparty_id);
-    const auto vf(make_timestamp(
-        ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
-    const auto vt(make_timestamp(
-        ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+    const auto vf(
+        make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
+    const auto vt(
+        make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
     const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
-                       where("counterparty_id"_c == cpty_id_str &&
-                             "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+                       where("counterparty_id"_c == cpty_id_str && "valid_from"_c < vt.value() &&
+                             "valid_to"_c > vf.value()) |
                        order_by("contact_type"_c);
 
     return execute_read_query<counterparty_contact_information_entity,

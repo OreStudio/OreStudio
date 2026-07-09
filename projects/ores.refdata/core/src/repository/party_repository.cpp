@@ -260,8 +260,7 @@ std::vector<domain::party> party_repository::read_all(const boost::uuids::uuid& 
 
 std::optional<domain::party> party_repository::read_at_version(const boost::uuids::uuid& id,
                                                                std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading party at version. Id: " << id
-                               << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Reading party at version. Id: " << id << " version: " << version;
 
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<party_entity>> |

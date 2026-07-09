@@ -82,8 +82,8 @@ public:
      */
     std::vector<domain::counterparty_contact_information>
     read_by_counterparty_id_as_of(const boost::uuids::uuid& counterparty_id,
-                                 std::chrono::system_clock::time_point valid_from_bound,
-                                 std::chrono::system_clock::time_point valid_to_bound);
+                                  std::chrono::system_clock::time_point valid_from_bound,
+                                  std::chrono::system_clock::time_point valid_to_bound);
 
 private:
     context ctx_;

@@ -23,7 +23,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.api/messaging/book_status_protocol.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
-#include "ores.refdata.api/messaging/regulatory_book_type_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
@@ -31,6 +30,7 @@
 #include "ores.refdata.api/messaging/party_status_protocol.hpp"
 #include "ores.refdata.api/messaging/party_type_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
+#include "ores.refdata.api/messaging/regulatory_book_type_protocol.hpp"
 #include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
 #include <boost/uuid/uuid_io.hpp>
 

@@ -69,8 +69,9 @@ QString write_temp_doc(const QString& dir, const QString& content) {
 
 }
 
-TEST_CASE("write_scenario_results rewrites Results and each step's Result, leaving the rest untouched",
-          tags) {
+TEST_CASE(
+    "write_scenario_results rewrites Results and each step's Result, leaving the rest untouched",
+    tags) {
     QTemporaryDir tmp;
     REQUIRE(tmp.isValid());
     const QString path = write_temp_doc(tmp.path(), sample_doc);
@@ -199,8 +200,9 @@ TEST_CASE("write_scenario_results disambiguates a step title shared by two clien
     REQUIRE(redHeading < redResult);
 }
 
-TEST_CASE("write_scenario_results re-running a step replaces its previous Result, not duplicates it",
-          tags) {
+TEST_CASE(
+    "write_scenario_results re-running a step replaces its previous Result, not duplicates it",
+    tags) {
     QTemporaryDir tmp;
     REQUIRE(tmp.isValid());
     const QString path = write_temp_doc(tmp.path(), sample_doc);

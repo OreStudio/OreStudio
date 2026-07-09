@@ -48,7 +48,8 @@ struct environment_metadata final {
  * launcher (see =compass client start --instance-name=), empty if
  * unset.
  */
-ORES_QT_HEADLESS_API environment_metadata capture_environment_metadata(const QString& reference_path = {});
+ORES_QT_HEADLESS_API environment_metadata
+capture_environment_metadata(const QString& reference_path = {});
 
 }
 

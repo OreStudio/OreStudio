@@ -38,10 +38,10 @@
 
 namespace ores::refdata::service::messaging {
 
-std::vector<ores::eventing::service::subscription>
-event_registrar::register_event_mappings(ores::eventing::service::postgres_event_source& event_source,
-                                         ores::eventing::service::event_bus& event_bus,
-                                         ores::nats::service::client& nats) {
+std::vector<ores::eventing::service::subscription> event_registrar::register_event_mappings(
+    ores::eventing::service::postgres_event_source& event_source,
+    ores::eventing::service::event_bus& event_bus,
+    ores::nats::service::client& nats) {
     std::vector<ores::eventing::service::subscription> subs;
 
     // ----------------------------------------------------------------

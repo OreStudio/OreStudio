@@ -239,25 +239,27 @@ public:
                       get_counterparty_composite_as_of_response{
                           .success = false,
                           .message = "No such counterparty version: " + req->id + " v" +
-                              std::to_string(version)});
+                                     std::to_string(version)});
                 return;
             }
 
             // See party_handler::composite_as_of — windows are contiguous
             // by construction; the domain object doesn't surface valid_to.
             auto next = cpty_svc.get_counterparty_at_version(req->id, version + 1);
-            const auto window_end = next ? next->recorded_at
-                                         : std::chrono::system_clock::now() +
-                                               std::chrono::hours(24 * 365 * 100);
+            const auto window_end =
+                next ? next->recorded_at :
+                       std::chrono::system_clock::now() + std::chrono::hours(24 * 365 * 100);
 
             boost::uuids::string_generator gen;
             service::counterparty_identifier_service identifier_svc(req_ctx);
-            auto identifiers = identifier_svc.list_counterparty_identifiers_by_counterparty_id_as_of(
-                req->id, current->recorded_at, window_end);
+            auto identifiers =
+                identifier_svc.list_counterparty_identifiers_by_counterparty_id_as_of(
+                    req->id, current->recorded_at, window_end);
 
             service::counterparty_contact_information_service contact_svc(req_ctx);
-            auto contacts = contact_svc.list_counterparty_contact_informations_by_counterparty_as_of(
-                gen(req->id), current->recorded_at, window_end);
+            auto contacts =
+                contact_svc.list_counterparty_contact_informations_by_counterparty_as_of(
+                    gen(req->id), current->recorded_at, window_end);
 
             BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,

@@ -85,9 +85,9 @@ public:
      * `true`.
      */
     void registerAction(QAction* action,
-                       const QString& setting_name,
-                       std::function<bool()> guard = {},
-                       bool default_when_missing = false);
+                        const QString& setting_name,
+                        std::function<bool()> guard = {},
+                        bool default_when_missing = false);
 
     /**
      * @brief Re-checks every registered action's visibility.

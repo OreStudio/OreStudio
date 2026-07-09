@@ -119,11 +119,11 @@ counterparty_contact_information_service::get_counterparty_contact_information_a
     return repo_.read_at_version(id, version);
 }
 
-std::vector<domain::counterparty_contact_information>
-counterparty_contact_information_service::list_counterparty_contact_informations_by_counterparty_as_of(
-    const boost::uuids::uuid& counterparty_id,
-    std::chrono::system_clock::time_point valid_from_bound,
-    std::chrono::system_clock::time_point valid_to_bound) {
+std::vector<domain::counterparty_contact_information> counterparty_contact_information_service::
+    list_counterparty_contact_informations_by_counterparty_as_of(
+        const boost::uuids::uuid& counterparty_id,
+        std::chrono::system_clock::time_point valid_from_bound,
+        std::chrono::system_clock::time_point valid_to_bound) {
     BOOST_LOG_SEV(lg(), debug)
         << "Listing counterparty contact informations by counterparty as of window: "
         << counterparty_id;

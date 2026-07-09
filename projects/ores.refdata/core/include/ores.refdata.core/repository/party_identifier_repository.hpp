@@ -134,9 +134,10 @@ public:
      * versions.
      */
     std::vector<domain::party_identifier>
-    read_by_party_id_as_of(context ctx, const std::string& party_id,
-                          std::chrono::system_clock::time_point valid_from_bound,
-                          std::chrono::system_clock::time_point valid_to_bound);
+    read_by_party_id_as_of(context ctx,
+                           const std::string& party_id,
+                           std::chrono::system_clock::time_point valid_from_bound,
+                           std::chrono::system_clock::time_point valid_to_bound);
 };
 
 }

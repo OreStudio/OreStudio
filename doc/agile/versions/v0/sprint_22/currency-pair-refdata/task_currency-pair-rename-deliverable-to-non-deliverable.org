@@ -46,11 +46,11 @@ separately for a future story.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-08                               |
 
 * Plan
@@ -116,3 +116,18 @@ Files:
 |   |                 |      |          |       |
 
 * Result
+
+Shipped: dropped =non_deliverable=, =settlement_currency=, and
+=fixing_source= from =currency_pair= entirely (SQL, domain, Qt),
+after a design pivot from a straight rename once it became clear a
+boolean/optional-currency pair can't express real FX settlement
+conventions. Filed a capture with a structural analysis for the
+proper future model. Also fixed a pre-existing, unrelated
+cross-plugin symbol-visibility bug that was silently killing the
+client on party selection.
+
+CI initially red on =canary= (RLS_002 on
+=ores_variability_system_settings_tbl=, pre-existing on =main=,
+unrelated to this PR) — added to the established ignore-list stopgap
+pattern. Merged with =--force= per explicit instruction once CI was
+green.

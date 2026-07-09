@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/currency-pair-merge-with-convention
 #+pr:
 #+blocked_on:
 #+blocked_since:

@@ -8,7 +8,7 @@
 #+filetags: :fix-missing-service-export-macros:sprint_22:v0:
 #+owner: marco
 #+branch: feature/implement-fix-missing-service-export-macros
-#+pr:
+#+pr: 1482
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-09
@@ -61,7 +61,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1482][#1482]] | [refdata,scheduler] Fix missing EXPORT macros on 20 service classes |
 
 * Review
 

@@ -87,7 +87,8 @@ void CurrencyDetailDialog::setupUi() {
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
-    // Flag editor hosted in the .ui flagGroup; base class owns the button.
+    // Flag editor hosted in the .ui flagGroup; base class owns the button
+    // (also wires the inline key-field icon — see initKeyFlagField()).
     initFlagButton(ui_->flagGroup->layout());
 
     toolBar_ = new QToolBar(this);
@@ -361,6 +362,9 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
         [this]() { return QString::fromStdString(currency_.monetary_nature); },
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load monetary natures: %1").arg(error));
+        },
+        [this]() {
+            setup_badge_combo(this, ui_->monetaryNatureCombo, badgeCache(), "monetary_nature");
         });
 }
 void CurrencyDetailDialog::populateMarketTierCombo() {
@@ -377,6 +381,9 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
         [this]() { return QString::fromStdString(currency_.market_tier); },
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load currency market tiers: %1").arg(error));
+        },
+        [this]() {
+            setup_badge_combo(this, ui_->marketTierCombo, badgeCache(), "currency_market_tier");
         });
 }
 void CurrencyDetailDialog::populateRoundingTypeCombo() {
@@ -608,5 +615,6 @@ void CurrencyDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

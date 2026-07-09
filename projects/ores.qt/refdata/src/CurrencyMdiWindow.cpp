@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,8 +18,7 @@
  *
  */
 #include "ores.qt/CurrencyMdiWindow.hpp"
-#include "ores.ore.core/xml/exporter.hpp"
-#include "ores.ore.core/xml/importer.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -27,295 +26,290 @@
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/ImportEntityDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.refdata.api/csv/exporter.hpp"
-#include "ores.refdata.api/generators/currency_generator.hpp"
-#include "ores.refdata.api/messaging/protocol.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-#include <QAction>
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include <QDesktopServices>
+#include <QFile>
 #include <QFileDialog>
 #include <QFutureWatcher>
-#include <QImage>
+#include <QHeaderView>
 #include <QMessageBox>
-#include <QPixmap>
-#include <QToolBar>
 #include <QUrl>
+#include <QVBoxLayout>
 #include <QtConcurrent>
-#include <QtCore/QVariant>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QHeaderView>
-#include <QtWidgets/QInputDialog>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QScrollBar>
-#include <QtWidgets/QTableView>
-#include <QtWidgets/QWidget>
-#include <filesystem>
-#include <vector>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-namespace {
-// Feature flag name for synthetic data generation
-constexpr std::string_view synthetic_generation_flag = "system.synthetic_data_generation";
-}
-
 CurrencyMdiWindow::CurrencyMdiWindow(ClientManager* clientManager,
-                                     ImageCache* imageCache,
                                      const QString& username,
+                                     BadgeCache* badgeCache,
+                                     ImageCache* imageCache,
                                      QWidget* parent)
     : EntityListMdiWindow(parent)
-    , verticalLayout_(new QVBoxLayout(this))
-    , currencyTableView_(new QTableView(this))
-    , toolBar_(new QToolBar(this))
-    , pagination_widget_(new PaginationWidget(this))
-    , reloadAction_(new QAction("Reload", this))
-    , addAction_(new QAction("Add", this))
-    , editAction_(new QAction("Edit", this))
-    , deleteAction_(new QAction("Delete", this))
-    , currencyModel_(std::make_unique<ClientCurrencyModel>(clientManager, imageCache))
     , clientManager_(clientManager)
-    , imageCache_(imageCache)
     , username_(username)
-    , settingGatedActions_(new SettingGatedActionController(clientManager, this)) {
+    , badgeCache_(badgeCache)
+    , imageCache_(imageCache)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , importXMLAction_(nullptr)
+    , exportCSVAction_(nullptr)
+    , exportXMLAction_(nullptr)
+    , historyAction_(nullptr) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating currency MDI window";
+    setupUi();
+    setupConnections();
+    reload();
+}
 
-    toolBar_->setMovable(false);
-    toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+void CurrencyMdiWindow::setupUi() {
+    auto* layout = new QVBoxLayout(this);
 
-    // Setup reload action with normal and stale icons
-    setupReloadAction();
-    toolBar_->addAction(reloadAction_);
+    setupToolbar();
+    layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
-    toolBar_->addSeparator();
+    setupTable();
+    layout->addWidget(tableView_);
 
-    addAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor));
-    addAction_->setToolTip("Add new currency");
+    paginationWidget_ = new PaginationWidget(this);
+    layout->addWidget(paginationWidget_);
+}
+
+void CurrencyMdiWindow::setupToolbar() {
+    toolbar_ = new QToolBar(this);
+    toolbar_->setMovable(false);
+    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    toolbar_->setIconSize(QSize(20, 20));
+
+    reloadAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        tr("Reload"));
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
+
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
+
+    toolbar_->addSeparator();
+
+    addAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
+    addAction_->setToolTip(tr("Add new currency"));
     connect(addAction_, &QAction::triggered, this, &CurrencyMdiWindow::addNew);
-    toolBar_->addAction(addAction_);
 
-    editAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor));
-    editAction_->setToolTip("Edit selected currency");
+    editAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
+    editAction_->setToolTip(tr("Edit selected currency"));
+    editAction_->setEnabled(false);
     connect(editAction_, &QAction::triggered, this, &CurrencyMdiWindow::editSelected);
-    toolBar_->addAction(editAction_);
 
-
-    deleteAction_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
-    deleteAction_->setToolTip("Delete selected currency/currencies");
+    deleteAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
+    deleteAction_->setToolTip(tr("Delete selected currency"));
+    deleteAction_->setEnabled(false);
     connect(deleteAction_, &QAction::triggered, this, &CurrencyMdiWindow::deleteSelected);
-    toolBar_->addAction(deleteAction_);
 
-    historyAction_ = new QAction("History", this);
-    historyAction_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
-    historyAction_->setToolTip("View currency history");
+    historyAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
+    historyAction_->setToolTip(tr("View currency history"));
+    historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this, &CurrencyMdiWindow::viewHistorySelected);
-    toolBar_->addAction(historyAction_);
 
-    // Setup generate action (visibility controlled by feature flag)
-    setupGenerateAction();
+    toolbar_->addSeparator();
 
-    toolBar_->addSeparator();
+    importXMLAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::ImportOre, IconUtils::DefaultIconColor),
+        tr("Import XML"));
+    importXMLAction_->setToolTip(tr("Import currencies from an ORE XML file"));
+    connect(importXMLAction_, &QAction::triggered, this, &CurrencyMdiWindow::importFromXML);
 
-    auto roundingTypesAction = new QAction("Rounding", this);
-    roundingTypesAction->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
-    roundingTypesAction->setToolTip("Open Rounding Types list");
-    connect(roundingTypesAction, &QAction::triggered, this, [this]() {
-        emit showRoundingTypesRequested();
-    });
-    toolBar_->addAction(roundingTypesAction);
+    exportCSVAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::ExportCsv, IconUtils::DefaultIconColor),
+        tr("Export CSV"));
+    exportCSVAction_->setToolTip(tr("Export currencies to CSV"));
+    connect(exportCSVAction_, &QAction::triggered, this, &CurrencyMdiWindow::exportToCSV);
 
-    auto monetaryNaturesAction = new QAction("Monetary Natures", this);
-    monetaryNaturesAction->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Classification, IconUtils::DefaultIconColor));
-    monetaryNaturesAction->setToolTip("Open Monetary Natures list");
-    connect(monetaryNaturesAction, &QAction::triggered, this, [this]() {
-        emit showMonetaryNaturesRequested();
-    });
-    toolBar_->addAction(monetaryNaturesAction);
+    exportXMLAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::ExportOre, IconUtils::DefaultIconColor),
+        tr("Export XML"));
+    exportXMLAction_->setToolTip(tr("Export currencies to ORE XML"));
+    connect(exportXMLAction_, &QAction::triggered, this, &CurrencyMdiWindow::exportToXML);
 
-    auto marketTiersAction = new QAction("Market Tiers", this);
-    marketTiersAction->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
-    marketTiersAction->setToolTip("Open Currency Market Tiers list");
-    connect(marketTiersAction, &QAction::triggered, this, [this]() {
-        emit showMarketTiersRequested();
-    });
-    toolBar_->addAction(marketTiersAction);
+    toolbar_->addSeparator();
 
-    toolBar_->addSeparator();
+    {
+        auto* action = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor), tr("Rounding"));
+        action->setToolTip(tr("Open Rounding Types list"));
+        connect(action, &QAction::triggered, this, [this]() { emit showRoundingTypesRequested(); });
+    }
 
-    auto importXMLAction = new QAction("Import", this);
-    importXMLAction->setIcon(
-        IconUtils::createRecoloredIcon(Icon::ImportOre, IconUtils::DefaultIconColor));
-    importXMLAction->setToolTip("Import currencies from ORE XML");
-    connect(importXMLAction, &QAction::triggered, this, &CurrencyMdiWindow::importFromXML);
-    toolBar_->addAction(importXMLAction);
+    {
+        auto* action = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::Classification, IconUtils::DefaultIconColor),
+            tr("Monetary Natures"));
+        action->setToolTip(tr("Open Monetary Natures list"));
+        connect(
+            action, &QAction::triggered, this, [this]() { emit showMonetaryNaturesRequested(); });
+    }
 
-    auto exportCSVAction = new QAction("Export", this);
-    exportCSVAction->setIcon(
-        IconUtils::createRecoloredIcon(Icon::ExportCsv, IconUtils::DefaultIconColor));
-    exportCSVAction->setToolTip("Export currencies to CSV");
-    connect(exportCSVAction, &QAction::triggered, this, &CurrencyMdiWindow::exportToCSV);
-    toolBar_->addAction(exportCSVAction);
+    {
+        auto* action = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
+            tr("Market Tiers"));
+        action->setToolTip(tr("Open Currency Market Tiers list"));
+        connect(action, &QAction::triggered, this, [this]() { emit showMarketTiersRequested(); });
+    }
+}
 
-    auto exportXMLAction = new QAction("Export", this);
-    exportXMLAction->setIcon(
-        IconUtils::createRecoloredIcon(Icon::ExportOre, IconUtils::DefaultIconColor));
-    exportXMLAction->setToolTip("Export currencies to ORE XML");
-    connect(exportXMLAction, &QAction::triggered, this, &CurrencyMdiWindow::exportToXML);
-    toolBar_->addAction(exportXMLAction);
-
-    verticalLayout_->addWidget(toolBar_);
-    verticalLayout_->addWidget(loadingBar());
-    verticalLayout_->addWidget(currencyTableView_);
-    verticalLayout_->addWidget(pagination_widget_);
-
-    currencyTableView_->setObjectName("currencyTableView");
-    currencyTableView_->setAlternatingRowColors(true);
-    currencyTableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    currencyTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    currencyTableView_->setWordWrap(false); // Prevent text wrapping in cells
-
-    // Setup proxy model for sorting
+void CurrencyMdiWindow::setupTable() {
+    model_ = new ClientCurrencyModel(clientManager_, this);
+    model_->setImageCache(imageCache_);
     proxyModel_ = new QSortFilterProxyModel(this);
-    proxyModel_->setSourceModel(currencyModel_.get());
-    currencyTableView_->setModel(proxyModel_);
-    currencyTableView_->setSortingEnabled(true);
-    currencyTableView_->sortByColumn(ClientCurrencyModel::IsoCode, Qt::AscendingOrder);
+    proxyModel_->setSourceModel(model_);
+    proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
 
-    // Use column metadata for delegate styles (single source of truth)
-    currencyTableView_->setItemDelegate(
-        new EntityItemDelegate(ClientCurrencyModel::columnStyles(), currencyTableView_));
+    tableView_ = new QTableView(this);
+    tableView_->setModel(proxyModel_);
+    tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView_->setSortingEnabled(true);
+    tableView_->setAlternatingRowColors(true);
+    tableView_->verticalHeader()->setVisible(false);
+    tableView_->setIconSize(single_flag_icon_size());
 
-    currencyTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    currencyTableView_->setIconSize(single_flag_icon_size());
+    using cs = column_style;
+    auto* delegate = new EntityItemDelegate(
+        {
+            cs::text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::mono_center,
+            cs::text_left,
+            cs::mono_center,
+            cs::text_left,
+            cs::badge_centered,
+            cs::badge_centered,
+            cs::mono_center,
+            cs::text_left,
+            cs::mono_center,
+            cs::text_left,
+            cs::mono_center,
+            cs::text_left,
+            cs::text_left,
+        },
+        tableView_);
+    delegate->set_badge_color_resolver(
+        9, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+            if (!cache)
+                return default_gray;
+            auto* def = cache->resolve("monetary_nature", value.toStdString());
+            if (!def)
+                return default_gray;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    delegate->set_badge_color_resolver(
+        10, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+            if (!cache)
+                return default_gray;
+            auto* def = cache->resolve("currency_market_tier", value.toStdString());
+            if (!def)
+                return default_gray;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    tableView_->setItemDelegate(delegate);
 
-    // Use column metadata for default hidden columns
-    initializeTableSettings(currencyTableView_,
-                            currencyModel_.get(),
-                            ClientCurrencyModel::kSettingsGroup,
-                            ClientCurrencyModel::defaultHiddenColumns(),
-                            ClientCurrencyModel::kDefaultWindowSize,
-                            2);
+    initializeTableSettings(tableView_, model_, "CurrencyListWindow", {}, {900, 400}, 1);
+}
 
-    // Connect signals
-    connect(currencyModel_.get(),
-            &ClientCurrencyModel::dataLoaded,
-            this,
-            &CurrencyMdiWindow::onDataLoaded);
-    connect(currencyModel_.get(),
-            &ClientCurrencyModel::loadError,
-            this,
-            &CurrencyMdiWindow::onLoadError);
-    connectModel(currencyModel_.get());
-    connect(currencyTableView_,
-            &QTableView::doubleClicked,
-            this,
-            &CurrencyMdiWindow::onRowDoubleClicked);
-    connect(currencyTableView_->selectionModel(),
+void CurrencyMdiWindow::setupConnections() {
+    connect(model_, &ClientCurrencyModel::dataLoaded, this, &CurrencyMdiWindow::onDataLoaded);
+    connect(model_, &ClientCurrencyModel::loadError, this, &CurrencyMdiWindow::onLoadError);
+
+    connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
             this,
             &CurrencyMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked, this, &CurrencyMdiWindow::onDoubleClicked);
 
-    // Connect pagination widget signals
     connect(
-        pagination_widget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
-            BOOST_LOG_SEV(lg(), debug) << "Page size changed to: " << size;
-            currencyModel_->set_page_size(size);
-            currencyModel_->refresh(true); // Reload from start with new page size
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
         });
 
-    connect(pagination_widget_, &PaginationWidget::load_all_requested, this, [this]() {
-        BOOST_LOG_SEV(lg(), debug) << "Load all requested from pagination widget";
-        const auto total = currencyModel_->total_available_count();
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
+        const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
-            emit statusChanged("Loading all currencies...");
-            currencyModel_->set_page_size(total);
-            currencyModel_->refresh(true);
-        } else if (total > 1000) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Total count " << total << " exceeds maximum page size of 1000";
-            emit statusChanged("Cannot load all - too many records (max 1000)");
+            model_->set_page_size(total);
+            model_->refresh();
         }
     });
 
-    connect(pagination_widget_,
-            &PaginationWidget::page_requested,
-            this,
-            [this](std::uint32_t offset, std::uint32_t limit) {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Page requested: offset=" << offset << ", limit=" << limit;
-                emit statusChanged("Loading currencies...");
-                currencyModel_->load_page(offset, limit);
-            });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
 
-    // Connect connection state signals
-    if (clientManager_) {
-        connect(clientManager_,
-                &ClientManager::connected,
-                this,
-                &CurrencyMdiWindow::onConnectionStateChanged);
-        connect(clientManager_,
-                &ClientManager::disconnected,
-                this,
-                &CurrencyMdiWindow::onConnectionStateChanged);
-
-        if (clientManager_->isLoggedIn())
-            settingGatedActions_->refresh();
-    }
-
-    updateActionStates();
-
-    emit statusChanged("Loading currencies...");
-
-    // Initial load (only if logged in, not just connected)
-    if (clientManager_->isLoggedIn()) {
-        currencyModel_->refresh();
-    } else {
-        emit statusChanged("Disconnected - Offline");
-        toolBar_->setEnabled(false);
-    }
-}
-
-CurrencyMdiWindow::~CurrencyMdiWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Destroying currency MDI window";
-
-    // Disconnect and cancel any active QFutureWatcher objects
-    const auto watchers = findChildren<QFutureWatcherBase*>();
-    for (auto* watcher : watchers) {
-        disconnect(watcher, nullptr, this, nullptr);
-        watcher->cancel();
-        watcher->waitForFinished();
-    }
-}
-
-void CurrencyMdiWindow::onConnectionStateChanged() {
-    const bool connected = clientManager_ && clientManager_->isConnected();
-    toolBar_->setEnabled(connected);
-
-    if (connected) {
-        emit statusChanged("Connected");
-        // Optionally auto-refresh on reconnect?
-        // currencyModel_->refresh();
-    } else {
-        emit statusChanged("Disconnected - Offline");
-    }
+    connectModel(model_);
 }
 
 void CurrencyMdiWindow::doReload() {
-    BOOST_LOG_SEV(lg(), debug) << "Reload requested";
-    if (!clientManager_->isLoggedIn()) {
-        emit statusChanged("Cannot reload - Not logged in");
+    BOOST_LOG_SEV(lg(), debug) << "Reloading currencies";
+    clearStaleIndicator();
+    emit statusChanged(tr("Loading currencies..."));
+    model_->refresh();
+}
+
+void CurrencyMdiWindow::onDataLoaded() {
+    const auto loaded = model_->rowCount();
+    const auto total = model_->total_available_count();
+    emit statusChanged(tr("Loaded %1 of %2 currencies").arg(loaded).arg(total));
+
+    paginationWidget_->update_state(loaded, total);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
+}
+
+void CurrencyMdiWindow::onLoadError(const QString& error_message, const QString& details) {
+    BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
+    emit errorOccurred(error_message);
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
+}
+
+void CurrencyMdiWindow::onSelectionChanged() {
+    updateActionStates();
+}
+
+void CurrencyMdiWindow::onDoubleClicked(const QModelIndex& index) {
+    if (!index.isValid())
         return;
+
+    auto sourceIndex = proxyModel_->mapToSource(index);
+    if (auto* currency = model_->getCurrency(sourceIndex.row())) {
+        emit showCurrencyDetails(*currency);
     }
-    emit statusChanged("Reloading currencies...");
-    currencyModel_->refresh();
+}
+
+void CurrencyMdiWindow::updateActionStates() {
+    const bool hasSelection = tableView_->selectionModel()->hasSelection();
+    editAction_->setEnabled(hasSelection);
+    deleteAction_->setEnabled(hasSelection);
+    historyAction_->setEnabled(hasSelection);
 }
 
 void CurrencyMdiWindow::addNew() {
@@ -323,173 +317,104 @@ void CurrencyMdiWindow::addNew() {
     emit addNewRequested();
 }
 
-void CurrencyMdiWindow::onDataLoaded() {
-    const auto loaded = currencyModel_->rowCount();
-    const auto total = currencyModel_->total_available_count();
-
-    // Update pagination widget
-    pagination_widget_->update_state(loaded, total);
-
-    // Enable/disable Load All button based on whether there's more data
-    const bool has_more = loaded < total && total > 0 && total <= 1000;
-    BOOST_LOG_SEV(lg(), debug) << "onDataLoaded: loaded=" << loaded << ", total=" << total
-                               << ", has_more=" << has_more;
-    pagination_widget_->set_load_all_enabled(has_more);
-
-    const QString message = QString("Loaded %1 of %2 currencies").arg(loaded).arg(total);
-    emit statusChanged(message);
-    BOOST_LOG_SEV(lg(), debug) << "Currency data loaded successfully: " << loaded << " of " << total
-                               << " currencies";
-
-    // Auto-select first row if data is available and nothing is selected
-    if (currencyModel_->rowCount() > 0 &&
-        currencyTableView_->selectionModel()->selectedRows().isEmpty()) {
-        currencyTableView_->selectRow(0);
-        BOOST_LOG_SEV(lg(), debug) << "Auto-selected first row";
-    }
-}
-
-void CurrencyMdiWindow::onLoadError(const QString& error_message, const QString& details) {
-    emit errorOccurred(error_message);
-    BOOST_LOG_SEV(lg(), error) << "Error loading currencies: " << error_message.toStdString();
-
-    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
-}
-
-void CurrencyMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
-    if (!index.isValid()) {
-        return;
-    }
-
-    // Map proxy index to source index
-    const auto sourceIndex = proxyModel_->mapToSource(index);
-    const auto* currency = currencyModel_->getCurrency(sourceIndex.row());
-    if (!currency) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get currency for row: " << sourceIndex.row();
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Emitting showCurrencyDetails for currency: "
-                               << currency->iso_code;
-    emit showCurrencyDetails(*currency);
-}
-
-void CurrencyMdiWindow::onSelectionChanged() {
-    const int selection_count = currencyTableView_->selectionModel()->selectedRows().count();
-    updateActionStates();
-    emit selectionChanged(selection_count);
-}
-
 void CurrencyMdiWindow::editSelected() {
-    const auto selected = currencyTableView_->selectionModel()->selectedRows();
+    const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "Edit requested but no row selected";
         return;
     }
 
-    // Use the first selected row (single selection mode)
-    onRowDoubleClicked(selected.first());
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* currency = model_->getCurrency(sourceIndex.row())) {
+        emit showCurrencyDetails(*currency);
+    }
 }
 
 void CurrencyMdiWindow::viewHistorySelected() {
-    const auto selected = currencyTableView_->selectionModel()->selectedRows();
+    const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "View history requested but no row selected";
         return;
     }
 
-    // Map proxy index to source index
-    const auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    const auto* currency = currencyModel_->getCurrency(sourceIndex.row());
-    if (!currency) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get currency for history view";
-        return;
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* currency = model_->getCurrency(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Emitting showCurrencyHistory for code: " << currency->iso_code;
+        emit showCurrencyHistory(*currency);
     }
-
-    BOOST_LOG_SEV(lg(), debug) << "Emitting showCurrencyHistory for currency: "
-                               << currency->iso_code;
-    emit showCurrencyHistory(QString::fromStdString(currency->iso_code));
 }
 
 void CurrencyMdiWindow::deleteSelected() {
-    const auto selected = currencyTableView_->selectionModel()->selectedRows();
+    const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "Delete requested but no row selected";
         return;
     }
 
-    if (!clientManager_->isLoggedIn()) {
+    if (!clientManager_->isConnected()) {
         MessageBoxHelper::warning(
-            this, "Not Logged In", "Cannot delete currency while not logged in.");
+            this, "Disconnected", "Cannot delete currency while disconnected.");
         return;
     }
 
-    std::vector<std::string> iso_codes;
+    std::vector<std::string> codes;
     for (const auto& index : selected) {
-        // Map proxy index to source index
-        const auto sourceIndex = proxyModel_->mapToSource(index);
-        const auto* currency = currencyModel_->getCurrency(sourceIndex.row());
-        if (currency)
-            iso_codes.push_back(currency->iso_code);
+        auto sourceIndex = proxyModel_->mapToSource(index);
+        if (auto* currency = model_->getCurrency(sourceIndex.row())) {
+            codes.push_back(currency->iso_code);
+        }
     }
 
-    if (iso_codes.empty()) {
+    if (codes.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "No valid currencies to delete";
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << iso_codes.size() << " currencies";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size() << " currencies";
 
     QString confirmMessage;
-    if (iso_codes.size() == 1) {
-        const auto sourceIndex = proxyModel_->mapToSource(selected.first());
-        const auto* currency = currencyModel_->getCurrency(sourceIndex.row());
-        confirmMessage = QString("Are you sure you want to delete currency '%1' (%2)?")
-                             .arg(QString::fromStdString(currency->name))
-                             .arg(QString::fromStdString(currency->iso_code));
+    if (codes.size() == 1) {
+        confirmMessage = QString("Are you sure you want to delete currency '%1'?")
+                             .arg(QString::fromStdString(codes.front()));
     } else {
         confirmMessage =
-            QString("Are you sure you want to delete %1 currencies?").arg(iso_codes.size());
+            QString("Are you sure you want to delete %1 currencies?").arg(codes.size());
     }
 
     auto reply = MessageBoxHelper::question(
         this, "Delete Currency", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
-        BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user.";
+        BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
         return;
     }
 
     QPointer<CurrencyMdiWindow> self = this;
     using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
 
-    // Capture iso_codes by value
-    auto task = [self, iso_codes]() -> DeleteResult {
+    auto task = [self, codes]() -> DeleteResult {
         DeleteResult results;
         if (!self)
             return {};
 
-        BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << iso_codes.size() << " currencies";
+        BOOST_LOG_SEV(lg(), debug) << "Making delete request for " << codes.size() << " currencies";
 
-        // Create batch request with all ISO codes
-        refdata::messaging::delete_currency_request request{iso_codes};
+        refdata::messaging::delete_currency_request request;
+        request.iso_codes = codes;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
-        auto response = self->clientManager_->process_authenticated_request(std::move(request));
-
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to send batch delete request: " << response.error();
-            for (const auto& iso_code : iso_codes) {
-                results.push_back({iso_code, {false, "Failed to communicate with server"}});
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            for (const auto& code : codes) {
+                results.push_back({code, {false, "Failed to communicate with server"}});
             }
             return results;
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Received batch delete_currency_response";
-
-        for (const auto& iso_code : iso_codes) {
-            results.push_back({iso_code, {response->success, response->message}});
+        for (const auto& code : codes) {
+            results.push_back({code, {response_result->success, response_result->message}});
         }
 
         return results;
@@ -504,27 +429,23 @@ void CurrencyMdiWindow::deleteSelected() {
         int failure_count = 0;
         QString first_error;
 
-        for (const auto& [iso_code, result] : results) {
-            auto [success, message] = result;
-
-            if (success) {
-                BOOST_LOG_SEV(lg(), debug) << "Currency deleted successfully: " << iso_code;
+        for (const auto& [code, result] : results) {
+            if (result.first) {
+                BOOST_LOG_SEV(lg(), debug) << "Currency deleted: " << code;
                 success_count++;
-
-                // Emit deletion signal for each successful deletion
-                emit self->currencyDeleted(QString::fromStdString(iso_code));
+                emit self->currencyDeleted(QString::fromStdString(code));
             } else {
                 BOOST_LOG_SEV(lg(), error)
-                    << "Currency deletion failed: " << iso_code << " - " << message;
+                    << "Currency deletion failed: " << code << " - " << result.second;
                 failure_count++;
-
                 if (first_error.isEmpty()) {
-                    first_error = QString::fromStdString(message);
+                    first_error = QString::fromStdString(result.second);
                 }
             }
         }
 
-        self->currencyModel_->refresh();
+        self->model_->refresh();
+
         if (failure_count == 0) {
             QString msg = success_count == 1 ?
                               "Successfully deleted 1 currency" :
@@ -538,74 +459,84 @@ void CurrencyMdiWindow::deleteSelected() {
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1 %2, failed to delete %3 %4")
-                              .arg(success_count)
-                              .arg(success_count == 1 ? "currency" : "currencies")
-                              .arg(failure_count)
-                              .arg(failure_count == 1 ? "currency" : "currencies");
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }
     });
 
-    // Run async
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
 void CurrencyMdiWindow::exportToCSV() {
-    if (currencyModel_->rowCount() == 0) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "User requested CSV export but " << "there are no currencies to export.";
+    if (model_->rowCount() == 0) {
         QMessageBox::information(this, "No Data", "There are no currencies to export.");
         return;
     }
 
-    // Get a copy of the current currencies from the model
-    auto currencies = currencyModel_->getCurrencies();
+    auto currencies = model_->getCurrencies();
 
     QString fileName = QFileDialog::getSaveFileName(
         this, "Export to CSV", "currencies.csv", "CSV Files (*.csv);;All Files (*)");
-
-    if (fileName.isEmpty()) {
-        BOOST_LOG_SEV(lg(), debug) << "User cancelled file selection in export.";
+    if (fileName.isEmpty())
         return;
-    }
 
     try {
-        // Export using the existing CSV exporter
-        using refdata::csv::exporter;
-        std::string csvData = exporter::export_currency_config(currencies);
+        std::string csvData = refdata::csv::exporter::export_currency_config(currencies);
 
         QFile file(fileName);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to open file for writing: " << fileName.toStdString();
             MessageBoxHelper::critical(
                 this, "File Error", QString("Could not open file for writing: %1").arg(fileName));
             return;
         }
-
         file.write(csvData.c_str(), csvData.length());
         file.close();
 
-        // Open the file in the default application
         QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
-
         emit statusChanged(QString("Successfully exported currencies to %1").arg(fileName));
-        BOOST_LOG_SEV(lg(), debug)
-            << "Successfully exported currencies to CSV: " << fileName.toStdString();
-
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Error exporting to CSV: " << e.what();
         MessageBoxHelper::critical(
             this, "Export Error", QString("Error during CSV export: %1").arg(e.what()));
     }
 }
 
-void CurrencyMdiWindow::importFromXML() {
-    BOOST_LOG_SEV(lg(), debug) << "Import XML action triggered";
+void CurrencyMdiWindow::exportToXML() {
+    if (model_->rowCount() == 0) {
+        QMessageBox::information(this, "No Data", "There are no currencies to export.");
+        return;
+    }
 
+    auto currencies = model_->getCurrencies();
+
+    QString fileName = QFileDialog::getSaveFileName(
+        this, "Export to ORE XML", "currencies.xml", "XML Files (*.xml);;All Files (*)");
+    if (fileName.isEmpty())
+        return;
+
+    try {
+        std::string xmlData = ore::xml::exporter::export_currency_config(currencies);
+
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            MessageBoxHelper::critical(
+                this, "File Error", QString("Could not open file for writing: %1").arg(fileName));
+            return;
+        }
+        file.write(xmlData.c_str(), xmlData.length());
+        file.close();
+
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+        emit statusChanged(QString("Successfully exported currencies to %1").arg(fileName));
+    } catch (const std::exception& e) {
+        MessageBoxHelper::critical(
+            this, "Export Error", QString("Error during XML export: %1").arg(e.what()));
+    }
+}
+
+void CurrencyMdiWindow::importFromXML() {
     if (!clientManager_->isLoggedIn()) {
         MessageBoxHelper::warning(
             this, "Not Logged In", "Cannot import currencies while not logged in.");
@@ -614,45 +545,38 @@ void CurrencyMdiWindow::importFromXML() {
 
     QString fileName = QFileDialog::getOpenFileName(
         this, "Select ORE XML File to Import", QString(), "ORE XML Files (*.xml);;All Files (*)");
-
-    if (fileName.isEmpty()) {
-        BOOST_LOG_SEV(lg(), debug) << "User cancelled file selection";
+    if (fileName.isEmpty())
         return;
-    }
 
-    BOOST_LOG_SEV(lg(), info) << "Selected file for import: " << fileName.toStdString();
     emit statusChanged("Parsing XML file...");
 
     try {
-        // Parse the XML file using the existing importer
-        using ore::xml::importer;
         std::filesystem::path path(fileName.toStdString());
-        auto currencies = importer::import_currency_config(path);
+        auto currencies = ore::xml::importer::import_currency_config(path);
 
         if (currencies.empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "No currencies found in XML file";
             MessageBoxHelper::information(this,
-                                          "No Currencies Found",
+                                          "No Currency Found",
                                           "The selected XML file does not contain any currencies.");
             emit statusChanged("Import cancelled - no currencies found");
             return;
         }
 
-        BOOST_LOG_SEV(lg(), info) << "Parsed " << currencies.size() << " currencies from XML";
-
         emit statusChanged(
             QString("Found %1 currencies - opening import dialog...").arg(currencies.size()));
 
-        // Build preview rows and validate up front, same as the dialog used to do internally.
         std::vector<ImportEntityRow> rows;
         rows.reserve(currencies.size());
         for (const auto& currency : currencies) {
-            const auto validation_error = importer::validate_currency(currency);
-            rows.push_back({.display_values = {QString::fromStdString(currency.iso_code),
-                                               QString::fromStdString(currency.name),
-                                               QString::fromStdString(currency.symbol),
-                                               QString::fromStdString(currency.fraction_symbol),
-                                               QString::number(currency.fractions_per_unit)},
+            const auto validation_error = ore::xml::importer::validate_currency(currency);
+            rows.push_back({.display_values =
+                                {
+                                    QString::fromStdString(currency.iso_code),
+                                    QString::fromStdString(currency.name),
+                                    QString::fromStdString(currency.symbol),
+                                    QString::fromStdString(currency.fraction_symbol),
+                                    QString::number(currency.fractions_per_unit),
+                                },
                             .is_valid = validation_error.empty(),
                             .invalid_reason = QString::fromStdString(validation_error)});
         }
@@ -664,44 +588,38 @@ void CurrencyMdiWindow::importFromXML() {
             return QString::fromStdString(currencies_by_row[index].iso_code);
         };
         auto import_one = [client_manager, username, currencies_by_row](std::size_t index) {
-            using namespace ores::refdata::messaging;
             auto currency_to_import = currencies_by_row[index];
             currency_to_import.modified_by = username.toStdString();
-
             try {
-                auto request = save_currency_request::from(currency_to_import);
+                auto request = refdata::messaging::save_currency_request::from(currency_to_import);
                 auto response_result =
                     client_manager->process_authenticated_request(std::move(request));
                 return response_result.has_value() && response_result->success;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error) << "Error importing currency "
-                                           << currencies_by_row[index].iso_code << ": " << e.what();
+            } catch (const std::exception&) {
                 return false;
             }
         };
 
-        // Show import dialog with full preview and import capability
-        auto* dialog = new ImportEntityDialog(
-            "Currencies",
-            fileName,
-            {"ISO Code", "Name", "Symbol", "Fraction Symbol", "Fractions/Unit"},
-            std::move(rows),
-            label_of,
-            import_one,
-            this);
+        auto* dialog = new ImportEntityDialog("currencies",
+                                              fileName,
+                                              {
+                                                  "Code",
+                                                  "Currency Name",
+                                                  "Symbol",
+                                                  "Fraction",
+                                                  "Per Unit",
+                                              },
+                                              std::move(rows),
+                                              label_of,
+                                              import_one,
+                                              this);
 
-        // Connect completion signal to refresh UI
         connect(dialog,
                 &ImportEntityDialog::importCompleted,
                 this,
                 [this](int success_count, int total_count) {
-                    BOOST_LOG_SEV(lg(), info) << "Import complete: " << success_count << " of "
-                                              << total_count << " currencies imported";
-
                     if (success_count > 0) {
-                        // Refresh the currency list to show imported currencies
-                        currencyModel_->refresh();
-
+                        model_->refresh();
                         QString message = QString("Successfully imported %1 of %2 currencies")
                                               .arg(success_count)
                                               .arg(total_count);
@@ -716,154 +634,20 @@ void CurrencyMdiWindow::importFromXML() {
                     }
                 });
 
-        // Connect cancellation signal
         connect(dialog, &ImportEntityDialog::importCancelled, this, [this]() {
-            BOOST_LOG_SEV(lg(), debug) << "Import cancelled by user";
             emit statusChanged("Import cancelled");
         });
 
-        // Show dialog modally
         if (dialog->exec() != QDialog::Accepted) {
-            BOOST_LOG_SEV(lg(), debug) << "User cancelled import dialog";
             emit statusChanged("Import cancelled");
         }
-
         dialog->deleteLater();
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Error importing XML: " << e.what();
         MessageBoxHelper::critical(
             this, "Import Error", QString("Failed to import XML file:\n%1").arg(e.what()));
         emit statusChanged("Import failed");
     }
 }
-
-void CurrencyMdiWindow::exportToXML() {
-    if (currencyModel_->rowCount() == 0) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "User requested CSV export but " << "there are no currencies to export.";
-        QMessageBox::information(this, "No Data", "There are no currencies to export.");
-        return;
-    }
-
-    const auto currencies = currencyModel_->getCurrencies();
-
-    QString fileName = QFileDialog::getSaveFileName(
-        this, "Export to ORE XML", "currencies.xml", "XML Files (*.xml);;All Files (*)");
-
-    if (fileName.isEmpty()) {
-        BOOST_LOG_SEV(lg(), debug) << "User cancelled file selection in export.";
-        return;
-    }
-
-    try {
-        using ore::xml::exporter;
-        std::string xmlData = exporter::export_currency_config(currencies);
-
-        QFile file(fileName);
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to open file for writing: " << fileName.toStdString();
-            MessageBoxHelper::critical(
-                this, "File Error", QString("Could not open file for writing: %1").arg(fileName));
-            return;
-        }
-
-        file.write(xmlData.c_str(), xmlData.length());
-        file.close();
-
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
-
-        emit statusChanged(QString("Successfully exported currencies to %1").arg(fileName));
-        BOOST_LOG_SEV(lg(), debug)
-            << "Successfully exported currencies to XML: " << fileName.toStdString();
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Error exporting to XML: " << e.what();
-        MessageBoxHelper::critical(
-            this, "Export Error", QString("Error during XML export: %1").arg(e.what()));
-    }
-}
-
-void CurrencyMdiWindow::updateActionStates() {
-    const int selection_count = currencyTableView_->selectionModel()->selectedRows().count();
-    const bool hasSelection = selection_count > 0;
-
-    // Enable/disable actions based on selection
-    editAction_->setEnabled(hasSelection);
-    deleteAction_->setEnabled(hasSelection);
-    historyAction_->setEnabled(hasSelection);
-}
-
-void CurrencyMdiWindow::setupReloadAction() {
-    reloadAction_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor));
-    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
-
-    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
-}
-
-void CurrencyMdiWindow::setupGenerateAction() {
-    generateAction_ = new QAction("Generate", this);
-    generateAction_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Wand, IconUtils::DefaultIconColor));
-    generateAction_->setToolTip("Generate synthetic test currencies");
-    connect(generateAction_, &QAction::triggered, this, &CurrencyMdiWindow::generateSynthetic);
-    toolBar_->addAction(generateAction_);
-
-    settingGatedActions_->registerAction(
-        generateAction_, QString::fromStdString(std::string{synthetic_generation_flag}));
-}
-
-void CurrencyMdiWindow::generateSynthetic() {
-    BOOST_LOG_SEV(lg(), debug) << "Generate synthetic currencies requested";
-
-    bool ok;
-    int count = QInputDialog::getInt(this,
-                                     tr("Generate Fictional Currencies"),
-                                     tr("Number of currencies to generate:"),
-                                     5,
-                                     1,
-                                     50,
-                                     1,
-                                     &ok);
-    if (!ok) {
-        BOOST_LOG_SEV(lg(), debug) << "Generation cancelled by user";
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Generating " << count << " synthetic currencies";
-
-    try {
-        utility::generation::generation_context ctx;
-        auto currencies = refdata::generators::generate_fictional_currencies(
-            static_cast<std::size_t>(count), ctx);
-
-        if (currencies.empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "No currencies generated";
-            emit statusChanged("Failed to generate currencies");
-            return;
-        }
-
-        // Set modified_by for all generated currencies
-        for (auto& currency : currencies) {
-            currency.modified_by = username_.toStdString();
-        }
-
-        currencyModel_->add_synthetic_currencies(std::move(currencies));
-
-        emit statusChanged(
-            QString("Generated %1 synthetic currencies (shown in blue - not yet saved)")
-                .arg(count));
-
-        BOOST_LOG_SEV(lg(), info) << "Added " << count << " synthetic currencies to model";
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Error generating currencies: " << e.what();
-        MessageBoxHelper::critical(
-            this, "Generation Error", QString("Failed to generate currencies: %1").arg(e.what()));
-    }
-}
-
 
 }

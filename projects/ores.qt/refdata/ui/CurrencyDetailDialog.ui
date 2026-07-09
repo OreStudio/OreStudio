@@ -91,7 +91,7 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QComboBox" name="monetaryNatureCombo">
+           <widget class="ores::qt::OreBadgeComboBox" name="monetaryNatureCombo">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
@@ -105,7 +105,7 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QComboBox" name="marketTierCombo">
+           <widget class="ores::qt::OreBadgeComboBox" name="marketTierCombo">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
@@ -285,6 +285,11 @@
    <class>ores::qt::ProvenanceWidget</class>
    <extends>QWidget</extends>
    <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>ores::qt::OreBadgeComboBox</class>
+   <extends>QComboBox</extends>
+   <header>ores.qt/OreBadgeComboBox.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :commission_purpose_type:sprint_22:v0:
 #+owner: marco
-#+branch: feature/commission-purpose-type
-#+pr: 1451
-#+blocked_on: 9763FBBF-7912-4EA2-A544-67E90EA27882
-#+blocked_since: 2026-07-06
+#+branch: feature/finish-commission-purpose-type
+#+pr: 1479
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-02
-#+updated: 2026-07-06
+#+updated: 2026-07-09
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Run the Qt application against a live service and verify all five purpose_type U
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] |
-| Now          | Migrated purpose_type to ores.codegen.entity; fixed two codegen template bugs (duplicate change_reason_code validation, lost validation_fn scope flags) along the way. List/detail/history/delete verified. NATS eventing hand-patched directly in application.cpp to unblock verification — this is a workaround, not the real fix. |
-| Waiting on   | [[id:9763FBBF-7912-4EA2-A544-67E90EA27882][Codegen: generate per-entity NATS event-mapping registrar]] — replace the hand-patch with generated registration before closing this task. |
-| Next         | Once the codegen registrar story lands, remove the hand-wired purpose_type block from application.cpp and re-verify via the generated path. |
-| Last touched | 2026-07-06                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-09                               |
 
 * Acceptance
 
@@ -45,10 +45,22 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:0B79AFD2-9A6E-475D-A3BE-6F34E1F98358][Verify purpose_type Qt UI end-to-end post-NATS]] | PASSED | Walked blue/green end to end: list load, detail edit/persist, history dialog (Close button confirmed fixed), add+delete, cross-client eventing both directions. |
+
 * PRs
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1479][#1479]] | [agile] Unblock and prepare final purpose_type Qt verification |
 | [[https://github.com/OreStudio/OreStudio/pull/1451][#1451]] | [refdata] Migrate purpose_type to ores.codegen.entity; fix codegen template bugs |
 
 * Review
@@ -58,5 +70,17 @@ plan itself stays — it is the historical record of what we did.)
 | 1 | Generated purpose_type_registrar.hpp/cpp never called; request/response handlers still hand-wired inline in registrar.cpp | registrar.cpp | Fixed — 95759a487 | Replaced inline block with append(register_purpose_type_handlers(...)), matching party_type. |
 | 2 | fetch_types never sets request.offset/limit; pagination silently ignored | ClientPurposeTypeModel.cpp | Fixed — 95759a487 | Root cause: model missing has_pagination Qt flag; added to purpose_type.org and regenerated (also fixed total_available_count using local page size instead of server total). |
 | 3 | No regression tests for the two codegen template fixes | ores.codegen/src/codegen/core.py | Declined (deferred) | Filed as capture instead of expanding this PR: doc/agile/product_backlog/inbox/codegen_regression_tests_for_domain_entity_sql.org |
+| 4 | Status table not updated to match the frontmatter unblock (State still BLOCKED, Waiting on/Now stale) | task_verify_qt.org | Fixed — c6ec0729f | Flipped State to STARTED; rewrote Now/Waiting on/Next; bumped #+updated/Last touched. |
 
 * Result
+
+Walked [[id:0B79AFD2-9A6E-475D-A3BE-6F34E1F98358][the test scenario]] end to end against the merged generated-registrar
+eventing path (no more application.cpp hand-patch), with a Barclays Plc
+tenant freshly provisioned via =barclays_system_provision.ores=. All five
+acceptance criteria passed on =blue=/=green=: list window loads; detail
+dialog edit/save/reload persists; history dialog shows the prior version
+and its Close button now closes correctly (the regression found and
+fixed during commissioning did not recur); delete removes the record
+from the active list; and a mutation in one client (both directions —
+blue→green and green→blue) appears live in the other via NATS eventing,
+with the recency highlight pulsing as expected. No regressions found.

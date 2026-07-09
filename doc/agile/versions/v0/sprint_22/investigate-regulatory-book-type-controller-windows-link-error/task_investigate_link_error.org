@@ -8,7 +8,7 @@
 #+filetags: :qt:build:windows:hotfix:sprint_22:v0:investigate-regulatory-book-type-controller-windows-link-error:
 #+owner: marco
 #+branch: hotfix/investigate-regulatory-book-type-controller-windows-link-error
-#+pr:
+#+pr: 1484
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-09
@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1484][#1484]] | [agile] Investigate RegulatoryBookTypeController Windows LNK2019 error |
 
 * Review
 

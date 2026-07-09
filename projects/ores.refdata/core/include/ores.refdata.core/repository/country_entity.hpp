@@ -40,11 +40,16 @@ struct country_entity {
     sqlgen::PrimaryKey<std::string> alpha2_code;
     std::string tenant_id;
     int version = 0;
+
     std::string alpha3_code;
+
+
     std::string numeric_code;
+
     std::string name;
     std::string official_name;
     std::optional<std::string> image_id;
+    std::optional<std::string> coding_scheme_code;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

@@ -2129,6 +2129,23 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     any(c.get('is_badge') for c in qt['columns'])
                     or qt.get('has_combo_badge_source', False)
                 )
+                # EntityItemDelegate (icon_centered/icon_text_left sizing,
+                # badge_centered rendering) is needed whenever the list view
+                # has ANY icon or badge column — not just badge columns.
+                # Gating it on has_badge_columns alone left icon-only
+                # entities (e.g. country, with just its own flag column)
+                # rendering that icon through Qt's default item-view path,
+                # which uses decorationSize directly instead of the
+                # aspect-correct, height-constrained sizing the delegate
+                # provides — the same class of bug fixed for currency_pair's
+                # mixed icon/text columns, just not yet visibly wrong for a
+                # single-icon-column view. EntityItemDelegate's constructor
+                # doesn't require a BadgeCache, so this is safe to widen
+                # independently of badgeCache_ (which stays gated on
+                # has_badge_columns, since only badge columns need it).
+                qt['needs_item_delegate'] = (
+                    qt['has_badge_columns'] or qt.get('has_any_flag_icon', False)
+                )
             # has_explorer_api opts a controller into the public
             # openAdd()/openEdit()/openHistory() surface a sibling explorer
             # window (e.g. PortfolioExplorer, OrgExplorer) needs to drive it

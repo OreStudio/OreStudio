@@ -23,6 +23,7 @@
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
+#include <unordered_set>
 
 namespace ores::refdata::generators {
 
@@ -35,17 +36,18 @@ domain::country generate_synthetic_country(utility::generation::generation_conte
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::country r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.alpha2_code = +"-" + std::to_string(idx);
+    r.alpha2_code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.alpha3_code = std::string(faker::location::countryCode()) + "X" + "-" + std::to_string(idx);
     r.numeric_code =
         std::to_string(faker::number::integer(10001, 99999)) + "-" + std::to_string(idx);
     r.name = std::string(faker::location::country());
     r.official_name = "Republic of " + std::string(faker::location::country());
     r.image_id = std::nullopt;
+    r.coding_scheme_code = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

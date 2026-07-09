@@ -29,13 +29,15 @@
 #include <QFileDialog>
 #include <QUrl>
 {{/domain_entity.qt.has_csv_xml_io}}
-{{#domain_entity.qt.has_badge_columns}}
+{{#domain_entity.qt.needs_item_delegate}}
 #include "ores.qt/EntityItemDelegate.hpp"
+{{/domain_entity.qt.needs_item_delegate}}
+{{#domain_entity.qt.has_badge_columns}}
 #include "ores.qt/BadgeCache.hpp"
+{{/domain_entity.qt.has_badge_columns}}
 {{#domain_entity.qt.needs_image_cache}}
 #include "ores.qt/ImageCache.hpp"
 {{/domain_entity.qt.needs_image_cache}}
-{{/domain_entity.qt.has_badge_columns}}
 #include "{{domain_entity.qt.protocol_include}}"
 
 namespace ores::qt {
@@ -231,7 +233,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
 {{/domain_entity.qt.has_any_flag_icon}}
 {{/domain_entity.qt.has_pair_icon_column}}
 
-{{#domain_entity.qt.has_badge_columns}}
+{{#domain_entity.qt.needs_item_delegate}}
     using cs = column_style;
     auto* delegate = new EntityItemDelegate({
 {{#domain_entity.qt.columns}}
@@ -252,6 +254,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
 {{/is_badge}}
 {{/domain_entity.qt.columns}}
     tableView_->setItemDelegate(delegate);
+{{#domain_entity.qt.has_badge_columns}}
     if (badgeCache_) {
         if (badgeCache_->isLoaded())
             tableView_->viewport()->update();
@@ -260,6 +263,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
         });
     }
 {{/domain_entity.qt.has_badge_columns}}
+{{/domain_entity.qt.needs_item_delegate}}
 
     initializeTableSettings(tableView_, model_,
         "{{domain_entity.qt.settings_group}}",

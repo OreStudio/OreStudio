@@ -37,9 +37,9 @@ fully-commissioned entity after currency).
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Country refresh task added.            |
+| Now           | Country regenerated and reconciled — real generator bug, SQL bootstrap-filter/clock_timestamp fixes, and a new needs_item_delegate template generalization (icon-only entities now get the same aspect-correct sizing as badge entities) all landed. |
 | Waiting on    | Nothing.                               |
-| Next          | Work the country refresh task.         |
+| Next          | Pick the next already-commissioned entity to sweep.      |
 | Last touched  | 2026-07-09                               |
 
 * Acceptance
@@ -56,7 +56,7 @@ fully-commissioned entity after currency).
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:82BA40CA-3A4A-47B5-88ED-ADA0178E5695][Regen country against latest codegen templates]] | BACKLOG | | | Country was last synced in sprint 21, before currency's commissioning landed substantial new shared-template capability. Re-run every codegen profile country participates in, diff against the repo, and reconcile drift. |
+| [[id:82BA40CA-3A4A-47B5-88ED-ADA0178E5695][Regen country against latest codegen templates]] | DONE | | 2026-07-09 | Country was last synced in sprint 21, before currency's commissioning landed substantial new shared-template capability. Re-run every codegen profile country participates in, diff against the repo, and reconcile drift. |
 
 * Decisions
 

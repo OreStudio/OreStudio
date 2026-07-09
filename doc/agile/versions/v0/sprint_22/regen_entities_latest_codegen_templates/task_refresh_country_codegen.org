@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-09
 #+updated: 2026-07-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AF0EFC5C-899A-4AE9-BD09-7B2D4E304543][Regen entities with latest codegen templates]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -46,11 +46,11 @@ did for its two permanently-hand-written files.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AF0EFC5C-899A-4AE9-BD09-7B2D4E304543][Regen entities with latest codegen templates]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-09                               |
 
 * Acceptance
@@ -95,3 +95,41 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Regenerated all applicable profiles for country
+(=./compass.sh codegen entity generate country=, then =--address
+ores.cpp.qt= separately after the template fix below) and reviewed
+every diff before writing:
+
+- Fixed a real bug in the synthetic-data generator
+  (=r.alpha2_code = +"-" + std::to_string(idx)= — unary =+= on a
+  string literal, producing garbage — now generates a real random
+  code via =faker::word::noun()=), and picked up a previously-
+  unreflected =coding_scheme_code= field already declared in the org
+  model.
+- SQL: adopted =clock_timestamp()= (not =current_timestamp=, which is
+  transaction-frozen) in the insert trigger and delete rule; wrapped
+  the delete rule's =do instead= body in parens (multi-statement
+  fix); and the validate function now bootstrap-pass-throughs on
+  *no active rows* rather than *no rows at all* — directly fixing the
+  "Item 2" bug documented in this story's own historical =Commission:
+  country= analysis, which said the fix would "occur naturally
+  through the commissioning pipeline" once propagated. It just did.
+- Picked up =read_at_version()= (temporal composite entity versioning
+  capability, landed generically since country's last sync).
+- Found and fixed one more shared-template gap while at it:
+  =EntityItemDelegate= (the class housing all of currency's icon/badge
+  sizing fixes) was constructed only when =has_badge_columns= was
+  true, so country's own flag column (no badges, just
+  =flag_icon_column=) rendered via Qt's default item-view path
+  instead — the exact "bypasses the aspect-correct sizing" bug fixed
+  for currency_pair, just not yet visibly wrong since country only
+  has one icon column competing for one iconSize. Widened the gate to
+  a new =needs_item_delegate= flag (=has_badge_columns OR
+  has_any_flag_icon=); =badgeCache_= itself stays gated on
+  =has_badge_columns= only, since =EntityItemDelegate='s constructor
+  never required it. Zero diff on regenerating currency/currency_pair
+  confirms no regression for badge-bearing entities.
+
+Full local build (0 errors) and ctest suite (69/69, 100%) verified
+clean.

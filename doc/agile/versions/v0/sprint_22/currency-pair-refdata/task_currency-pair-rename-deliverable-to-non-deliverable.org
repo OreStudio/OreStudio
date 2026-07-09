@@ -8,7 +8,7 @@
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
 #+branch: feature/currency-pair-rename-deliverable-to-non-deliverable
-#+pr:
+#+pr: 1480
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -107,7 +107,7 @@ Files:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1480][#1480]] | [refdata,qt,sql] Drop deliverable/settlement_currency/fixing_source |
 
 * Review
 

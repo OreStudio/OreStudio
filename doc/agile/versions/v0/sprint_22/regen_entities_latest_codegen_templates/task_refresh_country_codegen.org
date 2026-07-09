@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :regen_entities_latest_codegen_templates:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/regen-entities-latest-codegen-templates
 #+pr:
 #+blocked_on:
 #+blocked_since:

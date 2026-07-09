@@ -66,7 +66,6 @@ public:
         MonetaryNature,
         MarketTier,
         SpotDays,
-        Deliverable,
         DayBasis,
         BasePrecedence,
         HolidayCalendar,

@@ -26,7 +26,6 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
-#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include <QAction>
 #include <QToolBar>
 #include <vector>
@@ -77,7 +76,7 @@ public:
      * @param history All versions ordered newest-first (index 0 is latest)
      * @param versionNumber The version number to initially display
      */
-    void setHistory(const refdata::messaging::currency_version_history& history, int versionNumber);
+    void setHistory(const std::vector<refdata::domain::currency>& history, int versionNumber);
 
     /**
      * @brief Force the dialog into the unsaved-changes state.
@@ -156,7 +155,7 @@ private:
     QAction* prevVersionAction_{nullptr};
     QAction* nextVersionAction_{nullptr};
     QAction* lastVersionAction_{nullptr};
-    refdata::messaging::currency_version_history history_;
+    std::vector<refdata::domain::currency> history_;
     int currentHistoryIndex_{0};
     int historicalVersion_{0};
 };

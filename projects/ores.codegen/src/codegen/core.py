@@ -2316,10 +2316,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 })
             if combo_customs:
                 qt['combo_widget_customs'] = combo_customs
-            # Whether any static_combo detail field renders its items as
-            # badges (via the badge system) — gates BadgeCache wiring into
-            # the detail dialog itself (has_badge_columns only wires it
-            # into the list/MDI window).
+            # Whether any static_combo or dynamic_combo detail field renders
+            # its items as badges (via the badge system, apply_combo_badges
+            # resolves purely off (badge_key, item text) at paint time — it
+            # doesn't care how the combo was populated) — gates BadgeCache
+            # wiring into the detail dialog itself (has_badge_columns only
+            # wires it into the list/MDI window).
             qt['has_combo_badge_source'] = any(
                 f.get('badge_key') for f in detail_fields
                 if f.get('type') in ('static_combo', 'dynamic_combo')

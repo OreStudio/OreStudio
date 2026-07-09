@@ -380,6 +380,24 @@ def _description_and_detail(node: OrgNode) -> tuple[str, str]:
     return description, detail
 
 
+_SQL_STRING_TYPES = {"text", "string", "varchar", "char"}
+
+
+def _sql_quote_default(raw: str) -> str:
+    """SQL-quote a raw (unquoted) default literal for a text-typed column.
+
+    Authors write the plain value (e.g. ``ACT/360``) in the org model —
+    quoting is a SQL-syntax concern the template/loader owns, not
+    something every field author should have to get right. Function
+    calls / expressions (contain '(') and values already quoted are
+    passed through unchanged. Embedded single quotes are doubled per
+    SQL string-literal escaping."""
+    stripped = raw.strip()
+    if not stripped or "(" in stripped or stripped[0] in "'\"":
+        return raw
+    return "'" + stripped.replace("'", "''") + "'"
+
+
 def _column_node_to_dict(node: OrgNode) -> dict[str, Any]:
     """Convert a column or natural-key heading into a model column dict."""
     out: dict[str, Any] = {}
@@ -395,6 +413,13 @@ def _column_node_to_dict(node: OrgNode) -> dict[str, Any]:
             out[key] = v
         else:
             out[key] = _parse_typed(v)
+    # SQL-quote string-typed defaults here so field authors write the plain
+    # value (e.g. :default: ACT/360, not :default: 'ACT/360') — SQL quoting
+    # syntax is the template's concern, not the model's.
+    if out.get("type") in _SQL_STRING_TYPES:
+        for key in ("default", "default_value"):
+            if key in out and isinstance(out[key], str):
+                out[key] = _sql_quote_default(out[key])
     description, detail = _description_and_detail(node)
     if description:
         out["description"] = description

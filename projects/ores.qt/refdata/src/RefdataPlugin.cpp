@@ -96,6 +96,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                ctx_.image_cache,
                                                                ctx_.change_reason_cache,
                                                                ctx_.username,
+                                                               ctx_.badge_cache,
                                                                this);
     connectControllerSignals(currencyController_.get());
 

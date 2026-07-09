@@ -14,7 +14,7 @@
 #include <QAction>
 {{/domain_entity.qt.has_setting_gated_actions}}
 {{#domain_entity.qt.has_version_navigation}}
-#include "{{domain_entity.qt.version_history_include}}"
+#include <vector>
 {{/domain_entity.qt.has_version_navigation}}
 {{#domain_entity.qt.has_generate_action}}
 #include "ores.{{domain_entity.component_include}}/{{domain_entity.generator_facet_name}}/{{domain_entity.entity_singular}}_generator.hpp"
@@ -88,7 +88,7 @@ public:
      * @param history All versions ordered newest-first (index 0 is latest)
      * @param versionNumber The version number to initially display
      */
-    void setHistory(const {{domain_entity.qt.version_history_type}}& history, int versionNumber);
+    void setHistory(const std::vector<{{domain_entity.qt.domain_class}}>& history, int versionNumber);
 {{/domain_entity.qt.has_version_navigation}}
 
     /**
@@ -200,7 +200,7 @@ private:
     QAction* prevVersionAction_{nullptr};
     QAction* nextVersionAction_{nullptr};
     QAction* lastVersionAction_{nullptr};
-    {{domain_entity.qt.version_history_type}} history_;
+    std::vector<{{domain_entity.qt.domain_class}}> history_;
     int currentHistoryIndex_{0};
     int historicalVersion_{0};
 {{/domain_entity.qt.has_version_navigation}}

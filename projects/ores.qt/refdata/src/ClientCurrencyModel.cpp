@@ -104,8 +104,6 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
                 return QString::fromStdString(currency.market_tier);
             case SpotDays:
                 return static_cast<qlonglong>(currency.spot_days);
-            case Deliverable:
-                return currency.deliverable ? tr("true") : tr("false");
             case DayBasis:
                 return QString::fromStdString(currency.day_basis);
             case BasePrecedence:
@@ -165,8 +163,6 @@ QVariant ClientCurrencyModel::headerData(int section, Qt::Orientation orientatio
             return tr("Market Tier");
         case SpotDays:
             return tr("Spot Days");
-        case Deliverable:
-            return tr("Deliverable");
         case DayBasis:
             return tr("Day Basis");
         case BasePrecedence:

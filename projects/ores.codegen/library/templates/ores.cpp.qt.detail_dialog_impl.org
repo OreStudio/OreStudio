@@ -393,6 +393,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::setClientManager(ClientManager
 {{#combo_fetch_fn}}
     populate{{combo_setter_pascal}}();
 {{/combo_fetch_fn}}
+{{#badge_key}}
+    setup_badge_combo(this, ui_->{{widget}}, badgeCache(), "{{badge_key}}");
+{{/badge_key}}
 {{/is_dynamic_combo}}
 {{#is_static_combo}}
 {{#badge_key}}
@@ -591,13 +594,13 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly, int
 {{#domain_entity.qt.has_version_navigation}}
 
 void {{domain_entity.entity_pascal}}DetailDialog::setHistory(
-    const {{domain_entity.qt.version_history_type}}& history, int versionNumber) {
+    const std::vector<{{domain_entity.qt.domain_class}}>& history, int versionNumber) {
     history_ = history;
 
     // Find index of the requested version (history is newest-first)
     currentHistoryIndex_ = 0;
-    for (size_t i = 0; i < history_.versions.size(); ++i) {
-        if (history_.versions[i].version_number == versionNumber) {
+    for (size_t i = 0; i < history_.size(); ++i) {
+        if (history_[i].version == versionNumber) {
             currentHistoryIndex_ = static_cast<int>(i);
             break;
         }
@@ -608,24 +611,24 @@ void {{domain_entity.entity_pascal}}DetailDialog::setHistory(
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::displayCurrentVersion() {
-    if (history_.versions.empty() || currentHistoryIndex_ < 0 ||
-        currentHistoryIndex_ >= static_cast<int>(history_.versions.size())) {
+    if (history_.empty() || currentHistoryIndex_ < 0 ||
+        currentHistoryIndex_ >= static_cast<int>(history_.size())) {
         return;
     }
 
-    const auto& version = history_.versions[currentHistoryIndex_];
-    set{{domain_entity.entity_pascal_short}}(version.data);
-    setReadOnly(true, version.version_number);
+    const auto& version = history_[currentHistoryIndex_];
+    set{{domain_entity.entity_pascal_short}}(version);
+    setReadOnly(true, version.version);
     updateVersionNavButtonStates();
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::updateVersionNavButtonStates() {
-    if (history_.versions.empty()) {
+    if (history_.empty()) {
         showVersionNavActions(false);
         return;
     }
 
-    bool atOldest = (currentHistoryIndex_ == static_cast<int>(history_.versions.size()) - 1);
+    bool atOldest = (currentHistoryIndex_ == static_cast<int>(history_.size()) - 1);
     bool atNewest = (currentHistoryIndex_ == 0);
 
     if (firstVersionAction_)
@@ -650,23 +653,23 @@ void {{domain_entity.entity_pascal}}DetailDialog::showVersionNavActions(bool vis
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::onFirstVersionClicked() {
-    if (history_.versions.empty())
+    if (history_.empty())
         return;
-    currentHistoryIndex_ = static_cast<int>(history_.versions.size()) - 1;
+    currentHistoryIndex_ = static_cast<int>(history_.size()) - 1;
     displayCurrentVersion();
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::onPrevVersionClicked() {
-    if (history_.versions.empty())
+    if (history_.empty())
         return;
-    if (currentHistoryIndex_ < static_cast<int>(history_.versions.size()) - 1) {
+    if (currentHistoryIndex_ < static_cast<int>(history_.size()) - 1) {
         ++currentHistoryIndex_;
         displayCurrentVersion();
     }
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::onNextVersionClicked() {
-    if (history_.versions.empty())
+    if (history_.empty())
         return;
     if (currentHistoryIndex_ > 0) {
         --currentHistoryIndex_;
@@ -675,7 +678,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onNextVersionClicked() {
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::onLastVersionClicked() {
-    if (history_.versions.empty())
+    if (history_.empty())
         return;
     currentHistoryIndex_ = 0;
     displayCurrentVersion();

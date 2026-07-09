@@ -217,28 +217,12 @@ max of the two legs' values.
 faker::helper::randomElement(std::vector<int>{1, 2})
 #+end_src
 
-** deliverable
-:PROPERTIES:
-:type:     boolean
-:cpp_type: bool
-:nullable: false
-:default:  true
-:END:
-
-Whether cash in this currency can be delivered offshore. false for
-currencies subject to capital controls (e.g. CNY, INR, KRW), which
-forces any pair involving them to be non-deliverable (NDF).
-
-#+begin_src cpp :name generator
-true
-#+end_src
-
 ** day_basis
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
 :nullable: false
-:default:  "ACT/360"
+:default:  ACT/360
 :END:
 
 Day-count convention code (e.g. "ACT/360", "ACT/365"). Free-text for
@@ -315,35 +299,6 @@ drop function if exists ores_refdata_validate_currency_fn;
 :subcomponent:    api
 :END:
 
-** Custom NATS subscriptions
-
-=currency= has a history operation, but its =get_currency_history_request=
-lives in a split =currency_history_protocol.hpp= (not the standard
-=currency_protocol.hpp= the generated registrar includes). Pull that header in
-via the sub-registrar's custom-includes paste point so the generated
-=currency_registrar.cpp= can wire the standard history subscription.
-
-The same split extends to =currency_handler::history()=: its response
-carries per-version field diffs (=currency_version_history=, built via
-=currency_field_mapper::build_versions=) rather than the plain
-=std::vector<domain::currency> history= the =ores.cpp.protocol= /
-=ores.cpp.nats-handler= templates generate for a synced entity (compare
-=country_protocol.hpp='s =get_country_history_response=). No template
-equivalent for a diff-annotated history view exists yet, so
-=currency_protocol.hpp= deliberately omits
-=get_currency_history_request=/=response= (they stay in
-=currency_history_protocol.hpp= only) and =currency_handler::history()=
-is hand-maintained rather than regenerated — everything else in the
-handler (control flow, =req_ctx= naming, =error_reply= on bad decode)
-was brought in line with the current template output. See the Qt
-reconciliation story
-([[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][story]]) for the related
-version-navigation UI that consumes this richer shape.
-
-#+begin_src cpp :name custom_includes :implements 068323E2-D722-46F1-8B86-46BD32426003
-#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
-#+end_src
-
 ** Repository
 :PROPERTIES:
 :entity_singular_short: currency
@@ -389,7 +344,6 @@ version-navigation UI that consumes this richer shape.
 | monetary_nature    | Monetary Nature |
 | market_tier        | Market Tier     |
 | spot_days          | Spot Days       |
-| deliverable        | Deliverable     |
 | day_basis          | Day Basis       |
 | base_precedence    | Base Precedence |
 | holiday_calendar   | Holiday Calendar |
@@ -421,7 +375,7 @@ version-navigation UI that consumes this richer shape.
 :history_message_type:        get_currency_history_request
 :history_request_id_field:    iso_code
 :history_response_data_field: history
-:history_protocol_include:    ores.refdata.api/messaging/currency_history_protocol.hpp
+:history_protocol_include:    ores.refdata.api/messaging/currency_protocol.hpp
 :flag_icon_column:            IsoCode
 :flag_inline_widget:          isoCodeEdit
 :flag_accessor:               getCurrencyFlagIcon
@@ -446,44 +400,42 @@ version-navigation UI that consumes this richer shape.
 
 *** Detail fields
 
-All 11 fields currently exposed in =CurrencyDetailDialog.ui= (5 new
-domain columns — =spot_days=, =deliverable=, =day_basis=,
-=base_precedence=, =holiday_calendar= — aren't in the UI yet; out of
-scope for this sync, tracked separately). =image_id= isn't a detail
-field either (handled generically via =has_flag_icon=, matching
-every other flag entity).
+All 11 fields currently exposed in =CurrencyDetailDialog.ui= (4 new
+domain columns — =spot_days=, =day_basis=, =base_precedence=,
+=holiday_calendar= — aren't in the UI yet; out of scope for this sync,
+tracked separately). =image_id= isn't a detail field either (handled
+generically via =has_flag_icon=, matching every other flag entity).
 
-| field              | label               | widget                   | type          | is_key | is_required | placeholder                    | spin_min | spin_max | combo_domain_type                     | combo_fetch_include        | combo_fetch_fn              | combo_watcher_name    | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label            | combo_setter_pascal |
-|--------------------+----------------------+---------------------------+---------------+--------+-------------+---------------------------------+----------+----------+----------------------------------------+-----------------------------+------------------------------+-----------------------+------------------+----------------------+------------------+------------------------+----------------------|
-| iso_code           | ISO Code            | isoCodeEdit               | line_edit     | true   | true        | Enter ISO 4217 code             |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
-| name               | Name                | nameEdit                  | line_edit     |        | true        | Enter currency name             |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
-| numeric_code       | Numeric Code        | numericCodeEdit           | line_edit     |        | true        | Enter numeric code              |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
-| monetary_nature    | Asset Class         | monetaryNatureCombo       | dynamic_combo |        |             |                                  |          |          | refdata::domain::monetary_nature       | ores.qt/LookupFetcher.hpp   | fetch_monetary_natures       | monetaryNatureWatcher | code             | description          | display_order    | monetary natures       | MonetaryNatureCombo  |
-| market_tier        | Market Tier         | marketTierCombo           | dynamic_combo |        |             |                                  |          |          | refdata::domain::currency_market_tier  | ores.qt/LookupFetcher.hpp   | fetch_currency_market_tiers  | marketTierWatcher     | code             | description          | display_order    | currency market tiers  | MarketTierCombo      |
-| symbol             | Symbol              | symbolEdit                | line_edit     |        | true        | Enter currency symbol           |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
-| fraction_symbol    | Fraction Symbol     | fractionSymbolEdit        | line_edit     |        | true        | Enter fraction symbol           |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
-| fractions_per_unit | Fractions Per Unit  | fractionsPerUnitSpinBox   | spin_box      |        |             |                                  | 0        | 10000    |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
-| format             | Format              | formatEdit                | line_edit     |        | true        | Enter display format            |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
-| rounding_type      | Rounding Type       | roundingTypeCombo         | dynamic_combo |        |             |                                  |          |          | refdata::domain::rounding_type         | ores.qt/LookupFetcher.hpp   | fetch_rounding_types         | roundingTypeWatcher   | code             | description          | display_order    | rounding types         | RoundingTypeCombo    |
-| rounding_precision | Rounding Precision  | roundingPrecisionSpinBox  | spin_box      |        |             |                                  | 0        | 10       |                                        |                             |                              |                        |                  |                      |                  |                        |                      |
+| field              | label               | widget                   | type          | is_key | is_required | placeholder                    | spin_min | spin_max | combo_domain_type                     | combo_fetch_include        | combo_fetch_fn              | combo_watcher_name    | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label            | combo_setter_pascal | badge_key              |
+|--------------------+----------------------+---------------------------+---------------+--------+-------------+---------------------------------+----------+----------+----------------------------------------+-----------------------------+------------------------------+-----------------------+------------------+----------------------+------------------+------------------------+----------------------+------------------------|
+| iso_code           | ISO Code            | isoCodeEdit               | line_edit     | true   | true        | Enter ISO 4217 code             |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |                        |
+| name               | Name                | nameEdit                  | line_edit     |        | true        | Enter currency name             |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |                        |
+| numeric_code       | Numeric Code        | numericCodeEdit           | line_edit     |        | true        | Enter numeric code              |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |                        |
+| monetary_nature    | Asset Class         | monetaryNatureCombo       | dynamic_combo |        |             |                                  |          |          | refdata::domain::monetary_nature       | ores.qt/LookupFetcher.hpp   | fetch_monetary_natures       | monetaryNatureWatcher | code             | description          | display_order    | monetary natures       | MonetaryNatureCombo  | monetary_nature        |
+| market_tier        | Market Tier         | marketTierCombo           | dynamic_combo |        |             |                                  |          |          | refdata::domain::currency_market_tier  | ores.qt/LookupFetcher.hpp   | fetch_currency_market_tiers  | marketTierWatcher     | code             | description          | display_order    | currency market tiers  | MarketTierCombo      | currency_market_tier   |
+| symbol             | Symbol              | symbolEdit                | line_edit     |        | true        | Enter currency symbol           |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |                        |
+| fraction_symbol    | Fraction Symbol     | fractionSymbolEdit        | line_edit     |        | true        | Enter fraction symbol           |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |                        |
+| fractions_per_unit | Fractions Per Unit  | fractionsPerUnitSpinBox   | spin_box      |        |             |                                  | 0        | 10000    |                                        |                             |                              |                        |                  |                      |                  |                        |                      |                        |
+| format             | Format              | formatEdit                | line_edit     |        | true        | Enter display format            |          |          |                                        |                             |                              |                        |                  |                      |                  |                        |                      |                        |
+| rounding_type      | Rounding Type       | roundingTypeCombo         | dynamic_combo |        |             |                                  |          |          | refdata::domain::rounding_type         | ores.qt/LookupFetcher.hpp   | fetch_rounding_types         | roundingTypeWatcher   | code             | description          | display_order    | rounding types         | RoundingTypeCombo    |                        |
+| rounding_precision | Rounding Precision  | roundingPrecisionSpinBox  | spin_box      |        |             |                                  | 0        | 10       |                                        |                             |                              |                        |                  |                      |                  |                        |                      |                        |
 
 *** Columns (Qt model)
 
-| enum_name          | field              | header          | type      | width | import_preview |
-|--------------------+--------------------+-----------------+-----------+-------+----------------|
-| IsoCode            | iso_code           | Code            | string    | auto  | true           |
-| CurrencyName       | name               | Currency Name   | string    | auto  | true           |
-| NumericCode        | numeric_code       | Numeric Code    | string    | 70    |                |
-| Symbol             | symbol             | Symbol          | string    | 60    | true           |
-| FractionSymbol     | fraction_symbol    | Fraction        | string    | 60    | true           |
-| FractionsPerUnit   | fractions_per_unit | Per Unit        | int       | 70    | true           |
-| RoundingType       | rounding_type      | Rounding Type   | string    | auto  |                |
-| RoundingPrecision  | rounding_precision | Precision       | int       | 70    |                |
-| Format             | format             | Format          | string    | auto  |                |
-| MonetaryNature     | monetary_nature    | Monetary Nature | string    | auto  |                |
-| MarketTier         | market_tier        | Market Tier     | string    | auto  |                |
+| enum_name          | field              | header          | type      | width | import_preview | is_badge | badge_key            |
+|--------------------+--------------------+-----------------+-----------+-------+----------------+----------+-----------------------|
+| IsoCode            | iso_code           | Code            | string    | auto  | true           |          |                       |
+| CurrencyName       | name               | Currency Name   | string    | auto  | true           |          |                       |
+| NumericCode        | numeric_code       | Numeric Code    | string    | 70    |                |          |                       |
+| Symbol             | symbol             | Symbol          | string    | 60    | true           |          |                       |
+| FractionSymbol     | fraction_symbol    | Fraction        | string    | 60    | true           |          |                       |
+| FractionsPerUnit   | fractions_per_unit | Per Unit        | int       | 70    | true           |          |                       |
+| RoundingType       | rounding_type      | Rounding Type   | string    | auto  |                |          |                       |
+| RoundingPrecision  | rounding_precision | Precision       | int       | 70    |                |          |                       |
+| Format             | format             | Format          | string    | auto  |                |          |                       |
+| MonetaryNature     | monetary_nature    | Monetary Nature | string    | auto  |                | true     | monetary_nature       |
+| MarketTier         | market_tier        | Market Tier     | string    | auto  |                | true     | currency_market_tier  |
 | SpotDays           | spot_days          | Spot Days       | int       | 70    |                |
-| Deliverable        | deliverable        | Deliverable     | bool      | 80    |                |
 | DayBasis           | day_basis          | Day Basis       | string    | 80    |                |
 | BasePrecedence     | base_precedence    | Base Precedence | int       | 100   |                |
 | HolidayCalendar    | holiday_calendar   | Holiday Calendar| string    | auto  |                |

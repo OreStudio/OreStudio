@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/CurrencyDetailDialog.hpp"
+#include "ores.qt/BadgeComboHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -192,7 +193,9 @@ void CurrencyDetailDialog::setupConnections() {
 void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     populateMonetaryNatureCombo();
+    setup_badge_combo(this, ui_->monetaryNatureCombo, badgeCache(), "monetary_nature");
     populateMarketTierCombo();
+    setup_badge_combo(this, ui_->marketTierCombo, badgeCache(), "currency_market_tier");
     populateRoundingTypeCombo();
 }
 
@@ -237,14 +240,14 @@ void CurrencyDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
         revertAction_->setVisible(readOnly);
 }
 
-void CurrencyDetailDialog::setHistory(const refdata::messaging::currency_version_history& history,
+void CurrencyDetailDialog::setHistory(const std::vector<refdata::domain::currency>& history,
                                       int versionNumber) {
     history_ = history;
 
     // Find index of the requested version (history is newest-first)
     currentHistoryIndex_ = 0;
-    for (size_t i = 0; i < history_.versions.size(); ++i) {
-        if (history_.versions[i].version_number == versionNumber) {
+    for (size_t i = 0; i < history_.size(); ++i) {
+        if (history_[i].version == versionNumber) {
             currentHistoryIndex_ = static_cast<int>(i);
             break;
         }
@@ -255,24 +258,24 @@ void CurrencyDetailDialog::setHistory(const refdata::messaging::currency_version
 }
 
 void CurrencyDetailDialog::displayCurrentVersion() {
-    if (history_.versions.empty() || currentHistoryIndex_ < 0 ||
-        currentHistoryIndex_ >= static_cast<int>(history_.versions.size())) {
+    if (history_.empty() || currentHistoryIndex_ < 0 ||
+        currentHistoryIndex_ >= static_cast<int>(history_.size())) {
         return;
     }
 
-    const auto& version = history_.versions[currentHistoryIndex_];
-    setCurrency(version.data);
-    setReadOnly(true, version.version_number);
+    const auto& version = history_[currentHistoryIndex_];
+    setCurrency(version);
+    setReadOnly(true, version.version);
     updateVersionNavButtonStates();
 }
 
 void CurrencyDetailDialog::updateVersionNavButtonStates() {
-    if (history_.versions.empty()) {
+    if (history_.empty()) {
         showVersionNavActions(false);
         return;
     }
 
-    bool atOldest = (currentHistoryIndex_ == static_cast<int>(history_.versions.size()) - 1);
+    bool atOldest = (currentHistoryIndex_ == static_cast<int>(history_.size()) - 1);
     bool atNewest = (currentHistoryIndex_ == 0);
 
     if (firstVersionAction_)
@@ -297,23 +300,23 @@ void CurrencyDetailDialog::showVersionNavActions(bool visible) {
 }
 
 void CurrencyDetailDialog::onFirstVersionClicked() {
-    if (history_.versions.empty())
+    if (history_.empty())
         return;
-    currentHistoryIndex_ = static_cast<int>(history_.versions.size()) - 1;
+    currentHistoryIndex_ = static_cast<int>(history_.size()) - 1;
     displayCurrentVersion();
 }
 
 void CurrencyDetailDialog::onPrevVersionClicked() {
-    if (history_.versions.empty())
+    if (history_.empty())
         return;
-    if (currentHistoryIndex_ < static_cast<int>(history_.versions.size()) - 1) {
+    if (currentHistoryIndex_ < static_cast<int>(history_.size()) - 1) {
         ++currentHistoryIndex_;
         displayCurrentVersion();
     }
 }
 
 void CurrencyDetailDialog::onNextVersionClicked() {
-    if (history_.versions.empty())
+    if (history_.empty())
         return;
     if (currentHistoryIndex_ > 0) {
         --currentHistoryIndex_;
@@ -322,7 +325,7 @@ void CurrencyDetailDialog::onNextVersionClicked() {
 }
 
 void CurrencyDetailDialog::onLastVersionClicked() {
-    if (history_.versions.empty())
+    if (history_.empty())
         return;
     currentHistoryIndex_ = 0;
     displayCurrentVersion();

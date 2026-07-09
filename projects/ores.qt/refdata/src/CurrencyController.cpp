@@ -47,9 +47,11 @@ CurrencyController::CurrencyController(QMainWindow* mainWindow,
                                        ImageCache* imageCache,
                                        ChangeReasonCache* changeReasonCache,
                                        const QString& username,
+                                       BadgeCache* badgeCache,
                                        QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, currency_event_name, parent)
     , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
     setImageCache(imageCache);
@@ -67,7 +69,7 @@ void CurrencyController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new CurrencyMdiWindow(clientManager_, username_, imageCache_);
+    listWindow_ = new CurrencyMdiWindow(clientManager_, username_, badgeCache_, imageCache_);
 
     // Connect signals
     connect(
@@ -177,6 +179,7 @@ void CurrencyController::showAddWindow() {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -226,6 +229,7 @@ void CurrencyController::showDetailWindow(const refdata::domain::currency& curre
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -364,6 +368,7 @@ void CurrencyController::onOpenVersion(const refdata::domain::currency& currency
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     // A single version-nav toolbar (first/prev/next/last) only means something
@@ -426,6 +431,7 @@ void CurrencyController::onRevertVersion(const refdata::domain::currency& curren
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_currency = currency;

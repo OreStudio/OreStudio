@@ -69,6 +69,9 @@ struct currency final {
 
     /**
      * @brief Currency symbol displayed in the UI (e.g., "$", "€", "£").
+     *
+     * faker::finance::currencySymbol() can return an empty string for some locales; fall back to
+     * "$" rather than violate the non-nullable constraint.
      */
     std::string symbol;
 
@@ -120,13 +123,6 @@ struct currency final {
      * are 2). Used to derive currency_pair.spot_days as the max of the two legs' values.
      */
     int spot_days = 0;
-
-    /**
-     * @brief Whether cash in this currency can be delivered offshore. false for currencies subject
-     * to capital controls (e.g. CNY, INR, KRW), which forces any pair involving them to be
-     * non-deliverable (NDF).
-     */
-    bool deliverable = false;
 
     /**
      * @brief Day-count convention code (e.g. "ACT/360", "ACT/365"). Free-text for now — no aux-type

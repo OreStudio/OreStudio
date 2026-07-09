@@ -55,6 +55,16 @@ public:
 
     void loadHistory() override;
     [[nodiscard]] QString code() const override;
+{{#domain_entity.qt.has_version_navigation}}
+
+    /**
+     * @brief The full loaded version list (newest first), for wiring a
+     * just-opened version DetailDialog's first/prev/next/last navigation.
+     */
+    [[nodiscard]] const std::vector<{{domain_entity.qt.domain_class}}>& getHistory() const {
+        return versions_;
+    }
+{{/domain_entity.qt.has_version_navigation}}
 
 signals:
     void openVersionRequested(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}},

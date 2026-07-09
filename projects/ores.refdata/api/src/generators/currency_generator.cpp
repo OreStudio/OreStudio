@@ -57,7 +57,6 @@ domain::currency generate_synthetic_currency(utility::generation::generation_con
     r.market_tier = std::string("g10");
     r.image_id = std::nullopt;
     r.spot_days = faker::helper::randomElement(std::vector<int>{1, 2});
-    r.deliverable = true;
     r.day_basis = std::string("ACT/360");
     r.base_precedence = faker::number::integer(1, 100);
     r.holiday_calendar = std::string("TARGET");

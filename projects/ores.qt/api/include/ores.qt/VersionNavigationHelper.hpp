@@ -45,7 +45,7 @@ namespace ores::qt {
 template <typename HistoryDialogT, typename DetailDialogT>
 bool wireVersionHistory(QObject* sender, DetailDialogT* detailDialog, int versionNumber) {
     auto* historyDialog = qobject_cast<HistoryDialogT*>(sender);
-    if (!historyDialog || historyDialog->getHistory().versions.empty())
+    if (!historyDialog || historyDialog->getHistory().empty())
         return false;
     detailDialog->setHistory(historyDialog->getHistory(), versionNumber);
     return true;

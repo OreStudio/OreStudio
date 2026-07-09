@@ -31,7 +31,6 @@
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_group_protocol.hpp"
-#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_classification_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_convention_protocol.hpp"

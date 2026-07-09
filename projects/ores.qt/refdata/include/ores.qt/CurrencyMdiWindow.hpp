@@ -35,6 +35,7 @@
 
 namespace ores::qt {
 
+class BadgeCache;
 class ImageCache;
 
 /**
@@ -58,6 +59,7 @@ private:
 public:
     explicit CurrencyMdiWindow(ClientManager* clientManager,
                                const QString& username,
+                               BadgeCache* badgeCache,
                                ImageCache* imageCache,
                                QWidget* parent = nullptr);
     ~CurrencyMdiWindow() override = default;
@@ -112,6 +114,7 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
+    BadgeCache* badgeCache_;
     ImageCache* imageCache_;
 
     QToolBar* toolbar_;

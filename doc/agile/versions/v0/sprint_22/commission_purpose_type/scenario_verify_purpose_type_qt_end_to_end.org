@@ -10,7 +10,7 @@
 #+created: 2026-07-08
 #+updated: 2026-07-08
 #+environment:
-#+todo: PENDING | PASSED FAILED
+#+todo: PASSED | PENDING FAILED
 
 This page documents a test scenario verifying [[id:324912C7-DBE0-44CB-98E9-7DBF74A31D25][Verify purpose_type Qt UI end-to-end post-NATS]] in [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
 
@@ -22,7 +22,7 @@ This page documents a test scenario verifying [[id:324912C7-DBE0-44CB-98E9-7DBF7
 | Parent story  | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]]   |
 | Target dialog | Trading > Trading Codes > Purpose Types |
 | Clients       | blue, green                             |
-| State         | PENDING                               |
+| State         | PASSED                               |
 
 * Steps
 
@@ -37,10 +37,22 @@ Open Purpose Types; confirm the MDI list window loads and displays the
 existing purpose_type records (Code, Name, Description, Display Order,
 Version, Modified By, Recorded At columns).
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Detail dialog edits and persists
 
 Double-click a record to open its detail dialog; change the
 description, save; reopen the record and confirm the change persisted.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 *** History dialog shows the edit
 
@@ -49,12 +61,24 @@ version appears, and the History dialog's Close button actually closes
 the window (regression check — this was broken and fixed during
 commissioning).
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Delete preserves history
 
 Create a throwaway purpose type, delete it from the list, then confirm
 it disappears from the active list but its history is still reachable
 (e.g. via a version/revert dialog if the UI exposes one, or by
 confirming the delete doesn't hard-remove the row).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** green
 
@@ -65,14 +89,20 @@ With =blue='s edit from the previous step already saved, confirm
 manual refresh) shortly after the save. Then make a fresh edit in
 =green= itself and confirm it appears live in =blue=.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-09T18:53:44Z |
+| Branch        | feature/finish-commission-purpose-type |
+| Commit        | cd4600215 |
+| Worktree      | eager_maxwell |
 
 * Notes

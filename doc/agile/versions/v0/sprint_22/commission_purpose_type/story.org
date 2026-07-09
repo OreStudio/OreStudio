@@ -53,4 +53,8 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:324912C7-DBE0-44CB-98E9-7DBF74A31D25][Verify purpose_type Qt UI end-to-end post-NATS]] | DONE | 2026-07-02 | 2026-07-09 | Manually test all Qt windows for purpose_type (MDI list, detail dialog, history dialog, delete command, NATS eventing) against a live service; fix any regressions. |
+| [[id:C99FE60D-4E6C-4B62-9C33-8767BAE696C4][Implement and verify purpose_type shell commands]] | DONE | | | Shell list/add/remove commands. |
+| [[id:4917FC0A-4DEC-498F-A71F-38E18AA28B6A][Implement and verify purpose_type CLI commands]] | DONE | | | CLI list/add/remove commands. |
+| [[id:6657BD12-480B-4FAB-B7D9-CA62AFEAF54B][File Wt and HTTP backlog captures for purpose_type]] | DONE | | | Backlog captures filed for Wt and HTTP support. |
+| [[id:3E433126-8259-4280-9C89-1801C0C3E8E9][Write purpose_type user manual chapter]] | BACKLOG | | | Entity chapter documenting all Qt windows, shell, and CLI commands. |

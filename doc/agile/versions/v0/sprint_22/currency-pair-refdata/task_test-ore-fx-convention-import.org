@@ -117,7 +117,10 @@ Three test cases:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | pairCodeCombo never wired to onFieldChanged (is_key + combo template gap) | ores.cpp.qt.detail_dialog_impl.org | Accepted | Fixed a4c0ef5ce — extended is_key branch to wire combo types; gated onCodeChanged on new has_line_edit_key flag |
+| 2 | Duplicate-check magic number 100000 duplicated | CurrencyPairDetailDialog.cpp, CurrencyPairConventionDetailDialog.cpp | Accepted | Fixed a4c0ef5ce — reuse existing lookup_fetch_limit (1000 was already sufficient) |
+| 3 | Pre-check fails open (silently saves) if the check request itself fails | CurrencyPairDetailDialog.cpp, CurrencyPairConventionDetailDialog.cpp | Accepted | Fixed a4c0ef5ce — block save with a warning instead |
+| 4 | Trailing double blank line at end of CurrencyPairConventionDetailDialog.cpp | CurrencyPairConventionDetailDialog.cpp | Declined | Pre-existing codegen artifact (same seam, empty content) — confirmed identical pattern in already-merged BookDetailDialog.cpp, untouched by this PR |
 
 * Result
 

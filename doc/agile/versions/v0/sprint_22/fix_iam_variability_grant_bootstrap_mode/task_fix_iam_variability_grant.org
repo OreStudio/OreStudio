@@ -157,7 +157,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1478][#1478]] | [ores.iam,ores.variability,ores.sql] Fix tenant-scoped variability system settings: permissions and per-tenant seeding |
 
 * Review
 

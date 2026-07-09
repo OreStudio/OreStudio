@@ -274,6 +274,27 @@ did.)
   since it's pre-existing general-CRUD behaviour, not something this
   task's changes introduced or rely on.
 
+** Slice 4 done: NOTIFY listener mutex contention + max_backoff
+
+- =postgres_listener_service::listen_loop= now drains notifications
+  into a local batch under =mutex_=, then processes callbacks after
+  releasing it — previously callbacks ran while still holding the
+  lock, blocking =subscribe()=/=notify()=/=stop()= and, because the
+  same lock guards the listener's own poll loop, starving its next
+  iteration under a heavy bulk import (hundreds of NOTIFY-firing
+  INSERTs in one GLEIF party import).
+- =max_backoff= reduced from 30s to 5s — sized for a remote DB
+  originally; local PostgreSQL reconnects in well under a second.
+- =get_notifications()= returns =std::list=, not =std::vector= — fixed
+  the batch type accordingly (caught by the build, not a logic
+  change).
+- Documented the rationale in
+  =doc/knowledge/architecture/postgresql_architecture.org= (new
+  "Listener thread: draining under load" subsection).
+- Verified: all 5 existing =postgres_listener_service= unit tests
+  pass unchanged (lifecycle, notification reception, no-notification-
+  without-subscribe, subscribe-before-start, notify method).
+
 * PRs
 
 | PR | Title |

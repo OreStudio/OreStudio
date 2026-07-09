@@ -20,6 +20,7 @@
 #include "ores.database/service/postgres_listener_service.hpp"
 #include <algorithm>
 #include <chrono>
+#include <list>
 #include <thread>
 
 namespace ores::database::service {
@@ -175,11 +176,22 @@ void postgres_listener_service::listen_loop() {
     ready_cv_.notify_all();
 
     static constexpr std::chrono::seconds min_backoff{1};
-    static constexpr std::chrono::seconds max_backoff{30};
+    // A local PostgreSQL should reconnect in well under a second; 30s was
+    // sized for a remote DB and made outages look far longer than they were.
+    static constexpr std::chrono::seconds max_backoff{5};
     auto backoff = min_backoff;
 
     while (running_) {
         bool connection_ok = true;
+        // Drain notifications into a local vector under the lock, then
+        // process callbacks outside it. Under a heavy bulk import (e.g. the
+        // GLEIF party dataset — hundreds of INSERTs each firing a NOTIFY
+        // trigger), processing callbacks while holding mutex_ blocks any
+        // other thread waiting on it (subscribe(), notify(), stop()) for as
+        // long as the whole batch takes, and — because that same mutex
+        // guards the 100ms poll cycle above — starves the listener's own
+        // next iteration, making it appear to have died under load.
+        std::list<sqlgen::postgres::Notification> batch;
         {
             std::lock_guard lock(mutex_);
 
@@ -191,12 +203,11 @@ void postgres_listener_service::listen_loop() {
                 connection_ok = false;
             } else {
                 backoff = min_backoff; // reset on successful poll
-                auto notifications = (*connection_)->get_notifications();
-                for (const auto& notification : notifications) {
-                    handle_notification(notification);
-                }
+                batch = (*connection_)->get_notifications();
             }
         }
+        for (const auto& notification : batch)
+            handle_notification(notification);
 
         if (!connection_ok) {
             if (!running_)

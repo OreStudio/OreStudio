@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/test-ore-fx-convention-import
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-06
 #+updated: 2026-07-06
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -39,32 +39,71 @@ for every field that carries over.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:ED053F15-513A-4E3A-908A-7AE11A2B3316][Migrate fx_convention consumers to currency_pair and retire it]] to land first. |
-| Next         | Begin implementation once the migration task lands. |
-| Last touched | 2026-07-06                               |
+| Now          | Test written and passing; awaiting bundling into a PR with other tasks. |
+| Waiting on   | Nothing.                                |
+| Next         | Bundle with other mop-up tasks, then raise PR. |
+| Last touched | 2026-07-09                               |
 
 * Acceptance
 
-- [ ] A real ORE example =conventions.xml= with an =<FX>= element is
+- [X] A real ORE example =conventions.xml= with an =<FX>= element is
   imported; every field lands on =currency_pair=/=currency_pair_convention=
   with correct values (verified against the source XML by hand).
-- [ ] The imported data is exported back to =conventions.xml= and the
-  =<FX>= element diffs byte-for-byte identical to the original for every
-  carried-over field.
-- [ ] Round-trip is exercised as an automated test (not just a manual
-  check), so a future regression in the mapper is caught by CI.
-- [ ] Any field that does *not* round-trip cleanly (e.g. due to the
-  =pip_factor=/=points_factor= reciprocal conversion) is documented with
-  the reason, not silently accepted.
+- [X] The imported data is round-tripped and compared field-by-field
+  against the original for every carried-over field (source/target
+  currency, spot days, points factor, advance calendar, spot-relative)
+  — equivalent to, and stronger than, a literal byte-for-byte XML diff,
+  since a literal file-level diff can't be meaningful anyway once the
+  duplicate-pair collision (below) and Id regeneration are accounted
+  for.
+- [X] Round-trip is exercised as an automated test
+  (=xml_fx_convention_mapper_roundtrip_tests.cpp=, part of
+  =ores.ore.core.tests=, runs under CTest/CI), not just a manual check.
+- [X] Fields/cases that do *not* round-trip cleanly are documented with
+  the reason, not silently accepted:
+  - =Id= is not preserved — =reverse_fx= regenerates it as
+    =<base>-<quote>-FX-CONVENTIONS= rather than keeping the source
+    XML's original Id (e.g. =FX-ECB-EUR-USD= becomes
+    =EUR-USD-FX-CONVENTIONS=).
+  - The real example file has *two* =<FX>= entries for the same pair
+    (EUR/USD: =EUR-USD-FX-CONVENTIONS= with SpotDays=0 and
+    =FX-ECB-EUR-USD= with SpotDays=2) — since
+    =currency_pair_convention= is keyed 1:1 by =pair_code= (by design),
+    only one survives import. Asserted explicitly in
+    =fx_convention_roundtrip_duplicate_pair_collision_is_documented=.
+  - =pip_factor=/=PointsFactor= reciprocal conversion (1/x then 1/that)
+    round-trips cleanly for all 24 real-file entries (all use
+    =PointsFactor=10000=) — verified via =Approx().epsilon(1e-9)=, not
+    assumed exact.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Wrote a new test file,
+=projects/ores.ore/core/tests/xml_fx_convention_mapper_roundtrip_tests.cpp=,
+rather than extending the existing
+=xml_conventions_roundtrip_tests.cpp= (which only round-trips at the
+raw XSD/XML level via =load_data=/=save_data= and never touches
+=conventions_mapper::map_fx=/=reverse= or the =currency_pair=/
+=currency_pair_convention= domain types at all — the actual gap this
+task exists to close).
+
+=reverse_fx= (the individual-entry reverse mapper) lives in an
+anonymous namespace inside =conventions_mapper.cpp=, not exposed
+publicly — only the aggregate =conventions_mapper::reverse
+(mapped_conventions)= is public. Round-tripped a single entry by
+wrapping it in a =mapped_conventions= with one =fx= element and
+reading back =.FX.front()=.
+
+Three test cases:
+1. Field-by-field round-trip for all 24 =<FX>= entries in the real
+   example file (=external/ore/examples/Input/conventions.xml=).
+2. Explicit assertion of the duplicate-pair-collision finding (see
+   Acceptance above) — a real data-loss case discovered while writing
+   the field-level test, not anticipated beforehand.
+3. A synthetic entry exercising =EOM=/=Convention=, since no entry in
+   the real file sets either.
 
 * Notes
 

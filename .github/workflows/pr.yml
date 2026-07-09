@@ -75,7 +75,8 @@ jobs:
                 # images): no C++ impact.
                 docs=true ;;
               projects/modeling/*|projects/*/modeling/*|projects/*/*/modeling/*)
-                # Modeling docs (org/puml/png): no C++ impact, site renders them.
+                # Modeling docs (org/puml/png): no C++ impact, site
+                # renders them.
                 docs=true ;;
               *)
                 code=true ;;

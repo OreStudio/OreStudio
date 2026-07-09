@@ -44,7 +44,7 @@ class ImageCache;
 /**
  * @brief The type of flag icons to apply to a combo box.
  */
-enum class FlagSource { Currency, Country, BusinessCentre };
+enum class FlagSource { Currency, Country, BusinessCentre, CurrencyPair };
 
 /**
  * @brief Flag icon for one currency, or a composited pair icon for two — the

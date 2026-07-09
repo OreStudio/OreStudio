@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: D55B1E5C-5B25-4922-8D10-3AFC9A3E3A53
+:END:
+#+title: Test Scenario: Currency Pair: save/edit/delete refreshes the list live via NATS eventing
+#+description: Verify saving, editing, and deleting a Currency Pair (and a Currency Pair Convention) publishes a NATS event that refreshes the open list grid without a manual Reload.
+#+type: test_scenario
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+target_dialog:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:C93B2806-B20A-48BD-BD0D-BE5196775C99][Currency Pair changes never publish NATS events (missing event registrar wiring)]] in [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:C93B2806-B20A-48BD-BD0D-BE5196775C99][Currency Pair changes never publish NATS events (missing event registrar wiring)]] |
+| Parent story  | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]   |
+| Target dialog | CurrencyPairDetailDialog, CurrencyPairConventionDetailDialog |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Connect and log in
+
+Log in as =tenant_admin@barclays_plc= (password =Secure-Password-123=)
+and select the BARCLAYS PLC party. If the DB was recreated since,
+re-run
+=compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+to restore this starting state first.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Currency Pair: create refreshes the list live
+
+Open Currency Pairs, leaving the list window visible. Click Add, pick
+a Base/Quote combination that doesn't exist yet, fill in
+Classification, and Save — *without* clicking Reload afterwards.
+Confirm the new pair appears in the grid on its own within a second
+or two.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Currency Pair: edit refreshes the list live
+
+Double-click an existing pair, change its Classification, and Save
+— again without a manual Reload. Confirm the grid's Classification
+badge and Version column update on their own.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Currency Pair: delete refreshes the list live
+
+Select a pair (ideally one created in this test run) and Delete it —
+without a manual Reload. Confirm it disappears from the grid on its
+own.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Currency Pair Convention: create/edit/delete all refresh the list live
+
+Open Currency Pair Conventions (via the Currency Pairs list's
+"Conventions" toolbar button). Repeat the same three checks (create,
+edit, delete) without manual Reload in between.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-09T21:58:46Z |
+| Branch        | feature/test-ore-fx-convention-import |
+| Commit        | 40740e790 |
+| Worktree      | prime_origin |
+
+* Notes

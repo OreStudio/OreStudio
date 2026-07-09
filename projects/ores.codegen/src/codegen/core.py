@@ -2226,6 +2226,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     f.setdefault('combo_allow_blank', False)
                     flag_source = f.get('flag_source', 'currency')
                     f['flag_source_pascal'] = snake_to_pascal(flag_source)
+                    # currency_pair icons are twice as wide as a single flag
+                    # (two composited flags) -- squeezing one into the
+                    # square box single_flag_icon_size() gives every other
+                    # flag source would squash it. currency_pair_icon_size()
+                    # keeps the same height (so it still matches every other
+                    # flag-bearing widget in the app) but reserves the extra
+                    # width.
+                    f['flag_icon_size_expr'] = ('currency_pair_icon_size()'
+                                                if flag_source == 'currency_pair'
+                                                else 'single_flag_icon_size()')
                     # A currency flagged_combo has a ready-made shared
                     # implementation (setup_currency_combo) and promoted
                     # widget class (OreCurrencyComboBox, for uic's standard
@@ -2312,6 +2322,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Expose the key field's widget name for setCreateMode
             key_field_data = next((f for f in detail_fields if f.get('is_key')), None)
             qt['key_widget'] = key_field_data['widget'] if key_field_data else 'codeEdit'
+            # onCodeChanged() only makes sense (and is only ever connected)
+            # for an is_key field that's a QLineEdit -- a combo-widget key
+            # (e.g. currency_pair_convention's pair_code) wires to the
+            # generic onFieldChanged() like any other combo instead. Gate
+            # the method's generation so it doesn't sit as unreachable dead
+            # code for entities whose key isn't a line_edit.
+            qt['has_line_edit_key'] = bool(
+                key_field_data and key_field_data.get('is_line_edit'))
             # Every field locked after create (is_key or immutable):
             # setCreateMode() disables each by its own widget kind
             # (setReadOnly for a text field, setEnabled(false) for a

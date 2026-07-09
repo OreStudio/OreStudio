@@ -118,7 +118,9 @@ signals:
 private slots:
     void onSaveClicked();
     void onDeleteClicked();
+{{#domain_entity.qt.has_line_edit_key}}
     void onCodeChanged(const QString& text);
+{{/domain_entity.qt.has_line_edit_key}}
     void onFieldChanged();
 {{#domain_entity.qt.has_version_navigation}}
     void onRevertClicked();

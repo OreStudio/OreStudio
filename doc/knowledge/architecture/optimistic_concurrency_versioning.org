@@ -1,0 +1,269 @@
+:PROPERTIES:
+:ID: CE4752C0-7A3C-46B4-AC97-922C5B940BB1
+:END:
+#+title: Optimistic Concurrency Versioning: the version=0 Overload and Why It's a Problem
+#+description: Every codegen'd entity's insert trigger treats a caller-supplied version=0 as "skip the optimistic-concurrency check entirely" — a single sentinel value silently conflated across four distinct, legitimate-looking but semantically different use cases (create, republish/upsert, synthetic regeneration, revert), which is why a genuine duplicate-key create is currently indistinguishable from an intentional upsert at the SQL layer.
+#+type: knowledge
+#+level: cross
+#+filetags: :versioning:bitemporality:concurrency:database:architecture:sql:codegen:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+
+* Summary
+
+Every codegen'd entity's insert trigger implements optimistic
+concurrency the same way: a caller-supplied =version= is checked
+against the row's current version, *unless* the caller sends
+=version = 0=, in which case the check is skipped entirely and the
+insert is accepted as the row's next version regardless of what the
+current version actually is. This single sentinel value has been
+silently overloaded to mean at least four different things across the
+codebase — a genuine first-time create (where the check is moot
+anyway), a deliberate batch upsert, a synthetic-data regeneration
+convenience, and an explicit revert-to-history operation — and
+nothing currently distinguishes "the caller doesn't know/care about
+the current version, force it" from "the caller believes this key
+doesn't exist yet, reject if it does." That conflation is the direct
+cause of [[id:03FDF102-2379-4C73-BFD8-FA71BF670BF5][a Currency Pair created with an already-used pair_code
+silently overwriting the unrelated existing row]] instead of being
+rejected — and the same gap exists, latent, for every other
+codegen'd entity in the system, not just =currency_pair=.
+
+* Detail
+
+** The mechanism, as it exists today
+
+Every entity generated with audit columns gets the same insert
+trigger shape
+(=projects/ores.codegen/library/templates/sql_schema_domain_entity_create.mustache=),
+introduced in the very first commit that added codegen'd domain
+entities (=72e07b6d3=, "Add domain entity and junction table
+support") with no accompanying rationale in the commit message or any
+architecture document — this document is the first place the
+=version = 0= behaviour is actually written down:
+
+#+begin_src sql
+select version into current_version
+from "..._tbl"
+where <primary key> = NEW.<primary key>
+  and valid_to = ores_utility_infinity_timestamp_fn()
+for update;
+
+if found then
+    if NEW.version != 0 and NEW.version != current_version then
+        raise exception 'Version conflict: expected version %, but current version is %',
+            NEW.version, current_version
+            using errcode = 'P0002';
+    end if;
+    NEW.version = current_version + 1;
+
+    update "..._tbl"
+    set valid_to = clock_timestamp()
+    where <primary key> = NEW.<primary key>
+      and valid_to = ores_utility_infinity_timestamp_fn();
+else
+    NEW.version = 1;
+end if;
+#+end_src
+
+The key observation: the version comparison only ever executes inside
+=if found= — i.e. only when a row with that primary key *already
+exists*. A genuinely new key never reaches the comparison at all; it
+falls straight to the =else= branch and gets =version = 1=
+unconditionally. This means the =version = 0= bypass exists
+*exclusively* to serve callers that expect =found= to be =true= and
+want the insert to succeed anyway — every one of the four use cases
+below is, structurally, "I am inserting against a key I believe (or
+don't care whether) already exists."
+
+** The four use cases, with concrete examples
+
+*** 1. Interactive create (Qt "Add") — the bug case
+
+The Qt client's generated =onSaveClicked()= sends a domain object
+whose =version= field is default-constructed (=0=) for a brand-new
+record in create mode — see
+=projects/ores.codegen/library/templates/ores.cpp.qt.detail_dialog_impl.org=,
+=onSaveClicked()=. The *intent* here is "this key does not exist yet";
+there is no scenario where the user meant to overwrite an existing
+row. If the derived key happens to collide with an existing row (see
+the currency_pair example: picking a base/quote combination that
+already has a pair), the trigger takes the =if found= branch, sees
+=version = 0=, skips the check, and silently versions the *existing*
+row forward with the *new* dialog's data — a real, user-visible data
+loss bug, not a theoretical one. This is the only one of the four use
+cases where =found = true= represents a genuine error condition that
+should be rejected, not an accepted upsert.
+
+*** 2. DQ→refdata publish (batch republish) — intentional upsert
+
+=projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql=
+hardcodes =version = 0= on every insert it performs, regardless of
+=p_mode= (=insert_only=/=replace_all=/plain upsert) and regardless of
+whether the target row already exists — e.g. the =currency_pair=
+publish loop:
+
+#+begin_src sql
+insert into ores_refdata_currency_pairs_tbl (
+    tenant_id,
+    pair_code, version, base_currency, quote_currency,
+    classification,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    p_target_tenant_id,
+    r.pair_code, 0, r.base_currency, r.quote_currency,
+    r.classification,
+    coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
+    'Imported from DQ dataset: ' || v_dataset_name
+)
+#+end_src
+
+Here =found = true= (republishing over an existing pair) is the
+*expected*, desired case — the whole point of republishing is to push
+a fresh copy of curated reference data over whatever is currently
+there, without the caller having fetched (or cared about) the current
+version first. Tightening the trigger without also giving this flow
+an alternative path would break every entity's DQ publish pipeline.
+
+*** 3. Synthetic data generation — convenience, historically buggy
+
+Generated domain-object generators
+(=projects/ores.codegen/library/templates/cpp_domain_type_generator.cpp.mustache=)
+emit synthetic instances for tests, shell scripts, and demo data.
+=version = 0= here means "generate a plausible instance and let the
+database assign whatever version is next" so the *same* generator can
+be invoked repeatedly against the *same* synthetic key without the
+caller tracking version state between calls. This one was actually
+*broken* until recently in the other direction: 36 generated files
+hardcoded =r.version = 1= instead of =0=, which made a *third* write
+of the same synthetic entity fail with a spurious "Version conflict:
+expected version 1, but current version is 2" — see the still-open
+capture, [[id:32B11CDE-02D7-48D7-8F64-1311B2F5FD06][Bulk-regenerate synthetic generators to fix hardcoded
+r.version = 1]]. That bug is itself evidence of how easy it is to get
+this sentinel wrong in either direction when its meaning isn't
+written down anywhere.
+
+*** 4. Revert-to-historical-version — deliberate, explicit reset
+
+=CurrencyPairController::onRevertVersion= (and the equivalent
+=SystemSettingController::onRevertSystemSetting= and siblings for
+every other =has_version_navigation= entity) loads a *historical* row
+(whose =.version= field holds the old, superseded version number),
+then explicitly resets it before sending:
+
+#+begin_src cpp
+auto reverted_pair = pair;
+reverted_pair.version = 0;
+detailDialog->setPair(reverted_pair);
+#+end_src
+
+Without this explicit reset, sending the historical version number
+as-is would raise a version-conflict exception (it never matches the
+*current* version, by definition — that's what makes it historical).
+Zeroing it out is the correct, deliberate way to say "take this old
+data and make it the next version, whatever the current version
+happens to be" — structurally identical in shape to use case 2, just
+triggered from a different UI action.
+
+** Why this matters: the conflation is the root cause
+
+Use case 1 wants: *reject* if =found=. Use cases 2–4 want: *proceed
+regardless* if =found=. All four currently signal their intent with
+the exact same value (=version = 0=), so the SQL trigger has
+*no way to distinguish them*. This is not a currency_pair-specific
+bug — every codegen'd entity with a Qt create flow has the same latent
+hole; =currency_pair= is simply the first place it was noticed,
+because [[id:BBB450FD-845D-4D6D-AA54-07589FDC1DFF][pair_code became a derived, immutable key]] this sprint,
+which made "accidentally pick an already-used base/quote combination"
+an easy, unremarkable user action rather than a deliberate typo.
+
+** Proposed direction: stop overloading version=0
+
+The version comparison itself is sound (that's exactly what optimistic
+concurrency is supposed to do); the problem is entirely that "no
+check, force it" and "the caller's honest belief about the current
+version" share one representation. Two structurally different fixes
+close the gap, and they are not mutually exclusive:
+
+*** A. Require an explicit, separate "force" signal for use cases 2–4
+
+Add a distinct out-of-band flag (protocol-level, e.g. a
+=force_version: bool= field alongside =version= on the generated save
+request, or a dedicated =upsert= RPC method/SQL function distinct from
+the plain insert path) that use cases 2–4 opt into explicitly. Once
+that exists, the trigger's =version = 0= bypass is removed entirely:
+=found = true= always requires *some* version, and a caller sending
+=0= (uninitialised/default-constructed, exactly the state of a
+brand-new Qt create) always fails the comparison against any real
+=current_version >= 1=, which is precisely the rejection use case 1
+needs. This is the strong fix — it enforces the invariant at the
+single point (the trigger) every write path goes through, so no
+future write path can reintroduce the same accidental-overwrite bug
+by omission.
+
+*** B. Give every entity's Qt create flow its own pre-check (weaker, already partially in place)
+
+Where (A) isn't feasible in the short term (e.g. it needs coordinated
+changes across every entity's protocol/service/repository layer, a
+big surface), a client-side existence pre-check like the one added
+for =currency_pair='s =onSaveClicked()= (a new paste-block seam,
+=4E83FA7A-742A-4102-90AF-D337F6FB1269=, in
+=ores.cpp.qt.detail_dialog_impl.org=) closes the gap for that one
+entity, for that one client. It does *not* close it for any other
+client, script, or future UI surface hitting the same service — it is
+strictly weaker than (A), a stopgap, not a substitute.
+
+*** Recommendation
+
+(A) is the correct target state; (B) is acceptable as an interim,
+entity-by-entity mitigation while (A) is scoped and rolled out,
+precisely the same relationship [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity
+Versioning]] describes between its own target-state touch-function
+mechanism and today's per-table-independent status quo — both
+documents describe the same underlying insert-trigger template
+gaining a new, coordinated capability, not a one-off patch to a
+single entity.
+
+** Relationship to composite entity versioning
+
+[[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning]] and this document describe two
+independent gaps in the *same* insert-trigger template
+(=sql_schema_domain_entity_create.mustache=) and should be designed
+together, not sequentially, since both propose new codegen-level flags
+that touch the identical SCD2 lock-close-insert block:
+
+- Composite versioning adds a *parent-touch* call when a child writes
+  (a new write path into the *parent's* version sequence, triggered by
+  something other than a direct edit to the parent).
+- This document's fix (A) changes what counts as a *valid* caller-
+  supplied version for the *same* row's own trigger.
+
+A child's "touch" call to the parent (per composite versioning's
+design) is, in this document's taxonomy, exactly use case 2/4's shape
+— "advance the version regardless of what the caller knows," except
+the caller here is generated SQL, not a Qt client — so whatever
+explicit "force" mechanism (A) introduces should be the *same*
+mechanism the touch function uses internally, rather than inventing a
+second, parallel bypass. Any implementation plan should sequence or
+combine both stories rather than let composite versioning bake in
+another ad-hoc bypass alongside the one this document is trying to
+remove.
+
+* See also
+
+- [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] — the bitemporal
+  model (=valid_from=/=valid_to=/infinity sentinel) this document's
+  =version= mechanism layers on top of.
+- [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the sibling
+  gap in the same insert-trigger template; see "Relationship to
+  composite entity versioning" above.
+- [[id:03FDF102-2379-4C73-BFD8-FA71BF670BF5][Creating a Currency Pair with an already-used pair_code silently
+  versions the existing row]] — the concrete bug that surfaced this,
+  and where mitigation (B) was implemented as a stopgap.
+- [[id:32B11CDE-02D7-48D7-8F64-1311B2F5FD06][Bulk-regenerate synthetic generators to fix hardcoded r.version = 1]]
+  — a second, independent bug caused by getting the same sentinel
+  wrong in the opposite direction, evidence of how undocumented this
+  behaviour has been.
+- =projects/ores.codegen/library/templates/sql_schema_domain_entity_create.mustache=
+  — the shared insert-trigger template both this document and
+  composite versioning modify.

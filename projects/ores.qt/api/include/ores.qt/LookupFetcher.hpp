@@ -94,6 +94,16 @@ ORES_QT_API lookup_result fetch_tenant_lookups(ClientManager* cm);
 ORES_QT_API std::vector<std::string> fetch_currency_codes(ClientManager* cm);
 
 /**
+ * @brief Fetches currency pair codes (e.g. "EUR/USD") from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by detail dialogs that need a currency pair combo box (e.g.
+ * currency_pair_convention's pair_code field).
+ * Returns empty vector on failure.
+ */
+ORES_QT_API std::vector<std::string> fetch_currency_pair_codes(ClientManager* cm);
+
+/**
  * @brief Fetches a currency ISO code -> display name mapping from the server.
  *
  * Synchronous call intended to be run from within QtConcurrent::run.

@@ -61,6 +61,7 @@ canonical IDs live in [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta
 | =9A719585-3AB1-47DE-B0B0-99AFDFE7180E= | End of =setCreateMode()=, after the generated locked_fields loop    | [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]] |
 | =7A4AE8D5-A22D-4912-B4BF-D58215681CD2= | End of =setReadOnly()=, after the generated is_locked_after_create loop | [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]] |
 | =69F22F14-6701-4E73-AFCC-78AC1B1FDDDF= | Inside =validateInput()='s =return= chain, before the closing =;= | [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]] |
+| =4E83FA7A-742A-4102-90AF-D337F6FB1269= | Inside =onSaveClicked()=, after =validateInput()= passes, before the save dispatch | [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]] |
 | =67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A= | In =signals:=, after the generated signals                          | [[id:0FC76068-16A8-430F-8A15-2E765B562046][ores.cpp.qt.mdi_window_header]] |
 | =18B9ED63-78C2-4259-93AC-CCDFBC88EFBD= | End of =setupToolbar()=, after the generated History action         | [[id:B903843F-9A8D-4B47-BB80-16F701525E3F][ores.cpp.qt.mdi_window_impl]] |
 | =66E078FB-D6A6-4DF6-814B-65995D948090= | In =signals:=, after the generated signals                          | [[id:CA7F5DA4-73D8-418D-BF31-C65E1F2DBCE1][ores.cpp.qt.controller_header]] |

@@ -22,17 +22,15 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
 #include "ui_CurrencyPairConventionDetailDialog.h"
 #include <QComboBox>
 #include <QFutureWatcher>
-#include <QIcon>
-#include <QLineEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -85,22 +83,6 @@ void CurrencyPairConventionDetailDialog::setupUi() {
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-
-    // No uploadable flag image of its own — just the derived, read-only
-    // inline icon on the key field.
-    initKeyFlagField();
-}
-
-QLineEdit* CurrencyPairConventionDetailDialog::keyFlagField() const {
-    return ui_->pairCodeEdit;
-}
-
-QIcon CurrencyPairConventionDetailDialog::keyFlagIcon(const std::string& key) const {
-    return imageCache() ? currency_flag_icon_from_pair_code(*imageCache(), key) : QIcon();
-}
-
-QSize CurrencyPairConventionDetailDialog::keyFlagIconSize() const {
-    return currency_pair_icon_size(24);
 }
 
 void CurrencyPairConventionDetailDialog::setupCombos() {
@@ -129,10 +111,10 @@ void CurrencyPairConventionDetailDialog::setupConnections() {
             this,
             &CurrencyPairConventionDetailDialog::onCloseClicked);
 
-    connect(ui_->pairCodeEdit,
-            &QLineEdit::textChanged,
+    connect(ui_->pairCodeCombo,
+            &QComboBox::currentIndexChanged,
             this,
-            &CurrencyPairConventionDetailDialog::onCodeChanged);
+            &CurrencyPairConventionDetailDialog::onFieldChanged);
     connect(ui_->pipFactorEdit,
             &QLineEdit::textChanged,
             this,
@@ -157,6 +139,47 @@ void CurrencyPairConventionDetailDialog::setClientManager(ClientManager* clientM
                       ui_->businessDayConventionCombo,
                       badgeCache(),
                       "currency_pair_convention_business_day_convention");
+    populatePairCodeCombo();
+}
+
+void CurrencyPairConventionDetailDialog::populatePairCodeCombo() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<CurrencyPairConventionDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
+    QObject::connect(
+        watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
+            auto codes = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
+
+            auto* combo = self->ui_->pairCodeCombo;
+            const QString previous = combo->currentText();
+            combo->blockSignals(true);
+            combo->clear();
+            for (const auto& c : codes)
+                combo->addItem(QString::fromStdString(c));
+            // fallback_selection is evaluated here (fetch-completion time), not
+            // at populate-call time, since setConvention() may run before or
+            // after setClientManager() triggers this fetch.
+            const QString fallback = QString::fromStdString(self->convention_.pair_code);
+            const QString to_select = !previous.isEmpty() ? previous : fallback;
+            if (!to_select.isEmpty()) {
+                const int idx = combo->findText(to_select);
+                if (idx >= 0)
+                    combo->setCurrentIndex(idx);
+            }
+            combo->blockSignals(false);
+
+            if (self->imageCache())
+                apply_flag_icons(
+                    combo, self->imageCache(), FlagSource::CurrencyPair, currency_pair_icon_size());
+        });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm]() { return fetch_currency_pair_codes(cm); }));
 }
 
 void CurrencyPairConventionDetailDialog::setUsername(const std::string& username) {
@@ -171,11 +194,12 @@ void CurrencyPairConventionDetailDialog::setConvention(
 
 void CurrencyPairConventionDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->pairCodeEdit->setReadOnly(!createMode);
+    ui_->pairCodeCombo->setEnabled(createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
     updateSaveButtonState();
+    WidgetUtils::set_combo_locked(ui_->pairCodeCombo, !createMode);
 }
 
 void CurrencyPairConventionDetailDialog::markDirty() {
@@ -185,17 +209,22 @@ void CurrencyPairConventionDetailDialog::markDirty() {
 
 void CurrencyPairConventionDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->pairCodeEdit->setReadOnly(true);
+    ui_->pairCodeCombo->setEnabled(false);
     ui_->pipFactorEdit->setReadOnly(readOnly);
     ui_->tickSizeEdit->setReadOnly(readOnly);
     ui_->advanceCalendarEdit->setReadOnly(readOnly);
     ui_->businessDayConventionCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
+    WidgetUtils::set_combo_locked(ui_->pairCodeCombo, true);
 }
 
 void CurrencyPairConventionDetailDialog::updateUiFromConvention() {
-    ui_->pairCodeEdit->setText(QString::fromStdString(convention_.pair_code));
+    {
+        const auto val = QString::fromStdString(convention_.pair_code);
+        const int idx = ui_->pairCodeCombo->findText(val);
+        ui_->pairCodeCombo->setCurrentIndex(idx);
+    }
     ui_->pipFactorEdit->setText(QString::number(convention_.pip_factor));
     ui_->tickSizeEdit->setText(QString::number(convention_.tick_size));
     ui_->decimalPlacesSpinBox->setValue(convention_.decimal_places);
@@ -230,7 +259,7 @@ void CurrencyPairConventionDetailDialog::updateUiFromConvention() {
 
 void CurrencyPairConventionDetailDialog::updateConventionFromUi() {
     if (createMode_) {
-        convention_.pair_code = ui_->pairCodeEdit->text().trimmed().toStdString();
+        convention_.pair_code = ui_->pairCodeCombo->currentText().trimmed().toStdString();
     }
     convention_.pip_factor = ui_->pipFactorEdit->text().trimmed().toDouble();
     convention_.tick_size = ui_->tickSizeEdit->text().trimmed().toDouble();
@@ -268,10 +297,6 @@ void CurrencyPairConventionDetailDialog::updateConventionFromUi() {
     convention_.modified_by = username_;
 }
 
-void CurrencyPairConventionDetailDialog::onCodeChanged(const QString& /* text */) {
-    hasChanges_ = true;
-    updateSaveButtonState();
-}
 
 void CurrencyPairConventionDetailDialog::onFieldChanged() {
     hasChanges_ = true;
@@ -284,12 +309,11 @@ void CurrencyPairConventionDetailDialog::updateSaveButtonState() {
 }
 
 bool CurrencyPairConventionDetailDialog::validateInput() {
-    const QString pair_code_val = ui_->pairCodeEdit->text().trimmed();
     const QString pip_factor_val = ui_->pipFactorEdit->text().trimmed();
     const QString tick_size_val = ui_->tickSizeEdit->text().trimmed();
+    const bool pair_code_selected = ui_->pairCodeCombo->currentIndex() >= 0;
 
-    return true && !pair_code_val.isEmpty() && !pip_factor_val.isEmpty() &&
-           !tick_size_val.isEmpty();
+    return true && !pip_factor_val.isEmpty() && !tick_size_val.isEmpty() && pair_code_selected;
 }
 
 void CurrencyPairConventionDetailDialog::onSaveClicked() {
@@ -304,6 +328,33 @@ void CurrencyPairConventionDetailDialog::onSaveClicked() {
     if (!validateInput()) {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
+    }
+
+    if (createMode_) {
+        const std::string selectedPairCode = ui_->pairCodeCombo->currentText().toStdString();
+
+        refdata::messaging::get_currency_pair_conventions_request checkRequest;
+        checkRequest.limit = lookup_fetch_limit;
+        auto checkResult = clientManager_->process_authenticated_request(std::move(checkRequest));
+        if (!checkResult) {
+            MessageBoxHelper::warning(
+                this,
+                "Cannot Verify",
+                "Could not check for an existing convention before saving. Please try again.");
+            return;
+        }
+
+        const bool exists = std::ranges::any_of(checkResult->conventions, [&](const auto& c) {
+            return c.pair_code == selectedPairCode;
+        });
+        if (exists) {
+            MessageBoxHelper::warning(
+                this,
+                "Duplicate Convention",
+                QString("'%1' already has a convention. Edit the existing one instead.")
+                    .arg(QString::fromStdString(selectedPairCode)));
+            return;
+        }
     }
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
@@ -438,5 +489,6 @@ void CurrencyPairConventionDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

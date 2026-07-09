@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: C93B2806-B20A-48BD-BD0D-BE5196775C99
+:END:
+#+title: Task: Currency Pair changes never publish NATS events (missing event registrar wiring)
+#+description: currency_pair_event_registrar.cpp/.hpp were never generated and wired into event_registrar.cpp's register_event_mappings(), unlike currency/book/country/etc -- so saving a Currency Pair never publishes ores.refdata.currency_pair_changed, and no client (including the one that just saved) gets notified or auto-refreshes.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch: feature/test-ore-fx-convention-import
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Root cause of the "no eventing notification" gap noted repeatedly
+while manually testing Currency Pair this sprint (first surfaced
+during [[id:BBB450FD-845D-4D6D-AA54-07589FDC1DFF][pair code derivation]] testing, again during
+[[id:03FDF102-2379-4C73-BFD8-FA71BF670BF5][duplicate pair_code]] testing): saving, editing, or deleting a
+Currency Pair never publishes =ores.refdata.currency_pair_changed=
+over NATS, so no client (including the one that just performed the
+save) gets notified to refresh.
+
+=projects/ores.refdata/service/src/messaging/event_registrar.cpp=
+(the aggregator that wires each entity's generated
+=<entity>_event_registrar.cpp=/=hpp= into
+=event_registrar::register_event_mappings()=) only registers 6
+entities: =book=, =business_day_convention_type=, =country=,
+=currency=, =party_type=, =purpose_type=. =currency_pair= (and
+=currency_pair_convention=) was never generated *or* wired — not even
+present in the file's own "stale drift, hand-wired in application.cpp
+instead" exclusion list, which documents ten *other* entities in that
+state. It simply fell through the cracks entirely: the domain event
+type (=currency_pair_changed_event.hpp=) and the Postgres =NOTIFY=
+trigger (=refdata_currency_pairs_notify_trigger_create.sql=) both
+exist and are codegen'd correctly, but nothing on the service side
+ever subscribed to the notify channel and republished it to NATS.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-09                               |
+
+* Acceptance
+
+- [X] =currency_pair_event_registrar.cpp=/=hpp= generated via
+  =ores.cpp.nats-event-registrar= and wired into
+  =event_registrar::register_event_mappings()=.
+- [X] Saving a new Currency Pair, or editing/deleting an existing one,
+  causes the list grid to refresh live (no manual Reload needed) —
+  verified manually.
+- [X] =currency_pair_convention= had the identical gap — fixed in the
+  same pass (=currency_pair_convention_event_registrar.cpp=/=hpp=
+  generated and wired alongside =currency_pair='s).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:D55B1E5C-5B25-4922-8D10-3AFC9A3E3A53][Currency Pair: save/edit/delete refreshes the list live via NATS eventing]] | PENDING | |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Shipped: both entities' event registrars generated and wired into
+=event_registrar::register_event_mappings()=; confirmed via service
+log ("Registering event mapping: ores.refdata.currency_pair -> ..."
+and the =_convention= equivalent) and manually verified live-refresh
+via [[id:D55B1E5C-5B25-4922-8D10-3AFC9A3E3A53][Currency Pair: save/edit/delete refreshes the list live via NATS
+eventing]] — all steps pass for both entities. Root-caused via gdb-free
+log comparison against a working entity (=currency=), not guesswork.

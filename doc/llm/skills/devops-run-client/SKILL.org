@@ -41,12 +41,14 @@ Launching the Qt client, detached so the terminal stays free; colour and instanc
    immediately instead of using Scenario Runner's own Open button.
 
 3. /Always include a connect/login step in the scenario itself/ — every
-   =test_scenario= doc opened this way must state, in its =* Context=
-   section, the exact account to log in as and its password (e.g.
-   =tenant_admin@barclays_plc= / =Secure-Password-123=) and which party
-   to select, plus how to get back to that state if the DB was recreated
-   since (the provisioning script to re-run). Never leave the tester to
-   guess credentials or starting state.
+   =test_scenario= doc opened this way must have, as its *first =* Steps=
+   entry* (not just prose in =* Context=, which the Scenario Runner
+   panel doesn't track pass/fail for), a step stating the exact account
+   to log in as and its password (e.g. =tenant_admin@barclays_plc= /
+   =Secure-Password-123=) and which party to select, plus how to get
+   back to that state if the DB was recreated since (the provisioning
+   script to re-run). Never leave the tester to guess credentials or
+   starting state.
 
 4. /Stop/ (pass the same =--colour= the instance was started with):
 

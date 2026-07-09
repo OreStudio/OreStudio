@@ -105,6 +105,8 @@ void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source, QS
                 return cache->getCountryFlagIcon(code);
             case FlagSource::BusinessCentre:
                 return cache->getBusinessCentreFlagIcon(code);
+            case FlagSource::CurrencyPair:
+                return currency_flag_icon_from_pair_code(*cache, code);
         }
         return {};
     };

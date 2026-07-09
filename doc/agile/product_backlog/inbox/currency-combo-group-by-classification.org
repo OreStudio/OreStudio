@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 4228F282-F0E6-4560-8C14-FF9140F47C52
+:END:
+#+title: Currency combo boxes should group by classification (major/minor/exotic)
+#+description: Currency pickers (base/quote/settlement combos, currency_pair pair_code, etc.) currently sort currencies alphabetically by ISO code; group them by classification (major, minor, exotic) instead, matching how traders actually scan a currency list.
+#+type: capture
+#+level: cross
+#+filetags: :qt:ux:currency:combo:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every currency combo box in the app (base/quote/settlement pickers on
+currency_pair, and any future flagged_combo with =flag_source:
+currency=) is populated via the shared =setup_currency_combo()=
+(=projects/ores.qt/api/src/FlagIconHelper.cpp=), which does a plain
+=std::sort(codes.begin(), codes.end())= — alphabetical by ISO code,
+with no grouping. Group items instead by an existing classification
+concept — =currency.market_tier= (e.g. "g10", "emerging") for a
+single-currency picker, or =currency_pair.classification= (major,
+minor, exotic, commodity) for a currency-pair picker like
+=currency_pair_convention='s new =pairCodeCombo= — sorted
+alphabetically *within* each group, with the groups themselves
+ordered by real-world liquidity/importance rather than alphabetically
+(so "g10"/major sorts first, not last).
+
+* Why
+
+A trader scanning a currency dropdown thinks in terms of "is this a
+major, or some exotic/frontier currency" — alphabetical order buries
+USD among dozens of unfamiliar codes and provides no visual grouping
+at all. This became visible while adding the =currency_pair_convention=
+Pair Code combo (see [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] component), which surfaces the
+same long, ungrouped, alphabetical list problem as the existing
+base/quote pickers, just with pair codes instead of single currency
+codes.
+
+* References
+
+- =projects/ores.qt/api/src/FlagIconHelper.cpp= — =setup_currency_combo()=,
+  the shared population/sort logic for every currency flagged_combo.
+- =projects/ores.refdata/modeling/ores.refdata.currency.org= —
+  =market_tier= field (the natural grouping key for single-currency
+  combos).
+- =projects/ores.refdata/modeling/ores.refdata.currency_pair.org= —
+  =classification= field (the natural grouping key for currency-pair
+  combos, e.g. =currency_pair_convention='s =pairCodeCombo=).
+
+Qt implementation needs a grouped-combo pattern (e.g. non-selectable
+section-header items, or a custom delegate) since plain =QComboBox=
+has no built-in grouping — check whether any existing combo in the
+app already does this (e.g. a =static_combo= with category headers)
+before inventing a new mechanism.
+
+* See also
+
+- [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] — where the
+  =currency_pair_convention= Pair Code combo that surfaced this was
+  added.

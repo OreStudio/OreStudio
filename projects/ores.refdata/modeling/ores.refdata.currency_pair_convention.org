@@ -248,10 +248,6 @@ drop function if exists ores_refdata_validate_currency_pair_convention_fn;
 :history_message_type:        get_currency_pair_convention_history_request
 :history_request_id_field:    pair_code
 :history_response_data_field: history
-:key_flag_field:              pairCodeEdit
-:key_flag_accessor:           currency_flag_icon_from_pair_code
-:key_flag_accessor_is_free_fn: true
-:key_flag_is_pair:             true
 :settings_group:         CurrencyPairConventionListWindow
 :window_title:           Currency Pair Conventions
 :icon:                   Currency
@@ -285,9 +281,9 @@ entity has no separate base/quote fields of its own.
 
 *** Detail fields
 
-| field                    | label                    | widget                     | type      | is_key | is_required | placeholder                        | combo_values                                                                               | badge_key                                          |
-|--------------------------+---------------------------+-----------------------------+-----------+--------+-------------+--------------------------------------+----------------------------------------------------------------------------------------------+-----------------------------------------------------|
-| pair_code                | Pair Code                | pairCodeEdit                | line_edit | true   | true        | e.g. EUR/USD                        |                                                                                                |                                                       |
+| field                    | label                    | widget                     | type      | is_key | is_required | placeholder                        | combo_values                                                                               | badge_key                                          | flag_source | combo_fetch | combo_fetch_include |
+|--------------------------+---------------------------+-----------------------------+-----------+--------+-------------+--------------------------------------+----------------------------------------------------------------------------------------------+-----------------------------------------------------+--------------+-------------+----------------------|
+| pair_code                | Pair Code                | pairCodeCombo               | flagged_combo | true | true    | e.g. EUR/USD                        |                                                                                                |                                                       | currency_pair | fetch_currency_pair_codes | ores.qt/LookupFetcher.hpp |
 | pip_factor               | Pip Factor                | pipFactorEdit               | line_edit |        | true        | e.g. 0.0001                          |                                                                                                |                                                       |
 | tick_size                | Tick Size                 | tickSizeEdit                 | line_edit |        | true        | e.g. 0.1                             |                                                                                                |                                                       |
 | decimal_places           | Decimal Places            | decimalPlacesSpinBox         | spin_box  |        | true        |                                       |                                                                                                |                                                       |
@@ -297,6 +293,64 @@ entity has no separate base/quote fields of its own.
 | end_of_month             | End Of Month               | endOfMonthCheckBox           | check_box |        |             |                                       |                                                                                                |                                                       |
 
 ** Custom repository methods
+
+** Qt: pair_code stays visually normal while locked
+:PROPERTIES:
+:ID: B8D3E6F1-4A29-4C7E-9B1D-3F5A8C2E7D64
+:END:
+
+Same reasoning as [[id:E1EE950D-FC22-4DAB-A93F-8B2A15196031][ores.refdata.currency_pair]]'s own base/quote lock: the
+generated =is_key= lock loop uses =setEnabled(false)=, which grays out
+the combo and makes its flag icon hard to see — override with
+=WidgetUtils::set_combo_locked()= so the flag stays visible while
+still blocking interaction, once created.
+
+#+begin_src cpp :name create_mode_override :implements 9A719585-3AB1-47DE-B0B0-99AFDFE7180E
+WidgetUtils::set_combo_locked(ui_->pairCodeCombo, !createMode);
+#+end_src
+
+#+begin_src cpp :name read_only_override :implements 7A4AE8D5-A22D-4912-B4BF-D58215681CD2
+WidgetUtils::set_combo_locked(ui_->pairCodeCombo, true);
+#+end_src
+
+** Qt: reject duplicate pair_code on create
+:PROPERTIES:
+:ID: A2E4B7C9-1F3D-4E62-8A9B-6C5D3F8E2B17
+:END:
+
+=pair_code= is a soft FK to =currency_pair= (see that entity's own
+=Qt: reject duplicate pair_code on create= seam for the analogous
+identity check). Since a pair has *at most one* convention record,
+attaching a convention to a pair that already has one is the same
+class of accidental-overwrite bug: the trigger's upsert-by-natural-key
+semantics silently version the existing convention forward instead of
+rejecting. Same client-side mitigation, simpler than currency_pair's
+(no inverted-pair concept — conventions aren't directional).
+
+#+begin_src cpp :name save_duplicate_check :implements 4E83FA7A-742A-4102-90AF-D337F6FB1269
+if (createMode_) {
+    const std::string selectedPairCode = ui_->pairCodeCombo->currentText().toStdString();
+
+    refdata::messaging::get_currency_pair_conventions_request checkRequest;
+    checkRequest.limit = lookup_fetch_limit;
+    auto checkResult = clientManager_->process_authenticated_request(std::move(checkRequest));
+    if (!checkResult) {
+        MessageBoxHelper::warning(this, "Cannot Verify",
+            "Could not check for an existing convention before saving. Please try again.");
+        return;
+    }
+
+    const bool exists = std::ranges::any_of(checkResult->conventions, [&](const auto& c) {
+        return c.pair_code == selectedPairCode;
+    });
+    if (exists) {
+        MessageBoxHelper::warning(this, "Duplicate Convention",
+            QString("'%1' already has a convention. Edit the existing one instead.")
+                .arg(QString::fromStdString(selectedPairCode)));
+        return;
+    }
+}
+#+end_src
 
 * See also
 

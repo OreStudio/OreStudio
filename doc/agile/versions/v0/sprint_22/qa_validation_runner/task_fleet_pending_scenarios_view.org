@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :qt:fleet:dx:qa_validation_runner:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fleet-pending-scenarios-abandon
+#+pr: 1485
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-07
-#+updated: 2026-07-07
-#+environment:
+#+updated: 2026-07-08
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,12 +30,12 @@ their head.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                             |
 | Parent story | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-07                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-07-08                               |
 
 * Acceptance
 
@@ -43,9 +43,10 @@ their head.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Started implementing a "Fleet" tab (data sourced from =compass fleet
+--format json=, cross-referenced against each worktree's own
+=doc/agile= tree for pending =test_scenario= docs) before abandoning
+— see =* Result=.
 
 * Notes
 
@@ -53,12 +54,25 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1485][#1485]] | [agile] Abandon: surface pending scenarios across the fleet |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                    | File       | Decision | Notes |
+|---+-----------------------------------------------------------------------+--------------+----------+-------|
+| 1 | Parent story's Acceptance still listed this capability as pending, not abandoned | story.org  | Accepted | Fixed in f12baf023 — struck through and annotated with a link + rationale. |
+| 2 | =#+updated= (2026-07-07) drifted from =Last touched= (2026-07-08)        | this file  | Accepted | Fixed in f12baf023. |
 
 * Result
+
+Abandoned before implementation got far. The idea assumed a "fleet"
+worth cross-checking for pending scenarios per worktree/task, but this
+project doesn't have proper fleet coordination for that yet — no
+shared source of truth for which worktree is doing what beyond
+=compass fleet='s own best-effort snapshot, and no mechanism to keep a
+per-worktree scenario list meaningfully in sync across 10 independent
+checkouts. Building a UI on top of that would create the appearance of
+fleet coordination without the substance, likely misleading the tester
+rather than helping them. Revisit if/when the project actually builds
+real fleet coordination — this task's goal would then be a thin
+consumer of that, not a first attempt at inventing it.

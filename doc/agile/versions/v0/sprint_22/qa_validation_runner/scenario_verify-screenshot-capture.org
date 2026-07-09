@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 402D3072-36EC-4546-9401-EC69D3754A40
+:END:
+#+title: Test Scenario: Verify screenshot capture in the QA Validation Runner panel
+#+description: Manual verification of the scenario-level and step-level Screenshot buttons: capture the full screen after a short delay, save next to the scenario doc, and confirm step-level captures append a Notes reference.
+#+type: test_scenario
+#+level: s1
+#+filetags: :qt:testing:qa_validation_runner:sprint_22:v0:
+#+target_dialog:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:5184C0F8-9200-4A8D-9210-35736B84CC0F][Add screenshot capture to the QA Validation Runner panel]] in [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:5184C0F8-9200-4A8D-9210-35736B84CC0F][Add screenshot capture to the QA Validation Runner panel]] |
+| Parent story  | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]   |
+| Target dialog | QaValidationRunnerWidget                |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Open this scenario and confirm the Screenshot toolbar action is enabled
+
+Open the QA Validation Runner panel and load this file
+(=scenario_verify-screenshot-capture.org=). Confirm a "Screenshot"
+toolbar action appears next to Open/Save, and is enabled now that a
+scenario is loaded (it should be disabled before any scenario is
+loaded).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Screenshot: scenario_verify-screenshot-capture_step1_20260710_002146.png |
+
+** Trigger the scenario-level screenshot
+
+Click the toolbar's Screenshot action. Within ~1-2 seconds (before
+the capture fires), switch focus to some other window (e.g. a
+terminal or this doc in an editor) so the capture isn't just a
+screenshot of the runner itself. Confirm a status bar message
+reports a saved filename, and that a PNG file named after this
+scenario's slug plus a timestamp appears in the same directory as
+this =.org= file.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Screenshot: scenario_verify-screenshot-capture_step2_20260710_002224.png |
+
+** Open a step and trigger a per-step screenshot
+
+Double-click this step (or any other) to open its detail window.
+Confirm a "Screenshot" button appears in the button row alongside
+Mark PASS/Mark FAIL/Reset to Pending. Click it, again switching focus
+away within the delay window. Confirm: a PNG named after this
+scenario's slug, this step, and a timestamp is saved next to the
+scenario doc, a status bar message confirms the save, and a line
+referencing the screenshot's filename is auto-appended into this
+step's Notes box.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Screenshot: scenario_verify-screenshot-capture_step3_20260710_002236.png |
+
+** Confirm filenames never collide
+
+Trigger a second scenario-level screenshot and a second per-step
+screenshot (same step as above). Confirm both produce new files with
+distinct names (timestamp differs) rather than overwriting the first
+captures.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Save the results
+
+Click the toolbar's Save icon. Confirm no errors, and that the step
+Notes (including the auto-appended screenshot reference) are
+persisted.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Verify the saved files and doc
+
+Outside the app (file browser, =git status=, or an editor), confirm:
+all captured PNGs exist next to this scenario doc and open as valid
+images showing the expected content; this doc's =* Results= section
+and each exercised step's =*** Result= child heading are filled in
+correctly; the Steps' instructional text above is unchanged.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-09T23:22:57Z |
+| Branch        | feature/add-screenshot-capture |
+| Commit        | 579b3e092 |
+| Worktree      | solid_dirac |
+
+* Notes

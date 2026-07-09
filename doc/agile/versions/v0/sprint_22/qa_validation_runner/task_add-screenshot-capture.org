@@ -31,10 +31,10 @@ friction that discourages doing it at all.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and verified live; ready for PR. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-09                               |
+| Next         | Commit and raise PR.                   |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:402D3072-36EC-4546-9401-EC69D3754A40][Verify screenshot capture in the QA Validation Runner panel]] | PASSED | Both capture points verified live: scenario-level toolbar action and step-level button, no filename collisions across repeated captures, Notes auto-append confirmed. |
 
 * PRs
 
@@ -107,3 +107,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Implemented both capture points sharing a single =captureScreenshot()=
+helper: a scenario-level "Screenshot" toolbar action (enabled only
+when a scenario is loaded) and a per-step "Screenshot" button in the
+step-detail window, alongside Pass/Fail/Pending. Both grab the full
+primary screen via =QGuiApplication::primaryScreen()->grabWindow(0)=
+after a 1.5s delay, save as PNG next to the scenario doc, and report
+success/failure via a status bar message; the step-level capture also
+auto-appends a filename reference into that step's Notes. Verified
+live end-to-end via a dedicated test scenario launched directly with
+=compass client start --open-scenario=: both capture points work,
+repeated captures never collide on filename, and the Notes
+auto-append behaves as designed. Region-select capture remains a
+documented fast-follow, not implemented here.

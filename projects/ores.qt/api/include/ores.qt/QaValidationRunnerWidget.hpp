@@ -24,6 +24,7 @@
 #include <QList>
 #include <QString>
 #include <QWidget>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -175,9 +176,22 @@ private:
 
     std::vector<qa_step> steps_;
 
+    /**
+     * @brief Grabs the full primary screen after a short delay (so the
+     * tester can switch to the window under test first), saves it as a
+     * PNG next to the loaded scenario doc, and reports the result via
+     * onDone(path) — an empty path means the save failed. Shared by
+     * both the scenario-level toolbar action and each step's own
+     * screenshot button.
+     * @param baseName File stem (before "_<timestamp>.png"); caller
+     * supplies the scenario slug, optionally with a step suffix.
+     */
+    void captureScreenshot(const QString& baseName, const std::function<void(QString)>& onDone);
+
     QToolBar* toolBar_;
     QAction* openAction_;
     QAction* saveAction_;
+    QAction* screenshotAction_;
     QLabel* titleLabel_;
     QLabel* targetDialogLabel_;
     QLabel* overallStatusLabel_;

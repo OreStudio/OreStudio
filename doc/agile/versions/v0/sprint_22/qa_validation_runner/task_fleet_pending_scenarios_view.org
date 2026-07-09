@@ -58,9 +58,10 @@ Started implementing a "Fleet" tab (data sourced from =compass fleet
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                    | File       | Decision | Notes |
+|---+-----------------------------------------------------------------------+--------------+----------+-------|
+| 1 | Parent story's Acceptance still listed this capability as pending, not abandoned | story.org  | Accepted | Fixed in f12baf023 — struck through and annotated with a link + rationale. |
+| 2 | =#+updated= (2026-07-07) drifted from =Last touched= (2026-07-08)        | this file  | Accepted | Fixed in f12baf023. |
 
 * Result
 

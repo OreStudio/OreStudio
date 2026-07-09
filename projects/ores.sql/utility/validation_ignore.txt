@@ -287,6 +287,7 @@ RLS_001 ores_refdata_party_id_schemes_tbl
 RLS_001 ores_refdata_party_statuses_tbl
 RLS_001 ores_refdata_party_types_tbl
 RLS_001 ores_refdata_purpose_types_tbl
+RLS_001 ores_refdata_regulatory_book_types_tbl
 RLS_001 ores_refdata_rounding_types_tbl
 
 # Reporting lookup tables — concurrency policy and report type codes are

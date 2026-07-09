@@ -21,22 +21,22 @@
 title Book lifecycle
 
 skinparam state {
-    BackgroundColor #2A2A2E
-    BorderColor #58A6FF
-    FontColor #E3E3E6
-    AttributeFontColor #A1A1AA
-    ArrowColor #8AB4F8
-    ArrowFontColor #E3E3E6
-    StartColor #58A6FF
-    EndColor #58A6FF
+    BackgroundColor #D6E8FA
+    BorderColor #4A78A8
+    FontColor #1A1A1E
+    AttributeFontColor #3A3A3E
+    ArrowColor #4A78A8
+    ArrowFontColor #1A1A1E
+    StartColor #4A78A8
+    EndColor #4A78A8
 }
 skinparam note {
-    BackgroundColor #1A1A1E
-    BorderColor #58A6FF
-    FontColor #E3E3E6
+    BackgroundColor #FBF3D3
+    BorderColor #C9A227
+    FontColor #1A1A1E
 }
-skinparam BackgroundColor transparent
-skinparam DefaultFontColor #E3E3E6
+skinparam BackgroundColor white
+skinparam DefaultFontColor #1A1A1E
 
 state "Initiated" as Initiated
 state "Pending controller review" as ControllerReview

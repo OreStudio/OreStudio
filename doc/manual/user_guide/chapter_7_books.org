@@ -141,11 +141,13 @@ The General tab carries the fields of the book:
   badge. See [[*Book lifecycle][Book lifecycle]] below, and the [[*What is a Book?][What is a Book?]]
   section above, for what the distinction means.
 
-  #+caption: [SCREENSHOT NEEDED] The Regulatory Book Type combo box open, showing Trading and Banking as badges.
-  # Capture: open Book Details, click the Regulatory Book Type combo box, and screenshot
-  # it open with the dropdown showing both values (Trading, Banking) as coloured badges.
-  # Save as TODO_regulatory_book_type_combo.png (new file).
-  [[proj:assets/images/TODO_regulatory_book_type_combo.png]]
+  #+begin_note
+  [SCREENSHOT NEEDED] Open Book Details, click the Regulatory Book Type
+  combo box, and screenshot it open with the dropdown showing both
+  values (Trading, Banking) as coloured badges. Save as
+  =regulatory_book_type_combo.png= and add the image link here once
+  captured.
+  #+end_note
 
 *** Book lifecycle
 

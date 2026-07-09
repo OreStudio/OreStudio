@@ -8,7 +8,7 @@
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
 #+branch: feature/test-ore-fx-convention-import
-#+pr:
+#+pr: 1489
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-06
@@ -111,7 +111,7 @@ Three test cases:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1489][#1489]] | [refdata,qt,codegen,ore] FX convention test, duplicate/inverted pair reject, eventing fix |
 
 * Review
 

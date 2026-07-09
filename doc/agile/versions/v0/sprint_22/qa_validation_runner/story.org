@@ -116,9 +116,11 @@ how the Qt panel surfaces it without duplicating compass's data model.
 - [ ] The same panel (or a sibling tab) can render the driving
   story/task docs (goal, acceptance, status, tasks table) so the
   tester doesn't need to leave the app to recover context.
-- [ ] The tester can see, from within the panel or a companion list,
-  which worktrees/tasks in the fleet currently have a scenario waiting
-  — sourced from compass's existing fleet/task data, not duplicated.
+- [ ] ~~The tester can see, from within the panel or a companion list,
+  which worktrees/tasks in the fleet currently have a scenario
+  waiting~~ — abandoned (see [[id:CB112432-917A-46DC-99F2-00251CC91559][Surface pending scenarios across the fleet]]):
+  no fleet-coordination source of truth exists yet to build this on;
+  revisit once one does.
 - [ ] Rendered =test_scenario= docs (with their filled-in =* Results=)
   show up correctly on the published site, same as any other doc.
 - [ ] Works end-to-end for at least one real story from this sprint as

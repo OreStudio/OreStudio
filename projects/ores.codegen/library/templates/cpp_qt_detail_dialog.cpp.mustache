@@ -301,6 +301,18 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
     connect(ui_->{{widget}}, &QLineEdit::textChanged, this,
             &{{domain_entity.entity_pascal}}DetailDialog::onCodeChanged);
 {{/is_line_edit}}
+{{#is_static_combo}}
+    connect(ui_->{{widget}}, &QComboBox::currentIndexChanged, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
+{{/is_static_combo}}
+{{#is_dynamic_combo}}
+    connect(ui_->{{widget}}, &QComboBox::currentIndexChanged, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
+{{/is_dynamic_combo}}
+{{#is_flagged_combo}}
+    connect(ui_->{{widget}}, &QComboBox::currentIndexChanged, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
+{{/is_flagged_combo}}
 {{/is_key}}
 {{^is_key}}
 {{#is_line_edit}}
@@ -975,10 +987,12 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
     {{domain_entity.qt.item_var}}_.{{#domain_entity.qt.modified_by_access}}{{domain_entity.qt.modified_by_access}}{{/domain_entity.qt.modified_by_access}}{{^domain_entity.qt.modified_by_access}}modified_by{{/domain_entity.qt.modified_by_access}} = username_;
 }
 
+{{#domain_entity.qt.has_line_edit_key}}
 void {{domain_entity.entity_pascal}}DetailDialog::onCodeChanged(const QString& /* text */) {
     hasChanges_ = true;
     updateSaveButtonState();
 }
+{{/domain_entity.qt.has_line_edit_key}}
 
 void {{domain_entity.entity_pascal}}DetailDialog::onFieldChanged() {
     hasChanges_ = true;

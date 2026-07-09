@@ -111,6 +111,10 @@ void CurrencyPairConventionDetailDialog::setupConnections() {
             this,
             &CurrencyPairConventionDetailDialog::onCloseClicked);
 
+    connect(ui_->pairCodeCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &CurrencyPairConventionDetailDialog::onFieldChanged);
     connect(ui_->pipFactorEdit,
             &QLineEdit::textChanged,
             this,
@@ -293,10 +297,6 @@ void CurrencyPairConventionDetailDialog::updateConventionFromUi() {
     convention_.modified_by = username_;
 }
 
-void CurrencyPairConventionDetailDialog::onCodeChanged(const QString& /* text */) {
-    hasChanges_ = true;
-    updateSaveButtonState();
-}
 
 void CurrencyPairConventionDetailDialog::onFieldChanged() {
     hasChanges_ = true;
@@ -334,20 +334,26 @@ void CurrencyPairConventionDetailDialog::onSaveClicked() {
         const std::string selectedPairCode = ui_->pairCodeCombo->currentText().toStdString();
 
         refdata::messaging::get_currency_pair_conventions_request checkRequest;
-        checkRequest.limit = 100000;
+        checkRequest.limit = lookup_fetch_limit;
         auto checkResult = clientManager_->process_authenticated_request(std::move(checkRequest));
-        if (checkResult) {
-            const bool exists = std::ranges::any_of(checkResult->conventions, [&](const auto& c) {
-                return c.pair_code == selectedPairCode;
-            });
-            if (exists) {
-                MessageBoxHelper::warning(
-                    this,
-                    "Duplicate Convention",
-                    QString("'%1' already has a convention. Edit the existing one instead.")
-                        .arg(QString::fromStdString(selectedPairCode)));
-                return;
-            }
+        if (!checkResult) {
+            MessageBoxHelper::warning(
+                this,
+                "Cannot Verify",
+                "Could not check for an existing convention before saving. Please try again.");
+            return;
+        }
+
+        const bool exists = std::ranges::any_of(checkResult->conventions, [&](const auto& c) {
+            return c.pair_code == selectedPairCode;
+        });
+        if (exists) {
+            MessageBoxHelper::warning(
+                this,
+                "Duplicate Convention",
+                QString("'%1' already has a convention. Edit the existing one instead.")
+                    .arg(QString::fromStdString(selectedPairCode)));
+            return;
         }
     }
 

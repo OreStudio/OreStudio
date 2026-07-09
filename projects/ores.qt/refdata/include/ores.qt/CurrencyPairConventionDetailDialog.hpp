@@ -80,7 +80,6 @@ signals:
 private slots:
     void onSaveClicked();
     void onDeleteClicked();
-    void onCodeChanged(const QString& text);
     void onFieldChanged();
 
 protected:

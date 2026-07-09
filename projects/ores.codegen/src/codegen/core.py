@@ -2322,6 +2322,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Expose the key field's widget name for setCreateMode
             key_field_data = next((f for f in detail_fields if f.get('is_key')), None)
             qt['key_widget'] = key_field_data['widget'] if key_field_data else 'codeEdit'
+            # onCodeChanged() only makes sense (and is only ever connected)
+            # for an is_key field that's a QLineEdit -- a combo-widget key
+            # (e.g. currency_pair_convention's pair_code) wires to the
+            # generic onFieldChanged() like any other combo instead. Gate
+            # the method's generation so it doesn't sit as unreachable dead
+            # code for entities whose key isn't a line_edit.
+            qt['has_line_edit_key'] = bool(
+                key_field_data and key_field_data.get('is_line_edit'))
             # Every field locked after create (is_key or immutable):
             # setCreateMode() disables each by its own widget kind
             # (setReadOnly for a text field, setEnabled(false) for a

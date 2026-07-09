@@ -146,9 +146,9 @@ public:
                                          error_detail,
                                          bearer,
                                          &resp.resolved_price);
-        resp.message = resp.available ? "Vintage data available (" +
-                                            std::to_string(resp.resolved_price) + ")" :
-                                        error_detail;
+        resp.message = resp.available ?
+                           "Vintage data available (" + std::to_string(resp.resolved_price) + ")" :
+                           error_detail;
         reply(nats_, msg, resp);
     }
 

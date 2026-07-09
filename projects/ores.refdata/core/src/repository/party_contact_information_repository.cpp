@@ -20,10 +20,10 @@
 #include "ores.refdata.core/repository/party_contact_information_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/party_contact_information_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/party_contact_information_entity.hpp"
 #include "ores.refdata.core/repository/party_contact_information_mapper.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <sqlgen/postgres.hpp>
 
@@ -144,7 +144,7 @@ party_contact_information_repository::read_all(const boost::uuids::uuid& id) {
 
 std::optional<domain::party_contact_information>
 party_contact_information_repository::read_at_version(const boost::uuids::uuid& id,
-                                                       std::uint32_t version) {
+                                                      std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading party contact information at version. Id: " << id
                                << " version: " << version;
 
@@ -179,11 +179,10 @@ party_contact_information_repository::read_by_party_id_as_of(
     const auto vt(
         make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
     const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
-                       where("party_id"_c == party_id_str &&
-                             "valid_from"_c < vt.value() && "valid_to"_c > vf.value());
+                       where("party_id"_c == party_id_str && "valid_from"_c < vt.value() &&
+                             "valid_to"_c > vf.value());
 
-    return execute_read_query<party_contact_information_entity,
-                              domain::party_contact_information>(
+    return execute_read_query<party_contact_information_entity, domain::party_contact_information>(
         ctx_,
         query,
         [](const auto& entities) { return party_contact_information_mapper::map(entities); },

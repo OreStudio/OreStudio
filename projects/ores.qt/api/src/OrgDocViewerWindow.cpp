@@ -20,9 +20,9 @@
 #include "ores.qt/OrgDocViewerWindow.hpp"
 #include "ores.orgmode/indexing/resolver.hpp"
 #include "ores.orgmode/parser/parser.hpp"
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt.headless/OrgDocRenderer.hpp"
 #include "ores.qt.headless/RepoFileFinder.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QAction>
 #include <QTextBrowser>
 #include <QToolBar>
@@ -114,9 +114,9 @@ void OrgDocViewerWindow::showCurrent() {
         const auto doc = orgmode::parser::parse_file(target->path);
         browser_->setHtml(render_org_doc_to_html(doc));
     } catch (const std::exception& e) {
-        browser_->setPlainText(tr("(Could not parse '%1': %2)")
-                                    .arg(QString::fromStdString(target->path),
-                                         QString::fromStdString(e.what())));
+        browser_->setPlainText(
+            tr("(Could not parse '%1': %2)")
+                .arg(QString::fromStdString(target->path), QString::fromStdString(e.what())));
     }
 }
 

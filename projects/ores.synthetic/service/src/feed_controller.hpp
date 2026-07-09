@@ -234,11 +234,11 @@ public:
      * untouched otherwise.
      */
     bool validate(const std::string& ore_key,
-                 const std::string& vintage_source,
-                 const std::string& vintage_date,
-                 std::string& error_detail,
-                 const std::string& caller_bearer_token = {},
-                 double* resolved_price = nullptr) {
+                  const std::string& vintage_source,
+                  const std::string& vintage_date,
+                  std::string& error_detail,
+                  const std::string& caller_bearer_token = {},
+                  double* resolved_price = nullptr) {
         return vintage_data_available(ore_key,
                                       vintage_source,
                                       vintage_date,
@@ -250,9 +250,10 @@ public:
 private:
     // Split "FX/RATE/EUR/USD" into ("FX", "RATE", "EUR/USD"). Returns false
     // (and leaves the out-params untouched) if there are fewer than 3 parts.
-    static bool
-    parse_ore_key(const std::string& ore_key, std::string& series_type,
-                 std::string& metric, std::string& qualifier) {
+    static bool parse_ore_key(const std::string& ore_key,
+                              std::string& series_type,
+                              std::string& metric,
+                              std::string& qualifier) {
         std::vector<std::string> parts;
         std::stringstream ss(ore_key);
         std::string tok;
@@ -290,14 +291,14 @@ private:
     // callers in "vintage" mode can seed the process from it instead of an
     // arbitrary/zero initial price.
     bool vintage_data_available(const std::string& ore_key,
-                               const std::string& vintage_source,
-                               const std::string& vintage_date,
-                               std::string& error_detail,
-                               const std::string& caller_bearer_token = {},
-                               double* resolved_price = nullptr) {
+                                const std::string& vintage_source,
+                                const std::string& vintage_date,
+                                std::string& error_detail,
+                                const std::string& caller_bearer_token = {},
+                                double* resolved_price = nullptr) {
         const auto missing_message = [&] {
-            return "No vintage data found for source=" + vintage_source +
-                   ", date=" + vintage_date + ".";
+            return "No vintage data found for source=" + vintage_source + ", date=" + vintage_date +
+                   ".";
         };
 
         std::string series_type, metric, qualifier;
@@ -333,7 +334,7 @@ private:
                         *resolved_price = std::stod(obs.value);
                     } catch (const std::exception& e) {
                         error_detail = "Vintage observation value '" + obs.value +
-                                      "' is not a valid number: " + e.what();
+                                       "' is not a valid number: " + e.what();
                         return false;
                     }
                 }

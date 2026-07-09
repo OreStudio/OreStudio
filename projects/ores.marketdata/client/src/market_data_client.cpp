@@ -107,10 +107,8 @@ market_data_client::save_series(const std::vector<domain::market_series>& series
     return count;
 }
 
-std::expected<std::optional<domain::market_series>, std::string>
-market_data_client::find_series(const std::string& series_type,
-                                const std::string& metric,
-                                const std::string& qualifier) {
+std::expected<std::optional<domain::market_series>, std::string> market_data_client::find_series(
+    const std::string& series_type, const std::string& metric, const std::string& qualifier) {
     messaging::get_market_series_request req;
     req.limit = 10000;
     auto resp = send(nats_, req);

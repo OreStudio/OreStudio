@@ -19,8 +19,8 @@
  */
 #include "ores.qt/SystemProvisionerWizard.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.qt.headless/FontUtils.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PasswordMatchIndicator.hpp"
 #include "ores.qt/WidgetUtils.hpp"

@@ -18,9 +18,9 @@
  *
  */
 #include "ores.qt/ChangeReasonItemDelegate.hpp"
+#include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/ClientChangeReasonModel.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
-#include "ores.qt.headless/FontUtils.hpp"
 #include <QApplication>
 #include <QPainter>
 #include <QStyleOptionViewItem>

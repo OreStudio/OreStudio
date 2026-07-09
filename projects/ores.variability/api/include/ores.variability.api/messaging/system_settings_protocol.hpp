@@ -85,8 +85,7 @@ struct delete_setting_response {
 // the tenant is scoped from that JWT, never from client-supplied data.
 struct clear_bootstrap_mode_request {
     using response_type = struct clear_bootstrap_mode_response;
-    static constexpr std::string_view nats_subject =
-        "variability.v1.settings.clear_bootstrap_mode";
+    static constexpr std::string_view nats_subject = "variability.v1.settings.clear_bootstrap_mode";
 };
 
 struct clear_bootstrap_mode_response {

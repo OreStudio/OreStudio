@@ -320,10 +320,10 @@ public:
             if (!current) {
                 reply(nats_,
                       msg,
-                      get_party_composite_as_of_response{
-                          .success = false,
-                          .message = "No such party version: " + req->id + " v" +
-                              std::to_string(version)});
+                      get_party_composite_as_of_response{.success = false,
+                                                         .message =
+                                                             "No such party version: " + req->id +
+                                                             " v" + std::to_string(version)});
                 return;
             }
 
@@ -334,9 +334,9 @@ public:
             // "Temporal composite entity versioning" architecture doc; the
             // domain object does not surface valid_to directly).
             auto next = party_svc.get_party_at_version(id_uuid, version + 1);
-            const auto window_end = next ? next->recorded_at
-                                         : std::chrono::system_clock::now() +
-                                               std::chrono::hours(24 * 365 * 100);
+            const auto window_end =
+                next ? next->recorded_at :
+                       std::chrono::system_clock::now() + std::chrono::hours(24 * 365 * 100);
 
             service::party_identifier_service identifier_svc(ctx);
             auto identifiers = identifier_svc.list_party_identifiers_by_party_id_as_of(
@@ -355,8 +355,9 @@ public:
                                                      .contacts = std::move(contacts)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(
-                nats_, msg, get_party_composite_as_of_response{.success = false, .message = e.what()});
+            reply(nats_,
+                  msg,
+                  get_party_composite_as_of_response{.success = false, .message = e.what()});
         }
     }
 

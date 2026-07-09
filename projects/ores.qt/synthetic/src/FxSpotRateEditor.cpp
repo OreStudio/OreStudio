@@ -19,6 +19,8 @@
  */
 #include "ores.qt/FxSpotRateEditor.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -27,8 +29,6 @@
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/ReturnDistributionChart.hpp"
 #include "ores.qt/SamplePricePathsChart.hpp"
-#include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
-#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.synthetic.api/domain/process_parameter_validation.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
@@ -57,17 +57,17 @@
 #include <QTableWidget>
 #include <QTextBrowser>
 #include <QtConcurrent>
-#include <set>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
-#include <chrono>
-#include <format>
-#include <tuple>
 #include <cctype>
+#include <chrono>
 #include <cmath>
+#include <format>
 #include <optional>
+#include <set>
+#include <tuple>
 #include <utility>
 
 namespace ores::qt {
@@ -372,8 +372,8 @@ void FxSpotRateEditor::buildInstrumentTab() {
     // the radio-to-fields relationship is then unambiguous (a flat form
     // listing both groups' fields side by side, distinguished only by
     // greying, was confusing).
-    auto* priceSourceIntro = new QLabel(
-        tr("Where this rate's initial spot comes from — pick one."), tab);
+    auto* priceSourceIntro =
+        new QLabel(tr("Where this rate's initial spot comes from — pick one."), tab);
     priceSourceIntro->setStyleSheet("color: gray; font-style: italic;");
     layout->addWidget(priceSourceIntro);
 
@@ -423,9 +423,9 @@ void FxSpotRateEditor::buildInstrumentTab() {
     vintageForm->addRow(QString(), browseVintageButton_);
     layout->addLayout(vintageForm);
     connect(browseVintageButton_,
-           &QPushButton::clicked,
-           this,
-           &FxSpotRateEditor::onBrowseVintageClicked);
+            &QPushButton::clicked,
+            this,
+            &FxSpotRateEditor::onBrowseVintageClicked);
 
     layout->addStretch(1);
 
@@ -439,10 +439,9 @@ void FxSpotRateEditor::buildInstrumentTab() {
         browseVintageButton_->setEnabled(vintage);
     };
     updatePriceSourceEnablement();
-    connect(priceSourceGroup_,
-           &QButtonGroup::idClicked,
-           this,
-           [updatePriceSourceEnablement](int) { updatePriceSourceEnablement(); });
+    connect(priceSourceGroup_, &QButtonGroup::idClicked, this, [updatePriceSourceEnablement](int) {
+        updatePriceSourceEnablement();
+    });
 
     tabWidget_->addTab(tab, tr("Instrument"));
 
@@ -967,8 +966,7 @@ void FxSpotRateEditor::onBrowseVintageClicked() {
     const auto base = baseCombo_->currentText().toStdString();
     const auto quote = quoteCombo_->currentText().toStdString();
     if (base.empty() || quote.empty()) {
-        QMessageBox::warning(
-            this, tr("Incomplete"), tr("Pick base and quote currencies first."));
+        QMessageBox::warning(this, tr("Incomplete"), tr("Pick base and quote currencies first."));
         return;
     }
     const std::string qualifier = base + "/" + quote;
@@ -996,7 +994,9 @@ void FxSpotRateEditor::onBrowseVintageClicked() {
         series_req.limit = 10000;
         auto series_resp = cm->process_authenticated_request(series_req);
         if (!series_resp)
-            return {.success = false, .vintages = {}, .error = QString::fromStdString(series_resp.error())};
+            return {.success = false,
+                    .vintages = {},
+                    .error = QString::fromStdString(series_resp.error())};
 
         std::string series_id;
         for (const auto& s : series_resp->market_series) {
@@ -1013,7 +1013,9 @@ void FxSpotRateEditor::onBrowseVintageClicked() {
         obs_req.limit = 10000;
         auto obs_resp = cm->process_authenticated_request(obs_req);
         if (!obs_resp)
-            return {.success = false, .vintages = {}, .error = QString::fromStdString(obs_resp.error())};
+            return {.success = false,
+                    .vintages = {},
+                    .error = QString::fromStdString(obs_resp.error())};
 
         std::set<std::pair<std::string, std::string>> seen;
         std::vector<Vintage> vintages;
@@ -1038,8 +1040,7 @@ void FxSpotRateEditor::onBrowseVintageClicked() {
         if (!self)
             return;
         if (!result.success) {
-            QMessageBox::warning(
-                self, self->tr("Failed to fetch vintages"), result.error);
+            QMessageBox::warning(self, self->tr("Failed to fetch vintages"), result.error);
             return;
         }
         if (result.vintages.empty()) {
@@ -1047,19 +1048,20 @@ void FxSpotRateEditor::onBrowseVintageClicked() {
                 self,
                 self->tr("No vintages found"),
                 self->tr("No market data has been imported yet for FX/RATE/%1/%2. Run an "
-                        "import first, then browse again.")
+                         "import first, then browse again.")
                     .arg(QString::fromStdString(base), QString::fromStdString(quote)));
             return;
         }
 
         QDialog dialog(self);
-        dialog.setWindowTitle(self->tr("Available vintages for %1/%2")
-                                  .arg(QString::fromStdString(base), QString::fromStdString(quote)));
+        dialog.setWindowTitle(
+            self->tr("Available vintages for %1/%2")
+                .arg(QString::fromStdString(base), QString::fromStdString(quote)));
         auto* layout = new QVBoxLayout(&dialog);
         auto* list = new QListWidget(&dialog);
         for (const auto& v : result.vintages) {
-            list->addItem(QString("%1 — %2")
-                              .arg(QString::fromStdString(v.source), QString::fromStdString(v.date)));
+            list->addItem(QString("%1 — %2").arg(QString::fromStdString(v.source),
+                                                 QString::fromStdString(v.date)));
         }
         list->setCurrentRow(0);
         layout->addWidget(list);
@@ -1770,7 +1772,7 @@ void FxSpotRateEditor::onSaveClicked() {
 
     const bool vintageMode = priceSourceGroup_->checkedId() == 1;
     if (vintageMode && (vintageSourceEdit_->text().trimmed().isEmpty() ||
-                       vintageDateEdit_->text().trimmed().isEmpty())) {
+                        vintageDateEdit_->text().trimmed().isEmpty())) {
         QMessageBox::warning(this,
                              tr("Incomplete"),
                              tr("Vintage source and date are both required when the price source "

@@ -210,11 +210,10 @@ public:
                     hdrs[std::string(ores::nats::headers::delegated_authorization)] =
                         std::string(ores::nats::headers::bearer_prefix) + bearer;
 
-                const auto resp_msg =
-                    nats_.request_sync(clear_bootstrap_mode_request::nats_subject,
-                                       std::span<const std::byte>(p, json.size()),
-                                       std::move(hdrs),
-                                       std::chrono::seconds(5));
+                const auto resp_msg = nats_.request_sync(clear_bootstrap_mode_request::nats_subject,
+                                                         std::span<const std::byte>(p, json.size()),
+                                                         std::move(hdrs),
+                                                         std::chrono::seconds(5));
                 const std::string_view sv(reinterpret_cast<const char*>(resp_msg.data.data()),
                                           resp_msg.data.size());
                 const auto resp = rfl::json::read<clear_bootstrap_mode_response>(sv);

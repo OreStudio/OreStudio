@@ -258,53 +258,51 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
         // sidesteps it entirely rather than working around it.) Shared
         // between the menu action and --open-scenario startup below —
         // both need a live widget/window before they can do anything.
-        auto ensure_qa_runner_window = [this, main_window = smc.main_window, mdi_area = smc.mdi_area]() {
-            if (qaValidationRunnerWindow_)
-                return;
-            qaValidationRunnerWidget_ = new QaValidationRunnerWidget(main_window);
-            qaValidationRunnerWidget_->setMdiArea(mdi_area);
-            qaValidationRunnerWindow_ = new DetachableMdiSubWindow();
-            qaValidationRunnerWindow_->setWidget(qaValidationRunnerWidget_);
-            qaValidationRunnerWindow_->setWindowTitle(tr("Scenario Runner"));
-            qaValidationRunnerWindow_->setWindowIcon(ico(Icon::TasksApp));
-            qaValidationRunnerWindow_->setAttribute(Qt::WA_DeleteOnClose);
-            mdi_area->addSubWindow(qaValidationRunnerWindow_);
+        auto ensure_qa_runner_window =
+            [this, main_window = smc.main_window, mdi_area = smc.mdi_area]() {
+                if (qaValidationRunnerWindow_)
+                    return;
+                qaValidationRunnerWidget_ = new QaValidationRunnerWidget(main_window);
+                qaValidationRunnerWidget_->setMdiArea(mdi_area);
+                qaValidationRunnerWindow_ = new DetachableMdiSubWindow();
+                qaValidationRunnerWindow_->setWidget(qaValidationRunnerWidget_);
+                qaValidationRunnerWindow_->setWindowTitle(tr("Scenario Runner"));
+                qaValidationRunnerWindow_->setWindowIcon(ico(Icon::TasksApp));
+                qaValidationRunnerWindow_->setAttribute(Qt::WA_DeleteOnClose);
+                mdi_area->addSubWindow(qaValidationRunnerWindow_);
 
-            connect(qaValidationRunnerWindow_,
-                   &QObject::destroyed,
-                   this,
-                   [this]() {
-                       qaValidationRunnerWindow_ = nullptr;
-                       qaValidationRunnerWidget_ = nullptr;
-                   });
-            connect(qaValidationRunnerWidget_,
-                   &QaValidationRunnerWidget::statusMessage,
-                   main_window,
-                   [main_window](const QString& message) {
-                       if (auto* bar = main_window->statusBar())
-                           bar->showMessage(message, 5000);
-                   });
-            connect(qaValidationRunnerWidget_,
-                   &QaValidationRunnerWidget::errorOccurred,
-                   main_window,
-                   [main_window](const QString& message) {
-                       QMessageBox::warning(main_window, tr("Scenario Runner"), message);
-                   });
-        };
+                connect(qaValidationRunnerWindow_, &QObject::destroyed, this, [this]() {
+                    qaValidationRunnerWindow_ = nullptr;
+                    qaValidationRunnerWidget_ = nullptr;
+                });
+                connect(qaValidationRunnerWidget_,
+                        &QaValidationRunnerWidget::statusMessage,
+                        main_window,
+                        [main_window](const QString& message) {
+                            if (auto* bar = main_window->statusBar())
+                                bar->showMessage(message, 5000);
+                        });
+                connect(qaValidationRunnerWidget_,
+                        &QaValidationRunnerWidget::errorOccurred,
+                        main_window,
+                        [main_window](const QString& message) {
+                            QMessageBox::warning(main_window, tr("Scenario Runner"), message);
+                        });
+            };
 
         auto* testingMenu = smc.system_menu->addMenu(tr("&Testing"));
         auto* actQaRunner = testingMenu->addAction(tr("Scenario Runner"));
         connect(actQaRunner,
-               &QAction::triggered,
-               this,
-               [this, ensure_qa_runner_window, mdi_area = smc.mdi_area]() {
-                   ensure_qa_runner_window();
-                   qaValidationRunnerWindow_->setVisible(true);
-                   mdi_area->setActiveSubWindow(qaValidationRunnerWindow_);
-                   qaValidationRunnerWindow_->show();
-                   qaValidationRunnerWindow_->raise();
-                   qaValidationRunnerWindow_->activateWindow();
-               });
+                &QAction::triggered,
+                this,
+                [this, ensure_qa_runner_window, mdi_area = smc.mdi_area]() {
+                    ensure_qa_runner_window();
+                    qaValidationRunnerWindow_->setVisible(true);
+                    mdi_area->setActiveSubWindow(qaValidationRunnerWindow_);
+                    qaValidationRunnerWindow_->show();
+                    qaValidationRunnerWindow_->raise();
+                    qaValidationRunnerWindow_->activateWindow();
+                });
 
         // Gated by a runtime system setting (not a compile-time macro): a
         // fleet-wide manual-testing tool, not something to strip from
@@ -314,12 +312,12 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
         // override that here so the action stays visible before login too;
         // refresh() (on login/reconnect) then corrects it if the setting is
         // explicitly false.
-        qaValidationRunnerSettingGate_ =
-            new SettingGatedActionController(smc.client_manager, this);
-        qaValidationRunnerSettingGate_->registerAction(actQaRunner,
-                                                       QStringLiteral("system.qa_validation_runner_enabled"),
-                                                       /*guard=*/{},
-                                                       /*default_when_missing=*/true);
+        qaValidationRunnerSettingGate_ = new SettingGatedActionController(smc.client_manager, this);
+        qaValidationRunnerSettingGate_->registerAction(
+            actQaRunner,
+            QStringLiteral("system.qa_validation_runner_enabled"),
+            /*guard=*/{},
+            /*default_when_missing=*/true);
         actQaRunner->setVisible(true);
 
         // --open-scenario: launch straight into a scenario, so the tester

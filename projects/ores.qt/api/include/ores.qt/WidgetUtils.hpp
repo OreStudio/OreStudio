@@ -104,14 +104,14 @@ public:
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override {
         switch (event->type()) {
-        case QEvent::MouseButtonPress:
-        case QEvent::MouseButtonRelease:
-        case QEvent::MouseButtonDblClick:
-        case QEvent::Wheel:
-        case QEvent::KeyPress:
-            return true; // swallow: block the interaction, keep the widget visually normal
-        default:
-            return QObject::eventFilter(watched, event);
+            case QEvent::MouseButtonPress:
+            case QEvent::MouseButtonRelease:
+            case QEvent::MouseButtonDblClick:
+            case QEvent::Wheel:
+            case QEvent::KeyPress:
+                return true; // swallow: block the interaction, keep the widget visually normal
+            default:
+                return QObject::eventFilter(watched, event);
         }
     }
 };

@@ -18,11 +18,11 @@
  *
  */
 #include "ores.qt/AccountItemDelegate.hpp"
+#include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ClientAccountModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
-#include "ores.qt.headless/FontUtils.hpp"
 #include <QApplication>
 #include <QPainter>
 #include <QStyleOptionViewItem>

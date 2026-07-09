@@ -109,7 +109,8 @@ party_identifier_service::get_party_identifier_at_version(const std::string& id,
     return repo_.read_at_version(ctx_, id, version);
 }
 
-std::vector<domain::party_identifier> party_identifier_service::list_party_identifiers_by_party_id_as_of(
+std::vector<domain::party_identifier>
+party_identifier_service::list_party_identifiers_by_party_id_as_of(
     const std::string& party_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {

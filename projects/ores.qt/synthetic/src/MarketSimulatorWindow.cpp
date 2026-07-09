@@ -500,9 +500,9 @@ void MarketSimulatorWindow::setupConnections() {
     connect(startAllAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStartAllClicked);
     connect(stopAllAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStopAllClicked);
     connect(validateVintageAction_,
-           &QAction::triggered,
-           this,
-           &MarketSimulatorWindow::onValidateVintageClicked);
+            &QAction::triggered,
+            this,
+            &MarketSimulatorWindow::onValidateVintageClicked);
 }
 
 void MarketSimulatorWindow::onReloadClicked() {
@@ -1596,8 +1596,8 @@ void MarketSimulatorWindow::onValidateVintageClicked() {
         for (const auto& [label, ok, message] : results) {
             if (ok)
                 ++okCount;
-            lines << (ok ? tr("✓ %1 — %2").arg(QString::fromStdString(label), message)
-                        : tr("✗ %1 — %2").arg(QString::fromStdString(label), message));
+            lines << (ok ? tr("✓ %1 — %2").arg(QString::fromStdString(label), message) :
+                           tr("✗ %1 — %2").arg(QString::fromStdString(label), message));
         }
         QMessageBox::information(
             self,

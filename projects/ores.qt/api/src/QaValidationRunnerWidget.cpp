@@ -21,13 +21,13 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.orgmode/indexing/resolver.hpp"
 #include "ores.orgmode/parser/parser.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt.headless/EnvironmentMetadata.hpp"
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt.headless/OrgDocRenderer.hpp"
-#include "ores.qt/OrgDocViewerWindow.hpp"
 #include "ores.qt.headless/RepoFileFinder.hpp"
 #include "ores.qt.headless/TestScenarioResultsWriter.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/OrgDocViewerWindow.hpp"
 #include <QColor>
 #include <QDialogButtonBox>
 #include <QDir>
@@ -39,10 +39,10 @@
 #include <QLabel>
 #include <QListWidget>
 #include <QMdiArea>
-#include <QRegularExpression>
 #include <QPlainTextEdit>
 #include <QProcess>
 #include <QPushButton>
+#include <QRegularExpression>
 #include <QTabWidget>
 #include <QTextBrowser>
 #include <QToolBar>
@@ -65,8 +65,8 @@ auto& lg() {
 /**
  * @brief Find a top-level heading by exact title, or nullptr.
  */
-const orgmode::domain::heading*
-find_heading(const orgmode::domain::document& doc, const std::string& title) {
+const orgmode::domain::heading* find_heading(const orgmode::domain::document& doc,
+                                             const std::string& title) {
     for (const auto& h : doc.headings) {
         if (h.title == title)
             return &h;
@@ -139,31 +139,32 @@ qa_step make_step(const orgmode::domain::heading& step_heading, const QString& c
 
 QIcon status_icon(step_status status) {
     switch (status) {
-    case step_status::pass:
-        return IconUtils::createRecoloredIcon(Icon::CheckmarkCircleFilled, QColor(76, 175, 80));
-    case step_status::fail:
-        return IconUtils::createRecoloredIcon(Icon::DismissCircleFilled, QColor(229, 57, 53));
-    case step_status::pending:
-    default:
-        return IconUtils::createRecoloredIcon(Icon::Clock, QColor(255, 193, 7));
+        case step_status::pass:
+            return IconUtils::createRecoloredIcon(Icon::CheckmarkCircleFilled, QColor(76, 175, 80));
+        case step_status::fail:
+            return IconUtils::createRecoloredIcon(Icon::DismissCircleFilled, QColor(229, 57, 53));
+        case step_status::pending:
+        default:
+            return IconUtils::createRecoloredIcon(Icon::Clock, QColor(255, 193, 7));
     }
 }
 
 QString status_text(step_status status) {
     switch (status) {
-    case step_status::pass:
-        return QObject::tr("PASS");
-    case step_status::fail:
-        return QObject::tr("FAIL");
-    case step_status::pending:
-    default:
-        return QObject::tr("PENDING");
+        case step_status::pass:
+            return QObject::tr("PASS");
+        case step_status::fail:
+            return QObject::tr("FAIL");
+        case step_status::pending:
+        default:
+            return QObject::tr("PENDING");
     }
 }
 
 }
 
-QaValidationRunnerWidget::QaValidationRunnerWidget(QWidget* parent) : QWidget(parent) {
+QaValidationRunnerWidget::QaValidationRunnerWidget(QWidget* parent)
+    : QWidget(parent) {
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
@@ -211,8 +212,9 @@ QaValidationRunnerWidget::QaValidationRunnerWidget(QWidget* parent) : QWidget(pa
         auto* tabLayout = new QVBoxLayout(tab);
         auto* browser = new QTextBrowser(tab);
         browser->setOpenLinks(false);
-        connect(browser, &QTextBrowser::anchorClicked, this,
-            [this](const QUrl& url) { followContextLink(url); });
+        connect(browser, &QTextBrowser::anchorClicked, this, [this](const QUrl& url) {
+            followContextLink(url);
+        });
         tabLayout->addWidget(browser);
         tabWidget_->addTab(tab, tabTitle);
         return browser;
@@ -220,10 +222,13 @@ QaValidationRunnerWidget::QaValidationRunnerWidget(QWidget* parent) : QWidget(pa
     storyBrowser_ = make_context_tab(tr("Story"));
     taskBrowser_ = make_context_tab(tr("Task"));
 
-    connect(openAction_, &QAction::triggered, this, &QaValidationRunnerWidget::promptAndLoadScenario);
+    connect(
+        openAction_, &QAction::triggered, this, &QaValidationRunnerWidget::promptAndLoadScenario);
     connect(saveAction_, &QAction::triggered, this, [this]() { save(); });
-    connect(stepsList_, &QListWidget::itemDoubleClicked, this,
-        &QaValidationRunnerWidget::openStepDetail);
+    connect(stepsList_,
+            &QListWidget::itemDoubleClicked,
+            this,
+            &QaValidationRunnerWidget::openStepDetail);
 }
 
 void QaValidationRunnerWidget::promptAndLoadScenario() {
@@ -238,7 +243,8 @@ bool QaValidationRunnerWidget::loadScenario(const QString& path) {
     try {
         doc = orgmode::parser::parse_file(path.toStdString());
     } catch (const std::exception& e) {
-        emit errorOccurred(tr("Could not parse '%1': %2").arg(path, QString::fromStdString(e.what())));
+        emit errorOccurred(
+            tr("Could not parse '%1': %2").arg(path, QString::fromStdString(e.what())));
         return false;
     }
 
@@ -255,11 +261,12 @@ bool QaValidationRunnerWidget::loadScenario(const QString& path) {
     taskId_ = find_link_field_id(*info, "Verifies task");
     storyId_ = find_link_field_id(*info, "Parent story");
 
-    titleLabel_->setText(QString::fromStdString(doc.find_keyword("title").value_or(path.toStdString())));
-    const QString targetDialog = QString::fromStdString(doc.find_keyword("target_dialog").value_or(""));
-    targetDialogLabel_->setText(
-        targetDialog.isEmpty() ? tr("Target dialog: (none specified)")
-                               : tr("Target dialog: %1").arg(targetDialog));
+    titleLabel_->setText(
+        QString::fromStdString(doc.find_keyword("title").value_or(path.toStdString())));
+    const QString targetDialog =
+        QString::fromStdString(doc.find_keyword("target_dialog").value_or(""));
+    targetDialogLabel_->setText(targetDialog.isEmpty() ? tr("Target dialog: (none specified)") :
+                                                         tr("Target dialog: %1").arg(targetDialog));
 
     // A step is a heading directly under * Steps. A multi-client
     // scenario nests steps one level deeper instead, under a
@@ -291,8 +298,9 @@ bool QaValidationRunnerWidget::loadScenario(const QString& path) {
 void QaValidationRunnerWidget::rebuildStepList() {
     stepsList_->clear();
     for (const auto& step : steps_) {
-        const QString label =
-            step.client.isEmpty() ? step.title : QStringLiteral("[%1] %2").arg(step.client, step.title);
+        const QString label = step.client.isEmpty() ?
+                                  step.title :
+                                  QStringLiteral("[%1] %2").arg(step.client, step.title);
         auto* item = new QListWidgetItem(status_icon(step.status), label, stepsList_);
         item->setToolTip(label);
     }
@@ -310,10 +318,12 @@ void QaValidationRunnerWidget::updateOverallStatusLabel() {
         overallStatusLabel_->setText(tr("Status: (no steps)"));
         return;
     }
-    const bool any_fail = std::any_of(steps_.begin(), steps_.end(),
-        [](const qa_step& s) { return s.status == step_status::fail; });
-    const bool all_pass = std::all_of(steps_.begin(), steps_.end(),
-        [](const qa_step& s) { return s.status == step_status::pass; });
+    const bool any_fail = std::any_of(steps_.begin(), steps_.end(), [](const qa_step& s) {
+        return s.status == step_status::fail;
+    });
+    const bool all_pass = std::all_of(steps_.begin(), steps_.end(), [](const qa_step& s) {
+        return s.status == step_status::pass;
+    });
 
     QString text;
     QString color;
@@ -368,7 +378,8 @@ void QaValidationRunnerWidget::openStepDetail(QListWidgetItem* item) {
 
     auto* box = new QDialogButtonBox(QDialogButtonBox::Close, content);
     if (auto* closeButton = box->button(QDialogButtonBox::Close)) {
-        closeButton->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+        closeButton->setIcon(
+            IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
         closeButton->setText(tr("Close"));
     }
     auto* passButton = box->addButton(tr("Pass"), QDialogButtonBox::ActionRole);
@@ -404,8 +415,9 @@ void QaValidationRunnerWidget::openStepDetail(QListWidgetItem* item) {
     };
     connect(passButton, &QPushButton::clicked, subWindow, [apply]() { apply(step_status::pass); });
     connect(failButton, &QPushButton::clicked, subWindow, [apply]() { apply(step_status::fail); });
-    connect(pendingButton, &QPushButton::clicked, subWindow,
-        [apply]() { apply(step_status::pending); });
+    connect(pendingButton, &QPushButton::clicked, subWindow, [apply]() {
+        apply(step_status::pending);
+    });
 
     // Notes typed but not confirmed via a status button are still worth
     // keeping — persist on every edit rather than tying it to a
@@ -429,10 +441,12 @@ bool QaValidationRunnerWidget::save() {
     }
 
     scenario_result result;
-    const bool any_fail = std::any_of(steps_.begin(), steps_.end(),
-        [](const qa_step& s) { return s.status == step_status::fail; });
-    const bool all_pass = std::all_of(steps_.begin(), steps_.end(),
-        [](const qa_step& s) { return s.status == step_status::pass; });
+    const bool any_fail = std::any_of(steps_.begin(), steps_.end(), [](const qa_step& s) {
+        return s.status == step_status::fail;
+    });
+    const bool all_pass = std::all_of(steps_.begin(), steps_.end(), [](const qa_step& s) {
+        return s.status == step_status::pass;
+    });
     result.status = any_fail ? "FAILED" : (all_pass ? "PASSED" : "PENDING");
 
     for (const auto& step : steps_)
@@ -464,8 +478,16 @@ void QaValidationRunnerWidget::stampJournal(const QString& status) {
     QProcess process;
     process.setWorkingDirectory(QFileInfo(compass_sh).absolutePath());
     process.start(compass_sh,
-        {"journal", "update", "--story", storyId_, "--task", taskId_, "--branch",
-            capture_environment_metadata(scenarioPath_).branch, "--state", status});
+                  {"journal",
+                   "update",
+                   "--story",
+                   storyId_,
+                   "--task",
+                   taskId_,
+                   "--branch",
+                   capture_environment_metadata(scenarioPath_).branch,
+                   "--state",
+                   status});
     process.waitForFinished(5000);
 }
 
@@ -504,9 +526,9 @@ void QaValidationRunnerWidget::renderIdInto(orgmode::indexing::resolver* resolve
         const auto doc = orgmode::parser::parse_file(target->path);
         browser->setHtml(render_org_doc_to_html(doc));
     } catch (const std::exception& e) {
-        browser->setPlainText(tr("(Could not parse '%1': %2)")
-                                   .arg(QString::fromStdString(target->path),
-                                        QString::fromStdString(e.what())));
+        browser->setPlainText(
+            tr("(Could not parse '%1': %2)")
+                .arg(QString::fromStdString(target->path), QString::fromStdString(e.what())));
     }
 }
 
@@ -540,8 +562,7 @@ void QaValidationRunnerWidget::followContextLink(const QUrl& url) {
     auto* subWindow = new DetachableMdiSubWindow();
     subWindow->setAttribute(Qt::WA_DeleteOnClose);
     subWindow->setWidget(viewer);
-    connect(viewer, &OrgDocViewerWindow::windowTitleChanged, subWindow,
-        &QWidget::setWindowTitle);
+    connect(viewer, &OrgDocViewerWindow::windowTitleChanged, subWindow, &QWidget::setWindowTitle);
     mdiArea_->addSubWindow(subWindow);
     subWindow->resize(600, 500);
     subWindow->show();

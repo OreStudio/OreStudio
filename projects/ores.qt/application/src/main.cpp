@@ -18,8 +18,8 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.qt/CommandLineParser.hpp"
 #include "ores.qt.headless/FontUtils.hpp"
+#include "ores.qt/CommandLineParser.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/PluginRegistry.hpp"

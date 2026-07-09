@@ -19,8 +19,8 @@
  */
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <rfl/json.hpp>
 #include <algorithm>
+#include <rfl/json.hpp>
 
 namespace ores::eventing::service {
 
@@ -42,7 +42,8 @@ void publish_entity_event(ores::nats::service::client& nats,
         std::transform(json.begin(), json.end(), data.begin(), [](char c) { return std::byte(c); });
         nats.publish(subject, std::move(data), {});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to publish event to '" << subject << "': " << e.what();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to publish event to '" << subject << "': " << e.what();
     }
 }
 

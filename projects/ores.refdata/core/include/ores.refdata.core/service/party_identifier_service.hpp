@@ -141,8 +141,8 @@ public:
      * @brief Retrieves a single party identifier as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      */
-    std::optional<domain::party_identifier>
-    get_party_identifier_at_version(const std::string& id, std::uint32_t version);
+    std::optional<domain::party_identifier> get_party_identifier_at_version(const std::string& id,
+                                                                            std::uint32_t version);
 
     /**
      * @brief Lists party identifiers for a party that were live during a
@@ -150,8 +150,8 @@ public:
      */
     std::vector<domain::party_identifier>
     list_party_identifiers_by_party_id_as_of(const std::string& party_id,
-                                         std::chrono::system_clock::time_point valid_from_bound,
-                                         std::chrono::system_clock::time_point valid_to_bound);
+                                             std::chrono::system_clock::time_point valid_from_bound,
+                                             std::chrono::system_clock::time_point valid_to_bound);
 
 private:
     context ctx_;

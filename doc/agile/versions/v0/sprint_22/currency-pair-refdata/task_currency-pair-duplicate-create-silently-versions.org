@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/test-ore-fx-convention-import
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -46,22 +46,49 @@ scope that out before committing to an approach.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and building; needs manual QA. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Next         | Test, then bundle into the same PR as the FX convention test. |
+| Last touched | 2026-07-09                               |
 
 * Acceptance
 
--
+- [X] Creating a new Currency Pair whose derived =pair_code= collides
+  with an existing one shows a clear "Duplicate Pair" error dialog and
+  blocks the save, rather than silently succeeding.
+- [X] Editing an existing pair is unaffected (check is create-mode
+  only).
+- [X] Fix is scoped to the Qt client, not the shared SQL insert
+  trigger — the trigger's upsert-by-natural-key semantics are relied
+  on by the DQ→refdata publish flow and must not change.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Design decision: reject at the SQL trigger level was ruled out —
+=ores_refdata_currency_pairs_insert_fn= is shared with the
+DQ→refdata publish flow (=refdata_publish_from_dq_create.sql=), which
+relies on exactly this "insert with version=0 upserts/re-versions an
+existing row" behaviour for its own =insert_only=/=replace_all= modes.
+Tightening the trigger to reject on any duplicate would break that.
+
+Fix instead lives entirely client-side: a new paste-block seam
+(=4E83FA7A-742A-4102-90AF-D337F6FB1269=) inside the shared
+=onSaveClicked()= template, right after =validateInput()= passes and
+before the change-reason prompt/save dispatch — synchronous (not
+=QtConcurrent=-wrapped, matching existing precedent e.g.
+=SystemSettingController::onRevertClicked=), fetches the current pair
+list (explicit high =limit= — the request's default of 100 would
+silently miss pairs beyond the first page) and checks the
+UI-derived =pair_code= against it.
+
+Found and fixed a real bug while implementing: the first version
+compared against =pair_.pair_code=, which isn't synced from the UI
+until =updatePairFromUi()= runs *later* in =onSaveClicked()= — so the
+check was always comparing against an empty string and would never
+have caught an actual duplicate. Fixed by reading
+=ui_->pairCodeEdit->text()= directly instead.
 
 * Notes
 

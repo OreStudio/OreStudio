@@ -287,6 +287,28 @@ void CurrencyPairDetailDialog::onSaveClicked() {
         return;
     }
 
+    if (createMode_) {
+        // pair_.pair_code isn't synced from the UI until updatePairFromUi()
+        // runs, later in this function -- read the live combo-derived value
+        // directly rather than the (still-stale/empty) domain object.
+        const std::string derivedPairCode = ui_->pairCodeEdit->text().trimmed().toStdString();
+
+        refdata::messaging::get_currency_pairs_request checkRequest;
+        checkRequest.limit = 100000;
+        auto checkResult = clientManager_->process_authenticated_request(std::move(checkRequest));
+        if (checkResult) {
+            const bool exists = std::ranges::any_of(
+                checkResult->pairs, [&](const auto& p) { return p.pair_code == derivedPairCode; });
+            if (exists) {
+                MessageBoxHelper::warning(this,
+                                          "Duplicate Pair",
+                                          QString("A currency pair '%1' already exists.")
+                                              .arg(QString::fromStdString(derivedPairCode)));
+                return;
+            }
+        }
+    }
+
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");

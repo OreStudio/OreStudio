@@ -300,6 +300,52 @@ void CurrencyPairDetailDialog::updatePairCodeFromCurrencies() {
 }
 #+end_src
 
+** Qt: reject duplicate pair_code on create
+:PROPERTIES:
+:ID: 9F1C4E27-8B3D-4A6E-9C2F-5D7A8B3E1F04
+:END:
+
+The SQL insert trigger treats a colliding =pair_code= as the next
+*version* of the existing row (upsert-by-natural-key, the same
+pattern every bitemporal entity uses) rather than rejecting it — the
+trigger can't distinguish "genuine create" from "republish/upsert"
+without breaking the DQ→refdata publish flow, which relies on that
+exact semantics for its own re-versioning. So the check has to live
+client-side, scoped to just the interactive Add flow — see
+[[id:03FDF102-2379-4C73-BFD8-FA71BF670BF5][Creating a Currency Pair with an already-used pair_code silently
+versions the existing row]].
+
+Synchronous (not =QtConcurrent=-wrapped) — a brief UI-thread block for
+a quick pre-save check, same as other synchronous
+=process_authenticated_request= call sites elsewhere in the app (e.g.
+=SystemSettingController::onRevertClicked=). Requests a generously
+high =limit= explicitly: the default (100) would silently miss
+existing pairs beyond the first page and defeat the check.
+
+#+begin_src cpp :name save_duplicate_check :implements 4E83FA7A-742A-4102-90AF-D337F6FB1269
+if (createMode_) {
+    // pair_.pair_code isn't synced from the UI until updatePairFromUi()
+    // runs, later in this function -- read the live combo-derived value
+    // directly rather than the (still-stale/empty) domain object.
+    const std::string derivedPairCode = ui_->pairCodeEdit->text().trimmed().toStdString();
+
+    refdata::messaging::get_currency_pairs_request checkRequest;
+    checkRequest.limit = 100000;
+    auto checkResult = clientManager_->process_authenticated_request(std::move(checkRequest));
+    if (checkResult) {
+        const bool exists = std::ranges::any_of(checkResult->pairs, [&](const auto& p) {
+            return p.pair_code == derivedPairCode;
+        });
+        if (exists) {
+            MessageBoxHelper::warning(this, "Duplicate Pair",
+                QString("A currency pair '%1' already exists.")
+                    .arg(QString::fromStdString(derivedPairCode)));
+            return;
+        }
+    }
+}
+#+end_src
+
 ** Qt: Conventions toolbar button
 :PROPERTIES:
 :ID: 6A3E9C81-5F2D-4B87-A0E6-9D1C4F7B2A83

@@ -21,7 +21,7 @@ variables and their semantics.
 =<<paste:UUID>>= markers in this template are paste-block injection
 points — see [[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][paste blocks: injecting custom code into generated files]]
 for the full mechanism, and its Qt-specific table for the complete
-list. This template defines six:
+list. This template defines seven:
 
 - =3F8B6C1D-4E2A-4F9B-8C3D-1A5E7F2B9D4C= — top of the file, after the
   generated =#include= lines. Extra includes any of the other four
@@ -47,6 +47,14 @@ list. This template defines six:
   the closing =;=. Extra =&& (...)= conditions, e.g. cross-field
   validation the generic required-field mechanism can't express (two
   fields must differ, a combination of values is invalid together).
+- =4E83FA7A-742A-4102-90AF-D337F6FB1269= — inside =onSaveClicked()=,
+  after =validateInput()= passes, before the change-reason prompt and
+  save dispatch. A synchronous (not =QtConcurrent=-wrapped) pre-save
+  check that can call =return;= to abort the save with its own error
+  dialog — e.g. rejecting a duplicate natural key before it silently
+  versions an unrelated existing row (the SQL insert trigger can't
+  reject this itself without breaking other upsert-by-key consumers
+  of the same table).
 
 * Template
 
@@ -1078,6 +1086,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
             "Please fill in all required fields.");
         return;
     }
+
+{{! see * Extension points above }}
+<<paste:4E83FA7A-742A-4102-90AF-D337F6FB1269>>
 
     const auto crOpType = createMode_
         ? ChangeReasonDialog::OperationType::Create

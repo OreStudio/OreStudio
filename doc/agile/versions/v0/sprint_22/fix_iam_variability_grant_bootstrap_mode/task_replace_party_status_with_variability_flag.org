@@ -71,9 +71,9 @@ content is folded in below as the implementation plan.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:7356C36E-2633-4043-9747-27E61593EA4F][Fix tenant-scoped variability system settings: permissions and per-tenant seeding]] |
-| Now          | Slice 1 (schema + C++ data layer for party_id) done and merged; continuing in a follow-up PR/branch. |
+| Now          | Slices 1-3 done (schema, flag definitions/seeding, wizard wiring + login fix); verified live except the multi-party select_party response. |
 | Waiting on   | Nothing.                               |
-| Next         | Slice 2: onboarding.* flag definitions + service accessors + provisioner seeding. |
+| Next         | Slice 4 (NOTIFY listener fix, optional/may split out), then a manual Qt click-through of the multi-party select_party path before closing. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance
@@ -201,6 +201,78 @@ did.)
   provisioning run completes with =system.bootstrap_mode= clearing to
   =false= and =party_id= populated correctly for both the system
   tenant and the Barclays tenant.
+
+** Slice 2 done: onboarding.* flag definitions + service accessors + seeding
+
+- Added =onboarding.system=, =onboarding.tenant=, =onboarding.party=
+  to =system_setting_definitions=, and
+  =is_onboarding_system_complete=/=set_onboarding_system_complete=
+  (+ tenant/party equivalents) accessors on =system_settings_service=,
+  mirroring the existing =is_bootstrap_mode_enabled=/=set_bootstrap_mode=
+  pattern.
+- Seeded =onboarding.tenant = false= in the tenant provisioner
+  (system-party-scoped, alongside =system.bootstrap_mode=) and
+  =onboarding.system = false= in the general populate script
+  (system-tenant scope). Did *not* seed =onboarding.party= at party
+  creation time — =get_bool()= already falls back to the registry
+  default (=false=) when no row exists, so an eager seed row is
+  redundant; the flag is written =true= once, on wizard completion.
+
+** Slice 3 done: wire wizards + fix login's party_setup_required
+
+- New =complete_party_onboarding_request= NATS request (no permission
+  check, same trust model as =clear_bootstrap_mode_request=) —
+  =party_id= is client-supplied (the acting user's own session party
+  is not the party being onboarded) but =tenant_id= is still
+  JWT-derived, so this can only ever affect a party within the
+  caller's own tenant.
+- =clear_bootstrap_mode='s handler now also sets
+  =onboarding.tenant = true= in the same call (same tenant scope,
+  same caller, same trust model — piggybacked rather than adding a
+  fourth near-identical endpoint).
+- =PartyProvisioningWizard= (Qt) and the shell's =provision party=
+  porcelain both call =complete_party_onboarding_request= right after
+  marking the party =Active=, warn-only (matches the existing
+  activation step's own non-fatal-by-design behaviour in the wizard,
+  though the shell porcelain treats party activation itself as fatal
+  by design — only the new onboarding call is warn-only there).
+- =auth_handler.hpp= (single-party auto-login) and
+  =account_handler.hpp= (=select_party=, multi-party path) both
+  replaced their =party.status == "Inactive"= / party-cache check with
+  a direct DB read of =onboarding.party= via new
+  =auth_is_party_onboarding_complete=/=acct_is_party_onboarding_complete=
+  helpers (same pattern as =auth_is_tenant_bootstrap_mode=, immune to
+  cache staleness). Added =party_setup_warning= to =login_response=
+  and =select_party_response= for the "wizard ran but party still
+  Inactive" case.
+- Removed two now-redundant, now-risky client-side pre-emptive
+  =save_setting_request= calls for =system.bootstrap_mode= (one in
+  =TenantProvisioningWizard.cpp=, one in the shell's =provision
+  tenant= porcelain) — the authoritative server-side clear already
+  covers this, and the client-side calls would have started writing
+  a stray party-scoped duplicate row per the =stamp()= risk noted
+  above (whenever the acting user had a party selected).
+- Verified live: full rebuild, full Barclays GLEIF provisioning run.
+  DB confirms =onboarding.tenant = true= and =onboarding.party = true=
+  for the correct tenant/party rows; =ores.variability.service= logs
+  show =complete_party_onboarding= handled cleanly, no
+  permission-denied/UUID errors.
+  *Not directly exercised*: the actual login/=select_party= response
+  value in the multi-party case (the Barclays tenant_admin account
+  ended up associated with 82 GLEIF-imported parties, so every login
+  takes the multi-party =select_party= path, and the shell has no
+  command to drive that RPC). Confidence is high without this because
+  =is_onboarding_party_complete()= — the only new logic on the read
+  side — is exercised by the same, already-proven
+  =system_settings_service= construction/refresh path as the
+  tenant-scoped =bootstrap_mode= check; the two call sites just
+  forward its result into the response. Recommend a manual Qt-client
+  click-through before closing this task, or a shell =select-party=
+  command if that becomes a recurring testing need.
+- The =stamp()= party-scoping risk flagged in slice 1 remains
+  open — worth a follow-up capture rather than blocking this task,
+  since it's pre-existing general-CRUD behaviour, not something this
+  task's changes introduced or rely on.
 
 * PRs
 

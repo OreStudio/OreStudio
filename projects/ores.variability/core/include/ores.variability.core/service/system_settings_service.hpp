@@ -158,6 +158,37 @@ public:
 
     [[nodiscard]] bool is_password_validation_disabled() const;
 
+    /**
+     * @brief Whether the system provisioner wizard has completed
+     * (onboarding.system, system-tenant-scoped).
+     */
+    [[nodiscard]] bool is_onboarding_system_complete() const;
+    void set_onboarding_system_complete(bool complete,
+                                        std::string_view modified_by,
+                                        std::string_view change_reason_code,
+                                        std::string_view change_commentary);
+
+    /**
+     * @brief Whether the tenant provisioner wizard has completed for this
+     * tenant (onboarding.tenant, tenant-scoped via the system party).
+     */
+    [[nodiscard]] bool is_onboarding_tenant_complete() const;
+    void set_onboarding_tenant_complete(bool complete,
+                                       std::string_view modified_by,
+                                       std::string_view change_reason_code,
+                                       std::string_view change_commentary);
+
+    /**
+     * @brief Whether the party provisioner wizard has completed for this
+     * party (onboarding.party, party-scoped — construct this instance with
+     * the specific party's id to read/write its flag).
+     */
+    [[nodiscard]] bool is_onboarding_party_complete() const;
+    void set_onboarding_party_complete(bool complete,
+                                       std::string_view modified_by,
+                                       std::string_view change_reason_code,
+                                       std::string_view change_commentary);
+
 private:
     void set_bool_setting(std::string_view name,
                           bool value,

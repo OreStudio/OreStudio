@@ -94,6 +94,27 @@ struct clear_bootstrap_mode_response {
 };
 
 // ---------------------------------------------------------------------------
+// Complete party onboarding
+// ---------------------------------------------------------------------------
+
+// Deliberately has no associated permission check server-side, same trust
+// model as clear_bootstrap_mode_request. party_id is client-supplied (the
+// caller's own session party is not the party being onboarded), but
+// tenant_id is still derived from the validated JWT, so this can only ever
+// affect a party within the caller's own tenant.
+struct complete_party_onboarding_request {
+    using response_type = struct complete_party_onboarding_response;
+    static constexpr std::string_view nats_subject =
+        "variability.v1.settings.complete_party_onboarding";
+    std::string party_id;
+};
+
+struct complete_party_onboarding_response {
+    bool success = false;
+    std::string message;
+};
+
+// ---------------------------------------------------------------------------
 // History
 // ---------------------------------------------------------------------------
 

@@ -49,6 +49,12 @@ struct login_response {
     bool password_reset_required = false;
     bool tenant_bootstrap_mode = false;
     bool party_setup_required = false;
+    /**
+     * @brief Set when the party provisioner wizard has completed
+     * (onboarding.party = true) but the party is still Inactive. The
+     * client should show a message instead of re-launching the wizard.
+     */
+    std::string party_setup_warning;
     std::string token;
     std::string error_message;
     std::string message;

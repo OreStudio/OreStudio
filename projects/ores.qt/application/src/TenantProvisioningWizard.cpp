@@ -30,8 +30,6 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
-#include "ores.variability.api/domain/system_setting.hpp"
-#include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include <QFormLayout>
 #include <QFutureWatcher>
 #include <QGridLayout>
@@ -87,30 +85,14 @@ void TenantProvisioningWizard::setupPages() {
 }
 
 void TenantProvisioningWizard::clearBootstrapFlag() {
-    BOOST_LOG_SEV(lg(), info) << "Clearing tenant bootstrap mode flag";
-
-    variability::domain::system_setting setting;
-    setting.name = "system.bootstrap_mode";
-    setting.value = "false";
-    setting.data_type = "boolean";
-    setting.description = "Bootstrap mode disabled after tenant setup";
-    setting.modified_by = clientManager_->currentUsername();
-    setting.change_reason_code = std::string(reason::codes::new_record);
-    setting.change_commentary = "Tenant setup wizard completed";
-    variability::messaging::save_setting_request req;
-    req.data = std::move(setting);
-
-    auto result = clientManager_->process_authenticated_request(std::move(req));
-    if (!result) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to clear bootstrap flag: "
-                                  << "no response from server";
-    } else if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to clear bootstrap flag: "
-                                  << (result->message.empty() ? "Unknown error" : result->message);
-    } else {
-        BOOST_LOG_SEV(lg(), info) << "Bootstrap flag cleared successfully";
-    }
-
+    // complete_tenant_provisioning_command clears system.bootstrap_mode (and
+    // sets onboarding.tenant = true) server-side over its own NATS-routed,
+    // permission-check-free path — see
+    // ores.iam.core/messaging/tenant_handler.hpp. No separate client-side
+    // save_setting_request is needed (a prior version issued one
+    // pre-emptively here, but it was redundant with the authoritative
+    // server-side clear and risked writing a party-scoped duplicate row if
+    // the acting user had a party selected).
     BOOST_LOG_SEV(lg(), info) << "Marking tenant active";
     iam::messaging::complete_tenant_provisioning_command activateReq;
     auto activateResult = clientManager_->process_authenticated_request(std::move(activateReq));
@@ -1027,27 +1009,13 @@ void TenantExecutePage::startFinalize() {
         emit completeChanged();
     });
 
-    QFuture<FinalizeResult> future =
-        QtConcurrent::run([clientManager, publishedBy = publishedBy_]() -> FinalizeResult {
+    QFuture<FinalizeResult> future = QtConcurrent::run([clientManager]() -> FinalizeResult {
             FinalizeResult result;
 
-            variability::domain::system_setting setting;
-            setting.name = "system.bootstrap_mode";
-            setting.value = "false";
-            setting.data_type = "boolean";
-            setting.description = "Bootstrap mode disabled after tenant setup";
-            setting.modified_by = publishedBy;
-            setting.change_reason_code = std::string(reason::codes::new_record);
-            setting.change_commentary = "Tenant setup wizard completed";
-            variability::messaging::save_setting_request req;
-            req.data = std::move(setting);
-
-            auto settingResult = clientManager->process_authenticated_request(std::move(req));
-            if (!settingResult || !settingResult->success) {
-                result.error_message = settingResult ? settingResult->message : "no response";
-                // Continue to mark tenant active even if setting fails.
-            }
-
+            // complete_tenant_provisioning_command clears system.bootstrap_mode
+            // (and sets onboarding.tenant = true) server-side — see
+            // clearBootstrapFlag() above for why no separate
+            // save_setting_request is issued here.
             iam::messaging::complete_tenant_provisioning_command activateReq;
             auto activateResult =
                 clientManager->process_authenticated_request(std::move(activateReq));

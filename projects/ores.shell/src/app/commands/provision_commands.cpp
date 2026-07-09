@@ -446,26 +446,15 @@ void provision_commands::process_tenant(std::ostream& out,
     }
     out << "  " << linked << " part" << (linked == 1 ? "y" : "ies") << " associated." << std::endl;
 
-    // Phase 4: clear the bootstrap flag (warn-only, as the wizard)
-    // and complete provisioning (fatal).
+    // Phase 4: complete provisioning (fatal). This clears
+    // system.bootstrap_mode and sets onboarding.tenant = true server-side,
+    // over its own NATS-routed, permission-check-free path — see
+    // ores.iam.core/messaging/tenant_handler.hpp. No separate client-side
+    // save_setting_request is needed (a prior version issued one
+    // pre-emptively here, but it was redundant with the authoritative
+    // server-side clear and risked writing a party-scoped duplicate row if
+    // the acting user had a party selected).
     out << "[4/4] Finalizing tenant provisioning..." << std::endl;
-    variability::messaging::save_setting_request setting_req =
-        variability::messaging::save_setting_request::from(variability::domain::system_setting{
-            .name = "system.bootstrap_mode",
-            .value = "false",
-            .data_type = "boolean",
-            .description = "Bootstrap mode disabled after tenant setup",
-            .modified_by = username,
-            .change_reason_code =
-                std::string(dq::domain::change_reason_constants::codes::new_record),
-            .change_commentary = "Tenant provisioning completed via shell",
-            .recorded_at = std::chrono::system_clock::now()});
-    auto setting = do_request(out, session, setting_req, std::chrono::seconds(30), true);
-    if (!setting || !setting->success) {
-        out << "⚠ Could not clear system.bootstrap_mode; continuing." << std::endl;
-        command_feedback::reset();
-    }
-
     iam::messaging::complete_tenant_provisioning_command complete_req;
     auto completed = do_request(out, session, complete_req, std::chrono::seconds(30), true);
     if (!completed)
@@ -760,6 +749,20 @@ void provision_commands::process_party(std::ostream& out,
     if (!saved->success) {
         fail(out) << "Failed to activate party: " << saved->message << std::endl;
         return;
+    }
+
+    // Write onboarding.party = true, independent of the party's own status
+    // — this is what login checks to decide whether to re-launch the party
+    // wizard, not party.status. Warn-only: the wizard's own version of this
+    // step is likewise non-fatal.
+    variability::messaging::complete_party_onboarding_request onboarding_req;
+    onboarding_req.party_id = boost::uuids::to_string(party->id);
+    auto onboarding_result = do_request(out, session, onboarding_req, std::chrono::seconds(30), true);
+    if (!onboarding_result || !onboarding_result->success) {
+        out << "⚠ Could not record party onboarding completion; the party setup wizard may "
+               "reappear on next login."
+            << std::endl;
+        command_feedback::reset();
     }
 
     out << "✓ Party '" << party->full_name << "' provisioned and active." << std::endl;

@@ -124,12 +124,59 @@ public:
                 ctx.service_account(),
                 std::string(ores::dq::domain::change_reason_constants::codes::new_record),
                 "Bootstrap mode cleared on tenant activation");
+            // Piggyback the onboarding.tenant flag on the same tenant
+            // activation event — same scope, same trust model, same
+            // caller (tenant_handler::complete_provisioning).
+            svc.set_onboarding_tenant_complete(
+                true,
+                ctx.service_account(),
+                std::string(ores::dq::domain::change_reason_constants::codes::new_record),
+                "Tenant onboarding completed on tenant activation");
             BOOST_LOG_SEV(system_setting_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, clear_bootstrap_mode_response{.success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(system_setting_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, clear_bootstrap_mode_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void complete_party_onboarding(ores::nats::message msg) {
+        BOOST_LOG_SEV(system_setting_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        if (auto req = decode<complete_party_onboarding_request>(msg)) {
+            // No has_permission check: same trust model as
+            // clear_bootstrap_mode — party onboarding completion must work
+            // regardless of the actor's variability::flags:create
+            // permission. Unlike tenant/system scoping, party_id cannot be
+            // derived from the JWT here: the acting user's own session
+            // party is not the party being onboarded, so it is taken from
+            // the request body. This only ever flips a UI-gating boolean
+            // for a party within the caller's own (JWT-derived) tenant —
+            // no cross-tenant effect is possible.
+            const auto& ctx = *ctx_expected;
+            service::system_settings_service svc(ctx, ctx.tenant_id().to_string(), req->party_id);
+            try {
+                svc.set_onboarding_party_complete(
+                    true,
+                    ctx.service_account(),
+                    std::string(ores::dq::domain::change_reason_constants::codes::new_record),
+                    "Party onboarding completed on party activation");
+                BOOST_LOG_SEV(system_setting_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, complete_party_onboarding_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(system_setting_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      complete_party_onboarding_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(system_setting_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
     }
 

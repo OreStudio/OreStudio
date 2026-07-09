@@ -146,6 +146,29 @@ inline bool auth_is_tenant_bootstrap_mode(const ores::database::context& ctx,
     return false;
 }
 
+// Reads onboarding.party directly from the DB (never the party cache), so
+// it is immune to cache staleness after a heavy import — unlike the
+// party.status check it replaces, which conflated the party's own domain
+// status with whether its provisioner wizard has run.
+inline bool auth_is_party_onboarding_complete(const ores::database::context& ctx,
+                                              const std::string& tenant_id_str,
+                                              const std::string& party_id_str) {
+    try {
+        auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
+        if (!tid_result)
+            return false;
+        auto tenant_ctx = ctx.with_tenant(*tid_result, "");
+        variability::service::system_settings_service sfs(tenant_ctx, tenant_id_str, party_id_str);
+        sfs.refresh();
+        return sfs.is_onboarding_party_complete();
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), warn)
+            << "Failed to check party onboarding completion: " << e.what();
+    }
+    return false;
+}
+
 } // namespace
 
 using ores::service::messaging::reply;
@@ -314,12 +337,19 @@ public:
                     auto p =
                         auth_lookup_party(*party_cache_, acct.tenant_id.to_string(), ap.party_id);
                     if (ap.party_id == party_id) {
-                        resp.party_setup_required = p && p->status == "Inactive";
+                        const bool onboarding_complete = auth_is_party_onboarding_complete(
+                            login_ctx, acct.tenant_id.to_string(), boost::uuids::to_string(party_id));
+                        resp.party_setup_required = !onboarding_complete;
                         if (resp.party_setup_required) {
                             BOOST_LOG_SEV(auth_handler_lg(), info)
                                 << "login: party_setup_required=true for party "
-                                << boost::uuids::to_string(party_id)
-                                << " status=" << (p ? p->status : "not-in-cache");
+                                << boost::uuids::to_string(party_id);
+                        } else if (p && p->status == "Inactive") {
+                            resp.party_setup_warning =
+                                "Party setup completed, but the party is still marked Inactive.";
+                            BOOST_LOG_SEV(auth_handler_lg(), warn)
+                                << "login: onboarding.party complete but party "
+                                << boost::uuids::to_string(party_id) << " still Inactive";
                         }
                     }
                     resp.available_parties.push_back(party_summary{

@@ -149,9 +149,6 @@ void CurrencyPairMdiWindow::setupTable() {
             cs::text_left,
             cs::text_left,
             cs::badge_centered,
-            cs::text_left,
-            cs::badge_centered,
-            cs::text_left,
             cs::mono_center,
             cs::text_left,
             cs::text_left,
@@ -159,17 +156,6 @@ void CurrencyPairMdiWindow::setupTable() {
         tableView_);
     delegate->set_badge_color_resolver(
         3, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
-            if (!cache)
-                return default_gray;
-            auto* def = cache->resolve("currency_pair_deliverable", value.toStdString());
-            if (!def)
-                return default_gray;
-            return {QColor(QString::fromStdString(def->background_colour)),
-                    QColor(QString::fromStdString(def->text_colour))};
-        });
-    delegate->set_badge_color_resolver(
-        5, [cache = badgeCache_](const QString& value) -> badge_color_pair {
             static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
             if (!cache)
                 return default_gray;

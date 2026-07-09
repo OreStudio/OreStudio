@@ -102,9 +102,10 @@ Identical mapping across all three:
 
 *** Boolean yes/no domains
 
-Every =*_is_trading=, =*_online=, =currency_pair_deliverable=,
+Every =*_is_trading=, =*_online=,
 =currency_pair_convention_spot_relative=,
-=currency_pair_convention_end_of_month= domain shares this mapping:
+=currency_pair_convention_end_of_month= domain shares this mapping —
+Yes is always green, regardless of what the field means:
 
 | Value | Badge          |
 |-------+-----------------|

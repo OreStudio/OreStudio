@@ -24,6 +24,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/RefdataExport.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
@@ -39,7 +40,7 @@ class DetachableMdiSubWindow;
  * Manages the lifecycle of regulatory book type list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class RegulatoryBookTypeController final : public EntityController {
+class ORES_QT_REFDATA_EXPORT RegulatoryBookTypeController final : public EntityController {
     Q_OBJECT
 
 private:
@@ -69,6 +70,7 @@ signals:
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::regulatory_book_type& type);

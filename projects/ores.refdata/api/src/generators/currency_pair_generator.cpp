@@ -23,6 +23,7 @@
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
+#include <unordered_set>
 
 namespace ores::refdata::generators {
 
@@ -36,7 +37,7 @@ generate_synthetic_currency_pair(utility::generation::generation_context& ctx) {
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::currency_pair r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
@@ -44,10 +45,7 @@ generate_synthetic_currency_pair(utility::generation::generation_context& ctx) {
                   std::string(faker::finance::currencyCode()) + "-" + std::to_string(idx);
     r.base_currency = std::string("EUR");
     r.quote_currency = std::string("USD");
-    r.deliverable = true;
-    r.settlement_currency = std::nullopt;
     r.classification = std::string("major");
-    r.fixing_source = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

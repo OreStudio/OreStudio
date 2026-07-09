@@ -109,10 +109,7 @@ private:
 
     void populateQuoteCurrencyCombo();
 
-    void populateSettlementCurrencyCombo();
-
     void updatePairCodeFromCurrencies();
-    void updateSettlementCurrencyAvailability(bool deliverable);
 
     Ui::CurrencyPairDetailDialog* ui_;
     ClientManager* clientManager_;

@@ -103,11 +103,7 @@ HistoryDialogBase::DiffResult CurrencyPairHistoryDialog::calculateDiffAt(int ci,
     checkString(diffs, tr("Pair Code"), curr.pair_code, prev.pair_code);
     checkString(diffs, tr("Base Currency"), curr.base_currency, prev.base_currency);
     checkString(diffs, tr("Quote Currency"), curr.quote_currency, prev.quote_currency);
-    checkBool(diffs, tr("Deliverable"), curr.deliverable, prev.deliverable);
-    checkString(
-        diffs, tr("Settlement Currency"), curr.settlement_currency, prev.settlement_currency);
     checkString(diffs, tr("Classification"), curr.classification, prev.classification);
-    checkString(diffs, tr("Fixing Source"), curr.fixing_source, prev.fixing_source);
     return diffs;
 }
 
@@ -120,13 +116,7 @@ void CurrencyPairHistoryDialog::displayFullDetails(int index) {
     ui_->pairCodeValue->setText(QString::fromStdString(version.pair_code));
     ui_->baseCurrencyValue->setText(QString::fromStdString(version.base_currency));
     ui_->quoteCurrencyValue->setText(QString::fromStdString(version.quote_currency));
-    ui_->deliverableCheckBox->setText(version.deliverable ? tr("true") : tr("false"));
-    ui_->settlementCurrencyValue->setText(version.settlement_currency ?
-                                              QString::fromStdString(*version.settlement_currency) :
-                                              QString{});
     ui_->classificationValue->setText(QString::fromStdString(version.classification));
-    ui_->fixingSourceValue->setText(
-        version.fixing_source ? QString::fromStdString(*version.fixing_source) : QString{});
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

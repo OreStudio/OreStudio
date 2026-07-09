@@ -63,6 +63,10 @@ ProvenanceWidget* RegulatoryBookTypeDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
 }
 
+QString RegulatoryBookTypeDetailDialog::code() const {
+    return QString::fromStdString(type_.code);
+}
+
 void RegulatoryBookTypeDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
@@ -332,5 +336,6 @@ void RegulatoryBookTypeDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

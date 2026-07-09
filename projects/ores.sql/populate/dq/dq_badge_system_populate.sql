@@ -356,10 +356,6 @@ BEGIN
         'Boolean online indicator for accounts (Yes, No).', 18);
 
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'currency_pair_deliverable', 'Currency Pair Deliverable',
-        'Whether a currency pair settles physically or cash-only (Yes/No badge).', 20);
-
-    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'currency_pair_classification', 'Currency Pair Classification',
         'Liquidity classification codes for currency pairs (major, minor, exotic, commodity).', 21);
 
@@ -457,13 +453,6 @@ BEGIN
         'account_online', 'Yes', 'login_online');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'account_online', 'No', 'inactive');
-
-    -- currency_pair_deliverable (reuses login_online/inactive — same
-    -- generic positive/negative palette as account_online/book_is_trading)
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'currency_pair_deliverable', 'Yes', 'login_online');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'currency_pair_deliverable', 'No', 'inactive');
 
     -- currency_pair_classification: a liquidity tier, not a status -- no
     -- RAG colours (see ux_language.org rule 3). Four dedicated,

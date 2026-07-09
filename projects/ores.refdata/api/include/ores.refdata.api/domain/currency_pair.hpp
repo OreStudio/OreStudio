@@ -67,29 +67,12 @@ struct currency_pair final {
     std::string quote_currency;
 
     /**
-     * @brief Whether the pair settles physically or cash-only (NDF flag).
-     */
-    bool deliverable = false;
-
-    /**
-     * @brief Soft FK to currency.iso_code; set only for non-deliverable (NDF) pairs, where
-     * settlement happens in a third currency.
-     */
-    std::optional<std::string> settlement_currency;
-
-    /**
      * @brief Liquidity classification; soft FK to ores_refdata_currency_pair_classifications_tbl
      * (e.g. "major", "minor", "exotic"). Free-text pending a working dynamic-combo mechanism for
      * aux-type reference data (tracked separately; out of scope for this entity — see
      * [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]).
      */
     std::string classification;
-
-    /**
-     * @brief Default fixing source for cash-settled / NDF trades on this pair. No fixing-source
-     * reference entity exists yet; free-text for now.
-     */
-    std::optional<std::string> fixing_source;
 
     /**
      * @brief Username of the person who last modified this currency pair.

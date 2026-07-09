@@ -26,15 +26,16 @@ The chapter advances the argument that managing a book well means first
 understanding what it represents, then the interface that governs its
 lifecycle — and it proceeds in that order. It begins by establishing
 what a book is in [[*What is a Book?][What is a Book?]], distinguishing a book from the
-counterparties and portfolios it sits alongside; this is the premise
-the rest of the chapter builds on. From there it surveys the body of
-records in [[*The Books window][The Books window]] before narrowing to a single record in
-[[*Book Details][Book Details]] and its General and Provenance tabs, including the
-[[*Book lifecycle][Book lifecycle]] a book's status moves through. It then turns to
-changing a record under audit — [[*Editing a book][Editing]], [[*Deleting a book][Deleting]], and
-[[*Book history][Book history]] — culminating in reverting to an earlier version, the
-point at which the bitemporal audit trail does its work. The
-[[*Conclusion][Conclusion]] draws these steps together.
+counterparties and portfolios it sits alongside, and by working through
+the real-world [[*Book lifecycle][Book lifecycle]] a book moves through — from its
+multi-party opening to closure — that the Status field on-screen only
+partially reflects; this is the premise the rest of the chapter builds
+on. From there it surveys the body of records in [[*The Books window][The Books window]]
+before narrowing to a single record in [[*Book Details][Book Details]] and its General
+and Provenance tabs. It then turns to changing a record under audit —
+[[*Editing a book][Editing]], [[*Deleting a book][Deleting]], and [[*Book history][Book history]] — culminating in
+reverting to an earlier version, the point at which the bitemporal
+audit trail does its work. The [[*Conclusion][Conclusion]] draws these steps together.
 
 ** What is a Book?
 
@@ -89,8 +90,9 @@ book; a position held to maturity or for longer-term investment purposes
 belongs in the banking book. The same instrument — a bond, a swap — can
 sit in either book depending on why it is held.
 
-Why it matters: the two books are subject to entirely different capital
-regimes. Trading-book positions are capitalised for *market risk* — the
+The distinction matters because the two books are subject to entirely
+different capital regimes. Trading-book positions are capitalised for
+*market risk* — the
 risk that market prices move against an open position — recognising
 that these positions may be actively traded and revalued daily.
 Banking-book positions are instead capitalised for *credit risk* — the
@@ -100,6 +102,70 @@ moving positions between the two books opportunistically to reduce
 capital charges, is precisely what regulators police most closely;
 switching a position's classification after the fact is heavily
 restricted for that reason.
+
+** Book lifecycle
+
+The *Status* field you will meet on the General tab further on is a
+simplified, editable reflection of a much heavier real-world process:
+opening, running, and closing a book. This section walks through that
+wider process, so the meaning behind each status value is clear before
+you meet it in the interface.
+
+*** Opening a book
+
+A new book is not something a desk sets up for itself. Bringing a book
+live is a deliberately heavyweight, multi-party process, with four
+separate functions involved:
+
+- The *desk* initiates the request — it knows it needs a new book (a
+  new product line, a new trading strategy) but cannot create or
+  enrich one itself.
+- A *controller* reviews and approves the initiation request — an
+  independent check that exists specifically to prevent a desk from
+  authorising its own new book.
+- Three functions then *enrich* the book in parallel, each contributing
+  the data their function owns: *Finance* wires the book into the
+  ledger — its ledger currency, cost centre, and monthly balance
+  carry-forward; *Market Risk* sets its regulatory book type (Trading
+  or Banking) and assigns it to a rates centre for consistent
+  revaluation data; *Operations* sets up the book's allowed-currency
+  and allowed-product constraints. Because all three enrich the book at
+  the same time rather than in sequence, each must independently
+  approve its own contribution before the book can move on.
+- Only once every approval is in does the book's access review begin;
+  once that completes, the book is set up on the booking systems and
+  becomes *Active*.
+
+#+caption: The book lifecycle: the multi-party opening workflow, the live-book loop (deal moves, periodic access review), and the flat-check gate on closing.
+[[proj:doc/knowledge/domain/book_lifecycle.png]]
+
+*** While a book is active
+
+A live book is not static:
+
+- Deals move between books routinely — freely if the move stays within
+  the same legal entity and branch, or via a close-and-rebook if not.
+  An erroneous move can be undone.
+- Access to a book is not permanent: it must be periodically reviewed
+  (monthly or quarterly, depending on the tenant's policy). If nobody
+  renews a user's access, it lapses automatically and must be
+  re-requested.
+- A book can be temporarily *Frozen* — taken out of normal trading use
+  without being closed down entirely.
+
+*** Closing a book
+
+A book can only be closed once it is *flat* — every balance held
+against it is zero on that business date. Closure is executed through
+accounting: all remaining live deals are moved to a different book,
+after which the book's status moves to *Closed*. A closed book is
+never physically deleted; it is retained in the system for its audit
+history, exactly like any other historical version.
+
+With the concept and its lifecycle established, the rest of this
+chapter turns to the interface OreStudio provides for it — starting
+with the Books window, which lists every book governed by the process
+just described.
 
 ** The Books window
 
@@ -152,7 +218,7 @@ The General tab carries the fields of the book:
 - *Status* — the book's position in its operational lifecycle, chosen
   from a combo box populated from the tenant's configured book
   statuses and shown as a colour-coded badge once selected. See
-  [[*Book lifecycle][Book lifecycle]] below for what each value means.
+  [[*Book lifecycle][Book lifecycle]] above for what each value means.
 
   #+caption: [SCREENSHOT OUTDATED — retake needed] The Status combo box open, showing the badge-coloured status values.
   # Capture: open Book Details, click the Status combo box, and screenshot it open with
@@ -162,8 +228,8 @@ The General tab carries the fields of the book:
 
 - *Regulatory Book Type* — a combo box choosing the book's Basel
   classification, /Trading/ or /Banking/, also shown as a colour-coded
-  badge. See [[*Book lifecycle][Book lifecycle]] below, and the [[*What is a Book?][What is a Book?]]
-  section above, for what the distinction means.
+  badge. See [[*Book lifecycle][Book lifecycle]] and [[*What is a Book?][What is a Book?]] above for what
+  the distinction means.
 
   #+begin_note
   [SCREENSHOT NEEDED] Open Book Details, click the Regulatory Book Type
@@ -172,64 +238,6 @@ The General tab carries the fields of the book:
   =regulatory_book_type_combo.png= and add the image link here once
   captured.
   #+end_note
-
-*** Book lifecycle
-
-The *Status* field on the General tab is a simplified, editable
-reflection of a much heavier real-world process: opening, running, and
-closing a book. This section explains that wider process, so the
-meaning behind each status value is clear.
-
-**** Opening a book
-
-A new book is not something a desk sets up for itself. Bringing a book
-live is a deliberately heavyweight, multi-party process, with four
-separate functions involved:
-
-- The *desk* initiates the request — it knows it needs a new book (a
-  new product line, a new trading strategy) but cannot create or
-  enrich one itself.
-- A *controller* reviews and approves the initiation request — an
-  independent check that exists specifically to prevent a desk from
-  authorising its own new book.
-- Three functions then *enrich* the book in parallel, each contributing
-  the data their function owns: *Finance* wires the book into the
-  ledger — its ledger currency, cost centre, and monthly balance
-  carry-forward; *Market Risk* sets its regulatory book type (Trading
-  or Banking) and assigns it to a rates centre for consistent
-  revaluation data; *Operations* sets up the book's allowed-currency
-  and allowed-product constraints. Because all three enrich the book at
-  the same time rather than in sequence, each must independently
-  approve its own contribution before the book can move on.
-- Only once every approval is in does the book's access review begin;
-  once that completes, the book is set up on the booking systems and
-  becomes *Active*.
-
-#+caption: The book lifecycle: the multi-party opening workflow, the live-book loop (deal moves, periodic access review), and the flat-check gate on closing.
-[[proj:doc/knowledge/domain/book_lifecycle.png]]
-
-**** While a book is active
-
-A live book is not static:
-
-- Deals move between books routinely — freely if the move stays within
-  the same legal entity and branch, or via a close-and-rebook if not.
-  An erroneous move can be undone.
-- Access to a book is not permanent: it must be periodically reviewed
-  (monthly or quarterly, depending on the tenant's policy). If nobody
-  renews a user's access, it lapses automatically and must be
-  re-requested.
-- A book can be temporarily *Frozen* — taken out of normal trading use
-  without being closed down entirely.
-
-**** Closing a book
-
-A book can only be closed once it is *flat* — every balance held
-against it is zero on that business date. Closure is executed through
-accounting: all remaining live deals are moved to a different book,
-after which the book's status moves to *Closed*. A closed book is
-never physically deleted; it is retained in the system for its audit
-history, exactly like any other historical version.
 
 *** Provenance
 

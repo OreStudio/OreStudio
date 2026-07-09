@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: F8D5B797-DD74-4B59-B3C8-E4B782639E72
+:END:
+#+title: Task: Scaffold story: Fix missing ORES_REFDATA_CORE_EXPORT on refdata/scheduler service classes
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :fix-missing-service-export-macros:sprint_22:v0:
+#+owner: marco
+#+branch: hotfix/fix-missing-service-export-macros
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:616CCA80-DDA2-48E6-8802-9557C8BCFFDA][Fix missing ORES_REFDATA_CORE_EXPORT on refdata/scheduler service classes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:616CCA80-DDA2-48E6-8802-9557C8BCFFDA][Fix missing ORES_REFDATA_CORE_EXPORT on refdata/scheduler service classes]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-09                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Scaffolded the story/task docs and sprint wiring for this hotfix via
+=agile-start-hotfix=; the implementation task carried the actual PR (#1482).

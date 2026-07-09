@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/ois_convention.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/ois_convention_repository.hpp"
 #include <optional>
 #include <string>
@@ -33,7 +34,7 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing OIS conventions.
  */
-class ois_convention_service {
+class ORES_REFDATA_CORE_EXPORT ois_convention_service {
 private:
     inline static std::string_view logger_name = "ores.refdata.service.ois_convention_service";
 

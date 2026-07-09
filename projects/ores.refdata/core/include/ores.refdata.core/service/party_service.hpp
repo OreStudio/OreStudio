@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.utility/domain/hierarchy.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -39,7 +40,7 @@ namespace ores::refdata::service {
  * This service provides functionality for:
  * - Managing parties (CRUD operations)
  */
-class party_service {
+class ORES_REFDATA_CORE_EXPORT party_service {
 private:
     inline static std::string_view logger_name = "ores.refdata.service.party_service";
 

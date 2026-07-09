@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_unit.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/business_unit_repository.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -37,7 +38,7 @@ namespace ores::refdata::service {
  * This service provides functionality for:
  * - Managing business units (CRUD operations)
  */
-class business_unit_service {
+class ORES_REFDATA_CORE_EXPORT business_unit_service {
 private:
     inline static std::string_view logger_name = "ores.refdata.service.business_unit_service";
 

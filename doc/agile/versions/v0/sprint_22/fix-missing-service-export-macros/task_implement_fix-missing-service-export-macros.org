@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: A179FB53-D816-455A-8F5C-AA8ABB51F796
+:END:
+#+title: Task: Add missing EXPORT macros to service classes
+#+description: Initial task for: Fix missing ORES_REFDATA_CORE_EXPORT on refdata/scheduler service classes
+#+type: task
+#+level: s1
+#+filetags: :fix-missing-service-export-macros:sprint_22:v0:
+#+owner: marco
+#+branch: feature/implement-fix-missing-service-export-macros
+#+pr: 1482
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:616CCA80-DDA2-48E6-8802-9557C8BCFFDA][Fix missing ORES_REFDATA_CORE_EXPORT on refdata/scheduler service classes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every *_service class meant to be called across .so boundaries (party_service, portfolio_service, and 17 other refdata services, plus scheduler's job_definition_service) is missing its ORES_<COMPONENT>_CORE_EXPORT annotation. With the project's -fvisibility=hidden default, this makes their methods unresolvable from any other shared library or executable, surfacing as undefined-reference linker errors (discovered via ores.iam.core.tests failing to link against party_service::get_party_at_version and counterparty_service::get_counterparty_at_version, and counterparty_repository::read_at_version needing a stale .o recompile). Add the export.hpp include and EXPORT macro to every affected class; leave *_mapper classes alone since those are internal-only, never called cross-.so.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:616CCA80-DDA2-48E6-8802-9557C8BCFFDA][Fix missing ORES_REFDATA_CORE_EXPORT on refdata/scheduler service classes]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-09                               |
+
+* Acceptance
+
+- All 19 ores.refdata.core service classes and ores.scheduler.core's job_definition_service carry their EXPORT macro.
+- ores.iam.core.tests and a full project build link cleanly with no undefined-reference errors.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1482][#1482]] | [refdata,scheduler] Fix missing EXPORT macros on 20 service classes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Added the =export.hpp= include and =ORES_REFDATA_CORE_EXPORT=/=ORES_SCHEDULER_CORE_EXPORT=
+macro to all 19 affected =ores.refdata.core= service classes plus
+=ores.scheduler.core='s =job_definition_service=; =*_mapper= classes were
+deliberately left alone as internal-only. Also touched
+=counterparty_repository.cpp= to force a recompile of a stale =.o= missing
+=read_at_version=. Verified with a full clean build and a full local =rat=
+run (54 suites, all green) — no undefined-reference errors remain.

@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/contact_type.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/contact_type_repository.hpp"
 #include <optional>
 #include <string>
@@ -33,7 +34,7 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing contact types.
  */
-class contact_type_service {
+class ORES_REFDATA_CORE_EXPORT contact_type_service {
 private:
     inline static std::string_view logger_name = "ores.refdata.service.contact_type_service";
 

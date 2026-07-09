@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/business_centre_repository.hpp"
 #include <optional>
 #include <string>
@@ -36,7 +37,7 @@ namespace ores::refdata::service {
  * Provides a higher-level interface for business centre operations, wrapping
  * the underlying repository.
  */
-class business_centre_service {
+class ORES_REFDATA_CORE_EXPORT business_centre_service {
 private:
     inline static std::string_view logger_name = "ores.refdata.service.business_centre_service";
 

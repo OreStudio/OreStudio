@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_contact_information.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/party_contact_information_repository.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -38,7 +39,7 @@ namespace ores::refdata::service {
  * This service provides functionality for:
  * - Managing party contact informations (CRUD operations)
  */
-class party_contact_information_service {
+class ORES_REFDATA_CORE_EXPORT party_contact_information_service {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.service.party_contact_information_service";

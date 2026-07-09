@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 75DD1418-D96C-4A7E-80F5-46847F65974D
+:END:
+#+title: Story: Investigate RegulatoryBookTypeController Windows LNK2019 error
+#+description: Windows build reported unresolved externals for RegulatoryBookTypeController's constructor/showListWindow when linking ores.qt.trading.dll against ores.qt.refdata.dll.
+#+type: story
+#+level: s2
+#+filetags: :qt:build:windows:hotfix:sprint_22:v0:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Determine whether a pasted Windows LNK2019 build failure reflects a
+real defect on =main= (and fix it if so), or is a stale/CI-caching
+artifact not worth a speculative code change.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Nothing.                                |
+| Waiting on    | Nothing.                                |
+| Next          | Nothing.                                |
+| Last touched  | 2026-07-09                               |
+
+* Acceptance
+
+- [X] Root-caused rather than blindly patched: compared the reported
+  class against its one working sibling case, rebuilt the exact
+  reported symbols from current =main=, and audited the codebase for
+  similar cross-plugin cases before deciding whether a code change was
+  warranted.
+- [X] No defect found — no speculative fix made without evidence.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8E353A2D-4E82-4312-BB1B-B96FE8430535][Investigate the RegulatoryBookTypeController LNK2019 error]] | DONE | 2026-07-09 | 2026-07-09 | Root-cause a Windows LNK2019 (unresolved external for RegulatoryBookTypeController's constructor and showListWindow) reported when linking ores.qt.trading.dll. |
+
+* Decisions
+
+- Investigated before patching: compared the reported class
+  (=RegulatoryBookTypeController=) against its one working sibling
+  case (=BookController=, same cross-plugin shape:
+  =ores.qt.trading= consuming an =ores.qt.refdata=-owned class) —
+  identical export-macro treatment on both, and the exact reported
+  symbols rebuild/link clean from current =main= on Linux. No
+  defect found, so no code change was made; a code change without
+  evidence would just be guessing.
+- Audited every =ores.qt.*= plugin for this same cross-plugin shape
+  (a plugin consuming a class owned by a *different* plugin's
+  =include/=) as part of "check for similar cases" — only the one
+  pre-existing pair (=BookController=/=RegulatoryBookTypeController=)
+  exists in the whole codebase, both correctly decorated.
+
+* Out of scope
+
+- Reproducing the failure on an actual Windows machine/CI run — no
+  Windows build environment was available; the investigation relied
+  on source comparison, Linux rebuilds, and codebase audit only.

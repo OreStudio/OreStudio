@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 8E353A2D-4E82-4312-BB1B-B96FE8430535
+:END:
+#+title: Task: Investigate the RegulatoryBookTypeController LNK2019 error
+#+description: Root-cause a Windows LNK2019 (unresolved external for RegulatoryBookTypeController's constructor and showListWindow) reported when linking ores.qt.trading.dll.
+#+type: task
+#+level: s1
+#+filetags: :qt:build:windows:hotfix:sprint_22:v0:investigate-regulatory-book-type-controller-windows-link-error:
+#+owner: marco
+#+branch: hotfix/investigate-regulatory-book-type-controller-windows-link-error
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:75DD1418-D96C-4A7E-80F5-46847F65974D][Investigate RegulatoryBookTypeController Windows LNK2019 error]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Determine whether the pasted Windows LNK2019 (unresolved external for
+=RegulatoryBookTypeController::RegulatoryBookTypeController= and
+=::showListWindow=, linking =ores.qt.trading.dll=) reflects a real
+source defect on current =main=, or a stale/transient CI artifact —
+and fix it if real.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                             |
+| Parent story | [[id:75DD1418-D96C-4A7E-80F5-46847F65974D][Investigate RegulatoryBookTypeController Windows LNK2019 error]] |
+| Now          | Nothing.                                |
+| Waiting on   | Nothing.                                |
+| Next         | Nothing — see =* Result= for the recommended follow-up if it recurs. |
+| Last touched | 2026-07-09                               |
+
+* Acceptance
+
+- [X] Confirmed whether =RegulatoryBookTypeController= has the same
+  export-macro treatment as its one sibling cross-plugin case,
+  =BookController= (both consumed by =ores.qt.trading= but owned by
+  =ores.qt.refdata=).
+- [X] Rebuilt =ores.qt.refdata.lib=/=ores.qt.trading.lib= from current
+  =main= locally and confirmed the exact reported symbols link clean.
+- [X] Audited every =ores.qt.*= plugin for similar cross-plugin class
+  usage, to check for other instances of this bug class.
+- [ ] No source code change made — no defect found (see =* Result=).
+
+* Plan
+
+1. Located the class: =RegulatoryBookTypeController= lives in
+   =ores.qt.refdata= (=RegulatoryBookTypeController.hpp=/=.cpp=),
+   consumed from =ores.qt.trading='s =TradingPlugin.cpp= — a genuine
+   cross-plugin dependency (=ores.qt.trading='s =CMakeLists.txt=
+   already links =ores.qt.refdata.lib= =PRIVATE= for exactly this
+   reason).
+
+2. Compared against its one sibling case, =BookController= (same
+   pattern: owned by =ores.qt.refdata=, consumed by
+   =ores.qt.trading=, not reported as broken in the pasted log).
+   Both headers use the identical =ORES_QT_REFDATA_EXPORT= macro
+   (=RefdataExport.hpp=, the same =ORES_QT_REFDATA_LIBRARY=-gated
+   dllexport/dllimport pattern as =ores.qt.headless='s own
+   =ORES_QT_HEADLESS_API=, just pre-existing). No difference found
+   between the two classes' export treatment, constructor signature,
+   or how they're constructed (both via =std::make_unique<X>=ing a
+   =final= class).
+
+3. Checked whether =RegulatoryBookTypeController.cpp= was newly added
+   relative to the commit this Windows run might have been building —
+   it was already present (and unchanged in the relevant range) at
+   the base commit of the (now-merged) =ores.qt.headless= hotfix
+   branch, ruling out "file didn't exist yet at that commit" as an
+   explanation.
+
+4. Rebuilt =ores.qt.refdata.lib= and =ores.qt.trading.lib= from
+   current =main= locally on Linux — both build and link clean,
+   including the exact symbols reported unresolved
+   (=RegulatoryBookTypeController='s constructor and
+   =showListWindow=).
+
+5. Audited every =ores.qt.*= plugin's own =*Plugin.cpp= for headers
+   =#include=d from a *different* plugin's =include/= tree (i.e. the
+   same cross-plugin shape that caused this). Only two such cases
+   exist in the whole codebase, both =ores.qt.trading= consuming
+   =ores.qt.refdata= classes: =BookController= and
+   =RegulatoryBookTypeController=. Both correctly and identically
+   decorated — no other latent instances of this bug class found.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+No source-level defect found. =RegulatoryBookTypeController= is
+decorated and consumed identically to its working sibling case
+(=BookController=), and the exact reported symbols link cleanly from
+current =main= on Linux. An audit of every =ores.qt.*= plugin found no
+other cross-plugin class missing an export macro either.
+
+Most likely explanation: the pasted log is from a Windows CI run
+against a stale/incrementally-cached build state (=sccache=/partial
+ninja graph — the log shows a large partially-cached build,
+=[3138/5433]=, not a from-scratch one) rather than a true source
+defect — a classic symptom when a target compiled via
+=file(GLOB_RECURSE ...)= (as =ores.qt.refdata='s =CMakeLists.txt= is)
+picks up a new =.cpp= only after CMake re-configures, and an
+incremental/cached Windows build didn't. Not conclusively provable
+without access to the actual failing run's commit SHA and cache state,
+which wasn't available.
+
+Follow-up if this recurs: capture the failing run's URL/commit SHA
+(not just the pasted log) so the actual build state can be inspected,
+and/or trigger a clean (non-incremental) Windows rebuild to rule out
+caching before assuming a source defect.

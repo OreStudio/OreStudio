@@ -27,7 +27,6 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
 #include "ui_CurrencyPairDetailDialog.h"
-#include <QCheckBox>
 #include <QComboBox>
 #include <QFutureWatcher>
 #include <QIcon>
@@ -130,16 +129,8 @@ void CurrencyPairDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &CurrencyPairDetailDialog::onFieldChanged);
-    connect(ui_->settlementCurrencyCombo,
-            &QComboBox::currentIndexChanged,
-            this,
-            &CurrencyPairDetailDialog::onFieldChanged);
     connect(ui_->classificationCombo,
             &QComboBox::currentIndexChanged,
-            this,
-            &CurrencyPairDetailDialog::onFieldChanged);
-    connect(ui_->fixingSourceEdit,
-            &QLineEdit::textChanged,
             this,
             &CurrencyPairDetailDialog::onFieldChanged);
     connect(ui_->baseCurrencyCombo,
@@ -150,10 +141,6 @@ void CurrencyPairDetailDialog::setupConnections() {
             &QComboBox::currentTextChanged,
             this,
             &CurrencyPairDetailDialog::updatePairCodeFromCurrencies);
-    connect(ui_->deliverableCheckBox,
-            &QCheckBox::toggled,
-            this,
-            &CurrencyPairDetailDialog::updateSettlementCurrencyAvailability);
 }
 
 void CurrencyPairDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -161,7 +148,6 @@ void CurrencyPairDetailDialog::setClientManager(ClientManager* clientManager) {
     setup_badge_combo(this, ui_->classificationCombo, badgeCache(), "currency_pair_classification");
     populateBaseCurrencyCombo();
     populateQuoteCurrencyCombo();
-    populateSettlementCurrencyCombo();
 }
 
 void CurrencyPairDetailDialog::populateBaseCurrencyCombo() {
@@ -174,14 +160,6 @@ void CurrencyPairDetailDialog::populateQuoteCurrencyCombo() {
     setup_currency_combo(ui_->quoteCurrencyCombo, this, clientManager_, imageCache(), [this]() {
         return QString::fromStdString(pair_.quote_currency);
     });
-}
-
-void CurrencyPairDetailDialog::populateSettlementCurrencyCombo() {
-    setup_currency_combo(
-        ui_->settlementCurrencyCombo, this, clientManager_, imageCache(), [this]() {
-            const auto& v = pair_.settlement_currency;
-            return v ? QString::fromStdString(*v) : QString();
-        });
 }
 
 void CurrencyPairDetailDialog::setUsername(const std::string& username) {
@@ -222,14 +200,11 @@ void CurrencyPairDetailDialog::setReadOnly(bool readOnly) {
     ui_->pairCodeEdit->setReadOnly(true);
     ui_->baseCurrencyCombo->setEnabled(false);
     ui_->quoteCurrencyCombo->setEnabled(false);
-    ui_->settlementCurrencyCombo->setEnabled(!readOnly);
     ui_->classificationCombo->setEnabled(!readOnly);
-    ui_->fixingSourceEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
     WidgetUtils::set_combo_locked(ui_->baseCurrencyCombo, true);
     WidgetUtils::set_combo_locked(ui_->quoteCurrencyCombo, true);
-    updateSettlementCurrencyAvailability(pair_.deliverable);
 }
 
 void CurrencyPairDetailDialog::updateUiFromPair() {
@@ -244,22 +219,12 @@ void CurrencyPairDetailDialog::updateUiFromPair() {
         const int idx = ui_->quoteCurrencyCombo->findText(val);
         ui_->quoteCurrencyCombo->setCurrentIndex(idx);
     }
-    ui_->deliverableCheckBox->setChecked(pair_.deliverable);
-    {
-        const auto val = pair_.settlement_currency ?
-                             QString::fromStdString(*pair_.settlement_currency) :
-                             QString{};
-        const int idx = ui_->settlementCurrencyCombo->findText(val);
-        ui_->settlementCurrencyCombo->setCurrentIndex(idx);
-    }
     {
         const auto val = QString::fromStdString(pair_.classification);
         const int idx = ui_->classificationCombo->findData(val);
         if (idx >= 0)
             ui_->classificationCombo->setCurrentIndex(idx);
     }
-    ui_->fixingSourceEdit->setText(
-        pair_.fixing_source ? QString::fromStdString(*pair_.fixing_source) : QString{});
 
     populateProvenance(pair_.version,
                        pair_.modified_by,
@@ -282,18 +247,7 @@ void CurrencyPairDetailDialog::updatePairFromUi() {
     if (createMode_) {
         pair_.quote_currency = ui_->quoteCurrencyCombo->currentText().trimmed().toStdString();
     }
-    pair_.deliverable = ui_->deliverableCheckBox->isChecked();
-    {
-        const auto _txt = ui_->settlementCurrencyCombo->currentText().trimmed().toStdString();
-        pair_.settlement_currency = _txt.empty() ? std::nullopt : std::optional<std::string>(_txt);
-    }
     pair_.classification = ui_->classificationCombo->currentData().toString().toStdString();
-    {
-        const auto fixing_source_str = ui_->fixingSourceEdit->text().trimmed().toStdString();
-        pair_.fixing_source = fixing_source_str.empty() ?
-                                  std::nullopt :
-                                  std::optional<std::string>(fixing_source_str);
-    }
     pair_.modified_by = username_;
 }
 
@@ -469,10 +423,6 @@ void CurrencyPairDetailDialog::updatePairCodeFromCurrencies() {
         return;
     ui_->pairCodeEdit->setText(ui_->baseCurrencyCombo->currentText() + "/" +
                                ui_->quoteCurrencyCombo->currentText());
-}
-
-void CurrencyPairDetailDialog::updateSettlementCurrencyAvailability(bool deliverable) {
-    WidgetUtils::set_combo_unavailable(ui_->settlementCurrencyCombo, deliverable || readOnly_);
 }
 
 }

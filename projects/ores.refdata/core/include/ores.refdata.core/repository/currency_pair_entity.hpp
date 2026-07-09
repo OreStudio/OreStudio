@@ -42,10 +42,7 @@ struct currency_pair_entity {
     int version = 0;
     std::string base_currency;
     std::string quote_currency;
-    bool deliverable = false;
-    std::optional<std::string> settlement_currency;
     std::string classification;
-    std::optional<std::string> fixing_source;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

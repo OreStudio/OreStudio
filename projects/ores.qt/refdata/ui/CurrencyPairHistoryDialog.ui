@@ -192,111 +192,69 @@
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="deliverableLabel">
-                 <property name="text">
-                  <string>Deliverable:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QLabel" name="deliverableCheckBox">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="settlement_currencyLabel">
-                 <property name="text">
-                  <string>Settlement Currency:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
-                <widget class="QLabel" name="settlementCurrencyValue">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0">
                 <widget class="QLabel" name="classificationLabel">
                  <property name="text">
                   <string>Classification:</string>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="3" column="1">
                 <widget class="QLabel" name="classificationValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0">
-                <widget class="QLabel" name="fixing_sourceLabel">
-                 <property name="text">
-                  <string>Fixing Source:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="1">
-                <widget class="QLabel" name="fixingSourceValue">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="0">
+               <item row="4" column="0">
                 <widget class="QLabel" name="versionNumberLabel">
                  <property name="text">
                   <string>Version:</string>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="1">
+               <item row="4" column="1">
                 <widget class="QLabel" name="versionNumberValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="0">
+               <item row="5" column="0">
                 <widget class="QLabel" name="modifiedByLabel">
                  <property name="text">
                   <string>Modified By:</string>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="1">
+               <item row="5" column="1">
                 <widget class="QLabel" name="modifiedByValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="9" column="0">
+               <item row="6" column="0">
                 <widget class="QLabel" name="recordedAtLabel">
                  <property name="text">
                   <string>Recorded At:</string>
                  </property>
                 </widget>
                </item>
-               <item row="9" column="1">
+               <item row="6" column="1">
                 <widget class="QLabel" name="recordedAtValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0">
+               <item row="7" column="0">
                 <widget class="QLabel" name="changeCommentaryLabel">
                  <property name="text">
                   <string>Change Commentary:</string>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="1">
+               <item row="7" column="1">
                 <widget class="QLabel" name="changeCommentaryValue">
                  <property name="text">
                   <string/>

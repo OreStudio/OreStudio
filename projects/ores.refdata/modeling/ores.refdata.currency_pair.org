@@ -75,34 +75,6 @@ Quote (second) leg of the pair. Soft FK to =currency.iso_code=.
 std::string("USD")
 #+end_src
 
-** deliverable
-:PROPERTIES:
-:type:     boolean
-:cpp_type: bool
-:nullable: false
-:default:  true
-:END:
-
-Whether the pair settles physically or cash-only (NDF flag).
-
-#+begin_src cpp :name generator
-true
-#+end_src
-
-** settlement_currency
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Soft FK to =currency.iso_code=; set only for non-deliverable (NDF)
-pairs, where settlement happens in a third currency.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
 ** classification
 :PROPERTIES:
 :type:     text
@@ -118,20 +90,6 @@ entity — see [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support 
 
 #+begin_src cpp :name generator
 std::string("major")
-#+end_src
-
-** fixing_source
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Default fixing source for cash-settled / NDF trades on this pair. No
-fixing-source reference entity exists yet; free-text for now.
-
-#+begin_src cpp :name generator
-std::nullopt
 #+end_src
 
 * SQL
@@ -206,10 +164,7 @@ drop function if exists ores_refdata_validate_currency_pair_fn;
 | pair_code          | Pair                |
 | base_currency      | Base                |
 | quote_currency     | Quote               |
-| deliverable        | Deliverable         |
-| settlement_currency | Settlement Currency |
 | classification     | Classification      |
-| fixing_source      | Fixing Source       |
 | modified_by        | Modified By         |
 | version            | Version             |
 
@@ -254,10 +209,7 @@ drop function if exists ores_refdata_validate_currency_pair_fn;
 | PairCode           | pair_code            | Pair                | string    | 100   |          |                                |                |                            |
 | BaseCurrency       | base_currency        | Base                | string    | 80    |          |                                |                |                            |
 | QuoteCurrency      | quote_currency       | Quote               | string    | 80    |          |                                |                |                            |
-| Deliverable        | deliverable          | Deliverable         | bool      | 90    | true     | currency_pair_deliverable     | boolYesNoLabel | ores.qt/BoolYesNoLabel.hpp |
-| SettlementCurrency | settlement_currency  | Settlement Currency | string    | 130   |          |                                |                |                            |
 | Classification     | classification       | Classification      | string    | 100   | true     | currency_pair_classification  |                |                            |
-| FixingSource       | fixing_source        | Fixing Source       | string    | 100   |          |                                |                |                            |
 | Version            | version              | Version             | int       | 70    |          |                                |                |                            |
 | ModifiedBy         | modified_by          | Modified By         | string    | auto  |          |                                |                |                            |
 | RecordedAt         | recorded_at          | Recorded At         | timestamp | auto  |          |                                |                |                            |
@@ -274,7 +226,6 @@ existing hand-written pattern (see =currency_flag_icon()= in
 | PairCode           | currency_flag_icon | base_currency       | quote_currency |
 | BaseCurrency       | currency_flag_icon | base_currency       |                |
 | QuoteCurrency      | currency_flag_icon | quote_currency      |                |
-| SettlementCurrency | currency_flag_icon | settlement_currency |                |
 
 *** Detail fields
 
@@ -283,14 +234,11 @@ existing hand-written pattern (see =currency_flag_icon()= in
 | pair_code            | Pair Code            | pairCodeEdit              | line_edit     | true   | true        | e.g. EUR/USD                              |              |                        |                                    |                   |                                        |                               |           |
 | base_currency        | Base Currency        | baseCurrencyCombo         | flagged_combo |        | true        |                                           | currency     | fetch_currency_codes  | ores.qt/LookupFetcher.hpp         | false             |                                        |                               | true      |
 | quote_currency       | Quote Currency       | quoteCurrencyCombo        | flagged_combo |        | true        |                                           | currency     | fetch_currency_codes  | ores.qt/LookupFetcher.hpp         | false             |                                        |                               | true      |
-| deliverable          | Deliverable          | deliverableCheckBox       | check_box     |        |             |                                           |              |                        |                                    |                   |                                        |                               |           |
-| settlement_currency  | Settlement Currency  | settlementCurrencyCombo   | flagged_combo |        |             |                                           | currency     | fetch_currency_codes  | ores.qt/LookupFetcher.hpp         | true              |                                        |                               |           |
 | classification       | Classification       | classificationCombo       | static_combo  |        |             |                                           |              |                        |                                    |                   | major,minor,exotic,commodity          | currency_pair_classification |           |
-| fixing_source        | Fixing Source        | fixingSourceEdit          | line_edit     |        |             | Default fixing source                     |              |                        |                                    |                   |                                        |                               |           |
 
 ** Custom repository methods
 
-** Qt: derived pair_code and conditional settlement currency
+** Qt: derived pair_code
 :PROPERTIES:
 :ID: 8D2F5A17-6C4E-4B93-A1D7-3E9F0C8B2D56
 :END:
@@ -299,21 +247,21 @@ pair_code is base_currency + "/" + quote_currency, not independent
 user input — kept live-synced while both are still editable (create
 mode only; once created they're locked and pair_code never changes
 again, per [[id:BBB450FD-845D-4D6D-AA54-07589FDC1DFF][Pair code doesn't recompute when base/quote currency
-changes]]). settlement_currency only means something for a
-non-deliverable (NDF) pair, which settles in a third currency — see
-this entity's own settlement_currency field doc; disabled and cleared
-whenever Deliverable is checked. Base/Quote lock via
-=WidgetUtils::set_combo_locked()= rather than the generated
-=setEnabled(false)=, so the flag icon stays visible while locked
-rather than fading out — see [[id:BBB450FD-845D-4D6D-AA54-07589FDC1DFF][same task]].
+changes]]). Base/Quote lock via =WidgetUtils::set_combo_locked()=
+rather than the generated =setEnabled(false)=, so the flag icon stays
+visible while locked rather than fading out — see [[id:BBB450FD-845D-4D6D-AA54-07589FDC1DFF][same task]].
 
-#+begin_src cpp :name extra_includes :implements 3F8B6C1D-4E2A-4F9B-8C3D-1A5E7F2B9D4C
-#include <QCheckBox>
-#+end_src
+Deliverability (physical vs. cash/NDF settlement, and the settlement
+currency for the latter) was modelled here as a =deliverable=/
+=non_deliverable= boolean, then dropped entirely — real FX conventions
+allow *multiple* settlement types per pair (sometimes business-centre
+dependent), which a single boolean/optional-currency pair on
+=currency_pair= can't express; needs a proper =settlement_type=
+junction model, tracked as a future story (see the capture in the
+inbox).
 
 #+begin_src cpp :name declarations :implements F55CB64E-165A-4E15-A50A-5723C0320E97
 void updatePairCodeFromCurrencies();
-void updateSettlementCurrencyAvailability(bool deliverable);
 #+end_src
 
 #+begin_src cpp :name connections :implements B6F2748A-9896-4B9C-BEAC-38436FD1CA79
@@ -321,8 +269,6 @@ connect(ui_->baseCurrencyCombo, &QComboBox::currentTextChanged, this,
         &CurrencyPairDetailDialog::updatePairCodeFromCurrencies);
 connect(ui_->quoteCurrencyCombo, &QComboBox::currentTextChanged, this,
         &CurrencyPairDetailDialog::updatePairCodeFromCurrencies);
-connect(ui_->deliverableCheckBox, &QCheckBox::toggled, this,
-        &CurrencyPairDetailDialog::updateSettlementCurrencyAvailability);
 #+end_src
 
 #+begin_src cpp :name create_mode_override :implements 9A719585-3AB1-47DE-B0B0-99AFDFE7180E
@@ -339,7 +285,6 @@ ui_->pairCodeEdit->setReadOnly(true);
 #+begin_src cpp :name read_only_override :implements 7A4AE8D5-A22D-4912-B4BF-D58215681CD2
 WidgetUtils::set_combo_locked(ui_->baseCurrencyCombo, true);
 WidgetUtils::set_combo_locked(ui_->quoteCurrencyCombo, true);
-updateSettlementCurrencyAvailability(pair_.deliverable);
 #+end_src
 
 #+begin_src cpp :name validation :implements 69F22F14-6701-4E73-AFCC-78AC1B1FDDDF
@@ -352,10 +297,6 @@ void CurrencyPairDetailDialog::updatePairCodeFromCurrencies() {
         return;
     ui_->pairCodeEdit->setText(
         ui_->baseCurrencyCombo->currentText() + "/" + ui_->quoteCurrencyCombo->currentText());
-}
-
-void CurrencyPairDetailDialog::updateSettlementCurrencyAvailability(bool deliverable) {
-    WidgetUtils::set_combo_unavailable(ui_->settlementCurrencyCombo, deliverable || readOnly_);
 }
 #+end_src
 

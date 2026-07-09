@@ -103,8 +103,7 @@ begin
 
     insert into ores_dq_currency_pairs_artefact_tbl (
         dataset_id, tenant_id, pair_code, version,
-        base_currency, quote_currency, deliverable, settlement_currency,
-        classification, fixing_source
+        base_currency, quote_currency, classification
     )
     select
         v_dataset_id,
@@ -113,73 +112,69 @@ begin
         0,
         c.base_currency,
         c.quote_currency,
-        c.deliverable,
-        c.settlement_currency,
-        c.classification,
-        c.fixing_source
+        c.classification
     from (values
         -- Majors
-        ('EUR', 'USD', true, null::text, 'major', 'WM/Reuters 4pm London'),
-        ('GBP', 'USD', true, null, 'major', 'WM/Reuters 4pm London'),
-        ('USD', 'JPY', true, null, 'major', 'WM/Reuters 4pm London'),
-        ('USD', 'CHF', true, null, 'major', 'WM/Reuters 4pm London'),
-        ('USD', 'CAD', true, null, 'major', 'WM/Reuters 4pm London'),
-        ('AUD', 'USD', true, null, 'major', 'WM/Reuters 4pm London'),
-        ('NZD', 'USD', true, null, 'major', 'WM/Reuters 4pm London'),
+        ('EUR', 'USD', 'major'),
+        ('GBP', 'USD', 'major'),
+        ('USD', 'JPY', 'major'),
+        ('USD', 'CHF', 'major'),
+        ('USD', 'CAD', 'major'),
+        ('AUD', 'USD', 'major'),
+        ('NZD', 'USD', 'major'),
         -- EUR crosses
-        ('EUR', 'GBP', true, null, 'minor', null),
-        ('EUR', 'JPY', true, null, 'minor', null),
-        ('EUR', 'CHF', true, null, 'minor', null),
-        ('EUR', 'CAD', true, null, 'minor', null),
-        ('EUR', 'AUD', true, null, 'minor', null),
-        ('EUR', 'NZD', true, null, 'minor', null),
-        ('EUR', 'NOK', true, null, 'minor', null),
-        ('EUR', 'SEK', true, null, 'minor', null),
-        ('EUR', 'DKK', true, null, 'minor', null),
-        ('EUR', 'PLN', true, null, 'minor', null),
-        ('EUR', 'CZK', true, null, 'minor', null),
-        ('EUR', 'HUF', true, null, 'minor', null),
-        ('EUR', 'TRY', true, null, 'minor', null),
+        ('EUR', 'GBP', 'minor'),
+        ('EUR', 'JPY', 'minor'),
+        ('EUR', 'CHF', 'minor'),
+        ('EUR', 'CAD', 'minor'),
+        ('EUR', 'AUD', 'minor'),
+        ('EUR', 'NZD', 'minor'),
+        ('EUR', 'NOK', 'minor'),
+        ('EUR', 'SEK', 'minor'),
+        ('EUR', 'DKK', 'minor'),
+        ('EUR', 'PLN', 'minor'),
+        ('EUR', 'CZK', 'minor'),
+        ('EUR', 'HUF', 'minor'),
+        ('EUR', 'TRY', 'minor'),
         -- GBP crosses
-        ('GBP', 'JPY', true, null, 'minor', null),
-        ('GBP', 'CHF', true, null, 'minor', null),
-        ('GBP', 'CAD', true, null, 'minor', null),
-        ('GBP', 'AUD', true, null, 'minor', null),
-        ('GBP', 'NZD', true, null, 'minor', null),
+        ('GBP', 'JPY', 'minor'),
+        ('GBP', 'CHF', 'minor'),
+        ('GBP', 'CAD', 'minor'),
+        ('GBP', 'AUD', 'minor'),
+        ('GBP', 'NZD', 'minor'),
         -- Other G10 crosses
-        ('AUD', 'JPY', true, null, 'minor', null),
-        ('AUD', 'CAD', true, null, 'minor', null),
-        ('AUD', 'CHF', true, null, 'minor', null),
-        ('AUD', 'NZD', true, null, 'minor', null),
-        ('NZD', 'JPY', true, null, 'minor', null),
-        ('CAD', 'JPY', true, null, 'minor', null),
-        ('CHF', 'JPY', true, null, 'minor', null),
-        ('NOK', 'SEK', true, null, 'minor', null),
-        -- USD / EM crosses (deliverable=false + settlement_currency=USD for
-        -- currencies flagged non-deliverable in the ISO currencies dataset)
-        ('USD', 'CNY', false, 'USD', 'exotic', null),
-        ('USD', 'HKD', true, null, 'exotic', null),
-        ('USD', 'SGD', true, null, 'exotic', null),
-        ('USD', 'INR', false, 'USD', 'exotic', null),
-        ('USD', 'KRW', false, 'USD', 'exotic', null),
-        ('USD', 'TWD', false, 'USD', 'exotic', null),
-        ('USD', 'THB', true, null, 'exotic', null),
-        ('USD', 'MYR', false, 'USD', 'exotic', null),
-        ('USD', 'IDR', false, 'USD', 'exotic', null),
-        ('USD', 'PHP', false, 'USD', 'exotic', null),
-        ('USD', 'ZAR', true, null, 'exotic', null),
-        ('USD', 'MXN', true, null, 'exotic', null),
-        ('USD', 'BRL', false, 'USD', 'exotic', null),
-        ('USD', 'TRY', true, null, 'exotic', null),
-        ('USD', 'RUB', false, 'USD', 'exotic', null),
-        ('USD', 'ILS', true, null, 'exotic', null),
-        ('USD', 'SAR', true, null, 'exotic', null),
-        ('USD', 'AED', true, null, 'exotic', null),
-        ('USD', 'PLN', true, null, 'exotic', null),
-        ('USD', 'CZK', true, null, 'exotic', null),
-        ('USD', 'HUF', true, null, 'exotic', null),
-        ('USD', 'RON', true, null, 'exotic', null)
-    ) as c(base_currency, quote_currency, deliverable, settlement_currency, classification, fixing_source);
+        ('AUD', 'JPY', 'minor'),
+        ('AUD', 'CAD', 'minor'),
+        ('AUD', 'CHF', 'minor'),
+        ('AUD', 'NZD', 'minor'),
+        ('NZD', 'JPY', 'minor'),
+        ('CAD', 'JPY', 'minor'),
+        ('CHF', 'JPY', 'minor'),
+        ('NOK', 'SEK', 'minor'),
+        -- USD / EM crosses
+        ('USD', 'CNY', 'exotic'),
+        ('USD', 'HKD', 'exotic'),
+        ('USD', 'SGD', 'exotic'),
+        ('USD', 'INR', 'exotic'),
+        ('USD', 'KRW', 'exotic'),
+        ('USD', 'TWD', 'exotic'),
+        ('USD', 'THB', 'exotic'),
+        ('USD', 'MYR', 'exotic'),
+        ('USD', 'IDR', 'exotic'),
+        ('USD', 'PHP', 'exotic'),
+        ('USD', 'ZAR', 'exotic'),
+        ('USD', 'MXN', 'exotic'),
+        ('USD', 'BRL', 'exotic'),
+        ('USD', 'TRY', 'exotic'),
+        ('USD', 'RUB', 'exotic'),
+        ('USD', 'ILS', 'exotic'),
+        ('USD', 'SAR', 'exotic'),
+        ('USD', 'AED', 'exotic'),
+        ('USD', 'PLN', 'exotic'),
+        ('USD', 'CZK', 'exotic'),
+        ('USD', 'HUF', 'exotic'),
+        ('USD', 'RON', 'exotic')
+    ) as c(base_currency, quote_currency, classification);
 
     get diagnostics v_count = row_count;
 
@@ -190,16 +185,13 @@ begin
     -- rather than leaving the long tail of EM/frontier currencies
     -- entirely unpaired. Convention: fiat currencies quote against USD
     -- (USD/<ccy>); commodity currencies (precious metals) are quoted as
-    -- <metal>/USD, matching real market convention. deliverable and
-    -- settlement_currency are derived from the currency's own curated
-    -- flag (see iso_currencies_artefact_populate.sql), not re-decided
-    -- here. Supranational (XDR) is skipped: not a spot-traded pair.
-    -- Already-covered currencies (either leg of a hand-curated pair
-    -- above) are skipped via the anti-join.
+    -- <metal>/USD, matching real market convention. Supranational (XDR)
+    -- is skipped: not a spot-traded pair. Already-covered currencies
+    -- (either leg of a hand-curated pair above) are skipped via the
+    -- anti-join.
     insert into ores_dq_currency_pairs_artefact_tbl (
         dataset_id, tenant_id, pair_code, version,
-        base_currency, quote_currency, deliverable, settlement_currency,
-        classification, fixing_source
+        base_currency, quote_currency, classification
     )
     select
         v_dataset_id,
@@ -211,10 +203,7 @@ begin
         0,
         case when iso.monetary_nature = 'commodity' then iso.iso_code else 'USD' end,
         case when iso.monetary_nature = 'commodity' then 'USD' else iso.iso_code end,
-        iso.deliverable,
-        case when iso.deliverable then null else 'USD' end,
-        case when iso.monetary_nature = 'commodity' then 'commodity' else 'exotic' end,
-        null
+        case when iso.monetary_nature = 'commodity' then 'commodity' else 'exotic' end
     from ores_dq_currencies_artefact_tbl iso
     join ores_dq_datasets_tbl iso_ds
         on iso_ds.id = iso.dataset_id
@@ -257,8 +246,4 @@ where classification = 'exotic'
 union all
 select 'Commodity Pairs', count(*)
 from ores_dq_currency_pairs_artefact_tbl
-where classification = 'commodity'
-union all
-select 'Non-Deliverable Pairs', count(*)
-from ores_dq_currency_pairs_artefact_tbl
-where deliverable = false;
+where classification = 'commodity';

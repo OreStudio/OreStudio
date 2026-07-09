@@ -348,10 +348,7 @@ begin
             dq.pair_code,
             dq.base_currency,
             dq.quote_currency,
-            dq.deliverable,
-            dq.settlement_currency,
-            dq.classification,
-            dq.fixing_source
+            dq.classification
         from ores_dq_currency_pairs_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_utility_system_tenant_id_fn()
@@ -371,13 +368,13 @@ begin
 
         insert into ores_refdata_currency_pairs_tbl (
             tenant_id,
-            pair_code, version, base_currency, quote_currency, deliverable, settlement_currency,
-            classification, fixing_source,
+            pair_code, version, base_currency, quote_currency,
+            classification,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             p_target_tenant_id,
-            r.pair_code, 0, r.base_currency, r.quote_currency, r.deliverable, r.settlement_currency,
-            r.classification, r.fixing_source,
+            r.pair_code, 0, r.base_currency, r.quote_currency,
+            r.classification,
             coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )

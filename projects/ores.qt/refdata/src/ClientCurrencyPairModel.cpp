@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/ClientCurrencyPairModel.hpp"
-#include "ores.qt/BoolYesNoLabel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -88,16 +87,8 @@ QVariant ClientCurrencyPairModel::data(const QModelIndex& index, int role) const
                 return QString::fromStdString(pair.base_currency);
             case QuoteCurrency:
                 return QString::fromStdString(pair.quote_currency);
-            case Deliverable:
-                return boolYesNoLabel(pair.deliverable);
-            case SettlementCurrency:
-                return pair.settlement_currency ?
-                           QString::fromStdString(*pair.settlement_currency) :
-                           QString{};
             case Classification:
                 return QString::fromStdString(pair.classification);
-            case FixingSource:
-                return pair.fixing_source ? QString::fromStdString(*pair.fixing_source) : QString{};
             case Version:
                 return static_cast<qlonglong>(pair.version);
             case ModifiedBy:
@@ -116,8 +107,6 @@ QVariant ClientCurrencyPairModel::data(const QModelIndex& index, int role) const
             return currency_flag_icon(*imageCache_, pair.base_currency);
         if (index.column() == Column::QuoteCurrency)
             return currency_flag_icon(*imageCache_, pair.quote_currency);
-        if (index.column() == Column::SettlementCurrency)
-            return currency_flag_icon(*imageCache_, pair.settlement_currency);
     }
 
     if (role == Qt::ForegroundRole) {
@@ -139,14 +128,8 @@ ClientCurrencyPairModel::headerData(int section, Qt::Orientation orientation, in
             return tr("Base");
         case QuoteCurrency:
             return tr("Quote");
-        case Deliverable:
-            return tr("Deliverable");
-        case SettlementCurrency:
-            return tr("Settlement Currency");
         case Classification:
             return tr("Classification");
-        case FixingSource:
-            return tr("Fixing Source");
         case Version:
             return tr("Version");
         case ModifiedBy:

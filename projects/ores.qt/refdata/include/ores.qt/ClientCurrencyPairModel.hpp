@@ -57,10 +57,7 @@ public:
         PairCode,
         BaseCurrency,
         QuoteCurrency,
-        Deliverable,
-        SettlementCurrency,
         Classification,
-        FixingSource,
         Version,
         ModifiedBy,
         RecordedAt,
@@ -84,7 +81,6 @@ protected:
             Column::PairCode,
             Column::BaseCurrency,
             Column::QuoteCurrency,
-            Column::SettlementCurrency,
         };
     }
 

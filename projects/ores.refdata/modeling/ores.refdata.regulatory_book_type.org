@@ -179,6 +179,7 @@ faker::number::integer(1, 100)
 :settings_group:         RegulatoryBookTypeListWindow
 :window_title:           Regulatory Book Types
 :icon:                   Tag
+:has_export_macro:       true
 :END:
 
 *** Columns (Qt model)

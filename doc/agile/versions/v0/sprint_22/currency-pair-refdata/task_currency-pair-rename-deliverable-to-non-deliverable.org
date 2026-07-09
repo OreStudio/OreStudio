@@ -1,57 +1,52 @@
 :PROPERTIES:
 :ID: 42636589-644C-43B2-BB02-63F102D2DB3E
 :END:
-#+title: Task: Rename deliverable flag to non_deliverable (idiomatic FX trading term)
-#+description: currency_pair.deliverable should be renamed to non_deliverable (and the boolean sense inverted) to match the idiomatic FX trading term 'non-deliverable forward' (NDF) -- avoids the double-negative confusion of deliverable=false meaning NDF.
+#+title: Task: Drop deliverable/settlement_currency/fixing_source from currency_pair (deliverability needs a real model)
+#+description: currency_pair.deliverable, settlement_currency, and fixing_source dropped entirely rather than renamed -- a single boolean/optional-currency pair can't express real FX settlement conventions (multiple settlement types per pair, sometimes business-centre dependent); deliverability needs a dedicated settlement-convention model, tracked separately.
 #+type: task
 #+level: s1
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/currency-pair-rename-deliverable-to-non-deliverable
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Rename =currency_pair.deliverable= (bool, default true) to
-=non_deliverable= (bool, default false), inverting the sense to match
-"non-deliverable forward" (NDF), the idiomatic FX trading term — the
-current name reads backwards (=deliverable=false= to mean "this is an
-NDF" is a double negative that isn't how traders talk about it).
-
-Touches: SQL column + default + insert trigger, C++ domain struct,
-generator, Qt Columns/Detail fields (list badge, checkbox, badge_key
-=currency_pair_deliverable= → rename to
-=currency_pair_non_deliverable= and flip its Yes/No badge mapping
-sense), the =settlement_currency= toggle logic
-(=updateSettlementCurrencyAvailability= currently keys off
-=!deliverable=, becomes =non_deliverable= directly), seed/populate
-data (=iso_currencies_artefact_populate.sql=,
-=refdata_currency_pairs_seed_populate.sql=), and the manual/knowledge
-docs that reference "deliverable".
+Started as: rename =currency_pair.deliverable= to =non_deliverable=
+(inverted sense, matching the idiomatic FX term "non-deliverable
+forward"/NDF). Implemented, then reconsidered per FpML research
+(FpML models this via a =settlementType= enum — Cash/Physical — not a
+boolean, precisely because a pair can have more than one settlement
+type, sometimes business-centre dependent) — see the design pivot in
+=* Plan= below. Ended as: drop =non_deliverable=, =settlement_currency=,
+and =fixing_source= from =currency_pair= entirely; deliverability
+needs a dedicated settlement-convention junction model, captured
+separately for a future story.
 
 * Acceptance
 
-- Column, domain field, Qt label/checkbox/badge, and all seed data
-  consistently use =non_deliverable= with the inverted sense.
-- Badge colours/labels still read correctly (Yes = NDF/non-deliverable,
-  No = deliverable) — re-verify against
-  [[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge Catalogue]].
-- No leftover references to the old =deliverable= name/sense in code,
-  SQL, or docs.
+- =currency_pair= no longer carries =non_deliverable=,
+  =settlement_currency=, or =fixing_source= in SQL (schema, DQ
+  artefact table, seed/populate, publish-from-DQ), C++ domain/
+  repository/generator, or Qt (columns, detail fields, badges).
+- [[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge Catalogue]] has no leftover =currency_pair_non_deliverable=/
+  =currency_pair_deliverable= entry.
+- A capture exists in the backlog inbox describing the proper
+  settlement-convention model for a future story.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -60,9 +55,51 @@ docs that reference "deliverable".
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Scope decision (with user): only =currency_pair.deliverable= —
+=currency.deliverable= (a separate, semantically-identical field:
+whether the currency itself forces any pair to be NDF) stays as-is,
+out of scope for this task.
+
+Round 1 (rename): codegen-driven — edited the field definition in
+=ores.refdata.currency_pair.org= (name, label, default, badge_key),
+regenerated SQL/domain/Qt, hand-fixed what codegen doesn't own
+(seed/populate SQL, badge-system population row, paste blocks
+referencing the field). Badge colour sense was first inverted (Yes=NDF
+= gray/"special case"), then reverted back to plain Yes=green — user
+feedback: Yes should always read as the affirmative/green case
+regardless of what the field means, consistent with every other
+Yes/No badge in the app.
+
+Round 2 (drop): mid-implementation, asked "how does FpML model
+this?" — FpML uses =settlementType= (Cash/Physical enum) plus a
+conditional =settlementCurrency=, not a boolean, precisely because
+real FX conventions allow multiple settlement types per pair
+(sometimes business-centre dependent) — a plain boolean/optional-
+currency pair can't express that. Decision: drop =non_deliverable=,
+=settlement_currency=, and (same NDF-related concept)
+=fixing_source= from =currency_pair= entirely, and capture the proper
+settlement-convention model
+([[id:75252EFB-55B6-4B14-B00B-EA04B459CCD5][Model FX settlement type per currency pair]], referencing
+[[id:32F89EFA-6CF9-4A14-A2C9-6A7B59802123][FX Settlement Market Convention Data Model]]) for a future story
+rather than build it now.
+
+Also fixed along the way (pre-existing bug from a concurrent merge on
+main, unrelated to this task but blocking manual testing):
+=RegulatoryBookTypeController= was missing =:has_export_macro: true=,
+so its symbols were hidden from =libores.qt.refdata.so='s dynamic
+symbol table — =libores.qt.trading.so= references it and failed to
+resolve the symbol at load time, silently killing the client right
+after party selection. Root-caused via gdb + =nm -D= comparison
+against a working controller (=BookController=, which does carry the
+flag).
+
+Files:
+- =projects/ores.refdata/modeling/ores.refdata.currency_pair.org= — field defs removed; paste-block bodies simplified to just pair_code derivation + base≠quote validation.
+- Regenerated: SQL create/drop, domain struct, repository/mapper/generator, Qt Columns/Detail/Model/Dialog/MdiWindow/HistoryDialog files.
+- Hand-fixed: =refdata_currency_pairs_seed_populate.sql=, =dq_currency_pairs_artefact_create.sql=, =refdata_publish_from_dq_create.sql=, =dq_badge_system_populate.sql=.
+- =projects/ores.refdata/modeling/ores.refdata.regulatory_book_type.org= — added the missing export-macro flag (unrelated fix, bundled in this PR since it blocked testing).
+- Docs: [[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge Catalogue]] — removed the =currency_pair_non_deliverable= entry.
+- New: [[id:32F89EFA-6CF9-4A14-A2C9-6A7B59802123][FX Settlement Market Convention Data Model]] (Gemini analysis, committed with an org-roam ID), [[id:75252EFB-55B6-4B14-B00B-EA04B459CCD5][Model FX settlement type per currency pair]] (backlog capture referencing it).
 
 * Notes
 

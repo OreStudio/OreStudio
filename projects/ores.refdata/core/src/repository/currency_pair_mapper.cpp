@@ -35,10 +35,7 @@ domain::currency_pair currency_pair_mapper::map(const currency_pair_entity& v) {
     r.pair_code = v.pair_code.value();
     r.base_currency = v.base_currency;
     r.quote_currency = v.quote_currency;
-    r.deliverable = v.deliverable;
-    r.settlement_currency = v.settlement_currency;
     r.classification = v.classification;
-    r.fixing_source = v.fixing_source;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -58,10 +55,7 @@ currency_pair_entity currency_pair_mapper::map(const domain::currency_pair& v) {
     r.version = v.version;
     r.base_currency = v.base_currency;
     r.quote_currency = v.quote_currency;
-    r.deliverable = v.deliverable;
-    r.settlement_currency = v.settlement_currency;
     r.classification = v.classification;
-    r.fixing_source = v.fixing_source;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

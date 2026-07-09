@@ -20,33 +20,19 @@
 #include "ores.refdata.api/domain/currency_pair_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
-#include <sstream>
 
 namespace ores::refdata::domain {
 
-namespace {
-template <typename T>
-std::string opt_str(const std::optional<T>& o) {
-    if (!o)
-        return {};
-    std::ostringstream s;
-    if constexpr (std::is_same_v<T, bool>)
-        s << std::boolalpha;
-    s << *o;
-    return s.str();
-}
-}
 
 std::string convert_to_table(const std::vector<currency_pair>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Pair" << "Base" << "Quote" << "Deliverable" << "Settlement Currency"
-          << "Classification" << "Fixing Source" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Pair" << "Base" << "Quote" << "Classification" << "Modified By"
+          << "Version" << fort::endr;
 
     for (const auto& cp : v) {
-        table << cp.pair_code << cp.base_currency << cp.quote_currency << cp.deliverable
-              << opt_str(cp.settlement_currency) << cp.classification << opt_str(cp.fixing_source)
+        table << cp.pair_code << cp.base_currency << cp.quote_currency << cp.classification
               << cp.modified_by << cp.version << fort::endr;
     }
     return table.to_string();

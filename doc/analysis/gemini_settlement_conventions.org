@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 32F89EFA-6CF9-4A14-A2C9-6A7B59802123
+:END:
+#+TITLE: FX Settlement Market Convention Data Model
+#+AUTHOR: Technical Architecture Team
+#+DATE: 2026-07-09
+#+OPTIONS: toc:nil num:t todo:nil
+
+* Overview
+This document outlines the decoupled data model and structural rules required to handle Non-Deliverable Forwards (NDFs) alongside deliverable (physical) FX forwards within the trading system.
+
+The core architectural principle relies on separating the economic concept of a *Currency Pair* from its *Settlement Market Convention*. The behavior of a currency pair—whether it settles physically or via cash cash-settled NDF mechanisms—is determined by the geographic, legal, or jurisdictional context where the trade is booked.
+
+* Structural Data Model
+
+The logical relationships are structured as follows:
+
+#+BEGIN_SRC
++-------------------------+         +-------------------------------------+         +--------------------------+
+|      Currency Pair      |         | Settlement Market Convention        |         |    Business Center       |
+|-------------------------|         |-------------------------------------|         |--------------------------|
+| - Pair Code (PK)        | 1     * | - Convention ID (PK)                | * 1 | - Center Code (PK)       |
+| - Base Currency         |-------->| - Pair Code (FK)                    |<--------| - Center Name            |
+| - Quote Currency        |         | - Trading Location (FK)             |         +--------------------------+
++-------------------------+         | - Settlement Type                   |                       ^
+                                    | - Is Default For Pair Globally      |                       |
+                                    | - Is Default For Location           |                       | *
+                                    | - Settlement Currency (Optional)    |                       |
+                                    | - Fixing Currency (Optional)        |                       |
+                                    +-------------------------------------+                       |
+                                                       | 1                                        |
+                                                       |                                          |
+                                                       v * |
+                                             +-------------------------------------+              |
+                                             |  Convention Holiday Calendar        |              |
+                                             |-------------------------------------|              |
+                                             | - Convention ID (FK)                |              |
+                                             | - Center Code (FK)  -------------------------------+
+                                             | - Calendar Purpose                  |
+                                             +-------------------------------------+
+#+END_SRC
+
+** Core Entities
+
+*** 1. Currency Pair (Reference Data)
+Defines the absolute economic pair standard.
+- =Pair Code= [PK] (e.g., =USDCNY=, =EURUSD=, =USDBRL=)
+- =Base Currency=
+- =Quote Currency=
+
+*** 2. Business Center (Reference Data)
+Defines the calendar authorities and financial centers governing lifecycle schedules.
+- =Center Code= [PK] (e.g., =USNY=, =GBLO=, =CNBE=, =SGSI=)
+- =Center Name=
+
+*** 3. Settlement Market Convention (Junction & Behavioral Definition)
+Maps how a specific currency pair behaves structural-wise given a designated trading context or location.
+- =Convention ID= [PK]
+- =Pair Code= [FK to Currency Pair]
+- =Trading Location= [FK to Business Center] (Represents booking desk, venue, or legal entity jurisdiction)
+- =Settlement Type= [Enum] (=PHYSICAL=, =CASH_NDF=)
+- =Is Default For Pair Globally= [Boolean]
+- =Is Default For Location= [Boolean]
+- =Settlement Currency= [Currency Code, Nullable] (The deliverable currency cash is paid out in, usually =USD=)
+- =Fixing Currency= [Currency Code, Nullable] (The non-deliverable currency whose rate dictates the payout calculation)
+
+*** 4. Convention Holiday Calendar (Junction)
+Maps the distinct operational calendars required for execution across different lifecycles.
+- =Convention ID= [FK to Settlement Market Convention]
+- =Center Code= [FK to Business Center]
+- =Calendar Purpose= [Enum] (=FIXING=, =SETTLEMENT=, =BOTH=)
+
+* Core Modeling Rules
+
+** Rule 1: Contextual Dominance Over Settlement
+A Currency Pair in isolation must never dictate settlement type. The combination of the pair and its booking jurisdiction via the *Settlement Market Convention* resolves whether the transaction is an NDF or a physical delivery.
+- =USDCNY= executed under location =CNBE= (Beijing Onshore) maps to =PHYSICAL=.
+- =USDCNY= executed under location =GBLO= (London Offshore) maps to =CASH_NDF=.
+
+** Rule 2: NDF Field Invariants
+Conditional data constraints must be tightly enforced depending on the structural type chosen:
+- If =Settlement Type= is =CASH_NDF=:
+  - =Settlement Currency= and =Fixing Currency= must be explicitly populated.
+  - =Settlement Currency= must match one of the parent pair currencies (typically the base or quote clearing currency).
+  - =Fixing Currency= must match the opposite currency of the parent pair.
+- If =Settlement Type= is =PHYSICAL=:
+  - =Settlement Currency= and =Fixing Currency= must be null.
+
+** Rule 3: Dynamic Calendar Bifurcation
+The logic evaluating schedules must split calendar dependencies into independent functional legs:
+- *Fixing Schedule:* Must track the holiday calendars associated with the onshore center of the non-deliverable currency (e.g., =CNBE= for =CNY= NDFs) to verify fixing rate source availability.
+- *Settlement Schedule:* Must track the liquid global payment and clearing centers (e.g., =USNY= and =GBLO=) to determine valid cash movement dates.
+
+** Rule 4: Data Constraint Integrity & Uniqueness
+To safeguard against ambiguous data queries, the following relational invariants are mandatory:
+- *Global Uniqueness:* For any given =Pair Code=, exactly *one* record across all conventions can be marked as =Is Default For Pair Globally = True=.
+- *Location Uniqueness:* For any specific combination of =Pair Code= + =Trading Location=, exactly *one* record can be marked as =Is Default For Location = True=.
+
+* Default Resolution Hierarchy
+
+When a trade is processed by the system, the resolution engine traverses from the most specific context to the absolute market baseline using this deterministic cascading fallback strategy:
+
+#+BEGIN_SRC
+[ Trade Entry / Execution ]
+             │
+             ▼
+1. Is Location Specified? ───(Yes)───> Query (Pair Code + Trading Location)
+             │                                        │
+            (No)                                 (Not Found)
+             │                                        │
+             ├────────────────────────────────────────┘
+             ▼
+2. Fetch Pair where "Is Default For Pair Globally" = True ───> Use Resolved Settlement Type
+             │
+        (Not Found)
+             │
+             ▼
+3. Reject / Throw System Validation Exception
+#+END_SRC
+
+** Step 1: Venue-Specific Resolution
+If a booking entity, trading desk, or venue location is assigned to the trade, query the *Settlement Market Convention* mapping for that specific =Pair Code= + =Trading Location=. If a matching entry exists where =Is Default For Location = True=, apply its configuration.
+
+** Step 2: Global Standard Fallback
+If the trade context lacks an explicit location identifier, or if no location-specific override exists, select the fallback row for that =Pair Code= where =Is Default For Pair Globally = True=.
+- *Example 1:* =USDINR= defaults globally to =CASH_NDF= (the offshore standard).
+- *Example 2:* =EURUSD= defaults globally to =PHYSICAL=.
+
+** Step 3: Hard Exception Boundary
+If neither a location-specific rule nor a global default rule is mapped for the pair, the data integrity boundary is breached; the trade entry must be blocked, preventing un-routable transactions from hitting the downstream lifecycle grid.

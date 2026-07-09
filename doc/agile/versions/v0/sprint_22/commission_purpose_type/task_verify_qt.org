@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-02
-#+updated: 2026-07-06
+#+updated: 2026-07-09
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Run the Qt application against a live service and verify all five purpose_type U
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] |
-| Now          | Migrated purpose_type to ores.codegen.entity; fixed two codegen template bugs (duplicate change_reason_code validation, lost validation_fn scope flags) along the way. List/detail/history/delete verified. NATS eventing hand-patched directly in application.cpp to unblock verification — this is a workaround, not the real fix. |
-| Waiting on   | [[id:9763FBBF-7912-4EA2-A544-67E90EA27882][Codegen: generate per-entity NATS event-mapping registrar]] — replace the hand-patch with generated registration before closing this task. |
-| Next         | Once the codegen registrar story lands, remove the hand-wired purpose_type block from application.cpp and re-verify via the generated path. |
-| Last touched | 2026-07-06                               |
+| Now          | [[id:9763FBBF-7912-4EA2-A544-67E90EA27882][Codegen: generate per-entity NATS event-mapping registrar]] landed (PR #1459) — purpose_type's NATS eventing now goes through the generated registrar, the hand-patch is gone from application.cpp. Re-verified list/detail/history/delete and cross-client eventing manually against the merged code; also found and fixed a pre-existing history-dialog Close-button regression along the way. |
+| Waiting on   | Nothing.                               |
+| Next         | Walk [[id:0B79AFD2-9A6E-475D-A3BE-6F34E1F98358][the test scenario]] end to end, record Results, then close this task. |
+| Last touched | 2026-07-09                               |
 
 * Acceptance
 

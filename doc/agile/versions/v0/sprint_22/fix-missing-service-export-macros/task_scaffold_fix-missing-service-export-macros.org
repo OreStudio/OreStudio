@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:616CCA80-DDA2-48E6-8802-9557C8BCFFDA][Fix missing ORES_REFDATA_CORE_EXPORT on refdata/scheduler service classes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-09                               |
 
 * Acceptance
@@ -69,3 +69,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Scaffolded the story/task docs and sprint wiring for this hotfix via
+=agile-start-hotfix=; the implementation task carried the actual PR (#1482).

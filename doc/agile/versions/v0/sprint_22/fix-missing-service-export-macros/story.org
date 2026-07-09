@@ -21,11 +21,11 @@ Every *_service class meant to be called across .so boundaries (party_service, p
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.            |
 | Last touched  | 2026-07-09                               |
 
 * Acceptance
@@ -37,10 +37,15 @@ Every *_service class meant to be called across .so boundaries (party_service, p
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:F8D5B797-DD74-4B59-B3C8-E4B782639E72][Scaffold story: Fix missing ORES_REFDATA_CORE_EXPORT on refdata/scheduler service classes]] | STARTED | 2026-07-09 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:A179FB53-D816-455A-8F5C-AA8ABB51F796][Add missing EXPORT macros to service classes]] | STARTED | 2026-07-09 | | Initial task for: Fix missing ORES_REFDATA_CORE_EXPORT on refdata/scheduler service classes |
+| [[id:F8D5B797-DD74-4B59-B3C8-E4B782639E72][Scaffold story: Fix missing ORES_REFDATA_CORE_EXPORT on refdata/scheduler service classes]] | DONE | 2026-07-09 | 2026-07-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A179FB53-D816-455A-8F5C-AA8ABB51F796][Add missing EXPORT macros to service classes]] | DONE | 2026-07-09 | 2026-07-09 | Initial task for: Fix missing ORES_REFDATA_CORE_EXPORT on refdata/scheduler service classes |
 
 * Decisions
+
+- Deliberately excluded =*_mapper= classes from the EXPORT sweep since they are
+  internal-only, never called across a =.so= boundary.
+- Also touched =counterparty_repository.cpp= (no content change) to force
+  recompilation of a stale =.o= that predated =read_at_version= being added.
 
 * Out of scope
 

@@ -26,11 +26,11 @@ Every *_service class meant to be called across .so boundaries (party_service, p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:616CCA80-DDA2-48E6-8802-9557C8BCFFDA][Fix missing ORES_REFDATA_CORE_EXPORT on refdata/scheduler service classes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-09                               |
 
 * Acceptance
@@ -70,3 +70,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added the =export.hpp= include and =ORES_REFDATA_CORE_EXPORT=/=ORES_SCHEDULER_CORE_EXPORT=
+macro to all 19 affected =ores.refdata.core= service classes plus
+=ores.scheduler.core='s =job_definition_service=; =*_mapper= classes were
+deliberately left alone as internal-only. Also touched
+=counterparty_repository.cpp= to force a recompile of a stale =.o= missing
+=read_at_version=. Verified with a full clean build and a full local =rat=
+run (54 suites, all green) — no undefined-reference errors remain.

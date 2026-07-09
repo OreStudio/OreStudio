@@ -105,11 +105,12 @@ restricted for that reason.
 
 ** Book lifecycle
 
-The *Status* field you will meet on the General tab further on is a
-simplified, editable reflection of a much heavier real-world process:
-opening, running, and closing a book. This section walks through that
-wider process, so the meaning behind each status value is clear before
-you meet it in the interface.
+A book moves through a much heavier real-world process than a simple
+open/closed flag suggests: a deliberate opening workflow, a live phase
+in which deals move and access is periodically reviewed, and a closing
+process gated on the book being flat. This section walks through that
+process in its own terms; c.f. the *Status* field on the General tab
+below, which is OreStudio's simplified, editable reflection of it.
 
 *** Opening a book
 

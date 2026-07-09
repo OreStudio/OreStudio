@@ -47,7 +47,7 @@ and fix it if real.
   =main= locally and confirmed the exact reported symbols link clean.
 - [X] Audited every =ores.qt.*= plugin for similar cross-plugin class
   usage, to check for other instances of this bug class.
-- [ ] No source code change made — no defect found (see =* Result=).
+- [X] No source code change made — no defect found (see =* Result=).
 
 * Plan
 

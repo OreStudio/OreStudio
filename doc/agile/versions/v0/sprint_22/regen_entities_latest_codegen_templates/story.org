@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: AF0EFC5C-899A-4AE9-BD09-7B2D4E304543
+:END:
+#+title: Story: Regen entities with latest codegen templates
+#+description: Substantial shared codegen template capability has landed since several entities were last synced (Qt icon/badge rendering, hidden-column defaults, SQL default-quoting, paste-block extension points, and more). Sweep already-commissioned entities, re-run codegen, diff against the repo, and reconcile drift.
+#+type: story
+#+level: s2
+#+filetags: :codegen:refdata:qt:sql:drift:sprint_22:v0:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Currency's commissioning (sprint 22, PR #1470 and the currency_pair
+work it merged with) landed substantial new shared codegen template
+capability that didn't exist when most already-commissioned entities
+were last synced: generic =hidden_by_default= list-column support,
+badge-repaint-on-cache-load fix, aspect-correct icon sizing
+(=icon_text_left= column style), =has_related_entity_shortcuts=,
+=has_generate_action=/=has_toolbar=, version-navigation UI, NATS
+notification-wiring, the paste-block extension-point mechanism, and
+SQL default-value auto-quoting. Sweep entities one at a time, re-run
+their codegen profiles, diff against the repo, and reconcile: adopt
+capability that fits, document any deliberate divergence the way
+currency did for its two permanently-hand-written files.
+
+One task per entity swept, starting with country (the next-oldest
+fully-commissioned entity after currency).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Country refresh task added.            |
+| Waiting on    | Nothing.                               |
+| Next          | Work the country refresh task.         |
+| Last touched  | 2026-07-09                               |
+
+* Acceptance
+
+- For each swept entity: every codegen profile it participates in has
+  been re-run and each output file's diff reviewed.
+- Genuine drift (template capability that should apply but doesn't
+  yet) is adopted; deliberate divergence is documented in the task's
+  =* Result=.
+- Full local build and test suite pass clean per entity.
+- Verified live in the client, not just by diff/compile.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:82BA40CA-3A4A-47B5-88ED-ADA0178E5695][Regen country against latest codegen templates]] | BACKLOG | | | Country was last synced in sprint 21, before currency's commissioning landed substantial new shared-template capability. Re-run every codegen profile country participates in, diff against the repo, and reconcile drift. |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 82BA40CA-3A4A-47B5-88ED-ADA0178E5695
+:END:
+#+title: Task: Regen country against latest codegen templates
+#+description: Country was last synced in sprint 21, before currency's commissioning landed substantial new shared-template capability. Re-run every codegen profile country participates in, diff against the repo, and reconcile drift.
+#+type: task
+#+level: s1
+#+filetags: :regen_entities_latest_codegen_templates:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AF0EFC5C-899A-4AE9-BD09-7B2D4E304543][Regen entities with latest codegen templates]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Country was last fully synced in sprint 21 (2026-06-29), before
+currency's commissioning (sprint 22, PR #1470 and the currency_pair
+work it merged with) landed substantial new shared codegen template
+capability: generic =hidden_by_default= list-column support,
+badge-repaint-on-cache-load fix, aspect-correct icon sizing
+(=icon_text_left= column style), =has_related_entity_shortcuts=,
+=has_generate_action=/=has_toolbar=, version-navigation UI, NATS
+notification-wiring, the paste-block extension-point mechanism, and
+SQL default-value auto-quoting (=_sql_quote_default=). None of these
+were present when country was synced, so country's generated files
+are increasingly stale relative to what the templates now produce for
+every other entity.
+
+Re-run every codegen profile country participates in (=ores.sql=,
+=ores.cpp.domain=, =ores.cpp.repository=, =ores.cpp.generator=,
+=ores.cpp.qt=, messaging profiles as applicable), diff each output
+file against the repo, and reconcile: adopt template-driven
+capabilities that fit (e.g. hidden-column defaults for any low-signal
+country columns, badge rendering if country has any =is_badge=
+fields), and document any deliberate divergence the same way currency
+did for its two permanently-hand-written files.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:AF0EFC5C-899A-4AE9-BD09-7B2D4E304543][Regen entities with latest codegen templates]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-09                               |
+
+* Acceptance
+
+- Every codegen profile country participates in has been re-run and
+  each output file's diff against the repo reviewed.
+- Genuine drift (template capability that should apply to country but
+  doesn't yet) is adopted; deliberate divergence is documented in this
+  task's =* Result= (and the story's =* Decisions= if durable).
+- Full local build and test suite pass clean.
+- Verified live in the client, not just by diff/compile.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

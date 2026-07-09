@@ -26,7 +26,19 @@ Raises the PR with =compass pr create= and immediately posts an
 
 * How to use this skill
 
-1. *Raise the PR*:
+1. *Build and run tests locally first*. CI no longer runs a full
+   C++ build/test job on PRs (the old "canary" job was removed — it
+   took too long and slowed down development), so this step is the
+   only thing that catches a broken build before review:
+
+   #+begin_src sh :results verbatim
+   cmake --build --preset <preset>
+   ctest --preset <preset>
+   #+end_src
+
+   Do not raise the PR until both are clean.
+
+2. *Raise the PR*:
 
    #+begin_src sh :results verbatim
    ./compass.sh pr create --title "[component] Description" \
@@ -38,7 +50,7 @@ Raises the PR with =compass pr create= and immediately posts an
    opens the PR, records it on the task, and stamps the journal. Note
    the PR number it prints.
 
-2. *Trigger Claude review* by posting a PR comment:
+3. *Trigger Claude review* by posting a PR comment:
 
    #+begin_src sh :results verbatim
    gh pr comment <N> --body "@claude please review this pull request"

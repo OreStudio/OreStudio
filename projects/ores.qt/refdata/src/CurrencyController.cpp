@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -25,20 +25,18 @@
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ImageCache.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.qt/VersionNavigationHelper.hpp"
 #include "ores.refdata.api/eventing/currency_changed_event.hpp"
-#include "ores.refdata.api/messaging/protocol.hpp"
-#include <QFutureWatcher>
+#include <QMdiSubWindow>
+#include <QMessageBox>
 #include <QPointer>
-#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-// Event type name for currency changes
 constexpr std::string_view currency_event_name =
     eventing::domain::event_traits<refdata::eventing::currency_changed_event>::name;
 }
@@ -49,232 +47,160 @@ CurrencyController::CurrencyController(QMainWindow* mainWindow,
                                        ImageCache* imageCache,
                                        ChangeReasonCache* changeReasonCache,
                                        const QString& username,
+                                       BadgeCache* badgeCache,
                                        QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent)
-    , imageCache_(imageCache)
+    : EntityController(mainWindow, mdiArea, clientManager, username, currency_event_name, parent)
     , changeReasonCache_(changeReasonCache)
-    , currencyListWindow_(nullptr) {
-    BOOST_LOG_SEV(lg(), debug) << "Currency controller created";
+    , badgeCache_(badgeCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
+    setImageCache(imageCache);
 
-    // Connect to notification signal from ClientManager
-    if (clientManager_) {
-        connect(clientManager_,
-                &ClientManager::notificationReceived,
-                this,
-                &CurrencyController::onNotificationReceived);
-
-        // Subscribe to events when logged in (event adapter only available after login)
-        connect(clientManager_,
-                &ClientManager::loggedIn,
-                this,
-                [self = QPointer<CurrencyController>(this)]() {
-                    if (!self)
-                        return;
-                    BOOST_LOG_SEV(lg(), info) << "Subscribing to currency change events";
-                    self->clientManager_->subscribeToEvent(std::string{currency_event_name});
-                });
-
-        // Re-subscribe after reconnection
-        connect(clientManager_,
-                &ClientManager::reconnected,
-                this,
-                [self = QPointer<CurrencyController>(this)]() {
-                    if (!self)
-                        return;
-                    BOOST_LOG_SEV(lg(), info)
-                        << "Re-subscribing to currency change events after reconnect";
-                    self->clientManager_->subscribeToEvent(std::string{currency_event_name});
-                });
-
-        // If already connected, subscribe now
-        if (clientManager_->isConnected()) {
-            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to currency change events";
-            clientManager_->subscribeToEvent(std::string{currency_event_name});
-        }
-    }
-}
-
-CurrencyController::~CurrencyController() {
-    BOOST_LOG_SEV(lg(), debug) << "Currency controller destroyed";
-
-    // Unsubscribe from currency change events
-    if (clientManager_) {
-        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from currency change events";
-        clientManager_->unsubscribeFromEvent(std::string{currency_event_name});
-    }
+    BOOST_LOG_SEV(lg(), debug) << "CurrencyController created";
 }
 
 void CurrencyController::showListWindow() {
-    // We allow showing window even if disconnected (it will show empty or cached data + offline
-    // status) But for now let's keep the check if strictly required, or just warn. The user
-    // requirement is "windows stay open". Let's allow opening it, but the window itself should
-    // handle disconnected state. For now, simply passing the clientManager is enough.
+    BOOST_LOG_SEV(lg(), debug) << "showListWindow called";
 
-    // Reuse existing window if it exists
-    if (currencyListWindow_) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing currencies window";
-
-        // Bring window to front
-        if (currencyListWindow_->isDetached()) {
-            currencyListWindow_->setVisible(true);
-            currencyListWindow_->show();
-            currencyListWindow_->raise();
-            currencyListWindow_->activateWindow();
-        } else {
-            currencyListWindow_->setVisible(true);
-            mdiArea_->setActiveSubWindow(currencyListWindow_);
-            currencyListWindow_->show();
-            currencyListWindow_->raise();
-        }
+    const QString key = build_window_key("list", "currencies");
+    if (try_reuse_window(key)) {
+        BOOST_LOG_SEV(lg(), debug) << "Reusing existing list window";
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new currencies MDI window";
-    auto* currencyWidget =
-        new CurrencyMdiWindow(clientManager_, imageCache_, username_, mainWindow_);
+    // Create new window
+    listWindow_ = new CurrencyMdiWindow(clientManager_, username_, badgeCache_, imageCache_);
 
-    // Connect status signals
-    connect(currencyWidget,
-            &CurrencyMdiWindow::statusChanged,
+    // Connect signals
+    connect(
+        listWindow_, &CurrencyMdiWindow::statusChanged, this, &CurrencyController::statusMessage);
+    connect(
+        listWindow_, &CurrencyMdiWindow::errorOccurred, this, &CurrencyController::errorMessage);
+    connect(listWindow_,
+            &CurrencyMdiWindow::showCurrencyDetails,
             this,
-            [self = QPointer<CurrencyController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(currencyWidget,
-            &CurrencyMdiWindow::errorOccurred,
-            this,
-            [self = QPointer<CurrencyController>(this)](const QString& err_msg) {
-                if (!self)
-                    return;
-                emit self->errorMessage("Error loading currencies: " + err_msg);
-            });
-
-    // Connect currency operations (add, edit, history)
-    connect(currencyWidget,
+            &CurrencyController::onShowDetails);
+    connect(listWindow_,
             &CurrencyMdiWindow::addNewRequested,
             this,
             &CurrencyController::onAddNewRequested);
-    connect(currencyWidget,
-            &CurrencyMdiWindow::showCurrencyDetails,
-            this,
-            &CurrencyController::onShowCurrencyDetails);
-    connect(currencyWidget,
+    connect(listWindow_,
             &CurrencyMdiWindow::showCurrencyHistory,
             this,
-            &CurrencyController::onShowCurrencyHistory);
-    connect(currencyWidget,
+            &CurrencyController::onShowHistory);
+    connect(listWindow_,
             &CurrencyMdiWindow::showRoundingTypesRequested,
             this,
             &CurrencyController::showRoundingTypesRequested);
-    connect(currencyWidget,
+    connect(listWindow_,
             &CurrencyMdiWindow::showMonetaryNaturesRequested,
             this,
             &CurrencyController::showMonetaryNaturesRequested);
-    connect(currencyWidget,
+    connect(listWindow_,
             &CurrencyMdiWindow::showMarketTiersRequested,
             this,
             &CurrencyController::showMarketTiersRequested);
 
-    currencyListWindow_ = new DetachableMdiSubWindow();
-    currencyListWindow_->setAttribute(Qt::WA_DeleteOnClose);
-    currencyListWindow_->setWidget(currencyWidget);
-    currencyListWindow_->setWindowTitle("Currencies");
-    currencyListWindow_->setWindowIcon(
+    // Create MDI subwindow
+    listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
+    listMdiSubWindow_->setWidget(listWindow_);
+    listMdiSubWindow_->setWindowTitle("Currencies");
+    listMdiSubWindow_->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    listMdiSubWindow_->resize(listWindow_->sizeHint());
 
-    // Track window for detach/reattach operations
-    register_detachable_window(currencyListWindow_);
-    QPointer<CurrencyController> self = this;
-    QPointer<DetachableMdiSubWindow> windowBeingDestroyed = currencyListWindow_;
-    // to avoid race conditions with signal processing
-    connect(
-        currencyListWindow_, &QObject::destroyed, this, [self, windowBeingDestroyed](QObject* obj) {
-            if (!self)
-                return;
+    mdiArea_->addSubWindow(listMdiSubWindow_);
+    listMdiSubWindow_->show();
 
-            BOOST_LOG_SEV(lg(), debug) << "Detachable MDI Sub Window destroyed";
+    // Track window
+    track_window(key, listMdiSubWindow_);
+    register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
-            // If the destroyed window is the currency list, nullify the pointer
-            if (self->currencyListWindow_ == windowBeingDestroyed)
-                self->currencyListWindow_ = nullptr;
-        });
-
-    // When the image cache reloads (due to external event), mark the list as stale
-    connect(imageCache_,
-            &ImageCache::allLoaded,
+    // Cleanup when closed
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
             this,
-            [self = QPointer<CurrencyController>(this),
-             currencyWidget = QPointer<CurrencyMdiWindow>(currencyWidget)]() {
+            [self = QPointer<CurrencyController>(this), key]() {
                 if (!self)
                     return;
-                if (currencyWidget) {
-                    currencyWidget->markAsStale();
-                }
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
             });
 
-    mdiArea_->addSubWindow(currencyListWindow_);
-    currencyListWindow_->adjustSize();
-    currencyListWindow_->show();
+    BOOST_LOG_SEV(lg(), debug) << "Currency list window created";
 }
 
 void CurrencyController::closeAllWindows() {
-    // We no longer close windows on disconnect!
-    // But we might close them if the controller itself is destroyed (e.g. app exit)
-    // The base class doesn't enforce closing.
-    // MainWindow calls this on disconnect? It should NOT anymore.
-    // But if we do need to close them:
-    if (currencyListWindow_) {
-        currencyListWindow_->close();
+    BOOST_LOG_SEV(lg(), debug) << "closeAllWindows called";
+
+    // Close all managed windows
+    QList<QString> keys = managed_windows_.keys();
+    for (const QString& key : keys) {
+        if (auto* window = managed_windows_.value(key)) {
+            window->close();
+        }
     }
+    managed_windows_.clear();
+
+    listWindow_ = nullptr;
+    listMdiSubWindow_ = nullptr;
 }
 
 void CurrencyController::reloadListWindow() {
-    if (currencyListWindow_) {
-        if (auto* widget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget())) {
-            widget->reload();
-        }
+    if (listWindow_) {
+        listWindow_->reload();
     }
+}
+
+void CurrencyController::onShowDetails(const refdata::domain::currency& currency) {
+    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << currency.iso_code;
+    showDetailWindow(currency);
 }
 
 void CurrencyController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new currency requested";
-    refdata::domain::currency new_currency;
+    showAddWindow();
+}
 
-    // Assuming CurrencyDetailDialog updated to take ClientManager*
+
+void CurrencyController::onShowHistory(const refdata::domain::currency& currency) {
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << currency.iso_code;
+    showHistoryWindow(QString::fromStdString(currency.iso_code));
+}
+
+void CurrencyController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new currency";
+
     auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
-    if (clientManager_) {
-        detailDialog->setClientManager(clientManager_);
-        detailDialog->setUsername(username_.toStdString());
-    }
-    if (imageCache_) {
-        detailDialog->setImageCache(imageCache_);
-    }
-    if (changeReasonCache_) {
+    if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
-    }
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CurrencyDetailDialog::statusMessage,
             this,
-            [self = QPointer<CurrencyController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
+            &CurrencyController::statusMessage);
+    connect(
+        detailDialog, &CurrencyDetailDialog::errorMessage, this, &CurrencyController::errorMessage);
     connect(detailDialog,
-            &CurrencyDetailDialog::errorMessage,
+            &CurrencyDetailDialog::currencySaved,
             this,
-            [self = QPointer<CurrencyController>(this)](const QString& message) {
+            [self = QPointer<CurrencyController>(this)](const QString& code) {
                 if (!self)
                     return;
-                emit self->errorMessage(message);
+                BOOST_LOG_SEV(lg(), info) << "Currency saved: " << code.toStdString();
+                self->handleEntitySaved();
             });
 
-    detailDialog->setCurrency(new_currency);
-
-    auto* detailWindow = new DetachableMdiSubWindow();
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Currency");
@@ -284,96 +210,95 @@ void CurrencyController::onAddNewRequested() {
     register_detachable_window(detailWindow);
 
     connect_dialog_close(detailDialog, detailWindow);
-    show_managed_window(detailWindow, currencyListWindow_);
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void CurrencyController::onShowCurrencyDetails(const refdata::domain::currency& currency) {
-    BOOST_LOG_SEV(lg(), info) << "Showing currency details for: " << currency.iso_code;
+void CurrencyController::showDetailWindow(const refdata::domain::currency& currency) {
 
-    const QString isoCode = QString::fromStdString(currency.iso_code);
-    const QString windowKey = build_window_key("details", isoCode);
+    const QString identifier = QString::fromStdString(currency.iso_code);
+    const QString key = build_window_key("details", identifier);
 
-    // Try to reuse existing window
-    if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing detail window for: " << currency.iso_code;
+    if (try_reuse_window(key)) {
+        BOOST_LOG_SEV(lg(), debug) << "Reusing existing detail window";
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new detail window for: " << currency.iso_code;
+    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << currency.iso_code;
 
     auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
-    if (clientManager_) {
-        detailDialog->setClientManager(clientManager_);
-        detailDialog->setUsername(username_.toStdString());
-    }
-    if (imageCache_) {
-        detailDialog->setImageCache(imageCache_);
-    }
-    if (changeReasonCache_) {
+    if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
-    }
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setCreateMode(false);
+    detailDialog->setCurrency(currency);
 
     connect(detailDialog,
             &CurrencyDetailDialog::statusMessage,
             this,
-            [self = QPointer<CurrencyController>(this)](const QString& message) {
+            &CurrencyController::statusMessage);
+    connect(
+        detailDialog, &CurrencyDetailDialog::errorMessage, this, &CurrencyController::errorMessage);
+    connect(detailDialog,
+            &CurrencyDetailDialog::currencySaved,
+            this,
+            [self = QPointer<CurrencyController>(this)](const QString& code) {
                 if (!self)
                     return;
-                emit self->statusMessage(message);
+                BOOST_LOG_SEV(lg(), info) << "Currency saved: " << code.toStdString();
+                self->handleEntitySaved();
             });
     connect(detailDialog,
-            &CurrencyDetailDialog::errorMessage,
+            &CurrencyDetailDialog::currencyDeleted,
             this,
-            [self = QPointer<CurrencyController>(this)](const QString& message) {
+            [self = QPointer<CurrencyController>(this), key](const QString& code) {
                 if (!self)
                     return;
-                emit self->errorMessage(message);
+                BOOST_LOG_SEV(lg(), info) << "Currency deleted: " << code.toStdString();
+                self->handleEntityDeleted();
             });
 
-    detailDialog->setCurrency(currency);
-
-    auto* detailWindow = new DetachableMdiSubWindow();
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Currency Details: %1").arg(isoCode));
+    detailWindow->setWindowTitle(QString("Currency: %1").arg(identifier));
     detailWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));
 
-    // Track this detail window
-    track_window(windowKey, detailWindow);
+    // Track window
+    track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<CurrencyController> self = this;
-    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
-            self->untrack_window(windowKey);
+            self->untrack_window(key);
         }
     });
 
     connect_dialog_close(detailDialog, detailWindow);
-    show_managed_window(detailWindow, currencyListWindow_);
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
-    BOOST_LOG_SEV(lg(), info) << "Showing currency history for: " << isoCode.toStdString();
+void CurrencyController::showHistoryWindow(const QString& code) {
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for currency: " << code.toStdString();
 
-    const QString windowKey = build_window_key("history", isoCode);
+    const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << isoCode.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << isoCode.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyWidget = new CurrencyHistoryDialog(isoCode, clientManager_, mainWindow_);
-    if (imageCache_) {
-        historyWidget->setImageCache(imageCache_);
-    }
+    auto* historyDialog = new CurrencyHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyWidget,
+    connect(historyDialog,
             &CurrencyHistoryDialog::statusChanged,
             this,
             [self = QPointer<CurrencyController>(this)](const QString& message) {
@@ -381,37 +306,38 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
                     return;
                 emit self->statusMessage(message);
             });
-    connect(historyWidget,
+    connect(historyDialog,
             &CurrencyHistoryDialog::errorOccurred,
             this,
-            [self = QPointer<CurrencyController>(this)](const QString& error_message) {
+            [self = QPointer<CurrencyController>(this)](const QString& message) {
                 if (!self)
                     return;
-                emit self->statusMessage("Error loading history: " + error_message);
+                emit self->errorMessage(message);
             });
-
-    // Connect open and revert signals
-    connect(historyWidget,
-            &CurrencyHistoryDialog::openVersionRequested,
-            this,
-            &CurrencyController::onOpenCurrencyVersion);
-    connect(historyWidget,
+    connect(historyDialog,
             &CurrencyHistoryDialog::revertVersionRequested,
             this,
-            &CurrencyController::onRevertCurrency);
+            &CurrencyController::onRevertVersion);
+    connect(historyDialog,
+            &CurrencyHistoryDialog::openVersionRequested,
+            this,
+            &CurrencyController::onOpenVersion);
 
-    historyWidget->loadHistory();
+    // Load history data
+    historyDialog->loadHistory();
 
-    auto* historyWindow = new DetachableMdiSubWindow();
+    auto* historyWindow = new DetachableMdiSubWindow(mainWindow_);
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
-    historyWindow->setWidget(historyWidget);
-    historyWindow->setWindowTitle(QString("History: %1").arg(isoCode));
+    historyWindow->setWidget(historyDialog);
+    historyWindow->setWindowTitle(QString("Currency History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<CurrencyController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -420,66 +346,17 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
         }
     });
 
-    show_managed_window(historyWindow, currencyListWindow_);
+    show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void CurrencyController::onNotificationReceived(const QString& eventType,
-                                                const QDateTime& timestamp,
-                                                const QStringList& entityIds,
-                                                const QString& /*tenantId*/) {
-    // Check if this is a currency change event
-    if (eventType != QString::fromStdString(std::string{currency_event_name})) {
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Received currency change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString() << " with "
-                              << entityIds.size() << " ISO codes";
-
-    // If the currency list window is open, mark it as stale
-    if (currencyListWindow_) {
-        auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
-        if (currencyWidget) {
-            currencyWidget->markAsStale();
-            BOOST_LOG_SEV(lg(), debug) << "Marked currency window as stale";
-        }
-    }
-
-    // Notify open detail/history dialogs for affected currencies
-    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
-        const QString& key = it.key();
-        auto* window = it.value();
-        if (!window)
-            continue;
-
-        if (key.startsWith("details.")) {
-            if (auto* detailDialog = qobject_cast<CurrencyDetailDialog*>(window->widget())) {
-                if (entityIds.isEmpty() || entityIds.contains(detailDialog->isoCode())) {
-                    detailDialog->markAsStale();
-                    BOOST_LOG_SEV(lg(), debug) << "Marked detail dialog as stale for: "
-                                               << detailDialog->isoCode().toStdString();
-                }
-            }
-        } else if (key.startsWith("history.")) {
-            if (auto* historyDialog = qobject_cast<CurrencyHistoryDialog*>(window->widget())) {
-                if (entityIds.isEmpty() || entityIds.contains(historyDialog->code())) {
-                    historyDialog->markAsStale();
-                    BOOST_LOG_SEV(lg(), debug) << "Marked history dialog as stale for: "
-                                               << historyDialog->code().toStdString();
-                }
-            }
-        }
-    }
-}
-
-void CurrencyController::onOpenCurrencyVersion(const refdata::domain::currency& currency,
-                                               int versionNumber) {
+void CurrencyController::onOpenVersion(const refdata::domain::currency& currency,
+                                       int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for currency: " << currency.iso_code;
 
-    const QString isoCode = QString::fromStdString(currency.iso_code);
+    const QString code = QString::fromStdString(currency.iso_code);
     const QString windowKey =
-        build_window_key("version", QString("%1_v%2").arg(isoCode).arg(versionNumber));
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -488,16 +365,25 @@ void CurrencyController::onOpenCurrencyVersion(const refdata::domain::currency& 
     }
 
     auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
-    if (clientManager_) {
-        detailDialog->setClientManager(clientManager_);
-        detailDialog->setUsername(username_.toStdString());
-    }
-    if (imageCache_) {
-        detailDialog->setImageCache(imageCache_);
-    }
-    if (changeReasonCache_) {
+    if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    // A single version-nav toolbar (first/prev/next/last) only means something
+    // if the dialog has the *full* history to navigate, not just this one
+    // version. When onOpenVersion's sender is the HistoryDialog that
+    // requested it, pull that history across; otherwise fall back to a plain
+    // read-only single-version display.
+    if (!wireVersionHistory<CurrencyHistoryDialog>(sender(), detailDialog, versionNumber)) {
+        detailDialog->setCurrency(currency);
+        detailDialog->setReadOnly(true, versionNumber);
     }
+    connect(detailDialog,
+            &CurrencyDetailDialog::revertRequested,
+            this,
+            &CurrencyController::onRevertVersion);
 
     connect(detailDialog,
             &CurrencyDetailDialog::statusMessage,
@@ -516,32 +402,13 @@ void CurrencyController::onOpenCurrencyVersion(const refdata::domain::currency& 
                 emit self->errorMessage(message);
             });
 
-    // Connect revert signal
-    connect(detailDialog,
-            &CurrencyDetailDialog::revertRequested,
-            this,
-            &CurrencyController::onRevertCurrency);
-
-    // Try to get history from the sender (history dialog) for version navigation
-    auto* historyDialog = qobject_cast<CurrencyHistoryDialog*>(sender());
-    if (historyDialog && !historyDialog->getHistory().versions.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "Using history from sender for version navigation";
-        detailDialog->setHistory(historyDialog->getHistory(), versionNumber);
-    } else {
-        // Fallback: just show single version without navigation
-        detailDialog->setCurrency(currency);
-        detailDialog->setReadOnly(true, versionNumber);
-    }
-
-    auto* detailWindow = new DetachableMdiSubWindow();
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(
-        QString("Currency: %1 (Version %2 - Read Only)").arg(isoCode).arg(versionNumber));
+    detailWindow->setWindowTitle(QString("Currency: %1 (Version %2)").arg(code).arg(versionNumber));
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
-    // Track this version window
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
@@ -553,68 +420,81 @@ void CurrencyController::onOpenCurrencyVersion(const refdata::domain::currency& 
     });
 
     connect_dialog_close(detailDialog, detailWindow);
-    show_managed_window(detailWindow, currencyListWindow_);
+    show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void CurrencyController::onRevertCurrency(const refdata::domain::currency& currency) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting currency: " << currency.iso_code;
+void CurrencyController::onRevertVersion(const refdata::domain::currency& currency) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting currency to version: " << currency.version;
 
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Revert requested but client not connected.";
-        emit errorMessage("Not connected to server. Please login.");
-        return;
-    }
+    // Open detail dialog with the old version data for editing
+    auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    auto reverted_currency = currency;
+    reverted_currency.version = 0;
+    detailDialog->setCurrency(reverted_currency);
+    detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
-    // Create a copy of the currency for saving
-    refdata::domain::currency currencyToSave = currency;
-    currencyToSave.modified_by = username_.toStdString();
-
-    QPointer<CurrencyController> self = this;
-    QFuture<std::pair<bool, std::string>> future =
-        QtConcurrent::run([self, currencyToSave]() -> std::pair<bool, std::string> {
-            if (!self)
-                return {false, ""};
-
-            BOOST_LOG_SEV(lg(), debug)
-                << "Sending save currency request for revert: " << currencyToSave.iso_code;
-
-            refdata::messaging::save_currency_request request;
-            request.data = currencyToSave;
-            auto response_result =
-                self->clientManager_->process_authenticated_request(std::move(request));
-
-            if (!response_result)
-                return {false, "Failed to communicate with server"};
-
-            return {response_result->success, response_result->message};
-        });
-
-    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);
+    connect(detailDialog,
+            &CurrencyDetailDialog::statusMessage,
+            this,
+            &CurrencyController::statusMessage);
     connect(
-        watcher,
-        &QFutureWatcher<std::pair<bool, std::string>>::finished,
-        self,
-        [self, watcher, currencyToSave]() {
-            if (!self)
-                return;
+        detailDialog, &CurrencyDetailDialog::errorMessage, this, &CurrencyController::errorMessage);
+    connect(detailDialog,
+            &CurrencyDetailDialog::currencySaved,
+            this,
+            [self = QPointer<CurrencyController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Currency reverted: " << code.toStdString();
+                emit self->statusMessage(QString("Currency '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
-            auto [success, message] = watcher->result();
-            watcher->deleteLater();
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(
+        QString("Revert Currency: %1").arg(QString::fromStdString(currency.iso_code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
-            if (success) {
-                BOOST_LOG_SEV(lg(), debug) << "Currency reverted successfully.";
-                emit self->statusMessage(QString("Successfully reverted currency: %1")
-                                             .arg(QString::fromStdString(currencyToSave.iso_code)));
-            } else {
-                BOOST_LOG_SEV(lg(), error) << "Currency revert failed: " << message;
-                emit self->errorMessage(
-                    QString("Failed to revert currency: %1").arg(QString::fromStdString(message)));
-                MessageBoxHelper::critical(
-                    self->mainWindow_, "Revert Failed", QString::fromStdString(message));
+    register_detachable_window(detailWindow);
+
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_);
+}
+
+EntityListMdiWindow* CurrencyController::listWindow() const {
+    return listWindow_;
+}
+
+void CurrencyController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
             }
-        });
-
-    watcher->setFuture(future);
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

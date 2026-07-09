@@ -267,6 +267,17 @@ TEST_CASE("event_bus_concurrent_subscribe_unsubscribe", tags) {
         }
     });
 
+    // Wait (bounded — never spin forever under adversarial scheduling) for
+    // the publisher to actually start before racing it against the
+    // subscriber's short (~1ms total) loop below — thread creation latency
+    // under CPU contention can otherwise exceed that whole window, leaving
+    // publish_count at 0 with no bug in event_bus itself (flaky failure
+    // observed in CI/parallel ctest runs, root-caused here).
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (publish_count == 0 && std::chrono::steady_clock::now() < deadline) {
+        std::this_thread::yield();
+    }
+
     // Thread that subscribes and unsubscribes repeatedly
     std::thread subscriber([&]() {
         for (int i = 0; i < 10; ++i) {

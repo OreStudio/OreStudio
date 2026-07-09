@@ -34,7 +34,6 @@ create table if not exists "ores_dq_currencies_artefact_tbl" (
     "market_tier" text not null,
     "image_id" uuid,
     "spot_days" integer not null default 2,
-    "deliverable" boolean not null default true,
     "day_basis" text not null default 'ACT/360',
     "base_precedence" integer not null default 100,
     "holiday_calendar" text

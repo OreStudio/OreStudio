@@ -380,6 +380,24 @@ def _description_and_detail(node: OrgNode) -> tuple[str, str]:
     return description, detail
 
 
+_SQL_STRING_TYPES = {"text", "string", "varchar", "char"}
+
+
+def _sql_quote_default(raw: str) -> str:
+    """SQL-quote a raw (unquoted) default literal for a text-typed column.
+
+    Authors write the plain value (e.g. ``ACT/360``) in the org model —
+    quoting is a SQL-syntax concern the template/loader owns, not
+    something every field author should have to get right. Function
+    calls / expressions (contain '(') and values already quoted are
+    passed through unchanged. Embedded single quotes are doubled per
+    SQL string-literal escaping."""
+    stripped = raw.strip()
+    if not stripped or "(" in stripped or stripped[0] in "'\"":
+        return raw
+    return "'" + stripped.replace("'", "''") + "'"
+
+
 def _column_node_to_dict(node: OrgNode) -> dict[str, Any]:
     """Convert a column or natural-key heading into a model column dict."""
     out: dict[str, Any] = {}
@@ -395,6 +413,13 @@ def _column_node_to_dict(node: OrgNode) -> dict[str, Any]:
             out[key] = v
         else:
             out[key] = _parse_typed(v)
+    # SQL-quote string-typed defaults here so field authors write the plain
+    # value (e.g. :default: ACT/360, not :default: 'ACT/360') — SQL quoting
+    # syntax is the template's concern, not the model's.
+    if out.get("type") in _SQL_STRING_TYPES:
+        for key in ("default", "default_value"):
+            if key in out and isinstance(out[key], str):
+                out[key] = _sql_quote_default(out[key])
     description, detail = _description_and_detail(node)
     if description:
         out["description"] = description
@@ -516,6 +541,25 @@ def _qt_setting_gated_actions(node: OrgNode) -> list[dict[str, Any]]:
     SettingGatedActionController per mdi_window/detail_dialog rather
     than duplicating the subscribe/notify/query mechanism per action.
     """
+    if not node.tables:
+        return []
+    return [
+        {k: _parse_typed(v) for k, v in row.items()} for row in node.tables[0]
+    ]
+
+
+def _qt_related_entity_shortcuts(node: OrgNode) -> list[dict[str, Any]]:
+    """Convert the Qt 'Related entity shortcuts' table into the dict list shape.
+
+    Each row is a toolbar shortcut to a related entity's own list window —
+    e.g. currency's Rounding Type / Monetary Nature / Market Tier combos each
+    reference a small lookup entity worth a one-click detour to. `signal`
+    names the emitted/relayed Qt signal (`show{signal}Requested`); `icon`
+    is an Icon:: enum value; `tooltip`/`label` are the toolbar action's
+    tooltip and button text. Wiring the signal to the target entity's own
+    controller happens in the plugin's composition root (e.g.
+    RefdataPlugin), not here — cross-controller wiring is inherently
+    plugin-level, same as every other controller-to-controller signal."""
     if not node.tables:
         return []
     return [
@@ -831,6 +875,24 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             if sga:
                 qt_out["setting_gated_actions"] = _qt_setting_gated_actions(sga)
                 qt_out["has_setting_gated_actions"] = bool(qt_out["setting_gated_actions"])
+            # Every entity gets a generate_synthetic_<entity> generator (ores.cpp.generator
+            # facet) — a detail dialog opts into a "Generate" toolbar button that fills
+            # its fields from it by naming the QAction member "generateAction" in the
+            # Setting-gated actions table above (member declaration + visibility gating
+            # both come from that table already; this only decides whether the click
+            # handler and its generator call get generated).
+            qt_out["has_generate_action"] = any(
+                a.get("action") == "generateAction" for a in qt_out.get("setting_gated_actions", [])
+            )
+            # A detail dialog needs a QToolBar iff it hosts either version-nav
+            # actions or the Generate action (both add QAction rows to it).
+            qt_out["has_toolbar"] = bool(
+                qt_out.get("has_version_navigation") or qt_out["has_generate_action"]
+            )
+            res = _section(qt, "Related entity shortcuts")
+            if res:
+                qt_out["related_entity_shortcuts"] = _qt_related_entity_shortcuts(res)
+                qt_out["has_related_entity_shortcuts"] = bool(qt_out["related_entity_shortcuts"])
             # has_flag_icon is derived, not a separately-authored property:
             # an entity has the single-column image_id-keyed flag mechanism
             # iff it declared which column shows it. Any manually-set

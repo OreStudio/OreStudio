@@ -51,7 +51,6 @@ domain::currency currency_mapper::map(const currency_entity& v) {
                      std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
                      std::nullopt;
     r.spot_days = v.spot_days;
-    r.deliverable = v.deliverable;
     r.day_basis = v.day_basis;
     r.base_precedence = v.base_precedence;
     r.holiday_calendar = v.holiday_calendar;
@@ -87,7 +86,6 @@ currency_entity currency_mapper::map(const domain::currency& v) {
     r.image_id =
         v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
     r.spot_days = v.spot_days;
-    r.deliverable = v.deliverable;
     r.day_basis = v.day_basis;
     r.base_precedence = v.base_precedence;
     r.holiday_calendar = v.holiday_calendar;

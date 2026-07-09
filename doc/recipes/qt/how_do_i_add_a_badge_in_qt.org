@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :qt:badge:recipe:
 #+created: 2026-06-04
-#+updated: 2026-06-04
+#+updated: 2026-07-09
 
 The badge resolution architecture — how =BadgeCache=, =code_domain=,
 =badge_definition=, and =badge_mapping= fit together — is in
@@ -19,16 +19,51 @@ How do I render a new field as a DB-driven pill badge in a Qt list view?
 
 * Answer
 
-Four steps; all are required.
+Two halves — org-model wiring (generates the code) and SQL seed data
+(supplies the colours the generated code looks up). *Both are
+required*; the codegen half compiles and generates clean with the SQL
+half entirely missing, so a skipped seed step fails silently — the
+badge just renders the shared fallback colour forever, not an error.
 
-*1. Add a code domain* to =dq_badge_system_populate.sql=:
+** Half 1 — org model (generates the code, no hand-written delegate)
+
+Codegen's =qt.cpp= profile (=ores.cpp.qt.mdi_window_impl= /
+=..._detail_dialog_...= templates) generates the delegate wiring
+automatically from two org-model tables — never hand-write
+=ItemDelegate::paint()=/=sizeHint()= for a badge column:
+
+- *List view*: add =is_badge: true= and =badge_key: my_domain= to the
+  column's row in the entity's "Columns (Qt model)" table. The
+  generated =MdiWindow= then constructs an =EntityItemDelegate= with
+  that column styled =badge_centered= and a resolver bound to
+  ='my_domain'=.
+- *Detail dialog combo*: add =badge_key: my_domain= to the field's row
+  in "Detail fields" (works for both =static_combo= and
+  =dynamic_combo= widgets). The generated =DetailDialog= then calls
+  =apply_combo_badges(combo, badgeCache_, "my_domain")=.
+
+Regenerate (=codegen.sh generate --model <entity.org> --address
+ores.cpp.qt=) and rebuild.
+
+** Half 2 — SQL seed data (supplies the actual colours)
+
+Both generated resolvers call =BadgeCache::resolve(domain, value)=,
+which looks up rows seeded by =dq_badge_system_populate.sql=. Add all
+three, in order:
+
+*1. Add a code domain*:
 
 #+begin_src sql
 PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
     'my_domain', 'My Domain', 'Description of the domain.', <next_display_order>);
 #+end_src
 
-*2. Add badge definitions* — one per distinct visual variant:
+*2. Add badge definitions* — one per distinct visual variant. =name=
+(the 2nd argument, the human-readable label) has a *global* uniqueness
+constraint across every domain — grep the file for your chosen label
+before adding it, or the population script fails on
+=badge_definitions_name_uniq_idx= partway through (leaving the DB in a
+half-populated state; re-run =db recreate= after fixing):
 
 #+begin_src sql
 PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -46,26 +81,25 @@ PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
 #+end_src
 
 The entity code must match exactly what the Qt model returns for
-=Qt::DisplayRole= on that column (raw DB code or translated display string).
-
-*4. Wire the delegate* in the entity's =ItemDelegate=:
-
-- =paint()=: add =Column::MyField= to the badge column guard; call
-  =badgeCache_->resolve("my_domain", text.toStdString())= and apply
-  the returned colours; fall back to default gray on =nullptr=.
-- =sizeHint()=: add the same column guard; set minimum height 24 px
-  and a minimum width appropriate for the longest label.
+=Qt::DisplayRole= on that column (raw DB code or translated display
+string) — case-sensitive.
 
 * Script
 
-No script — changes are to =dq_badge_system_populate.sql= and the
-entity's =ItemDelegate=. See [[id:F7DE2705-4D20-4878-A10C-A834F3283683][Badge system wiring]] for the full
-=paint()= code template.
+No script — org-model changes go through normal codegen regeneration;
+SQL changes are to =dq_badge_system_populate.sql=, applied via
+=compass db recreate -y -k= on a dev database (services must be
+restarted after, since their connection pools point at the dropped
+DB).
 
 * Tested by
 
-Manual: re-run the population script against a dev database and open
-the entity list view to confirm badge colours appear.
+Manual: recreate the dev database, restart the client, log in, and
+open the entity's list view and detail dialog to confirm badge colours
+appear in both — not just the shared fallback colour
+(=color_constants::badge_fallback=, orange) or a generic default gray,
+either of which means the domain/code/mapping rows are missing or the
+entity code doesn't match.
 
 * See also
 

@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: 3247E7A0-73CD-459D-B2C5-119FC0D7DA33
+:END:
+#+title: Story: Rethink synthetic reference-data generation across entities
+#+description: Currency's ad-hoc Generate feature (client-side blue-highlighted unsaved rows, per-entity hand-wiring) is half-baked and not actually save-able; design a proper cross-entity mechanism for single + batch synthetic generation before reintroducing it anywhere.
+#+type: story
+#+level: s2
+#+filetags: :sprint_22:v0:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Design and implement a proper, cross-entity mechanism for generating
+synthetic test data from the Qt UI — covering both a *single-record*
+fill (detail dialog "Generate" button, pre-fills the form with
+plausible data the user can tweak before saving) and *batch*
+generation (list-window "Generate N" button, creates N records) —
+that actually round-trips through the real save path, for any entity
+that opts in, not just currency. This supersedes and replaces
+currency's existing ad-hoc implementation, which is being removed as
+part of this story (see Analysis below) rather than carried forward.
+
+* Analysis: currency's previous implementation (removed)
+
+** Origin
+
+Introduced in commit =ef1326ee9= ("[qt] Add synthetic data generation
+for currencies", 2026-01-07), well before the current org-model/codegen
+system existed for the Qt layer. Added, in one shot:
+- =system.synthetic_data_generation= feature flag (SQL-seeded).
+- =ClientCurrencyModel= extended to track a =std::set<std::string>
+  synthetic_iso_codes_=, consulted by the =Qt::ForegroundRole= override
+  in =data()= to paint matching rows cornflower-blue.
+- =CurrencyMdiWindow=: a "Generate" toolbar action, gated by the
+  feature flag, opening a count-input dialog (=QInputDialog::getInt=,
+  1-50), calling a faker-based generator N times, and pushing the
+  results straight into the client-side model via
+  =add_synthetic_currencies()= — *no server round-trip at all*.
+- =CurrencyDetailDialog=: a second, independent "Generate" toolbar
+  action that fills the open form's fields from one generated record
+  (does not touch the model or the server either).
+
+** Why it's half-baked — not actually save-able
+
+=ClientCurrencyModel= also defines =is_synthetic()=, =mark_as_saved()=,
+and =clear_synthetic_markers()= — clearly intended to let the blue
+highlight clear once a generated row is actually persisted. *None of
+the three is ever called anywhere in the codebase* (confirmed by
+project-wide grep, 2026-07-08) — dead code from day one. The practical
+consequence: a row inserted by the list-level Generate button exists
+*only* in the client-side model, was never sent to the server, and has
+no working path to becoming real:
+- Double-clicking it to edit opens the detail dialog in *edit* mode
+  (an existing-record assumption) for a currency the server has never
+  heard of; saving would issue an UPDATE against a non-existent row.
+- There is no "this row is new, POST it" affordance anywhere in the
+  flow — the batch Generate button was, at best, a way to preview what
+  fake data would look like in the grid, never a way to actually create
+  records.
+- The detail-dialog's own independent Generate button is the only one
+  that ever produces a genuinely saveable record — because it just
+  fills the *currently open* create-mode form; the user still has to
+  click the real Save button themselves. The list-level batch version
+  never got this right.
+
+** What was reused this session (2026-07-08), now also removed
+
+While landing the "Sync Qt codegen for currency" task, the detail
+dialog's Generate button (single-record fill into an already-open
+form, click Save yourself) was carried forward and even *generalised*
+into the qt-profile codegen template (gated by a =generateAction= row
+in each entity's =Setting-gated actions= table, calling the generic
+=generate_synthetic_<entity>()= function every =ores.cpp.generator=
+facet already produces) — this part genuinely worked correctly, since
+it never bypassed the save button. It is being removed here too,
+pending this story's redesign, so the whole feature is designed once,
+properly, rather than half-migrated.
+
+** Design questions for the redo
+
+- *Single-record fill*: keep the working pattern (fill the open
+  create-mode form, user reviews/edits and clicks Save themselves) —
+  cheap, safe, no server-side concept of "unsaved synthetic row"
+  needed. Candidate to keep close to as-is, generalised via the
+  generator facet's =generate_synthetic_<entity>()=.
+- *Batch generation*: needs an actual decision on the save path.
+  Options: (a) generate + immediately POST each record to the server
+  in a loop, surfacing real per-row success/failure, so the grid only
+  ever shows genuinely-persisted rows (no synthetic/unsaved state to
+  track at all); (b) keep an explicit "pending" concept but make it
+  real — a dedicated pending-rows area, a bulk "Save all" action, and
+  correct is_synthetic-driven routing to POST instead of PUT/PATCH on
+  save; (c) drop batch grid-generation entirely and offer batch
+  creation only via a script/CLI path, keeping the Qt UI to
+  single-record fills.
+- Whichever shape wins should be a *generic* mechanism (template +
+  org-model flag, same pattern as =Setting-gated actions=/=Related
+  entity shortcuts=), available to any entity, not hand-wired
+  per-entity.
+- Decide whether "N fake rows previewed before committing" is a real
+  user need at all, or whether it was solving a problem nobody asked
+  for — worth confirming with whoever originally wanted the feature
+  before rebuilding it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-08                               |
+
+* Acceptance
+
+- A design decision is recorded (in =* Decisions= below) on the batch
+  generation save path (see the three options in Analysis), covering
+  every entity that opts in, not just currency.
+- Single-record "Generate" (fill an open create-mode form) is
+  reimplemented as a generic template capability, gated by an
+  org-model flag, using the existing =generate_synthetic_<entity>()=
+  generator function — no per-entity hand-wiring.
+- If batch generation is kept, generated rows are either immediately
+  persisted (no client-only "synthetic" state) or have a fully-working
+  save path with no dead tracking methods.
+- Currency's =ClientCurrencyModel= regenerates for real with zero
+  hand-maintained drift, picking up the 5 list-view columns
+  (=spot_days=, =deliverable=, =day_basis=, =base_precedence=,
+  =holiday_calendar=) that were blocked behind this rewrite.
+- =system.synthetic_data_generation= setting and any UI it gates
+  reflect the new design, not the removed one.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

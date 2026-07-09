@@ -7,18 +7,22 @@
 #+level: cross
 #+filetags: :qt:architecture:badge:knowledge:
 #+created: 2026-06-04
-#+updated: 2026-06-04
+#+updated: 2026-07-09
 
 * Summary
 
-ORE Studio renders pill badges in Qt list views via a three-layer
-DB-driven system: =ores.dq= owns the four domain entities
-(=badge_severity=, =code_domain=, =badge_definition=,
+ORE Studio renders pill badges in Qt list views and detail-dialog
+combos via a three-layer DB-driven system: =ores.dq= owns the four
+domain entities (=badge_severity=, =code_domain=, =badge_definition=,
 =badge_mapping=); =ores.sql= seeds them at install time; and
 =ores.qt.api='s =BadgeCache= loads them at login and resolves
-=(domain, entity_code)= pairs to colours at paint time. Adding a new
-badge requires no C++ changes to the resolution logic — only a SQL
-population entry and a one-line delegate call. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+=(domain, entity_code)= pairs to colours at paint time. For codegen-
+backed entities, adding a new badge requires *no hand-written C++ at
+all* — the delegate wiring is generated from two org-model table
+columns (=is_badge=/=badge_key=); only the SQL population entry is
+manual. Because a missing SQL entry fails silently (the generated
+resolver just returns the shared fallback colour, not an error), it is
+the step most often forgotten. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Detail
 
@@ -71,46 +75,37 @@ Returns =nullptr= on cache miss — callers must fall back to a default
 colour. The cache is injected into every =ItemDelegate= at
 construction via the =plugin_context= received in =on_login=.
 
-** Qt wiring — item delegate
+** Qt wiring — codegen-generated (do not hand-write)
 
-Each entity list view has an =ItemDelegate= subclass (e.g.
-=AccountItemDelegate=) that overrides =paint()= and =sizeHint()=.
+For any entity generated via the =ores.cpp.qt= codegen profile, badge
+rendering is driven entirely by org-model table columns — never
+hand-write =ItemDelegate::paint()=/=sizeHint()= for a badge column;
+that predates the current mechanism and will drift from what
+regeneration produces.
 
-*paint():*
+- *List view*: set =is_badge: true= and =badge_key: my_domain= on the
+  column's row in the entity's "Columns (Qt model)" table. The
+  =ores.cpp.qt.mdi_window_impl= template then emits a shared
+  =EntityItemDelegate= (styled =cs::badge_centered= for that column)
+  with a resolver closure bound to ='my_domain'=, falling back to
+  =color_constants::badge_fallback= (orange) on a cache miss or
+  unresolved value — the *same* fallback the combo path below uses, so
+  a missing/miskeyed mapping renders identically (not a mismatched
+  fallback colour) in both places.
+- *Detail dialog combo*: set =badge_key: my_domain= on the field's row
+  in "Detail fields" (works for both =static_combo= and
+  =dynamic_combo=). The generated =DetailDialog= calls
+  =apply_combo_badges(combo, badgeCache_, "my_domain")=.
 
-#+begin_src cpp
-if (index.column() == Column::MyField /* || ... */) {
-    QStyle* style = QApplication::style();
-    style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter);
+Regenerate (=codegen.sh generate --model <entity.org> --address
+ores.cpp.qt=) and rebuild; no other file changes.
 
-    static const QColor default_gray(107, 114, 128);
-    static const QColor white(255, 255, 255);
-    QColor bgColor = default_gray;
-    QColor textColor = white;
-
-    QString text = index.data(Qt::DisplayRole).toString();
-    QString badgeText = text; // or a translated label
-
-    if (badgeCache_) {
-        auto* def = badgeCache_->resolve("my_domain", text.toStdString());
-        if (def) {
-            bgColor = QColor(QString::fromStdString(def->background_colour));
-            textColor = QColor(QString::fromStdString(def->text_colour));
-        }
-    }
-
-    QFont badgeFont = opt.font;
-    badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
-    badgeFont.setBold(true);
-    DelegatePaintUtils::draw_centered_badge(
-        painter, opt.rect, badgeText, bgColor, textColor, badgeFont);
-    return;
-}
-#+end_src
-
-*sizeHint():* add the same column guard and set a minimum height of 24
-and a minimum width appropriate for the longest label (typically
-50–90 px).
+For hand-written (non-codegen) entities, the same =BadgeCache::resolve()=
+/ =EntityItemDelegate= building blocks apply — wire a column to
+=cs::badge_centered= and a resolver closure the same way the generated
+code does (see =EntityItemDelegate::paint()= for the dispatch and
+=ores.cpp.qt.mdi_window_impl.org='s =has_badge_columns= block for the
+resolver-closure shape to copy).
 
 The entity code passed to =resolve()= must exactly match the string
 the model returns for =Qt::DisplayRole= on that column. If the model
@@ -146,6 +141,18 @@ colours) may already fit.
 | =account_type=              |    17 | Classification of account types (user, service, algorithm, llm).         |
 | =account_online=            |    18 | Boolean online indicator for accounts (Yes, No).                        |
 | =regulatory_book_type=      |    19 | Basel III/IV FRTB trading book / banking book classification a book carries. |
+| =currency_pair_classification= |    21 | Liquidity classification codes for currency pairs (major, minor, exotic, commodity). |
+| =monetary_nature=           |    25 | Nature classification codes for currencies (fiat, commodity, synthetic, supranational). |
+| =currency_market_tier=      |    26 | Liquidity tier classification codes for currencies (G10, emerging, exotic, frontier, historical). |
+
+=badge_definition.name= (the human-readable label, 2nd argument to
+=ores_dq_badge_definitions_upsert_fn=) has a *database-wide* unique
+index — not scoped per domain. Two domains both wanting a "Commodity"
+or "Exotic" badge must pick distinct labels (=Commodity Currency= vs
+=Commodity=, =Exotic Tier= vs =Exotic=); grep the population script
+for your label before adding it. Violating this fails the population
+script partway through and leaves the DB half-populated — re-run
+=db recreate= after fixing.
 
 ** Worked example — account_type
 

@@ -223,8 +223,22 @@ void EntityController::show_managed_window(DetachableMdiSubWindow* window,
         // positions a subwindow when it is added, so restoring earlier (in the
         // caller, before this point) is clobbered. Keyed off the window's
         // geometryKey so every managed window persists size/position uniformly.
+        bool restored = false;
         if (!window->geometryKey().isEmpty())
-            UiPersistence::restoreMdiGeometry(window->geometryKey(), window);
+            restored = UiPersistence::restoreMdiGeometry(window->geometryKey(), window);
+        // No saved geometry (first-ever open, or it was cleared): size to the
+        // content's own sizeHint() rather than whatever size the .ui's static
+        // minimumSize happened to specify. sizeHint() is computed from the
+        // *live* widget tree, so it reflects anything added at runtime after
+        // setupUi() (e.g. a version-nav toolbar) that a static XML size can't
+        // know about. Cheap here — a handful of widgets in a QFormLayout, not
+        // the QHeaderView::ResizeToContents per-cell cost that caused the
+        // 24-second list-window freeze (sprint 19); see that story before
+        // reaching for ResizeToContents-style per-row/per-cell measurement.
+        if (!restored) {
+            if (auto* widget = window->widget())
+                window->resize(widget->sizeHint().expandedTo(window->size()));
+        }
     }
 
     if (referenceWindow) {

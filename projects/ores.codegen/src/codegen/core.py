@@ -2055,6 +2055,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 if 'export_header' not in qt:
                     qt['export_header'] = f'{component.capitalize()}Export.hpp'
             # Mark last item in columns for template iteration
+            qt.setdefault('qt_settings_version', 1)
             if 'columns' in qt:
                 _mark_last_item(qt['columns'])
                 # Compute has_description_column flag
@@ -2062,6 +2063,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     c.get('enum_name') == 'Description'
                     for c in qt['columns']
                 )
+                # Columns hidden from the list view by default: any column
+                # explicitly marked hidden_by_default in the org model, plus
+                # Description (a long free-text field, hidden for every
+                # entity that has one — a generic rule, not a per-entity
+                # exception).
+                seen_enum_names = set()
+                hidden_columns = []
+                for c in qt['columns']:
+                    if c.get('enum_name') in seen_enum_names:
+                        continue
+                    if c.get('hidden_by_default') or c.get('enum_name') == 'Description':
+                        hidden_columns.append(c)
+                        seen_enum_names.add(c.get('enum_name'))
+                if hidden_columns:
+                    _mark_last_item(hidden_columns)
+                qt['hidden_columns'] = hidden_columns
                 # Cross-reference qt columns with domain columns to flag optionals:
                 # when the underlying domain column is std::optional<std::string>, the
                 # Qt model needs to unwrap before QString::fromStdString.
@@ -2069,6 +2086,23 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     c.get('name'): c.get('cpp_type', '')
                     for c in domain_entity.get('columns', [])
                 }
+                # Columns that also carry a DecorationRole icon (per the
+                # "Icon columns (Qt model)" table) need icon-aware rendering
+                # even though they display text too — otherwise they fall
+                # through to the text_left default, which paints the icon
+                # via Qt's own QStyledItemDelegate path using the view's
+                # blanket iconSize() directly instead of the height-
+                # constrained, aspect-preserving sizing every other icon
+                # column gets. Harmless when a view has only one icon shape
+                # (e.g. currency's own single flag column), but visibly
+                # wrong the moment a view mixes shapes (e.g. currency_pair's
+                # narrow BaseCurrency/QuoteCurrency next to its wide
+                # composited PairCode column).
+                icon_column_names = {
+                    ic.get('column') for ic in qt.get('icon_columns', [])
+                }
+                if qt.get('flag_icon_column'):
+                    icon_column_names.add(qt['flag_icon_column'])
                 for idx, qt_col in enumerate(qt['columns']):
                     field = qt_col.get('field')
                     cpp_type = domain_col_types.get(field, '')
@@ -2081,6 +2115,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     if 'column_style' not in qt_col:
                         if qt_col.get('is_badge'):
                             qt_col['column_style'] = 'cs::badge_centered'
+                        elif qt_col.get('enum_name') in icon_column_names:
+                            qt_col['column_style'] = 'cs::icon_text_left'
                         elif qt_col.get('is_int'):
                             qt_col['column_style'] = 'cs::mono_center'
                         else:
@@ -2316,10 +2352,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 })
             if combo_customs:
                 qt['combo_widget_customs'] = combo_customs
-            # Whether any static_combo detail field renders its items as
-            # badges (via the badge system) — gates BadgeCache wiring into
-            # the detail dialog itself (has_badge_columns only wires it
-            # into the list/MDI window).
+            # Whether any static_combo or dynamic_combo detail field renders
+            # its items as badges (via the badge system, apply_combo_badges
+            # resolves purely off (badge_key, item text) at paint time — it
+            # doesn't care how the combo was populated) — gates BadgeCache
+            # wiring into the detail dialog itself (has_badge_columns only
+            # wires it into the list/MDI window).
             qt['has_combo_badge_source'] = any(
                 f.get('badge_key') for f in detail_fields
                 if f.get('type') in ('static_combo', 'dynamic_combo')

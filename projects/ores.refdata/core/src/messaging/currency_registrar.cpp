@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/messaging/currency_registrar.hpp"
-#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.core/messaging/currency_handler.hpp"
 #include <memory>

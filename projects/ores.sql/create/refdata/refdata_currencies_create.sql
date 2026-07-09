@@ -17,15 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/*
+/**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_create.mustache
+ * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
+ *
+ * Currency Table
+ *
+ * ISO 4217 currency definitions used for reference data.
+ * Currencies are managed per-tenant and drive financial calculations,
+ * rounding, and display formatting across the system.
  */
-
--- =============================================================================
--- ISO 4217 currency definitions
--- =============================================================================
 
 create table if not exists "ores_refdata_currencies_tbl" (
     "iso_code" text not null,
@@ -41,13 +43,11 @@ create table if not exists "ores_refdata_currencies_tbl" (
     "format" text not null,
     "monetary_nature" text not null,
     "market_tier" text not null,
-    "coding_scheme_code" text,
-    "image_id" uuid,
+    "image_id" uuid null,
     "spot_days" integer not null default 2,
-    "deliverable" boolean not null default true,
     "day_basis" text not null default 'ACT/360',
     "base_precedence" integer not null default 100,
-    "holiday_calendar" text,
+    "holiday_calendar" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -64,6 +64,12 @@ create table if not exists "ores_refdata_currencies_tbl" (
     check ("iso_code" <> '')
 );
 
+-- Unique name for active records
+create unique index if not exists currencies_name_uniq_idx
+on "ores_refdata_currencies_tbl" (tenant_id, name)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Version uniqueness for optimistic concurrency
 create unique index if not exists currencies_version_uniq_idx
 on "ores_refdata_currencies_tbl" (tenant_id, iso_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -82,77 +88,66 @@ declare
     current_version integer;
 begin
     -- Validate tenant_id
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
-
-    -- Validate foreign key references
-    if NEW.coding_scheme_code is not null and not exists (
-        select 1 from ores_dq_coding_schemes_tbl
-        where code = NEW.coding_scheme_code
-        and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
-        using errcode = '23503';
-    end if;
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
     -- Validate rounding_type
-    new.rounding_type := ores_refdata_validate_rounding_type_fn(new.tenant_id, new.rounding_type);
+    NEW.rounding_type := ores_refdata_validate_rounding_type_fn(NEW.tenant_id, NEW.rounding_type);
 
     -- Validate monetary_nature
-    new.monetary_nature := ores_refdata_validate_monetary_nature_fn(new.tenant_id, new.monetary_nature);
+    NEW.monetary_nature := ores_refdata_validate_monetary_nature_fn(NEW.tenant_id, NEW.monetary_nature);
 
     -- Validate market_tier
-    new.market_tier := ores_refdata_validate_currency_market_tier_fn(new.tenant_id, new.market_tier);
+    NEW.market_tier := ores_refdata_validate_currency_market_tier_fn(NEW.tenant_id, NEW.market_tier);
 
     -- Validate change_reason_code
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- Version management
     select version into current_version
     from "ores_refdata_currencies_tbl"
-    where tenant_id = new.tenant_id
-      and iso_code = new.iso_code
+    where tenant_id = NEW.tenant_id
+      and iso_code = NEW.iso_code
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
-        if new.version != 0 and new.version != current_version then
+        if NEW.version != 0 and NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
-                new.version, current_version
+                NEW.version, current_version
                 using errcode = 'P0002';
         end if;
-        new.version = current_version + 1;
+        NEW.version = current_version + 1;
 
         update "ores_refdata_currencies_tbl"
         set valid_to = current_timestamp
-        where tenant_id = new.tenant_id
-          and iso_code = new.iso_code
+        where tenant_id = NEW.tenant_id
+          and iso_code = NEW.iso_code
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
-        new.version = 1;
+        NEW.version = 1;
     end if;
 
-    new.valid_from = current_timestamp;
-    new.valid_to = ores_utility_infinity_timestamp_fn();
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    NEW.valid_from = current_timestamp;
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    return new;
+    return NEW;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_currencies_insert_trg
 before insert on "ores_refdata_currencies_tbl"
-for each row
-execute function ores_refdata_currencies_insert_fn();
+for each row execute function ores_refdata_currencies_insert_fn();
 
 create or replace rule ores_refdata_currencies_delete_rule as
-on delete to "ores_refdata_currencies_tbl"
-do instead
-  update "ores_refdata_currencies_tbl"
-  set valid_to = current_timestamp
-  where tenant_id = old.tenant_id
-  and iso_code = old.iso_code
-  and valid_to = ores_utility_infinity_timestamp_fn();
+on delete to "ores_refdata_currencies_tbl" do instead
+    update "ores_refdata_currencies_tbl"
+    set valid_to = current_timestamp
+    where tenant_id = OLD.tenant_id
+      and iso_code = OLD.iso_code
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
 -- =============================================================================
 -- Validation function for currency

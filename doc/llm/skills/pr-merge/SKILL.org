@@ -24,12 +24,25 @@ Merging an approved PR. Guard rails refuse while review threads are unresolved o
 
 * How to use this skill
 
-1. /Close the task first/ — run =agile-close-task= on the feature branch
+1. /Build and run tests locally first/, on the latest commit about to
+   be merged. CI does not run a full C++ build/test job on PRs (the
+   old "canary" job was removed — it took too long and slowed down
+   development), so this is the only build/test verification a merge
+   gets:
+
+   #+begin_src sh :results verbatim
+   cmake --build --preset <preset>
+   ctest --preset <preset>
+   #+end_src
+
+   Do not merge until both are clean.
+
+2. /Close the task first/ — run =agile-close-task= on the feature branch
    *before* merging. Bookkeeping must ride the PR, not follow it. A
    STARTED task is a hard stop: do not proceed to merge until the task
    is closed.
 
-2. /Merge/ (merge commit, never squash):
+3. /Merge/ (merge commit, never squash):
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh pr merge
@@ -37,7 +50,7 @@ Merging an approved PR. Guard rails refuse while review threads are unresolved o
 
    =--force= overrides the guards — only on explicit user instruction.
 
-3. /Verify/ the remote branch was deleted and the journal stamped.
+4. /Verify/ the remote branch was deleted and the journal stamped.
 
 * Recipes
 

@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: E7277F16-BE4D-4B8C-81EF-B9A3384B54EB
+:END:
+#+title: Task: Migrate currency's synthetic-currency tracking onto the generic client model
+#+description: ClientCurrencyModel's blue-highlighted generated-but-unsaved row tracking (add_synthetic_currencies/is_synthetic/mark_as_saved/clear_synthetic_markers) has no AbstractClientModel equivalent; kept hand-written during the Qt codegen sync. Migrate it generically or document why not, so the file can finally be regenerated and pick up the new list-view columns (spot_days, deliverable, day_basis, base_precedence, holiday_calendar).
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+abandoned_reason: Superseded by [[id:3247E7A0-73CD-459D-B2C5-119FC0D7DA33][Rethink synthetic reference-data generation across entities]] — the feature turned out to be half-baked (never actually save-able; see that story's Analysis), so it's being removed and redesigned from scratch rather than migrated as-is.
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ClientCurrencyModel= is the last of the 12 Qt output files still
+hand-written after the "Sync Qt codegen for currency" task
+(EA647CBC). It carries a currency-specific feature —
+generated-but-unsaved rows shown in blue
+(=add_synthetic_currencies=/=is_synthetic=/=mark_as_saved=/
+=clear_synthetic_markers=, woven into the =data()= override's
+=Qt::ForegroundRole= colouring) — with no equivalent in
+=AbstractClientModel= or the =client_model= codegen template. Either
+generalise it as a template capability (if other entities would
+plausibly want the same "synthetic row" highlighting), or migrate it
+onto =AbstractClientModel= as a protected extension point entities
+opt into, or document a reason it should stay entity-specific
+hand-written code long-term.
+
+Landing this unblocks regenerating =ClientCurrencyModel= for real,
+which currently means currency's list view is missing 5 columns
+already configured in the model
+(=spot_days=/=deliverable=/=day_basis=/=base_precedence=/
+=holiday_calendar=) but never surfaced because regeneration has been
+deferred.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                            |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Nothing.                                |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing — see [[id:3247E7A0-73CD-459D-B2C5-119FC0D7DA33][Rethink synthetic reference-data generation across entities]] instead. |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- =ClientCurrencyModel.{hpp,cpp}= regenerates with zero diff (or every
+  delta classified/decided), same as the other 11 currency Qt files.
+- The 5 new list-view columns appear in the regenerated output.
+- Synthetic-row highlighting behaviour is preserved (verified live or
+  by careful code comparison, not just compilation).
+- Build passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -18,9 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/currencies_commands.hpp"
-#include "ores.refdata.api/domain/currency_table_io.hpp"         // IWYU pragma: keep.
-#include "ores.refdata.api/domain/currency_version_table_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
+#include "ores.refdata.api/domain/currency_table_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -127,20 +125,12 @@ void currencies_commands::register_commands(cli::Menu& root_menu,
         },
         "Delete a currency by ISO code");
 
-    currencies_menu->Insert(
-        "history",
-        [&session](std::ostream& out, std::string iso_code) {
-            process_get_currency_history(std::ref(out), std::ref(session), std::move(iso_code));
-        },
-        "Get version history for a currency by ISO code");
-
-    currencies_menu->Insert(
-        "history-diff",
-        [&session](std::ostream& out, std::string iso_code) {
-            process_get_currency_history_diff(
-                std::ref(out), std::ref(session), std::move(iso_code));
-        },
-        "Show version history for a currency as a unified diff");
+    // "history"/"history-diff" commands disabled: depended on
+    // currency_version/currency_version_history (hand-written, non-codegen
+    // types) removed when the Qt history dialog was migrated onto the
+    // standard flat std::vector<currency> history shape. Reimplement once
+    // shell entity commands are brought under codegen — see "Shell entity
+    // commands — top-level commissioning story".
 
     root_menu.Insert(std::move(currencies_menu));
 }
@@ -266,124 +256,6 @@ void currencies_commands::process_delete_currency(std::ostream& out,
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete currency: " << result->message;
         fail(out) << "Failed to delete currency: " << result->message << std::endl;
     }
-}
-
-void currencies_commands::process_get_currency_history(std::ostream& out,
-                                                       nats_client& session,
-                                                       std::string iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get currency history for: " << iso_code;
-
-    // Check if logged in
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get currency history." << std::endl;
-        return;
-    }
-
-    refdata::messaging::get_currency_history_request req;
-    req.iso_code = std::move(iso_code);
-
-    auto result = do_auth_request<refdata::messaging::get_currency_history_response>(
-        out, session, "refdata.v1.currencies.history", rfl::json::write(req));
-    if (!result)
-        return;
-
-    if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get currency history: " << result->message;
-        fail(out) << "" << result->message << std::endl;
-        return;
-    }
-
-    if (result->history.versions.empty()) {
-        out << "No history found for this currency." << std::endl;
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->history.versions.size()
-                              << " history records.";
-    out << result->history.versions << std::endl;
-}
-
-void currencies_commands::process_get_currency_history_diff(std::ostream& out,
-                                                            nats_client& session,
-                                                            std::string iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get currency history diff for: " << iso_code;
-
-    if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get currency history." << std::endl;
-        return;
-    }
-
-    refdata::messaging::get_currency_history_request req;
-    req.iso_code = iso_code;
-
-    auto result = do_auth_request<refdata::messaging::get_currency_history_response>(
-        out, session, "refdata.v1.currencies.history", rfl::json::write(req));
-    if (!result)
-        return;
-
-    if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get currency history: " << result->message;
-        fail(out) << "" << result->message << std::endl;
-        return;
-    }
-
-    const auto& versions = result->history.versions;
-    if (versions.empty()) {
-        out << "No history found for this currency." << std::endl;
-        return;
-    }
-
-    auto header = [&](const auto& v) {
-        return "v" + std::to_string(v.version_number) + " (" + v.modified_by + ")";
-    };
-
-    // Versions arrive newest first; print transitions oldest to newest.
-    // The server computed every changes row; this only formats them.
-    for (auto it = versions.rbegin(); it != versions.rend(); ++it) {
-        const auto& current = *it;
-        const bool is_oldest = (it == versions.rbegin());
-        if (!is_oldest && current.changes.entries.empty())
-            continue; // No field changes recorded for this transition.
-        if (is_oldest) {
-            out << "--- /dev/null" << "\n";
-        } else {
-            out << "--- " << iso_code << " " << header(*std::prev(it)) << "\n";
-        }
-        out << "+++ " << iso_code << " " << header(current) << "\n";
-
-        if (is_oldest) {
-            // Initial version: every field is an addition.
-            for (const auto& f : current.fields)
-                out << "+" << f.name << ": " << f.value << "\n";
-            out << "\n";
-            continue;
-        }
-
-        // Context and changes in field order; removed fields follow.
-        for (const auto& f : current.fields) {
-            const auto entry = std::find_if(current.changes.entries.begin(),
-                                            current.changes.entries.end(),
-                                            [&](const auto& e) { return e.field_name == f.name; });
-            if (entry == current.changes.entries.end()) {
-                out << " " << f.name << ": " << f.value << "\n";
-            } else {
-                out << "-" << entry->field_name << ": " << entry->old_value << "\n";
-                out << "+" << entry->field_name << ": " << entry->new_value << "\n";
-            }
-        }
-        for (const auto& e : current.changes.entries) {
-            if (e.new_value.empty() && !e.old_value.empty()) {
-                const auto in_fields =
-                    std::any_of(current.fields.begin(), current.fields.end(), [&](const auto& f) {
-                        return f.name == e.field_name;
-                    });
-                if (!in_fields)
-                    out << "-" << e.field_name << ": " << e.old_value << "\n";
-            }
-        }
-        out << "\n";
-    }
-    out << std::flush;
 }
 
 }

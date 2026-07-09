@@ -70,6 +70,18 @@ signals:
     void addNewRequested();
     void {{domain_entity.qt.item_var}}Deleted(const QString& code);
     void show{{domain_entity.entity_pascal_short}}History(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+{{#domain_entity.qt.has_related_entity_shortcuts}}
+
+    /**
+     * @brief Emitted to request opening a related entity's own list window
+     * (e.g. a lookup entity backing one of this entity's combo fields).
+     * Relayed by the controller and wired to the target's controller in the
+     * plugin's composition root.
+     */
+{{#domain_entity.qt.related_entity_shortcuts}}
+    void show{{signal}}Requested();
+{{/domain_entity.qt.related_entity_shortcuts}}
+{{/domain_entity.qt.has_related_entity_shortcuts}}
     // Extra signal declarations seam: a future
     // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
     // to declare any entity-specific signals (e.g. a cross-navigation

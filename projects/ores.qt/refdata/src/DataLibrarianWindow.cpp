@@ -300,6 +300,8 @@ void DataLibrarianWindow::setupCentralWorkspace() {
 
     datasetTable_->setModel(datasetProxyModel_);
     datasetTable_->setItemDelegate(new DatasetItemDelegate(badgeCache_, datasetTable_));
+    if (badgeCache_ && badgeCache_->isLoaded())
+        datasetTable_->viewport()->update();
     connect(badgeCache_, &BadgeCache::loaded, datasetTable_->viewport(), [this]() {
         datasetTable_->viewport()->update();
     });

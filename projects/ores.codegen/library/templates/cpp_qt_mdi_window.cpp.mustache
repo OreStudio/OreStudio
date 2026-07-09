@@ -188,6 +188,22 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
     connect(exportXMLAction_, &QAction::triggered, this,
             &{{domain_entity.entity_pascal}}MdiWindow::exportToXML);
 {{/domain_entity.qt.has_csv_xml_io}}
+{{#domain_entity.qt.has_related_entity_shortcuts}}
+
+    toolbar_->addSeparator();
+{{#domain_entity.qt.related_entity_shortcuts}}
+
+    {
+        auto* action = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::{{icon}}, IconUtils::DefaultIconColor),
+            tr("{{label}}"));
+        action->setToolTip(tr("{{tooltip}}"));
+        connect(action, &QAction::triggered, this, [this]() {
+            emit show{{signal}}Requested();
+        });
+    }
+{{/domain_entity.qt.related_entity_shortcuts}}
+{{/domain_entity.qt.has_related_entity_shortcuts}}
 }
 
 void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
@@ -225,27 +241,34 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
 {{#domain_entity.qt.columns}}
 {{#is_badge}}
     delegate->set_badge_color_resolver({{column_index}}, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-        static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
-        if (!cache) return default_gray;
+        static const badge_color_pair fallback{color_constants::badge_fallback,
+                                               color_constants::badge_fallback_text};
+        if (!cache) return fallback;
         auto* def = cache->resolve("{{badge_key}}", value.toStdString());
-        if (!def) return default_gray;
+        if (!def) return fallback;
         return {QColor(QString::fromStdString(def->background_colour)),
                 QColor(QString::fromStdString(def->text_colour))};
     });
 {{/is_badge}}
 {{/domain_entity.qt.columns}}
     tableView_->setItemDelegate(delegate);
+    if (badgeCache_) {
+        if (badgeCache_->isLoaded())
+            tableView_->viewport()->update();
+        connect(badgeCache_, &BadgeCache::loaded, tableView_->viewport(), [this]() {
+            tableView_->viewport()->update();
+        });
+    }
 {{/domain_entity.qt.has_badge_columns}}
 
     initializeTableSettings(tableView_, model_,
         "{{domain_entity.qt.settings_group}}",
-{{#domain_entity.qt.has_description_column}}
-        {Client{{domain_entity.entity_pascal}}Model::Description},
-{{/domain_entity.qt.has_description_column}}
-{{^domain_entity.qt.has_description_column}}
-        {},
-{{/domain_entity.qt.has_description_column}}
-        {900, 400}, 1);
+        {
+{{#domain_entity.qt.hidden_columns}}
+            Client{{domain_entity.entity_pascal}}Model::{{enum_name}}{{^is_last}},{{/is_last}}
+{{/domain_entity.qt.hidden_columns}}
+        },
+        {900, 400}, {{domain_entity.qt.qt_settings_version}});
 }
 
 void {{domain_entity.entity_pascal}}MdiWindow::setupConnections() {

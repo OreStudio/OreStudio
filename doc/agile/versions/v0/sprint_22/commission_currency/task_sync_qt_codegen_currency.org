@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_currency:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on: [[id:318EE3EB-E15E-4F10-BCF7-154658A4AFE8][Reconcile currency's flag image handling and wire the piloted combo-field mechanism]]
-#+blocked_since: 2026-07-04
+#+branch: feature/sync-qt-codegen-currency
+#+pr: 1470
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-06-26
 #+updated: 2026-07-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Ensure the Qt codegen profile produces output matching the repository for curren
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Reconciliation story done (see [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][decisions]] and regenerate plan). This task is now scoped as step 9 of that plan: the final mechanical regenerate + diff + reconcile, once 5 new template-capability tasks and 1 reconciliation task land. |
-| Waiting on   | [[id:78BF95FE-1513-4556-BCBC-8A4A1AF48907][Relocate generator logic]], [[id:2EAF2F99-B71F-410D-985A-7A616E40CB88][CSV/XML export capability]], [[id:D9CB6853-797A-4144-BED0-AEBDDBBC173C][setting-gated visibility capability]], [[id:DBDECEFC-7154-4A40-A554-C897AA51BEEE][version-nav UI capability]], [[id:D613BDFD-FE12-4945-8878-5C92FA109E40][NATS notification-wiring capability]], and [[id:318EE3EB-E15E-4F10-BCF7-154658A4AFE8][flag image/combo reconciliation]] — in that order. |
-| Next         | Work the 6 prerequisite tasks in sequence, then resume this one. |
-| Last touched | 2026-07-04                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-08                               |
 
 * Acceptance
 
@@ -39,17 +39,100 @@ Ensure the Qt codegen profile produces output matching the repository for curren
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Populated currency's org model "Detail fields" table with all 11
+UI-exposed fields (previously only the 3 combo fields, added for the
+combo-wiring task) — the key line-edit, 6 more line-edits, 2 spin
+boxes, plus the 3 combos already there. =image_id= isn't a detail
+field (handled via =has_flag_icon=). 5 newer domain columns
+(=spot_days=, =deliverable=, =day_basis=, =base_precedence=,
+=holiday_calendar=) aren't in the UI yet — out of scope for this sync
+(the UI hasn't been extended to expose them), unaffected either way.
+
+Regenerated all 12 =ores.cpp.qt= output files for real via
+=codegen.sh generate --address ores.cpp.qt=, then iterated:
+regenerate → build → fix → repeat. Per-file classification:
+
+** Fixed as template/model bugs (apply everywhere, not currency-only)
+
+- =delete_request_id_field: iso_code= → =iso_codes= — currency's org
+  model had the wrong field name; =delete_currency_request= carries a
+  plural =iso_codes= vector, not a singular =iso_code=. Model-data
+  fix, not a template fix.
+- Added =history_protocol_include= to the =history_dialog= template
+  (new optional property, only emitted when set) — the history dialog
+  needs the entity's split history-protocol header when
+  =history_request_class=/=history_response_class= live outside
+  =protocol_include= (currency's is the only current user).
+- Added =flag_icon_column=/=flag_inline_widget=/=flag_accessor= to
+  currency's model — missed when the flag-handling migration task
+  added the =entityImageId()=/=keyFlagField()=/=keyFlagIcon()=
+  overrides by hand without also setting =has_flag_icon='s driving
+  property, which meant =needs_image_cache= stayed false and the
+  generated =CurrencyController= ctor silently dropped the
+  =ImageCache*= parameter.
+
+** Accepted as generated (regenerated files now the source of truth)
+
+=CurrencyController.{hpp,cpp}=, =CurrencyDetailDialog.{hpp,cpp,ui}=,
+=CurrencyMdiWindow.{hpp,cpp}= — all previously-landed capabilities
+(version-nav, NATS notification-wiring, CSV/XML export,
+setting-gated visibility, flag handling, combo wiring) generate
+correctly and match. New list-view columns (=spot_days= etc.,
+pre-configured in "Columns (Qt model)" but never regenerated) now
+surface — confirmed intentional, not scope creep.
+
+** Kept hand-written (documented, permanent exceptions)
+
+- =ClientCurrencyModel.{hpp,cpp}= — the synthetic-currency tracking
+  feature (blue-highlighted generated-but-unsaved rows:
+  =add_synthetic_currencies=/=is_synthetic=/=mark_as_saved=/
+  =clear_synthetic_markers=, woven into the =data()= override's
+  colour logic) has no template equivalent and is too deeply
+  integrated to safely merge in this pass. Reverted the regeneration;
+  filed as a follow-up task rather than rush a risky merge of ~85
+  lines of custom logic.
+- =CurrencyHistoryDialog.{hpp,cpp,ui}= — per the story's existing
+  Decision, currency's history response carries per-version diffs
+  (=currency_version_history=) rather than the plain
+  =std::vector<currency>= the template assumes; the =response.history=
+  assignment doesn't type-check against the template's generic shape.
+  Reverted the regeneration.
+
+** Manually restored after generation (currency-specific, no template equivalent)
+
+Three features the template has no mechanism for; re-added by hand
+on top of the otherwise-accepted generated files, matching the
+original implementations exactly (log messages, tooltips, icons):
+- =CurrencyMdiWindow=/=CurrencyController=: 3 cross-domain navigation
+  signals (=showRoundingTypesRequested=/=showMonetaryNaturesRequested=/
+  =showMarketTiersRequested=) relayed to =RefdataPlugin=, which opens
+  the corresponding auxiliary entity's list window. Toolbar buttons +
+  signal declarations + relay wiring.
+- =CurrencyDetailDialog=: the =setupGenerateAction()=/
+  =onGenerateClicked()= synthetic-data-fill feature — the
+  setting-gated *visibility* mechanism is templated (landed earlier),
+  but per that task's own documented decision the actual =QAction=
+  and its business logic stay hand-written per entity.
+- =CurrencyMdiWindow=: the =setupGenerateAction()=/=generateSynthetic()=
+  batch-generate-N-currencies feature (prompts for a count, calls
+  =model_->add_synthetic_currencies=) — same reasoning, and the reason
+  =ClientCurrencyModel= had to stay hand-written in the first place.
+
+Verified via a real rebuild (=ores.qt.refdata.lib= then the full
+whole-app build), not diff-only, at every iteration.
 
 * Notes
+
+Filed a follow-up task: migrate =ClientCurrencyModel='s
+synthetic-tracking feature onto the =AbstractClientModel= base (or a
+documented reason it can't/shouldn't move), so the client-model file
+can finally be regenerated too and pick up the new list-view columns.
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1470][#1470]] | [codegen,qt] Sync Qt codegen for currency |
 
 * Review
 
@@ -58,3 +141,17 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+10 of 12 Qt output files now regenerate cleanly and are the current
+source of truth (=ClientCurrencyModel.{hpp,cpp}= and
+=CurrencyHistoryDialog.{hpp,cpp,ui}= stay hand-written, documented
+exceptions — follow-up filed for the former). Fixed two model-data
+bugs (wrong delete-request field name, missing flag-icon
+configuration) and added one new template capability
+(=history_protocol_include=) along the way. Three currency-specific
+features with no template equivalent (cross-domain navigation,
+detail-dialog generate-fill, MDI batch-generate) were manually
+restored on top of the generated files, matching the originals
+exactly. Verified via full whole-app rebuild, clean. This closes
+"Commission: currency"'s Qt-layer work — only the independent
+Wt/HTTP capture-filing task remains on the story.

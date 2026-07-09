@@ -81,6 +81,16 @@ public:
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
+{{#domain_entity.qt.has_related_entity_shortcuts}}
+
+    /**
+     * @brief Relayed from {{domain_entity.entity_pascal}}MdiWindow; wired to
+     * the target's own controller in the plugin's composition root.
+     */
+{{#domain_entity.qt.related_entity_shortcuts}}
+    void show{{signal}}Requested();
+{{/domain_entity.qt.related_entity_shortcuts}}
+{{/domain_entity.qt.has_related_entity_shortcuts}}
 {{! see * Extension points above }}
 <<paste:66E078FB-D6A6-4DF6-814B-65995D948090>>
 

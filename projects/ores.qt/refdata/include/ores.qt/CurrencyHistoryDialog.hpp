@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -23,11 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
-#include "ores.refdata.api/messaging/protocol.hpp"
-#include <QString>
-#include <memory>
 
 namespace Ui {
 class CurrencyHistoryDialog;
@@ -36,7 +32,10 @@ class CurrencyHistoryDialog;
 namespace ores::qt {
 
 /**
- * @brief Widget for displaying currency version history.
+ * @brief Dialog for viewing the version history of a currency.
+ *
+ * Shows all historical versions of a currency with ability
+ * to view details or revert to a previous version.
  */
 class CurrencyHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
@@ -51,65 +50,40 @@ private:
     }
 
 public:
-    explicit CurrencyHistoryDialog(QString iso_code,
+    explicit CurrencyHistoryDialog(const QString& code,
                                    ClientManager* clientManager,
                                    QWidget* parent = nullptr);
     ~CurrencyHistoryDialog() override;
 
     void loadHistory() override;
+    [[nodiscard]] QString code() const override;
 
     /**
-     * @brief Set the image cache for displaying currency flags.
+     * @brief The full loaded version list (newest first), for wiring a
+     * just-opened version DetailDialog's first/prev/next/last navigation.
      */
-    void setImageCache(ImageCache* imageCache);
-
-    /**
-     * @brief Returns the ISO code of the currency.
-     */
-    [[nodiscard]] QString code() const override {
-        return isoCode_;
+    [[nodiscard]] const std::vector<refdata::domain::currency>& getHistory() const {
+        return versions_;
     }
-
-    /**
-     * @brief Returns the loaded history for version navigation.
-     */
-    [[nodiscard]] const refdata::messaging::currency_version_history& getHistory() const {
-        return history_;
-    }
-
-protected:
-    void closeEvent(QCloseEvent* event) override;
 
 signals:
-    /**
-     * @brief Emitted when user requests to open a version in read-only mode.
-     * @param currency The currency data at the selected version.
-     * @param versionNumber The version number being viewed.
-     */
     void openVersionRequested(const refdata::domain::currency& currency, int versionNumber);
-
-    /**
-     * @brief Emitted when user requests to revert to a selected version.
-     * @param currency The currency data to revert to.
-     */
     void revertVersionRequested(const refdata::domain::currency& currency);
 
 protected:
     [[nodiscard]] int historySize() const override;
     [[nodiscard]] VersionRow versionRow(int index) const override;
     [[nodiscard]] QString historyTitle() const override;
-    [[nodiscard]] DiffResult calculateDiffAt(int current_index, int previous_index) const override;
+    [[nodiscard]] DiffResult calculateDiffAt(int ci, int pi) const override;
     void displayFullDetails(int index) override;
     void openVersionAt(int index) override;
     void revertToVersionAt(int index) override;
-    QWidget* changeCellWidget(const QString& field, const QString& value) override;
 
 private:
-    std::unique_ptr<Ui::CurrencyHistoryDialog> ui_;
+    Ui::CurrencyHistoryDialog* ui_;
+    QString code_;
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
-    QString isoCode_;
-    refdata::messaging::currency_version_history history_;
+    std::vector<refdata::domain::currency> versions_;
 };
 
 }

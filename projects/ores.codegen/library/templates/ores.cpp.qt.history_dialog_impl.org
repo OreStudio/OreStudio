@@ -31,6 +31,9 @@ The full template source. Edit here and re-tangle with
 #include "ui_{{domain_entity.entity_pascal}}HistoryDialog.h"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "{{domain_entity.qt.protocol_include}}"
+{{#domain_entity.qt.history_protocol_include}}
+#include "{{domain_entity.qt.history_protocol_include}}"
+{{/domain_entity.qt.history_protocol_include}}
 {{#domain_entity.qt.has_uuid_primary_key}}
 #include <boost/uuid/uuid_io.hpp>
 {{/domain_entity.qt.has_uuid_primary_key}}

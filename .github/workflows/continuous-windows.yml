@@ -106,8 +106,8 @@ jobs:
       # sccache is NOT cached across runs on this platform (deliberately —
       # see story canary_ctest_ignores_cancellation): GitHub's actions/cache
       # is capped at a fixed 10 GB per repository, shared across every
-      # OS/compiler/buildtype variant. Linux gates every PR via canary, so
-      # it gets the shared quota; Windows only runs on a schedule/tag push
+      # OS/compiler/buildtype variant. Linux CI jobs run on every PR, so
+      # they get the shared quota; Windows only runs on a schedule/tag push
       # and doesn't need to compete for it. Revisit if/when sccache moves to
       # an external cache backend (see the sccache_external_cache_backend
       # backlog capture) that isn't quota-shared.

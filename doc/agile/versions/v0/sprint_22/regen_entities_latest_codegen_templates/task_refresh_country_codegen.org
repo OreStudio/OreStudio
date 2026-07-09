@@ -92,7 +92,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Two independent Claude review passes: both verified every claim in the PR description against the diff, no blocking issues | (whole PR) | Accepted (no change needed) | Both passes confirmed the needs_item_delegate gate, SQL fixes, and generator fix are correct and match sibling entities' already-shipped patterns. |
+| 2 | Unused =#include <unordered_set>= in country_generator.cpp | country_generator.cpp | Declined | Emitted unconditionally by the shared generator template for every entity, not introduced by this PR — 2 other already-regenerated entities have the same unused include. Hand-patching the generated file would drift back on next regen; filed as a follow-up capture (gate_unordered_set_include_generator_template) instead. |
 
 * Result
 

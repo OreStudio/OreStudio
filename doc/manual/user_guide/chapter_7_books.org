@@ -56,26 +56,50 @@ a filesystem analogy, a portfolio is a folder and a book is a file. A
 book can, in principle, have child books, but only through ledger
 setup, never created ad hoc from the trading system itself.
 
-A book carries a small set of identifying and operational fields:
+Every book carries a *ledger currency* — the functional, or accounting,
+currency its positions are reported in. Trades themselves can happen in
+whatever currency the deal was struck in, but the ledger needs one
+settled currency per book to carry balances and P&L in; that currency
+is designated by the ledger, not chosen freely by the desk. A book also
+carries a *GL account reference*, which is simply the general ledger
+account in the firm's accounting system that this book's activity maps
+to — the trading system's record of a position only means something
+once it can be traced back to a specific line in the firm's books of
+account. Alongside that sits a *cost centre*, the internal code that
+activity in this book is charged against for cost allocation and
+management reporting; a full treatment of how ledger currency, GL
+accounts, and cost centres compose into the wider accounting hierarchy
+belongs to a future ledger-focused chapter, not this one.
 
-- A *ledger currency* — the functional/accounting currency this book's
-  positions are reported in, as designated by the ledger.
-- A *GL account reference* — the general ledger account this book maps
-  to in the firm's accounting system.
-- A *cost centre* — the internal cost allocation this book's activity
-  is charged to.
-- A *status* — the book's current operational state (e.g. active,
-  closed, frozen), chosen from the set of statuses configured for the
-  tenant.
-- A *regulatory book type* — whether this is a *trading book* (held
-  with trading intent, subject to market-risk capital treatment under
-  the FRTB framework) or a *banking book* (held to maturity, subject to
-  credit-risk capital treatment instead). This is one of the more
-  consequential classifications a book carries, since it determines
-  which capital regime the book's positions fall under.
+A book also carries a *status* — its current operational state, such
+as active, closed, or frozen — chosen from the set of statuses
+configured for the tenant. See [[*Book lifecycle][Book lifecycle]] below for what drives a
+book between these states.
 
-Unlike currencies or countries, a book has no external standards body;
-its identity is entirely OreStudio's own, scoped to the owning party.
+Perhaps the most consequential classification a book carries is
+whether it is a *trading book* or a *banking book* — a distinction
+that traces back to the Basel III/IV capital adequacy framework, and
+specifically to a component of it called FRTB (the Fundamental Review
+of the Trading Book).
+
+The distinction is about /intent/, not instrument type: a position held
+with the intent of benefiting from short-term price movements, market
+making, or hedging other trading-book positions belongs in the trading
+book; a position held to maturity or for longer-term investment purposes
+belongs in the banking book. The same instrument — a bond, a swap — can
+sit in either book depending on why it is held.
+
+Why it matters: the two books are subject to entirely different capital
+regimes. Trading-book positions are capitalised for *market risk* — the
+risk that market prices move against an open position — recognising
+that these positions may be actively traded and revalued daily.
+Banking-book positions are instead capitalised for *credit risk* — the
+risk that a counterparty fails to pay — reflecting that these positions
+are typically held to term. Getting this classification wrong, or
+moving positions between the two books opportunistically to reduce
+capital charges, is precisely what regulators police most closely;
+switching a position's classification after the fact is heavily
+restricted for that reason.
 
 ** The Books window
 

@@ -59,5 +59,6 @@ plan itself stays — it is the historical record of what we did.)
 | 1 | Generated purpose_type_registrar.hpp/cpp never called; request/response handlers still hand-wired inline in registrar.cpp | registrar.cpp | Fixed — 95759a487 | Replaced inline block with append(register_purpose_type_handlers(...)), matching party_type. |
 | 2 | fetch_types never sets request.offset/limit; pagination silently ignored | ClientPurposeTypeModel.cpp | Fixed — 95759a487 | Root cause: model missing has_pagination Qt flag; added to purpose_type.org and regenerated (also fixed total_available_count using local page size instead of server total). |
 | 3 | No regression tests for the two codegen template fixes | ores.codegen/src/codegen/core.py | Declined (deferred) | Filed as capture instead of expanding this PR: doc/agile/product_backlog/inbox/codegen_regression_tests_for_domain_entity_sql.org |
+| 4 | Status table not updated to match the frontmatter unblock (State still BLOCKED, Waiting on/Now stale) | task_verify_qt.org | Fixed — c6ec0729f | Flipped State to STARTED; rewrote Now/Waiting on/Next; bumped #+updated/Last touched. |
 
 * Result

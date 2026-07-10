@@ -118,16 +118,19 @@ struct book final {
     /**
      * @brief Lifecycle status of the book.
      *
-     * References book_statuses lookup (Active, Closed, Frozen).
+     * References book_statuses lookup (Active, Closed, Frozen). Defaults to Active so a
+     * freshly-constructed book (the Add dialog, before the Status combo's async populate completes)
+     * always carries a value the FK-validation trigger accepts.
      */
-    std::string book_status;
+    std::string book_status = "Active";
 
     /**
      * @brief Basel III/IV FRTB trading book / banking book classification.
      *
-     * References regulatory_book_types lookup (Trading, Banking).
+     * References regulatory_book_types lookup (Trading, Banking). Defaults to Trading for the same
+     * reason book_status defaults to Active.
      */
-    std::string regulatory_book_type;
+    std::string regulatory_book_type = "Trading";
 
     /**
      * @brief Username of the person who last modified this book.

@@ -19,10 +19,8 @@
  */
 #include "ores.qt/BookStatusHistoryDialog.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/book_status_protocol.hpp"
 #include "ui_BookStatusHistoryDialog.h"
-#include <QHeaderView>
 
 namespace ores::qt {
 
@@ -37,21 +35,26 @@ BookStatusHistoryDialog::BookStatusHistoryDialog(const QString& code,
     , clientManager_(clientManager) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
-
-    ui_->titleLabel->setText(QString("History for: %1").arg(code_));
-
     ui_->versionListWidget->setColumnCount(5);
-    ui_->versionListWidget->setHorizontalHeaderLabels(
-        {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
-
-    initializeHistoryUi({.versionList = ui_->versionListWidget,
-                         .changesTable = ui_->changesTableWidget,
-                         .titleLabel = ui_->titleLabel,
-                         .closeButton = ui_->closeButton});
+    ui_->versionListWidget->setHorizontalHeaderLabels({tr("Version"),
+                                                       tr("Recorded At"),
+                                                       tr("Modified By"),
+                                                       tr("Performed By"),
+                                                       tr("Commentary")});
+    ui_->changesTableWidget->setColumnCount(3);
+    ui_->changesTableWidget->setHorizontalHeaderLabels(
+        {tr("Field"), tr("Old Value"), tr("New Value")});
+    initializeHistoryUi(
+        {ui_->versionListWidget, ui_->changesTableWidget, ui_->titleLabel, ui_->closeButton});
 }
 
-BookStatusHistoryDialog::~BookStatusHistoryDialog() = default;
+BookStatusHistoryDialog::~BookStatusHistoryDialog() {
+    delete ui_;
+}
+
+QString BookStatusHistoryDialog::code() const {
+    return code_;
+}
 
 void BookStatusHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), debug) << "Loading history for book status: " << code_.toStdString();
@@ -60,48 +63,53 @@ void BookStatusHistoryDialog::loadHistory() {
     refdata::messaging::get_book_status_history_request request;
     request.code = code_.toStdString();
 
-    runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
-        if (!response.success) {
-            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
-            historyLoadFailed(QString::fromStdString(response.message));
-            return;
-        }
-        versions_ = std::move(response.statuses);
-        historyLoaded();
-    });
+    QPointer<BookStatusHistoryDialog> self = this;
+    runHistoryRequest(clientManager_,
+                      std::move(request),
+                      [self](refdata::messaging::get_book_status_history_response response) {
+                          if (!self)
+                              return;
+                          if (!response.success) {
+                              self->historyLoadFailed(QString::fromStdString(response.message));
+                              return;
+                          }
+                          self->versions_ = std::move(response.history);
+                          self->historyLoaded();
+                      });
 }
 
 int BookStatusHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow BookStatusHistoryDialog::versionRow(int index) const {
-    const auto& version = versions_[index];
-    return {.version = version.version,
-            .cells = {relative_time_helper::format(version.recorded_at),
-                      QString::fromStdString(version.modified_by),
-                      QString::fromStdString(version.performed_by),
-                      QString::fromStdString(version.change_commentary)}};
-}
-
 QString BookStatusHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::DiffResult BookStatusHistoryDialog::calculateDiffAt(int current_index,
-                                                                       int previous_index) const {
-    const auto& current = versions_[current_index];
-    const auto& previous = versions_[previous_index];
+HistoryDialogBase::VersionRow BookStatusHistoryDialog::versionRow(int index) const {
+    const auto& v = versions_[index];
+    return {v.version,
+            {relative_time_helper::format(v.recorded_at),
+             QString::fromStdString(v.modified_by),
+             QString::fromStdString(v.performed_by),
+             QString::fromStdString(v.change_commentary)}};
+}
 
+HistoryDialogBase::DiffResult BookStatusHistoryDialog::calculateDiffAt(int ci, int pi) const {
     DiffResult diffs;
-    checkString(diffs, "Code", current.code, previous.code);
-    checkString(diffs, "Name", current.name, previous.name);
-    checkString(diffs, "Description", current.description, previous.description);
+    const auto& curr = versions_[ci];
+    const auto& prev = versions_[pi];
 
+    checkString(diffs, tr("Code"), curr.code, prev.code);
+    checkString(diffs, tr("Name"), curr.name, prev.name);
+    checkString(diffs, tr("Description"), curr.description, prev.description);
     return diffs;
 }
 
 void BookStatusHistoryDialog::displayFullDetails(int index) {
+    if (index < 0 || static_cast<size_t>(index) >= versions_.size())
+        return;
+
     const auto& version = versions_[index];
 
     ui_->codeValue->setText(QString::fromStdString(version.code));
@@ -114,20 +122,11 @@ void BookStatusHistoryDialog::displayFullDetails(int index) {
 }
 
 void BookStatusHistoryDialog::openVersionAt(int index) {
-    const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening book status version " << version.version
-                              << " in read-only mode";
-    emit openVersionRequested(version, version.version);
+    emit openVersionRequested(versions_[index], versions_[index].version);
 }
 
 void BookStatusHistoryDialog::revertToVersionAt(int index) {
-    // The base has already confirmed with the user; revert TO the
-    // selected version.
-    const auto& selected = versions_[index];
-
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
-
-    emit revertVersionRequested(selected);
+    emit revertVersionRequested(versions_[index]);
 }
 
 }

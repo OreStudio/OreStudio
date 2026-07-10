@@ -19,10 +19,8 @@
  */
 #include "ores.qt/BookStatusMdiWindow.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/book_status_protocol.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
@@ -44,6 +42,7 @@ BookStatusMdiWindow::BookStatusMdiWindow(ClientManager* clientManager,
     , tableView_(nullptr)
     , model_(nullptr)
     , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
     , reloadAction_(nullptr)
     , addAction_(nullptr)
     , editAction_(nullptr)
@@ -52,13 +51,10 @@ BookStatusMdiWindow::BookStatusMdiWindow(ClientManager* clientManager,
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
 void BookStatusMdiWindow::setupUi() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();
@@ -67,6 +63,9 @@ void BookStatusMdiWindow::setupUi() {
 
     setupTable();
     layout->addWidget(tableView_);
+
+    paginationWidget_ = new PaginationWidget(this);
+    layout->addWidget(paginationWidget_);
 }
 
 void BookStatusMdiWindow::setupToolbar() {
@@ -119,39 +118,68 @@ void BookStatusMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(
-        new EntityItemDelegate(ClientBookStatusModel::columnStyles(), tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+
     initializeTableSettings(tableView_,
                             model_,
-                            ClientBookStatusModel::kSettingsGroup,
-                            ClientBookStatusModel::defaultHiddenColumns(),
-                            ClientBookStatusModel::kDefaultWindowSize,
+                            "BookStatusListWindow",
+                            {
+                                ClientBookStatusModel::Description,
+                            },
+                            {900, 400},
                             1);
 }
 
 void BookStatusMdiWindow::setupConnections() {
     connect(model_, &ClientBookStatusModel::dataLoaded, this, &BookStatusMdiWindow::onDataLoaded);
     connect(model_, &ClientBookStatusModel::loadError, this, &BookStatusMdiWindow::onLoadError);
-    connectModel(model_);
 
     connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
             this,
             &BookStatusMdiWindow::onSelectionChanged);
     connect(tableView_, &QTableView::doubleClicked, this, &BookStatusMdiWindow::onDoubleClicked);
+
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
+
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
+        const auto total = model_->total_available_count();
+        if (total > 0 && total <= 1000) {
+            model_->set_page_size(total);
+            model_->refresh();
+        }
+    });
+
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
+
+    connectModel(model_);
 }
 
 void BookStatusMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading book statuses";
+    clearStaleIndicator();
     emit statusChanged(tr("Loading book statuses..."));
     model_->refresh();
 }
 
 void BookStatusMdiWindow::onDataLoaded() {
-    emit statusChanged(tr("Loaded %1 book statuses").arg(model_->rowCount()));
+    const auto loaded = model_->rowCount();
+    const auto total = model_->total_available_count();
+    emit statusChanged(tr("Loaded %1 of %2 book statuses").arg(loaded).arg(total));
+
+    paginationWidget_->update_state(loaded, total);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
 }
 
 void BookStatusMdiWindow::onLoadError(const QString& error_message, const QString& details) {
@@ -267,19 +295,23 @@ void BookStatusMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << codes.size() << " book statuses";
+            << "Making delete request for " << codes.size() << " book statuses";
+
+        refdata::messaging::delete_book_status_request request;
+        request.codes = codes;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            for (const auto& code : codes) {
+                results.push_back({code, {false, "Failed to communicate with server"}});
+            }
+            return results;
+        }
 
         for (const auto& code : codes) {
-            refdata::messaging::delete_book_status_request request;
-            request.codes = {code};
-            auto response_result =
-                self->clientManager_->process_authenticated_request(std::move(request));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to delete book status: " << code;
-                results.push_back({code, {false, "Failed to communicate with server"}});
-            } else {
-                results.push_back({code, {response_result->success, response_result->message}});
-            }
+            results.push_back({code, {response_result->success, response_result->message}});
         }
 
         return results;
@@ -334,5 +366,6 @@ void BookStatusMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

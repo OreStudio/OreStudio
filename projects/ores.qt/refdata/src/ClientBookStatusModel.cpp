@@ -87,9 +87,9 @@ QVariant ClientBookStatusModel::data(const QModelIndex& index, int role) const {
             case Description:
                 return QString::fromStdString(status.description);
             case DisplayOrder:
-                return status.display_order;
+                return static_cast<qlonglong>(status.display_order);
             case Version:
-                return status.version;
+                return static_cast<qlonglong>(status.version);
             case ModifiedBy:
                 return QString::fromStdString(status.modified_by);
             case RecordedAt:
@@ -119,7 +119,7 @@ ClientBookStatusModel::headerData(int section, Qt::Orientation orientation, int 
         case Description:
             return tr("Description");
         case DisplayOrder:
-            return tr("Order");
+            return tr("Display Order");
         case Version:
             return tr("Version");
         case ModifiedBy:
@@ -132,46 +132,92 @@ ClientBookStatusModel::headerData(int section, Qt::Orientation orientation, int 
 }
 
 void ClientBookStatusModel::refresh() {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
+
     if (is_fetching_) {
-        BOOST_LOG_SEV(lg(), debug) << "Already fetching, skipping refresh";
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
         return;
     }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh book status model: disconnected.";
         emit loadError("Not connected to server");
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Starting book status fetch";
-    is_fetching_ = true;
+    if (!statuses_.empty()) {
+        beginResetModel();
+        statuses_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        total_available_count_ = 0;
+        endResetModel();
+    }
 
+    fetch_statuses(0, page_size_);
+}
+
+void ClientBookStatusModel::load_page(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
+
+    if (is_fetching_) {
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring load_page request.";
+        return;
+    }
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load page: disconnected.";
+        return;
+    }
+
+    if (!statuses_.empty()) {
+        beginResetModel();
+        statuses_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        endResetModel();
+    }
+
+    fetch_statuses(offset, limit);
+}
+
+void ClientBookStatusModel::fetch_statuses(std::uint32_t offset, std::uint32_t limit) {
+    is_fetching_ = true;
     QPointer<ClientBookStatusModel> self = this;
 
-    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
         return exception_helper::wrap_async_fetch<FetchResult>(
             [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making book statuses request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false,
                             .statuses = {},
+                            .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
                 refdata::messaging::get_book_statuses_request request;
-                auto response_result =
+
+                auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
-                if (!response_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .statuses = {},
-                            .error_message = "Failed to send request",
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << response_result->statuses.size() << " book statuses";
+                    << "Fetched " << result->statuses.size() << " book statuses";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->statuses.size());
                 return {.success = true,
-                        .statuses = std::move(response_result->statuses),
+                        .statuses = std::move(result->statuses),
+                        .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};
             },
@@ -193,19 +239,38 @@ void ClientBookStatusModel::onStatusesLoaded() {
         return;
     }
 
-    beginResetModel();
-    statuses_ = std::move(result.statuses);
-    endResetModel();
+    total_available_count_ = result.total_available_count;
 
-    const bool has_recent = recencyTracker_.update(statuses_);
-    if (has_recent && !pulseManager_->is_pulsing()) {
-        pulseManager_->start_pulsing();
-        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                   << " book statuses newer than last reload";
+    const int new_count = static_cast<int>(result.statuses.size());
+
+    if (new_count > 0) {
+        beginResetModel();
+        statuses_ = std::move(result.statuses);
+        endResetModel();
+
+        const bool has_recent = recencyTracker_.update(statuses_);
+        if (has_recent && !pulseManager_->is_pulsing()) {
+            pulseManager_->start_pulsing();
+            BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                       << " book statuses newer than last reload";
+        }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << statuses_.size() << " book statuses";
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " book statuses."
+                              << " Total available: " << total_available_count_;
+
     emit dataLoaded();
+}
+
+void ClientBookStatusModel::set_page_size(std::uint32_t size) {
+    if (size == 0 || size > 1000) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size
+                                  << ". Must be between 1 and 1000. Using default: 100";
+        page_size_ = 100;
+    } else {
+        page_size_ = size;
+        BOOST_LOG_SEV(lg(), info) << "Page size set to: " << page_size_;
+    }
 }
 
 const refdata::domain::book_status* ClientBookStatusModel::getStatus(int row) const {
@@ -214,6 +279,7 @@ const refdata::domain::book_status* ClientBookStatusModel::getStatus(int row) co
         return nullptr;
     return &statuses_[idx];
 }
+
 
 QVariant ClientBookStatusModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

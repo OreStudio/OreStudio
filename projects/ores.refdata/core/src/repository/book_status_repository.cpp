@@ -49,8 +49,10 @@ void book_status_repository::write(context ctx, const std::vector<domain::book_s
 
 std::vector<domain::book_status> book_status_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<book_status_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("code"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c);
 
     return execute_read_query<book_status_entity, domain::book_status>(
         ctx,
@@ -64,8 +66,10 @@ std::vector<domain::book_status> book_status_repository::read_latest(context ctx
                                                                      const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest book status. code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<book_status_entity>> |
-                       where("code"_c == code && "valid_to"_c == max.value());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<book_status_entity>> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<book_status_entity, domain::book_status>(
         ctx,
@@ -78,7 +82,9 @@ std::vector<domain::book_status> book_status_repository::read_latest(context ctx
 std::vector<domain::book_status> book_status_repository::read_all(context ctx,
                                                                   const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all book status versions. code: " << code;
-    const auto query = sqlgen::read<std::vector<book_status_entity>> | where("code"_c == code) |
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<book_status_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code) |
                        order_by("version"_c.desc());
 
     return execute_read_query<book_status_entity, domain::book_status>(
@@ -89,20 +95,86 @@ std::vector<domain::book_status> book_status_repository::read_all(context ctx,
         "Reading all book status versions by code.");
 }
 
+std::optional<domain::book_status> book_status_repository::read_at_version(context ctx,
+                                                                           const std::string& code,
+                                                                           std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading book status at version. code: " << code
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<book_status_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<book_status_entity, domain::book_status>(
+        ctx,
+        query,
+        [](const auto& entities) { return book_status_mapper::map(entities); },
+        lg(),
+        "Reading book status at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+
 void book_status_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book status: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::delete_from<book_status_entity> |
-                       where("code"_c == code && "valid_to"_c == max.value());
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<book_status_entity> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing book status from database.");
 }
 
+std::vector<domain::book_status>
+book_status_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest book statuses with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<book_status_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<book_status_entity, domain::book_status>(
+        ctx,
+        query,
+        [](const auto& entities) { return book_status_mapper::map(entities); },
+        lg(),
+        "Reading latest book statuses with pagination.");
+}
+
+std::uint32_t book_status_repository::get_total_status_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active book status count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::select_from<book_status_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active book status count: " << count;
+    return count;
+}
+
 void book_status_repository::remove(context ctx, const std::vector<std::string>& codes) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::delete_from<book_status_entity> |
-                       where("code"_c.in(codes) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "batch removing book statuses");
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<book_status_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing book statuses.");
 }
 
 

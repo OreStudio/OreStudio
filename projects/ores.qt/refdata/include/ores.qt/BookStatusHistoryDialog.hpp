@@ -24,9 +24,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
-#include <QString>
-#include <memory>
-#include <vector>
 
 namespace Ui {
 class BookStatusHistoryDialog;
@@ -59,13 +56,7 @@ public:
     ~BookStatusHistoryDialog() override;
 
     void loadHistory() override;
-
-    /**
-     * @brief Returns the identifier of the book status.
-     */
-    [[nodiscard]] QString code() const override {
-        return code_;
-    }
+    [[nodiscard]] QString code() const override;
 
 signals:
     void openVersionRequested(const refdata::domain::book_status& status, int versionNumber);
@@ -75,13 +66,13 @@ protected:
     [[nodiscard]] int historySize() const override;
     [[nodiscard]] VersionRow versionRow(int index) const override;
     [[nodiscard]] QString historyTitle() const override;
-    [[nodiscard]] DiffResult calculateDiffAt(int current_index, int previous_index) const override;
+    [[nodiscard]] DiffResult calculateDiffAt(int ci, int pi) const override;
     void displayFullDetails(int index) override;
     void openVersionAt(int index) override;
     void revertToVersionAt(int index) override;
 
 private:
-    std::unique_ptr<Ui::BookStatusHistoryDialog> ui_;
+    Ui::BookStatusHistoryDialog* ui_;
     QString code_;
     ClientManager* clientManager_;
     std::vector<refdata::domain::book_status> versions_;

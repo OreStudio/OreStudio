@@ -21,7 +21,6 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/book_status_protocol.hpp"
 #include "ui_BookStatusDetailDialog.h"
 #include <QFutureWatcher>
@@ -39,9 +38,13 @@ BookStatusDetailDialog::BookStatusDetailDialog(QWidget* parent)
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 BookStatusDetailDialog::~BookStatusDetailDialog() {
@@ -51,11 +54,17 @@ BookStatusDetailDialog::~BookStatusDetailDialog() {
 QTabWidget* BookStatusDetailDialog::tabWidget() const {
     return ui_->tabWidget;
 }
+
 QWidget* BookStatusDetailDialog::provenanceTab() const {
     return ui_->provenanceTab;
 }
+
 ProvenanceWidget* BookStatusDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString BookStatusDetailDialog::code() const {
+    return QString::fromStdString(status_.code);
 }
 
 void BookStatusDetailDialog::setupUi() {
@@ -101,10 +110,13 @@ void BookStatusDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
-
     setProvenanceEnabled(!createMode);
-
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void BookStatusDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
@@ -128,6 +140,7 @@ void BookStatusDetailDialog::updateUiFromStatus() {
                        status_.recorded_at,
                        status_.change_reason_code,
                        status_.change_commentary);
+
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -139,7 +152,6 @@ void BookStatusDetailDialog::updateStatusFromUi() {
     status_.name = ui_->nameEdit->text().trimmed().toStdString();
     status_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     status_.modified_by = username_;
-    status_.performed_by = username_;
 }
 
 void BookStatusDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -158,10 +170,10 @@ void BookStatusDetailDialog::updateSaveButtonState() {
 }
 
 bool BookStatusDetailDialog::validateInput() {
-    const QString code = ui_->codeEdit->text().trimmed();
-    const QString name = ui_->nameEdit->text().trimmed();
+    const QString code_val = ui_->codeEdit->text().trimmed();
+    const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return !code.isEmpty() && !name.isEmpty();
+    return true && !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void BookStatusDetailDialog::onSaveClicked() {
@@ -172,12 +184,9 @@ void BookStatusDetailDialog::onSaveClicked() {
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(
-            this, "Invalid Input", "Please fill in all required fields (Code and Name).");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
-
-    updateStatusFromUi();
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -186,6 +195,8 @@ void BookStatusDetailDialog::onSaveClicked() {
         return;
     status_.change_reason_code = crSel->reason_code;
     status_.change_commentary = crSel->commentary;
+
+    updateStatusFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving book status: " << status_.code;
 
@@ -256,7 +267,7 @@ void BookStatusDetailDialog::onDeleteClicked() {
     }
 
     const auto crSel =
-        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -307,5 +318,6 @@ void BookStatusDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

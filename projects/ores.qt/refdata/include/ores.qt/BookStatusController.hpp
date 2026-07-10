@@ -24,6 +24,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/RefdataExport.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
@@ -32,7 +33,6 @@ namespace ores::qt {
 
 class BookStatusMdiWindow;
 class DetachableMdiSubWindow;
-class ChangeReasonCache;
 
 /**
  * @brief Controller for managing book status windows and operations.
@@ -40,7 +40,7 @@ class ChangeReasonCache;
  * Manages the lifecycle of book status list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class BookStatusController final : public EntityController {
+class ORES_QT_REFDATA_EXPORT BookStatusController final : public EntityController {
     Q_OBJECT
 
 private:
@@ -56,7 +56,6 @@ public:
     BookStatusController(QMainWindow* mainWindow,
                          QMdiArea* mdiArea,
                          ClientManager* clientManager,
-                         ChangeReasonCache* changeReasonCache,
                          const QString& username,
                          QObject* parent = nullptr);
 
@@ -64,12 +63,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::book_status& status);
@@ -83,7 +84,6 @@ private:
     void showDetailWindow(const refdata::domain::book_status& status);
     void showHistoryWindow(const QString& code);
 
-    ChangeReasonCache* changeReasonCache_{nullptr};
     BookStatusMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

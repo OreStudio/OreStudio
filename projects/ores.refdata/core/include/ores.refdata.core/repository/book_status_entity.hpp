@@ -20,13 +20,15 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BOOK_STATUS_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BOOK_STATUS_ENTITY_HPP
 
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
-#include "sqlgen/Timestamp.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a book status in the database.
@@ -36,16 +38,19 @@ struct book_status_entity {
     constexpr static const char* tablename = "ores_refdata_book_statuses_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
+    std::string tenant_id;
     int version = 0;
+
     std::string name;
+
     std::string description;
     int display_order = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const book_status_entity& v);

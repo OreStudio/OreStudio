@@ -24,6 +24,7 @@
 #include "ores.marketdata.core/messaging/market_fixing_handler.hpp"
 #include "ores.marketdata.core/messaging/market_observation_handler.hpp"
 #include "ores.marketdata.core/messaging/market_series_handler.hpp"
+#include "ores.marketdata.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.nats/domain/message.hpp"
 #include <functional>
 
@@ -150,6 +151,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                 import_handler h(nats, ctx, verifier, auth_nats);
                                 h.import(std::move(msg));
                             }));
+
+    // Publish-from-DQ workflow step handler
+    {
+        auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
+        subs.push_back(nats.queue_subscribe(
+            "marketdata.v1.market-data-observations.publish-from-dq",
+            queue,
+            [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+    }
 
     return subs;
 }

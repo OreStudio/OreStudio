@@ -133,6 +133,9 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'currency_pair_conventions', 0, 'Currency Pair Conventions', 'Quoting and date conventions (pip factor, tick size, calendars) for standard FX currency pairs',
      'dq_currency_pair_conventions_artefact_tbl', 'refdata_currency_pair_conventions_tbl', 'refdata.v1.currency-pair-conventions.publish-from-dq', 36,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'market_data_observations', 0, 'Market Data Observations', 'Curated FX driver rates (Federal Reserve H.10) for a fixed as-of date',
+     'dq_market_data_observations_artefact_tbl', 'marketdata_market_observations_tbl', 'marketdata.v1.market-data-observations.publish-from-dq', 37,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

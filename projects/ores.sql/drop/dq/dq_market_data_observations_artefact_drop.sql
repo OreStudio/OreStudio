@@ -17,20 +17,4 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- Series must be created before observations and fixings (trigger references it).
-\ir ./marketdata_series_create.sql
-\ir ./marketdata_observations_create.sql
-\ir ./marketdata_fixings_create.sql
-
--- Codegen market data entities (market_series must precede observations/fixings).
-\ir ./marketdata_market_series_create.sql
-\ir ./marketdata_market_series_notify_trigger_create.sql
-\ir ./marketdata_market_observations_create.sql
-\ir ./marketdata_market_observations_notify_trigger_create.sql
-\ir ./marketdata_market_fixings_create.sql
-\ir ./marketdata_market_fixings_notify_trigger_create.sql
-\ir ./marketdata_feed_bindings_create.sql
-\ir ./marketdata_feed_bindings_notify_trigger_create.sql
-
-\ir ./marketdata_publish_from_dq_create.sql
+drop table if exists "ores_dq_market_data_observations_artefact_tbl";

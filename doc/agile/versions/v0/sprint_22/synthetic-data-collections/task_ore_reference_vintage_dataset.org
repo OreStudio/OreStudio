@@ -53,9 +53,9 @@ citable source of truth instead of ad hoc file parsing.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Beginning implementation: SQL artefact table, methodology, catalog, dataset, publish-from-dq function. |
+| Now          | Infrastructure built and verified live end-to-end (bundle publish, idempotency, values, citations). Writing up before closing. |
 | Waiting on   | Nothing.                               |
-| Next         | New DQ artefact table for market data observations. |
+| Next         | Close out; unblocks Seed Basic and Realistic dataset bundles. |
 | Last touched | 2026-07-10                               |
 
 * Acceptance
@@ -188,3 +188,48 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered, with two design refinements beyond the original plan (both
+made mid-implementation, per review):
+
+- *Generic, extensible artefact shape*: =ores_dq_market_data_observations_artefact_tbl=
+  mirrors =market_observation='s own decomposed-key columns
+  (=series_type=/=metric=/=qualifier=/=point_id=), not anything
+  FX-specific — future asset classes (rates curves, vol surfaces, ...)
+  are new dataset rows, never a new artefact table. Added =source_url=/
+  =retrieved_at= as per-row columns so every future value carries its
+  own citation independently, rather than a shared methodology blob
+  that would grow unboundedly as more data is added.
+- *Bundle grouping*: registered =marketdata.reference_vintage_2016_02_05=
+  (via =ores_dq_dataset_bundles_upsert_fn=/=..._bundle_members_upsert_fn=,
+  the same bundle mechanism =base=/=slovaris=/etc. already use) with
+  =marketdata.fx_driver_rates= as its first member — future datasets
+  for the same vintage date become further members of this one bundle,
+  not new bundles.
+
+Five pieces, all hand-written (no codegen model exists for a DQ
+artefact table — see Notes): the artefact table, a new =artefact_type=
+row, the methodology/catalog/dataset/bundle seed populate script, the
+=ores_marketdata_publish_market_data_observations_from_dq_fn=
+=SECURITY DEFINER= function (finds-or-creates the series, upserts
+observations, party-scoped like =market_series=/=market_observations=
+require), and a new =ores.marketdata.core= NATS handler
+(=publish_from_dq_handler=, mirroring =ores.synthetic.core='s) wired
+into the registrar — =ores.marketdata.service='s first inbound
+publish-from-dq subject.
+
+Verified end-to-end against a live stack via the generic =bundles
+publish <code> --wait --party-id <id>= shell command (no dedicated
+provisioning script needed — this mechanism already existed and
+required no changes): all 8 pairs land on Barclays with exact curated
+values, correct =observation_datetime=, and the distinct
+=source='fed.h10.2016-02-05'= tag; a second publish is idempotent
+(still exactly 1 current row per pair, no duplicates).
+
+Hit one unrelated environmental issue along the way: =ores.marketdata.service=
+was running a deleted-inode binary (the executable file had been
+overwritten by a later build while the process was still up, and a
+prior =services stop=/=start= cycle silently failed to actually
+replace it) — diagnosed via =readlink /proc/<pid>/exe= showing
+"(deleted)", fixed by killing the stale PID so the controller
+respawned it fresh. Not a code bug; noted here in case it recurs.

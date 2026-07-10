@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 4DEBBF25-A373-40FD-A913-B175AE27BA66
+:END:
+#+title: Consolidate message boxes into one non-modal, copiable, standard-button ORE Studio dialog
+#+description: Replace ad-hoc QMessageBox/MessageBoxHelper usage with a single ORE Studio message box: standard buttons, copiable text, and non-modal so it doesn't block test-scenario screenshot capture.
+#+type: capture
+#+level: cross
+#+filetags: :qt:ui-consistency:testing:dx:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Introduce a single ORE Studio-specific message box widget that
+every call site uses instead of ad-hoc =QMessageBox= calls or the
+existing [[proj:projects/ores.qt/api/include/ores.qt/MessageBoxHelper.hpp][=MessageBoxHelper=]]. Consumers should only ever state the text
+and which buttons they want; everything else — button styling
+(standard ORE buttons, not raw Qt defaults), selectable/copiable
+message text (so the text can be pasted into an LLM chat or a bug
+report verbatim), and, critically, *non-modal* presentation so the
+QA Validation Runner's screenshot-capture steps can still interact
+with other windows while the message box is open — is common code
+owned by the widget itself. =MessageBoxHelper= already exists as a
+partial consolidation point ([[proj:projects/ores.qt/api/src/MessageBoxHelper.cpp][=MessageBoxHelper.cpp=]]) but 14 files
+still construct =QMessageBox= directly, bypassing it entirely (e.g.
+=CatalogDetailDialog.cpp=, =AddItemDialog.cpp=,
+=MasterPasswordDialog.cpp=, =TenantOnboardingWizard.cpp=,
+=PublishBundleWizard.cpp=, =ScriptEditorMdiWindow.cpp= — see
+References for the full list found by grep), and even the 250+
+files that do go through =MessageBoxHelper= inherit whatever
+modal/button/copiability behaviour that helper currently has, which
+is not yet what's wanted. This capture is for building the new
+widget (or upgrading =MessageBoxHelper= in place) and then migrating
+every call site to it.
+
+* Why
+
+Message boxes today are inconsistent in three concrete ways
+discovered doing manual QA and screenshot capture this sprint:
+buttons don't use ORE Studio's standard button styling; the boxes
+are modal, which blocks the QA Validation Runner's test-scenario
+screenshot steps from clicking on or focusing a different window
+while a message box is up, making some scenario steps impossible to
+automate/capture as written; and message text isn't selectable, so a
+tester or developer can't copy an error/warning verbatim to paste
+into an LLM chat for triage. Consolidating on one widget, where
+consumers only supply text and button choice, fixes all three at
+once and prevents the same inconsistency from being reintroduced at
+new call sites.
+
+* References
+
+- [[proj:projects/ores.qt/api/include/ores.qt/MessageBoxHelper.hpp][=MessageBoxHelper.hpp=]] / [[proj:projects/ores.qt/api/src/MessageBoxHelper.cpp][=MessageBoxHelper.cpp=]] — existing partial
+  consolidation point; candidate to extend in place.
+- Files still constructing =QMessageBox= directly, bypassing
+  =MessageBoxHelper= (grep =QMessageBox::= without =MessageBoxHelper=
+  in the same file, 14 hits at time of writing):
+  =refdata/src/CatalogDetailDialog.cpp=,
+  =application/src/AddItemDialog.cpp=,
+  =synthetic/src/MarketSimulatorWindow.cpp=,
+  =synthetic/src/FxSpotRateEditor.cpp=,
+  =application/src/MasterPasswordDialog.cpp=,
+  =application/src/TagSelectorWidget.cpp=,
+  =synthetic/src/FeedDialog.cpp=,
+  =compute/src/ReportDefinitionController.cpp=,
+  =admin/src/TenantOnboardingWizard.cpp=,
+  =compute/src/ServiceDashboardMdiWindow.cpp=,
+  =refdata/src/CatalogMdiWindow.cpp=,
+  =refdata/src/PublishBundleWizard.cpp=,
+  =application/src/ScriptEditorMdiWindow.cpp=,
+  =application/src/ScriptLibraryPanel.cpp= (all paths relative to
+  =projects/ores.qt/=).
+- [[id:A976A11A-93B1-4703-8F09-8741CF9BC0F0][Capture screenshots for the Currency Pairs manual chapter]] — the
+  scenario that surfaced the modal-blocking problem while designing
+  the "Inverted Pair" rejection dialog capture step.
+
+* See also
+
+- [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]

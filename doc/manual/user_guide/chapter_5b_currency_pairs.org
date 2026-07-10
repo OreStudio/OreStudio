@@ -1,0 +1,319 @@
+:PROPERTIES:
+:ID: 055488FE-81DF-4881-8866-B90FB0E71A04
+:END:
+#+title: Currency Pairs
+#+description: Currency pair and currency pair convention management in ORE Studio: domain concepts (base/quote, classification, pip factor), the Qt UI, and the relationship between the two entities.
+#+type: manual
+#+level: cross
+#+filetags: :knowledge:manual:currency-pairs:refdata:user_guide:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+
+#+startup: inlineimages
+@@latex:\lettrine[lines=2,nindent=0em]{A}{} \textsc{currency} @@@@html:A currency @@on its own, as the previous chapter set out, is a self-contained
+identity: a code, a name, a set of display and rounding rules. The
+moment two currencies are set against one another, a second entity
+comes into being, one whose identity is relational rather than
+intrinsic. This chapter examines that entity, the /currency pair/,
+and the separate but tightly coupled record of market conventions
+that governs how quotes on that pair are read, rounded, and dated.
+
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
+** Overview
+
+The chapter follows the same progression as the previous one, adapted
+to a case where two closely related entities, rather than one, share
+the stage. It opens with the domain foundation in [[*Currency pairs and market conventions][Currency pairs and
+market conventions]], distinguishing what a pair /is/ from the market
+conventions layered on top of it, and setting out the classification
+scheme, the base/quote precedence rule, and the pip and tick
+mechanics that later sections draw on. It then turns to the first
+entity, walking from [[*The Currency Pairs window][The Currency Pairs window]] through [[*Currency Pair Details][Currency Pair
+Details]], [[*Editing a currency pair][editing]], and [[*Currency pair history][history]], in the same pattern the Currencies
+chapter established. It then does the same for the second entity in
+[[*Currency Pair Conventions][Currency Pair Conventions]], and closes by explaining how the two windows
+are cross-navigable from one another. The [[*Conclusion][Conclusion]] draws the pair
+of entities back together.
+
+** Currency pairs and market conventions
+
+A currency pair names an exchange rate relationship between two
+currencies rather than a currency itself: it answers the question of
+how many units of one currency, the /quote/ currency, are needed to
+buy one unit of the other, the /base/ currency. Market convention
+writes this as =CCY1/CCY2=, base over quote, and, crucially, treats
+the two directions as the same market rather than as independent
+instruments: =EUR/USD= and =USD/EUR= are not two pairs but one pair
+quoted two ways, and a well-behaved system permits only one canonical
+direction to exist as a record. Which currency of the two takes the
+base position is itself conventional rather than arbitrary, governed
+by a fixed precedence order with the euro at its head, followed by
+sterling, the Australian and New Zealand dollars, the US dollar, and
+then the remaining currencies — so market participants write
+=EUR/USD=, never =USD/EUR=, even though both describe the same
+underlying rate.
+
+Currency pairs are not a homogeneous population; the market
+classifies them by liquidity and tradability, a taxonomy independent
+of the mere fact that both legs are valid ISO 4217 currencies. A
+/major/ pairs the US dollar with one of the six other currencies with
+the deepest global markets — the euro, sterling, the yen, the Swiss
+franc, and the Australian, Canadian, and New Zealand dollars — and
+carries the tightest spreads and the most continuous liquidity of any
+pair in the market. A /minor/, sometimes called a cross, pairs two of
+those major non-dollar currencies against one another with no dollar
+leg at all, a pair such as =EUR/GBP= or =GBP/JPY=; because the dollar
+is absent, such a rate is frequently derived by triangulating through
+it rather than quoted directly. An /exotic/ pairs a major currency
+against the currency of a smaller or developing economy, carrying
+markedly wider spreads, thinner liquidity, and greater sensitivity to
+domestic political and economic events. A further distinct
+classification exists alongside this one for commodity-backed
+instruments, where one leg is not a sovereign currency at all but a
+precious metal such as gold or silver traded under currency-like
+conventions; ORE Studio labels this fourth case /commodity/. It is
+worth noting explicitly that classification and raw trading volume
+diverge in at least one well-known respect: the Scandinavian
+currencies, the Danish krone, the Norwegian krone, and the Swedish
+krona, trade in somewhat lower volume than the seven majors and are
+sometimes loosely called exotic on that basis, yet institutionally
+they belong to the same deep-liquidity tier as the majors and should
+be classified as minors, not exotics, when paired with the dollar.
+
+Once a pair's identity and classification are settled, a further set
+of market conventions governs how its rate is actually quoted and
+handled operationally, and these live on a separate record from the
+pair itself. A /pip/ is the standard unit of rate movement for a
+pair, and its size is not universal: most pairs quote to four decimal
+places, so that a single pip equals =0.0001= of the rate, while pairs
+with a yen leg quote to only two decimal places, making a pip equal
+to =0.01=. The /pip factor/ is this decimal scaling made explicit and
+storable, the multiplier that converts a count of pips into an
+absolute rate move, and getting it wrong does not produce a merely
+inaccurate result but one whose sign and order of magnitude are both
+wrong, since it governs how forward points are added to or subtracted
+from a spot rate. Layered on top of the pip convention is the /tick
+size/, the smallest increment by which a quoted rate is actually
+permitted to move, stated in units of pips and capable of varying by
+pair, by trading venue, and by instrument; a pip defines the
+denomination, a tick defines the smallest coin in that denomination
+actually in circulation. Finally, settlement timing follows its own
+convention: an FX rate, notwithstanding the informal name /spot
+rate/, is very rarely a rate for immediate delivery but rather a
+forward rate for the earliest date on which funds can actually
+settle, arrived at by advancing from today by the number of business
+days each currency's home market needs to clear a payment, one day
+for the US dollar and typically two for most other currencies, with
+the pair as a whole taking the longer of its two legs' requirements —
+which is why most pairs are conventionally said to settle two
+business days after the trade date.
+
+A word of scope is due before moving on. Real FX markets also
+distinguish pairs by /deliverability/ — whether a trade in that pair
+settles through physical delivery of both currencies or, for
+currencies subject to capital controls, is instead settled in cash in
+a third currency against a published fixing, the non-deliverable
+forward arrangement. ORE Studio explored modelling this distinction
+directly on the currency pair record and withdrew it again during
+this development cycle: a single flag proved unable to express the
+reality that some pairs support more than one settlement arrangement,
+sometimes depending on the trading centre involved, and a proper
+treatment needs its own structure rather than a field bolted onto the
+pair. Deliverability and non-deliverable settlement are, at the time
+of writing, not represented anywhere in ORE Studio's reference data
+and are not described further in this chapter.
+
+With the domain foundation in place, the base/quote relationship
+and its precedence rule, the classification taxonomy, and the pip,
+tick, and settlement-timing conventions that will recur throughout
+the entity descriptions below, the chapter turns from what these
+concepts mean to where a user goes to work with the records that
+carry them.
+
+** The Currency Pairs window
+
+Open the Currency Pairs window from the /Reference Data/ menu. It
+lists all currency pairs defined in the tenant, with one row per
+pair.
+
+#+caption[The Currency Pairs window]: The Currency Pairs window, showing the full list of currency pairs in the tenant. Each row shows the composited base+quote flag, the individual Base and Quote codes, the Classification badge, version, and provenance columns.
+[[proj:assets/images/currency_pairs_main_window.png]]
+
+Each row shows the pair code (with the base and quote currencies'
+flag icons composited into the same cell), the base and quote
+currency codes individually, the classification badge, the version
+number, the identity of the last modifier, and when the record was
+last recorded. The toolbar buttons reload the list and adjust the
+display; a further /Conventions/ button, described in
+[[*Currency Pair Conventions][Currency Pair Conventions]] below, cross-navigates to the companion
+window. The list is paginated; use the page controls at the bottom
+right to navigate. Double-clicking a row opens the *Currency Pair
+Details* dialog.
+
+** Currency Pair Details
+
+#+caption[Currency Pair Details — USD/AOA]: The Currency Pair Details dialog for USD/AOA, showing the Pair Code field with both flags, the locked Base and Quote Currency combos, and the Classification combo.
+[[proj:assets/images/currency_pair_details.png]]
+
+The dialog carries a compact set of fields. *Pair Code* is not typed
+directly; it is computed live from the *Base Currency* and *Quote
+Currency* combos while the record is still being created, and the
+field itself remains read-only throughout. *Base Currency* and *Quote
+Currency* are flagged combo boxes, each showing the relevant
+currency's flag alongside its ISO code, populated from the currencies
+already on file. *Classification* is a combo offering the four values
+described above — major, minor, exotic, and commodity.
+
+Once a pair has been saved for the first time, its Base Currency and
+Quote Currency combos lock: the values remain visible, flags and all,
+but can no longer be changed, and Pair Code is therefore permanently
+fixed from the moment of creation onward. This reflects the domain
+reality that a currency pair's identity /is/ its two legs; changing
+either leg would not modify the pair but create a different one
+under a different natural key.
+
+Two checks run at creation time, both driven by the base-currency-
+precedence rule described in [[*Currency pairs and market conventions][Currency pairs and market conventions]].
+Attempting to create a pair whose code already exists is rejected
+outright, since that would silently create a new version of the
+existing record rather than a genuinely new one. Attempting to create
+the /inverse/ of a pair that already exists — for example, adding
+=USD/EUR= when =EUR/USD= is already on file — is rejected for the
+same underlying reason: the two directions describe one market, not
+two, and only the canonically ordered direction may exist as a
+record.
+
+#+caption[The Inverted Pair rejection dialog]: With USD/AOA already on file, attempting to create AOA/USD is rejected: the warning names both the rejected code and the existing pair it inverts, and explains the delete-then-recreate workaround for the rare case the direction genuinely needs to change.
+[[proj:assets/images/currency_pair_inverted_rejection.png]]
+
+The three action buttons at the bottom, *Delete*, *Close*, and
+*Save*, apply to the pair as a whole. The dialog also has a
+*Provenance* tab, read-only, showing the audit metadata for the
+current version; see the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Reference Data — Provenance]] section for a full
+description of the fields common to all reference data entities.
+
+** Editing a currency pair
+
+To edit a currency pair, open it in the Currency Pair Details dialog,
+change its *Classification* — the only field still open to editing
+once Base Currency and Quote Currency have locked — and click *Save*.
+As with every reference-data entity, ORE Studio prompts for a change
+reason before the record is written; select a *Reason* from the
+drop-down, add optional *Commentary*, and click *Save* to confirm.
+Every save creates a new version rather than overwriting the
+previous one.
+
+** Currency pair history
+
+To view the full change history, open the details dialog and click
+the history icon in the title bar, or right-click the row and choose
+*History*. Select a version to populate the detail panel; the
+*Changes* tab shows which fields differ between the selected version
+and its predecessor, and the *Revert* button reinstates any
+historical version as a new version, preserving the full audit
+chain. The mechanics are identical to currency history, described in
+full in the previous chapter's [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currency history]] section.
+
+** Currency Pair Conventions
+
+Where the currency pair record establishes /identity/, base, quote,
+and classification, a second, separate record establishes the
+/market conventions/ that govern how a pair's rate is quoted, rounded,
+and dated: pip factor, tick size, decimal places, the advancing
+calendar, the business day convention, and two boolean flags
+governing forward-date generation. The two records stand in a strict
+one-to-one relationship, keyed by the same pair code, and are kept as
+distinct entities rather than merged into one for the same reason the
+Currencies chapter kept Rounding Types and Market Tiers separate from
+the Currency record itself: identity and convention change at
+different rates and for different reasons, and separating them keeps
+each record's audit history meaningful on its own terms.
+
+Open the Currency Pair Conventions window from the /Reference Data/
+menu, or from the /Conventions/ toolbar button on the Currency Pairs
+window described above.
+
+#+caption[The Currency Pair Conventions window]: The Currency Pair Conventions window. USD/JPY (row eight) shows the JPY-cross convention — pip factor =0.01=, two decimal places — contrasting with the =0.0001=/four-decimal-place convention every other row here shares.
+[[proj:assets/images/currency_pair_conventions_main_window.png]]
+
+Each row shows the pair code with its composited flag icons, pip
+factor, tick size, decimal places, advance calendar, business day
+convention badge, and the spot-relative and end-of-month flags
+rendered as Yes/No labels, followed by the usual version and
+provenance columns. Double-clicking a row opens the *Currency Pair
+Convention Details* dialog.
+
+#+caption[Currency Pair Convention Details — USD/KPW]: The Currency Pair Convention Details dialog for USD/KPW, showing the locked Pair Code combo with its flags, Pip Factor, Tick Size, Decimal Places, Advance Calendar, Business Day Convention, and the Spot Relative/End Of Month checkboxes.
+[[proj:assets/images/currency_pair_convention_details.png]]
+
+*Pair Code* is a flagged combo, but unlike the Currency Pair Details
+dialog it does not derive its value from two separate legs; instead
+it lets the user pick directly from the pairs already on file, and,
+as with Base and Quote Currency above, is selectable only while
+creating the record and locks, still showing its flags, once saved.
+Attempting to create a second convention record for a pair code that
+already has one is rejected, on the same reasoning as the duplicate-
+pair check on the identity entity: a pair has at most one convention
+record, and the correct action is to edit the existing one rather
+than create a second.
+
+The remaining fields follow directly from the domain concepts set
+out earlier in the chapter. *Pip Factor* and *Tick Size* express the
+pip and tick mechanics described in [[*Currency pairs and market conventions][Currency pairs and market
+conventions]]; a typical non-yen pair carries a pip factor of =0.0001=,
+a yen cross =0.01=. *Decimal Places* fixes how many digits the rate
+displays, consistent with the same pip convention — four for most
+pairs, two for yen crosses. *Advance Calendar* names the calendar
+used when advancing from the spot date to a forward date. *Business
+Day Convention* selects among the standard date-rolling rules —
+Following, Modified Following, Preceding, Modified Preceding,
+Unadjusted, Half-Month Modified Following, and Nearest — that
+determine how a date falling on a holiday is adjusted onto a business
+day. *Spot Relative* indicates whether forward dates for this pair
+are generated relative to the spot date rather than the trade date,
+and *End Of Month* indicates whether the end-of-month date-rolling
+convention applies.
+
+** Editing a currency pair convention
+
+Editing follows the same pattern as every other reference-data
+entity in ORE Studio: open the record, change any field still open to
+editing once Pair Code has locked, and click *Save*. A change reason
+is required before the save is written, exactly as for currency pairs
+above.
+
+** Currency pair convention history
+
+History and revert work identically to currency pair history: open
+the history icon or right-click and choose *History*, select a
+version, review the *Changes* tab, and use *Revert* to reinstate an
+earlier version as a new one.
+
+** Conclusion
+
+The chapter set out to treat the currency pair as a relational entity
+distinct from, but built upon, the currencies documented in the
+previous chapter, and to separate that identity from the market
+conventions layered on top of it. The base-currency-precedence rule
+fixed how a pair's two legs are ordered and why only one of the two
+possible directions may ever be recorded; the major/minor/exotic/
+commodity taxonomy classified the population of pairs by liquidity
+and tradability, independent of the raw fact that both legs are valid
+currencies; and the pip, tick, and settlement-timing conventions
+supplied the vocabulary the second entity's fields draw upon. The Qt
+interface then walked both entities from list to detail to history,
+in the pattern the previous chapter established, and showed how the
+two windows cross-navigate via the Conventions toolbar button. Unlike
+currencies, currency pairs and their conventions do not yet have
+shell or command-line equivalents; that gap is tracked as future
+work rather than glossed over here.
+
+** See also
+
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the domain-knowledge hub this chapter draws on.
+- [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the previous chapter, covering the individual currency
+  legs a pair is built from.
+- [[https://www.investopedia.com/terms/c/currencypair.asp][Currency Pair (Investopedia)]] — an accessible introduction to
+  currency pair quoting conventions.

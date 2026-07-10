@@ -39,6 +39,7 @@ The table is machine-parsed: each data row is =| <integer> | <date> |
 | 8 | 2026-07-03 | NATS client/monitor ports now derive from ORES_BASE_PORT (+5/+6) instead of an independent 42221xxx/8221xxx sequence, so all ports for an environment are identifiable from its base port |
 | 9 | 2026-07-05 | Added SCCACHE_DIR, SCCACHE_CACHE_SIZE, and CMAKE_BUILD_PARALLEL_LEVEL for shared SSD sccache cache and tuned build parallelism |
 | 10 | 2026-07-05 | Removed SCCACHE_DIR/SCCACHE_CACHE_SIZE (sccache now reads its cache location from its own global config); added ORES_COMPILER_CACHE to select sccache/ccache for local builds |
+| 11 | 2026-07-10 | NATS client/monitor and other per-environment ports moved below the kernel ephemeral port range (BASE_PORT_START 50000 -> 20000) to prevent spurious bind failures from unrelated processes' ephemeral source ports colliding with a fixed listener |
 
 * See also
 

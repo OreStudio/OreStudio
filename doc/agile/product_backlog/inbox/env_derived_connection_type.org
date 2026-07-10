@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 8790130B-FAE4-4FDA-AE92-990AB65A2091
+:END:
+#+title: Add a connection type derived from the local .env
+#+description: A special Connection Manager entry type that reads its host/port/subject-prefix parameters live from the current checkout's .env instead of a stored, hand-entered value.
+#+type: capture
+#+level: cross
+#+filetags: :qt:connection-manager:devex:environment:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a special connection type to the Qt client's Connection Manager
+(=~/.local/share/ores.qt/connections.db=, =environments= table) that,
+instead of storing a hand-entered =host=/=port=/=http_port=/=subject_prefix=
+snapshot, resolves those parameters live from the current checkout's
+=.env= (=ORES_NATS_PORT=, =ORES_HTTP_PORT=, =ORES_NATS_SUBJECT_PREFIX=,
+etc. — all derived from =ORES_BASE_PORT= per the scheme documented in
+[[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][Environment format version log]]) each time the client starts or
+connects, rather than once at connection-creation time.
+
+* Why
+
+Discovered while migrating =prime_origin= off the port range that
+collided with the kernel's ephemeral port range (=env_init.py=
+=BASE_PORT_START= 50000 -> 20000, [[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][.env format version 11]]). The
+Connection Manager's stored =environments= row for =prime_origin= kept
+the old, now-stale port (=57005=/=57000=) even after the checkout's
+own =.env= had the correct new values (=27005=/=27000=), silently
+breaking the client's connection until the row was hand-patched via
+=sqlite3=. Any future re-provisioning of an environment's ports — a
+new =BASE_PORT_START=, a new offset, or simply re-running
+=compass env configure= after a manual =.env= edit — will hit the same
+staleness for every developer who already has a Connection Manager
+entry for that environment. A connection type that reads live from
+=.env= instead of a cached snapshot would make the client
+self-healing across this whole class of drift, at least for the
+common case of "this connection points at a checkout on this same
+machine."
+
+* References
+
+- [[proj:doc/knowledge/architecture/env_format_version_log.org][Environment format version log]] — the =.env= schema/versioning
+  this connection type would read from.
+- =~/.local/share/ores.qt/connections.db=, table =environments= — the
+  current storage the new type would sit alongside.
+- =projects/ores.compass/src/env_init.py= — the source-of-truth port
+  derivation (=BASE_PORT_START=, =*_PORT_OFFSET= constants) an
+  env-derived connection would need to mirror or read via =.env=
+  directly.
+
+* See also
+
+- [[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][Environment format version log]]

@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: E8E892B8-184D-474A-839F-FFCA1A5148EF
+:END:
+#+title: Doc Add Entity Chapter
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :llm:skill:skills:claude_code:documentation:manual:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+
+#+begin_export markdown
+---
+name: doc-add-entity-chapter
+description: Author a complete user-manual chapter for a reference-data entity, from domain grounding through screenshot capture, ready for human review.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When a reference-data entity needs a user-manual chapter — a new entity
+just commissioned through codegen, or an existing entity whose chapter is
+missing or badly out of date. Covers the whole authoring arc: domain
+grounding, thesis-structured prose, screenshot placeholders, capturing
+and cropping the real screenshots, and wiring the chapter into the
+manual — ending with a chapter ready for human review.
+
+* How to use this skill
+
+1. /Ask the user for the domain-knowledge source/ if they haven't
+   already named one — which hub note under [[proj:doc/knowledge/domain][=doc/knowledge/domain/=]] (or
+   external notebook) the chapter's conceptual section should summarise.
+   Do not proceed to drafting without this; see
+   [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]]§"Gather the domain-knowledge source" for
+   why this can't be skipped or guessed.
+
+2. /Write the chapter/ by following [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]] in full:
+   scaffold the chapter file, follow the thesis structure (Abstract →
+   Overview → domain-concepts section in PhD-thesis prose → standard/
+   identity → list window → detail dialog → editing/history →
+   shell/CLI or an explicit note that they don't exist yet →
+   Conclusion → See also), segue every section into the next, insert a
+   =[SCREENSHOT NEEDED]= placeholder with a =# Capture:= instruction for
+   every dialog/window referenced, wire the chapter into
+   =user_manual.org=, and build to validate. Stop when the recipe says
+   to stop: a chapter that reads correctly and compiles, but has no real
+   screenshots yet.
+
+3. /Capture the screenshots/ by following [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for
+   a manual chapter?]] in full: scaffold a =test_scenario= with one step
+   per placeholder, run it through the QA Validation Runner (falling
+   back to a manual desktop screenshot for any step blocked by a modal
+   dialog — capture that gap separately rather than working around it
+   in the scenario), crop each raw capture to just the dialog or window,
+   name it per the plural/singular convention, wire the real images and
+   captions into the chapter, and rebuild the manual to confirm every
+   figure resolves.
+
+4. /Hand off for human review/. The skill's job ends here — do not mark
+   the underlying task DONE and do not merge; the chapter is
+   content-complete and image-complete, but still needs a human read
+   for prose quality, factual accuracy against the entity's actual
+   shipped fields, and screenshot correctness (right data, right crop,
+   right caption).
+
+* Recipes
+
+- [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]] — chapter structure, prose tone, domain
+  grounding, screenshot placeholders, manual wiring.
+- [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] — test scenario,
+  capture, crop, rename, wire in.
+
+* Reference
+
+- [[id:055488FE-81DF-4881-8866-B90FB0E71A04][Currency Pairs]] — the most recently authored chapter and the exemplar
+  both recipes above point to.
+- [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] — the master document every chapter is wired
+  into.
+- [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]
+  — the panel the second recipe drives.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

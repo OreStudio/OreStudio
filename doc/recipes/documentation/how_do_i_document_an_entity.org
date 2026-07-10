@@ -2,27 +2,54 @@
 :ID: B0BD4EAC-1ECF-45F4-9D62-B590955D93DE
 :END:
 #+title: How do I document an entity?
-#+description: Author a user-manual chapter for an entity: the thesis chapter structure, screenshot naming standards, image references, and wiring into the manual — using the currency and country chapters as exemplars.
+#+description: Author a user-manual chapter for an entity: the thesis chapter structure, PhD-thesis prose tone, section segues, domain-knowledge summarisation, screenshot placeholders, and wiring into the manual — using the currency, country, and currency pair chapters as exemplars.
 #+type: recipe
 #+level: cross
 #+filetags: :documentation:docs:manual:entity:recipe:
 #+created: 2026-06-29
-#+updated: 2026-06-29
+#+updated: 2026-07-10
 
 Once an entity has been commissioned through codegen (see [[id:4A92A706-F1B7-49B3-AA38-888B7A707D92][How do I add a
 new codegen entity model?]]), the last step is its [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][user-manual]] chapter.
-This recipe defines the *thesis* chapter structure, the screenshot naming
-standard, and the wiring every entity chapter follows. The [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] and
-[[id:849845B0-29BE-4BBB-96D1-05579F06EEED][Countries]] chapters are the canonical exemplars — copy the nearest one and
-adapt it rather than starting from a blank file.
+This recipe defines the *thesis* chapter structure, the required prose tone,
+domain-knowledge sourcing, screenshot-placeholder convention, and the wiring
+every entity chapter follows. The [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]], [[id:849845B0-29BE-4BBB-96D1-05579F06EEED][Countries]], and
+[[id:055488FE-81DF-4881-8866-B90FB0E71A04][Currency Pairs]] chapters are the canonical exemplars — copy the nearest one
+and adapt it rather than starting from a blank file. This recipe stops at a
+chapter that compiles and reads correctly but has no real screenshots yet —
+for those, see [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]].
 
 * Question
 
 How do I write the user-manual chapter for a reference-data entity so it
-matches every other entity chapter — structure, prose, screenshots, and
-manual wiring?
+matches every other entity chapter — structure, prose, domain grounding,
+screenshot placeholders, and manual wiring?
 
 * Answer
+
+** 0. Gather the domain-knowledge source
+
+Before writing a word of the chapter, ask the user which domain-knowledge
+document(s) — from the [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] index, usually a hub note under
+[[proj:doc/knowledge/domain][=doc/knowledge/domain/=]], sometimes an external notebook file outside the
+repository — the chapter's conceptual section should be sourced from and
+summarised. Do not guess or invent domain framing from general knowledge —
+the chapter's authority comes from the project's own knowledge graph. Read
+the hub note and follow its own =* See also= links to the individual notes
+it points to; read each one before deciding what belongs in the chapter and
+what is out of scope (a hub note is frequently broader than what a single
+entity's shipped fields warrant — see step 2 below on scoping).
+
+Cross-check whatever the domain notes describe against the entity's *actual
+shipped fields* (its =ores.<component>.<entity>.org= codegen model and, for
+Qt UI accuracy, its =*_field_group.org= or detail-fields table). Domain
+notes are written ahead of implementation and often describe fields that
+were modelled and then dropped, or that are still future work — never
+document as current, shipped behaviour anything the entity's own model
+doesn't actually carry. When in doubt, name the gap explicitly in the
+chapter's domain section rather than silently omitting or silently
+including it (see the Currency Pairs chapter's "A word of scope is due
+before moving on" paragraph on deliverability for the pattern).
 
 ** 1. Scaffold the chapter
 
@@ -34,7 +61,7 @@ Create the chapter under =doc/manual/user_guide= as =chapter_<n>_<plural>.org=
   --slug chapter_<n>_<plural> \
   --parent-dir doc/manual/user_guide \
   --title "<Plural>" \
-  --description "<Entity> management in OreStudio: the standard, the Qt UI, history and revert, shell and CLI commands."
+  --description "<Entity> management in ORE Studio: the standard, the Qt UI, history and revert, shell and CLI commands."
 #+end_src
 
 The frontmatter follows the exemplars: =#+type: manual=, =#+level: cross=,
@@ -54,7 +81,7 @@ sections, top to bottom:
 
    #+begin_example
    @@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /country/ as a
-   reference-data entity in OreStudio. ...
+   reference-data entity in ORE Studio. ...
 
    # Restore the heading gap that the lettrine paragraph suppresses.
    #+latex: \bigskip
@@ -67,28 +94,77 @@ sections, top to bottom:
    From there it… It then… Finally…". This is the one section authors most
    often get wrong: it is a chapter map, not a summary of the domain.
 
-3. *Body sections* — the entity's standard lifecycle, in this order:
+3. *A domain-concepts section* (e.g. "Money, currency, and cash", "Currency
+   pairs and market conventions") — the conceptual grounding sourced in step
+   0, positioned between the Overview and the standard/identity section. Its
+   register is deliberately different from the rest of the chapter: PhD
+   *thesis prose*, connected paragraphs building an argument, not a
+   definition list. Avoid bullet-heavy structure here even when the source
+   notebook or knowledge doc is itself bulleted — translate bullets into
+   sentences that state a claim, ground it, and move to the next. A single
+   =#+BEGIN_EXAMPLE= diagram (e.g. a nesting relationship) is acceptable
+   where prose alone cannot carry the structure, but it should be the
+   exception, not the default. This is a standing tone requirement across
+   the whole chapter, not just this section — the body sections below (field
+   tables aside) should also read as prose paragraphs rather than nested
+   bullet lists wherever the content allows it.
+
+4. *Body sections* — the entity's standard lifecycle, in this order:
    - the *standard / identity* section (e.g. "ISO 3166-1 and its
-     limitations") — what identifies the entity and the gaps OreStudio's
+     limitations") — what identifies the entity and the gaps ORE Studio's
      extensions fill;
    - *The <Plural> window* — the list view, paging, reloading;
    - *<Entity> Details* — the detail dialog, one =***= subsection per tab
      (General, Provenance, …);
    - *Editing a <entity>*, *Deleting a <entity>*, *<Entity> history* —
      change-under-audit, culminating in revert;
-   - *Shell commands* and *CLI commands* — the programmatic equivalents.
+   - *Shell commands* and *CLI commands* — the programmatic equivalents, if
+     they exist yet for this entity; if they don't, say so explicitly in
+     the Conclusion rather than fabricating commands or silently dropping
+     the sections (see the Currency Pairs chapter's Conclusion for the
+     pattern).
 
-4. =** Conclusion= — draws the argument together in prose, retracing the
+   *Segue every section into the next.* Do not let the chapter jump from
+   domain concepts straight to identity straight to screens with no bridge.
+   End each section (or open the next) with one transition sentence or
+   short paragraph that names what the reader is leaving behind and what
+   they are moving into — e.g. "With the underlying model in place, … the
+   rest of the chapter turns from what a currency record contains to where
+   you go to work with one." A chapter with strong individual sections but
+   no segues between them is not done; add the missing bridges before
+   moving on to screenshots.
+
+5. =** Conclusion= — draws the argument together in prose, retracing the
    steps the Overview promised ("The chapter set out to show… and it has
    traced exactly that path."). Always named *Conclusion*, never "Summary".
 
-5. =** See also= — id-links to the standard, related external references,
+6. =** See also= — id-links to the standard, related external references,
    and the sibling/template chapter this one mirrors.
 
 The =** Provenance= subsection links to the shared [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter's
 Provenance section by ID rather than re-describing the common audit fields.
 
-** 3. Name screenshots to the standard
+** 3. Placeholder every screenshot — do not capture them yet
+
+At this stage no real screenshots exist; each one is a *placeholder* the
+next recipe ([[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]]) will replace.
+For every dialog, window, or UI state the chapter references, insert:
+
+#+begin_example
+,#+caption: [SCREENSHOT NEEDED] <what the image should show>.
+# Capture: <precise instruction — what state to set up, what to click, what to capture>.
+[[proj:assets/images/TODO_<descriptive_name>.png]]
+#+end_example
+
+The =# Capture:= comment is not decorative — it is the literal instruction
+the next recipe's test-scenario step will use verbatim, so write it as if
+briefing someone who has never seen the dialog: what data must already
+exist, what to click, what the frame should include. Name the placeholder
+file with the =TODO_= prefix and the *real* target name after it (see
+naming convention below) so a repo-wide search for =TODO_= finds every
+outstanding capture across every chapter.
+
+** 4. Name screenshots to the standard
 
 Screenshots live in =assets/images/= and are referenced from the chapter
 with =[[proj:assets/images/<name>.png]]=. The naming rule turns on
@@ -113,11 +189,17 @@ Each image is introduced with a =#+caption[Short caption]: Long caption…=
 on the line above the link; the short caption feeds the PDF list of
 figures, the long one describes what the reader is looking at.
 
-** 4. Wire the chapter into the manual
+** 5. Wire the chapter into the manual
 
 Add the chapter to =doc/manual/user_guide/user_manual.org= in reading
 order, inside the correct =\part=, as a top-level heading with a
-=:CUSTOM_ID:= plus an =#+include= at =:minlevel 2=:
+=:CUSTOM_ID:= plus an =#+include= at =:minlevel 2=. If the entity belongs
+between two existing chapters rather than at the end (e.g. a companion
+entity documented right after the one it extends), it is fine for the
+chapter's filename to not match its numeric position — match the file to
+its neighbour in the manual's reading order, not to a strict sequential
+chapter count (see =chapter_5b_currency_pairs.org=, positioned between
+chapters 5 and 6):
 
 #+begin_example
 ,* Countries
@@ -128,14 +210,25 @@ order, inside the correct =\part=, as a top-level heading with a
 ,#+include: "chapter_6_countries.org" :minlevel 2
 #+end_example
 
-** 5. Build to validate
+** 6. Build to validate
 
 #+begin_src sh :results verbatim
 ./compass.sh build --direct manual
 #+end_src
 
 A clean build ("Manual PDF build succeeded.") confirms the lettrine,
-includes, images and links all resolve.
+includes, images and links all resolve, and that every placeholder's
+=[[proj:assets/images/TODO_*.png]]= link at least points somewhere
+resolvable as a file reference (the build does not require the =TODO_=
+files to exist as real images).
+
+At the end of this recipe the chapter is content-complete — domain
+grounding sourced and written in the required prose tone, every section
+segued into the next, every field and workflow documented, and every
+screenshot placeholder inserted with its =# Capture:= instruction — but it
+is *not yet ready to ship*: it still needs its screenshots captured (see
+[[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]]) and a human review
+pass. Do not mark the underlying task DONE until both of those are done.
 
 * Script
 
@@ -153,9 +246,14 @@ a broken link or missing image fails the build.
 
 - [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the template chapter; the simplest complete exemplar.
 - [[id:849845B0-29BE-4BBB-96D1-05579F06EEED][Countries]] — exemplar with a "standard and its limitations" opening section.
+- [[id:055488FE-81DF-4881-8866-B90FB0E71A04][Currency Pairs]] — exemplar with a domain-concepts section sourced from a
+  knowledge-graph hub, explicit deliverability scoping, and a non-sequential
+  chapter file position (=chapter_5b_=) between two existing chapters.
 - [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the shared chapter entity chapters link to for common
   fields (e.g. Provenance).
 - [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] — the master document that =#+include=​s each chapter.
+- [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] — the follow-on
+  recipe that replaces this recipe's placeholders with real images.
 - [[id:4A92A706-F1B7-49B3-AA38-888B7A707D92][How do I add a new codegen entity model?]] — commissioning the entity, the
   step before documenting it.
 - [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]] — sibling authoring recipe.

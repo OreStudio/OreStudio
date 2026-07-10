@@ -80,6 +80,7 @@ Recipes, knowledge, manual, memory, diagrams, search.
 | [[id:E8629813-4F4A-4165-85AA-27BE7F38E32C][doc-add-chart]] | Doc Add Chart | / |
 | [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][doc-add-class-diagram]] | Doc Add Class Diagram | Author or update a PlantUML class diagram for an ORE Studio component, or the system-level architecture dia... |
 | [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][doc-add-component-model]] | Doc Add Component Model | Create or update component_overview.org and the PlantUML class diagram for an ORE Studio component. |
+| [[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][doc-add-entity-chapter]] | Doc Add Entity Chapter | Author a complete user-manual chapter for a reference-data entity, from domain grounding through screenshot capture, ready for human review. |
 | [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][doc-add-er-diagram]] | Doc Add ER Diagram | Author or update the PlantUML ER diagram for the ORE Studio SQL schema — tables, relationships, temporal pa... |
 | [[id:D3767A34-DC32-4366-ADAB-534D6FC4C607][doc-add-knowledge]] | Doc Add Knowledge | Create a knowledge document: scaffold, fill Summary and Detail, tag, and wire the knowledge index. |
 | [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory]] | Doc Add Memory | When the user gives feedback worth remembering, or asks "remember this", write or update a memory under doc... |

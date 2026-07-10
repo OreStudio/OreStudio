@@ -145,6 +145,13 @@
 
 #+include: "chapter_5_currencies.org" :minlevel 2
 
+* Currency Pairs
+:PROPERTIES:
+:CUSTOM_ID: chapter_5b_currency_pairs
+:END:
+
+#+include: "chapter_5b_currency_pairs.org" :minlevel 2
+
 * Countries
 :PROPERTIES:
 :CUSTOM_ID: chapter_6_countries

@@ -2,18 +2,18 @@
 :ID: 5E8C3909-3BCD-4BBD-9748-2B551054A3B9
 :END:
 #+title: Task: Document currency pairs and conventions in the user manual
-#+description: Add currency pairs and currency pair conventions to the user manual: what they are, how to manage them, and the deliverable/classification/convention concepts, following the manual's existing chapter structure.
+#+description: Add currency pairs and currency pair conventions to the user manual: what they are, how to manage them, and the classification/convention concepts, following the manual's existing chapter structure.
 #+type: task
 #+level: s1
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/currency-pair-manual-chapter
+#+pr: 1494
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -23,32 +23,48 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Currency pairs and currency pair conventions have no coverage in
 the user manual. Add a section (following the manual's existing
 chapter/screenshot-placeholder conventions) covering: what a currency
-pair is, base/quote/deliverable/settlement_currency/classification,
-what a currency pair convention is (pip_factor, tick_size, calendars,
-business day convention, spot_relative, end_of_month), and how to
-manage both from the Qt client.
+pair is (=pair_code= derived live from Base/Quote and locked after
+create, =classification=), what a currency pair convention is
+(=pair_code= — a flagged combo picking an existing pair, locked after
+create — =pip_factor=, =tick_size=, =decimal_places=,
+=advance_calendar=, =business_day_convention=, =spot_relative=,
+=end_of_month=), and how to manage both from the Qt client —
+including the duplicate/inverted-pair rejection on create and the
+"Conventions" cross-navigation toolbar button.
+
+Deliverability (=deliverable=/=settlement_currency=) was modelled,
+then dropped this sprint — a single boolean/optional-currency pair
+can't express real FX settlement conventions. See
+[[id:75252EFB-55B6-4B14-B00B-EA04B459CCD5][Model FX settlement type per currency pair]] for the future-work
+capture — do *not* document deliverable/NDF/settlement currency as
+current behaviour; that's not shipped.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Not yet started.                       |
+| Now          | Complete — chapter written, wired in, all five screenshots captured, manual PDF and Qt help rebuilt. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
-- [ ] User manual has a Currency Pairs section explaining the domain
-  concepts (deliverable/NDF, classification, settlement currency).
-- [ ] User manual has a Currency Pair Conventions section explaining
-  pip_factor/tick_size/decimal_places/calendars/business day
-  convention/spot_relative/end_of_month.
-- [ ] Screenshots (or placeholders) included per the manual's existing
+- [X] User manual has a Currency Pairs section explaining pair_code
+  derivation/immutability, classification, and duplicate/inverted-pair
+  rejection on create.
+- [X] User manual has a Currency Pair Conventions section explaining
+  the pair_code picker (create-only, locked after) and
+  pip_factor/tick_size/decimal_places/advance_calendar/business day
+  convention/spot_relative/end_of_month, plus the Conventions
+  cross-navigation toolbar button.
+- [X] No mention of deliverable/NDF/settlement currency as current,
+  shipped behaviour.
+- [X] Screenshots (or placeholders) included per the manual's existing
   convention.
-- [ ] Manual PDF rebuilds cleanly with the new content.
+- [X] Manual PDF rebuilds cleanly with the new content.
 
 * Plan
 
@@ -62,12 +78,31 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1494][#1494]] | [doc] Currency Pairs manual chapter, screenshot capture recipes, and env port fix |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | "seven" leftover should say "five" (screenshot task description) | task_currency-pair-manual-screenshots.org | Applied | Fixed in ea480f107. |
+| 2 | Stale OreStudio (unspaced) branding in newly-added recipe text | how_do_i_document_an_entity.org | Applied | Fixed in ea480f107 (3 instances). |
+| 3 | _scan_ports has no upper bound; ~13th worktree re-enters the ephemeral range | env_init.py | Applied | Fixed in ea480f107 — raises RuntimeError at EPHEMERAL_PORT_FLOOR instead of silently colliding. |
+| 4 | Task State STARTED / Acceptance unchecked despite chapter shipping | task_currency-pair-manual-chapter.org | Applied | Fixed in ea480f107 — flipped to DONE with Result. |
+| 5 | story.org rows for both tasks out of sync with their own task docs | story.org | Applied | Fixed in ea480f107 — both rows synced to DONE with dates. |
 
 * Result
+
+Shipped =chapter_5b_currency_pairs.org=, covering base/quote
+precedence, major/minor/exotic/commodity classification, pip/tick/
+settlement conventions (sourced from the [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] domain hub), and
+the Qt UI for both =currency_pair= and =currency_pair_convention= —
+including the duplicate/inverted-pair rejection and the Conventions
+cross-navigation toolbar button. Deliverability/NDF explicitly scoped
+out as unshipped per the Goal above. All five screenshot placeholders
+captured and wired in (see [[id:78BEBD36-0A8A-43B7-B62C-934A78542CC5][the sibling screenshots task]]); manual PDF
+and Qt-embedded HTML help both rebuild cleanly. Along the way, this
+work also generalised the authoring process into two recipes
+([[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]], [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual
+chapter?]]) and a skill ([[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][doc-add-entity-chapter]]) chaining them, and fixed
+an unrelated NATS port-collision bug in the dev environment scheme
+discovered while readying up the environment for screenshot capture.

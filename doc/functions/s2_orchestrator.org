@@ -73,6 +73,9 @@ The skills you invoke as orchestrator:
   for human review.
 - [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][doc-add-recipe]] — when a task surfaces a reusable how-to worth
   capturing.
+- [[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][doc-add-entity-chapter]] — when a reference-data entity needs its
+  user-manual chapter written, from domain grounding through
+  screenshot capture.
 - [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory]] — when the user corrects or confirms an approach
   in a way that should apply to future sessions.
 - [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][doc-sync-recipes]] — when a story's work reveals a recipe

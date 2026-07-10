@@ -104,7 +104,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Scenario-level screenshot's onDone re-read scenarioPath_ after the capture delay, risking the note landing in whichever scenario was loaded by the time the delayed grab completed | QaValidationRunnerWidget.cpp | Fixed | Fixed in 97a566ae1: capture scenarioPath_ by value at click time, same as baseName already was. |
+| 2 | No unit test coverage for append_scenario_note | TestScenarioResultsWriter.cpp/test_scenario_results_writer_tests.cpp | Fixed | Fixed in 97a566ae1: 5 new test cases (empty/non-empty Notes, missing heading, missing file, separator before a following heading). |
+| 3 | Screenshot action/button stays enabled during the 1.5s capture delay; a same-second double-click silently overwrites the first screenshot (second-granularity filenames) | QaValidationRunnerWidget.cpp | Fixed | Fixed in 97a566ae1: disabled for the duration of the delay, re-enabled in onDone, both capture points. |
+| 4 | append_scenario_note butts the new line directly against whatever heading follows Notes, no blank-line separator | TestScenarioResultsWriter.cpp | Fixed | Fixed in 97a566ae1: inserts a trailing blank line when Notes isn't the doc's last section. |
+| 5 | Icon::Copy reused for the Screenshot glyph could read as clipboard-copy to a new tester | QaValidationRunnerWidget.cpp | Declined | IconUtils::Icon has no camera/screenshot glyph; not worth adding a new icon asset for this. |
 
 * Result
 

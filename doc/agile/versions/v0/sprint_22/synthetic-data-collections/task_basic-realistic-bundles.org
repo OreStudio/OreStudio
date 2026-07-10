@@ -101,9 +101,11 @@ cover all 8 pairs, previously would have inherited only 2):
   were ever pegged), so they behave close to a random walk at the
   tick/intraday horizons this generator models; real FX mean reversion
   only shows up at multi-year PPP horizons, far beyond this generator's
-  scope. OU would misrepresent these pairs. =ticks_per_hour = 60=
-  (once/minute, a more plausible feed cadence than Basic's 1/sec).
-  Each pair gets a 2-component Gaussian mixture: a primary component
+  scope. OU would misrepresent these pairs. =ticks_per_hour = 1800=
+  (every 2 seconds — revised down from an initial once/minute choice,
+  see Result: the feed loop sleeps a full tick period before its
+  *first* publish, so once/minute meant a full 60s wait with nothing
+  visible after starting a feed). Each pair gets a 2-component Gaussian mixture: a primary component
   (weight 0.95) calibrated to that pair's approximate 2016 annualised
   realised vol (converted to per-tick stdev via
   =vol / sqrt(ticks_per_year)=), plus a low-weight tail component
@@ -164,3 +166,44 @@ switching between the two bundles leaves no orphaned components.
 | 5 | Fallback (=else=) branch of the GMM voiding fix has no equivalent orphan-voiding step | =synthetic_publish_from_dq_create.sql= | Accepted | Fixed in 98ebe0f40 — mirrors the primary branch's voiding logic; verified live against a real DB |
 
 * Result
+
+Delivered: =synthetic_basic= and =synthetic_realistic= bundles, each
+covering all 8 major driver pairs, seeded from the curated 2016-02-05
+vintage, with a genuinely calibrated per-pair GMM mixture instead of a
+hardcoded placeholder. Both went through five rounds of PR review;
+every finding was triaged (2 fixed and verified live, 3 declined with
+recorded reasoning — see =* Review=).
+
+Two issues surfaced during manual end-to-end testing, after the code
+itself was already reviewed and merged-clean:
+
+- *Realistic's tick cadence was originally too slow to be usable*:
+  =ticks_per_hour = 60= (once/minute) meant a full 60-second wait with
+  nothing visible after starting a feed, because
+  =fx_spot_feed::start= (=projects/ores.synthetic/service/src/fx_spot_feed.cpp:64-106=)
+  always sleeps a full tick period before its *first* publish — there
+  is no immediate tick on start. Revised to =ticks_per_hour = 1800=
+  (every 2 seconds), recalibrating each pair's per-tick stdev for the
+  new tick rate (annualised vol / 3970.9, replacing / 725.0) so the
+  target annualised volatility is unchanged. Captured
+  [[id:36581D84-E9AE-4EE8-A475-6A882C1E2A78][varying tick timing itself stochastically]] as a future refinement,
+  out of this task's scope.
+- Diagnosed (with the user) why a party can't run =Basic= and
+  =Realistic= simultaneously for the same pair: both are keyed by
+  =(tenant, party, base_currency, quote_currency)=, so publishing one
+  after the other overwrites the same feed identity rather than
+  creating a parallel one — confirmed as the existing, tracked scope of
+  [[id:A3787A77-1F23-496D-B0E8-A198BE237735][Namespace feed source_name/NATS subject by collection]], not a new gap.
+
+Also found and captured two adjacent, out-of-scope issues while testing
+this task's feeds against the Qt client (both filed separately, not
+fixed here): [[id:9A614F60-45C5-4759-AF7D-80F9FBFA1103][the FX Spot chart doesn't refresh when feed bindings change
+while it's already open]], and a Gemini UI review surfaced
+[[id:B6422FA1-D61A-4D9D-B6B8-DFE3CD12E1C5][several readability issues in the FX Spot Monitor widget]] (color
+fatigue, alignment, JPY decimal convention, redundant status text).
+
+Verified end-to-end multiple times via full =db recreate= →
+=barclays_system_provision.ores= → hand-published =synthetic_basic=/=synthetic_realistic=
+(new opt-in bundles, not part of standard provisioning) → live query
+confirmation of tick cadence, GMM mixture, and no orphaned components
+across bundle switches.

@@ -116,12 +116,12 @@ TEST_CASE("fx_convention_roundtrip_real_example_file_field_values", tags) {
         const auto roundtripped = roundtrip_single(fx);
 
         CHECK(ores::ore::domain::to_string(roundtripped.SourceCurrency) ==
-             ores::ore::domain::to_string(fx.SourceCurrency));
+              ores::ore::domain::to_string(fx.SourceCurrency));
         CHECK(ores::ore::domain::to_string(roundtripped.TargetCurrency) ==
-             ores::ore::domain::to_string(fx.TargetCurrency));
+              ores::ore::domain::to_string(fx.TargetCurrency));
         CHECK(static_cast<int64_t>(roundtripped.SpotDays) == static_cast<int64_t>(fx.SpotDays));
         CHECK(static_cast<double>(roundtripped.PointsFactor) ==
-             Approx(static_cast<double>(fx.PointsFactor)).epsilon(1e-9));
+              Approx(static_cast<double>(fx.PointsFactor)).epsilon(1e-9));
 
         if (fx.AdvanceCalendar) {
             REQUIRE(roundtripped.AdvanceCalendar);
@@ -169,9 +169,9 @@ TEST_CASE("fx_convention_roundtrip_duplicate_pair_collision_is_documented", tags
     for (const auto& [pair, count] : pair_counts) {
         if (count > 1) {
             ++duplicated_pairs;
-            BOOST_LOG_SEV(lg, info) << "Colliding FX convention pair: " << pair.first << "/"
-                                    << pair.second << " (" << count << " entries in source XML, "
-                                    << "only 1 survives import)";
+            BOOST_LOG_SEV(lg, info)
+                << "Colliding FX convention pair: " << pair.first << "/" << pair.second << " ("
+                << count << " entries in source XML, " << "only 1 survives import)";
         }
     }
 

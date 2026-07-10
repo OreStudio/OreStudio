@@ -86,9 +86,8 @@ inline constexpr std::array system_setting_definitions = {
     system_setting_definition{.name = "onboarding.system",
                               .data_type = "boolean",
                               .default_value = "false",
-                              .description =
-                                  "Whether the system provisioner wizard has completed. "
-                                  "System-tenant-scoped."},
+                              .description = "Whether the system provisioner wizard has completed. "
+                                             "System-tenant-scoped."},
     system_setting_definition{.name = "onboarding.tenant",
                               .data_type = "boolean",
                               .default_value = "false",

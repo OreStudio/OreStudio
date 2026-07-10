@@ -337,8 +337,10 @@ public:
                     auto p =
                         auth_lookup_party(*party_cache_, acct.tenant_id.to_string(), ap.party_id);
                     if (ap.party_id == party_id) {
-                        const bool onboarding_complete = auth_is_party_onboarding_complete(
-                            login_ctx, acct.tenant_id.to_string(), boost::uuids::to_string(party_id));
+                        const bool onboarding_complete =
+                            auth_is_party_onboarding_complete(login_ctx,
+                                                              acct.tenant_id.to_string(),
+                                                              boost::uuids::to_string(party_id));
                         resp.party_setup_required = !onboarding_complete;
                         if (resp.party_setup_required) {
                             BOOST_LOG_SEV(auth_handler_lg(), info)

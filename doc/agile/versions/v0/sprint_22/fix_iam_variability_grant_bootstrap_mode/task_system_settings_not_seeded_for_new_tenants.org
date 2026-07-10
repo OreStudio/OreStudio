@@ -8,7 +8,7 @@
 #+filetags: :fix_iam_variability_grant_bootstrap_mode:sprint_22:v0:
 #+owner: marco
 #+branch: feature/system-settings-not-seeded-for-new-tenants
-#+pr:
+#+pr: 1496
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -135,7 +135,7 @@ did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1496][#1496]] | [ores.sql] Seed all system.* settings for new tenants |
 
 * Review
 

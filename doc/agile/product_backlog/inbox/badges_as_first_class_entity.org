@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 68FAE9B4-81DF-435D-A8C2-DBD4C96B867D
+:END:
+#+title: Make badges a first-class entity with a colour-editing UI
+#+description: Badge definitions (colours, severities, mappings) are currently a fixed catalogue rather than a user-editable entity; add a UI so users can customise badge colours like any other reference-data entity.
+#+type: capture
+#+level: cross
+#+filetags: :qt:badge:refdata:ux:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Badges (the coloured pills used throughout the Qt UI for status/severity
+indicators — currency market tier, party status, book status, etc.)
+should be user-editable reference data, not a fixed catalogue baked
+into the app. =ores.dq.badge_definition= (colours, label, severity) and
+=ores.dq.badge_severity= already exist as real codegen entities with a
+generated Qt UI (=BadgeDefinitionController=/=BadgeSeverityController=,
+wired into =AdminPlugin.cpp=) — worth checking, before scoping any
+work, whether that existing UI already covers "users can change their
+colours", or whether the badges actually rendered elsewhere in the app
+(currency, party, book, etc.) are hardcoded (e.g. via =BadgeCache=/
+=IconUtils= convention) rather than actually reading their colour from
+=badge_definition= rows — in which case the entity/UI exists but isn't
+the real source of truth for what users see, and that's the actual gap
+to close.
+
+* Why
+
+Hardcoded badge colours mean any branding/accessibility/preference
+change requires a code change and a release, instead of an admin
+simply editing a reference-data row like they already can for rounding
+types or market tiers. If =badge_definition= already exists precisely
+for this and just isn't wired end-to-end as the actual colour source,
+that's a comparatively small integration gap rather than new entity
+work — worth confirming which case this is before estimating.
+
+* References
+
+- [[id:F7DE2705-4D20-4878-A10C-A834F3283683][Badge system wiring]] (knowledge doc)
+- [[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge catalogue]] (knowledge doc)
+- [[id:7BEB786A-A573-474E-9677-64C869A64E47][ores.dq.badge_definition]] (existing codegen entity model)
+- [[id:22798D61-7CF5-4FFC-8AC4-F3D469C47918][ores.dq.badge_severity]] (existing codegen entity model)
+
+* See also
+
+- [[id:5D345B02-7CCF-4BD1-9957-F50DF571B52C][Persist tag colour and tag dialog]] — related capture on
+  user-editable colour for a different UI concept (tags, not badges).

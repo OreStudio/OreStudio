@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 78BEBD36-0A8A-43B7-B62C-934A78542CC5
+:END:
+#+title: Task: Capture screenshots for the Currency Pairs manual chapter
+#+description: Test plan and execution checklist for capturing the seven screenshot placeholders added in chapter_5b_currency_pairs.org.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[[id:5E8C3909-3BCD-4BBD-9748-2B551054A3B9][Document currency pairs and conventions in the user manual]] shipped
+five =[SCREENSHOT NEEDED]= placeholders in
+[[proj:doc/manual/user_guide/chapter_5b_currency_pairs.org][=chapter_5b_currency_pairs.org=]], each a =TODO_*.png= link under
+[[proj:doc/assets/images][=assets/images/=]]. This task is the execution checklist for capturing
+the real screenshots, replacing the placeholder links, and removing
+the =[SCREENSHOT NEEDED]= markers — the same close-out pattern used by
+[[id:27422EEE-9435-49EC-B706-43BD66B2D7A6][Generate all missing screenshots for the manual]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Ready up the environment (=devops-run-environment=), start the Qt client, and work the checklist below top to bottom. |
+| Last touched | 2026-07-10                               |
+
+* Acceptance
+
+- All five placeholders below are captured, named per the
+  =<area>_<description>.png= convention, and committed under
+  [[proj:doc/assets/images][=assets/images/=]].
+- Each =TODO_*.png= link in =chapter_5b_currency_pairs.org= is replaced
+  with the real filename and its =[SCREENSHOT NEEDED]= caption/comment
+  pair removed.
+- Manual PDF (=./compass.sh build --direct manual=) rebuilds cleanly
+  with the new figures present, and is committed alongside the chapter.
+
+* Plan
+
+** Environment setup
+
+1. Ready up the environment (=devops-run-environment= skill), default
+   Barclays Plc (GLEIF) provisioner — this seeds a realistic spread of
+   currency pairs and conventions, including at least one JPY cross.
+2. Confirm the Barclays seed includes both a major (e.g. =EUR/USD=)
+   and a JPY cross (e.g. =USD/JPY= or =EUR/JPY=) among the currency
+   pairs, and that both have convention records — needed for the
+   Conventions-window screenshot's decimal-places contrast. If not
+   present, create them by hand via the Currency Pairs / Currency Pair
+   Conventions detail dialogs before capturing.
+3. Start the Qt client (=devops-run-client= skill) and log in as
+   =tenant_admin@barclays_plc=, party BARCLAYS PLC.
+
+** Capture checklist
+
+Work top to bottom; each item names the placeholder file, the exact
+=# Capture:= instruction already recorded in the chapter, and the
+final filename to save under [[proj:doc/assets/images][=assets/images/=]] (drop the =TODO_= prefix,
+keep the rest of the name).
+
+| # | Placeholder                                       | Final filename                              | What to set up                                                                                                    |
+|---+-----------------------------------------------------+----------------------------------------------+----------------------------------------------------------------------------------------------------------------------|
+| 1 | TODO_currency_pairs_main_window.png                  | currency_pairs_main_window.png                | Reference Data → Currency Pairs, ≥3 pairs spanning ≥2 classifications, toolbar visible.                              |
+| 2 | TODO_currency_pair_details.png                       | currency_pair_details.png                     | Double-click an existing pair (e.g. EUR/USD) — edit mode, whole dialog, both flags visible.                          |
+| 3 | TODO_currency_pair_inverted_rejection.png             | currency_pair_inverted_rejection.png           | With EUR/USD on file, create-mode dialog with Base=USD, Quote=EUR, click Save — capture the warning dialog.          |
+| 4 | TODO_currency_pair_conventions_main_window.png        | currency_pair_conventions_main_window.png      | Reference Data → Currency Pair Conventions (or the Conventions toolbar button), ≥2 rows incl. one JPY cross.        |
+| 5 | TODO_currency_pair_convention_details.png             | currency_pair_convention_details.png           | Double-click an existing convention record — edit mode, whole dialog.                                                |
+
+Five placeholders in total (=grep -c "SCREENSHOT NEEDED"
+chapter_5b_currency_pairs.org=); re-run that check before closing
+this task in case the chapter changed since this checklist was
+written.
+
+** Wiring and verification
+
+1. =git mv= each captured PNG into [[proj:doc/assets/images][=assets/images/=]] under its final name.
+2. In =chapter_5b_currency_pairs.org=, replace each =[[proj:assets/images/TODO_*.png]]=
+   link with the real filename, and delete the =#+caption: [SCREENSHOT
+   NEEDED] ...= / =# Capture: ...= pair, replacing the caption with a
+   plain =#+caption[...]: ...= describing the actual captured image
+   (see the Currencies chapter for the caption style once a figure is
+   real).
+3. Rebuild the manual: =./compass.sh build --direct manual=. Confirm
+   all five figures render and no LaTeX errors are introduced beyond
+   the pre-existing, unrelated warnings.
+4. Commit the images and the updated chapter together; rebuild and
+   commit the PDF.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

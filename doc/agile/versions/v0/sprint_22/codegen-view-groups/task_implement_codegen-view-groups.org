@@ -168,7 +168,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | compute_view_groups() collision: grouped by raw view_group string but derived widget names from a separately-normalized form, so case/whitespace-only variants collided on identical widget names | core.py | Fixed | 12089e805 — key groups dict by normalized form, keep first-seen raw string as display title; added regression test |
+| 2 | has_multiple_view_groups is dead code | core.py | Fixed | 12089e805 — removed |
+| 3 | Story miscategorized under Hotfixes instead of Epic: Codegen | sprint.org | Fixed | 7024fcd86 |
+| 4 | Scaffold task Goal/Acceptance left as template placeholders | task_scaffold_codegen-view-groups.org | Fixed | 7024fcd86 |
+| 5 | Missing :codegen:/:qt: filetags | task_implement_codegen-view-groups.org | Fixed | 7024fcd86 |
+| 6 | Scenario's Commit field left as (pending) | scenario_retake_currency_details_screenshots.org | Fixed | ed36424c3 |
 
 * Result
 

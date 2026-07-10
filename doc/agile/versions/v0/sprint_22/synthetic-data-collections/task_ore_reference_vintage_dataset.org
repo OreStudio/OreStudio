@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-10
 #+updated: 2026-07-10
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -59,11 +59,11 @@ citable source of truth instead of ad hoc file parsing.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Infrastructure built and verified live end-to-end (bundle publish, idempotency, values, citations). Writing up before closing. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close out; unblocks Seed Basic and Realistic dataset bundles. |
+| Next         | Nothing. |
 | Last touched | 2026-07-10                               |
 
 * Acceptance
@@ -295,3 +295,19 @@ prior =services stop=/=start= cycle silently failed to actually
 replace it) — diagnosed via =readlink /proc/<pid>/exe= showing
 "(deleted)", fixed by killing the stale PID so the controller
 respawned it fresh. Not a code bug; noted here in case it recurs.
+
+Also discovered — after publishing the new =marketdata.reference_vintage_2016_02_05=
+bundle, a freshly-provisioned party showed nothing in the Market Series
+window — that neither party provisioner (Qt wizard or shell CLI)
+actually published it, since both hard-code a fixed sequence of
+bundle-publish phases. The Qt wizard was additionally missing the
+pre-existing =synthetic.fx_spot_configs= phase the shell CLI already
+had. Fixed by adding the missing phases to both provisioners (shell
+=[5/6]=, Qt =startFxDriverRatesPublish=/=startFxSpotConfigsPublish=)
+and widening [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][the existing data-driven-provisioning story]] to cover the
+general problem — every party-scoped bundle currently needs its own
+hand-written phase, duplicated in two languages, rather than being a
+data change. Verified end-to-end with a full =db recreate= →
+=barclays_system_provision.ores= run from scratch: all 6 phases
+succeeded, and exactly 200 current observations landed for Barclays
+(25 vintages × 8 pairs).

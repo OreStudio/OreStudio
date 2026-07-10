@@ -56,15 +56,80 @@ certainly has the same silent-hide bug for every non-system tenant).
 
 * Acceptance
 
--
+- A new tenant is provisioned with a copy of every current
+  =system.%=-prefixed policy setting from the system tenant (e.g.
+  =system.synthetic_data_generation=, =system.disable_password_validation=,
+  =system.user_signups=, =system.signup_requires_authorization=,
+  =system.qa_validation_runner_enabled=), not just =bootstrap_mode=.
+- =system.bootstrap_mode= keeps its existing explicit, hardcoded seed
+  (=true=) — it is per-tenant provisioning *state*, not a copied
+  policy default, and must not be overwritten by a generic copy.
+- =onboarding.*= and =iam.token.*= settings are untouched by the
+  generic copy (per-tenant state and genuinely system-tenant-only
+  respectively — confirmed =iam.token.*= is always read from
+  =system_tenant_id=, never per-tenant, in
+  =auth_handler.hpp=/=account_handler.hpp=).
+- Adding a new =system.%= policy setting to
+  =variability_system_settings_populate.sql= in the future
+  automatically seeds it for every subsequently-provisioned tenant —
+  no second list to remember to update (this was the actual bug:
+  =qa_validation_runner_enabled= was forgotten in the provisioner
+  until caught live).
+- Explicitly *not* fixing already-provisioned tenants (e.g. an
+  existing Barclays) retroactively — out of scope; a decision was
+  made in favour of explicit seeding at provisioning time over a
+  read-path fallback, so pre-existing tenants keep whatever they
+  already have. Backfilling them is a separate, explicit follow-on if
+  ever needed.
+- Full build green; verified live against a fresh tenant provisioning
+  run.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Chose *explicit seeding at provisioning time* over a read-path
+fallback (system-tenant row as an implicit default merged into
+=get_all()=/=refresh()=): a fallback would mean any tenant silently
+changes behaviour whenever someone edits a system-tenant setting,
+with no audit trail at the tenant level explaining why — an
+action-at-a-distance the team explicitly wants to avoid. Explicit
+per-tenant rows mean every tenant's effective configuration is
+visible, bitemporally audited, and stable until someone (or a
+provisioning script) deliberately changes it.
+
+** Implementation
+
+- New SQL function, e.g.
+  =ores_variability_seed_tenant_system_settings_fn(p_tenant_id uuid,
+  p_actor text)=: copies every currently-active row from the system
+  tenant whose =name= starts with ='system.'= — *except*
+  ='system.bootstrap_mode'=, which keeps its own explicit seed — into
+  =p_tenant_id=, using =ores_variability_system_settings_upsert_fn=
+  (so it inherits the ON CONFLICT-safe insert-if-absent behaviour and
+  the =party_id= defaulting to the new tenant's system party).
+- Call it from =iam_tenant_provisioner_create.sql= right after the
+  existing =system.bootstrap_mode= seed, replacing the now-redundant
+  individual =system.qa_validation_runner_enabled= upsert call (it's
+  covered by the generic copy).
+- Leave =SettingGatedActionController='s =default_when_missing=
+  parameter in place — it's a legitimate independent defence-in-depth
+  measure (fail open on a genuinely missing row, e.g. a tenant
+  provisioned before this fix shipped), not superseded by this task.
+
+(Key decisions are distilled into the parent story's =* Decisions= at
+close, but this plan stays — it is the historical record of what we
+did.)
 
 * Notes
+
+- Verified live: full DB recreate (no SQL errors), all 24 services
+  start clean, provisioned a fresh test tenant via
+  =ores.shell='s =provision system= — DB confirms all 5 previously-
+  missing =system.*= settings (=synthetic_data_generation=,
+  =disable_password_validation=, =user_signups=,
+  =signup_requires_authorization=, =qa_validation_runner_enabled=)
+  are now seeded for the new tenant with the correct values, while
+  =bootstrap_mode= and =onboarding.tenant= keep their own explicit
+  per-tenant seeds untouched.
 
 * PRs
 

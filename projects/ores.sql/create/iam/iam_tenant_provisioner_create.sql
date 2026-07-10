@@ -459,16 +459,12 @@ begin
     -- reads only the caller's tenant), so a "system."-prefixed setting
     -- meant to be a global default must still be seeded per-tenant here —
     -- otherwise SettingGatedActionController silently hides the feature
-    -- for every tenant except the system tenant. Seeded here (before any
-    -- tenant account exists) so it hits the same bootstrap allowance
-    -- system.bootstrap_mode above relies on.
-    perform ores_variability_system_settings_upsert_fn(
-        v_tenant_id,
-        'system.qa_validation_runner_enabled',
-        'true',
-        'boolean',
-        'Shows the QA Validation Runner panel in ores.qt, used to run test_scenario docs and record results. Enabled by default; this is a fleet-wide manual-testing tool, not something to hide behind a build flag.'
-    );
+    -- for every tenant except the system tenant. Copies every current
+    -- system.* policy setting from the system tenant (bootstrap_mode
+    -- excluded — seeded explicitly above, it's per-tenant state, not a
+    -- copied policy default) so a newly-added setting is automatically
+    -- seeded for future tenants without a second list to remember.
+    perform ores_variability_seed_tenant_system_settings_fn(v_tenant_id);
 
     raise notice 'Seeded bootstrap mode system setting for tenant: %', p_code;
 

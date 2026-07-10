@@ -868,6 +868,48 @@ begin
 end;
 $$ language plpgsql;
 
+/**
+ * Seeds a newly-provisioned tenant with a copy of every current
+ * "system."-prefixed policy setting from the system tenant, so
+ * SettingGatedActionController-gated features don't silently hide for
+ * every tenant except system (each such setting only ever existed under
+ * the system tenant otherwise, since system_settings_service reads are
+ * tenant-scoped with no fallback).
+ *
+ * Excludes 'system.bootstrap_mode': that name tracks per-tenant
+ * provisioning *state* (has this tenant's wizard completed), not a copied
+ * policy default, and is seeded explicitly by the caller instead.
+ *
+ * Insert-if-absent via ores_variability_system_settings_upsert_fn, so
+ * this is safe to call even if some settings were already seeded by
+ * name elsewhere.
+ */
+create or replace function ores_variability_seed_tenant_system_settings_fn(
+    p_tenant_id uuid
+) returns void as $$
+declare
+    v_setting record;
+begin
+    for v_setting in
+        select name, value, data_type, description
+        from ores_variability_system_settings_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and name like 'system.%'
+          and name <> 'system.bootstrap_mode'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    loop
+        perform ores_variability_system_settings_upsert_fn(
+            p_tenant_id,
+            v_setting.name,
+            v_setting.value,
+            v_setting.data_type,
+            v_setting.description);
+    end loop;
+
+    raise debug 'Seeded system.* settings for tenant %', p_tenant_id;
+end;
+$$ language plpgsql;
+
 -- =============================================================================
 -- Data Quality: Dataset Bundles
 -- =============================================================================

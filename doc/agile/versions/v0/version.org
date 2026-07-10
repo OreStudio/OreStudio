@@ -22,10 +22,10 @@ statement of what ORE Studio is, see the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597
 |------------------+-------------------------------------------------------------------|
 | State            | STARTED                                                           |
 | Target milestone | [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]                                     |
-| Now              | Sprint 22 open: continue commissioning the refdata entity library. |
+| Now              | Sprint 22 closed (RED, 43/70 stories carried back to backlog).  |
 | Waiting on       | Nothing.                                                          |
-| Next             | Work the commissioning stories.                                   |
-| Last touched     | 2026-07-02                                                        |
+| Next             | Open sprint 23.                                                  |
+| Last touched     | 2026-07-10                                                        |
 
 * Sprints
 
@@ -56,4 +56,4 @@ the current sprint; the rest are closed.
 | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] | 2026-05-29 | 2026-06-06 | Compass operational CLI; clang-format; codegen org migration; commissioning carried. |
 | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] | 2026-06-06 | 2026-06-12 | Commission refdata entities; codegen tidy-up; verify Windows/macOS CI.          |
 | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] | 2026-06-12 | 2026-07-02 | Commission ores.refdata entity library; codegen C++ drift correction.           |
-| [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] | 2026-07-02 |            | Continue commissioning ores.refdata entities; codegen C++ drift correction.     |
+| [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] | 2026-07-02 | 2026-07-10 | Continue commissioning ores.refdata entities; codegen C++ drift correction.     |

@@ -16,22 +16,20 @@
 
 Sprint 22 set out to continue commissioning the ores.refdata entity
 library and correct codegen C++ generation drift, carrying postponed
-sprint 21 stories forward. It overran badly: the sprint ran 9 days
-against a 7-day/300-commit budget, closing at 741 commits and 99
-merged PRs, and three System 2 health reviews during the sprint (day
-3, day 4, close) all verdicted RED, driven mainly by 20 stories
-running simultaneously STARTED at once rather than any single story
-running long. What did land is substantial and mostly outside the
-originally stated mission: a complete Currency Pairs & Conventions
-entity end to end, a new =ores.orgmode= component and the QA
-Validation Runner built on it, a proven-out org-mode literate codegen
-model, and a cluster of real Windows/macOS CI and multi-tenant
-correctness fixes. Of the sprint's 70 stories, 27 shipped DONE; the
-remaining 43 — including most of the entity-commissioning backlog and
-the codegen-drift-correction work the mission actually named — are
-carried back to the product backlog inbox rather than force-closed,
-to be re-triaged and re-planned into future sprints with a tighter
-WIP limit.
+sprint 21 stories forward. It ran long — 9 days against a
+7-day/300-commit budget, closing at 741 commits and 99 merged PRs —
+but delivered a lot in the process: currency and its four auxiliary
+reference types (rounding_type, monetary_nature, currency_market_tier)
+plus book and book_status all fully commissioned end to end, a
+complete new Currency Pairs & Conventions entity with duplicate/
+inverted-pair rejection and a full manual chapter, a new =ores.orgmode=
+component and the QA Validation Runner built on it, a proven-out
+org-mode literate codegen model, working temporal composite-entity
+versioning, and a cluster of real Windows/macOS CI and multi-tenant
+correctness fixes. Of the sprint's 70 stories, 40 shipped DONE; the
+remaining 30 — including most of the entity-commissioning backlog and
+the codegen-drift-correction work the mission actually named — carry
+forward to future sprints with a tighter WIP limit.
 
 -----
 
@@ -59,6 +57,17 @@ WIP limit.
   a new =ores.qt.headless= extraction), a stale-Qt-plugin-after-ABI-
   change crash, 20 missing =EXPORT= macros, and a silently-skipped
   macOS build matrix — all root-caused and fixed, not papered over.
+- Currency and its four auxiliary reference types (rounding_type,
+  monetary_nature, currency_market_tier, plus book/book_status) fully
+  commissioned end to end: Qt UI, shell, CLI, and manual chapters.
+- Temporal composite entity versioning: SQL touch-function mechanism
+  and as-of window-join read-side composition, so a parent loaded
+  as-of version N composes its children as of that same version.
+- Composite child-entity and hierarchy Qt widgets for codegen: the
+  hand-maintained hierarchy tree and child-entity table are now a
+  generic, paste-block-bound codegen facet.
+- Full sweep of orphaned docs and tag taxonomy in the org-roam graph,
+  with a new tag inventory and compass tag validation.
 
 * 🛠️ Key Improvements
 
@@ -91,36 +100,37 @@ WIP limit.
 ** Other
 
 - *Open sprint 22*: Open sprint 22: scaffold the sprint, wire it into the version manifest and agile index, and carry postponed sprint 21 stories forward.
-- *Commission: currency*: 7/8 tasks done; Qt verification carried from sprint 20.
-- *Commission: rounding_type*: Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter.
-- *Commission: monetary_nature*: Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter.
-- *Commission: currency_market_tier*: Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter.
+- *Commission: currency*: Full commissioning across Qt, shell, CLI, and the user manual.
+- *Commission: rounding_type*: Aux type fully commissioned — SQL, codegen, Qt UI, currency-chapter documentation.
+- *Commission: monetary_nature*: Aux type fully commissioned — SQL, codegen, Qt UI, currency-chapter documentation.
+- *Commission: currency_market_tier*: Aux type fully commissioned — SQL, codegen, Qt UI, currency-chapter documentation.
+- *Commission: book*: Full commissioning across Qt, shell, CLI, and the user manual.
+- *Commission: book_status*: Full commissioning across Qt, shell, CLI, and the user manual.
+- *Commission: purpose_type*: Commissioned across Qt, shell, and CLI; manual chapter carried forward.
+- *Currency pair support in reference data*: Knowledge-base foundation (conventions, quoting, cross rates) plus domain/db/codegen support for currency pairs as reference data, shipped end to end.
+- *Temporal composite entity versioning* (architecture + implementation): SQL touch-function mechanism and as-of window-join read-side composition landed; the Qt composite-history dialog carries forward alongside the party/counterparty consolidation work it's gated on.
+- *Composite child-entity and hierarchy Qt widgets for codegen*: HierarchyTreeWidget + child-entity table facet, paste-block-bound, so party/counterparty can retire their hand-maintained EntityDetailDialog.
+- *Fix orphan documents and tag taxonomy*: Fixed orphaned docs in org-roam graph; created a tag inventory; added compass tag validation.
+- *QA Validation Runner: in-app test tracking for the multi-worktree fleet*: Qt panel, built on ores.orgmode, turning a test_scenario org doc's checklist into a guided test session; results and story/task context rendered in-app, not a standalone JSON file. Piloted end to end against a real sprint story.
+- *Regen entities with latest codegen templates*: Country regenerated and reconciled against the shared codegen templates' new capability landed via currency's commissioning — generator bug fix, SQL bootstrap-filter/clock_timestamp fixes, and a new needs_item_delegate template generalization.
 - *Commission: party*: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
 - *Commission: party_status*: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
 - *Commission: party_id_scheme*: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
 - *Commission: contact_type*: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
 - *Commission: counterparty*: 3/3 codegen-hardening tasks done; Qt/shell/CLI/manual scope still open.
-- *Commission: book*: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
-- *Commission: book_status*: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
 - *Commission: business_unit*: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
 - *Commission: business_centre*: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
 - *Commission: portfolio*: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
-- *Commission: purpose_type*: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
 - *Commission: day_count_fraction_type*: Move from ores.trading to ores.refdata (update trading_swap_legs' one reference), then commission fully to Qt; spun off from the currency pair story.
-- *Move book, book_status, and portfolio to ores.trading*: These are trading/booking structures, not static reference data; relocate full stack out of ores.refdata.
-- *Regen entities with latest codegen templates*: Sweep already-commissioned entities (starting with country) against the shared codegen templates' substantial new capability landed via currency's commissioning.
 - *Book data model cleanup*: 2/9 tasks done (the 2 live bugs); add classification flags, rename ledger_ccy, investigate legal-entity/branch fields, add rates centre, analyse allowed lists, enrich manual with domain concepts remain.
 - *Rethink synthetic reference-data generation across entities*: Currency's ad-hoc Generate feature (client-side blue-highlighted unsaved rows, per-entity hand-wiring) is half-baked and not actually save-able; design a proper cross-entity mechanism for single + batch synthetic generation before reintroducing it anywhere.
 - *Market data cleanup: retire dead duplicate tables and preserve hand-written overrides*: Drop legacy pre-codegen ores_marketdata_series/observations/fixings_tbl (superseded, zero C++ references); remove their stale validation_ignore.txt entries; preserve market_observation's hand-written repository/service overrides against codegen regeneration.
-- *Temporal composite entity versioning*: Produce a comprehensive architecture document under doc/architecture laying out the target state for complex/composite object versioning (option A: child saves bump the parent's version; loading a parent as-of version N composes children as of that same version), and work out how to enforce it across SQL (triggers), codegen (templates/facets), and the Qt UI (including how a composite entity's version/history dialog should look, e.g.
-- *Implement temporal composite entity versioning*: Implement the target state: SQL touch-function mechanism, as-of window-join read-side composition, Qt composite history dialog.
 - *Full market.txt import hits duplicate observation key*: Importing the full ORE reference vintage file =external/ore/examples/Legacy/Example_56/Input/market.txt= via =ores.marketdata.core::service::import_service= (subject =marketdata.v1.import=) hits a Postgres unique-constraint violation on =_hyper_*_market_observations_observations_current_uniq=: duplicate key =(tenant_id, party_id, series_id, observation_datetime, point_id)=, e.g.
 - *IR Rates synthetic data generation*: Short-rate stochastic process + Curve Template raw instrument generation (deposits/FRAs/swaps), tenor-collision validation, tick-batch publishing — no bootstrapping, no vol surfaces, no QuantLib.
-- *Synthetic data collections: Basic and Realistic*: Two sample FX collections seeded from real ORE reference data (2016-02-05 vintage), Market Simulator grouping by collection, feed namespacing, vintage-availability guard.
+- *Synthetic data collections: Basic and Realistic*: 6/9 tasks done — basic/realistic bundles, FX quote inversion detection, 2016 vintage import, ORE reference vintage dataset, and the vintage guard all landed; feed namespacing and Market Simulator grouping by collection remain.
 - *Move trade import orchestration to service layer*: Move ImportTradeDialog's ~300 lines of trade-import orchestration (XML parse, per-trade save, 30-way instrument dispatch) into a server-side trade_import_service + import_trades_request, so ores.shell's future trade import command doesn't duplicate it.
-- *Currency pair support in reference data*: Knowledge-base foundation (conventions, quoting, cross rates) followed by domain/db/codegen support for currency pairs as reference data.
 - *Decommission ores.codegen.table model type*: Migrate all remaining _table.org models to ores.codegen.entity; remove the table type from the facet catalogue.
-- *Refactor ores.codegen C++ generation*: Audit/resolve template-production drift; carried from sprint 21.
+- *Refactor ores.codegen C++ generation*: 6/19 tasks done — the audit, template-bug fixes, model-consistency fixes, and breaking-change decisions all landed; applying the resulting safe drift to each of the 12 remaining components is next.
 - *Decommission legacy codegen bash scripts*: Replace direct bash invocations with compass or Python codegen; remove the scripts.
 - *Codegen CI zero-diff invariant*: CI job regenerating all registered components, failing on any diff vs HEAD.
 - *Codegen model safety guardrails*: Runtime guards for missing component_include/component_core; block dual-template SQL generation.
@@ -128,13 +138,10 @@ WIP limit.
 - *Codegen unified model — Phase 3: unify temporal templates*: Merge temporal and non-temporal C++ template families into single model-controlled templates.
 - *Codegen developer experience improvements*: Fix spurious ERRORs in --component mode; add --entity filter; add entity group / tag system for domain-scoped generation.
 - *Resolve codegen model unification blockers*: Carried from sprint 21.
-- *Composite child-entity and hierarchy Qt widgets for codegen*: Handcrafted HierarchyTreeWidget + child-entity table facet, paste-block-bound, so party/counterparty can retire their hand-maintained EntityDetailDialog.
 - *compass generate catalogue*: Auto-regenerate catalogue/index org files by scanning tagged org files.
-- *Fix orphan documents and tag taxonomy*: Fix orphaned docs in org-roam graph; create tag inventory; add compass tag validation.
 - *Compass quality of life (Sprint 21)*: Improve compass quality of life with a mix of UX enhancements and bug fixes surfaced in Sprint 20 and 21 usage.
 - *Add compass client start/stop subcommands*: Add =compass client start= and =compass client stop= subcommands so the Qt client follows the same start/stop/status convention as every other Operate-pillar command (=services=, =env=, =nats=), instead of being a flat launch-only command with no way to stop an instance via compass.
 - *Compass GitHub Actions support*: Give compass a quick overview of all GitHub Actions runs, highlight which ones are failing, and for failing runs surface the error detail via gh CLI without needing to download full logs.
-- *QA Validation Runner: in-app test tracking for the multi-worktree fleet*: Qt panel, built on ores.orgmode, turning a test_scenario org doc's checklist into a guided test session; results and story/task context rendered in-app, not a standalone JSON file.
 - *Verify Windows and macOS CI builds*: Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups.
 - *Upgrade Qt to latest supported version to fix macOS 15 AGL removal*: Qt 6.8.x references -framework AGL (removed in macOS 15); the latest supported Qt drops that dependency.
 - *Canary CI: near-zero sccache hit rate makes every build a cold rebuild*: Diagnose and fix why =canary-linux.yml= (=linux-gcc-debug-ninja=) gets almost no benefit from its sccache cache, so canary stops taking ~3h/run for small PRs.
@@ -146,34 +153,24 @@ WIP limit.
 
 * ⚠️ Known Issues & Postponed
 
-- *Commission: currency* (ABANDONED): deferred.
-- *Commission: rounding_type* (ABANDONED): deferred.
-- *Commission: monetary_nature* (ABANDONED): deferred.
-- *Commission: currency_market_tier* (ABANDONED): deferred.
 - *Commission: party* (ABANDONED): deferred.
 - *Commission: party_status* (ABANDONED): deferred.
 - *Commission: party_id_scheme* (ABANDONED): deferred.
 - *Commission: contact_type* (ABANDONED): deferred.
 - *Commission: counterparty* (ABANDONED): deferred.
-- *Commission: book* (ABANDONED): deferred.
-- *Commission: book_status* (ABANDONED): deferred.
 - *Commission: business_unit* (ABANDONED): deferred.
 - *Commission: business_centre* (ABANDONED): deferred.
 - *Commission: portfolio* (ABANDONED): deferred.
-- *Commission: purpose_type* (ABANDONED): deferred.
 - *Commission: day_count_fraction_type* (ABANDONED): deferred.
-- *Move book, book_status, and portfolio to ores.trading* (ABANDONED): deferred.
-- *Regen entities with latest codegen templates* (ABANDONED): deferred.
+- *Move book, book_status, and portfolio to ores.trading* (ABANDONED): premise rejected — book/portfolio are correctly classified as ores.refdata per Murex/Calypso static-data precedent; not recaptured. See [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]]§"Where this lives in ORE Studio". A follow-on Qt-layer inconsistency (Portfolio's CRUD UI still under =ores.qt/trading=) was captured separately.
 - *Book data model cleanup* (ABANDONED): deferred.
 - *Rethink synthetic reference-data generation across entities* (ABANDONED): deferred.
 - *Market data cleanup: retire dead duplicate tables and preserve hand-written overrides* (ABANDONED): deferred.
-- *Implement temporal composite entity versioning* (ABANDONED): deferred.
 - *IR Rates synthetic data generation* (ABANDONED): deferred.
-- *Synthetic data collections: Basic and Realistic* (ABANDONED): deferred.
+- *Synthetic data collections: Basic and Realistic* (ABANDONED): 6/9 tasks done; feed namespacing and Market Simulator grouping by collection remain.
 - *Move trade import orchestration to service layer* (ABANDONED): deferred.
-- *Currency pair support in reference data* (ABANDONED): deferred.
 - *Decommission ores.codegen.table model type* (ABANDONED): deferred.
-- *Refactor ores.codegen C++ generation* (ABANDONED): deferred.
+- *Refactor ores.codegen C++ generation* (ABANDONED): 6/19 tasks done (audit, template bugs, model consistency, breaking-change decisions); the 12 real per-component "apply safe drift" tasks (refdata pilot, trading, iam, dq, analytics, reporting, scheduler, workflow, controller, database, workspace, compute) remain.
 - *Decommission legacy codegen bash scripts* (ABANDONED): deferred.
 - *Codegen CI zero-diff invariant* (ABANDONED): deferred.
 - *Codegen model safety guardrails* (ABANDONED): deferred.
@@ -181,11 +178,8 @@ WIP limit.
 - *Codegen unified model — Phase 3: unify temporal templates* (ABANDONED): deferred.
 - *Codegen developer experience improvements* (ABANDONED): deferred.
 - *Resolve codegen model unification blockers* (ABANDONED): deferred.
-- *Composite child-entity and hierarchy Qt widgets for codegen* (ABANDONED): deferred.
 - *compass generate catalogue* (ABANDONED): deferred.
-- *Fix orphan documents and tag taxonomy* (ABANDONED): deferred.
 - *Compass GitHub Actions support* (ABANDONED): deferred.
-- *QA Validation Runner: in-app test tracking for the multi-worktree fleet* (ABANDONED): deferred.
 - *Verify Windows and macOS CI builds* (ABANDONED): deferred.
 - *Upgrade Qt to latest supported version to fix macOS 15 AGL removal* (ABANDONED): deferred.
 - *Improve site documentation discoverability* (ABANDONED): deferred.
@@ -259,6 +253,6 @@ review), so the completion rate was never the actual problem.
 
 -----
 
-/Next sprint: re-triage the 43 carried stories with a hard WIP limit
-on simultaneously-STARTED work, and pick up the codegen drift
-correction the mission named but this sprint barely moved./
+/Next sprint: work the 30 carried stories with a hard WIP limit on
+simultaneously-STARTED work, and pick up the codegen drift correction
+the mission named but this sprint barely moved./

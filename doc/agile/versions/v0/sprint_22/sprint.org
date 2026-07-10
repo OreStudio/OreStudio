@@ -331,6 +331,14 @@ Steady upward slope is healthy; plateauing signals a stall.
   BACKLOG) — the sprint's own summary document was, for stretches of
   the sprint, not a reliable source of truth for what was actually in
   flight.
+- The initial mechanical carry-to-inbox at close swept 43 stories on
+  the assumption that anything not force-verified was incomplete; a
+  post-close re-triage against real evidence found 13 of those were
+  already substantially or fully done — individual task/story
+  =Now:=/=State:= fields had gone stale during the sprint rather than
+  being updated as work actually finished. Bookkeeping discipline
+  needs to improve: update status fields the moment work changes,
+  not in a batch reconciliation after close.
 - The mission as written ("continue commissioning ores.refdata
   entities and correct codegen C++ drift") covered only a fraction of
   what actually shipped or was attempted — an entire Market Data
@@ -355,6 +363,10 @@ Steady upward slope is healthy; plateauing signals a stall.
 - When a sprint's actual work diverges this far from its stated
   mission, update the mission mid-sprint rather than letting
   =sprint.org= silently stop describing what's happening.
+- Update a story/task's =Now:=/=State:=/=Waiting on:=/=Next:= fields
+  the moment work actually finishes, not in a batch reconciliation
+  after close — that discipline gap is what made the post-close
+  re-triage necessary in the first place.
 
 * Release Notes
 

@@ -21,12 +21,12 @@ Move book, book_status, and portfolio — full stack (domain types, JSON/table I
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | ABANDONED                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Abandoned — premise rejected.           |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-06                               |
+| Next          | None.                                   |
+| Last touched  | 2026-07-10                               |
 
 * Acceptance
 
@@ -42,6 +42,21 @@ Move book, book_status, and portfolio — full stack (domain types, JSON/table I
 |      |       |       |     |             |
 
 * Decisions
+
+Abandoned 2026-07-10 at sprint 22 close: the premise (book/portfolio
+belong in =ores.trading=, not =ores.refdata=) doesn't hold up against
+how established trading systems draw this line. Murex's *Static Data*
+module and Calypso's *Reference Data domain* both explicitly place
+books and portfolios alongside counterparties, legal entities, and
+currencies — not alongside trades, positions, or cashflows — because
+the classifying test is lifecycle/mutation pattern (created rarely by
+back-office setup, referenced constantly by trades) rather than
+topical proximity to trading. This also matches how this sprint's
+work on book (=commission_book=, =commission_book_status=,
+=book_data_model_cleanup=) already treated it as a refdata entity
+throughout, with no friction. Full reasoning recorded in [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]]§"Where
+this lives in ORE Studio". Not recaptured under a different direction
+— =ores.refdata= is already correct, nothing needs to move.
 
 * Out of scope
 

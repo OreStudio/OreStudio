@@ -66,6 +66,23 @@ BEGIN
 END $$;
 
 -- =============================================================================
+-- Subject Area Registration
+--
+-- First dataset under the Market Data domain (as opposed to Reference
+-- Data > Market Data, which is for market-data *reference types* like
+-- asset classes - this is actual observation/rate values).
+-- =============================================================================
+
+DO $$
+BEGIN
+    PERFORM ores_dq_subject_areas_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'Market Data',
+        'FX Spot',
+        'FX spot observation/rate values.'
+    );
+END $$;
+
+-- =============================================================================
 -- Dataset Registration
 -- =============================================================================
 
@@ -74,8 +91,8 @@ BEGIN
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'marketdata.fx_driver_rates',
         'FX Driver Rates',
+        'FX Spot',
         'Market Data',
-        'Reference Data',
         'NONE',
         'Primary',
         'Actual',

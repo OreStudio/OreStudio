@@ -92,6 +92,17 @@ ORES_QT_HEADLESS_API bool write_scenario_results(const QString& path,
                                                  const scenario_result& result,
                                                  const environment_metadata& environment);
 
+/**
+ * @brief Append @p line at the end of a =test_scenario= doc's top-level
+ * =* Notes= heading (after any existing content in that section) — used
+ * to record a scenario-level screenshot as an org image link without
+ * waiting for the tester to hit Save. Every other line in the file is
+ * left byte-identical, same splicing approach as write_scenario_results().
+ * @return true on success; false if the file couldn't be read/written or
+ * didn't contain a top-level =* Notes= heading.
+ */
+ORES_QT_HEADLESS_API bool append_scenario_note(const QString& path, const QString& line);
+
 }
 
 #endif

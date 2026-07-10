@@ -254,3 +254,65 @@ TEST_CASE("write_scenario_results returns false when the doc has no Results head
 TEST_CASE("write_scenario_results returns false for a missing file", tags) {
     REQUIRE_FALSE(ores::qt::write_scenario_results("/no/such/scenario.org", {}, {}));
 }
+
+TEST_CASE("append_scenario_note appends onto a Notes section that already has content", tags) {
+    QTemporaryDir tmp;
+    REQUIRE(tmp.isValid());
+    const QString path = write_temp_doc(tmp.path(), sample_doc);
+
+    REQUIRE(ores::qt::append_scenario_note(path, "[[file:shot.png]]"));
+
+    QFile file(path);
+    REQUIRE(file.open(QIODevice::ReadOnly | QIODevice::Text));
+    const QString written = QTextStream(&file).readAll();
+
+    REQUIRE(written.contains("Pre-existing notes text that should be replaced."));
+    REQUIRE(written.contains("[[file:shot.png]]"));
+    // Appended after the pre-existing content, not before it.
+    REQUIRE(written.indexOf("Pre-existing notes text") < written.indexOf("[[file:shot.png]]"));
+}
+
+TEST_CASE("append_scenario_note appends onto an empty Notes section", tags) {
+    QTemporaryDir tmp;
+    REQUIRE(tmp.isValid());
+    const QString doc = "* Scenario Info\n"
+                        "\n"
+                        "* Notes\n";
+    const QString path = write_temp_doc(tmp.path(), doc);
+
+    REQUIRE(ores::qt::append_scenario_note(path, "[[file:shot.png]]"));
+
+    QFile file(path);
+    REQUIRE(file.open(QIODevice::ReadOnly | QIODevice::Text));
+    const QString written = QTextStream(&file).readAll();
+    REQUIRE(written.contains("* Notes\n[[file:shot.png]]"));
+}
+
+TEST_CASE("append_scenario_note separates the appended line from a heading that follows Notes",
+          tags) {
+    QTemporaryDir tmp;
+    REQUIRE(tmp.isValid());
+    const QString doc = "* Notes\n"
+                        "\n"
+                        "* Something else\n";
+    const QString path = write_temp_doc(tmp.path(), doc);
+
+    REQUIRE(ores::qt::append_scenario_note(path, "[[file:shot.png]]"));
+
+    QFile file(path);
+    REQUIRE(file.open(QIODevice::ReadOnly | QIODevice::Text));
+    const QString written = QTextStream(&file).readAll();
+    REQUIRE(written.contains("[[file:shot.png]]\n\n* Something else"));
+}
+
+TEST_CASE("append_scenario_note returns false when the doc has no Notes heading", tags) {
+    QTemporaryDir tmp;
+    REQUIRE(tmp.isValid());
+    const QString path = write_temp_doc(tmp.path(), "#+title: No notes section\n\n* Steps\n");
+
+    REQUIRE_FALSE(ores::qt::append_scenario_note(path, "[[file:shot.png]]"));
+}
+
+TEST_CASE("append_scenario_note returns false for a missing file", tags) {
+    REQUIRE_FALSE(ores::qt::append_scenario_note("/no/such/scenario.org", "[[file:shot.png]]"));
+}

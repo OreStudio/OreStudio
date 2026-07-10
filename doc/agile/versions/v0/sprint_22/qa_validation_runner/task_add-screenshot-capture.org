@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: 5184C0F8-9200-4A8D-9210-35736B84CC0F
+:END:
+#+title: Task: Add screenshot capture to the QA Validation Runner panel
+#+description: Add a 'Screenshot' toolbar action next to Open/Save: grab the full primary screen via QScreen::grabWindow(0), save as PNG next to the open scenario doc (same directory as scenarioPath_), named after the scenario slug/step/timestamp. Region-select capture (QRubberBand over a full-screen grab, drag-select, crop, save) as a documented fast-follow, not required for the first cut.
+#+type: task
+#+level: s1
+#+filetags: :qt:testing:dx:qa_validation_runner:sprint_22:v0:
+#+owner: marco
+#+branch: feature/add-screenshot-capture
+#+pr: 1490
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let the tester capture a screenshot without leaving the app or the
+QA Validation Runner panel — today they alt-tab to an OS screenshot
+tool and manually move the file next to the scenario doc, which is
+friction that discourages doing it at all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-10                               |
+
+* Acceptance
+
+Two capture points, both sharing the same grab/save helper:
+
+- *Scenario-level*: a "Screenshot" toolbar action next to Open/Save,
+  enabled only when a scenario is loaded. Saves next to the scenario
+  doc, named from the scenario slug + timestamp — no step
+  association.
+- *Step-level*: a "Screenshot" button in the per-step detail window
+  (=openStepDetail=, alongside the existing Pass/Fail/Pending
+  buttons), so a capture is unambiguously tied to the step being
+  worked on. On capture, auto-append a reference (filename, or an
+  org =[[file:...]]= link) into that step's own =notesEdit=, so the
+  screenshot shows up in the step's =Notes= without the tester typing
+  anything. Named from the scenario slug + step title/index +
+  timestamp.
+
+Shared behaviour:
+
+- Both grab the full primary screen
+  (=QGuiApplication::primaryScreen()->grabWindow(0)=), after a short
+  delay (~1-2s) so the tester can switch to the window under test
+  first.
+- Both save as PNG in the same directory as the open scenario doc
+  (=scenarioPath_='s directory); filenames never collide across
+  steps/reruns.
+- A confirmation (status bar message or similar) shows the saved
+  filename.
+- Region-select (drag a rectangle over the full-screen grab via
+  =QRubberBand=, crop, save) is a documented fast-follow for *both*
+  capture points, not required for the first cut — full-screen
+  capture alone is already a large improvement over the current
+  OS-tool workflow.
+- Works correctly on whichever platform(s) this project targets for
+  the Qt client (verify X11 at minimum; note if Wayland's
+  window-specific grab restrictions affect the full-screen path —
+  they generally don't, since this grabs the whole screen, not a
+  specific window).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:402D3072-36EC-4546-9401-EC69D3754A40][Verify screenshot capture in the QA Validation Runner panel]] | PASSED | Both capture points verified live: scenario-level toolbar action and step-level button, no filename collisions across repeated captures, Notes auto-append confirmed. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1490][#1490]] | [qt] Add screenshot capture to the QA Validation Runner panel |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Scenario-level screenshot's onDone re-read scenarioPath_ after the capture delay, risking the note landing in whichever scenario was loaded by the time the delayed grab completed | QaValidationRunnerWidget.cpp | Fixed | Fixed in 97a566ae1: capture scenarioPath_ by value at click time, same as baseName already was. |
+| 2 | No unit test coverage for append_scenario_note | TestScenarioResultsWriter.cpp/test_scenario_results_writer_tests.cpp | Fixed | Fixed in 97a566ae1: 5 new test cases (empty/non-empty Notes, missing heading, missing file, separator before a following heading). |
+| 3 | Screenshot action/button stays enabled during the 1.5s capture delay; a same-second double-click silently overwrites the first screenshot (second-granularity filenames) | QaValidationRunnerWidget.cpp | Fixed | Fixed in 97a566ae1: disabled for the duration of the delay, re-enabled in onDone, both capture points. |
+| 4 | append_scenario_note butts the new line directly against whatever heading follows Notes, no blank-line separator | TestScenarioResultsWriter.cpp | Fixed | Fixed in 97a566ae1: inserts a trailing blank line when Notes isn't the doc's last section. |
+| 5 | Icon::Copy reused for the Screenshot glyph could read as clipboard-copy to a new tester | QaValidationRunnerWidget.cpp | Declined | IconUtils::Icon has no camera/screenshot glyph; not worth adding a new icon asset for this. |
+
+* Result
+
+Implemented both capture points sharing a single =captureScreenshot()=
+helper: a scenario-level "Screenshot" toolbar action (enabled only
+when a scenario is loaded) and a per-step "Screenshot" button in the
+step-detail window, alongside Pass/Fail/Pending. Both grab the full
+primary screen via =QGuiApplication::primaryScreen()->grabWindow(0)=
+after a 1.5s delay, save as PNG next to the scenario doc, and report
+success/failure via a status bar message; the step-level capture also
+auto-appends a filename reference into that step's Notes. Verified
+live end-to-end via a dedicated test scenario launched directly with
+=compass client start --open-scenario=: both capture points work,
+repeated captures never collide on filename, and the Notes
+auto-append behaves as designed. Region-select capture remains a
+documented fast-follow, not implemented here.

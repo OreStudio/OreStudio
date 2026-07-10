@@ -29,22 +29,28 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/OrgDocViewerWindow.hpp"
 #include <QColor>
+#include <QDateTime>
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QGroupBox>
+#include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QLabel>
 #include <QListWidget>
 #include <QMdiArea>
+#include <QPixmap>
 #include <QPlainTextEdit>
+#include <QPointer>
 #include <QProcess>
 #include <QPushButton>
 #include <QRegularExpression>
+#include <QScreen>
 #include <QTabWidget>
 #include <QTextBrowser>
+#include <QTimer>
 #include <QToolBar>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -176,6 +182,11 @@ QaValidationRunnerWidget::QaValidationRunnerWidget(QWidget* parent)
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor), tr("Save"));
     saveAction_->setToolTip(tr("Write step results back to the scenario doc"));
     saveAction_->setEnabled(false);
+    screenshotAction_ = toolBar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Copy, IconUtils::DefaultIconColor), tr("Screenshot"));
+    screenshotAction_->setToolTip(
+        tr("Grab the full screen (after a short delay) and save it next to the scenario doc"));
+    screenshotAction_->setEnabled(false);
     layout->addWidget(toolBar_);
 
     tabWidget_ = new QTabWidget(this);
@@ -225,10 +236,50 @@ QaValidationRunnerWidget::QaValidationRunnerWidget(QWidget* parent)
     connect(
         openAction_, &QAction::triggered, this, &QaValidationRunnerWidget::promptAndLoadScenario);
     connect(saveAction_, &QAction::triggered, this, [this]() { save(); });
+    connect(screenshotAction_, &QAction::triggered, this, [this]() {
+        // Captured by value, not re-read from the member inside onDone: the
+        // capture delay gives the tester time to switch windows, which
+        // includes switching to a different loaded scenario via Open —
+        // re-reading scenarioPath_ then would record the note into the
+        // wrong (newly loaded) doc.
+        const QString scenarioPath = scenarioPath_;
+        const QString baseName = QFileInfo(scenarioPath).completeBaseName();
+        screenshotAction_->setEnabled(false);
+        captureScreenshot(baseName, [this, scenarioPath](const QString& path) {
+            screenshotAction_->setEnabled(true);
+            if (path.isEmpty()) {
+                emit errorOccurred(tr("Failed to save screenshot."));
+                return;
+            }
+            emit statusMessage(tr("Saved screenshot to %1").arg(path));
+            if (!append_scenario_note(
+                    scenarioPath, tr("[[file:%1]]").arg(QFileInfo(path).fileName())))
+                emit errorOccurred(tr("Saved screenshot but failed to record it in the "
+                                       "scenario doc's Notes section."));
+        });
+    });
     connect(stepsList_,
             &QListWidget::itemDoubleClicked,
             this,
             &QaValidationRunnerWidget::openStepDetail);
+}
+
+void QaValidationRunnerWidget::captureScreenshot(const QString& baseName,
+                                                 const std::function<void(QString)>& onDone) {
+    const QString directory = QFileInfo(scenarioPath_).absolutePath();
+
+    // Deferred, not an immediate grab: this slot runs synchronously from
+    // the button click that triggered it, while the QA Runner (or the
+    // step-detail subwindow) is still the foreground window. A short
+    // delay gives the tester a chance to alt-tab to the window under
+    // test first, same idea as an OS screenshot tool's countdown.
+    QTimer::singleShot(1500, this, [directory, baseName, onDone]() {
+        const QPixmap pixmap = QGuiApplication::primaryScreen()->grabWindow(0);
+        const QString filename = QStringLiteral("%1_%2.png").arg(
+            baseName, QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));
+        const QString path = QDir(directory).filePath(filename);
+        onDone(pixmap.save(path, "PNG") ? path : QString());
+    });
 }
 
 void QaValidationRunnerWidget::promptAndLoadScenario() {
@@ -291,6 +342,7 @@ bool QaValidationRunnerWidget::loadScenario(const QString& path) {
     loadContextTab(taskId_, storyId_);
 
     saveAction_->setEnabled(!steps_.empty());
+    screenshotAction_->setEnabled(true);
     emit statusMessage(tr("Loaded %1").arg(path));
     return true;
 }
@@ -382,6 +434,9 @@ void QaValidationRunnerWidget::openStepDetail(QListWidgetItem* item) {
             IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
         closeButton->setText(tr("Close"));
     }
+    auto* screenshotButton = box->addButton(tr("Screenshot"), QDialogButtonBox::ActionRole);
+    screenshotButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Copy, IconUtils::DefaultIconColor));
     auto* passButton = box->addButton(tr("Pass"), QDialogButtonBox::ActionRole);
     passButton->setIcon(status_icon(step_status::pass));
     auto* failButton = box->addButton(tr("Fail"), QDialogButtonBox::ActionRole);
@@ -413,6 +468,34 @@ void QaValidationRunnerWidget::openStepDetail(QListWidgetItem* item) {
         }
         subWindow->close();
     };
+    // notesEdit is captured via QPointer, not raw: the delayed grab in
+    // captureScreenshot() completes after the button click returns, and
+    // the tester may have closed this step's subwindow (destroying
+    // notesEdit) in the meantime.
+    QPointer<QPlainTextEdit> notesPtr = notesEdit;
+    QPointer<QPushButton> screenshotButtonPtr = screenshotButton;
+    connect(screenshotButton,
+            &QPushButton::clicked,
+            subWindow,
+            [this, index, notesPtr, screenshotButtonPtr]() {
+        const QString baseName = QStringLiteral("%1_step%2")
+                                     .arg(QFileInfo(scenarioPath_).completeBaseName())
+                                     .arg(index + 1);
+        if (screenshotButtonPtr)
+            screenshotButtonPtr->setEnabled(false);
+        captureScreenshot(baseName, [this, notesPtr, screenshotButtonPtr](const QString& path) {
+            if (screenshotButtonPtr)
+                screenshotButtonPtr->setEnabled(true);
+            if (path.isEmpty()) {
+                emit errorOccurred(tr("Failed to save screenshot."));
+                return;
+            }
+            emit statusMessage(tr("Saved screenshot to %1").arg(path));
+            if (notesPtr)
+                notesPtr->appendPlainText(
+                    tr("[[file:%1]]").arg(QFileInfo(path).fileName()));
+        });
+    });
     connect(passButton, &QPushButton::clicked, subWindow, [apply]() { apply(step_status::pass); });
     connect(failButton, &QPushButton::clicked, subWindow, [apply]() { apply(step_status::fail); });
     connect(pendingButton, &QPushButton::clicked, subWindow, [apply]() {

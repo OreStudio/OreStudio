@@ -189,4 +189,38 @@ bool write_scenario_results(const QString& path,
     return true;
 }
 
+bool append_scenario_note(const QString& path, const QString& line) {
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+    QStringList lines;
+    {
+        QTextStream in(&file);
+        while (!in.atEnd())
+            lines << in.readLine();
+    }
+    file.close();
+
+    const auto notes_span = find_heading(lines, "Notes", 0, lines.size());
+    if (!notes_span.found())
+        return false;
+
+    // A trailing blank line separates the appended line from whatever
+    // heading follows Notes — irrelevant when Notes is the last section
+    // (the common case, EOF right after), but keeps the doc readable for
+    // the (rarer) template variant where something follows it.
+    const bool has_following_heading = notes_span.end < lines.size();
+    QStringList insertion{line};
+    if (has_following_heading)
+        insertion << QString();
+    lines = lines.mid(0, notes_span.end) + insertion + lines.mid(notes_span.end);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
+        return false;
+    QTextStream out(&file);
+    for (const auto& l : lines)
+        out << l << "\n";
+    return true;
+}
+
 }

@@ -32,6 +32,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <algorithm>
 #include <map>
 #include <rfl/enums.hpp>
 #include <rfl/json.hpp>
@@ -144,7 +145,8 @@ fetch_known_currency_pairs(ores::nats::service::nats_client& auth_nats) {
             for (const auto& p : resp->pairs)
                 pairs.emplace(p.base_currency, p.quote_currency);
             offset += static_cast<std::uint32_t>(resp->pairs.size());
-            if (resp->pairs.empty() || offset >= static_cast<std::uint32_t>(resp->total_available_count))
+            if (resp->pairs.empty() ||
+                offset >= static_cast<std::uint32_t>(resp->total_available_count))
                 break;
         }
     } catch (const std::exception& e) {
@@ -248,14 +250,18 @@ import_service::import(const messaging::import_market_data_request& req) {
         // series this creates) sees the canonical key. The value is never
         // touched — only the qualifier's two currencies are swapped — so
         // this can never introduce floating-point error.
-        {
+        const auto has_fx_rate = std::any_of(data.begin(), data.end(), [](const auto& d) {
+            return d.series_type == "FX" && d.metric == "RATE";
+        });
+        if (has_fx_rate) {
             const auto known_pairs = fetch_known_currency_pairs(auth_nats_);
             const ores::ore::market::fx_quote_convention_checker checker(known_pairs);
             for (auto& d : data) {
                 if (d.series_type != "FX" || d.metric != "RATE")
                     continue;
                 const auto slash = d.qualifier.find('/');
-                if (slash == std::string::npos || d.qualifier.find('/', slash + 1) != std::string::npos)
+                if (slash == std::string::npos ||
+                    d.qualifier.find('/', slash + 1) != std::string::npos)
                     continue; // not a plain two-currency qualifier
                 const auto base = d.qualifier.substr(0, slash);
                 const auto quote = d.qualifier.substr(slash + 1);

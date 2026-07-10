@@ -33,11 +33,11 @@
       <attribute name="title"><string>General</string></attribute>
       <layout class="QVBoxLayout" name="generalLayout">
        <item>
-        <widget class="QGroupBox" name="basicInfoGroup">
+        <widget class="QGroupBox" name="generalGroup">
          <property name="title">
-          <string>Basic Information</string>
+          <string>General</string>
          </property>
-         <layout class="QFormLayout" name="formLayout">
+         <layout class="QFormLayout" name="generalFormLayout">
           <item row="0" column="0">
            <widget class="QLabel" name="labelIsoCode">
             <property name="text">
@@ -111,42 +111,77 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="flagGroup">
+         <property name="title">
+          <string>Icon</string>
+         </property>
+         <layout class="QVBoxLayout" name="flagGroupLayout"/>
+        </widget>
+       </item>
+       <item>
+        <spacer name="generalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="formattingTab">
+      <attribute name="title"><string>Formatting</string></attribute>
+      <layout class="QVBoxLayout" name="formattingLayout">
+       <item>
+        <widget class="QGroupBox" name="formattingGroup">
+         <property name="title">
+          <string>Formatting</string>
+         </property>
+         <layout class="QFormLayout" name="formattingFormLayout">
+          <item row="0" column="0">
            <widget class="QLabel" name="labelSymbol">
             <property name="text">
              <string>Symbol:</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="0" column="1">
            <widget class="QLineEdit" name="symbolEdit">
             <property name="placeholderText">
              <string>Enter currency symbol</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
+          <item row="1" column="0">
            <widget class="QLabel" name="labelFractionSymbol">
             <property name="text">
              <string>Fraction Symbol:</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="1" column="1">
            <widget class="QLineEdit" name="fractionSymbolEdit">
             <property name="placeholderText">
              <string>Enter fraction symbol</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
+          <item row="2" column="0">
            <widget class="QLabel" name="labelFractionsPerUnit">
             <property name="text">
              <string>Fractions Per Unit:</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="2" column="1">
            <widget class="QSpinBox" name="fractionsPerUnitSpinBox">
             <property name="minimum">
              <number>0</number>
@@ -156,42 +191,69 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="labelFormat">
             <property name="text">
              <string>Format:</string>
             </property>
            </widget>
           </item>
-          <item row="8" column="1">
+          <item row="3" column="1">
            <widget class="QLineEdit" name="formatEdit">
             <property name="placeholderText">
              <string>Enter display format</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="0">
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="formattingSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="roundingTab">
+      <attribute name="title"><string>Rounding</string></attribute>
+      <layout class="QVBoxLayout" name="roundingLayout">
+       <item>
+        <widget class="QGroupBox" name="roundingGroup">
+         <property name="title">
+          <string>Rounding</string>
+         </property>
+         <layout class="QFormLayout" name="roundingFormLayout">
+          <item row="0" column="0">
            <widget class="QLabel" name="labelRoundingType">
             <property name="text">
              <string>Rounding Type:</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="1">
+          <item row="0" column="1">
            <widget class="QComboBox" name="roundingTypeCombo">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>
-          <item row="10" column="0">
+          <item row="1" column="0">
            <widget class="QLabel" name="labelRoundingPrecision">
             <property name="text">
              <string>Rounding Precision:</string>
             </property>
            </widget>
           </item>
-          <item row="10" column="1">
+          <item row="1" column="1">
            <widget class="QSpinBox" name="roundingPrecisionSpinBox">
             <property name="minimum">
              <number>0</number>
@@ -205,15 +267,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="flagGroup">
-         <property name="title">
-          <string>Icon</string>
-         </property>
-         <layout class="QVBoxLayout" name="flagGroupLayout"/>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer">
+        <spacer name="roundingSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>

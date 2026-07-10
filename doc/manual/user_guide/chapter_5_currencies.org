@@ -223,6 +223,9 @@ The Formatting tab controls how currency amounts are displayed:
 
 *** Rounding
 
+#+caption[Currency Details — Rounding tab]: The Rounding tab for AOA, showing the rounding type (Closest) and rounding precision (2).
+[[proj:assets/images/currency_details_rounding.png]]
+
 The Rounding tab controls how calculated amounts are rounded before
 storage and display:
 

@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: FBD97665-3F69-4070-B8D2-5B936B6FEE31
+:END:
+#+title: Story: Codegen support for view groups (Qt detail-dialog tabs)
+#+description: The pre-codegen currency dialog grouped fields into separate tabs; codegen's Qt detail-dialog template only ever generates a single tab, making entities with many fields harder to read. Add a generic view_group concept to the entity_org schema and Qt codegen templates, piloted on currency, and document the domain knowledge in the manual.
+#+type: story
+#+level: s2
+#+filetags: :codegen:qt:currency:refdata:sprint_22:v0:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the ability to group an entity's detail-dialog fields into
+separate tabs — lost when currency was migrated onto the shared Qt
+codegen templates — as a generic, reusable codegen concept
+(=view_group=) rather than a currency-specific patch, piloted on
+currency (the entity that had it and lost it), and document the
+result in the manual.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Nothing.                                |
+| Waiting on    | Nothing.                                |
+| Next          | Nothing.                                |
+| Last touched  | 2026-07-10                               |
+
+* Acceptance
+
+- [X] The =entity_org= schema (=codegen_input_org_schema.org=) gains an
+  optional per-field =view_group= column in the =Detail fields= table
+  (=*** Detail fields= under =** Qt=). Fields with no =view_group=
+  default to a single implicit tab (backward compatible with every
+  existing entity — verified mechanically via zero-diff regeneration,
+  not just asserted).
+- [X] The Qt detail-dialog codegen templates (=qt_detail_dialog_ui.mustache=,
+  via =compute_view_groups()= in =core.py=) generate one =QWidget= tab
+  per distinct =view_group= (in first-appearance order), each with its
+  own =QFormLayout=, instead of always emitting a single =generalTab=.
+  The generic =Provenance= tab is unaffected. =cpp_qt_detail_dialog.{hpp,cpp}.mustache=
+  needed no changes (confirmed, not assumed).
+- [X] Currency's =entity_org= model updated with =view_group= values
+  matching the pre-codegen tabs exactly (recovered from git history):
+  General, Formatting, Rounding — Provenance unaffected.
+- [X] Currency regenerated and manually verified live: 6/6 test steps
+  PASSED (all four tabs, correct fields, editing/saving, tab-switch
+  state preservation).
+- [X] Manual chapter 5 screenshots retaken against the regenerated
+  dialog and cropped to just the dialog window — 5/5 test steps
+  PASSED. =currency_details_rounding.png= embedded in the chapter for
+  the first time (pre-existing gap, fixed alongside the others).
+- [X] No additional currency domain knowledge gaps surfaced — prose
+  re-verified field-by-field against the live dialog and found
+  accurate as written.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8FB9E5AD-E154-4CB8-8ED4-CA2FF3022663][Scaffold story: Codegen support for view groups (Qt detail-dialog tabs)]] | DONE | 2026-07-09 | 2026-07-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A2DD82C0-0B8A-498D-8AA3-DA5C9A8355D2][Design and add view_group support to the entity_org schema and Qt codegen templates]] | DONE | 2026-07-09 | 2026-07-10 | Add an optional view_group column to the Detail fields table and generate one dialog tab per distinct view_group. |
+| [[id:2C1C628B-7C55-4CC7-B8F9-B3E52A0739A6][Apply view_group tabs to the currency entity (pilot)]] | DONE | 2026-07-10 | 2026-07-10 | Model currency's fields into the pre-codegen tab grouping, regenerate, verify. |
+| [[id:43BF58C0-902A-4222-A9E5-86C67CE60C9A][Document currency domain knowledge in the manual]] | DONE | 2026-07-10 | 2026-07-10 | Retake chapter 5 screenshots against the restored tabs; fix the missing Rounding screenshot; add any newly-surfaced domain knowledge. |
+
+* Decisions
+
+- =view_group= grouping is computed in =core.py=, after the existing
+  per-field enrichment loop, not in =org_loader.py= as originally
+  planned — some entities never declare an explicit =Detail fields=
+  table (=core.py= auto-generates a minimal one from columns when
+  absent), and that fallback path runs after =org_loader.py=. Grouping
+  earlier would have silently skipped every auto-generated-detail_fields
+  entity. Factored into a standalone, directly unit-testable
+  =compute_view_groups()= function rather than left inlined.
+- Byte-identical backward compatibility for the no-=view_group= case
+  required hard-coding the exact legacy widget names/title (including
+  the group box's "Basic Information" title, distinct from the tab's
+  own "General" title) rather than deriving them generically — a naive
+  "tab title == group box title == group name" scheme would have
+  silently changed every existing entity's generated =.ui=.
+- While verifying the currency pilot live, discovered and fixed a real,
+  systemic bug unrelated to =view_group= itself: every generated
+  =Client*Model::fetch_*()= checked transport-level failure but never
+  the response's own =success=/=message= fields, silently turning a
+  genuine backend failure (e.g. a stale-schema SQL error) into "0 rows
+  loaded" with no visible error. Fixed at the shared codegen template
+  source, regenerated for currency only (other entities' protocol
+  structs predate the =success=/=message= fields the current protocol
+  template already generates unconditionally — broader rollout needs
+  each entity's protocol confirmed current first, tracked separately).
+
+* Out of scope
+
+- Any UI grouping mechanism beyond Qt detail-dialog tabs (e.g. table
+  column grouping, report sections) — =view_group= is named generically
+  in case other projections want it later, but this story only
+  implements the detail-dialog-tab consumer.
+- Restoring exact pixel-level layout/spacing from the pre-codegen
+  dialog — only the field-to-tab grouping, using the same generated
+  widget conventions every other codegen'd entity already uses.

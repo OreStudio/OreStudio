@@ -92,7 +92,15 @@ def _read_env(env_file: Path) -> dict:
 # BASE_PORT_STEP apart), so every port an environment owns is identifiable at a
 # glance from its base. These offsets are the single source of truth for that
 # layout; keep them in sync with the services and the Qt client.
-BASE_PORT_START = 50000
+#
+# Kept below the kernel's ephemeral port range (see
+# /proc/sys/net/ipv4/ip_local_port_range, typically 32768-60999) so a fixed
+# listener (e.g. the NATS monitor port) can never collide with an unrelated
+# process's outbound connection being handed the same port as its OS-assigned
+# ephemeral source port. BASE_PORT_START used to be 50000, squarely inside
+# that range; existing environments keep their old ports via ORES_BASE_PORT
+# in .env until migrated by hand.
+BASE_PORT_START = 20000
 BASE_PORT_STEP = 1000
 HTTP_PORT_OFFSET_DEBUG = 0
 HTTP_PORT_OFFSET_RELEASE = 1

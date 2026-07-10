@@ -31,12 +31,12 @@ in practice, not just in isolation.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] |
-| Now          | Not yet started.                       |
+| Now          | Complete.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-07                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -63,3 +63,13 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Piloted end-to-end on [[id:A976A11A-93B1-4703-8F09-8741CF9BC0F0][Capture screenshots for the Currency Pairs manual
+chapter]] (=currency-pair-refdata= story): five capture steps run
+through the panel, per-step =*** Result= sections written back with
+PASS status and screenshot file links, the overall =* Results= table
+populated with completion timestamp/branch/commit/worktree, and the
+scenario rendered correctly on the built site. Also independently
+exercised via =scenario_verify_context_viewer_and_ui_polish.org= for
+the Story/Task context viewer specifically. Proves the full workflow
+end to end, not just in isolation.

@@ -890,10 +890,18 @@ create or replace function ores_variability_seed_tenant_system_settings_fn(
 declare
     v_setting record;
 begin
+    -- Restricted to the system tenant's own system-party scope: all
+    -- system.* settings are seeded that way today (no party-specific
+    -- overrides exist), and this filter makes that invariant enforced
+    -- rather than incidental — without it, a future party-scoped
+    -- system.* override at the system tenant would be silently
+    -- re-scoped to the destination tenant's system party instead of
+    -- being skipped.
     for v_setting in
         select name, value, data_type, description
         from ores_variability_system_settings_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
+          and party_id = ores_variability_resolve_system_party_fn(ores_utility_system_tenant_id_fn())
           and name like 'system.%'
           and name <> 'system.bootstrap_mode'
           and valid_to = ores_utility_infinity_timestamp_fn()

@@ -99,8 +99,8 @@ provisioning script) deliberately changes it.
 ** Implementation
 
 - New SQL function, e.g.
-  =ores_variability_seed_tenant_system_settings_fn(p_tenant_id uuid,
-  p_actor text)=: copies every currently-active row from the system
+  =ores_variability_seed_tenant_system_settings_fn(p_tenant_id uuid)=:
+  copies every currently-active row from the system
   tenant whose =name= starts with ='system.'= — *except*
   ='system.bootstrap_mode'=, which keeps its own explicit seed — into
   =p_tenant_id=, using =ores_variability_system_settings_upsert_fn=

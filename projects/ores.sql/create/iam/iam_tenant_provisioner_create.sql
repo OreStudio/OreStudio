@@ -466,7 +466,7 @@ begin
     -- seeded for future tenants without a second list to remember.
     perform ores_variability_seed_tenant_system_settings_fn(v_tenant_id);
 
-    raise notice 'Seeded bootstrap mode system setting for tenant: %', p_code;
+    raise notice 'Seeded system settings for tenant: %', p_code;
 
     -- =========================================================================
     -- Seed Live workspace for this tenant

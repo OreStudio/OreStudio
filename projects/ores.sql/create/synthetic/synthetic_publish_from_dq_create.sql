@@ -289,6 +289,18 @@ begin
                 end if;
             end loop;
         else
+            -- Same voiding rule as the branch above: this fallback publishes
+            -- exactly one component (index 0), so any other pre-existing
+            -- index (e.g. left over from a previously-published multi-
+            -- component mixture for this fx_spot_config_id) must be voided
+            -- too, not just left orphaned.
+            update ores_synthetic_gmm_components_tbl existing
+            set valid_to = current_timestamp
+            where existing.tenant_id = p_target_tenant_id
+              and existing.fx_spot_config_id = v_fx_config_id
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+              and existing.component_index <> 0;
+
             select exists (
                 select 1 from ores_synthetic_gmm_components_tbl existing
                 where existing.tenant_id = p_target_tenant_id

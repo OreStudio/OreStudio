@@ -81,6 +81,37 @@ initial price, tick cadence, process type).
 :nullable: false
 :END:
 
+** price_source
+:PROPERTIES:
+:type:     text
+:nullable: false
+:default:  'vintage'
+:END:
+
+Where this row's initial spot price comes from: =fixed= (use
+=gmm_initial_price= as entered) or =vintage= (derive it from
+=vintage_source=/=vintage_date=, guarded by availability).
+
+** vintage_source
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+Source tag of the market-data vintage this row's initial spot is
+validated against (e.g. =ore.reference=, =fed.h10.2016-02-05=). Only
+populated when =price_source= is =vintage=.
+
+** vintage_date
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+Observation date of the market-data vintage this row's initial spot is
+validated against, ISO format (e.g. =2016-02-05=). Only populated
+when =price_source= is =vintage=.
+
 * Artefact indexes
 
 ** base_currency_code

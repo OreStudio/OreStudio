@@ -157,6 +157,8 @@ switching between the two bundles leaves no orphaned components.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =ClientMarketFixingModel= has the same unfiltered-fetch-then-client-filter truncation bug this PR fixed for observations | =ClientMarketFixingModel.cpp= | Declined (for now) | Needs a protocol change (=series_id= field), different scope; captured as =fixings_model_unfiltered_page_truncation= |
+| 2 | =total_available_count= stays unfiltered by =series_id= after this PR's fix, inconsistent with the (now-filtered) result rows | =market_observation_handler.hpp= | Declined | Pre-existing, not user-visible today (field unused by the window); noted in the fixings capture for whoever picks it up |
+| 3 | No unique constraint on =(dataset_id, base_currency_code, quote_currency_code, component_index)= for the new GMM components artefact table | =dq_synthetic_gmm_components_artefact_create.sql= | Declined | Defense-in-depth suggestion; nothing in current populate scripts can produce a duplicate, downstream unique index would catch it loudly if that changed |
 
 * Result

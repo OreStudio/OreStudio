@@ -26,12 +26,12 @@ Generate and review C++ core artefacts for book_status (domain class, mapper, re
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned — superseded.                 |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-26                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -58,3 +58,6 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Duplicate of "Sync C++ codegen for book_status" (DONE), left over
+from an earlier, more granular task breakdown; superseded.

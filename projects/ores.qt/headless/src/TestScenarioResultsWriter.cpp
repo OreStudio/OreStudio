@@ -189,4 +189,30 @@ bool write_scenario_results(const QString& path,
     return true;
 }
 
+bool append_scenario_note(const QString& path, const QString& line) {
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+    QStringList lines;
+    {
+        QTextStream in(&file);
+        while (!in.atEnd())
+            lines << in.readLine();
+    }
+    file.close();
+
+    const auto notes_span = find_heading(lines, "Notes", 0, lines.size());
+    if (!notes_span.found())
+        return false;
+
+    lines.insert(notes_span.end, line);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
+        return false;
+    QTextStream out(&file);
+    for (const auto& l : lines)
+        out << l << "\n";
+    return true;
+}
+
 }

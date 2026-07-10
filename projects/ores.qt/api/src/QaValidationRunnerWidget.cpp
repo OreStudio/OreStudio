@@ -239,10 +239,15 @@ QaValidationRunnerWidget::QaValidationRunnerWidget(QWidget* parent)
     connect(screenshotAction_, &QAction::triggered, this, [this]() {
         const QString baseName = QFileInfo(scenarioPath_).completeBaseName();
         captureScreenshot(baseName, [this](const QString& path) {
-            if (path.isEmpty())
+            if (path.isEmpty()) {
                 emit errorOccurred(tr("Failed to save screenshot."));
-            else
-                emit statusMessage(tr("Saved screenshot to %1").arg(path));
+                return;
+            }
+            emit statusMessage(tr("Saved screenshot to %1").arg(path));
+            if (!append_scenario_note(
+                    scenarioPath_, tr("[[file:%1]]").arg(QFileInfo(path).fileName())))
+                emit errorOccurred(tr("Saved screenshot but failed to record it in the "
+                                       "scenario doc's Notes section."));
         });
     });
     connect(stepsList_,
@@ -471,7 +476,8 @@ void QaValidationRunnerWidget::openStepDetail(QListWidgetItem* item) {
             }
             emit statusMessage(tr("Saved screenshot to %1").arg(path));
             if (notesPtr)
-                notesPtr->appendPlainText(tr("Screenshot: %1").arg(QFileInfo(path).fileName()));
+                notesPtr->appendPlainText(
+                    tr("[[file:%1]]").arg(QFileInfo(path).fileName()));
         });
     });
     connect(passButton, &QPushButton::clicked, subWindow, [apply]() { apply(step_status::pass); });

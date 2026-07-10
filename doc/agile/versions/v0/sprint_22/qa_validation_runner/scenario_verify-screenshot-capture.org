@@ -11,6 +11,7 @@
 #+updated: 2026-07-10
 #+environment:
 #+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
 
 This page documents a test scenario verifying [[id:5184C0F8-9200-4A8D-9210-35736B84CC0F][Add screenshot capture to the QA Validation Runner panel]] in [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
 

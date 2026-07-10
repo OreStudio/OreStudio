@@ -2,7 +2,7 @@
 :ID: 352DD997-5ABB-4E4E-B83A-EF90455EAE52
 :END:
 #+title: Currencies
-#+description: Currency management in OreStudio: ISO 4217, the Qt UI, auxiliary data (rounding types, market tiers, monetary natures), shell and CLI commands.
+#+description: Currency management in ORE Studio: ISO 4217, the Qt UI, auxiliary data (rounding types, market tiers, monetary natures), shell and CLI commands.
 #+type: manual
 #+level: cross
 #+filetags: :knowledge:manual:currencies:refdata:user_guide:
@@ -11,9 +11,9 @@
 
 #+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /currency/ as a reference-data
-entity in OreStudio. Currencies are identified by the international ISO
+entity in ORE Studio. Currencies are identified by the international ISO
 4217 standard; the chapter sets out that standard and the gaps it leaves,
-the extensions OreStudio layers on top — display formatting, rounding
+the extensions ORE Studio layers on top — display formatting, rounding
 rules, market tiers, and monetary natures — and the complete lifecycle of
 managing currency records through the Qt interface, the interactive
 shell, and the command-line tool.
@@ -32,7 +32,7 @@ and cash]], distinguishing three terms routinely conflated in casual
 usage; this framing is what makes the rest of the chapter's choices
 legible, not just a list of fields. From there it establishes identity
 in [[*ISO 4217 and its limitations][ISO 4217 and its limitations]], which sets out the codes that name a
-currency and the gaps that motivate OreStudio's extensions. It then
+currency and the gaps that motivate ORE Studio's extensions. It then
 surveys the body of records in [[*The Currencies window][The Currencies window]] before
 narrowing to a single record in [[*Currency Details][Currency Details]] and its General,
 Formatting, Rounding, and Provenance tabs. It then turns to changing a
@@ -49,7 +49,7 @@ same operations automated from the [[*Shell commands][shell]] and the [[*CLI com
 /Money/, /currency/, and /cash/ are used almost interchangeably in
 everyday speech, yet they name three distinct, if related, concepts,
 each nested within the one before it. Disentangling them clarifies
-what OreStudio's =Currency= record is actually modelling, and, just as
+what ORE Studio's =Currency= record is actually modelling, and, just as
 importantly, what it deliberately is not.
 
 Money is the broadest of the three terms: any item or verifiable
@@ -88,7 +88,7 @@ a defined area of circulation, usually a country or a group of
 countries sharing a monetary union. Two meanings coexist in ordinary
 usage, the physical representation of banknotes and coins on one
 hand, and the abstract system of money itself on the other, the
-latter being the more useful framing for a system such as OreStudio,
+latter being the more useful framing for a system such as ORE Studio,
 given how small a fraction of any modern money supply physical cash
 actually represents. Being standardised by [[*ISO 4217 and its limitations][ISO 4217]] is not a
 precondition for counting as a currency in this conceptual sense;
@@ -110,7 +110,7 @@ one eventually occurs.
 
 Cash narrows the concept furthest of the three. It is money in the
 physical form of banknotes and coins, or, in the bookkeeping sense
-more relevant to a system like OreStudio, the broader class of
+more relevant to a system like ORE Studio, the broader class of
 current assets comprising currency or currency-equivalents that can
 be accessed immediately or near-immediately. A bank deposit falls
 under this broader definition: it is a financial asset rather than
@@ -122,11 +122,11 @@ cryptocurrencies stretch the definition in different directions; and
 not all currency holdings are cash, since a currency can equally be
 held in a comparatively illiquid financial-asset form.
 
-OreStudio's =Currency= reference-data record, the subject of the
+ORE Studio's =Currency= reference-data record, the subject of the
 remainder of this chapter, models currency in precisely this
 narrower, systemic sense: a named, identified system of money,
 equipped with the extensions described in [[*ISO 4217 and its limitations][the next section]] that let
-OreStudio put it to practical use in calculations. The chapter does
+ORE Studio put it to practical use in calculations. The chapter does
 not attempt to model money in the abstract, nor the accounting
 concept of cash; those notions are drawn upon, where relevant, by the
 trading and booking chapters that build upon the currency reference
@@ -140,7 +140,7 @@ numeric code (=840=, =978=, =826=), a currency name, and the number of
 decimal places — for example, USD has 2 minor units, meaning amounts
 are expressed to the nearest cent.
 
-ISO 4217 is widely adopted and OreStudio uses it as its primary
+ISO 4217 is widely adopted and ORE Studio uses it as its primary
 identifier. However, the standard has gaps that matter in practice:
 
 - It does not classify currencies by *market tier* — the distinction
@@ -155,10 +155,16 @@ identifier. However, the standard has gaps that matter in practice:
 - It does not specify *rounding conventions* — whether a calculation
   result should be rounded up, down, or to the nearest unit.
 
-OreStudio extends the ISO 4217 model with additional fields to cover
+ORE Studio extends the ISO 4217 model with additional fields to cover
 these gaps: monetary nature, market tier, currency symbol, fraction
 symbol, a printf-style format string, and configurable rounding rules.
 The standard fields remain primary; the extensions are supplementary.
+
+With the underlying model in place, both the standard fields ISO 4217
+provides and the extensions layered on top of them, the rest of the
+chapter turns from what a currency record contains to where you go to
+work with one. That begins, as it does for any list-backed entity in
+ORE Studio, with the window listing every currency the tenant holds.
 
 ** The Currencies window
 
@@ -237,7 +243,7 @@ description of the provenance fields common to all reference data entities.
 ** Editing a currency
 
 To edit a currency, open it in the Currency Details dialog, make your
-changes, and click *Save*. Before the record is written, OreStudio
+changes, and click *Save*. Before the record is written, ORE Studio
 prompts for a change reason.
 
 #+caption[The Change Reason Required dialog]: The Change Reason Required dialog, which appears before every save. A reason code must be selected; commentary is optional for some reason codes and required for others.
@@ -265,7 +271,7 @@ a new version, preserving the full audit chain.
 
 The three tables described in this section act as classification
 vocabularies for currencies. In a standard deployment their values
-are fixed at provisioning time and rarely change; OreStudio still
+are fixed at provisioning time and rarely change; ORE Studio still
 versions and audits them the same way as any other reference data.
 They are managed by the system tenant and are accessible from
 the /Reference Data → Currencies/ sub-menu.
@@ -501,7 +507,7 @@ The chapter set out to show that managing a currency well follows from
 understanding its identity, the extensions that make it usable, its
 interface, and its programmatic equivalents in turn, and it has traced
 exactly that path. ISO 4217 supplies the standard identity — code,
-numeric code, name, and minor units — while OreStudio's extensions cover
+numeric code, name, and minor units — while ORE Studio's extensions cover
 what the standard leaves out: market tiers, monetary natures for digital
 assets, display formatting, and rounding conventions. Building on that,
 the Qt interface took the record from the list view down to a single

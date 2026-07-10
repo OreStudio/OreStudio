@@ -20,7 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the story's documents (story, tasks, test scenarios), wire it
+into the sprint, and raise the initial scaffold PR — so the
+substantive implementation tasks start with the docs skeleton and PR
+already in place.
 
 * Status
 
@@ -35,7 +38,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- [X] Story and its three tasks scaffolded with =compass add=, wired
+  into =sprint.org=.
+- [X] Pre-codegen currency tab grouping recovered from git history and
+  written into the story's Acceptance and the tasks' Plans.
+- [X] Scaffold PR (#1488) raised.
 
 * Plan
 

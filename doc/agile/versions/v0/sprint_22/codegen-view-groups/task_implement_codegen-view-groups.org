@@ -5,7 +5,7 @@
 #+description: Initial task for: Codegen support for view groups (Qt detail-dialog tabs)
 #+type: task
 #+level: s1
-#+filetags: :codegen-view-groups:sprint_22:v0:
+#+filetags: :codegen:qt:codegen-view-groups:sprint_22:v0:
 #+owner: marco
 #+branch: feature/codegen-view-groups
 #+pr:

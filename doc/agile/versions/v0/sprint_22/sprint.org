@@ -146,7 +146,7 @@ starting from FX and generalising to other asset classes over time.
 | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] | ABANDONED | 2026-07-03 | 2026-07-10 | Two sample FX collections seeded from real ORE reference data (2016-02-05 vintage), Market Simulator grouping by collection, feed namespacing, vintage-availability guard. |
 | [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] | DONE | 2026-07-04 | 2026-07-04 | Non-interactive market data import command, reusing the existing import_service; unblocks the synthetic data collections story's vintage import task. |
 | [[id:57DB2B98-0013-4AED-BA7A-315DC8BD8623][Move trade import orchestration to service layer]] | ABANDONED | | 2026-07-10 | Move ImportTradeDialog's ~300 lines of trade-import orchestration (XML parse, per-trade save, 30-way instrument dispatch) into a server-side trade_import_service + import_trades_request, so ores.shell's future trade import command doesn't duplicate it. |
-| [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] | ABANDONED | 2026-07-06 | 2026-07-10 | Knowledge-base foundation (conventions, quoting, cross rates) followed by domain/db/codegen support for currency pairs as reference data. |
+| [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] | DONE | 2026-07-06 | 2026-07-10 | Knowledge-base foundation (conventions, quoting, cross rates) followed by domain/db/codegen support for currency pairs as reference data. |
 
 ** Tooling
 

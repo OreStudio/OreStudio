@@ -57,4 +57,4 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 | [[id:C99FE60D-4E6C-4B62-9C33-8767BAE696C4][Implement and verify purpose_type shell commands]] | DONE | | | Shell list/add/remove commands. |
 | [[id:4917FC0A-4DEC-498F-A71F-38E18AA28B6A][Implement and verify purpose_type CLI commands]] | DONE | | | CLI list/add/remove commands. |
 | [[id:6657BD12-480B-4FAB-B7D9-CA62AFEAF54B][File Wt and HTTP backlog captures for purpose_type]] | DONE | | | Backlog captures filed for Wt and HTTP support. |
-| [[id:3E433126-8259-4280-9C89-1801C0C3E8E9][Write purpose_type user manual chapter]] | BACKLOG | | | Entity chapter documenting all Qt windows, shell, and CLI commands. |
+| [[id:3E433126-8259-4280-9C89-1801C0C3E8E9][Write purpose_type user manual chapter]] | (moved) | | 2026-07-10 | Moved to [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 snags]] — only real remaining item in an otherwise-DONE story. |

@@ -21,16 +21,23 @@ just the leftover task is listed here — pull it into whichever
 future sprint has room, or fold it into a more natural home if one
 emerges (e.g. once a related entity gets commissioned).
 
-** Write purpose_type user manual chapter
+** Tasks parked here
 
-From [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] (4/5 tasks done this sprint; the story
-itself is closed DONE). =purpose_type= is a lookup classifying
-Portfolio purpose, and Portfolio itself ([[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]]) hasn't
-been commissioned yet — so there's no natural parent chapter to fold
-this into the way book_status folds into Book's chapter. Write it as
-its own small chapter (or a subsection once Portfolio's chapter
-exists) covering the Qt UI (list, detail, history — all already
-shipped and verified this sprint) and the standard values.
+Each task file was moved here as-is (state, acceptance, notes all
+intact) and reparented to this capture — nothing rewritten.
+
+- [[id:3E433126-8259-4280-9C89-1801C0C3E8E9][Write purpose_type user manual chapter]] — from [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission:
+  purpose_type]] (4/5 done this sprint; story closed DONE). No natural
+  parent chapter yet since Portfolio itself ([[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]])
+  isn't commissioned.
+- [[id:D8C2D3DF-433A-4350-9916-73327EB90999][Add a generic FK-combo-with-flag-icons facet to ores.codegen.entity]]
+  — from [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] (27/30 done; story
+  closed DONE).
+- [[id:5BF9E640-E0EB-48B9-8BAB-67919D811429][Add domain-explanation tooltips to Currency and Currency Pair
+  Convention detail fields]] — same story.
+- [[id:B4526411-7FDC-48E8-A346-DA69B5F66BDD][pair_code inline flag icon renders tiny regardless of
+  keyFlagIconSize()]] — same story; an attempted fix was already
+  reverted, needs proper investigation.
 
 * Why
 

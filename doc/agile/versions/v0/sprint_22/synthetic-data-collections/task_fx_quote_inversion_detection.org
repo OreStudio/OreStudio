@@ -8,7 +8,7 @@
 #+filetags: :synthetic-data-collections:sprint_22:v0:
 #+owner: marco
 #+branch: feature/fx-quote-inversion-detection
-#+pr:
+#+pr: 1492
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -160,7 +160,7 @@ detection.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1492][#1492]] | [marketdata] Detect and correct reversed FX spot quotes during import |
 
 * Review
 

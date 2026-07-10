@@ -35,11 +35,11 @@ during implementation whether these sit alongside or replace
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Implemented and verified live via db recreate + from-scratch Barclays provisioning + both bundles hand-published. Writing up before closing. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close out.        |
+| Next         | Nothing. |
 | Last touched | 2026-07-10                               |
 
 * Acceptance

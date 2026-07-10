@@ -8,7 +8,7 @@
 #+filetags: :synthetic-data-collections:sprint_22:v0:
 #+owner: marco
 #+branch: feature/seed-basic-realistic-bundles
-#+pr:
+#+pr: 1498
 #+blocked_on: [[id:C236C0DC-4ED1-4EEE-8DDD-CD841CED3AB2][Publish a curated FX driver-rate dataset for 2016-02-05]]
 #+blocked_since: 2026-07-10
 #+created: 2026-07-03
@@ -151,7 +151,7 @@ switching between the two bundles leaves no orphaned components.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1498][#1498]] | [synthetic] Seed Basic and Realistic FX spot config bundles |
 
 * Review
 

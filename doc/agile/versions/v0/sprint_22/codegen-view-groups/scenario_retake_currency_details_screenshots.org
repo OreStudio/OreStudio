@@ -119,7 +119,7 @@ if that's not already explained).
 | Status        | PASSED |
 | Completed at  | 2026-07-10T09:50:00Z |
 | Branch        | feature/codegen-view-groups |
-| Commit        | (pending) |
+| Commit        | 7024fcd86 |
 | Worktree      | bright_faraday |
 
 * Notes

@@ -77,7 +77,8 @@ def _cmd_create(args, project_root):
 def _cmd_charts(args, project_root):
     import compass
     ns = argparse.Namespace(sprint=args.sprint, start_date=None,
-                            end_date=None, output_dir=None)
+                            end_date=None, output_dir=None,
+                            branch=args.branch)
     return compass.cmd_sprint_charts(ns)
 
 
@@ -292,6 +293,11 @@ def run(argv, project_root):
 
     ch = sub.add_parser("charts", help="Render the sprint's gnuplot health charts")
     ch.add_argument("--sprint", type=int, required=True)
+    ch.add_argument("--branch", default=None,
+                    help="Git ref to read commit/merge activity from "
+                         "(default: origin/main). Use the current feature "
+                         "branch to include not-yet-merged work, e.g. "
+                         "--branch HEAD.")
 
     ex = sub.add_parser("export",
                         help="Export release_notes.org to release_notes.md "

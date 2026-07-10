@@ -79,11 +79,26 @@ and SQL (table DDL, triggers, constraints).  The largest doc type (~83 files).
   ** Conventions           — PROPERTIES: iterator_var
   ** Table display         — | column | header | table
   ** Qt                    — PROPERTIES: many (domain_class, protocol_include, …)
-     *** Detail fields     — | field | label | widget | type | is_key | … | table
+     *** Detail fields     — | field | label | widget | type | is_key | view_group (opt) | … | table
      *** Columns (Qt model)— | enum_name | field | header | type | width | table
   ** Custom repository methods — freeform
 * See also                 — org-roam links
 #+end_example
+
+*** view_group (Detail fields)
+
+An optional cell on each =Detail fields= row naming which Qt
+detail-dialog tab that field belongs to. Fields sharing the same
+=view_group= value land in the same tab, in the order they appear in
+the table; tabs themselves appear in first-appearance order across the
+table. Fields with no =view_group= all fall into one implicit tab, so
+an entity that never sets it generates exactly the single tab codegen
+always produced before this existed — adding =view_group= to one
+entity's model has no effect on any other entity's generated dialog.
+
+Named generically (not e.g. =tab=) since it models "which projection
+of the entity a field belongs to" rather than committing to tabs
+specifically — the Qt detail dialog is its only consumer today.
 
 *** ORE Studio MASD stereotypes
 

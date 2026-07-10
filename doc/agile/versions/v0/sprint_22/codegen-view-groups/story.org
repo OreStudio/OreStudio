@@ -72,7 +72,7 @@ result in the manual.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:8FB9E5AD-E154-4CB8-8ED4-CA2FF3022663][Scaffold story: Codegen support for view groups (Qt detail-dialog tabs)]] | DONE | 2026-07-09 | 2026-07-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:A2DD82C0-0B8A-498D-8AA3-DA5C9A8355D2][Design and add view_group support to the entity_org schema and Qt codegen templates]] | BACKLOG | | | Add an optional view_group column to the Detail fields table and generate one dialog tab per distinct view_group. |
+| [[id:A2DD82C0-0B8A-498D-8AA3-DA5C9A8355D2][Design and add view_group support to the entity_org schema and Qt codegen templates]] | DONE | 2026-07-09 | 2026-07-10 | Add an optional view_group column to the Detail fields table and generate one dialog tab per distinct view_group. |
 | [[id:2C1C628B-7C55-4CC7-B8F9-B3E52A0739A6][Apply view_group tabs to the currency entity (pilot)]] | BACKLOG | | | Model currency's fields into the pre-codegen tab grouping, regenerate, verify. |
 | [[id:43BF58C0-902A-4222-A9E5-86C67CE60C9A][Document currency domain knowledge in the manual]] | BACKLOG | | | Retake chapter 5 screenshots against the restored tabs; fix the missing Rounding screenshot; add any newly-surfaced domain knowledge. |
 

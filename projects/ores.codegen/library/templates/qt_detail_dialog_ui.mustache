@@ -30,24 +30,25 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex"><number>0</number></property>
-     <widget class="QWidget" name="generalTab">
-      <attribute name="title"><string>General</string></attribute>
-      <layout class="QVBoxLayout" name="generalLayout">
+{{#domain_entity.qt.view_groups}}
+     <widget class="QWidget" name="{{tab_widget_name}}">
+      <attribute name="title"><string>{{name}}</string></attribute>
+      <layout class="QVBoxLayout" name="{{tab_layout_name}}">
        <item>
-        <widget class="QGroupBox" name="basicInfoGroup">
+        <widget class="QGroupBox" name="{{group_box_name}}">
          <property name="title">
-          <string>Basic Information</string>
+          <string>{{group_box_title}}</string>
          </property>
-         <layout class="QFormLayout" name="formLayout">
-{{#domain_entity.qt.detail_fields}}
-          <item row="{{_row_index}}" column="0">
+         <layout class="QFormLayout" name="{{form_layout_name}}">
+{{#detail_fields}}
+          <item row="{{_group_row_index}}" column="0">
            <widget class="QLabel" name="{{label_widget}}">
             <property name="text">
              <string>{{label}}:</string>
             </property>
            </widget>
           </item>
-          <item row="{{_row_index}}" column="1">
+          <item row="{{_group_row_index}}" column="1">
 {{#is_line_edit}}
            <widget class="QLineEdit" name="{{widget}}">
             <property name="placeholderText">
@@ -128,10 +129,11 @@
            </widget>
 {{/is_spin_box}}
           </item>
-{{/domain_entity.qt.detail_fields}}
+{{/detail_fields}}
          </layout>
         </widget>
        </item>
+{{#_is_first}}
 {{#domain_entity.qt.has_flag_icon}}
        <item>
         <widget class="QGroupBox" name="flagGroup">
@@ -142,8 +144,9 @@
         </widget>
        </item>
 {{/domain_entity.qt.has_flag_icon}}
+{{/_is_first}}
        <item>
-        <spacer name="verticalSpacer">
+        <spacer name="{{spacer_name}}">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -157,6 +160,7 @@
        </item>
       </layout>
      </widget>
+{{/domain_entity.qt.view_groups}}
      <widget class="QWidget" name="provenanceTab">
       <attribute name="title"><string>Provenance</string></attribute>
       <layout class="QVBoxLayout" name="provenanceTabLayout">

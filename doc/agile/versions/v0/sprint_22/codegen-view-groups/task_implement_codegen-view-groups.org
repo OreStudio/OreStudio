@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-09
 #+updated: 2026-07-09
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,45 +29,58 @@ always landing in one flat form.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                |
+| Next         | Nothing. |
 | Last touched | 2026-07-09                               |
 
 * Acceptance
 
-- [ ] =codegen_input_org_schema.org= documents an optional =view_group=
+- [X] =codegen_input_org_schema.org= documents an optional =view_group=
   column on the =*** Detail fields= table (=** Qt= section of
-  =entity_org=).
-- [ ] =org_loader.py= (or wherever =entity_org= is parsed into the
-  generator model) reads =view_group= per field, defaulting to a
-  single implicit group when absent — every entity without the column
-  today must generate byte-identical output to before.
-- [ ] The generator model exposes fields grouped by =view_group= in
-  first-appearance order (e.g. a =domain_entity.qt.view_groups= list,
-  each with a name and its ordered =detail_fields=) for the Mustache
-  templates to iterate.
-- [ ] =qt_detail_dialog_ui.mustache= iterates =view_groups= to emit one
-  =QWidget= tab per group (title = group name, one per
-  =domain_entity.qt.view_groups= entry) instead of the single hardcoded
-  =generalTab=; the existing =QFormLayout=-per-tab structure and
-  widget-type branches (=is_line_edit=, =is_text_edit=, combo/flag
-  variants, etc.) are reused unchanged inside each generated tab.
-- [ ] =cpp_qt_detail_dialog.{hpp,cpp}.mustache= need no changes if they
-  only reference fields by name (verify this holds — the =tabWidget()=
-  accessor already exists and returns =ui_->tabWidget= regardless of
-  how many pages it holds).
-- [ ] Regenerated a currently-single-tab entity (e.g. run the
-  currency_pair or another already-synced entity through codegen with
-  no =view_group= column added) and confirmed its generated =.ui=/=.cpp=
-  are unchanged — the backward-compatibility guarantee, checked
-  mechanically (diff), not just asserted.
-- [ ] Unit/scaffold test coverage in
-  =projects/ores.codegen/tests/component_scaffold/= (or wherever
-  entity_org → Qt generation is exercised) covers both the
-  no-view_group (single implicit tab) and multi-view_group cases.
+  =entity_org=), plus a dedicated subsection explaining its semantics
+  and the generic (not Qt-tab-specific) naming choice.
+- [X] =compute_view_groups()= (=core.py=, run after =detail_fields= is
+  fully finalized — both the org-provided and auto-generated-from-columns
+  cases — so it works uniformly for both) groups fields by =view_group=,
+  defaulting to a single implicit "General" group when no field sets it.
+- [X] The generator model exposes =domain_entity.qt.view_groups=: a list
+  of groups in first-appearance order, each with a name and its ordered
+  =detail_fields=, plus per-group computed widget names
+  (=tab_widget_name=, =tab_layout_name=, =group_box_name=,
+  =group_box_title=, =form_layout_name=, =spacer_name=) and a
+  =_group_row_index= set on each field (0-based within its own tab's
+  form, distinct from the field's global =_row_index= used elsewhere,
+  e.g. the history dialog's single flat form).
+- [X] =qt_detail_dialog_ui.mustache= (tangled from
+  =ores.cpp.qt.detail_dialog_ui.org= — never hand-edited directly)
+  iterates =view_groups= to emit one =QWidget= tab per group instead of
+  the single hardcoded =generalTab=; the existing =QFormLayout=-per-tab
+  structure and widget-type branches are reused unchanged inside each
+  generated tab. The flag-icon group box (=has_flag_icon=) is emitted
+  only in the first tab, matching where it always lived.
+- [X] =cpp_qt_detail_dialog.{hpp,cpp}.mustache= confirmed unchanged —
+  grepped for any reference to the legacy tab/layout/group-box names
+  and found none; they only reference fields by name via generated
+  accessors.
+- [X] Regenerated =purpose_type= and =currency= (both currently
+  single-tab, currency additionally exercising =has_flag_icon=) via
+  =compass codegen entity generate <entity> --diff --address
+  ores.cpp.qt= and confirmed zero diff for both — the
+  backward-compatibility guarantee, checked mechanically, not asserted.
+  Also hand-verified the multi-tab path directly against a modified
+  copy of the =counterparty= model (2 groups, 5 fields): well-formed
+  XML, correct tab/group/spacer/layout names, per-group row indices
+  reset to 0.
+- [X] Unit test coverage added:
+  =projects/ores.codegen/tests/test_view_groups.py= (8 cases) covers
+  the no-view_group legacy-name-reproduction case, first-appearance
+  ordering across and within groups, derived-name generation, distinct
+  per-tab spacer/layout names, per-group row-index reset, =_is_first=
+  marking, and a field left blank alongside an explicit group. Full
+  suite (38 tests) passes.
 
 * Plan
 
@@ -100,7 +113,39 @@ and =docs/codegen_input_org_schema.org=):
    generated accessors, not by tab, so they likely need zero changes;
    confirm this rather than assume it.
 
+Deviation from the original sketch, discovered mid-implementation:
+grouping can't happen in =org_loader.py= as originally planned, because
+some entities never declare an explicit =*** Detail fields= table at
+all — =core.py= auto-generates a minimal one (code/name/description)
+from the entity's columns when absent, and that path runs strictly
+after =org_loader.py=. Computing =view_groups= in =org_loader.py= would
+silently skip every auto-generated-detail_fields entity. Moved the
+whole computation into =core.py=, immediately after the per-field
+enrichment loop that already runs there (setting =is_line_edit=,
+=_row_index=, etc.) — the same enriched field dicts the .ui template
+already renders per-field widgets from, so no double-enrichment. Also
+factored it into a standalone =compute_view_groups()= function (it was
+originally inlined) specifically so it could be unit-tested in
+isolation without needing to construct a full domain_entity model.
+
+Also discovered mid-implementation: a naive "tab title == group box
+title == group name" scheme would NOT be byte-identical for the
+no-view_group case, since the legacy template used *different* text
+for the two ("General" tab, "Basic Information" group box) — so the
+backward-compatible branch hard-codes the exact legacy strings/widget
+names rather than deriving them, and only entities that actually
+declare =view_group= get the generic derived-name/title-equals-group-name
+scheme.
+
 * Notes
+
+Confirmed via =compass codegen entity generate <entity> --diff
+--address ores.cpp.qt= (temp-dir diff against on-disk files, writes
+nothing) — the right tool for this, found via recipe search
+(=compass list --type recipe --tag codegen=) rather than guessing
+flags on the legacy, now-broken =run_generator.sh= (references a
+=generator.py= module that no longer exists; =codegen.sh= is the
+current entry point).
 
 * Test Scenarios
 
@@ -126,3 +171,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Codegen now supports grouping a Qt detail dialog's fields into tabs via
+an optional per-field =view_group= cell, fully backward compatible
+(verified mechanically, not asserted) — every entity that doesn't use
+it generates byte-identical output. Ready for the currency pilot task
+to add real =view_group= values and verify the restored four-tab
+dialog live in the app.

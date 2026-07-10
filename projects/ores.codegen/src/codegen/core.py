@@ -590,6 +590,77 @@ def snake_to_pascal(snake_str):
     return ''.join(word.capitalize() for word in snake_str.split('_'))
 
 
+def compute_view_groups(detail_fields):
+    """Group a fully-enriched Qt detail_fields list by their optional
+    view_group cell into Qt detail-dialog tabs (see
+    codegen_input_org_schema.org), preserving first-appearance order both
+    within a group and across groups.
+
+    Fields with no view_group all land in one implicit "General" group; in
+    that case (no entity field ever set view_group) the single group
+    reproduces the exact legacy single-tab widget names/title -- including
+    the group box's "Basic Information" title, distinct from the tab's own
+    "General" title -- byte-for-byte, so adding view_group support has zero
+    effect on any entity that doesn't use it. This is the mechanism behind
+    the backward-compatibility guarantee: adding view_group values to one
+    entity's model cannot change any other entity's generated .ui.
+
+    Each returned group dict also gets a '_group_row_index' set on every one
+    of its own detail_fields entries (0-based within that group, for the
+    per-tab QFormLayout's row= attribute -- distinct from the field's own
+    global '_row_index', which numbers it within the whole flat list and is
+    used elsewhere, e.g. the history dialog's single flat form).
+    """
+    uses_view_group = any(f.get('view_group') for f in detail_fields)
+    groups: dict[str, list] = {}
+    order: list[str] = []
+    for f in detail_fields:
+        group_name = f.get('view_group') or 'General'
+        if group_name not in groups:
+            groups[group_name] = []
+            order.append(group_name)
+        groups[group_name].append(f)
+
+    view_groups = []
+    for group_name in order:
+        group_fields = groups[group_name]
+        for gi, f in enumerate(group_fields):
+            f['_group_row_index'] = gi
+        if not uses_view_group:
+            view_groups.append({
+                'name': group_name,
+                'detail_fields': group_fields,
+                'tab_widget_name': 'generalTab',
+                'tab_layout_name': 'generalLayout',
+                'group_box_name': 'basicInfoGroup',
+                'group_box_title': 'Basic Information',
+                'form_layout_name': 'formLayout',
+                'spacer_name': 'verticalSpacer',
+            })
+            continue
+        group_snake = re.sub(r'[^0-9a-zA-Z]+', '_', group_name).strip('_').lower()
+        group_pascal = snake_to_pascal(group_snake) if group_snake else 'General'
+        group_camel = group_pascal[0].lower() + group_pascal[1:] if group_pascal else 'general'
+        view_groups.append({
+            'name': group_name,
+            'detail_fields': group_fields,
+            'tab_widget_name': group_camel + 'Tab',
+            'tab_layout_name': group_camel + 'Layout',
+            'group_box_name': group_camel + 'Group',
+            'group_box_title': group_name,
+            'form_layout_name': group_camel + 'FormLayout',
+            # Distinct per tab -- uic flattens every named widget into one
+            # Ui_* member namespace regardless of nesting, so reusing
+            # "verticalSpacer" across tabs would collide.
+            'spacer_name': group_camel + 'Spacer',
+        })
+
+    view_groups[0]['_is_first'] = True
+    for vg in view_groups[1:]:
+        vg['_is_first'] = False
+    return view_groups
+
+
 def resolve_output_path(output_pattern, model_data, model_type):
     """
     Resolve placeholders in an output path pattern.
@@ -2435,6 +2506,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['metadata_start_row_plus_1'] = len(detail_fields) + 1
             qt['metadata_start_row_plus_2'] = len(detail_fields) + 2
             qt['metadata_start_row_plus_3'] = len(detail_fields) + 3
+            # Group detail_fields by their optional view_group cell into Qt
+            # detail-dialog tabs (see codegen_input_org_schema.org). Computed
+            # here, after detail_fields is fully finalized (both the
+            # org-provided and auto-generated-above cases), not in
+            # org_loader.py, so it uses the same fully-enriched field dicts
+            # the .ui template already renders per-field widgets from.
+            qt['view_groups'] = compute_view_groups(detail_fields)
+            qt['has_multiple_view_groups'] = len(qt['view_groups']) > 1
         # Add generator facet name with default (trade uses 'generator', refdata uses 'generators')
         domain_entity.setdefault('generator_facet_name', 'generators')
         domain_entity['generator_facet_name_upper'] = domain_entity['generator_facet_name'].upper()

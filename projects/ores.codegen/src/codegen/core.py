@@ -610,20 +610,29 @@ def compute_view_groups(detail_fields):
     per-tab QFormLayout's row= attribute -- distinct from the field's own
     global '_row_index', which numbers it within the whole flat list and is
     used elsewhere, e.g. the history dialog's single flat form).
+
+    Grouping identity uses the same normalized key as the derived Qt widget
+    names (lowercase, non-alnum stripped), not the raw view_group string --
+    two rows differing only by case or incidental whitespace (e.g.
+    "Rounding" vs "rounding ") must fold into the same tab, or they'd
+    silently derive identical widget names for two distinct groups, and
+    uic would reject the generated .ui as a duplicate-widget name. The
+    first-seen raw string is kept as the display title.
     """
     uses_view_group = any(f.get('view_group') for f in detail_fields)
     groups: dict[str, list] = {}
-    order: list[str] = []
+    display_names: dict[str, str] = {}
     for f in detail_fields:
         group_name = f.get('view_group') or 'General'
-        if group_name not in groups:
-            groups[group_name] = []
-            order.append(group_name)
-        groups[group_name].append(f)
+        group_key = re.sub(r'[^0-9a-zA-Z]+', '_', group_name).strip('_').lower() or 'general'
+        if group_key not in groups:
+            groups[group_key] = []
+            display_names[group_key] = group_name
+        groups[group_key].append(f)
 
     view_groups = []
-    for group_name in order:
-        group_fields = groups[group_name]
+    for group_key, group_fields in groups.items():
+        group_name = display_names[group_key]
         for gi, f in enumerate(group_fields):
             f['_group_row_index'] = gi
         if not uses_view_group:
@@ -638,8 +647,7 @@ def compute_view_groups(detail_fields):
                 'spacer_name': 'verticalSpacer',
             })
             continue
-        group_snake = re.sub(r'[^0-9a-zA-Z]+', '_', group_name).strip('_').lower()
-        group_pascal = snake_to_pascal(group_snake) if group_snake else 'General'
+        group_pascal = snake_to_pascal(group_key)
         group_camel = group_pascal[0].lower() + group_pascal[1:] if group_pascal else 'general'
         view_groups.append({
             'name': group_name,
@@ -2513,7 +2521,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # org_loader.py, so it uses the same fully-enriched field dicts
             # the .ui template already renders per-field widgets from.
             qt['view_groups'] = compute_view_groups(detail_fields)
-            qt['has_multiple_view_groups'] = len(qt['view_groups']) > 1
         # Add generator facet name with default (trade uses 'generator', refdata uses 'generators')
         domain_entity.setdefault('generator_facet_name', 'generators')
         domain_entity['generator_facet_name_upper'] = domain_entity['generator_facet_name'].upper()

@@ -105,6 +105,27 @@ def test_only_first_group_marked_is_first():
     assert [g['_is_first'] for g in groups] == [True, False, False]
 
 
+def test_view_groups_differing_only_by_case_or_whitespace_fold_together():
+    # "Rounding" and "rounding " both normalize to the same widget-name key
+    # -- they must land in one group, not two groups that would derive
+    # identical (colliding) widget names.
+    fields = [
+        _field('code', 'General'),
+        _field('rounding_type', 'Rounding'),
+        _field('rounding_precision', 'rounding '),
+    ]
+    groups = compute_view_groups(fields)
+
+    assert [g['name'] for g in groups] == ['General', 'Rounding']
+    rounding = groups[1]
+    assert [f['field'] for f in rounding['detail_fields']] == [
+        'rounding_type', 'rounding_precision',
+    ]
+    assert rounding['tab_widget_name'] == 'roundingTab'
+    assert rounding['group_box_name'] == 'roundingGroup'
+    assert rounding['group_box_title'] == 'Rounding'  # first-seen display name
+
+
 def test_field_with_no_view_group_falls_back_to_general_alongside_explicit_group():
     # Once any field declares a view_group, the entity is no longer in the
     # legacy no-view_group case -- a field left blank simply joins "General"

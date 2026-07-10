@@ -29,11 +29,11 @@ friction that discourages doing it at all.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] |
-| Now          | Implemented and verified live; ready for PR. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit and raise PR.                   |
+| Next         | Nothing. |
 | Last touched | 2026-07-10                               |
 
 * Acceptance

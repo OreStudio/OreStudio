@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: EEE4CB47-15A9-45C3-B7AC-D5BBD2860BAE
+:END:
+#+title: ClientMarketFixingModel truncates series on unfiltered page fetch
+#+description: Same failure mode PR #1498 fixed for market observations: fetches an unfiltered limit=10000 page of fixings and filters client-side, so a series' rows get silently truncated once other series' continuous ticks grow the table past the page size.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:qt:bug:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Found by automated review on PR #1498 (=projects/ores.qt/mktdata/src/ClientMarketFixingModel.cpp:125-145=):
+fetches an unfiltered =limit=10000= page of fixings, then filters
+client-side by =series_id_= via =std::remove_if= — the exact pattern
+PR #1498 just fixed for =ClientMarketObservationModel=. Once
+continuously-ticking synthetic feeds across other series push the
+fixings table past 10,000 rows, this series' fixings will be silently
+truncated out of the result — nothing shows in the fixings view for
+that series, with no error or indication why. Unlike observations,
+=get_market_fixings_request=
+(=projects/ores.marketdata/api/include/ores.marketdata.api/messaging/market_fixing_protocol.hpp:30-35=)
+has no =series_id= field yet, so the fix needs a small protocol +
+repository change first (mirroring
+=market_observation_repository::read_latest='s =series_id= branch),
+not just a client tweak: add =series_id= to the request, thread it
+through the fixing repository/service/handler equivalents of
+=market_observation_repository.cpp=/=market_observation_service.cpp=/=market_observation_handler.hpp=,
+then set =req.series_id= in the client and remove the client-side
+filter.
+
+* Why
+
+Same root cause, same user-facing symptom (a screen quietly shows
+nothing once enough unrelated data accumulates), just not yet hit in
+practice the way the observations bug was. Fixing it now, while the
+pattern and the fix shape are fresh from PR #1498, is cheaper than
+re-discovering it later.
+
+* References
+
+- =projects/ores.qt/mktdata/src/ClientMarketFixingModel.cpp:125-145=
+- =projects/ores.marketdata/api/include/ores.marketdata.api/messaging/market_fixing_protocol.hpp:30-35=
+- =projects/ores.marketdata/core/src/repository/market_observation_repository.cpp:109-141= (the pattern to mirror)
+
+* See also
+
+- [[id:73E7622C-CBD2-48C8-96B9-DEA8AA7C45C6][Task: Seed Basic and Realistic dataset bundles]] — PR #1498, where the sibling observations bug was found and fixed.
+- [[id:9A614F60-45C5-4759-AF7D-80F9FBFA1103][Capture: FX Spot chart doesn't refresh on feed binding change]] — found in the same testing session.

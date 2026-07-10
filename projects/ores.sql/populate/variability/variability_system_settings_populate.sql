@@ -73,6 +73,13 @@ BEGIN
         'Shows the QA Validation Runner panel in ores.qt, used to run test_scenario docs and record results. Enabled by default; this is a fleet-wide manual-testing tool, not something to hide behind a build flag.'
     );
 
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'onboarding.system',
+        'false',
+        'boolean',
+        'Whether the system provisioner wizard has completed.'
+    );
+
     -- -----------------------------------------------------------------------------
     -- IAM token lifetime settings
     -- -----------------------------------------------------------------------------

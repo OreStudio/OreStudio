@@ -198,6 +198,45 @@ bool system_settings_service::is_password_validation_disabled() const {
     return get_bool("system.disable_password_validation");
 }
 
+bool system_settings_service::is_onboarding_system_complete() const {
+    return get_bool("onboarding.system");
+}
+
+void system_settings_service::set_onboarding_system_complete(
+    bool complete,
+    std::string_view modified_by,
+    std::string_view change_reason_code,
+    std::string_view change_commentary) {
+    set_bool_setting(
+        "onboarding.system", complete, modified_by, change_reason_code, change_commentary);
+}
+
+bool system_settings_service::is_onboarding_tenant_complete() const {
+    return get_bool("onboarding.tenant");
+}
+
+void system_settings_service::set_onboarding_tenant_complete(
+    bool complete,
+    std::string_view modified_by,
+    std::string_view change_reason_code,
+    std::string_view change_commentary) {
+    set_bool_setting(
+        "onboarding.tenant", complete, modified_by, change_reason_code, change_commentary);
+}
+
+bool system_settings_service::is_onboarding_party_complete() const {
+    return get_bool("onboarding.party");
+}
+
+void system_settings_service::set_onboarding_party_complete(
+    bool complete,
+    std::string_view modified_by,
+    std::string_view change_reason_code,
+    std::string_view change_commentary) {
+    set_bool_setting(
+        "onboarding.party", complete, modified_by, change_reason_code, change_commentary);
+}
+
 void system_settings_service::set_bool_setting(std::string_view name,
                                                bool value,
                                                std::string_view modified_by,

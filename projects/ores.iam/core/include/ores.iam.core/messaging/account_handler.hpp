@@ -82,6 +82,29 @@ inline std::optional<refdata::domain::party> acct_lookup_party(const service::pa
     return cache.lookup_party(tenant_id, party_id);
 }
 
+// Reads onboarding.party directly from the DB (never the party cache), so
+// it is immune to cache staleness after a heavy import — unlike the
+// party.status check it replaces, which conflated the party's own domain
+// status with whether its provisioner wizard has run.
+inline bool acct_is_party_onboarding_complete(const ores::database::context& ctx,
+                                              const std::string& tenant_id_str,
+                                              const std::string& party_id_str) {
+    try {
+        auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
+        if (!tid_result)
+            return false;
+        auto tenant_ctx = ctx.with_tenant(*tid_result, "");
+        variability::service::system_settings_service sfs(tenant_ctx, tenant_id_str, party_id_str);
+        sfs.refresh();
+        return sfs.is_onboarding_party_complete();
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(account_handler_lg(), warn)
+            << "Failed to check party onboarding completion: " << e.what();
+    }
+    return false;
+}
+
 inline std::string acct_lookup_tenant_name(const ores::database::context& ctx,
                                            const boost::uuids::uuid& tenant_id) {
     try {
@@ -711,15 +734,23 @@ public:
                                                              "party selection: "
                                                           << e.what();
             }
-            bool party_setup_required = false;
+            const bool onboarding_complete = acct_is_party_onboarding_complete(
+                ctx, tenant_id_str, boost::uuids::to_string(requested_party_id));
+            const bool party_setup_required = !onboarding_complete;
+            std::string party_setup_warning;
             if (const auto p =
                     acct_lookup_party(*party_cache_, tenant_id_str, requested_party_id)) {
                 p_name = p->full_name;
-                party_setup_required = p->status == "Inactive";
                 if (party_setup_required) {
                     BOOST_LOG_SEV(account_handler_lg(), info)
                         << "select_party: party_setup_required=true for party "
-                        << boost::uuids::to_string(requested_party_id) << " status=" << p->status;
+                        << boost::uuids::to_string(requested_party_id);
+                } else if (p->status == "Inactive") {
+                    party_setup_warning =
+                        "Party setup completed, but the party is still marked Inactive.";
+                    BOOST_LOG_SEV(account_handler_lg(), warn)
+                        << "select_party: onboarding.party complete but party "
+                        << boost::uuids::to_string(requested_party_id) << " still Inactive";
                 }
             } else {
                 BOOST_LOG_SEV(account_handler_lg(), warn)
@@ -736,7 +767,8 @@ public:
                                         .username = claims_result->username.value_or(""),
                                         .tenant_name = t_name,
                                         .party_name = p_name,
-                                        .party_setup_required = party_setup_required});
+                                        .party_setup_required = party_setup_required,
+                                        .party_setup_warning = party_setup_warning});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, select_party_response{.success = false, .message = e.what()});

@@ -27,6 +27,7 @@
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include <QFutureWatcher>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -830,6 +831,22 @@ void PartyExecutePage::startActivate() {
 
         BOOST_LOG_SEV(lg(), info) << "Phase 4: party " << boost::uuids::to_string(party_id)
                                   << " marked Active successfully";
+
+        // Write onboarding.party = true, independent of the party's own
+        // status — this is what login checks to decide whether to
+        // re-launch this wizard, not party.status (which can be flipped
+        // back to Inactive/Suspended later without re-triggering setup).
+        variability::messaging::complete_party_onboarding_request onboarding_req;
+        onboarding_req.party_id = boost::uuids::to_string(party_id);
+        auto onboarding_result =
+            clientManager->process_authenticated_request(std::move(onboarding_req));
+        if (!onboarding_result || !onboarding_result->success) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Phase 4: complete_party_onboarding_request failed: "
+                << (onboarding_result ? onboarding_result->message : "no server response")
+                << " — party setup wizard may reappear on next login";
+        }
+
         result.success = true;
         return result;
     });

@@ -443,6 +443,18 @@ begin
         'Indicates whether the tenant is in bootstrap mode (waiting for initial setup).'
     );
 
+    -- Seed the tenant onboarding-completion flag (system-party-scoped,
+    -- p_party_id omitted). Cleared by the tenant provisioner wizard on
+    -- completion via the same NATS-routed pattern as the bootstrap_mode
+    -- clear — see ores.iam.core/messaging/tenant_handler.hpp.
+    perform ores_variability_system_settings_upsert_fn(
+        v_tenant_id,
+        'onboarding.tenant',
+        'false',
+        'boolean',
+        'Whether the tenant provisioner wizard has completed for this tenant.'
+    );
+
     -- System settings are tenant-scoped (system_settings_service.get_all()
     -- reads only the caller's tenant), so a "system."-prefixed setting
     -- meant to be a global default must still be seeded per-tenant here —

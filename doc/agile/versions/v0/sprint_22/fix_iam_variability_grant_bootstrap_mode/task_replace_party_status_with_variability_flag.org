@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :iam:variability:qt:party:onboarding:sprint_22:v0:fix_iam_variability_grant_bootstrap_mode:
 #+owner: marco
-#+branch: feature/system-settings-not-seeded-for-new-tenants
-#+pr: 1478
+#+branch: feature/onboarding-party-flag
+#+pr: 1491
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -69,11 +69,11 @@ content is folded in below as the implementation plan.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7356C36E-2633-4043-9747-27E61593EA4F][Fix tenant-scoped variability system settings: permissions and per-tenant seeding]] |
-| Now          | Slice 1 (schema + C++ data layer for party_id) done and merged; continuing in a follow-up PR/branch. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Slice 2: onboarding.* flag definitions + service accessors + provisioner seeding. |
+| Next         | Nothing. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance
@@ -202,16 +202,138 @@ did.)
   =false= and =party_id= populated correctly for both the system
   tenant and the Barclays tenant.
 
+** Slice 2 done: onboarding.* flag definitions + service accessors + seeding
+
+- Added =onboarding.system=, =onboarding.tenant=, =onboarding.party=
+  to =system_setting_definitions=, and
+  =is_onboarding_system_complete=/=set_onboarding_system_complete=
+  (+ tenant/party equivalents) accessors on =system_settings_service=,
+  mirroring the existing =is_bootstrap_mode_enabled=/=set_bootstrap_mode=
+  pattern.
+- Seeded =onboarding.tenant = false= in the tenant provisioner
+  (system-party-scoped, alongside =system.bootstrap_mode=) and
+  =onboarding.system = false= in the general populate script
+  (system-tenant scope). Did *not* seed =onboarding.party= at party
+  creation time — =get_bool()= already falls back to the registry
+  default (=false=) when no row exists, so an eager seed row is
+  redundant; the flag is written =true= once, on wizard completion.
+
+** Slice 3 done: wire wizards + fix login's party_setup_required
+
+- New =complete_party_onboarding_request= NATS request (no permission
+  check, same trust model as =clear_bootstrap_mode_request=) —
+  =party_id= is client-supplied (the acting user's own session party
+  is not the party being onboarded) but =tenant_id= is still
+  JWT-derived, so this can only ever affect a party within the
+  caller's own tenant.
+- =clear_bootstrap_mode='s handler now also sets
+  =onboarding.tenant = true= in the same call (same tenant scope,
+  same caller, same trust model — piggybacked rather than adding a
+  fourth near-identical endpoint).
+- =PartyProvisioningWizard= (Qt) and the shell's =provision party=
+  porcelain both call =complete_party_onboarding_request= right after
+  marking the party =Active=, warn-only (matches the existing
+  activation step's own non-fatal-by-design behaviour in the wizard,
+  though the shell porcelain treats party activation itself as fatal
+  by design — only the new onboarding call is warn-only there).
+- =auth_handler.hpp= (single-party auto-login) and
+  =account_handler.hpp= (=select_party=, multi-party path) both
+  replaced their =party.status == "Inactive"= / party-cache check with
+  a direct DB read of =onboarding.party= via new
+  =auth_is_party_onboarding_complete=/=acct_is_party_onboarding_complete=
+  helpers (same pattern as =auth_is_tenant_bootstrap_mode=, immune to
+  cache staleness). Added =party_setup_warning= to =login_response=
+  and =select_party_response= for the "wizard ran but party still
+  Inactive" case.
+- Removed two now-redundant, now-risky client-side pre-emptive
+  =save_setting_request= calls for =system.bootstrap_mode= (one in
+  =TenantProvisioningWizard.cpp=, one in the shell's =provision
+  tenant= porcelain) — the authoritative server-side clear already
+  covers this, and the client-side calls would have started writing
+  a stray party-scoped duplicate row per the =stamp()= risk noted
+  above (whenever the acting user had a party selected).
+- Verified live: full rebuild, full Barclays GLEIF provisioning run.
+  DB confirms =onboarding.tenant = true= and =onboarding.party = true=
+  for the correct tenant/party rows; =ores.variability.service= logs
+  show =complete_party_onboarding= handled cleanly, no
+  permission-denied/UUID errors.
+  *Not directly exercised*: the actual login/=select_party= response
+  value in the multi-party case (the Barclays tenant_admin account
+  ended up associated with 82 GLEIF-imported parties, so every login
+  takes the multi-party =select_party= path, and the shell has no
+  command to drive that RPC). Confidence is high without this because
+  =is_onboarding_party_complete()= — the only new logic on the read
+  side — is exercised by the same, already-proven
+  =system_settings_service= construction/refresh path as the
+  tenant-scoped =bootstrap_mode= check; the two call sites just
+  forward its result into the response. Recommend a manual Qt-client
+  click-through before closing this task, or a shell =select-party=
+  command if that becomes a recurring testing need.
+- The =stamp()= party-scoping risk flagged in slice 1 remains
+  open — worth a follow-up capture rather than blocking this task,
+  since it's pre-existing general-CRUD behaviour, not something this
+  task's changes introduced or rely on.
+
+** Slice 4 done: NOTIFY listener mutex contention + max_backoff
+
+- =postgres_listener_service::listen_loop= now drains notifications
+  into a local batch under =mutex_=, then processes callbacks after
+  releasing it — previously callbacks ran while still holding the
+  lock, blocking =subscribe()=/=notify()=/=stop()= and, because the
+  same lock guards the listener's own poll loop, starving its next
+  iteration under a heavy bulk import (hundreds of NOTIFY-firing
+  INSERTs in one GLEIF party import).
+- =max_backoff= reduced from 30s to 5s — sized for a remote DB
+  originally; local PostgreSQL reconnects in well under a second.
+- =get_notifications()= returns =std::list=, not =std::vector= — fixed
+  the batch type accordingly (caught by the build, not a logic
+  change).
+- Documented the rationale in
+  =doc/knowledge/architecture/postgresql_architecture.org= (new
+  "Listener thread: draining under load" subsection).
+- Verified: all 5 existing =postgres_listener_service= unit tests
+  pass unchanged (lifecycle, notification reception, no-notification-
+  without-subscribe, subscribe-before-start, notify method).
+
 * PRs
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1491][#1491]] | [ores.iam,ores.variability] Replace party.status with onboarding.party flag |
 | [[https://github.com/OreStudio/OreStudio/pull/1478][#1478]] | [ores.iam,ores.variability,ores.sql] Fix tenant-scoped variability system settings: permissions and per-tenant seeding |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | party_setup_warning populated but never read by any client (x4 review passes) | ClientManager.hpp/cpp, LoginDialog.cpp | Accepted | Fixed in 6b1ef520e |
+| 2 | auth_is_party_onboarding_complete / acct_is_party_onboarding_complete near-duplicate | auth_handler.hpp, account_handler.hpp | Declined | Matches existing acct_*/auth_* file-local duplication convention |
+| 3 | onboarding.system flag/accessors are dead code | system_settings.hpp | Accepted | Comment added in 6b1ef520e noting deliberate deferral |
+| 4 | No unit tests for complete_party_onboarding / new accessors / party_setup_required branching | (n/a) | Declined | Matches existing untested bootstrap_mode precedent; follow-up capture promised |
 
 * Result
+
+Replaced the =party.status == "Inactive"= / stale party-cache check
+with a dedicated =onboarding.party= variability flag, party-scoped
+via a new =party_id= column, read directly from the DB — the party
+provisioner wizard no longer re-triggers after a successful
+provisioning run. Along the way: added =onboarding.system=/
+=onboarding.tenant= for symmetry, wired both wizards (Qt and shell)
+to write their flag via a dedicated permission-check-free NATS
+request, added =party_setup_warning= for the "wizard ran but party
+still Inactive" edge case (now wired end-to-end into the Qt client),
+removed two now-redundant/risky client-side pre-emptive
+=bootstrap_mode= writes, and fixed an unrelated NOTIFY-listener
+mutex-contention bug found while touching this code.
+
+Verified live end-to-end against a full Barclays GLEIF provisioning
+run (DB confirms =onboarding.tenant=/=onboarding.party= both correctly
+=true=, no permission-denied/UUID errors) and via 4 independent
+review passes on PR #1491, all converging on the same one real gap
+(=party_setup_warning= not yet client-wired), which was fixed and
+re-verified. Not directly exercised live: the multi-party
+=select_party= response value (no shell command drives it and the
+test tenant ended up with 82 GLEIF-imported parties) — reasoned
+correct by construction (same tested read path as the single-party
+case) rather than click-tested; captured a follow-up for regression
+test coverage in this area.

@@ -350,6 +350,23 @@ distinct from the PostgreSQL layer:
 The service registers the mapping explicitly; the two names are not
 derived from each other automatically.
 
+** Listener thread: draining under load
+
+=ores.database.service.postgres_listener_service= runs a dedicated
+connection and thread per service, polling every 100ms
+(=consume_input()= + =get_notifications()=) and invoking the
+notification callback for each event. Callbacks run *outside* the
+poll's mutex lock: the lock is held only long enough to drain pending
+notifications into a local batch, then released before the batch is
+processed. Under a heavy bulk import (e.g. the GLEIF party dataset —
+hundreds of INSERTs each firing a NOTIFY trigger), holding the lock
+across callback processing would block =subscribe()=/=notify()=/=stop()=
+for as long as the batch takes, and — because the same lock guards
+the listener's own next poll iteration — starve it, making the
+listener appear to have died under load. Reconnect backoff caps at
+5s (not 30s): a local PostgreSQL reconnects in well under a second,
+so a longer ceiling only makes outages look worse than they are.
+
 * Key utility functions
 
 Defined in =ores.sql/create/utility/utility_functions_create.sql=:

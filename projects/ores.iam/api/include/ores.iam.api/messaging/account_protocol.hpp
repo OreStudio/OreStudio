@@ -165,6 +165,12 @@ struct select_party_response {
      */
     bool party_setup_required = false;
     /**
+     * @brief Set when the party provisioner wizard has completed
+     * (onboarding.party = true) but the party is still Inactive. The
+     * client should show a message instead of re-launching the wizard.
+     */
+    std::string party_setup_warning;
+    /**
      * @brief Token lifetime in seconds for the newly issued token.
      *
      * Clients re-arm the proactive refresh timer using this value.

@@ -73,6 +73,37 @@ inline constexpr std::array system_setting_definitions = {
                               .description = "Enables synthetic test data generation in the UI. "
                                              "FOR TESTING/DEVELOPMENT ONLY."},
     // -------------------------------------------------------------------------
+    // Onboarding completion flags — written by the system/tenant/party
+    // provisioner wizards on completion, checked with a direct DB read
+    // (never a cache) so they are immune to cache-staleness. Independent of
+    // the entity's own domain status (party.status, tenant.status): these
+    // track "has this wizard run", not "is this entity active".
+    // -------------------------------------------------------------------------
+    // Added for symmetry with onboarding.tenant/onboarding.party; no code
+    // reads or writes it yet — the system provisioner wizard still clears
+    // system.bootstrap_mode directly. Wire it up if/when that wizard
+    // migrates to this flag (deliberately deferred, not an oversight).
+    system_setting_definition{.name = "onboarding.system",
+                              .data_type = "boolean",
+                              .default_value = "false",
+                              .description =
+                                  "Whether the system provisioner wizard has completed. "
+                                  "System-tenant-scoped."},
+    system_setting_definition{.name = "onboarding.tenant",
+                              .data_type = "boolean",
+                              .default_value = "false",
+                              .description =
+                                  "Whether the tenant provisioner wizard has completed for "
+                                  "this tenant. Tenant-scoped (system party)."},
+    system_setting_definition{.name = "onboarding.party",
+                              .data_type = "boolean",
+                              .default_value = "false",
+                              .description =
+                                  "Whether the party provisioner wizard has completed for this "
+                                  "party. Party-scoped — replaces the party.status == Inactive "
+                                  "check (which was cache-dependent and conflated wizard "
+                                  "completion with the party's own domain status)."},
+    // -------------------------------------------------------------------------
     // IAM token lifetime settings
     // -------------------------------------------------------------------------
     system_setting_definition{.name = "iam.token.access_lifetime_seconds",

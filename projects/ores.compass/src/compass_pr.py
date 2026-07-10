@@ -160,12 +160,23 @@ def _org_id(text):
 
 def _org_field(text, field):
     """#+<field>: value from an org file's frontmatter, or "" if absent/blank."""
-    m = re.search(rf"^#\+{field}:\s*(.*)$", text, re.M | re.I)
+    m = re.search(rf"^#\+{field}:[ \t]*(.*)$", text, re.M | re.I)
     return m.group(1).strip() if m else ""
 
 
 def _site_url(rel_path):
     return _SITE_BASE + str(rel_path).removesuffix(".org") + ".html"
+
+
+def _env_name(project_root):
+    """ORES_ENV_NAME from .env, or "" if the file/key is absent."""
+    env_file = project_root / ".env"
+    if not env_file.is_file():
+        return ""
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        if line.startswith("ORES_ENV_NAME="):
+            return line.split("=", 1)[1].strip()
+    return ""
 
 
 def _cmd_create(args, project_root):
@@ -215,7 +226,8 @@ def _cmd_create(args, project_root):
 
     summary = args.summary or "(Fill in: what changes, why.)"
     changes = "\n".join(f"- {c}" for c in (args.change or ["(Fill in.)"]))
-    environment = args.environment or _org_field(task_text, "environment") or "(none)"
+    environment = (args.environment or _org_field(task_text, "environment")
+                   or _env_name(project_root) or "(none)")
     body = (
         f"## Summary\n\n{summary}\n\n"
         f"## Changes\n\n{changes}\n\n"

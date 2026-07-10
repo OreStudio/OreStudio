@@ -57,6 +57,7 @@ declare
     v_inserted bigint := 0;
     v_updated bigint := 0;
     v_skipped bigint := 0;
+    v_deleted bigint := 0;
     r record;
     v_series_id uuid;
     v_asset_class text;
@@ -80,6 +81,31 @@ begin
     v_target_party_id := (p_params ->> 'party_id')::uuid;
     if v_target_party_id is null then
         raise exception 'p_params.party_id is required to publish market data observations';
+    end if;
+
+    -- replace_all: soft-delete existing observations for series this
+    -- dataset publishes (not a blanket tenant/party-wide delete - other
+    -- feeds/datasets may own series this dataset never touches).
+    if p_mode = 'replace_all' then
+        update ores_marketdata_market_observations_tbl
+        set valid_to = current_timestamp
+        where tenant_id = p_target_tenant_id
+          and party_id = v_target_party_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and series_id in (
+              select ms.id
+              from ores_marketdata_market_series_tbl ms
+              join ores_dq_market_data_observations_artefact_tbl dq
+                on dq.series_type = ms.series_type
+               and dq.metric = ms.metric
+               and dq.qualifier = ms.qualifier
+              where dq.dataset_id = p_dataset_id
+                and dq.tenant_id = ores_utility_system_tenant_id_fn()
+                and ms.tenant_id = p_target_tenant_id
+                and ms.party_id = v_target_party_id
+          );
+
+        get diagnostics v_deleted = row_count;
     end if;
 
     for r in
@@ -160,6 +186,8 @@ begin
     union all select 'updated'::text, v_updated
     where v_updated > 0
     union all select 'skipped'::text, v_skipped
-    where v_skipped > 0;
+    where v_skipped > 0
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;

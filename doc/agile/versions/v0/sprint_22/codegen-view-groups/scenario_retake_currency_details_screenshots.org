@@ -42,10 +42,24 @@ automatically.
 
 Switch the currency detail dialog to the *General* tab, then capture.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_retake_currency_details_screenshots_step1_20260710_094228.png]] |
+
 ** Capture the Formatting tab
 
 Switch the currency detail dialog to the *Formatting* tab, then
 capture.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_retake_currency_details_screenshots_step2_20260710_094238.png]] |
 
 ** Capture the Rounding tab
 
@@ -55,6 +69,13 @@ before (see =doc/manual/user_guide/chapter_5_currencies.org=) —
 capturing it now fixes both the stale-tabs issue and that pre-existing
 gap in one pass.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_retake_currency_details_screenshots_step3_20260710_094250.png]] |
+
 ** Capture the Provenance tab
 
 Switch the currency detail dialog to the *Provenance* tab, then
@@ -62,6 +83,13 @@ capture. This tab isn't part of =view_group= and its layout hasn't
 changed — capturing it anyway for a consistent, matching set of four,
 and because its current screenshot is still the pre-codegen
 hand-written dialog's chrome, not the current one's.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_retake_currency_details_screenshots_step4_20260710_094259.png]] |
 
 ** Move the captured screenshots into assets/images and update the manual
 
@@ -77,14 +105,21 @@ screenshots are fresh in mind, and add any domain-knowledge gaps
 noticed (e.g. why these particular fields ended up grouped this way,
 if that's not already explained).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Cropped all four captures to just the dialog window (608x565, box (296,181,904,746) at 1920x1080), saved as currency_details_{general,formatting,rounding,provenance}.png into assets/images/, overwriting the stale ones. Flipped all four captions in chapter_5_currencies.org back to normal. Re-verified prose field-by-field against the live dialog — accurate, no changes needed. Rebuilt the manual PDF (compass build --direct deploy_manual) — succeeded, TOC shows all four tab sections (8.2-8.5). |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-10T09:50:00Z |
+| Branch        | feature/codegen-view-groups |
+| Commit        | (pending) |
+| Worktree      | bright_faraday |
 
 * Notes

@@ -31,11 +31,11 @@ all.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] |
-| Now          | Chapter captions marked outdated/added; screenshot-capture scenario created, not yet run. |
-| Waiting on   | Nothing — currency pilot task is DONE. |
-| Next         | Run the scenario below through the QA Validation Runner. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                |
+| Next         | Nothing. |
 | Last touched | 2026-07-10                               |
 
 * Acceptance
@@ -48,18 +48,18 @@ all.
   asset, never embedded) now embedded in the =*** Rounding= subsection
   — a pre-existing gap, not caused by codegen — also marked outdated
   since it's the same stale pre-codegen image.
-- [ ] All four screenshots actually retaken against the live,
-  regenerated dialog and captions restored to normal, via
-  [[id:A607D53A-66E3-4211-AE3B-069A603F509F][Retake currency detail dialog screenshots for the manual]] (uses the
-  QA Validation Runner's screenshot-capture feature, merged since this
-  story started).
-- [ ] Chapter 5's prose re-verified field-by-field against the
-  regenerated dialog (labels, placeholder text, widget types) — it was
-  written against the pre-codegen dialog and should be re-checked
-  rather than assumed still accurate.
-- [ ] Any domain knowledge that surfaces while doing this (e.g. *why*
-  these particular fields were grouped this way, if that rationale
-  isn't already captured) is added to the relevant subsection.
+- [X] All four screenshots actually retaken against the live,
+  regenerated dialog, cropped to just the dialog window, and captions
+  restored to normal, via
+  [[id:A607D53A-66E3-4211-AE3B-069A603F509F][Retake currency detail dialog screenshots for the manual]] — 5/5 steps
+  PASSED.
+- [X] Chapter 5's prose re-verified field-by-field against the live
+  dialog (labels, placeholder text, widget types, example values for
+  AOA) — accurate, no changes needed.
+- [X] Manual PDF rebuilt (=compass build --direct deploy_manual=) and
+  confirmed: table of contents shows all four Currency Details tab
+  sections (8.2 General, 8.3 Formatting, 8.4 Rounding, 8.5 Provenance
+  — the Rounding entry didn't exist in the TOC before this task).
 
 * Plan
 
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:A607D53A-66E3-4211-AE3B-069A603F509F][Retake currency detail dialog screenshots for the manual]] | PENDING | |
+| [[id:A607D53A-66E3-4211-AE3B-069A603F509F][Retake currency detail dialog screenshots for the manual]] | PASSED | 5/5 steps passed. |
 
 * PRs
 
@@ -106,3 +106,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Chapter 5's Currency Details section is back in sync with the app:
+all four tabs have current, correctly-cropped screenshots (including
+the Rounding tab, embedded for the first time), captions restored to
+normal, prose re-verified accurate, and the manual PDF rebuilds clean
+with the Rounding tab now appearing in the table of contents.

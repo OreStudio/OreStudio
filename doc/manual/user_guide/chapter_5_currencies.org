@@ -186,7 +186,7 @@ The Currency Details dialog has four tabs: *General*, *Formatting*,
 
 *** General
 
-#+caption[SCREENSHOT OUTDATED — retake needed]: The General tab for the Angolan Kwanza (AOA). It shows the ISO code, full name, numeric code, monetary nature, market tier, and the country flag icon associated with the currency.
+#+caption[Currency Details — General tab]: The General tab for the Angolan Kwanza (AOA). It shows the ISO code, full name, numeric code, monetary nature, market tier, and the country flag icon associated with the currency.
 [[proj:assets/images/currency_details_general.png]]
 
 The General tab carries the core identity of the currency:
@@ -205,7 +205,7 @@ The General tab carries the core identity of the currency:
 
 *** Formatting
 
-#+caption[SCREENSHOT OUTDATED — retake needed]: The Formatting tab for AOA, showing the currency symbol (Kz), the fractional unit symbol (c for centavo), fractions per unit (100), and the display format string.
+#+caption[Currency Details — Formatting tab]: The Formatting tab for AOA, showing the currency symbol (Kz), the fractional unit symbol (c for centavo), fractions per unit (100), and the display format string.
 [[proj:assets/images/currency_details_formatting.png]]
 
 The Formatting tab controls how currency amounts are displayed:
@@ -223,7 +223,7 @@ The Formatting tab controls how currency amounts are displayed:
 
 *** Rounding
 
-#+caption[SCREENSHOT OUTDATED — retake needed]: The Rounding tab, showing the rounding type combo and rounding precision spin box. (This screenshot exists as an asset but was never actually embedded in this chapter until now — also stale, like its siblings above.)
+#+caption[Currency Details — Rounding tab]: The Rounding tab for AOA, showing the rounding type (Closest) and rounding precision (2).
 [[proj:assets/images/currency_details_rounding.png]]
 
 The Rounding tab controls how calculated amounts are rounded before
@@ -236,7 +236,7 @@ storage and display:
 
 *** Provenance
 
-#+caption[SCREENSHOT OUTDATED — retake needed]: The Provenance tab showing record metadata: version number, the service that last modified the record, who performed the operation, when it was recorded, the change reason code, and a free-text commentary.
+#+caption[Currency Details — Provenance tab]: The Provenance tab showing record metadata: version number, the service that last modified the record, who performed the operation, when it was recorded, the change reason code, and a free-text commentary.
 [[proj:assets/images/currency_details_provenance.png]]
 
 The Provenance tab is read-only and shows the audit metadata for the

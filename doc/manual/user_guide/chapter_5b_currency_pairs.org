@@ -138,9 +138,8 @@ Open the Currency Pairs window from the /Reference Data/ menu. It
 lists all currency pairs defined in the tenant, with one row per
 pair.
 
-#+caption: [SCREENSHOT NEEDED] The Currency Pairs window, showing the full list of currency pairs in the tenant.
-# Capture: Open Reference Data → Currency Pairs with at least three pairs present, spanning at least two classifications (e.g. a major and a minor), so the Classification column's badge colouring is visible. Show the paginated list with the toolbar visible at the top.
-[[proj:assets/images/TODO_currency_pairs_main_window.png]]
+#+caption[The Currency Pairs window]: The Currency Pairs window, showing the full list of currency pairs in the tenant. Each row shows the composited base+quote flag, the individual Base and Quote codes, the Classification badge, version, and provenance columns.
+[[proj:assets/images/currency_pairs_main_window.png]]
 
 Each row shows the pair code (with the base and quote currencies'
 flag icons composited into the same cell), the base and quote
@@ -155,9 +154,8 @@ Details* dialog.
 
 ** Currency Pair Details
 
-#+caption: [SCREENSHOT NEEDED] Currency Pair Details for EUR/USD.
-# Capture: Double-click an existing pair (e.g. EUR/USD) to open its detail dialog in edit mode. Capture the whole dialog showing the Pair Code field with both flags, the Base and Quote combos, and the Classification combo.
-[[proj:assets/images/TODO_currency_pair_details.png]]
+#+caption[Currency Pair Details — USD/AOA]: The Currency Pair Details dialog for USD/AOA, showing the Pair Code field with both flags, the locked Base and Quote Currency combos, and the Classification combo.
+[[proj:assets/images/currency_pair_details.png]]
 
 The dialog carries a compact set of fields. *Pair Code* is not typed
 directly; it is computed live from the *Base Currency* and *Quote
@@ -187,9 +185,8 @@ same underlying reason: the two directions describe one market, not
 two, and only the canonically ordered direction may exist as a
 record.
 
-#+caption: [SCREENSHOT NEEDED] The Inverted Pair rejection dialog.
-# Capture: With EUR/USD already on file, open a new Currency Pair Details dialog in create mode, set Base Currency to USD and Quote Currency to EUR, and click Save. Capture the resulting "Inverted Pair" warning dialog.
-[[proj:assets/images/TODO_currency_pair_inverted_rejection.png]]
+#+caption[The Inverted Pair rejection dialog]: With USD/AOA already on file, attempting to create AOA/USD is rejected: the warning names both the rejected code and the existing pair it inverts, and explains the delete-then-recreate workaround for the rare case the direction genuinely needs to change.
+[[proj:assets/images/currency_pair_inverted_rejection.png]]
 
 The three action buttons at the bottom, *Delete*, *Close*, and
 *Save*, apply to the pair as a whole. The dialog also has a
@@ -238,9 +235,8 @@ Open the Currency Pair Conventions window from the /Reference Data/
 menu, or from the /Conventions/ toolbar button on the Currency Pairs
 window described above.
 
-#+caption: [SCREENSHOT NEEDED] The Currency Pair Conventions window.
-# Capture: Open Reference Data → Currency Pair Conventions (or click Conventions from the Currency Pairs toolbar) with at least two convention records present, ideally one for a JPY-cross pair (2 decimal places) and one for a non-JPY pair (4 decimal places), so the Decimal Places and Pip Factor columns show contrasting values.
-[[proj:assets/images/TODO_currency_pair_conventions_main_window.png]]
+#+caption[The Currency Pair Conventions window]: The Currency Pair Conventions window. USD/JPY (row eight) shows the JPY-cross convention — pip factor =0.01=, two decimal places — contrasting with the =0.0001=/four-decimal-place convention every other row here shares.
+[[proj:assets/images/currency_pair_conventions_main_window.png]]
 
 Each row shows the pair code with its composited flag icons, pip
 factor, tick size, decimal places, advance calendar, business day
@@ -249,9 +245,8 @@ rendered as Yes/No labels, followed by the usual version and
 provenance columns. Double-clicking a row opens the *Currency Pair
 Convention Details* dialog.
 
-#+caption: [SCREENSHOT NEEDED] Currency Pair Convention Details for EUR/USD.
-# Capture: Double-click an existing convention record to open its detail dialog in edit mode. Capture the whole dialog showing the Pair Code combo (with flags), Pip Factor, Tick Size, Decimal Places, Advance Calendar, Business Day Convention, Spot Relative, and End Of Month fields.
-[[proj:assets/images/TODO_currency_pair_convention_details.png]]
+#+caption[Currency Pair Convention Details — USD/KPW]: The Currency Pair Convention Details dialog for USD/KPW, showing the locked Pair Code combo with its flags, Pip Factor, Tick Size, Decimal Places, Advance Calendar, Business Day Convention, and the Spot Relative/End Of Month checkboxes.
+[[proj:assets/images/currency_pair_convention_details.png]]
 
 *Pair Code* is a flagged combo, but unlike the Currency Pair Details
 dialog it does not derive its value from two separate legs; instead

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/currency-pair-manual-chapter
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -32,11 +32,11 @@ the =[SCREENSHOT NEEDED]= markers — the same close-out pattern used by
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Not yet started.                       |
+| Now          | Complete — all five screenshots captured, wired, and the manual rebuilt. |
 | Waiting on   | Nothing.                               |
-| Next         | Ready up the environment (=devops-run-environment=), start the Qt client, and work the checklist below top to bottom. |
+| Next         | None.                                  |
 | Last touched | 2026-07-10                               |
 
 * Acceptance
@@ -103,6 +103,14 @@ written.
 
 * Notes
 
+Actual pairs used for the captures were =USD/AOA= (Currency Pair
+Details) and =USD/KPW= (Currency Pair Convention Details) rather than
+=EUR/USD= — both are equally illustrative of the field set and were
+already on file in the Barclays seed data; captions were adjusted
+accordingly. The Currency Pair Conventions window capture used
+=USD/JPY= (row eight) as the JPY-cross contrast rather than a
+freshly-created pair, also already present in the seed data.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -112,7 +120,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:A976A11A-93B1-4703-8F09-8741CF9BC0F0][Capture screenshots for the Currency Pairs manual chapter]] | PENDING | Load this in the client's QA Validation Runner panel; walks the five screenshot placeholders. |
+| [[id:A976A11A-93B1-4703-8F09-8741CF9BC0F0][Capture screenshots for the Currency Pairs manual chapter]] | PASSED | 4/5 steps auto-captured via the Scenario Runner's own screenshot tool; step 3 (Inverted Pair rejection) had to be captured manually outside the runner since the warning dialog is modal and blocks the runner's own Pass/Screenshot buttons — see the =standard_ore_message_box= capture. |
 
 * PRs
 
@@ -127,3 +135,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All five placeholders in =chapter_5b_currency_pairs.org= are
+replaced with real, cropped screenshots committed under
+[[proj:doc/assets/images][=assets/images/=]]: =currency_pairs_main_window.png=,
+=currency_pair_details.png=, =currency_pair_inverted_rejection.png=,
+=currency_pair_conventions_main_window.png=, and
+=currency_pair_convention_details.png=. Four came from the Scenario
+Runner's built-in screenshot capture; the fifth (the modal Inverted
+Pair warning) required a manual desktop screenshot since the runner
+couldn't interact with its own panel while that dialog was open —
+captured as [[proj:doc/agile/product_backlog/inbox/standard_ore_message_box.org][a follow-up backlog item]] rather than worked around here.
+Manual PDF rebuilt cleanly (=./compass.sh build --direct manual=);
+figures 9.1-9.5 confirmed present in the List of Figures.

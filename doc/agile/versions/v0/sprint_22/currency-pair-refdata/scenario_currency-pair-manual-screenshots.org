@@ -49,11 +49,25 @@ listed spanning at least 2 classifications (e.g. a major and a
 minor), with the toolbar visible at the top. Capture the whole
 window.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_currency-pair-manual-screenshots_step1_20260710_091052.png]] |
+
 ** Capture currency_pair_details.png
 
 Double-click an existing pair (e.g. =EUR/USD=) to open it in edit
 mode. Capture the whole dialog, showing the Pair Code field with both
 flags, and the locked Base/Quote combos.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_currency-pair-manual-screenshots_step2_20260710_091122.png]] |
 
 ** Capture currency_pair_inverted_rejection.png
 
@@ -62,12 +76,26 @@ dialog in create mode. Set Base Currency to =USD= and Quote Currency
 to =EUR=, then click Save. Capture the resulting "Inverted Pair"
 warning dialog. Close without saving afterwards.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Could not take a screenshot due to message box being modal. created a capture. saved screenshot using OS app under ./tmp/Screenshot from 2026-07-10 09-15-56.png |
+
 ** Capture currency_pair_conventions_main_window.png
 
 Open /Reference Data → Currency Pair Conventions/ (or click
 /Conventions/ on the Currency Pairs toolbar). Confirm at least 2 rows
 are present, ideally one JPY-cross pair (2 decimal places) and one
 non-JPY pair (4 decimal places). Capture the whole window.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_currency-pair-manual-screenshots_step4_20260710_091753.png]] |
 
 ** Capture currency_pair_convention_details.png
 
@@ -76,14 +104,22 @@ it in edit mode. Capture the whole dialog: Pair Code combo (with
 flags), Pip Factor, Tick Size, Decimal Places, Advance Calendar,
 Business Day Convention, Spot Relative, and End Of Month.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_currency-pair-manual-screenshots_step5_20260710_091810.png]] |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-10T08:18:17Z |
+| Branch        | feature/currency-pair-manual-chapter |
+| Commit        | 8e69c1f9c |
+| Worktree      | prime_origin |
 
 * Notes
+[[file:scenario_currency-pair-manual-screenshots_20260710_091044.png]]

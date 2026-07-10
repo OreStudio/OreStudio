@@ -112,7 +112,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:A976A11A-93B1-4703-8F09-8741CF9BC0F0][Capture screenshots for the Currency Pairs manual chapter]] | PENDING | Load this in the client's QA Validation Runner panel; walks the five screenshot placeholders. |
 
 * PRs
 

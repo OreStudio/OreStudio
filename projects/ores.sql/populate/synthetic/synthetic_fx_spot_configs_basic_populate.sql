@@ -19,18 +19,19 @@
  */
 
 /**
- * Synthetic FX Spot Config Seed Population Script
+ * Synthetic FX Spot Config Seed Population Script — Basic
  *
- * Registers the synthetic.fx_spot_configs dataset and seeds the artefact
- * table with a starter set of synthetic FX spot generation configs, so a
- * party can get a usable FX synthetic data setup in one bundle Apply
- * instead of hand-authoring configs. Starting spots are plausible,
- * mutually-consistent reference values (not sourced from a specific
- * as-of date) - a full internally-consistent 30-pair library is tracked
- * separately.
- *
- * Execution order: this file registers its own catalog/dataset, no
- * dependency on other populate scripts.
+ * Registers the synthetic.fx_spot_configs.basic dataset: all 8 FX driver
+ * pairs from the marketdata.fx_driver_rates dataset (see
+ * marketdata_fx_driver_rates_populate.sql), seeded from the same
+ * 2016-02-05 Fed H.10 vintage, each on a single-component geometric
+ * (multiplicative) process with a deliberately exaggerated per-tick
+ * volatility — the same for every pair, not individually calibrated —
+ * so movement is easy to eyeball on a chart and every UI feature
+ * (ticking, charting, GMM editing) gets exercised without needing to
+ * squint. Contrast with synthetic_fx_spot_configs_realistic_populate.sql,
+ * whose per-pair volatility is calibrated to plausible real-world FX
+ * behaviour.
  *
  * This script is idempotent.
  */
@@ -55,7 +56,7 @@ END $$;
 DO $$
 BEGIN
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'synthetic.fx_spot_configs',
+        'synthetic.fx_spot_configs.basic',
         'Synthetic Market Data',
         'Trading',
         'Reference Data',
@@ -64,10 +65,10 @@ BEGIN
         'Synthetic',
         'Raw',
         'OreStudio Code Generation Methodology',
-        'Synthetic FX Spot Configs',
-        'Starter set of synthetic FX spot generation configs (currency pair, GMM initial price, tick cadence) for party provisioning.',
+        'Synthetic FX Spot Configs: Basic',
+        'All 8 major FX driver pairs, single-component geometric process, deliberately exaggerated uniform volatility — easy to eyeball, exercises every UI feature.',
         'ORESTUDIO',
-        'Seed data for the synthetic FX spot Librarian bundle',
+        'Basic archetype for the Synthetic data collections bundle',
         current_date,
         'Internal Use Only',
         'synthetic_fx_spot_configs'
@@ -82,27 +83,30 @@ do $$
 declare
     v_dataset_id uuid;
     v_tenant_id uuid := ores_utility_system_tenant_id_fn();
+    -- Exaggerated, uniform per-tick stdev (log-return) at 3600 ticks/hour
+    -- (1/sec) — deliberately far above any pair's real volatility so
+    -- motion is obvious within a short demo session.
+    v_stdev constant double precision := 0.0008;
 begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where tenant_id = v_tenant_id
-      and code = 'synthetic.fx_spot_configs'
+      and code = 'synthetic.fx_spot_configs.basic'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: synthetic.fx_spot_configs';
+        raise exception 'Dataset not found: synthetic.fx_spot_configs.basic';
     end if;
 
-    -- Skip if already populated
     if exists (
         select 1 from ores_dq_synthetic_fx_spot_configs_artefact_tbl
         where dataset_id = v_dataset_id
     ) then
-        raise debug 'Synthetic FX spot configs artefact already populated for dataset %', v_dataset_id;
+        raise debug 'Synthetic FX spot configs (basic) artefact already populated for dataset %', v_dataset_id;
         return;
     end if;
 
-    raise debug 'Populating synthetic FX spot configs for dataset: synthetic.fx_spot_configs';
+    raise debug 'Populating synthetic FX spot configs (basic) for dataset: synthetic.fx_spot_configs.basic';
 
     insert into ores_dq_synthetic_fx_spot_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
@@ -111,29 +115,28 @@ begin
         gmm_initial_price, ticks_per_hour, process_type,
         price_source, vintage_source, vintage_date
     )
-    values
-    (v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
-     'Synthetic FX Spot: EUR/USD',
-     'Default synthetic FX spot generator for the party''s market data configuration.',
-     true, 'EUR', 'USD', 1.0850, 3600, 'geometric',
-     -- price_source stays 'vintage' to preserve prior behaviour exactly:
-     -- the hand-typed gmm_initial_price above is not used at publish time
-     -- (see the publish function), the real imported ore.reference/
-     -- 2016-02-05 spot is.
-     'vintage', 'ore.reference', '2016-02-05'),
-    (v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
-     'Synthetic FX Spot: GBP/USD',
-     'Default synthetic FX spot generator for the party''s market data configuration.',
-     true, 'GBP', 'USD', 1.2650, 3600, 'geometric',
-     'vintage', 'ore.reference', '2016-02-05');
+    select
+        v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
+        'Synthetic FX Spot (Basic): ' || p.base || '/' || p.quote,
+        'Basic-archetype synthetic FX spot generator: single-component geometric process, exaggerated volatility.',
+        true, p.base, p.quote,
+        0, 3600, 'geometric',
+        'vintage', 'fed.h10.2016-02-05', '2016-02-05'
+    from (values
+        ('EUR', 'USD'), ('GBP', 'USD'), ('USD', 'CHF'), ('USD', 'JPY'),
+        ('USD', 'SEK'), ('AUD', 'USD'), ('USD', 'CAD'), ('NZD', 'USD')
+    ) as p(base, quote);
 
     insert into ores_dq_synthetic_gmm_components_artefact_tbl (
         dataset_id, tenant_id, base_currency_code, quote_currency_code,
         component_index, description, mean, stdev, weight
     )
-    values
-    (v_dataset_id, v_tenant_id, 'EUR', 'USD', 0,
-     'Default single-component GMM (placeholder, pending calibration)', 0.0, 0.0005, 1.0),
-    (v_dataset_id, v_tenant_id, 'GBP', 'USD', 0,
-     'Default single-component GMM (placeholder, pending calibration)', 0.0, 0.0005, 1.0);
+    select
+        v_dataset_id, v_tenant_id, p.base, p.quote,
+        0, 'Basic single-component GMM: exaggerated uniform volatility for visual demo purposes.',
+        0.0, v_stdev, 1.0
+    from (values
+        ('EUR', 'USD'), ('GBP', 'USD'), ('USD', 'CHF'), ('USD', 'JPY'),
+        ('USD', 'SEK'), ('AUD', 'USD'), ('USD', 'CAD'), ('NZD', 'USD')
+    ) as p(base, quote);
 end $$;

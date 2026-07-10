@@ -60,6 +60,7 @@ declare
     v_skipped bigint := 0;
     v_deleted bigint := 0;
     r record;
+    gr record;
     v_exists boolean;
     v_new_version integer;
 begin
@@ -150,7 +151,10 @@ begin
             a.gmm_initial_price,
             a.ticks_per_hour,
             a.process_type,
-            a.enabled
+            a.enabled,
+            a.price_source,
+            a.vintage_source,
+            a.vintage_date
         from ores_dq_synthetic_fx_spot_configs_artefact_tbl a
         where a.dataset_id = p_dataset_id
         order by a.base_currency_code, a.quote_currency_code
@@ -187,17 +191,15 @@ begin
             -- ore_key uses the pair's natural base/quote order; the
             -- underlying market data is keyed the same way.
             'FX/RATE/' || r.base_currency_code || '/' || r.quote_currency_code,
-            -- The DQ artefact has no per-row vintage, and every synthetic FX
-            -- config published from this dataset seeds from the same ORE
-            -- reference vintage the story targets — so this is price_source
-            -- 'vintage', not 'fixed'; the artefact's own gmm_initial_price is
-            -- ignored (0, per the vintage-mode check) in favour of the real
-            -- imported spot the guard validates against. Revisit if/when a
-            -- dataset carries its own vintage (see "Seed Basic and Realistic
-            -- dataset bundles").
-            'vintage', 0, r.ticks_per_hour, r.process_type,
+            -- price_source/vintage_source/vintage_date are per-row artefact
+            -- columns now — each dataset (ore_analytics, basic, realistic)
+            -- carries its own vintage tag; 'fixed' rows fall back to the
+            -- artefact's own gmm_initial_price instead of a vintage lookup.
+            r.price_source,
+            case when r.price_source = 'fixed' then r.gmm_initial_price else 0 end,
+            r.ticks_per_hour, r.process_type,
             coalesce(r.enabled, true),
-            'ore.reference', '2016-02-05',
+            coalesce(r.vintage_source, ''), coalesce(r.vintage_date, ''),
             coalesce(ores_iam_current_service_fn(), current_user), current_user,
             'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
         from (select 1) as _dummy
@@ -217,39 +219,118 @@ begin
         end if;
 
         -- Ensure every FX config has at least one GMM component; without
-        -- one the mixture has nothing to sample from. This is a single
-        -- placeholder component (no drift, plausible per-tick volatility),
-        -- pending a proper calibration — see the deferred 30-pair library
-        -- task for the real analysis.
-        select exists (
-            select 1 from ores_synthetic_gmm_components_tbl existing
+        -- one the mixture has nothing to sample from. Components are
+        -- sourced from the dataset's own GMM component artefact rows,
+        -- keyed by currency pair, so each dataset (basic, realistic, ...)
+        -- carries its own calibrated mixture. Falls back to a single
+        -- unrehearsed placeholder component if the dataset has none (e.g.
+        -- ore_analytics before it was backfilled).
+        if exists (
+            select 1 from ores_dq_synthetic_gmm_components_artefact_tbl g
+            where g.dataset_id = p_dataset_id
+              and g.base_currency_code = r.base_currency_code
+              and g.quote_currency_code = r.quote_currency_code
+        ) then
+            -- The mixture is a complete set per (pair, dataset), not a
+            -- sparse list of independently-upserted indices: void any
+            -- existing component whose index is no longer part of this
+            -- dataset's mixture (e.g. a party switching from a 2-component
+            -- Realistic mixture to a 1-component Basic one for the same
+            -- pair must not keep Realistic's orphaned tail component).
+            update ores_synthetic_gmm_components_tbl existing
+            set valid_to = current_timestamp
             where existing.tenant_id = p_target_tenant_id
               and existing.fx_spot_config_id = v_fx_config_id
-              and existing.component_index = 0
               and existing.valid_to = ores_utility_infinity_timestamp_fn()
-        ) into v_exists;
+              and existing.component_index not in (
+                  select g.component_index
+                  from ores_dq_synthetic_gmm_components_artefact_tbl g
+                  where g.dataset_id = p_dataset_id
+                    and g.base_currency_code = r.base_currency_code
+                    and g.quote_currency_code = r.quote_currency_code
+              );
 
-        if not (p_mode = 'insert_only' and v_exists) then
-            insert into ores_synthetic_gmm_components_tbl (
-                tenant_id, id, version, party_id, fx_spot_config_id, component_index,
-                description, mean, stdev, weight,
-                modified_by, performed_by, change_reason_code, change_commentary
-            )
-            select
-                p_target_tenant_id,
-                coalesce(existing_gmm.id, gen_random_uuid()),
-                coalesce(existing_gmm.version, 0),
-                v_party_id, v_fx_config_id, 0,
-                'Default single-component GMM (placeholder, pending calibration)',
-                0.0, 0.0005, 1.0,
-                coalesce(ores_iam_current_service_fn(), current_user), current_user,
-                'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
-            from (select 1) as _dummy2
-            left join ores_synthetic_gmm_components_tbl existing_gmm
-                on existing_gmm.tenant_id = p_target_tenant_id
-               and existing_gmm.fx_spot_config_id = v_fx_config_id
-               and existing_gmm.component_index = 0
-               and existing_gmm.valid_to = ores_utility_infinity_timestamp_fn();
+            for gr in
+                select g.component_index, g.description, g.mean, g.stdev, g.weight
+                from ores_dq_synthetic_gmm_components_artefact_tbl g
+                where g.dataset_id = p_dataset_id
+                  and g.base_currency_code = r.base_currency_code
+                  and g.quote_currency_code = r.quote_currency_code
+                order by g.component_index
+            loop
+                select exists (
+                    select 1 from ores_synthetic_gmm_components_tbl existing
+                    where existing.tenant_id = p_target_tenant_id
+                      and existing.fx_spot_config_id = v_fx_config_id
+                      and existing.component_index = gr.component_index
+                      and existing.valid_to = ores_utility_infinity_timestamp_fn()
+                ) into v_exists;
+
+                if not (p_mode = 'insert_only' and v_exists) then
+                    insert into ores_synthetic_gmm_components_tbl (
+                        tenant_id, id, version, party_id, fx_spot_config_id, component_index,
+                        description, mean, stdev, weight,
+                        modified_by, performed_by, change_reason_code, change_commentary
+                    )
+                    select
+                        p_target_tenant_id,
+                        coalesce(existing_gmm.id, gen_random_uuid()),
+                        coalesce(existing_gmm.version, 0),
+                        v_party_id, v_fx_config_id, gr.component_index,
+                        gr.description, gr.mean, gr.stdev, gr.weight,
+                        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                        'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+                    from (select 1) as _dummy2
+                    left join ores_synthetic_gmm_components_tbl existing_gmm
+                        on existing_gmm.tenant_id = p_target_tenant_id
+                       and existing_gmm.fx_spot_config_id = v_fx_config_id
+                       and existing_gmm.component_index = gr.component_index
+                       and existing_gmm.valid_to = ores_utility_infinity_timestamp_fn();
+                end if;
+            end loop;
+        else
+            -- Same voiding rule as the branch above: this fallback publishes
+            -- exactly one component (index 0), so any other pre-existing
+            -- index (e.g. left over from a previously-published multi-
+            -- component mixture for this fx_spot_config_id) must be voided
+            -- too, not just left orphaned.
+            update ores_synthetic_gmm_components_tbl existing
+            set valid_to = current_timestamp
+            where existing.tenant_id = p_target_tenant_id
+              and existing.fx_spot_config_id = v_fx_config_id
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+              and existing.component_index <> 0;
+
+            select exists (
+                select 1 from ores_synthetic_gmm_components_tbl existing
+                where existing.tenant_id = p_target_tenant_id
+                  and existing.fx_spot_config_id = v_fx_config_id
+                  and existing.component_index = 0
+                  and existing.valid_to = ores_utility_infinity_timestamp_fn()
+            ) into v_exists;
+
+            if not (p_mode = 'insert_only' and v_exists) then
+                insert into ores_synthetic_gmm_components_tbl (
+                    tenant_id, id, version, party_id, fx_spot_config_id, component_index,
+                    description, mean, stdev, weight,
+                    modified_by, performed_by, change_reason_code, change_commentary
+                )
+                select
+                    p_target_tenant_id,
+                    coalesce(existing_gmm.id, gen_random_uuid()),
+                    coalesce(existing_gmm.version, 0),
+                    v_party_id, v_fx_config_id, 0,
+                    'Default single-component GMM (placeholder, pending calibration)',
+                    0.0, 0.0005, 1.0,
+                    coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                    'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+                from (select 1) as _dummy2
+                left join ores_synthetic_gmm_components_tbl existing_gmm
+                    on existing_gmm.tenant_id = p_target_tenant_id
+                   and existing_gmm.fx_spot_config_id = v_fx_config_id
+                   and existing_gmm.component_index = 0
+                   and existing_gmm.valid_to = ores_utility_infinity_timestamp_fn();
+            end if;
         end if;
     end loop;
 

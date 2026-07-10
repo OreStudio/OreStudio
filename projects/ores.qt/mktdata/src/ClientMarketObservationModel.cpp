@@ -123,6 +123,12 @@ void ClientMarketObservationModel::fetch_data() {
                             .error_details = {}};
                 }
                 marketdata::messaging::get_market_observations_request req;
+                // Filter server-side: an unfiltered fetch-then-client-filter was
+                // silently truncating this series' rows out of the result once
+                // continuously-ticking synthetic feeds across other series grew
+                // past the page limit — see the fx_spot_chart_stale_on_binding_change
+                // capture's sibling bug report.
+                req.series_id = boost::uuids::to_string(self->series_id_);
                 req.limit = 10000;
 
                 auto result = self->clientManager_->process_authenticated_request(std::move(req));
@@ -135,16 +141,8 @@ void ClientMarketObservationModel::fetch_data() {
                             .error_details = {}};
                 }
                 const auto count = static_cast<std::uint32_t>(result->total_available_count);
-                auto all = std::move(result->market_observations);
-                const auto sid = boost::uuids::to_string(self->series_id_);
-                all.erase(std::remove_if(all.begin(),
-                                         all.end(),
-                                         [&](const auto& o) {
-                                             return boost::uuids::to_string(o.series_id) != sid;
-                                         }),
-                          all.end());
                 return {.success = true,
-                        .entries = std::move(all),
+                        .entries = std::move(result->market_observations),
                         .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};

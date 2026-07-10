@@ -63,5 +63,17 @@ BEGIN
         'ORE Analytics',
         'Default ORE analytics report definitions and synthetic market data generation configs. Seeds the standard set of risk reports (NPV, VaR, CVA, XVA, etc.) plus a starter FX spot generator for use during party provisioning.'
     );
+
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'synthetic_basic',
+        'Synthetic Data: Basic',
+        'Basic-archetype synthetic FX spot generation for all 8 major driver pairs: single-component geometric process, deliberately exaggerated uniform volatility, easy to eyeball and exercises every UI feature.'
+    );
+
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'synthetic_realistic',
+        'Synthetic Data: Realistic',
+        'Realistic-archetype synthetic FX spot generation for all 8 major driver pairs: 2-component geometric Gaussian mixture per pair, calibrated to plausible 2016 realised FX volatility.'
+    );
 END $$;
 

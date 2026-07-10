@@ -39,7 +39,10 @@ create table if not exists "ores_dq_synthetic_fx_spot_configs_artefact_tbl" (
     "quote_currency_code" text not null,
     "gmm_initial_price" double precision not null,
     "ticks_per_hour" integer not null,
-    "process_type" text not null
+    "process_type" text not null,
+    "price_source" text not null default 'vintage',
+    "vintage_source" text null,
+    "vintage_date" text null
 );
 
 create index if not exists dq_synthetic_fx_spot_configs_artefact_dataset_idx

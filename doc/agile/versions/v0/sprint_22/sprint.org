@@ -163,7 +163,7 @@ More stories expected here over time as other consumers emerge.
 | [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] | DONE | 2026-07-03 | 2026-07-04 | Cache-quota fix applied but doesn't explain the magnitude (32 files changed vs. 98.6% miss rate); running a live zero-source-diff experiment. |
 | [[id:05243CFE-F838-4759-9956-9400D6C90FDC][Fix NATS port collision with legacy env and label inconsistency]] | DONE | 2026-07-03 | 2026-07-03 | solid_dirac's NATS ports collided with a stray legacy env's server; migrate to base-port-derived NATS ports and unify the config label to underscore form. |
 | [[id:83B12C2D-5202-4738-8147-5F28E566D997][Fix uninitialized asset_class/series_subclass in market_series generator]] | DONE | 2026-07-03 | 2026-07-03 | Nightly Valgrind flagged uninitialized-memory defects in market_series_mapper::map(); generate_synthetic_market_series() never set the two enum fields. |
-| [[id:7356C36E-2633-4043-9747-27E61593EA4F][Fix tenant-scoped variability system settings: permissions and per-tenant seeding]] | BACKLOG | | | IAM can't clear a tenant's bootstrap_mode (missing DB grant, silent permission-denied); tenant-scoped system settings other than bootstrap_mode aren't seeded per-tenant, so gated features silently vanish for non-system tenants. |
+| [[id:7356C36E-2633-4043-9747-27E61593EA4F][Fix tenant-scoped variability system settings: permissions and per-tenant seeding]] | DONE | | 2026-07-10 | IAM can't clear a tenant's bootstrap_mode (missing DB grant, silent permission-denied); tenant-scoped system settings other than bootstrap_mode aren't seeded per-tenant, so gated features silently vanish for non-system tenants. |
 
 ** Documentation
 

@@ -47,11 +47,11 @@ certainly has the same silent-hide bug for every non-system tenant).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7356C36E-2633-4043-9747-27E61593EA4F][Fix tenant-scoped variability system settings: permissions and per-tenant seeding]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance
@@ -141,9 +141,28 @@ did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | party_id scoping implicit, not enforced (x2 review passes) | upsert_functions_create.sql | Accepted | Fixed in 851286270 |
+| 2 | Stale "Seeded bootstrap mode" log message (x2 review passes) | iam_tenant_provisioner_create.sql | Accepted | Fixed in 851286270 |
+| 3 | Doc drift: p_actor param in Plan section | task .org | Accepted | Fixed in 851286270 |
+| 4 | No automated test for the new function | (n/a) | Declined | No existing tenant-provisioning test coverage to regress against; follow-up capture filed |
 
 * Result
+
+Replaced the one-off =system.qa_validation_runner_enabled= upsert
+call in the tenant provisioner — the exact thing that caused this bug
+— with a generic copy of every current =system.%=-prefixed row from
+the system tenant (=system.bootstrap_mode= excluded, kept as explicit
+per-tenant state). Chose seeding over a read-path fallback so tenants
+never silently inherit a change to a system-tenant setting with no
+audit trail. Review across 3 passes converged on enforcing the
+implicit party-scoping assumption explicitly, which was fixed;
+automated test coverage was declined for this PR (no existing
+tenant-provisioning test coverage to regress against) and captured as
+a follow-up instead.
+
+Verified live: full DB recreate, fresh tenant provisioning confirms
+all 5 previously-missing settings are now seeded correctly, both
+before and after the party-scoping filter was added.
 
 * Promoted from capture
 

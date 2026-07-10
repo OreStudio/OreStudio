@@ -42,11 +42,11 @@ Observed while provisioning the Barclays Plc tenant via
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-07-08                               |
 
 * Acceptance
@@ -62,15 +62,50 @@ Observed while provisioning the Barclays Plc tenant via
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:95F83186-36A6-4F73-9A8A-85FBB02453FA][System settings are tenant-scoped but only bootstrap_mode is seeded per-tenant]] | STARTED | 2026-07-10 | | SettingGatedActionController-gated features (e.g. synthetic data generation) silently hide for every tenant except the system tenant, since system_settings_service.get_all() only reads the caller's own tenant and tenant provisioning only seeds system.bootstrap_mode. |
+| [[id:95F83186-36A6-4F73-9A8A-85FBB02453FA][System settings are tenant-scoped but only bootstrap_mode is seeded per-tenant]] | DONE | 2026-07-10 | 2026-07-10 | SettingGatedActionController-gated features (e.g. synthetic data generation) silently hide for every tenant except the system tenant, since system_settings_service.get_all() only reads the caller's own tenant and tenant provisioning only seeds system.bootstrap_mode. |
 | [[id:F1E5832D-F837-40AF-B0B3-32D787C3800A][Grant IAM service DML on variability system_settings table]] | DONE | 2026-07-08 | 2026-07-09 | IAM's tenant_handler cross-domain-calls variability::service::system_settings_service to clear bootstrap_mode, but the IAM service DB role has no grant on ores_variability_* tables, so the write fails with permission denied and is silently swallowed. |
 | [[id:97E2BB5F-2D7E-4713-AAB4-5B75048C4E18][Replace party.status Active/Inactive check with a party-level variability flag]] | DONE | 2026-07-08 | 2026-07-10 | Login's party_setup_required is derived from party.status via IAM's in-memory party cache, which can be stale after import and re-fires the party provisioner wizard even when the party already completed setup. Replace with an onboarding.party variability flag (party-scoped via a new party_id column), checked with a direct DB read at login, immune to the cache. |
 
 * Decisions
 
+- Cross-domain writes to another service's tables route through a
+  dedicated, permission-check-free NATS request on the owning
+  service (=clear_bootstrap_mode_request=,
+  =complete_party_onboarding_request=) rather than a same-process
+  cross-crate call under the caller's own DB role — the pattern this
+  codebase is moving towards generally (cf. the NATS eventing
+  migration).
+- Provisioning-complete signals (bootstrap_mode, onboarding.*) are
+  kept strictly separate from an entity's own domain status
+  (party.status, tenant.status) — a wizard-completion flag, not a
+  proxy for whether the entity is currently active.
+- Tenant-scoped settings that silently only exist under the system
+  tenant are fixed by *explicit seeding at provisioning time*, not a
+  read-path fallback that merges system-tenant rows as implicit
+  defaults — seeding keeps every tenant's effective configuration
+  visible and audited, at the cost of not retroactively fixing
+  already-provisioned tenants and not auto-propagating future changes
+  to system-tenant defaults.
+- =party_id= was added to =ores_variability_system_settings_tbl=
+  (defaulting to a tenant's system party when omitted) so a single
+  table serves system-, tenant-, and party-scoped settings uniformly,
+  rather than three separate tables or a nullable/ambiguous scoping
+  scheme.
+
 * Out of scope
 
--
+- Retroactively backfilling =system.*= settings for tenants
+  provisioned before this story shipped (e.g. an existing Barclays).
+- Migrating the system provisioner wizard to write =onboarding.system=
+  (added for symmetry, currently unused — that wizard still clears
+  =system.bootstrap_mode= directly).
+- Removing =system.bootstrap_mode= now that =onboarding.tenant= exists
+  alongside it.
+- Automated test coverage for the new NATS handlers, service
+  accessors, and tenant-provisioner seeding — captured as follow-ups
+  (=add_party_onboarding_regression_tests.org=,
+  =add_tenant_provisioner_seeding_tests.org=) rather than blocking
+  either PR.
 
 * Promoted from capture
 

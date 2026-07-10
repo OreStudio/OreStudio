@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :synthetic-data-collections:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fx-quote-inversion-detection
+#+pr: 1492
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -47,11 +47,11 @@ is left alone rather than guessed at.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance
@@ -160,12 +160,37 @@ detection.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1492][#1492]] | [marketdata] Detect and correct reversed FX spot quotes during import |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Refdata round-trip runs unconditionally even for non-FX imports | =import_service.cpp= | Fixed | =std::any_of= short-circuit before the fetch/checker; =0e661d505=. |
+| 2 | Include not alphabetically sorted | =application.cpp= | Fixed | Same commit. |
+| 3 | Swap-on-match path only indirectly tested (no fake NATS server for =currency_pairs.list=) | =service_import_service_tests.cpp= | Declined (informational) | Covered by =fx_quote_convention_checker='s own 8 unit tests plus manual live-stack verification; not worth new test infra for one PR. |
 
 * Result
+
+Delivered per plan. =fx_quote_convention_checker= (=ores.ore.core=) is a
+pure, dependency-free class — 8 unit tests — that swaps an FX pair's two
+currencies when reversed relative to a known-pairs set, never touching
+the value. Wired into =import_service= via =ores.marketdata.service='s
+first outbound service-to-service call: a client-credentials
+=nats_client= plus per-request On-Behalf-Of delegation of the importing
+caller's token (=currency_pair= is party-scoped, so the service's own
+identity alone can't see it — this failure mode, and the correct fix,
+are now documented in
+=doc/knowledge/architecture/service_to_service_auth_patterns.org=). The
+one-off SQL special-case hardcoding GBP/USD's =ore_key= is removed;
+=synthetic.gbpusd= now naturally resolves to =FX/RATE/GBP/USD=.
+
+Verified end-to-end against a live stack: the correction fires
+importing Legacy/Example_56's =market.txt=, the resulting series lands
+on canonical =GBP/USD=, and a started =synthetic.gbpusd= feed's first
+tick (=1.394465=) matches the real imported vintage spot
+(=1.394610179594994=).
+
+Merged via PR #1492, two review-round fixes applied (unconditional
+refdata round-trip → short-circuited for non-FX imports; include-sort
+nit).

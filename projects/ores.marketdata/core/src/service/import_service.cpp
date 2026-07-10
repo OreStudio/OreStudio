@@ -26,11 +26,17 @@
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.ore.core/market/fixing.hpp"
+#include "ores.ore.core/market/fx_quote_convention_checker.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
+#include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <algorithm>
 #include <map>
 #include <rfl/enums.hpp>
+#include <rfl/json.hpp>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <tuple>
@@ -103,10 +109,60 @@ series_classification classify_series_type(const std::string& series_type) {
     throw std::invalid_argument("Unknown ORE series_type: " + series_type);
 }
 
+auto& import_helpers_lg() {
+    using namespace ores::logging;
+    static auto instance = make_logger("ores.marketdata.service.import_service");
+    return instance;
+}
+
+// Fetches every known currency pair from ores.refdata (paginated), for
+// fx_quote_convention_checker. Best-effort: any failure (refdata
+// unreachable, decode error, permission denied) logs a warning and returns
+// an empty set, so an import never fails just because this side-check
+// couldn't run — the reversed-key correction is then simply skipped.
+std::set<ores::ore::market::fx_quote_convention_checker::currency_pair>
+fetch_known_currency_pairs(ores::nats::service::nats_client& auth_nats) {
+    using namespace ores::logging;
+    std::set<ores::ore::market::fx_quote_convention_checker::currency_pair> pairs;
+    try {
+        std::uint32_t offset = 0;
+        constexpr std::uint32_t page_size = 200;
+        for (;;) {
+            ores::refdata::messaging::get_currency_pairs_request req;
+            req.offset = offset;
+            req.limit = page_size;
+            const auto json = rfl::json::write(req);
+            const auto reply = auth_nats.authenticated_request(req.nats_subject, json);
+            const std::string_view sv(reinterpret_cast<const char*>(reply.data.data()),
+                                      reply.data.size());
+            auto resp = rfl::json::read<ores::refdata::messaging::get_currency_pairs_response>(sv);
+            if (!resp || !resp->success) {
+                BOOST_LOG_SEV(import_helpers_lg(), warn)
+                    << "Failed to fetch currency pairs for FX quote convention checking; "
+                    << "reversed-key correction disabled for this import.";
+                return {};
+            }
+            for (const auto& p : resp->pairs)
+                pairs.emplace(p.base_currency, p.quote_currency);
+            offset += static_cast<std::uint32_t>(resp->pairs.size());
+            if (resp->pairs.empty() ||
+                offset >= static_cast<std::uint32_t>(resp->total_available_count))
+                break;
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(import_helpers_lg(), warn)
+            << "Failed to fetch currency pairs (" << e.what()
+            << "); reversed-key correction disabled for this import.";
+        return {};
+    }
+    return pairs;
+}
+
 } // namespace
 
-import_service::import_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+import_service::import_service(context ctx, ores::nats::service::nats_client& auth_nats)
+    : ctx_(std::move(ctx))
+    , auth_nats_(auth_nats) {}
 
 messaging::import_market_data_response
 import_service::import(const messaging::import_market_data_request& req) {
@@ -182,9 +238,43 @@ import_service::import(const messaging::import_market_data_request& req) {
     if (!req.market_data_content.empty()) {
         std::istringstream in(req.market_data_content);
         ores::ore::market::parse_report report;
-        const auto data = ores::ore::market::parse_market_data(in, on_duplicate, &report);
+        auto data = ores::ore::market::parse_market_data(in, on_duplicate, &report);
         append_issues(resp.warnings, report.warnings, "market data");
         append_issues(resp.errors, report.errors, "market data");
+
+        // Best-effort: a reversed FX/RATE key (e.g. some vendored ORE
+        // example market.txt files store GBP/USD under FX/RATE/USD/GBP —
+        // see fx_quote_convention_checker's docs) is detected against
+        // ores.refdata's currency_pair reference data and corrected here,
+        // before persistence, so every downstream consumer (including the
+        // series this creates) sees the canonical key. The value is never
+        // touched — only the qualifier's two currencies are swapped — so
+        // this can never introduce floating-point error.
+        const auto has_fx_rate = std::any_of(data.begin(), data.end(), [](const auto& d) {
+            return d.series_type == "FX" && d.metric == "RATE";
+        });
+        if (has_fx_rate) {
+            const auto known_pairs = fetch_known_currency_pairs(auth_nats_);
+            const ores::ore::market::fx_quote_convention_checker checker(known_pairs);
+            for (auto& d : data) {
+                if (d.series_type != "FX" || d.metric != "RATE")
+                    continue;
+                const auto slash = d.qualifier.find('/');
+                if (slash == std::string::npos ||
+                    d.qualifier.find('/', slash + 1) != std::string::npos)
+                    continue; // not a plain two-currency qualifier
+                const auto base = d.qualifier.substr(0, slash);
+                const auto quote = d.qualifier.substr(slash + 1);
+                const auto result = checker.check(base, quote);
+                if (result.status != ores::ore::market::fx_quote_status::key_swapped)
+                    continue;
+                resp.warnings.push_back(
+                    "FX/RATE/" + base + "/" + quote + " = " + d.value + " -> FX/RATE/" +
+                    result.base_currency + "/" + result.quote_currency + " = " + d.value +
+                    " (value unchanged): reversed relative to refdata's canonical currency pair.");
+                d.qualifier = result.base_currency + "/" + result.quote_currency;
+            }
+        }
 
         // parse_market_data already de-duplicated repeated (date, key)
         // pairs (last-line-wins) — see duplicate_policy. In error mode,

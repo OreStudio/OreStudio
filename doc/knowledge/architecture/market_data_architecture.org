@@ -173,6 +173,29 @@ Start/stop is a generic, source-agnostic control contract the owning party
 subscribes to; the control panel speaks the registry + control contract and
 needs no producer-specific knowledge.
 
+** Vintage import: reversed-key detection via delegated cross-service lookup
+
+Importing an ORE =market.txt= vintage (=import_service=, distinct from the
+live subscribe/persist/remap path above — a batch operation, not a tick
+consumer) checks each =FX/RATE= spot quote's currency order against
+=ores.refdata='s =currency_pair= reference data, and corrects a reversed
+key before persisting (see [[id:F3CB17FB-6472-4DEB-BC5B-EC764C1368F8][the task]] and the pure decision logic in
+=fx_quote_convention_checker=, =ores.ore.core=). The reversed-key case is
+real, not hypothetical: some vendored ORE example =market.txt= files store
+GBP/USD under the key =FX/RATE/USD/GBP=.
+
+=currency_pair= is *tenant- and party-scoped* — each tenant can define its
+own currency-pair conventions — so this lookup cannot run as the
+marketdata service's own identity (which has no tenant) and must instead
+borrow the *importing user's* tenant/party: the On-Behalf-Of half of
+[[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth: Client Credentials vs. On-Behalf-Of Delegation]],
+not a one-off. =import_handler= extracts the caller's bearer token from
+the inbound =import_market_data_request= message and delegates it on the
+service's own =nats_client= before calling =refdata.v1.currency_pairs.list=,
+exactly as =feed_controller= already does for market-data lookups in the
+vintage guard. Best-effort: if the fetch fails (refdata unreachable, etc.),
+the import proceeds with no reversed-key correction rather than failing.
+
 ** Current state vs target
 
 Today (PoC): =ores.synthetic= publishes straight to =marketdata.v1.tick.*= *and*
@@ -197,3 +220,6 @@ vertical-slice that seeded this and [[id:8A65240D-C7A2-4F66-860F-97137B03B482][t
 - [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — what exists in the stack today.
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — derived rates, no-arbitrage, and correlations.
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — generation design.
+- [[id:F3CB17FB-6472-4DEB-BC5B-EC764C1368F8][Detect and correct reversed FX spot quotes during market data import]] —
+  worked example of the delegate half of "mint or delegate", for
+  tenant/party-scoped reference data.

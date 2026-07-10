@@ -37,11 +37,11 @@ collection proactively.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
-| Now          | Prerequisite gap closed and guard logic implemented (steps 1-3 of Plan); PR open. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Manual Qt smoke test of the guard/validate-all UX, then close out. |
+| Next         | Nothing. |
 | Last touched | 2026-07-07                               |
 
 * Acceptance
@@ -162,3 +162,32 @@ canonical order) is tracked separately as
 |   |                 |      |          |       |
 
 * Result
+
+Delivered as planned: =fx_spot_generation_config= carries
+=price_source=/=vintage_source=/=vintage_date=; =feed_controller=
+checks vintage-data availability (delegated, tenant-scoped) before a
+feed starts, overriding the manually-entered spot with the real
+imported observation on success; a "Validate Vintage" Market Simulator
+toolbar action runs the same check on demand across every configured
+rate. The FX spot rate editor gained a Fixed/From-vintage-data radio
+selector (two groups stacked vertically, each disabling the other's
+fields — iterated twice on the layout per review feedback) and a
+"Browse available…" picker so a user can pick a real (source, date)
+vintage instead of typing one blind (though it doesn't yet know about
+the reversed-key quirk below — see the follow-up task).
+
+Also fixed two independent stale-Qt-plugin-vs-exe ABI-mismatch
+crashes, permanently closed via =ores.qt.exe='s new
+=add_dependencies()= on every plugin lib (previously plugins were only
+=QPluginLoader=-loaded, never a CMake dependency of the exe).
+
+Found along the way, not part of the original scope: Legacy/
+Example_56's =market.txt= files GBP/USD under the reversed key
+=FX/RATE/USD/GBP= (confirmed via EUR-cross triangulation — see the
+story's Decisions). Patched around it for now with a one-off SQL
+special-case in the DQ-seeding function; the generic fix is
+[[id:F3CB17FB-6472-4DEB-BC5B-EC764C1368F8][Detect and correct reversed FX spot quotes during market data import]],
+raised as its own task and started next.
+
+Merged via PR #1467 (admin override — CI checks were still queued;
+branch was rebased onto latest main immediately beforehand).

@@ -21,6 +21,7 @@
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.testing/database_helper.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -39,7 +40,8 @@ TEST_CASE("import_dedupes_duplicate_observation_and_reports_warning", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import_service svc(h.context());
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
 
     ores::marketdata::messaging::import_market_data_request req;
     req.market_data_content = "20160205 FX/RATE/EUR/CHF 1.0\n"
@@ -59,7 +61,8 @@ TEST_CASE("import_with_duplicates_are_errors_skips_only_the_affected_section", t
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import_service svc(h.context());
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
 
     ores::marketdata::messaging::import_market_data_request req;
     // Market data has a duplicate; fixings does not.
@@ -87,7 +90,8 @@ TEST_CASE("import_defaults_point_id_to_spot_for_scalar_series", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import_service svc(h.context());
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
     ores::marketdata::repository::market_series_repository series_repo;
     ores::marketdata::repository::market_observations_repository obs_repo;
 
@@ -113,7 +117,8 @@ TEST_CASE("import_leaves_point_id_empty_for_non_scalar_series_with_short_key", t
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import_service svc(h.context());
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
     ores::marketdata::repository::market_series_repository series_repo;
     ores::marketdata::repository::market_observations_repository obs_repo;
 
@@ -138,4 +143,32 @@ TEST_CASE("import_leaves_point_id_empty_for_non_scalar_series_with_short_key", t
     const auto observations = obs_repo.read_latest(h.context(), series.front().id);
     REQUIRE(observations.size() == 1);
     CHECK(observations.front().point_id.empty());
+}
+
+TEST_CASE("import_leaves_fx_qualifier_untouched_when_currency_pairs_unreachable", tags) {
+    auto lg(make_logger(test_suite));
+
+    // auth_nats is unconnected (no live refdata to fetch currency_pair
+    // reference data from) — fetch_known_currency_pairs must degrade to an
+    // empty known-pairs set rather than throwing, and with no known pairs
+    // fx_quote_convention_checker never corrects anything: a genuinely
+    // reversed key like FX/RATE/USD/GBP is persisted exactly as given,
+    // which is the safe behaviour (never guess without reference data).
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 FX/RATE/USD/GBP 1.394610179594994\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    REQUIRE(resp.observation_count == 1);
+    CHECK(resp.warnings.empty());
+
+    const auto series = series_repo.read_latest_by_type(h.context(), "FX", "RATE", "USD/GBP");
+    REQUIRE(series.size() == 1);
 }

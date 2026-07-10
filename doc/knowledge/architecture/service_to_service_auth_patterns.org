@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: 3E20C1A0-7BA1-4F31-8C34-1E5F13558890
+:END:
+#+title: Service-to-Service Auth: Client Credentials vs. On-Behalf-Of Delegation
+#+description: When a service must call another service: client-credentials (mint its own token, for service-owned work) vs. on-behalf-of delegation (forward the caller's token, for tenant/party-scoped reads on the user's behalf) — decision criteria, the exact idiom, and why direct cross-service repository access is not a shortcut.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:services:authentication:iam:nats:multi-tenancy:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+
+* Summary
+
+A service that needs data another service owns has exactly two legitimate
+ways to authenticate that call — mint its own service identity (the
+*client credentials* grant) or forward the calling user's own token (the
+*on-behalf-of*, OBO, delegation flow) — never both blended into one call,
+and never a shortcut around either by reaching into the other service's
+repository/tables directly. Which of the two to use is decided by one
+question: is the data being read scoped to the *current caller* (tenant,
+party, permissions) or is it scoped to *the service itself* (background
+work, bootstrap, data the service is always allowed to see regardless of
+who asked)? =ores.nats.service::nats_client= implements both as one type
+(=with_delegation= layers OBO on top of an existing, already-authenticated
+client) — see [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] for the mechanics and
+[[id:F3CB17FB-6472-4DEB-BC5B-EC764C1368F8][Detect and correct reversed FX spot quotes during market data import]] for a
+worked OBO example.
+
+* Detail
+
+** The two flows, named properly
+
+These aren't ORE Studio inventions — they're the standard OAuth2/OIDC
+service-to-service flows, and the industry names are worth using because
+they carry the right connotations:
+
+- *Client Credentials Grant* — the service authenticates as *itself*,
+  using its own credentials (here: its database account, exchanged for a
+  JWT via IAM). The resulting identity has no tenant, no party, and no
+  end-user permissions — it *is* the service. Correct for: startup
+  bootstrap, a background feed/job the service runs autonomously, or any
+  read of data that is genuinely global/service-owned rather than
+  caller-owned.
+- *On-Behalf-Of (OBO) delegation* — the service forwards the *original
+  caller's* token (extracted from the inbound request) to the downstream
+  call, so the downstream service resolves tenant/party/permissions as if
+  the original caller had called it directly. Correct for: any read or
+  write of data that is tenant- or party-scoped, where "what can I see"
+  must match "what the calling user is allowed to see" — not what the
+  relaying service happens to be allowed to see.
+
+Mixing them up is the actual failure mode to watch for: using client
+credentials for tenant-scoped data silently returns *nothing* (RLS
+correctly filters to the service's own — empty — tenant context, not an
+error), which looks exactly like "the data doesn't exist" rather than
+"I asked with the wrong identity". This is precisely what happened before
+this pattern was applied to the FX quote-convention check (see the worked
+example below) — the service-account fetch of =currency_pair= data
+silently came back empty because =currency_pair= is party-scoped and the
+service account has no party, not because the data was actually missing.
+
+** When to use which
+
+- Ask "if the roles were reversed and this were an HTTP API, would this be
+  a request the *user* makes, or a request the *service* makes on a
+  schedule/at startup?" User-shaped request → OBO. Service-shaped request
+  → client credentials.
+- Ask "does the target table have a =tenant_id=/=party_id= column whose
+  value should vary depending on who's asking?" Yes → OBO. No (or it's
+  genuinely system/global reference data) → client credentials, and no
+  delegation is needed at all.
+- When in doubt, check how the *table itself* is scoped (RLS policy,
+  =tenant_id=/=party_id= columns) rather than guessing from the calling
+  code's context — the failure mode above is exactly what happens when
+  that check is skipped.
+
+** How to use it
+
+Both flows share one starting point: a *client-credentials* =nats_client=,
+built once (typically in the service's =application.cpp=/=main.cpp=) from
+the service's own database account credentials:
+
+#+begin_src cpp
+ores::nats::service::nats_client svc_nats(
+    nats,
+    ores::iam::client::make_service_token_provider(
+        nats, cfg.database.user, cfg.database.password()));
+#+end_src
+
+Used as-is, every call through =svc_nats= is client-credentials (the
+service's own identity). To make one specific call OBO instead, delegate
+the current request's caller token onto a *copy* (=with_delegation=
+returns a new value, it does not mutate =svc_nats=) before that call:
+
+#+begin_src cpp
+auto downstream = svc_nats.with_delegation(extract_bearer(msg));
+auto reply = downstream.authenticated_request(subject, json);
+#+end_src
+
+=extract_bearer(msg)= pulls the =Authorization: Bearer= header off the
+*inbound* NATS message the handler is currently processing — i.e. this
+only works inside a handler that itself received an authenticated
+request; there is no caller token to forward from a background job.
+
+The receiving service's =make_request_context= understands both: a plain
+=Authorization= header resolves to the client-credentials identity;
+an =X-Delegated-Authorization= header (which =with_delegation= sets)
+resolves to the delegated caller's full identity instead — tenant, party,
+and permissions all as that caller, not as the relaying service.
+
+Where to obtain the information being fetched: always through the owning
+service's NATS API (its published protocol/=nats_subject=), decoded via
+the typed request/response structs in its =*.api= component — the same
+contract any other caller of that service uses, authenticated with
+whichever of the two flows fits per the decision above.
+
+** What *not* to do: direct cross-service repository access
+
+It is tempting, when both services happen to share one physical Postgres
+instance, to skip the NATS round-trip entirely and have one service's
+=core= component directly construct another service's repository/mapper
+classes against a shared =context=. Resist this even though it compiles
+and — today — even returns correct rows:
+
+- it silently assumes the two services share a database, which is an
+  implementation detail of the current deployment, not a contract either
+  service has agreed to keep;
+- it bypasses whatever authorization the owning service's handler would
+  have enforced (=has_permission= checks, request-context validation) —
+  the read happens with *no* authorization boundary at all, tenant-scoped
+  data or not;
+- it couples the two services' internal schemas directly — a column
+  rename or table split in the owned service silently breaks the
+  borrowing service's build (or, worse, its runtime queries) with no
+  compiler or protocol-level signal;
+- it defeats the entire reason these are separate, independently
+  ownable/deployable services rather than one monolith.
+
+If a cross-service read feels awkward via NATS (extra round-trip,
+pagination, no convenience client library yet), that awkwardness is a
+prompt to add a typed client library for the owned service (see
+=ores.marketdata.client= as the reference pattern), not a reason to reach
+around the service boundary.
+
+* See also
+
+- [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — "Calling another service: mint or delegate", the
+  mechanics this doc names and expands on.
+- [[id:4B02695C-7C59-487A-8450-4240EC836685][Service-to-Service JWT Delegation]] — the original delegation design plan.
+- [[id:28A7AF22-1EB1-4989-B4BD-A383D09605F3][ores.iam.client]] — =make_service_token_provider= and session helpers.
+- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — tenant/party scoping and RLS.
+- [[id:F3CB17FB-6472-4DEB-BC5B-EC764C1368F8][Detect and correct reversed FX spot quotes during market data import]] —
+  worked OBO example: =ores.marketdata= reading party-scoped
+  =currency_pair= data from =ores.refdata=.

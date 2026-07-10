@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:qt:currency:refdata:sprint_22:v0:codegen-view-groups:
 #+owner: marco
-#+branch:
+#+branch: feature/codegen-view-groups
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-09
 #+updated: 2026-07-09
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,7 +28,7 @@ support, proving it out end-to-end on the entity that motivated it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] |
 | Now          | Blocked on the codegen schema/template task landing first. |
 | Waiting on   | [[id:A2DD82C0-0B8A-498D-8AA3-DA5C9A8355D2][Design and add view_group support to the entity_org schema and Qt codegen templates]] |
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:D8C8CD08-DB0E-4AF1-9D97-824EBFDE4411][Verify currency's restored General/Formatting/Rounding/Provenance tabs]] | PENDING | |
 
 * PRs
 

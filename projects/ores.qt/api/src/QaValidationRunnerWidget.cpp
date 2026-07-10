@@ -237,15 +237,23 @@ QaValidationRunnerWidget::QaValidationRunnerWidget(QWidget* parent)
         openAction_, &QAction::triggered, this, &QaValidationRunnerWidget::promptAndLoadScenario);
     connect(saveAction_, &QAction::triggered, this, [this]() { save(); });
     connect(screenshotAction_, &QAction::triggered, this, [this]() {
-        const QString baseName = QFileInfo(scenarioPath_).completeBaseName();
-        captureScreenshot(baseName, [this](const QString& path) {
+        // Captured by value, not re-read from the member inside onDone: the
+        // capture delay gives the tester time to switch windows, which
+        // includes switching to a different loaded scenario via Open —
+        // re-reading scenarioPath_ then would record the note into the
+        // wrong (newly loaded) doc.
+        const QString scenarioPath = scenarioPath_;
+        const QString baseName = QFileInfo(scenarioPath).completeBaseName();
+        screenshotAction_->setEnabled(false);
+        captureScreenshot(baseName, [this, scenarioPath](const QString& path) {
+            screenshotAction_->setEnabled(true);
             if (path.isEmpty()) {
                 emit errorOccurred(tr("Failed to save screenshot."));
                 return;
             }
             emit statusMessage(tr("Saved screenshot to %1").arg(path));
             if (!append_scenario_note(
-                    scenarioPath_, tr("[[file:%1]]").arg(QFileInfo(path).fileName())))
+                    scenarioPath, tr("[[file:%1]]").arg(QFileInfo(path).fileName())))
                 emit errorOccurred(tr("Saved screenshot but failed to record it in the "
                                        "scenario doc's Notes section."));
         });
@@ -465,11 +473,19 @@ void QaValidationRunnerWidget::openStepDetail(QListWidgetItem* item) {
     // the tester may have closed this step's subwindow (destroying
     // notesEdit) in the meantime.
     QPointer<QPlainTextEdit> notesPtr = notesEdit;
-    connect(screenshotButton, &QPushButton::clicked, subWindow, [this, index, notesPtr]() {
+    QPointer<QPushButton> screenshotButtonPtr = screenshotButton;
+    connect(screenshotButton,
+            &QPushButton::clicked,
+            subWindow,
+            [this, index, notesPtr, screenshotButtonPtr]() {
         const QString baseName = QStringLiteral("%1_step%2")
                                      .arg(QFileInfo(scenarioPath_).completeBaseName())
                                      .arg(index + 1);
-        captureScreenshot(baseName, [this, notesPtr](const QString& path) {
+        if (screenshotButtonPtr)
+            screenshotButtonPtr->setEnabled(false);
+        captureScreenshot(baseName, [this, notesPtr, screenshotButtonPtr](const QString& path) {
+            if (screenshotButtonPtr)
+                screenshotButtonPtr->setEnabled(true);
             if (path.isEmpty()) {
                 emit errorOccurred(tr("Failed to save screenshot."));
                 return;

@@ -205,7 +205,15 @@ bool append_scenario_note(const QString& path, const QString& line) {
     if (!notes_span.found())
         return false;
 
-    lines.insert(notes_span.end, line);
+    // A trailing blank line separates the appended line from whatever
+    // heading follows Notes — irrelevant when Notes is the last section
+    // (the common case, EOF right after), but keeps the doc readable for
+    // the (rarer) template variant where something follows it.
+    const bool has_following_heading = notes_span.end < lines.size();
+    QStringList insertion{line};
+    if (has_following_heading)
+        insertion << QString();
+    lines = lines.mid(0, notes_span.end) + insertion + lines.mid(notes_span.end);
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
         return false;

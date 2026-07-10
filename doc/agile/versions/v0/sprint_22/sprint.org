@@ -207,6 +207,7 @@ health review (promote to a story, move to =next=, or discard).
 |---+------------+-------+---------+-------------------------------|
 | 1 | 2026-07-04 | day 3 | RED     | [[id:FE18CB49-C6D0-4F1B-9B56-04E5738032D9][Health review 1 — sprint 22 analysis]] |
 | 2 | 2026-07-05 | day 4 | RED     | [[id:CC2B3D6B-2B92-4606-A3BE-E67FB86B2960][Health review 2 — sprint 22 mid-sprint analysis]] |
+| 3 | 2026-07-10 | day 9 | RED     | [[id:FCF5939C-FEE9-4F03-87C1-98F565C4E045][Health review 3 — sprint 22 close analysis]] |
 
 * Charts
 

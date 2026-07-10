@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: A607D53A-66E3-4211-AE3B-069A603F509F
+:END:
+#+title: Test Scenario: Retake currency detail dialog screenshots for the manual
+#+description: Use the QA Validation Runner's screenshot capture to retake the four Currency Details tab screenshots (General, Formatting, Rounding, Provenance) against the restored view_group tabs, replacing the stale pre-codegen images.
+#+type: test_scenario
+#+level: s1
+#+filetags: :docs:currency:refdata:sprint_22:v0:codegen-view-groups:
+#+target_dialog:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:43BF58C0-902A-4222-A9E5-86C67CE60C9A][Document currency domain knowledge in the manual]] in [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:43BF58C0-902A-4222-A9E5-86C67CE60C9A][Document currency domain knowledge in the manual]] |
+| Parent story  | [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]]   |
+| Target dialog | CurrencyDetailDialog                    |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Open a currency's detail dialog once (e.g. AOA, to match the existing
+screenshots' captions — or any currency, updating the captions'
+currency reference in the manual task afterward if a different one is
+used) and keep it open for all four steps below; just switch tabs
+between captures. For each step: switch to the named tab, open the
+step's own detail view in the QA Validation Runner (double-click the
+step), and click its *Screenshot* button — this captures the whole
+screen after a short delay, so bring the currency dialog to the front
+first. The captured filename is appended to the step's Notes
+automatically.
+
+** Capture the General tab
+
+Switch the currency detail dialog to the *General* tab, then capture.
+
+** Capture the Formatting tab
+
+Switch the currency detail dialog to the *Formatting* tab, then
+capture.
+
+** Capture the Rounding tab
+
+Switch the currency detail dialog to the *Rounding* tab, then capture.
+This tab has never actually had its screenshot embedded in the manual
+before (see =doc/manual/user_guide/chapter_5_currencies.org=) —
+capturing it now fixes both the stale-tabs issue and that pre-existing
+gap in one pass.
+
+** Capture the Provenance tab
+
+Switch the currency detail dialog to the *Provenance* tab, then
+capture. This tab isn't part of =view_group= and its layout hasn't
+changed — capturing it anyway for a consistent, matching set of four,
+and because its current screenshot is still the pre-codegen
+hand-written dialog's chrome, not the current one's.
+
+** Move the captured screenshots into assets/images and update the manual
+
+Not a live-app step: rename each captured PNG (from wherever the
+Screenshot button saved it, next to this scenario doc) to
+=currency_details_{general,formatting,rounding,provenance}.png=,
+=git mv= them into =assets/images/=, overwriting the stale ones, then
+in =doc/manual/user_guide/chapter_5_currencies.org= change each
+=#+caption[SCREENSHOT OUTDATED — retake needed]= back to a plain
+=#+caption[Currency Details — <Tab> tab]= now that it's current. Also
+re-read the surrounding prose against the live dialog while the
+screenshots are fresh in mind, and add any domain-knowledge gaps
+noticed (e.g. why these particular fields ended up grouped this way,
+if that's not already explained).
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

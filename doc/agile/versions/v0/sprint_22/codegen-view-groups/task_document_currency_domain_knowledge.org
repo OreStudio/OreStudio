@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :docs:currency:refdata:sprint_22:v0:codegen-view-groups:
 #+owner: marco
-#+branch:
+#+branch: feature/codegen-view-groups
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-09
 #+updated: 2026-07-09
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,24 +31,28 @@ all.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] |
-| Now          | Blocked on the currency pilot task.    |
-| Waiting on   | [[id:2C1C628B-7C55-4CC7-B8F9-B3E52A0739A6][Apply view_group tabs to the currency entity (pilot)]] |
-| Next         | Retake screenshots once the regenerated dialog is verified. |
-| Last touched | 2026-07-09                               |
+| Now          | Chapter captions marked outdated/added; screenshot-capture scenario created, not yet run. |
+| Waiting on   | Nothing — currency pilot task is DONE. |
+| Next         | Run the scenario below through the QA Validation Runner. |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
-- [ ] =assets/images/currency_details_general.png=,
-  =currency_details_formatting.png=, and
-  =currency_details_provenance.png= retaken against the regenerated
-  (codegen, view_group-based) dialog — they currently show the old
-  hand-written dialog, not the current single-tab codegen output, so
-  they're already inaccurate.
-- [ ] =assets/images/currency_details_rounding.png= (exists as an asset,
-  never embedded) added to the =*** Rounding= subsection of chapter 5
-  — a pre-existing gap, not caused by codegen, fix it while in there.
+- [X] =assets/images/currency_details_{general,formatting,provenance}.png=
+  captions marked =[SCREENSHOT OUTDATED — retake needed]= in chapter 5
+  (they currently show the old hand-written dialog's chrome, not the
+  restored view_group-based one).
+- [X] =assets/images/currency_details_rounding.png= (existed as an
+  asset, never embedded) now embedded in the =*** Rounding= subsection
+  — a pre-existing gap, not caused by codegen — also marked outdated
+  since it's the same stale pre-codegen image.
+- [ ] All four screenshots actually retaken against the live,
+  regenerated dialog and captions restored to normal, via
+  [[id:A607D53A-66E3-4211-AE3B-069A603F509F][Retake currency detail dialog screenshots for the manual]] (uses the
+  QA Validation Runner's screenshot-capture feature, merged since this
+  story started).
 - [ ] Chapter 5's prose re-verified field-by-field against the
   regenerated dialog (labels, placeholder text, widget types) — it was
   written against the pre-codegen dialog and should be re-checked
@@ -59,10 +63,22 @@ all.
 
 * Plan
 
-(Blocked until the currency pilot task lands and the regenerated
-dialog is verified — nothing to plan in detail yet beyond: retake the
-four screenshots, add the missing Rounding one, and re-read the
-existing prose against the live dialog field-by-field.)
+1. Marked all four Currency Details screenshot captions per the
+   =doc-update-manual= skill's convention (=[SCREENSHOT OUTDATED —
+   retake needed]=), including newly embedding the previously-unused
+   Rounding screenshot asset.
+
+2. Created a test_scenario
+   ([[id:A607D53A-66E3-4211-AE3B-069A603F509F][Retake currency detail dialog screenshots for the manual]]) that uses
+   the QA Validation Runner's screenshot-capture feature (a sibling
+   task in the QA Validation Runner story, merged to main since this
+   story's scaffold task) — one step per tab, switching the currency
+   dialog to that tab and clicking the step's own Screenshot button,
+   plus a final non-live step for moving the captured files into
+   =assets/images/= and flipping the captions back to normal.
+
+3. Run that scenario, then re-read chapter 5's prose against the live
+   dialog while the screenshots are fresh.
 
 * Notes
 
@@ -75,7 +91,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:A607D53A-66E3-4211-AE3B-069A603F509F][Retake currency detail dialog screenshots for the manual]] | PENDING | |
 
 * PRs
 

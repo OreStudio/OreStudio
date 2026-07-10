@@ -33,21 +33,45 @@ double-click a row). Confirm the dialog shows four tabs, in this
 order: General, Formatting, Rounding, Provenance — matching the
 manual's description ("The Currency Details dialog has four tabs...").
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** General tab shows the right fields
 
 Confirm the General tab shows: ISO Code, Name, Numeric Code, Asset
 Class (a combo), Market Tier (a combo), and the currency's flag icon.
 Confirm ISO Code is read-only (it's the primary key).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Formatting tab shows the right fields
 
 Confirm the Formatting tab shows: Symbol, Fraction Symbol, Fractions
 Per Unit, and Format — and none of the General tab's fields.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Rounding tab shows the right fields
 
 Confirm the Rounding tab shows: Rounding Type (a combo) and Rounding
 Precision — and none of the other tabs' fields.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Provenance tab is unchanged
 
@@ -56,12 +80,24 @@ Confirm the Provenance tab still shows the read-only audit metadata
 before — this tab isn't part of view_group, so it should be completely
 untouched by this change.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Editing and saving still works across tabs
 
 Change a field on one tab (e.g. the Format field on Formatting), switch
 to another tab, then Save. Confirm the change reason dialog appears,
 save succeeds, and the change actually took (reopen the dialog or check
 the list window's updated row).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Tab switching doesn't lose unsaved edits
 
@@ -71,14 +107,21 @@ reset the underlying widgets — Qt keeps unrelated tabs' state by
 default, but worth confirming nothing in the generated code interferes
 with it).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-10T08:06:53Z |
+| Branch        | feature/codegen-view-groups |
+| Commit        | 039fe4ffd |
+| Worktree      | bright_faraday |
 
 * Notes
+[[file:scenario_verify_currency_view_group_tabs_20260710_090648.png]]

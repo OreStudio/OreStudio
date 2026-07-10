@@ -84,7 +84,11 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | "seven" leftover should say "five" (screenshot task description) | task_currency-pair-manual-screenshots.org | Applied | Fixed in ea480f107. |
+| 2 | Stale OreStudio (unspaced) branding in newly-added recipe text | how_do_i_document_an_entity.org | Applied | Fixed in ea480f107 (3 instances). |
+| 3 | _scan_ports has no upper bound; ~13th worktree re-enters the ephemeral range | env_init.py | Applied | Fixed in ea480f107 — raises RuntimeError at EPHEMERAL_PORT_FLOOR instead of silently colliding. |
+| 4 | Task State STARTED / Acceptance unchecked despite chapter shipping | task_currency-pair-manual-chapter.org | Applied | Fixed in ea480f107 — flipped to DONE with Result. |
+| 5 | story.org rows for both tasks out of sync with their own task docs | story.org | Applied | Fixed in ea480f107 — both rows synced to DONE with dates. |
 
 * Result
 

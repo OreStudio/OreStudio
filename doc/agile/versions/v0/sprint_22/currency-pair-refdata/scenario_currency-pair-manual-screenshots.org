@@ -111,12 +111,42 @@ Business Day Convention, Spot Relative, and End Of Month.
 | Status | PASS |
 | Notes  | [[file:scenario_currency-pair-manual-screenshots_step5_20260710_091810.png]] |
 
+** Read the manual in the Qt client
+
+Added retroactively per [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] —
+not yet run for this scenario. Rebuild the Qt-embedded HTML help
+(=compass build --direct help= then
+=cmake --build --preset <preset> --target deploy_help_qch=), restart the
+Qt client, open the Currency Pairs chapter in /Help → User Manual/, and
+read it top to bottom: confirm the prose reads correctly, the segues
+work, and every screenshot appears where expected and matches its
+caption.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Check the built PDF
+
+Added retroactively, same as above — not yet run. Open the rebuilt
+=user_manual.pdf= (e.g. =zathura= or =evince=) at the Currency Pairs
+chapter's pages and confirm layout, figure numbering, and captions look
+correct in the PDF's own rendering.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PASSED |
-| Completed at  | 2026-07-10T08:18:17Z |
+| Status        | PENDING |
+| Completed at  | 2026-07-10T08:18:17Z (5 capture steps only — the two review steps below were added after this run and still need to be worked) |
 | Branch        | feature/currency-pair-manual-chapter |
 | Commit        | 8e69c1f9c |
 | Worktree      | prime_origin |

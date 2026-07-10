@@ -26,12 +26,12 @@ File backlog captures for rounding_type Wt web UI and HTTP API support. These la
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:8D0431A9-8894-4686-9BB6-3EAC7331084C][Commission: rounding_type]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned — superseded.                 |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-26                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -58,3 +58,8 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Superseded — per-entity Wt/HTTP gap capturing was replaced by two
+top-level commissioning-story captures covering every entity:
+[[id:EEE4880F-525A-4805-8082-B8638CB54ABA][Wt entity UI — top-level commissioning story]] and
+[[id:03FC50B3-622B-4456-AE66-2F180B526723][HTTP entity endpoints — top-level commissioning story]].

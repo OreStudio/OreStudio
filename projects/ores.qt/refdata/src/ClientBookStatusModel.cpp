@@ -199,6 +199,8 @@ void ClientBookStatusModel::fetch_statuses(std::uint32_t offset, std::uint32_t l
                 }
 
                 refdata::messaging::get_book_statuses_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -213,11 +215,12 @@ void ClientBookStatusModel::fetch_statuses(std::uint32_t offset, std::uint32_t l
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->statuses.size() << " book statuses";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->statuses.size());
+                    << "Fetched " << result->statuses.size()
+                    << " book statuses, total available: " << result->total_available_count;
                 return {.success = true,
                         .statuses = std::move(result->statuses),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

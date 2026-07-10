@@ -24,12 +24,12 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | ABANDONED                                |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | SQL and C++ core/messaging codegen sync done; Qt codegen sync, verify Qt, shell, CLI, manual, and DDL fix remain. |
+| Now           | Abandoned — consolidated into a single capture with party and counterparty. |
 | Waiting on    | Nothing.                               |
-| Next          | Sync Qt codegen for party_status.      |
-| Last touched  | 2026-07-06                             |
+| Next          | See [[id:E953C1DB-1FD5-415D-B777-5983315C8E22][Commission party, counterparty, and party_status together]]. |
+| Last touched  | 2026-07-10                             |
 
 * Acceptance
 

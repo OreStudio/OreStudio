@@ -24,12 +24,12 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | ABANDONED                            |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Security-definer gap fixed; codegen migration blocked, deferred to a backlog capture. |
+| Now           | Abandoned — consolidated into a single capture with counterparty and party_status. |
 | Waiting on    | Nothing.                               |
-| Next          | Verify Qt UI end-to-end post-NATS.     |
-| Last touched  | 2026-07-04                               |
+| Next          | See [[id:E953C1DB-1FD5-415D-B777-5983315C8E22][Commission party, counterparty, and party_status together]]. |
+| Last touched  | 2026-07-10                               |
 
 * Acceptance
 

@@ -166,6 +166,8 @@ detection.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Refdata round-trip runs unconditionally even for non-FX imports | =import_service.cpp= | Fixed | =std::any_of= short-circuit before the fetch/checker; =0e661d505=. |
+| 2 | Include not alphabetically sorted | =application.cpp= | Fixed | Same commit. |
+| 3 | Swap-on-match path only indirectly tested (no fake NATS server for =currency_pairs.list=) | =service_import_service_tests.cpp= | Declined (informational) | Covered by =fx_quote_convention_checker='s own 8 unit tests plus manual live-stack verification; not worth new test infra for one PR. |
 
 * Result

@@ -42,6 +42,18 @@ each one still actually needs:
   as a subsection of party's chapter, the same way book_status is
   documented alongside Book rather than standalone.
 
+- *prerequisite, not yet done*: bind the composite child-entity and
+  hierarchy Qt widgets to party and counterparty, verify feature
+  parity against the hand-maintained =EntityDetailDialog=, and retire
+  that abstraction. [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for
+  codegen]] is otherwise DONE this sprint — the reusable
+  =HierarchyTreeWidget=, the hierarchy-model-builder, the child-entity
+  Qt facet design, and the SQL/NATS hierarchy layer all shipped. Only
+  this one binding step, [[id:2AC41A6E-3F18-48FF-B389-D5CC0E1AAC8F][Bind composite child-entity and hierarchy
+  widgets to party and counterparty]], remains, and it belongs here
+  rather than in that now-closed story, since it only makes sense in
+  the context of this consolidated party/counterparty work.
+
 Shell/CLI and Wt/HTTP items for all three are *not* carried here —
 they're superseded by the top-level [[id:8BCD0D1C-AAFB-4FAA-A0E3-022FC6EF93C2][Shell entity commands]], [[id:469958E3-B249-4D4C-95A9-E7CDB703F0C0][CLI
 commands]], [[id:EEE4880F-525A-4805-8082-B8638CB54ABA][Wt entity UI]], and [[id:03FC50B3-622B-4456-AE66-2F180B526723][HTTP entity endpoints]] commissioning-story

@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned — moved.                      |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-04                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -65,3 +65,7 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Moved — this is now tracked as a prerequisite item under
+[[id:E953C1DB-1FD5-415D-B777-5983315C8E22][Commission party, counterparty, and party_status together]], since
+it only makes sense in the context of that consolidated work.

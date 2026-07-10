@@ -18,19 +18,19 @@
  *
  */
 
--- Series must be created before observations and fixings (trigger references it).
-\ir ./marketdata_series_create.sql
-\ir ./marketdata_observations_create.sql
-\ir ./marketdata_fixings_create.sql
+/**
+ * Market Data Component Population Script
+ *
+ * Seeds DQ artefact/dataset data for market data reference vintages, so
+ * they can be published from the Librarian into a party. All scripts are
+ * idempotent.
+ */
 
--- Codegen market data entities (market_series must precede observations/fixings).
-\ir ./marketdata_market_series_create.sql
-\ir ./marketdata_market_series_notify_trigger_create.sql
-\ir ./marketdata_market_observations_create.sql
-\ir ./marketdata_market_observations_notify_trigger_create.sql
-\ir ./marketdata_market_fixings_create.sql
-\ir ./marketdata_market_fixings_notify_trigger_create.sql
-\ir ./marketdata_feed_bindings_create.sql
-\ir ./marketdata_feed_bindings_notify_trigger_create.sql
+\echo '=== Market Data Component Population ==='
+\echo ''
 
-\ir ./marketdata_publish_from_dq_create.sql
+\echo '--- FX Driver Rates Seed Data ---'
+\ir ./marketdata_fx_driver_rates_populate.sql
+
+\echo ''
+\echo '=== Market Data Component Population Complete ==='

@@ -34,6 +34,7 @@
 -- Artefacts
 \ir ./dq_report_definitions_artefact_drop.sql
 \ir ./dq_synthetic_fx_spot_configs_artefact_drop.sql
+\ir ./dq_market_data_observations_artefact_drop.sql
 \ir ./dq_books_artefact_drop.sql
 \ir ./dq_portfolios_artefact_drop.sql
 \ir ./dq_business_units_artefact_drop.sql

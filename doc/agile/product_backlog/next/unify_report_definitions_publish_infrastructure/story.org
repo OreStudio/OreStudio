@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219
 :END:
-#+title: Story: Unify report definitions provisioning onto the standard publish-from-dq path
-#+description: Party provisioning (both the Qt wizard and the ores.shell CLI script) creates report definitions via a bespoke list-templates-then-create-individually RPC path, bypassing the standard DQ bundle-publish/publish-from-dq infrastructure that report_definitions is already otherwise wired into (dataset, artefact table, ores_reporting_publish_report_definitions_from_dq_fn). Replace both call sites with a generic dq.v1.bundles.publish call so report definitions (and any other ore_analytics bundle member, e.g. synthetic FX configs) provision the same way every other bundle-published entity does.
+#+title: Story: Make party-scoped bundle provisioning data-driven, not one hand-written phase per bundle
+#+description: Party provisioning (both the Qt wizard and the ores.shell CLI script) creates report definitions via a bespoke list-templates-then-create-individually RPC path, bypassing the standard DQ bundle-publish/publish-from-dq infrastructure that report_definitions is already otherwise wired into (dataset, artefact table, ores_reporting_publish_report_definitions_from_dq_fn). More broadly, every party-scoped bundle a provisioning run needs to publish (organisation, ore_analytics, and now marketdata's reference-vintage FX driver rates) is its own hand-written phase duplicated in both the Qt wizard and the shell CLI — proven a real, recurring cost by the FX driver-rates dataset needing a brand-new phase added to both places just to be provisioned at all. Replace the fixed phase list in both call sites with a data-driven list of bundle codes to publish, so a new dataset/bundle never requires new phase code in either provisioner.
 #+type: story
 #+level: s2
 #+filetags: :dq:publish:reporting:provisioning:tech_debt:next:product_backlog:
@@ -43,6 +43,26 @@ already works this way in both places, so report definitions (and any
 future =ore_analytics= member, e.g. synthetic FX configs) provision
 identically with zero new code per dataset.
 
+Confirmed as a live, recurring cost while implementing
+[[id:C236C0DC-4ED1-4EEE-8DDD-CD841CED3AB2][Publish a curated FX driver-rate dataset]]: publishing
+=marketdata.reference_vintage_2016_02_05= for a party required adding
+a *sixth* near-identical hand-written phase (=startFxDriverRatesPublish=/
+=onFxDriverRatesWorkflowComplete= in the Qt wizard,
+=[5/6]= in the shell CLI) — on top of the pre-existing gap where
+=synthetic.fx_spot_configs= itself had never been wired into either
+provisioner despite already being an =ore_analytics= bundle member
+(fixed in the same pass, adding a *fifth* near-identical phase). Every
+party-scoped bundle (=organisation=, =ore_analytics=,
+=marketdata.reference_vintage_2016_02_05=, and any future one) is
+currently its own bespoke phase — a =start*Publish=/=on*WorkflowComplete=
+callback pair in the Qt wizard plus a =[N/M]= block in the shell CLI —
+duplicated in two languages/call-sites per bundle. The fix scope should
+widen from "report definitions only" to: replace the fixed phase
+sequence in both provisioners with iteration over a data-driven list of
+party-scoped bundle codes to publish (e.g. a static list today, ideally
+sourced from DQ itself later), so a new bundle is a data change, not a
+code change, in either provisioner.
+
 * Status
 
 | Field         | Value                                  |
@@ -74,6 +94,14 @@ identically with zero new code per dataset.
 - Adding =synthetic.fx_spot_configs= (already a member of
   =ore_analytics=, see the FX story) to a provisioning run requires no
   further code changes — proving the fix is genuinely data-driven.
+- The =organisation= and =marketdata.reference_vintage_2016_02_05=
+  bundle publishes (currently their own hand-written phases,
+  =startOrgPublish=/=startFxDriverRatesPublish= in Qt,
+  =[2/6]=/=[5/6]= in the shell CLI) are folded into the same
+  data-driven bundle-list iteration, not left as further bespoke
+  phases — a new party-scoped bundle added in future requires a data
+  change (adding a bundle code to the list) in both provisioners, not
+  a new phase method/callback pair.
 
 * Tasks
 

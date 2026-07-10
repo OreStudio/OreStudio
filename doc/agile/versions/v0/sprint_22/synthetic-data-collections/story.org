@@ -122,6 +122,7 @@ two archetypes, and closes the gaps that surfaced while designing it:
 | [[id:A3787A77-1F23-496D-B0E8-A198BE237735][Namespace feed source_name/NATS subject by collection]] | BACKLOG | | | Prefix synthetic feed source_name and NATS subjects with the owning collection (synthetic.basic.<pair> / synthetic.realistic.<pair>) so concurrent collections don't collide. |
 | [[id:E3DEBE80-3B35-42D4-97B6-F1994D671F4F][Group Market Simulator feed tree by collection]] | BACKLOG | | | Change the Market Data Feeds tree's top-level node from a feed-source label to the owning collection (Basic / Realistic). |
 | [[id:F3CB17FB-6472-4DEB-BC5B-EC764C1368F8][Detect and correct reversed FX spot quotes during market data import]] | DONE | 2026-07-09 | 2026-07-10 | Wire fx_quote_convention_checker into ores.marketdata's import_service, fed from ores.refdata's currency_pair reference data, so a reversed FX/RATE key (e.g. the Legacy/Example_56 FX/RATE/USD/GBP quirk) is auto-corrected and clearly reported at import time instead of silently mis-keying market data. |
+| [[id:C236C0DC-4ED1-4EEE-8DDD-CD841CED3AB2][Publish a curated FX driver-rate dataset for 2016-02-05]] | DONE | 2026-07-10 | 2026-07-10 | Publish 8 real Federal Reserve H.10 FX driver rates for 2016-02-05 as a DQ/librarian dataset, replacing reliance on ORE's own approximate bundled vintage. |
 
 * Decisions
 

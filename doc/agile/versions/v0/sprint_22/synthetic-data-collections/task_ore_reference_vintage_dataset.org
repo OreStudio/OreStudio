@@ -1,0 +1,190 @@
+:PROPERTIES:
+:ID: C236C0DC-4ED1-4EEE-8DDD-CD841CED3AB2
+:END:
+#+title: Task: Publish a curated FX driver-rate dataset for 2016-02-05
+#+description: Publish a first-class DQ/librarian dataset (new artefact table, methodology, catalog, publish-from-dq function) of 8 real Federal Reserve H.10 FX driver rates for 2016-02-05 — a minimal USD-hub spanning tree over EUR/USD/GBP/CHF/JPY/SEK/AUD/CAD/NZD, fit for purpose as the future Cross-Rates Matrix's driver input — replacing reliance on ORE's own approximate bundled market.txt values (found to be off by 1-6.6% against real Fed closes), published the same way currency_pairs already is.
+#+type: task
+#+level: s1
+#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+owner: marco
+#+branch: feature/fx-driver-rate-dataset
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The synthetic FX collections (Basic/Realistic) need a real, internally
+consistent 2016-02-05 spot for every major currency, and the future
+Cross-Rates Matrix (CRM, [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][see design]]) needs a minimal *spanning-tree* set
+of directly-quoted *driver* rates spanning every currency it cares
+about — not derived crosses, and not gaps. ORE's own bundled
+=Legacy/Example_56/market.txt= was the original candidate source, but
+comparing its EUR-anchored values against real Federal Reserve H.10
+closes for the same date found it consistently off (1.28%-6.63%
+across all 7 pairs, worst on JPY) — plausible 2016 levels, not actual
+market closes. It's also missing AUD, CAD, and NZD entirely, so no
+amount of triangulation recovers those three currencies from it.
+
+This task publishes a small, purpose-built dataset instead: 8 real
+Federal Reserve H.10 rates for 2016-02-05, each individually citable
+to its own Fed URL, hub'd on USD — =EUR/USD, GBP/USD, USD/CHF,
+USD/JPY, USD/SEK, AUD/USD, USD/CAD, NZD/USD=. That's a minimal
+spanning tree over 9 currencies (EUR, USD, GBP, CHF, JPY, SEK, AUD,
+CAD, NZD): every pair among them is triangulable once the CRM exists,
+and every value in the dataset is real, not derived by us. Published
+through the same DQ/librarian mechanism =currency_pairs= already uses
+— a new artefact table, a new methodology entity documenting the
+sourcing (Fed URLs, retrieval timestamp, target date — queryable, not
+a code comment), a catalog, a dataset registration, and a
+publish-from-dq function — so a party gets it the same way it gets its
+currency-pairs bundle, and the synthetic generator has one consistent,
+citable source of truth instead of ad hoc file parsing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
+| Now          | Beginning implementation: SQL artefact table, methodology, catalog, dataset, publish-from-dq function. |
+| Waiting on   | Nothing.                               |
+| Next         | New DQ artefact table for market data observations. |
+| Last touched | 2026-07-10                               |
+
+* Acceptance
+
+- A new =ores_dq_market_data_observations_artefact_tbl= exists,
+  shaped like a market observation (=series_type=, =metric=,
+  =qualifier=, =point_id=, =observation_date=, =value=, =source=),
+  registered as an =artefact_type= (via the existing codegen
+  =lookup_entity=, not hand-written).
+- A new methodology row in =ores_dq_methodologies_tbl= documents the
+  sourcing exactly: primary source Federal Reserve H.10, each of the 8
+  rates' own retrieval URL, the retrieval timestamp, and the target
+  date (2016-02-05) — queryable, not a code comment. See the exact
+  values/URLs table below.
+- A new catalog + dataset registration (mirroring
+  =refdata_currency_pairs_seed_populate.sql='s shape) seeds the
+  artefact table with the 8 curated rows.
+- A new =ores_marketdata_publish_market_data_observations_from_dq_fn=
+  (=SECURITY DEFINER=) maps artefact rows into
+  =ores_marketdata_market_series_tbl= (find-or-create) +
+  =ores_marketdata_market_observations_tbl= for a target tenant, the
+  same shape as =ores_synthetic_publish_fx_spot_configs_from_dq_fn=.
+- Provisioning a party with this dataset (via the same
+  =synthetic.v1.*.publish-from-dq=-style dispatch already used for
+  =currency_pairs=/=fx_spot_configs=) produces exactly 8 =FX/RATE=
+  market_series + observations, source-tagged distinctly from
+  =ore.reference= (e.g. =source = 'fed.h10.2016-02-05'=), with values
+  matching the table below exactly.
+- =ores.marketdata.core.tests= / a new SQL-level test covers: publish
+  is idempotent (re-publish doesn't duplicate series/observations);
+  each of the 8 pairs round-trips to its exact curated value.
+
+** Curated values (Federal Reserve H.10, target date 2016-02-05)
+
+Retrieved 2026-07-10. Each row is its own release page's "5-FEB-16"
+entry — one direct, individually-citable Fed quote per pair, no
+values derived/computed by us.
+
+| Pair    |         Value | Fed H.10 release page                                        |
+|---------+---------------+---------------------------------------------------------------|
+| EUR/USD |        1.1131 | https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm |
+| GBP/USD |        1.4468 | https://www.federalreserve.gov/releases/h10/hist/dat00_uk.htm |
+| USD/CHF |        0.9938 | https://www.federalreserve.gov/releases/h10/hist/dat00_sz.htm |
+| USD/JPY |      121.2300 | https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm |
+| USD/SEK |        8.4802 | https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm |
+| AUD/USD |        0.7084 | https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm |
+| USD/CAD |        1.3875 | https://www.federalreserve.gov/releases/h10/hist/dat00_ca.htm |
+| NZD/USD |        0.6619 | https://www.federalreserve.gov/releases/h10/hist/dat00_nz.htm |
+
+Minimal spanning tree (USD hub) over 9 currencies: EUR, USD, GBP,
+CHF, JPY, SEK, AUD, CAD, NZD. For context (not part of this dataset —
+ORE's own bundled =market.txt= EUR-anchored values for the same date,
+found inconsistent with the above by 1.28%-6.63% per pair): EUR/CHF
+1.125046, EUR/GBP 0.811938, EUR/JPY 128.15046, EUR/SEK 9.657638,
+EUR/USD 1.132337, GBP/USD 1.394610 (derived), USD/CHF 1.006481.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+Five pieces, following =refdata.currency_pairs='s exact precedent
+(hand-written — see Notes on the =publish_from_dq= facet gap):
+
+1. New =artefact_type= row (=market_data_observations= or similar) —
+   via the existing codegen =lookup_entity= for =artefact_types=
+   (=ores.dq.artefact_type_lookup_entity.org=): add the row +
+   regenerate, don't hand-write the lookup table itself.
+2. New =ores_dq_market_data_observations_artefact_tbl= (hand-written
+   SQL, matching =dq_currency_pairs_artefact_create.sql='s shape):
+   =dataset_id=, =tenant_id=, =version=, =series_type=, =metric=,
+   =qualifier=, =point_id=, =observation_date=, =value= (numeric, not
+   text — this is curated, we own precision), =source=.
+3. New methodology row (=ores_dq_methodologies_upsert_fn= or direct
+   insert if no upsert helper exists for methodologies — check) with
+   the full sourcing description: Federal Reserve H.10, per-pair URLs,
+   retrieval timestamp, target date — the exact content from
+   Acceptance above.
+4. New catalog + dataset seed populate script
+   (=marketdata_fx_driver_rates_seed_populate.sql= or similar),
+   mirroring =refdata_currency_pairs_seed_populate.sql=: catalog
+   registration, dataset registration (methodology_name pointing at
+   the new methodology row), 8 curated =INSERT= rows.
+5. New =ores_marketdata_publish_market_data_observations_from_dq_fn=
+   (=SECURITY DEFINER=), mirroring
+   =ores_synthetic_publish_fx_spot_configs_from_dq_fn='s shape:
+   find-or-create each =FX/RATE= series, upsert observations tagged
+   with a distinct =source= (not =ore.reference= — this isn't ORE's
+   data). Wire into the NATS handler / registrar the same way other
+   publish-from-dq functions are dispatched.
+
+Then (tracked here, actioned by the now-unblocked
+[[id:73E7622C-CBD2-48C8-96B9-DEA8AA7C45C6][Seed Basic and Realistic dataset bundles]], not this task): point
+Basic/Realistic FX spot configs' =vintage_source=/=ore_key= at this
+new dataset's series instead of =ore.reference=.
+
+* Notes
+
+No codegen model exists anywhere for a DQ artefact table (confirmed
+by grep across every =modeling/= directory) — the =publish_from_dq=
+facet that would generate one was designed then abandoned. The new
+artefact table + publish-from-dq function here are hand-written,
+matching =refdata.currency_pairs='s own precedent exactly. Captured as
+its own backlog item since this is now the third time the same gap
+has been hit:
+[[id:1CAA4761-AF7A-4264-8A41-C514083A4FA9][publish_from_dq codegen facet: hand-writing artefact tables is a recurring cost]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

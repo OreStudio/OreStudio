@@ -1010,24 +1010,23 @@ void TenantExecutePage::startFinalize() {
     });
 
     QFuture<FinalizeResult> future = QtConcurrent::run([clientManager]() -> FinalizeResult {
-            FinalizeResult result;
+        FinalizeResult result;
 
-            // complete_tenant_provisioning_command clears system.bootstrap_mode
-            // (and sets onboarding.tenant = true) server-side — see
-            // clearBootstrapFlag() above for why no separate
-            // save_setting_request is issued here.
-            iam::messaging::complete_tenant_provisioning_command activateReq;
-            auto activateResult =
-                clientManager->process_authenticated_request(std::move(activateReq));
-            if (!activateResult || !activateResult->success) {
-                result.error_message += " / tenant activation failed: " +
-                                        (activateResult ? activateResult->message : "no response");
-                return result;
-            }
-
-            result.success = true;
+        // complete_tenant_provisioning_command clears system.bootstrap_mode
+        // (and sets onboarding.tenant = true) server-side — see
+        // clearBootstrapFlag() above for why no separate
+        // save_setting_request is issued here.
+        iam::messaging::complete_tenant_provisioning_command activateReq;
+        auto activateResult = clientManager->process_authenticated_request(std::move(activateReq));
+        if (!activateResult || !activateResult->success) {
+            result.error_message += " / tenant activation failed: " +
+                                    (activateResult ? activateResult->message : "no response");
             return result;
-        });
+        }
+
+        result.success = true;
+        return result;
+    });
 
     watcher->setFuture(future);
 }

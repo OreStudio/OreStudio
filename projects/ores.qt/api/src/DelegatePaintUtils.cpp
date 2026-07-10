@@ -38,11 +38,10 @@ namespace {
 // currency_pair_icon_size()) and ask the icon for its own natural width at
 // that height via actualSize(), so a square icon stays square and a
 // composited pair icon keeps its own wider aspect ratio.
-QPixmap fit_icon_pixmap(const QIcon& icon, const QStyleOptionViewItem& option,
-                        const QSize& bound) {
-    int targetHeight = option.decorationSize.isValid() && option.decorationSize.height() > 0
-        ? option.decorationSize.height()
-        : bound.height();
+QPixmap fit_icon_pixmap(const QIcon& icon, const QStyleOptionViewItem& option, const QSize& bound) {
+    int targetHeight = option.decorationSize.isValid() && option.decorationSize.height() > 0 ?
+                           option.decorationSize.height() :
+                           bound.height();
     QSize targetSize = icon.actualSize(QSize(bound.width(), targetHeight));
     targetSize = targetSize.boundedTo(bound);
 

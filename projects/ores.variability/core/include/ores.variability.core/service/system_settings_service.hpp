@@ -174,9 +174,9 @@ public:
      */
     [[nodiscard]] bool is_onboarding_tenant_complete() const;
     void set_onboarding_tenant_complete(bool complete,
-                                       std::string_view modified_by,
-                                       std::string_view change_reason_code,
-                                       std::string_view change_commentary);
+                                        std::string_view modified_by,
+                                        std::string_view change_reason_code,
+                                        std::string_view change_commentary);
 
     /**
      * @brief Whether the party provisioner wizard has completed for this

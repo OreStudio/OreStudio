@@ -49,13 +49,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             h.clear_bootstrap_mode(std::move(msg));
                                         }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(complete_party_onboarding_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            system_setting_handler h(nats, ctx, verifier);
-            h.complete_party_onboarding(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(complete_party_onboarding_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 system_setting_handler h(nats, ctx, verifier);
+                                 h.complete_party_onboarding(std::move(msg));
+                             }));
 
     subs.push_back(nats.queue_subscribe(std::string(delete_setting_request::nats_subject),
                                         queue,

@@ -757,7 +757,8 @@ void provision_commands::process_party(std::ostream& out,
     // step is likewise non-fatal.
     variability::messaging::complete_party_onboarding_request onboarding_req;
     onboarding_req.party_id = boost::uuids::to_string(party->id);
-    auto onboarding_result = do_request(out, session, onboarding_req, std::chrono::seconds(30), true);
+    auto onboarding_result =
+        do_request(out, session, onboarding_req, std::chrono::seconds(30), true);
     if (!onboarding_result || !onboarding_result->success) {
         out << "⚠ Could not record party onboarding completion; the party setup wizard may "
                "reappear on next login."

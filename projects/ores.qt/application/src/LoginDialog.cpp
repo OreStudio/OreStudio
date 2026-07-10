@@ -727,8 +727,9 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                         << " party_name=" << clientManager_->currentPartyName().toStdString();
                     emit partySetupDetected();
                 } else if (!clientManager_->lastPartySetupWarning().isEmpty()) {
-                    BOOST_LOG_SEV(lg(), warn) << "Party setup warning: "
-                                              << clientManager_->lastPartySetupWarning().toStdString();
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Party setup warning: "
+                        << clientManager_->lastPartySetupWarning().toStdString();
                     MessageBoxHelper::warning(
                         this, "Party Setup", clientManager_->lastPartySetupWarning());
                 }

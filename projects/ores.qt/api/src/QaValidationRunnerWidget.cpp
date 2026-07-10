@@ -252,10 +252,10 @@ QaValidationRunnerWidget::QaValidationRunnerWidget(QWidget* parent)
                 return;
             }
             emit statusMessage(tr("Saved screenshot to %1").arg(path));
-            if (!append_scenario_note(
-                    scenarioPath, tr("[[file:%1]]").arg(QFileInfo(path).fileName())))
+            if (!append_scenario_note(scenarioPath,
+                                      tr("[[file:%1]]").arg(QFileInfo(path).fileName())))
                 emit errorOccurred(tr("Saved screenshot but failed to record it in the "
-                                       "scenario doc's Notes section."));
+                                      "scenario doc's Notes section."));
         });
     });
     connect(stepsList_,
@@ -275,8 +275,9 @@ void QaValidationRunnerWidget::captureScreenshot(const QString& baseName,
     // test first, same idea as an OS screenshot tool's countdown.
     QTimer::singleShot(1500, this, [directory, baseName, onDone]() {
         const QPixmap pixmap = QGuiApplication::primaryScreen()->grabWindow(0);
-        const QString filename = QStringLiteral("%1_%2.png").arg(
-            baseName, QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));
+        const QString filename =
+            QStringLiteral("%1_%2.png")
+                .arg(baseName, QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));
         const QString path = QDir(directory).filePath(filename);
         onDone(pixmap.save(path, "PNG") ? path : QString());
     });
@@ -474,28 +475,28 @@ void QaValidationRunnerWidget::openStepDetail(QListWidgetItem* item) {
     // notesEdit) in the meantime.
     QPointer<QPlainTextEdit> notesPtr = notesEdit;
     QPointer<QPushButton> screenshotButtonPtr = screenshotButton;
-    connect(screenshotButton,
-            &QPushButton::clicked,
-            subWindow,
-            [this, index, notesPtr, screenshotButtonPtr]() {
-        const QString baseName = QStringLiteral("%1_step%2")
-                                     .arg(QFileInfo(scenarioPath_).completeBaseName())
-                                     .arg(index + 1);
-        if (screenshotButtonPtr)
-            screenshotButtonPtr->setEnabled(false);
-        captureScreenshot(baseName, [this, notesPtr, screenshotButtonPtr](const QString& path) {
+    connect(
+        screenshotButton,
+        &QPushButton::clicked,
+        subWindow,
+        [this, index, notesPtr, screenshotButtonPtr]() {
+            const QString baseName = QStringLiteral("%1_step%2")
+                                         .arg(QFileInfo(scenarioPath_).completeBaseName())
+                                         .arg(index + 1);
             if (screenshotButtonPtr)
-                screenshotButtonPtr->setEnabled(true);
-            if (path.isEmpty()) {
-                emit errorOccurred(tr("Failed to save screenshot."));
-                return;
-            }
-            emit statusMessage(tr("Saved screenshot to %1").arg(path));
-            if (notesPtr)
-                notesPtr->appendPlainText(
-                    tr("[[file:%1]]").arg(QFileInfo(path).fileName()));
+                screenshotButtonPtr->setEnabled(false);
+            captureScreenshot(baseName, [this, notesPtr, screenshotButtonPtr](const QString& path) {
+                if (screenshotButtonPtr)
+                    screenshotButtonPtr->setEnabled(true);
+                if (path.isEmpty()) {
+                    emit errorOccurred(tr("Failed to save screenshot."));
+                    return;
+                }
+                emit statusMessage(tr("Saved screenshot to %1").arg(path));
+                if (notesPtr)
+                    notesPtr->appendPlainText(tr("[[file:%1]]").arg(QFileInfo(path).fileName()));
+            });
         });
-    });
     connect(passButton, &QPushButton::clicked, subWindow, [apply]() { apply(step_status::pass); });
     connect(failButton, &QPushButton::clicked, subWindow, [apply]() { apply(step_status::fail); });
     connect(pendingButton, &QPushButton::clicked, subWindow, [apply]() {

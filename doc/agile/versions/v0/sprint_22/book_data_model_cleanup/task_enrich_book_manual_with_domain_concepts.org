@@ -8,7 +8,7 @@
 #+filetags: :book_data_model_cleanup:sprint_22:v0:
 #+owner: marco
 #+branch: feature/book-domain-knowledge-expansion
-#+pr:
+#+pr: 1495
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -52,7 +52,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1495][#1495]] | [doc,ores.refdata,ores.qt] Enrich Book manual with domain concepts, fix book_status tenant scoping |
 
 * Review
 

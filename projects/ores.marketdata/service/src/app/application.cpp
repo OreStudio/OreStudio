@@ -24,8 +24,10 @@
 #include "ores.eventing.core/service/registrar.hpp"
 #include "ores.marketdata.api/eventing/feed_binding_changed_event.hpp"
 #include "ores.marketdata.core/messaging/registrar.hpp"
+#include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
@@ -83,6 +85,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         throw;
     }
 
+    // Authenticated client for service-to-service calls. Currently used
+    // only by import_handler, to fetch ores.refdata's currency_pair
+    // reference data for FX quote convention checking during import. The
+    // token provider authenticates with the service's own database
+    // account credentials.
+    ores::nats::service::nats_client svc_nats(
+        nats,
+        ores::iam::client::make_service_token_provider(
+            nats, cfg.database.user, cfg.database.password()));
+
     auto ingest = std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database));
 
     namespace ev = ores::eventing;
@@ -103,9 +115,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         make_context(cfg.database),
         "ores.marketdata.service",
-        [&cfg, ingest](auto& n, auto c, auto v) {
+        [&cfg, ingest, &svc_nats](auto& n, auto c, auto v) {
             return ores::marketdata::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v), cfg.http_base_url);
+                n, std::move(c), svc_nats, std::move(v), cfg.http_base_url);
         },
         [&nats, ingest](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

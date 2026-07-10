@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/import_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include <string>
 
 namespace ores::marketdata::service {
@@ -48,12 +49,19 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit import_service(context ctx);
+    /**
+     * @param auth_nats Authenticated client used to fetch ores.refdata's
+     *        currency_pair reference data (for fx_quote_convention_checker).
+     *        If the fetch fails (refdata unreachable, etc.), the import
+     *        proceeds with no reversed-key correction rather than failing.
+     */
+    import_service(context ctx, ores::nats::service::nats_client& auth_nats);
 
     messaging::import_market_data_response import(const messaging::import_market_data_request& req);
 
 private:
     context ctx_;
+    ores::nats::service::nats_client& auth_nats_;
 };
 
 }

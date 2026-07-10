@@ -32,6 +32,7 @@ namespace ores::marketdata::messaging {
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              ores::database::context ctx,
+                             ores::nats::service::nats_client& auth_nats,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              std::string http_base_url) {
     std::vector<ores::nats::service::subscription> subs;
@@ -142,12 +143,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         }));
 
     // Import
-    subs.push_back(nats.queue_subscribe(std::string(import_market_data_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            import_handler h(nats, ctx, verifier);
-                                            h.import(std::move(msg));
-                                        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(import_market_data_request::nats_subject),
+                            queue,
+                            [&nats, ctx, verifier, &auth_nats](ores::nats::message msg) mutable {
+                                import_handler h(nats, ctx, verifier, auth_nats);
+                                h.import(std::move(msg));
+                            }));
 
     return subs;
 }

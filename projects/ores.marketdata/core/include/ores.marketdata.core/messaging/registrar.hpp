@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <optional>
@@ -33,9 +34,15 @@ namespace ores::marketdata::messaging {
 
 class ORES_MARKETDATA_CORE_EXPORT registrar {
 public:
+    /**
+     * @param auth_nats Authenticated client for outbound service-to-service
+     *        calls (currently: import_handler's ores.refdata currency_pair
+     *        lookup for FX quote convention checking).
+     */
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
                       ores::database::context ctx,
+                      ores::nats::service::nats_client& auth_nats,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt,
                       std::string http_base_url = {});
 };

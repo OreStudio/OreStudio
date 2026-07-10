@@ -35,12 +35,12 @@ fully-commissioned entity after currency).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Country regenerated and reconciled — real generator bug, SQL bootstrap-filter/clock_timestamp fixes, and a new needs_item_delegate template generalization (icon-only entities now get the same aspect-correct sizing as badge entities) all landed. |
+| Now           | Country regenerated and reconciled — real generator bug, SQL bootstrap-filter/clock_timestamp fixes, and a new needs_item_delegate template generalization (icon-only entities now get the same aspect-correct sizing as badge entities) all landed. Closed as a scoped pilot; remaining entities recaptured. |
 | Waiting on    | Nothing.                               |
-| Next          | Pick the next already-commissioned entity to sweep.      |
-| Last touched  | 2026-07-09                               |
+| Next          | None — see [[id:934D010C-73D2-4F76-8B83-E6F1669231F0][Sweep remaining already-commissioned entities against latest codegen templates]]. |
+| Last touched  | 2026-07-10                               |
 
 * Acceptance
 
@@ -59,6 +59,14 @@ fully-commissioned entity after currency).
 | [[id:82BA40CA-3A4A-47B5-88ED-ADA0178E5695][Regen country against latest codegen templates]] | DONE | | 2026-07-09 | Country was last synced in sprint 21, before currency's commissioning landed substantial new shared-template capability. Re-run every codegen profile country participates in, diff against the repo, and reconcile drift. |
 
 * Decisions
+
+Closed 2026-07-10 at sprint 22 close scoped to the country pilot:
+the sweep-and-reconcile process is proven and country is fully
+regenerated and reconciled, but the sweep itself is open-ended
+(new entity per pickup, no fixed batch) and doesn't fit a
+STARTED-forever story. Remaining entities recaptured as
+[[id:934D010C-73D2-4F76-8B83-E6F1669231F0][Sweep remaining already-commissioned entities against latest codegen
+templates]] for future opportunistic pickup.
 
 * Out of scope
 

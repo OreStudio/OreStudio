@@ -25,6 +25,8 @@
 #include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/book_status_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::refdata::service {
 
 /**
  * @brief Service for managing book statuses.
+ *
+ * Provides a higher-level interface for book status operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT book_status_service {
 private:
@@ -47,20 +52,80 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a book_status_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit book_status_service(context ctx);
 
-    std::vector<domain::book_status> list_statuses();
+    /**
+     * @brief Lists book statuses with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of book statuses for the requested page.
+     */
+    std::vector<domain::book_status> list_statuses(std::uint32_t offset, std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active book statuses.
+     *
+     * @return Total number of active book statuses.
+     */
+    std::uint32_t count_statuses();
+
+    /**
+     * @brief Retrieves a single book status as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param code The code of the book status.
+     * @param version The version to fetch.
+     * @return The book status at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::book_status> get_status_at_version(const std::string& code,
+                                                             std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single book status by its code.
+     *
+     * @param code The code of the book status.
+     * @return The book status if found, std::nullopt otherwise.
+     */
     std::optional<domain::book_status> get_status(const std::string& code);
 
-    void save_status(const domain::book_status& v);
+    /**
+     * @brief Saves a book status (creates or updates).
+     *
+     * @param status The book status to save.
+     * @throws std::exception on failure.
+     */
+    void save_status(const domain::book_status& status);
 
+    /**
+     * @brief Saves a batch of book statuses.
+     *
+     * @param statuses The book statuses to save.
+     * @throws std::exception on failure.
+     */
     void save_statuses(const std::vector<domain::book_status>& statuses);
 
-    void remove_status(const std::string& code);
+    /**
+     * @brief Deletes a book status by its code.
+     *
+     * @param code The code of the book status to delete.
+     * @throws std::exception on failure.
+     */
+    void delete_status(const std::string& code);
 
-    void remove_statuses(const std::vector<std::string>& codes);
+    /**
+     * @brief Deletes book statuses by their codes.
+     */
+    void delete_statuses(const std::vector<std::string>& codes);
 
+    /**
+     * @brief Retrieves all historical versions of a book status.
+     */
     std::vector<domain::book_status> get_status_history(const std::string& code);
 
 private:

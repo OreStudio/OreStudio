@@ -20,6 +20,7 @@
 #ifndef ORES_QT_DYNAMIC_COMBO_SETUP_HPP
 #define ORES_QT_DYNAMIC_COMBO_SETUP_HPP
 
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include <QComboBox>
 #include <QFutureWatcher>
@@ -33,6 +34,14 @@
 #include <vector>
 
 namespace ores::qt {
+
+namespace detail {
+[[nodiscard]] inline auto& dynamic_combo_setup_lg() {
+    using namespace ores::logging;
+    static auto instance = make_logger("ores.qt.dynamic_combo_setup");
+    return instance;
+}
+}
 
 /**
  * @brief Populates a QComboBox asynchronously from a server-fetched
@@ -95,11 +104,21 @@ void populateDynamicCombo(
     std::function<void()> on_success = []() {},
     const QString& loading_placeholder = QObject::tr("Loading…"),
     const QString& error_placeholder = QObject::tr("Failed to load")) {
-    if (!combo || !owner || !client_manager || !client_manager->isConnected())
+    if (!combo || !owner || !client_manager || !client_manager->isConnected()) {
+        BOOST_LOG_SEV(detail::dynamic_combo_setup_lg(), ores::logging::debug)
+            << watcher_name.toStdString() << ": early return, combo=" << (combo != nullptr)
+            << " owner=" << (owner != nullptr) << " client_manager=" << (client_manager != nullptr)
+            << " connected=" << (client_manager && client_manager->isConnected());
         return;
+    }
 
-    if (owner->findChild<QFutureWatcherBase*>(watcher_name))
+    if (owner->findChild<QFutureWatcherBase*>(watcher_name)) {
+        BOOST_LOG_SEV(detail::dynamic_combo_setup_lg(), ores::logging::debug)
+            << watcher_name.toStdString() << ": early return, watcher already in flight";
         return;
+    }
+    BOOST_LOG_SEV(detail::dynamic_combo_setup_lg(), ores::logging::debug)
+        << watcher_name.toStdString() << ": starting fetch";
 
     const QString previous_selection = combo->currentText();
 
@@ -136,10 +155,16 @@ void populateDynamicCombo(
             auto result = watcher->result();
             watcher->deleteLater();
 
+            BOOST_LOG_SEV(detail::dynamic_combo_setup_lg(), ores::logging::debug)
+                << "fetch finished, self valid=" << (self != nullptr)
+                << " has_result=" << result.has_value();
+
             if (!self)
                 return;
 
             if (!result) {
+                BOOST_LOG_SEV(detail::dynamic_combo_setup_lg(), ores::logging::debug)
+                    << "fetch error: " << result.error().toStdString();
                 combo->blockSignals(true);
                 combo->clear();
                 combo->addItem(error_placeholder);

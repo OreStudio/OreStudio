@@ -20,6 +20,7 @@
 #ifndef ORES_REFDATA_API_DOMAIN_BOOK_STATUS_HPP
 #define ORES_REFDATA_API_DOMAIN_BOOK_STATUS_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
 
@@ -39,6 +40,11 @@ struct book_status final {
      * @brief Version number for optimistic locking and change tracking.
      */
     int version = 0;
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief Unique status code.

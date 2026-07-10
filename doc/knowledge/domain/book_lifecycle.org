@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08
-#+updated: 2026-07-08
+#+updated: 2026-07-09
 
 * Summary
 
@@ -21,6 +21,20 @@ novation-like close-and-rebook. Closing a book requires it to be
 book, only moves it to a recycle mechanism.
 
 * Detail
+
+** Lifecycle state model
+
+The process below is a state model derived from the workflow
+described in this note; the underlying system does not name these
+states explicitly, but the note's own requirement — "the system must
+track exactly where in this process a given book sits" — implies
+something equivalent to it.
+
+#+caption: Book lifecycle: opening's multi-party workflow, the live-book loop (deal moves, access review), and the flat-check gate on closing.
+[[proj:doc/knowledge/domain/book_lifecycle.png]]
+
+Source: [[./book_lifecycle.puml][=book_lifecycle.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/domain/book_lifecycle.puml=.
 
 ** Opening a book
 
@@ -43,6 +57,48 @@ process:
 Throughout, the system must track exactly where in this process a
 given book sits, and who still needs to authorise or enrich it — an
 explicit workflow-state model, not just a binary open/closed flag.
+
+** Departments involved
+
+Opening a book is not a single-owner request — it is a controlled
+hand-off across four distinct functions, each with its own concern and
+its own sign-off, matching the front-office / middle-office / back-office
+separation of duties standard in a trading operation:
+
+- *Desk (Front Office)* — initiates the request. The desk knows it
+  needs a new book (e.g. a new product line or a new trading strategy)
+  but cannot itself create or enrich one; a book remains an accounting
+  construct even though the desk is the one that will trade out of it
+  (see [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]]).
+- *Controller* — the first independent check on the request, before
+  any of the three enriching functions get involved. A controller's
+  review-and-approve step exists specifically to prevent a desk from
+  self-authorising its own new book.
+- *Finance* — one of the three enriching functions. Finance's
+  enrichment is what wires the new book into the accounting hierarchy
+  and sets up its ledger book counterpart — functional currency,
+  cost-centre placement, and the monthly/yearly balance carry-forward
+  machinery (see [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and the ledger]]). This is also the function that
+  later executes book closure "through accounting" and books the
+  Profit Sell Down / Central Remittance entries against live books.
+- *Market Risk* — the second enriching function. Market Risk's
+  enrichment establishes how the book will be risk-managed once live:
+  its trading-book/banking-book classification and the regulatory
+  capital treatment that follows from it (see
+  [[id:36B8F463-121F-42D6-8048-3C62C21AF557][FRTB trading book / banking book boundary]]), and its assignment to a
+  rates centre for consistent revaluation market data (see
+  [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]]).
+- *Operations (Middle Office / Back Office)* — the third enriching
+  function, and the one that actually sets the book up on the booking
+  systems once every approval is in. Operations owns the book's
+  allowed-currency and allowed-product constraints (see
+  [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]]) and administers the recurring access
+  review once the book is live.
+
+Because Finance, Market Risk, and Operations enrich the book in
+parallel rather than in sequence, each of the three must independently
+approve its own contribution before the book can move to access
+review — no single function's sign-off implies the others are done.
 
 Once live, book access itself is not permanent: it must be
 periodically reviewed (monthly, quarterly, etc.). If nobody renews a

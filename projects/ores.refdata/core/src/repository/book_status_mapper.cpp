@@ -31,17 +31,18 @@ domain::book_status book_status_mapper::map(const book_status_entity& v) {
 
     domain::book_status r;
     r.version = v.version;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
+
     r.name = v.name;
+
     r.description = v.description;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    if (!v.valid_from)
-        throw std::logic_error("Cannot map entity with null valid_from to domain object.");
-    r.recorded_at = timestamp_to_timepoint(*v.valid_from);
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -52,8 +53,11 @@ book_status_entity book_status_mapper::map(const domain::book_status& v) {
 
     book_status_entity r;
     r.code = v.code;
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.name = v.name;
+
     r.description = v.description;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;

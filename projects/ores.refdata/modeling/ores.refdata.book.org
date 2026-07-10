@@ -159,14 +159,18 @@ std::string("CC-001")
 
 ** book_status
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "Active"
 :END:
 
 Lifecycle status of the book.
 
-References book_statuses lookup (Active, Closed, Frozen).
+References book_statuses lookup (Active, Closed, Frozen). Defaults to
+=Active= so a freshly-constructed book (the Add dialog, before the
+Status combo's async populate completes) always carries a value the
+FK-validation trigger accepts.
 
 #+begin_src cpp :name generator
 std::string("Active")
@@ -174,14 +178,16 @@ std::string("Active")
 
 ** regulatory_book_type
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "Trading"
 :END:
 
 Basel III/IV FRTB trading book / banking book classification.
 
-References regulatory_book_types lookup (Trading, Banking).
+References regulatory_book_types lookup (Trading, Banking). Defaults
+to =Trading= for the same reason =book_status= defaults to =Active=.
 
 #+begin_src cpp :name generator
 std::string("Trading")

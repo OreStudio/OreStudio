@@ -161,13 +161,14 @@ drop function if exists ores_refdata_validate_book_status_fn;
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.refdata/domain/book_status.hpp
+:domain_include:         ores.refdata.api/domain/book_status.hpp
 :domain_class:           refdata::domain::book_status
-:protocol_include:       ores.refdata/messaging/book_status_protocol.hpp
+:protocol_include:       ores.refdata.api/messaging/book_status_protocol.hpp
 :collection_name:        statuses
 :item_var:               status
 :key_field:              code
 :has_uuid_primary_key:   false
+:has_pagination:         true
 :get_request_class:      refdata::messaging::get_book_statuses_request
 :get_response_class:     refdata::messaging::get_book_statuses_response
 :get_message_type:       get_book_statuses_request
@@ -183,6 +184,7 @@ drop function if exists ores_refdata_validate_book_status_fn;
 :settings_group:         BookStatusListWindow
 :window_title:           Book Statuses
 :icon:                   Tag
+:has_export_macro:       true
 :END:
 
 *** Columns (Qt model)

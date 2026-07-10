@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :book_data_model_cleanup:sprint_22:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/book-domain-knowledge-expansion
+#+pr: 1495
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -20,22 +20,34 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Weave the domain concepts from the Book knowledge cluster (lifecycle,
+FRTB classification) into chapter_7_books.org, and add a PlantUML
+flowchart of the book lifecycle to both the knowledge cluster and the
+manual.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
--
+- [X] Book lifecycle (multi-party opening, departments involved, closing
+  gate) and FRTB trading/banking classification woven into
+  chapter_7_books.org as contextual prose, not a bare field list.
+- [X] PlantUML flowchart of the book lifecycle added to both
+  book_lifecycle.org and the manual chapter.
+- [X] Real bugs surfaced while dogfooding the screenshot scenario fixed:
+  regulatory_book_type tenant provisioning gap, book_status tenant-leak
+  in the repository, BookStatus Qt migration to ores.qt/refdata with
+  the has_export_macro crash fix, and the has_pagination gap found in
+  review.
 
 * Plan
 
@@ -49,12 +61,38 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1495][#1495]] | [doc,ores.refdata,ores.qt] Enrich Book manual with domain concepts, fix book_status tenant scoping |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Pagination bug: ClientBookStatusModel never sent offset/limit | ClientBookStatusModel.cpp | Fixed | a85079a4b — root-caused to missing :has_pagination: in book_status.org |
+| 2 | ClientBookModel.cpp / regulatory_book_type.org have the same gap | (out of scope) | Declined (as-is) | Pre-existing, not introduced by this PR; follow-up sweep candidate |
+| 3 | DynamicComboSetup.hpp diagnostic logging — keep or trim? | DynamicComboSetup.hpp | Declined (as-is) | Debug-level only, genuinely useful for this bug class |
+| 4 | Status table cosmetic padding | task doc | Declined (as-is) | org-mode re-aligns on save |
 
 * Result
+
+Added a PlantUML book lifecycle diagram (multi-party opening workflow,
+live-book loop, flat-check closing gate) to both
+doc/knowledge/domain/book_lifecycle.org and the Books manual chapter,
+with a departments-involved section (Desk/Controller/Finance/Market
+Risk/Operations) and the FRTB trading/banking classification expanded
+into full prose. Turned the previously bare book-fields list into
+contextual paragraphs.
+
+Dogfooding the new screenshot-capture test_scenario surfaced three real
+bugs, all fixed: regulatory_book_type was never copied down to new
+tenants during provisioning; book_status_repository was stale and
+leaked rows across tenants (missing the tenant_id filter every sibling
+lookup entity has); BookStatus's Qt stack was still living under
+ores.qt/trading with a hidden-visibility crash from a missing
+has_export_macro. PR review then found a fourth: book_status was also
+missing has_pagination, so its list model silently never sent
+offset/limit to the server.
+
+Also found and killed ~47 orphaned service processes for this
+environment (3 full generations never reaped by `services stop`),
+which were both exhausting the shared Postgres connection pool and
+serving stale pre-rebuild responses over NATS during debugging.

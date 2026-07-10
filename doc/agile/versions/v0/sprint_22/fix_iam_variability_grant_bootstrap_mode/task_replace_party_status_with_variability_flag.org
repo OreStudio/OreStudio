@@ -306,6 +306,9 @@ did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | party_setup_warning populated but never read by any client (x4 review passes) | ClientManager.hpp/cpp, LoginDialog.cpp | Accepted | Fixed in 6b1ef520e |
+| 2 | auth_is_party_onboarding_complete / acct_is_party_onboarding_complete near-duplicate | auth_handler.hpp, account_handler.hpp | Declined | Matches existing acct_*/auth_* file-local duplication convention |
+| 3 | onboarding.system flag/accessors are dead code | system_settings.hpp | Accepted | Comment added in 6b1ef520e noting deliberate deferral |
+| 4 | No unit tests for complete_party_onboarding / new accessors / party_setup_required branching | (n/a) | Declined | Matches existing untested bootstrap_mode precedent; follow-up capture promised |
 
 * Result

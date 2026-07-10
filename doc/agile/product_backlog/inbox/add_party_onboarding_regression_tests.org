@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: CA0ABE33-3EC7-43B6-BE34-8C32E08DBA91
+:END:
+#+title: Add regression tests for onboarding.party wizard-completion checks
+#+description: No automated coverage for party_setup_required/party_setup_warning branching in auth_handler/account_handler, nor for the complete_party_onboarding NATS handler and new system_settings_service onboarding accessors — flagged during PR #1491 review as valuable given this is the second time a party-wizard re-trigger bug has been fixed in this area.
+#+type: capture
+#+level: cross
+#+filetags: :ores.iam:ores.variability:testing:onboarding:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add automated test coverage for the =onboarding.party=
+wizard-completion mechanism introduced in PR #1491:
+
+- =auth_handler.hpp='s single-party login path and
+  =account_handler.hpp='s =select_party= path: cases for
+  =onboarding.party=false= (=party_setup_required=true=),
+  =onboarding.party=true= + party =Active= (both flags false/empty),
+  and =onboarding.party=true= + party still =Inactive=
+  (=party_setup_required=false=, =party_setup_warning= set).
+- =system_setting_handler::complete_party_onboarding= — the new
+  permission-check-free NATS handler.
+- =system_settings_service='s new
+  =is_onboarding_*_complete=/=set_onboarding_*_complete= accessors.
+
+* Why
+
+None of this had test coverage before or after PR #1491 (matching the
+existing untested =bootstrap_mode= precedent, but flagged during
+review as worth closing given this is the second time a
+party-provisioner-wizard re-trigger bug has been fixed in this area).
+A regression test would lock in the fix and catch future drift in the
+=party.status= vs =onboarding.party= distinction.
+
+* References
+
+- PR #1491: https://github.com/OreStudio/OreStudio/pull/1491
+
+* See also
+
+- [[id:97E2BB5F-2D7E-4713-AAB4-5B75048C4E18][Replace party.status Active/Inactive check with a party-level variability flag]]

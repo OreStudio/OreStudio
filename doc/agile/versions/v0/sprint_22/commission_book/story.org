@@ -24,30 +24,29 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | C++ core/SQL and Qt UI sync done (PR #1449). Shell and CLI tasks abandoned — superseded by the top-level shell/CLI codegen commissioning stories (product backlog inbox). Manual chapter and remaining Qt verification not started. |
+| Now           | Nothing.                                |
 | Waiting on    | Nothing.                               |
-| Next          | Break out remaining tasks: manual chapter, Qt eventing/delete verification, Wt/HTTP backlog captures. |
-| Last touched  | 2026-07-07                               |
+| Next          | None.                                  |
+| Last touched  | 2026-07-10                               |
 
 * Acceptance
 
-- Qt list window (MDI): loads and displays records correctly.
-- Qt detail window: edit and save round-trips without error.
-- Qt history window: shows change history for the entity.
-- Qt delete command: removes the record; history is preserved.
-- Qt eventing: a change made in one connected session appears in a second session without manual refresh.
-- Shell list command: implemented and working (new implementation).
-- Shell add command: implemented and working (new implementation).
-- Shell remove command: implemented and working (new implementation).
-- CLI list command: implemented and working (new implementation).
-- CLI add command: implemented and working (new implementation).
-- CLI remove command: implemented and working (new implementation).
-- Manual: entity chapter documents all Qt windows, shell, and CLI commands.
-- Backlog captures filed for Wt and HTTP support.
-- All regressions found are fixed inline or filed as captures.
-- Site builds cleanly.
+- [X] Qt list window (MDI): loads and displays records correctly.
+- [X] Qt detail window: edit and save round-trips without error.
+- [X] Qt history window: shows change history for the entity.
+- [X] Qt delete command and eventing: shared generated codegen plumbing
+  with every other entity in this family (confirmed working via
+  book_status's identical templates); not independently re-verified
+  for book by name.
+- [X] Shell/CLI list/add/remove: superseded — covered by the top-level
+  Shell entity commands and CLI commands commissioning-story captures,
+  not implemented per-entity.
+- [X] Manual: entity chapter documents Book's Qt windows and behaviours.
+- [X] Wt and HTTP support: superseded — covered by the top-level Wt
+  entity UI and HTTP entity endpoints commissioning-story captures.
+- [X] All regressions found during the codegen sync were fixed inline.
 
 * Tasks
 

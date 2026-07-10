@@ -42,11 +42,15 @@
  * (weight 0.05, 4x the primary's stdev) to add the fat tails real FX
  * returns exhibit that a single Gaussian understates. Both components
  * have zero mean (a random walk has no systematic drift over the
- * generator's horizon). ticks_per_hour = 60 (once a minute) — a more
- * plausible feed cadence than Basic's 1/sec, and the divisor used to
- * convert each pair's annualised vol into a per-tick stdev:
- *   ticks/year = 60 * 24 * 365 = 525,600; sqrt(ticks/year) ~= 725.0
- *   per-tick stdev = annualised_vol / 725.0
+ * generator's horizon). ticks_per_hour = 1800 (once every 2 seconds) —
+ * the feed loop always sleeps a full tick period before its *first*
+ * publish (no immediate tick on start), so this is also a UX choice, not
+ * just a calibration one: once/minute (the original choice) meant a full
+ * 60s wait with nothing visible after starting a feed; once every 2s is
+ * a plausible streaming-feed cadence while staying responsive. Divisor
+ * used to convert each pair's annualised vol into a per-tick stdev:
+ *   ticks/year = 1800 * 24 * 365 = 15,768,000; sqrt(ticks/year) ~= 3970.9
+ *   per-tick stdev = annualised_vol / 3970.9
  * Annualised vols are approximate, well-known 2016 G10 realised-vol
  * ranges (not fitted to any single data source):
  *   EUR/USD 9.5%, GBP/USD 11.5% (elevated ahead of the Brexit
@@ -136,7 +140,7 @@ begin
         'Synthetic FX Spot (Realistic): ' || p.base || '/' || p.quote,
         'Realistic-archetype synthetic FX spot generator: 2-component geometric Gaussian mixture calibrated to plausible real FX volatility.',
         true, p.base, p.quote,
-        0, 60, 'geometric',
+        0, 1800, 'geometric',
         'vintage', 'fed.h10.2016-02-05', '2016-02-05'
     from (values
         ('EUR', 'USD'), ('GBP', 'USD'), ('USD', 'CHF'), ('USD', 'JPY'),
@@ -144,7 +148,7 @@ begin
     ) as p(base, quote);
 
     -- Primary component: weight 0.95, calibrated per-pair stdev
-    -- (annualised vol / 725.0, per the header comment).
+    -- (annualised vol / 3970.9, per the header comment).
     insert into ores_dq_synthetic_gmm_components_artefact_tbl (
         dataset_id, tenant_id, base_currency_code, quote_currency_code,
         component_index, description, mean, stdev, weight
@@ -153,14 +157,14 @@ begin
         'Realistic primary component: calibrated to ~' || p.annualised_vol_pct || '% annualised realised vol.',
         0.0, p.stdev, 0.95
     from (values
-        ('EUR', 'USD', 9.5,  0.0001310),
-        ('GBP', 'USD', 11.5, 0.0001586),
-        ('USD', 'CHF', 9.0,  0.0001241),
-        ('USD', 'JPY', 10.0, 0.0001379),
-        ('USD', 'SEK', 10.5, 0.0001448),
-        ('AUD', 'USD', 12.0, 0.0001655),
-        ('USD', 'CAD', 9.5,  0.0001310),
-        ('NZD', 'USD', 12.5, 0.0001724)
+        ('EUR', 'USD', 9.5,  0.0000239),
+        ('GBP', 'USD', 11.5, 0.0000290),
+        ('USD', 'CHF', 9.0,  0.0000227),
+        ('USD', 'JPY', 10.0, 0.0000252),
+        ('USD', 'SEK', 10.5, 0.0000264),
+        ('AUD', 'USD', 12.0, 0.0000302),
+        ('USD', 'CAD', 9.5,  0.0000239),
+        ('NZD', 'USD', 12.5, 0.0000315)
     ) as p(base, quote, annualised_vol_pct, stdev);
 
     -- Tail component: weight 0.05, 4x the primary's stdev, adding the fat
@@ -173,13 +177,13 @@ begin
         'Realistic tail component: 4x primary stdev, low weight, for fat-tailed jumps.',
         0.0, p.stdev, 0.05
     from (values
-        ('EUR', 'USD', 0.0005240),
-        ('GBP', 'USD', 0.0006344),
-        ('USD', 'CHF', 0.0004964),
-        ('USD', 'JPY', 0.0005516),
-        ('USD', 'SEK', 0.0005792),
-        ('AUD', 'USD', 0.0006620),
-        ('USD', 'CAD', 0.0005240),
-        ('NZD', 'USD', 0.0006896)
+        ('EUR', 'USD', 0.0000956),
+        ('GBP', 'USD', 0.0001160),
+        ('USD', 'CHF', 0.0000908),
+        ('USD', 'JPY', 0.0001008),
+        ('USD', 'SEK', 0.0001056),
+        ('AUD', 'USD', 0.0001208),
+        ('USD', 'CAD', 0.0000956),
+        ('NZD', 'USD', 0.0001260)
     ) as p(base, quote, stdev);
 end $$;

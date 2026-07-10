@@ -69,11 +69,11 @@ content is folded in below as the implementation plan.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7356C36E-2633-4043-9747-27E61593EA4F][Fix tenant-scoped variability system settings: permissions and per-tenant seeding]] |
-| Now          | Slices 1-3 done (schema, flag definitions/seeding, wizard wiring + login fix); verified live except the multi-party select_party response. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Slice 4 (NOTIFY listener fix, optional/may split out), then a manual Qt click-through of the multi-party select_party path before closing. |
+| Next         | Nothing. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance
@@ -312,3 +312,28 @@ did.)
 | 4 | No unit tests for complete_party_onboarding / new accessors / party_setup_required branching | (n/a) | Declined | Matches existing untested bootstrap_mode precedent; follow-up capture promised |
 
 * Result
+
+Replaced the =party.status == "Inactive"= / stale party-cache check
+with a dedicated =onboarding.party= variability flag, party-scoped
+via a new =party_id= column, read directly from the DB — the party
+provisioner wizard no longer re-triggers after a successful
+provisioning run. Along the way: added =onboarding.system=/
+=onboarding.tenant= for symmetry, wired both wizards (Qt and shell)
+to write their flag via a dedicated permission-check-free NATS
+request, added =party_setup_warning= for the "wizard ran but party
+still Inactive" edge case (now wired end-to-end into the Qt client),
+removed two now-redundant/risky client-side pre-emptive
+=bootstrap_mode= writes, and fixed an unrelated NOTIFY-listener
+mutex-contention bug found while touching this code.
+
+Verified live end-to-end against a full Barclays GLEIF provisioning
+run (DB confirms =onboarding.tenant=/=onboarding.party= both correctly
+=true=, no permission-denied/UUID errors) and via 4 independent
+review passes on PR #1491, all converging on the same one real gap
+(=party_setup_warning= not yet client-wired), which was fixed and
+re-verified. Not directly exercised live: the multi-party
+=select_party= response value (no shell command drives it and the
+test tenant ended up with 82 GLEIF-imported parties) — reasoned
+correct by construction (same tested read path as the single-party
+case) rather than click-tested; captured a follow-up for regression
+test coverage in this area.

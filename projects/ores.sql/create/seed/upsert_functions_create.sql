@@ -868,6 +868,56 @@ begin
 end;
 $$ language plpgsql;
 
+/**
+ * Seeds a newly-provisioned tenant with a copy of every current
+ * "system."-prefixed policy setting from the system tenant, so
+ * SettingGatedActionController-gated features don't silently hide for
+ * every tenant except system (each such setting only ever existed under
+ * the system tenant otherwise, since system_settings_service reads are
+ * tenant-scoped with no fallback).
+ *
+ * Excludes 'system.bootstrap_mode': that name tracks per-tenant
+ * provisioning *state* (has this tenant's wizard completed), not a copied
+ * policy default, and is seeded explicitly by the caller instead.
+ *
+ * Insert-if-absent via ores_variability_system_settings_upsert_fn, so
+ * this is safe to call even if some settings were already seeded by
+ * name elsewhere.
+ */
+create or replace function ores_variability_seed_tenant_system_settings_fn(
+    p_tenant_id uuid
+) returns void as $$
+declare
+    v_setting record;
+begin
+    -- Restricted to the system tenant's own system-party scope: all
+    -- system.* settings are seeded that way today (no party-specific
+    -- overrides exist), and this filter makes that invariant enforced
+    -- rather than incidental — without it, a future party-scoped
+    -- system.* override at the system tenant would be silently
+    -- re-scoped to the destination tenant's system party instead of
+    -- being skipped.
+    for v_setting in
+        select name, value, data_type, description
+        from ores_variability_system_settings_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and party_id = ores_variability_resolve_system_party_fn(ores_utility_system_tenant_id_fn())
+          and name like 'system.%'
+          and name <> 'system.bootstrap_mode'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    loop
+        perform ores_variability_system_settings_upsert_fn(
+            p_tenant_id,
+            v_setting.name,
+            v_setting.value,
+            v_setting.data_type,
+            v_setting.description);
+    end loop;
+
+    raise debug 'Seeded system.* settings for tenant %', p_tenant_id;
+end;
+$$ language plpgsql;
+
 -- =============================================================================
 -- Data Quality: Dataset Bundles
 -- =============================================================================

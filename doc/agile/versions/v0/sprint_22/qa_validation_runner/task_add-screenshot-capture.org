@@ -8,7 +8,7 @@
 #+filetags: :qt:testing:dx:qa_validation_runner:sprint_22:v0:
 #+owner: marco
 #+branch: feature/add-screenshot-capture
-#+pr:
+#+pr: 1490
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-09
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1490][#1490]] | [qt] Add screenshot capture to the QA Validation Runner panel |
 
 * Review
 

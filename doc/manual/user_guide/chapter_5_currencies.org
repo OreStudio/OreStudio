@@ -24,21 +24,113 @@ shell, and the command-line tool.
 ** Overview
 
 The chapter advances the argument that managing a currency well means
-understanding its identity, the extensions that make it usable, the
-interface that governs its lifecycle, and the programmatic equivalents —
-and it proceeds in that order. It begins by establishing identity in
-[[*ISO 4217 and its limitations][ISO 4217 and its limitations]], which sets out the codes that name a
-currency and the gaps that motivate OreStudio's extensions; this is the
-premise the rest of the chapter builds on. From there it surveys the body
-of records in [[*The Currencies window][The Currencies window]] before narrowing to a single record
-in [[*Currency Details][Currency Details]] and its General, Formatting, Rounding, and
-Provenance tabs. It then turns to changing a record under audit —
-[[*Editing a currency][Editing]] and [[*Currency history][Currency history]] — culminating in reverting to an
-earlier version, the point at which the bitemporal audit trail does its
-work. It then documents the [[*Auxiliary Data][auxiliary classification tables]] — rounding
-types, market tiers, and monetary natures — whose values a currency
-references, and finally shows the same operations automated from the
-[[*Shell commands][shell]] and the [[*CLI commands][CLI]]. The [[*Conclusion][Conclusion]] draws these steps together.
+understanding what a currency actually /is/, its identity, the
+extensions that make it usable, the interface that governs its
+lifecycle, and the programmatic equivalents — and it proceeds in that
+order. It begins with the conceptual foundation in [[*Money, currency, and cash][Money, currency,
+and cash]], distinguishing three terms routinely conflated in casual
+usage; this framing is what makes the rest of the chapter's choices
+legible, not just a list of fields. From there it establishes identity
+in [[*ISO 4217 and its limitations][ISO 4217 and its limitations]], which sets out the codes that name a
+currency and the gaps that motivate OreStudio's extensions. It then
+surveys the body of records in [[*The Currencies window][The Currencies window]] before
+narrowing to a single record in [[*Currency Details][Currency Details]] and its General,
+Formatting, Rounding, and Provenance tabs. It then turns to changing a
+record under audit — [[*Editing a currency][Editing]] and [[*Currency history][Currency history]] — culminating
+in reverting to an earlier version, the point at which the bitemporal
+audit trail does its work. It then documents the [[*Auxiliary Data][auxiliary
+classification tables]] — rounding types, market tiers, and monetary
+natures — whose values a currency references, and finally shows the
+same operations automated from the [[*Shell commands][shell]] and the [[*CLI commands][CLI]]. The
+[[*Conclusion][Conclusion]] draws these steps together.
+
+** Money, currency, and cash
+
+/Money/, /currency/, and /cash/ are used almost interchangeably in
+everyday speech, yet they name three distinct, if related, concepts,
+each nested within the one before it. Disentangling them clarifies
+what OreStudio's =Currency= record is actually modelling, and, just as
+importantly, what it deliberately is not.
+
+Money is the broadest of the three terms: any item or verifiable
+record generally accepted as payment for goods and services, or as
+repayment of debts, within a particular society. It is best
+understood not as a physical thing but as a social convention, one
+that functions precisely because a sufficiently large group of people
+believes it functions, and which ceases to function the moment that
+belief collapses. What qualifies as money is best captured by what it
+/does/ rather than what it /is/: it serves as a medium of exchange,
+offering an efficient alternative to barter; as a unit of account,
+letting value be expressed numerically and compared across otherwise
+incommensurable goods; as a store of value, preserving purchasing
+power across time; and as a standard of deferred payment, so that an
+amount agreed today retains roughly the same value when it falls due
+in the future. Anything fulfilling these functions counts as money,
+which is why money has, historically, taken several distinct forms.
+Commodity money derives its value from the scarcity and physical
+usefulness of the substance embodying it, gold and silver being the
+paradigm cases. Fiat money, by contrast, carries no intrinsic value of
+its own; it is money purely because a government or a mutual
+agreement between parties declares it so. Bank money is more
+abstract still, consisting entirely of records: it is created the
+moment a bank extends a loan by crediting the borrower's deposit
+account, and destroyed the moment that loan is repaid. Despite the
+popular association of "money" with notes and coins, bank money
+constitutes the overwhelming majority of the money supply in any
+modern economy, physical cash typically accounting for a small
+single-digit percentage of the total. Cryptocurrencies form a fourth,
+more recent and non-standard category: digital assets used as a
+medium of exchange, with ownership recorded cryptographically and,
+typically, no central issuing authority standing behind them.
+
+Currency narrows money down to a system of money in common use within
+a defined area of circulation, usually a country or a group of
+countries sharing a monetary union. Two meanings coexist in ordinary
+usage, the physical representation of banknotes and coins on one
+hand, and the abstract system of money itself on the other, the
+latter being the more useful framing for a system such as OreStudio,
+given how small a fraction of any modern money supply physical cash
+actually represents. Being standardised by [[*ISO 4217 and its limitations][ISO 4217]] is not a
+precondition for counting as a currency in this conceptual sense;
+standardisation is better understood as a seal of approval than as a
+definition. The currencies of smaller nations not covered by the
+standard, and cryptocurrencies, which rely on informal,
+community-driven symbols such as =BTC= or =XBT= for Bitcoin rather
+than an assigned ISO code, are no less currencies for lacking one. A
+currency also has a lifecycle of its own, distinct from the lifecycle
+of any individual note or coin: it is born when created and put into
+circulation, lives while in general use, and dies when eventually
+withdrawn, though records of transactions conducted during its life
+must still be retained long after that withdrawal. Redenominations,
+currency replacements, and monetary unions forming or dissolving
+occur more often than a system designer might expect, and rarely
+afford the luxury of careful advance planning; a system not built to
+anticipate such events can find itself significantly disrupted when
+one eventually occurs.
+
+Cash narrows the concept furthest of the three. It is money in the
+physical form of banknotes and coins, or, in the bookkeeping sense
+more relevant to a system like OreStudio, the broader class of
+current assets comprising currency or currency-equivalents that can
+be accessed immediately or near-immediately. A bank deposit falls
+under this broader definition: it is a financial asset rather than
+physical currency, yet liquid enough to count as cash for most
+practical purposes. The relationship between the three terms can be
+summarised as a chain of increasingly narrow specialisation: not all
+money is a currency in the systemic sense, since commodity money and
+cryptocurrencies stretch the definition in different directions; and
+not all currency holdings are cash, since a currency can equally be
+held in a comparatively illiquid financial-asset form.
+
+OreStudio's =Currency= reference-data record, the subject of the
+remainder of this chapter, models currency in precisely this
+narrower, systemic sense: a named, identified system of money,
+equipped with the extensions described in [[*ISO 4217 and its limitations][the next section]] that let
+OreStudio put it to practical use in calculations. The chapter does
+not attempt to model money in the abstract, nor the accounting
+concept of cash; those notions are drawn upon, where relevant, by the
+trading and booking chapters that build upon the currency reference
+data documented here.
 
 ** ISO 4217 and its limitations
 

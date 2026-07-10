@@ -53,6 +53,18 @@ each one still actually needs:
   widgets to party and counterparty]], remains, and it belongs here
   rather than in that now-closed story, since it only makes sense in
   the context of this consolidated party/counterparty work.
+- *prerequisite, partially done*: [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity
+  versioning]] is otherwise DONE this sprint — the SQL touch-function
+  mechanism, the as-of window-join composition query, and the open
+  architectural decisions are all resolved and shipped. Two tasks
+  remain, both moved here since they're gated on the same
+  party/counterparty binding work above, not independent:
+  [[id:F41DC692-99AE-4F0C-9D6E-76BA767BB93E][Qt composite history/version dialog]] (PR #1469 landed an interim
+  flat-list implementation with steps 2-4 of its test scenario
+  passing; explicitly blocked on per-child history dialogs from the
+  binding task) and [[id:7F8A51BA-35CB-467E-B3E5-A847CB37E238][Document the composite versioning approach and
+  codegen recipe]] (gated on the mechanism being "fully implemented
+  and proven" — i.e. on the Qt dialog task above landing for real).
 
 Shell/CLI and Wt/HTTP items for all three are *not* carried here —
 they're superseded by the top-level [[id:8BCD0D1C-AAFB-4FAA-A0E3-022FC6EF93C2][Shell entity commands]], [[id:469958E3-B249-4D4C-95A9-E7CDB703F0C0][CLI

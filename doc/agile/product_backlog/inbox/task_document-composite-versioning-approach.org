@@ -5,7 +5,7 @@
 #+description: Once the mechanism is fully implemented and proven, write a doc/knowledge/architecture page explaining the approach (cross-referencing the existing target-state doc, ores.sql/PostgreSQL architecture docs, and any other related docs found), plus a codegen recipe explaining which variability knobs (:bump_parent_version:, :generate_touch_function:, :list_by_as_of:) to flip to make an entity a composite parent/child. All links must be proper org-roam ID links, cross-referenced both ways.
 #+type: task
 #+level: s1
-#+filetags: :composite_entity:versioning:documentation:codegen:implement-temporal-composite-entity-versioning:sprint_22:v0:
+#+filetags: :composite_entity:versioning:documentation:codegen:party:counterparty:sprint_22:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E953C1DB-1FD5-415D-B777-5983315C8E22][Commission party, counterparty, and party_status together]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] |
+| Parent story | [[id:E953C1DB-1FD5-415D-B777-5983315C8E22][Commission party, counterparty, and party_status together]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

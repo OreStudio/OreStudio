@@ -112,7 +112,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | ABANDONED | | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] | ABANDONED | | 2026-07-10 | 3/3 codegen-hardening tasks done; Qt/shell/CLI/manual scope still open. |
 | [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] | ABANDONED | 2026-07-02 | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | ABANDONED | 2026-07-06 | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | DONE | 2026-07-06 | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | ABANDONED | | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | ABANDONED | | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | ABANDONED | | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |

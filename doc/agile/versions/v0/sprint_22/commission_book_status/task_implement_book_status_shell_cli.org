@@ -26,12 +26,12 @@ Implement book_status shell commands (list, add, remove) and CLI commands (list,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned — superseded.                 |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-25                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -58,3 +58,9 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Superseded — per-entity shell/CLI commissioning was replaced by two
+top-level commissioning-story captures covering every entity:
+[[id:8BCD0D1C-AAFB-4FAA-A0E3-022FC6EF93C2][Shell entity commands — top-level commissioning story]] and
+[[id:469958E3-B249-4D4C-95A9-E7CDB703F0C0][CLI commands — top-level commissioning story]]. book_status's shell/CLI
+commands are covered there; no separate per-entity implementation.

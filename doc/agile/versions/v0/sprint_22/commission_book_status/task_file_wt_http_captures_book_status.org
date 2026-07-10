@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 3E0FC733-2595-42DD-881E-99DFDA13E302
+:ID: CEF488EE-F8BC-493D-92E9-AD94EF3D91D8
 :END:
-#+title: Task: Write book_status documentation
-#+description: Add the book_status entity chapter to the user manual and file Wt/HTTP backlog captures.
+#+title: Task: File Wt and HTTP gap captures for book_status
+#+description: Identify Wt UI and HTTP handler gaps for book_status discovered during commissioning and file them as backlog captures for future work.
 #+type: task
 #+level: s1
 #+filetags: :commission_book_status:sprint_22:v0:
@@ -11,8 +11,8 @@
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-06-25
-#+updated: 2026-06-25
+#+created: 2026-06-26
+#+updated: 2026-06-26
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,22 +20,22 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Write the user manual chapter for book_status covering all Qt windows, shell commands, and CLI commands. File backlog captures for missing Wt widgets and HTTP endpoints.
+Review book_status Wt UI and HTTP handler completeness; create compass captures for any gaps found; ensure no gap is silently dropped.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned — superseded.                 |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-25                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
-- Manual chapter present in user_manual.org; chapter documents Qt windows, shell, and CLI; Wt and HTTP gap captures filed in the backlog; site builds cleanly.
+- All Wt and HTTP gaps identified; captures filed; story references the captures.
 
 * Plan
 
@@ -58,3 +58,9 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Superseded — per-entity Wt/HTTP gap capturing was replaced by two
+top-level commissioning-story captures covering every entity at
+once: [[id:EEE4880F-525A-4805-8082-B8638CB54ABA][Wt entity UI — top-level commissioning story]] and
+[[id:03FC50B3-622B-4456-AE66-2F180B526723][HTTP entity endpoints — top-level commissioning story]]. book_status's
+gap is covered there; no separate capture needed.

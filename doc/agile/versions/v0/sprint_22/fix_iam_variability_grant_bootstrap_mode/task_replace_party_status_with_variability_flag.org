@@ -8,7 +8,7 @@
 #+filetags: :iam:variability:qt:party:onboarding:sprint_22:v0:fix_iam_variability_grant_bootstrap_mode:
 #+owner: marco
 #+branch: feature/onboarding-party-flag
-#+pr:
+#+pr: 1491
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -299,6 +299,7 @@ did.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1491][#1491]] | [ores.iam,ores.variability] Replace party.status with onboarding.party flag |
 | [[https://github.com/OreStudio/OreStudio/pull/1478][#1478]] | [ores.iam,ores.variability,ores.sql] Fix tenant-scoped variability system settings: permissions and per-tenant seeding |
 
 * Review

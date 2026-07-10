@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 5BF9E640-E0EB-48B9-8BAB-67919D811429
+:END:
+#+title: Task: Add domain-explanation tooltips to Currency and Currency Pair Convention detail fields
+#+description: Fields like spot_relative and end_of_month aren't self-explanatory; add tooltips to every field in the Currency and Currency Pair Convention detail dialogs explaining the domain concept, not just restating the label.
+#+type: task
+#+level: s1
+#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 snags]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fields like =spot_relative= and =end_of_month= aren't
+self-explanatory from their label alone. Add tooltips explaining the
+underlying domain concept (not just restating the label) to every
+field in the Currency and Currency Pair Convention detail dialogs, and
+— where technically feasible — to the corresponding column headers in
+their list windows too, so the explanation is available without
+opening a record.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 snags]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- [ ] Every field in the Currency detail dialog has a tooltip
+  explaining the domain concept.
+- [ ] Every field in the Currency Pair Convention detail dialog has a
+  tooltip explaining the domain concept (e.g. spot_relative,
+  end_of_month, pip_factor vs tick_size).
+- [ ] Column headers in the Currency and Currency Pair Convention list
+  windows carry the same tooltips, if the Qt table-header widget
+  supports it (confirm feasibility as part of this task).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

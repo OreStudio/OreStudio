@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: F90CDE0A-9813-407C-A145-30BA001FAAA8
+:END:
+#+title: Sprint 22 snags: single leftover tasks from otherwise-complete stories
+#+description: Small, genuinely single-task leftovers from sprint 22 stories that were morally complete otherwise. Pull individual tasks into whichever future sprint has room, rather than re-carrying their whole parent story.
+#+type: capture
+#+level: cross
+#+filetags: :sprint_22:cleanup:snags:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A running list of single, genuinely-standalone leftover tasks from
+sprint 22 stories that were re-triaged at sprint close and found to
+be morally complete except for one real remaining item. Rather than
+carry the whole parent story forward (or re-open it next sprint),
+just the leftover task is listed here — pull it into whichever
+future sprint has room, or fold it into a more natural home if one
+emerges (e.g. once a related entity gets commissioned).
+
+** Tasks parked here
+
+Each task file was moved here as-is (state, acceptance, notes all
+intact) and reparented to this capture — nothing rewritten.
+
+- [[id:3E433126-8259-4280-9C89-1801C0C3E8E9][Write purpose_type user manual chapter]] — from [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission:
+  purpose_type]] (4/5 done this sprint; story closed DONE). No natural
+  parent chapter yet since Portfolio itself ([[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]])
+  isn't commissioned.
+- [[id:D8C2D3DF-433A-4350-9916-73327EB90999][Add a generic FK-combo-with-flag-icons facet to ores.codegen.entity]]
+  — from [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] (27/30 done; story
+  closed DONE).
+- [[id:5BF9E640-E0EB-48B9-8BAB-67919D811429][Add domain-explanation tooltips to Currency and Currency Pair
+  Convention detail fields]] — same story.
+- [[id:B4526411-7FDC-48E8-A346-DA69B5F66BDD][pair_code inline flag icon renders tiny regardless of
+  keyFlagIconSize()]] — same story; an attempted fix was already
+  reverted, needs proper investigation.
+
+* Why
+
+Sprint 22's health review found the sprint's own paperwork
+untrustworthy — stories carried wholesale to the backlog inbox even
+when only one task genuinely remained. This capture is the
+lightweight alternative: don't re-open a story for one task, don't
+silently drop the task either.
+
+* References
+
+- [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] — the story this task came from.
+
+* See also
+
+-

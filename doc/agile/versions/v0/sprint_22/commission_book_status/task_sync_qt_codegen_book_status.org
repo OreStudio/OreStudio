@@ -26,12 +26,12 @@ Generate and review Qt artefacts for book_status (detail dialog, history dialog,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
-| Now          | Not yet started.                       |
+| Now          | Complete.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-26                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -54,3 +54,10 @@ Generate and review Qt artefacts for book_status (detail dialog, history dialog,
 |   |                 |      |          |       |
 
 * Result
+
+Done, but never marked as such — this task's own Status table was
+left stale. Full Qt UI exists and is wired:
+=BookStatusMdiWindow=, =BookStatusDetailDialog=, =BookStatusController=,
+=ClientBookStatusModel=, =BookStatusHistoryDialog=, and the =.ui= file,
+all under =projects/ores.qt/refdata/=. Landed via commit =339b9e4dc=
+("Fix book_status tenant scoping and stale Qt UI generation").

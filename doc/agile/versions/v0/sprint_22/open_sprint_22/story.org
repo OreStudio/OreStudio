@@ -22,28 +22,29 @@ agile index, and carry postponed sprint 21 stories forward.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Scaffolding sprint 22 and moving postponed stories. |
+| Now           | Nothing.                                |
 | Waiting on    | Nothing.                               |
-| Next          | Raise the PR.                          |
-| Last touched  | 2026-07-02                               |
+| Next          | None.                                  |
+| Last touched  | 2026-07-10                               |
 
 * Acceptance
 
-- Sprint 22 folder scaffolded with mission set.
-- Sprint 22 wired into the version manifest and agile index.
-- Postponed sprint 21 stories moved into sprint 22.
+- [X] Sprint 22 folder scaffolded with mission set.
+- [X] Sprint 22 wired into the version manifest and agile index.
+- [X] Postponed sprint 21 stories moved into sprint 22.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2CC79A8B-86FC-4DF2-A36B-DB53034785AF][Task: Open sprint 22]] | STARTED | 2026-07-02 | | Scaffold sprint 22, wire manifest, move postponed stories. |
+| [[id:2CC79A8B-86FC-4DF2-A36B-DB53034785AF][Task: Open sprint 22]] | DONE | 2026-07-02 | 2026-07-10 | Scaffold sprint 22, wire manifest, move postponed stories. |
 | [[id:5076E124-409F-4D79-B207-3CD59968D4AA][Generate release notes for Sprint 21]] | DONE | 2026-07-02 | 2026-07-02 | Generate ORE Studio release notes from merged PRs and the closing sprint 21 backlog, tag main, and open a draft GitHub release. |
 | [[id:C653D61E-A2A6-47B4-96A2-7B1FC1A7EDAA][Bump project version to 0.0.22 for sprint 22]] | DONE | 2026-07-02 | 2026-07-02 | Missed as part of the sprint-opening process: bump the project version across CMakeLists.txt, vcpkg.json, and the GitHub workflow files (currently all still at 0.0.21, sprint 21's version). |
 | [[id:FE18CB49-C6D0-4F1B-9B56-04E5738032D9][Health review 1 — sprint 22 mid-sprint analysis]] | DONE | 2026-07-04 | 2026-07-04 | System 2 health review 1 of sprint 22. |
 | [[id:CC2B3D6B-2B92-4606-A3BE-E67FB86B2960][Health review 2 — sprint 22 mid-sprint analysis]] | DONE | 2026-07-05 | 2026-07-05 | System 2 health review 2 of sprint 22. |
+| [[id:FCF5939C-FEE9-4F03-87C1-98F565C4E045][Health review 3 — sprint 22 close analysis]] | DONE | 2026-07-10 | 2026-07-10 | System 2 health review 3 of sprint 22, at close (day 9, one day past expected end). |
 
 * Decisions
 

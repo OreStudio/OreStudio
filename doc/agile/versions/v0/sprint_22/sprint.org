@@ -23,16 +23,57 @@ codegen C++ generation drift, carrying postponed sprint 21 stories.
 
 | Field          | Value                                  |
 |----------------+----------------------------------------|
-| State          | STARTED                              |
+| State          | DONE                                  |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
 | Previous       | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
 | Start          | 2026-07-02                               |
-| End (expected) | 2026-07-09                           |
-| Now            | Sprint in flight.                      |
+| End            | 2026-07-10                           |
+| Now            | Nothing.                                |
 | Waiting on     | Nothing.                               |
-| Next           | Pick the first story.                  |
-| Release Notes  | Added at end of sprint.                |
-| Last touched   | 2026-07-02                               |
+| Next           | Open sprint 23.                        |
+| Release Notes  | [[file:release_notes.org][release_notes.org]] |
+| Last touched   | 2026-07-10                               |
+
+** Achievements
+
+- Shipped the Currency Pairs & Conventions reference-data entity end
+  to end: knowledge-base foundation, domain/db/codegen model, Qt UI
+  (list, detail, duplicate/inverted-pair rejection, Conventions
+  cross-navigation), and a full user-manual chapter with captured
+  screenshots.
+- Proved out the org-mode literate codegen model on =party= (PR
+  #963) — a single org file now drives both C++ and SQL generation
+  with inline custom repository methods, replacing the two-JSON-file
+  pattern; the mechanism is now the template for future entity
+  migrations.
+- Landed =ores.orgmode=, a new C++ component parsing org-mode docs
+  and resolving =id:= links via the existing org-roam index, and
+  built the QA Validation Runner on top of it — an in-app Qt panel
+  turning a =test_scenario= doc into a guided, trackable test session
+  across the multi-worktree fleet.
+- Added codegen support for view groups (Qt detail-dialog tabs),
+  piloted on currency, replacing the single-tab-only generated dialog
+  layout for entities with many fields.
+- Closed out a cluster of Windows/macOS CI reliability issues: the
+  MSVC C4273 dllimport failure (via a new ores.qt.headless
+  extraction), a stale-Qt-plugin-after-ABI-change crash, missing
+  EXPORT macros across 20 refdata/scheduler service classes, and the
+  macOS relevance-guard silently skipping the build matrix.
+- Fixed a real multi-tenant correctness bug: tenant-scoped
+  variability system settings other than =bootstrap_mode= weren't
+  seeded per-tenant, silently hiding gated features for every
+  non-system tenant.
+- Found and fixed the NATS-port-inside-the-kernel-ephemeral-range bug
+  (moved =BASE_PORT_START= below 32768) after it caused a real bind
+  collision during this sprint's own manual-chapter work — .env
+  format version bumped to 11.
+- Ran three System 2 health reviews (day 3, day 4, close) tracking
+  the sprint honestly through two consecutive RED verdicts to a third;
+  the close review's findings (8 stale sprint.org rows, 20
+  simultaneously STARTED stories, 741 commits against a 300 target)
+  directly drove this closure's scope: 43 of 70 stories carried back
+  to the product backlog rather than force-closed or silently
+  dropped.
 
 * Stories
 
@@ -43,7 +84,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] | STARTED | 2026-07-02 | | Scaffold sprint 22, wire manifest, move postponed stories. |
+| [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] | DONE | 2026-07-02 | 2026-07-10 | Scaffold sprint 22, wire manifest, move postponed stories. |
 | [[id:62034F29-D2EB-4BA4-9291-9B35D33A724A][Fix Windows dllimport build failure via ores.qt.headless extraction]] | DONE | 2026-07-08 | 2026-07-09 | MSVC C4273 broke Windows CI; root cause was Widgets-free logic living inside ores.qt.api, fixed by extracting a proper ores.qt.headless component. |
 | [[id:75DD1418-D96C-4A7E-80F5-46847F65974D][Investigate RegulatoryBookTypeController Windows LNK2019 error]] | DONE | 2026-07-09 | 2026-07-09 | Root-caused a pasted Windows LNK2019; no defect found on current main, no speculative fix made. |
 
@@ -59,29 +100,30 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | STARTED | | | 7/8 tasks done; Qt verification carried from sprint 20. |
+| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | DONE | | 2026-07-10 | 23/27 tasks done; remaining 4 abandoned (superseded by top-level shell/CLI/Wt/HTTP stories) or found already complete (badge rendering, stale bookkeeping). |
 | [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] | DONE | 2026-07-04 | 2026-07-04 | Triaged currency's custom Qt functionality vs. the qt codegen profile, piloted the combo-field mechanism, and produced the regenerate plan for the Qt sync task. |
-| [[id:8D0431A9-8894-4686-9BB6-3EAC7331084C][Commission: rounding_type]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
-| [[id:26E93F97-D7CB-4963-9DA7-5798AEE4F9BE][Commission: monetary_nature]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
-| [[id:FE0ADB0A-F8F9-4AAF-95F8-020A60191187][Commission: currency_market_tier]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
-| [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:8D0431A9-8894-4686-9BB6-3EAC7331084C][Commission: rounding_type]] | DONE | | 2026-07-10 | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
+| [[id:26E93F97-D7CB-4963-9DA7-5798AEE4F9BE][Commission: monetary_nature]] | DONE | | 2026-07-10 | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
+| [[id:FE0ADB0A-F8F9-4AAF-95F8-020A60191187][Commission: currency_market_tier]] | DONE | | 2026-07-10 | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
+| [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | ABANDONED | 2026-07-02 | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | DONE | | 2026-07-04 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | STARTED | 2026-07-06 | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Commission: party_id_scheme]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] | STARTED | | | 3/3 codegen-hardening tasks done; Qt/shell/CLI/manual scope still open. |
-| [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | STARTED | 2026-07-06 | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]] | BACKLOG | | | Move from ores.trading to ores.refdata (zero current consumers), then commission fully to Qt; spun off from the currency pair story. |
-| [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]] | BACKLOG | | | Move from ores.trading to ores.refdata (update trading_swap_legs' one reference), then commission fully to Qt; spun off from the currency pair story. |
-| [[id:D83F5588-5F05-4AF6-9CCF-98489309DE4A][Move book, book_status, and portfolio to ores.trading]] | BACKLOG | | | These are trading/booking structures, not static reference data; relocate full stack out of ores.refdata. |
+| [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | ABANDONED | 2026-07-06 | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Commission: party_id_scheme]] | ABANDONED | | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | ABANDONED | | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] | ABANDONED | | 2026-07-10 | 3/3 codegen-hardening tasks done; Qt/shell/CLI/manual scope still open. |
+| [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] | DONE | 2026-07-02 | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | DONE | 2026-07-06 | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | ABANDONED | | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | ABANDONED | | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | ABANDONED | | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | DONE | 2026-07-02 | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]] | DONE | 2026-07-04 | 2026-07-07 | Move from ores.trading to ores.refdata (zero current consumers), then commission fully to Qt; spun off from the currency pair story. |
+| [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]] | ABANDONED | | 2026-07-10 | Move from ores.trading to ores.refdata (update trading_swap_legs' one reference), then commission fully to Qt; spun off from the currency pair story. |
+| [[id:D83F5588-5F05-4AF6-9CCF-98489309DE4A][Move book, book_status, and portfolio to ores.trading]] | ABANDONED | | 2026-07-10 | These are trading/booking structures, not static reference data; relocate full stack out of ores.refdata. |
 | [[id:9763FBBF-7912-4EA2-A544-67E90EA27882][Codegen: generate per-entity NATS event-mapping registrar]] | DONE | | 2026-07-08 | Hand-wired application.cpp eventing registration caused a missed-wiring regression (purpose_type); generate it per-entity instead. |
-| [[id:AF0EFC5C-899A-4AE9-BD09-7B2D4E304543][Regen entities with latest codegen templates]] | STARTED | 2026-07-09 | | Sweep already-commissioned entities (starting with country) against the shared codegen templates' substantial new capability landed via currency's commissioning. |
-| [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] | STARTED | 2026-07-08 | | 2/9 tasks done (the 2 live bugs); add classification flags, rename ledger_ccy, investigate legal-entity/branch fields, add rates centre, analyse allowed lists, enrich manual with domain concepts remain. |
+| [[id:AF0EFC5C-899A-4AE9-BD09-7B2D4E304543][Regen entities with latest codegen templates]] | DONE | 2026-07-09 | 2026-07-10 | Country regenerated and reconciled against the shared codegen templates' new capability landed via currency's commissioning; remaining entities recaptured for future pickup. |
+| [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] | ABANDONED | 2026-07-08 | 2026-07-10 | 2/9 tasks done (the 2 live bugs); add classification flags, rename ledger_ccy, investigate legal-entity/branch fields, add rates centre, analyse allowed lists, enrich manual with domain concepts remain. |
+| [[id:3247E7A0-73CD-459D-B2C5-119FC0D7DA33][Rethink synthetic reference-data generation across entities]] | ABANDONED | | 2026-07-10 | Currency's ad-hoc Generate feature (client-side blue-highlighted unsaved rows, per-entity hand-wiring) is half-baked and not actually save-able; design a proper cross-entity mechanism for single + batch synthetic generation before reintroducing it anywhere. |
 
 *** Epic: Market data generation
 
@@ -93,18 +135,18 @@ starting from FX and generalising to other asset classes over time.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] | DONE | | | SQL template variability (hypertable, soft-update/soft-delete triggers, GIST exclusion) + .org models for market_series, market_observation, market_fixing; prerequisite for full-stack codegen of ores.marketdata. |
-| [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] | BACKLOG | | | Drop legacy pre-codegen ores_marketdata_series/observations/fixings_tbl (superseded, zero C++ references); remove their stale validation_ignore.txt entries; preserve market_observation's hand-written repository/service overrides against codegen regeneration. |
+| [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] | ABANDONED | | 2026-07-10 | Drop legacy pre-codegen ores_marketdata_series/observations/fixings_tbl (superseded, zero C++ references); remove their stale validation_ignore.txt entries; preserve market_observation's hand-written repository/service overrides against codegen regeneration. |
 | [[id:366DCF08-C483-47B7-A136-229B4D2FC394][Temporal composite entity versioning]] | DONE | 2026-07-06 | 2026-07-07 | Design doc: child saves (e.g. party_identifiers) must bump the parent's version; loading a parent as-of version N must compose children as of that version. Work out enforcement across SQL/codegen and Qt composite version/history UX. Found via party LEI/BIC identifiers not bumping party.version. |
-| [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] | BACKLOG | | | Implement the target state: SQL touch-function mechanism, as-of window-join read-side composition, Qt composite history dialog. Party/counterparty are the reference case. |
+| [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] | DONE | 2026-07-07 | 2026-07-10 | Implement the target state: SQL touch-function mechanism, as-of window-join read-side composition, Qt composite history dialog. Party/counterparty are the reference case. |
 | [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]] | DONE | 2026-07-04 | 2026-07-04 | Fixed: the file genuinely repeats ~100 (date, key) pairs, not a series_key_registry bug; import_service now de-duplicates last-line-wins with a warn/error policy; unblocks the 2016-02-05 vintage import. |
 | [[id:6C515A93-C7D9-4B6C-B7B2-7AD433BACE44][Configurable feed status indicator in the FX spot grid]] | DONE | 2026-07-02 | 2026-07-03 | FX spot grid status pips use hardcoded CSS colours; replace with a configurable indicator once the right UX (badge vs. compact status dot) is settled. |
 | [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]] | DONE | 2026-07-02 | 2026-07-03 | Chart axis labels, per-component + combined PDF display, and stochastic process component gaps (incl. Ornstein-Uhlenbeck). |
-| [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] | BACKLOG | | | Short-rate stochastic process + Curve Template raw instrument generation (deposits/FRAs/swaps), tenor-collision validation, tick-batch publishing — no bootstrapping, no vol surfaces, no QuantLib. |
+| [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] | ABANDONED | | 2026-07-10 | Short-rate stochastic process + Curve Template raw instrument generation (deposits/FRAs/swaps), tenor-collision validation, tick-batch publishing — no bootstrapping, no vol surfaces, no QuantLib. |
 | [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] | DONE | 2026-07-02 | 2026-07-03 | Librarian gives each new party a usable synthetic data configuration; FX only for now, but db tables/publishing built generically via codegen for future asset classes. |
-| [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] | STARTED | 2026-07-03 | | Two sample FX collections seeded from real ORE reference data (2016-02-05 vintage), Market Simulator grouping by collection, feed namespacing, vintage-availability guard. |
+| [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] | ABANDONED | 2026-07-03 | 2026-07-10 | Two sample FX collections seeded from real ORE reference data (2016-02-05 vintage), Market Simulator grouping by collection, feed namespacing, vintage-availability guard. |
 | [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] | DONE | 2026-07-04 | 2026-07-04 | Non-interactive market data import command, reusing the existing import_service; unblocks the synthetic data collections story's vintage import task. |
-| [[id:57DB2B98-0013-4AED-BA7A-315DC8BD8623][Move trade import orchestration to service layer]] | BACKLOG | | | Move ImportTradeDialog's ~300 lines of trade-import orchestration (XML parse, per-trade save, 30-way instrument dispatch) into a server-side trade_import_service + import_trades_request, so ores.shell's future trade import command doesn't duplicate it. |
-| [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] | STARTED | 2026-07-06 | | Knowledge-base foundation (conventions, quoting, cross rates) followed by domain/db/codegen support for currency pairs as reference data. |
+| [[id:57DB2B98-0013-4AED-BA7A-315DC8BD8623][Move trade import orchestration to service layer]] | ABANDONED | | 2026-07-10 | Move ImportTradeDialog's ~300 lines of trade-import orchestration (XML parse, per-trade save, 30-way instrument dispatch) into a server-side trade_import_service + import_trades_request, so ores.shell's future trade import command doesn't duplicate it. |
+| [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] | DONE | 2026-07-06 | 2026-07-10 | Knowledge-base foundation (conventions, quoting, cross rates) followed by domain/db/codegen support for currency pairs as reference data. |
 
 ** Tooling
 
@@ -116,17 +158,17 @@ and CI checks so generated code stays trustworthy. Carried from sprint 21.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] | BACKLOG | | | Migrate all remaining _table.org models to ores.codegen.entity; remove the table type from the facet catalogue. |
-| [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | STARTED | 2026-07-06 | | Audit/resolve template-production drift; carried from sprint 21. |
-| [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy codegen bash scripts]] | BACKLOG | | | Replace direct bash invocations with compass or Python codegen; remove the scripts. |
-| [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] | BACKLOG | | | CI job regenerating all registered components, failing on any diff vs HEAD. |
-| [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] | BACKLOG | | | Runtime guards for missing component_include/component_core; block dual-template SQL generation. |
-| [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model — Phase 1: Qt derivation]] | BACKLOG | | | Derive Qt fields from conventions; drop explicit NATS protocol class names from models. |
-| [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal templates]] | BACKLOG | | | Merge temporal and non-temporal C++ template families into single model-controlled templates. |
-| [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] | BACKLOG | | | Fix spurious ERRORs in --component mode; add --entity filter; add entity group / tag system for domain-scoped generation. |
+| [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] | ABANDONED | | 2026-07-10 | Migrate all remaining _table.org models to ores.codegen.entity; remove the table type from the facet catalogue. |
+| [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | ABANDONED | 2026-07-06 | 2026-07-10 | Audit/resolve template-production drift; carried from sprint 21. |
+| [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy codegen bash scripts]] | ABANDONED | | 2026-07-10 | Replace direct bash invocations with compass or Python codegen; remove the scripts. |
+| [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] | ABANDONED | | 2026-07-10 | CI job regenerating all registered components, failing on any diff vs HEAD. |
+| [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] | ABANDONED | | 2026-07-10 | Runtime guards for missing component_include/component_core; block dual-template SQL generation. |
+| [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model — Phase 1: Qt derivation]] | ABANDONED | | 2026-07-10 | Derive Qt fields from conventions; drop explicit NATS protocol class names from models. |
+| [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal templates]] | ABANDONED | | 2026-07-10 | Merge temporal and non-temporal C++ template families into single model-controlled templates. |
+| [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] | ABANDONED | | 2026-07-10 | Fix spurious ERRORs in --component mode; add --entity filter; add entity group / tag system for domain-scoped generation. |
 | [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] | DONE | | 2026-07-04 | Replace monolithic registrar.cpp with generated per-entity sub-registrars; isolate handler compilation; unblock incremental service API migration. |
-| [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] | STARTED | 2026-07-06 | | Carried from sprint 21. |
-| [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] | BACKLOG | | | Handcrafted HierarchyTreeWidget + child-entity table facet, paste-block-bound, so party/counterparty can retire their hand-maintained EntityDetailDialog. Overlaps with solid_dirac's Commission: party work — compare approaches before implementing. |
+| [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] | ABANDONED | 2026-07-06 | 2026-07-10 | Carried from sprint 21. |
+| [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] | DONE | 2026-07-04 | 2026-07-10 | Handcrafted HierarchyTreeWidget + child-entity table facet, paste-block-bound, so party/counterparty can retire their hand-maintained EntityDetailDialog. Overlaps with solid_dirac's Commission: party work — compare approaches before implementing. |
 | [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] | DONE | 2026-07-09 | 2026-07-10 | The pre-codegen currency dialog grouped fields into separate tabs; codegen's Qt detail-dialog template only ever generates a single tab, making entities with many fields harder to read. Add a generic view_group concept to the entity_org schema and Qt codegen templates, piloted on currency, and document the domain knowledge in the manual. |
 
 *** Epic: Compass
@@ -134,11 +176,11 @@ and CI checks so generated code stays trustworthy. Carried from sprint 21.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:3A9DF70D-07F7-46A7-8219-57A024707B64][compass generate catalogue]] | BACKLOG | | | Auto-regenerate catalogue/index org files by scanning tagged org files. |
-| [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and tag taxonomy]] | STARTED | 2026-07-06 | | Fix orphaned docs in org-roam graph; create tag inventory; add compass tag validation. |
+| [[id:3A9DF70D-07F7-46A7-8219-57A024707B64][compass generate catalogue]] | ABANDONED | | 2026-07-10 | Auto-regenerate catalogue/index org files by scanning tagged org files. |
+| [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and tag taxonomy]] | DONE | 2026-07-06 | 2026-07-10 | Fix orphaned docs in org-roam graph; create tag inventory; add compass tag validation. |
 | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] | DONE | | 2026-07-02 | Carried from sprint 21. |
 | [[id:25A93F0B-FD5C-4EA1-9194-093073B44C44][Add compass client start/stop subcommands]] | DONE | 2026-07-03 | 2026-07-03 | compass client was flat (launch-only); add start/stop matching the services/env/nats subcommand convention. |
-| [[id:B7C756F2-985A-49FA-BE98-D50C4F418B51][Compass GitHub Actions support]] | STARTED | | | Give compass a quick overview of all GitHub Actions runs, highlight which ones are failing, and for failing runs surface the error detail via gh CLI without needing to download full logs. |
+| [[id:B7C756F2-985A-49FA-BE98-D50C4F418B51][Compass GitHub Actions support]] | ABANDONED | | 2026-07-10 | Give compass a quick overview of all GitHub Actions runs, highlight which ones are failing, and for failing runs surface the error detail via gh CLI without needing to download full logs. |
 
 *** Epic: Org-mode support
 
@@ -152,15 +194,15 @@ More stories expected here over time as other consumers emerge.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] | DONE | 2026-07-06 | 2026-07-07 | New component: parse org-mode docs into a C++ structure, resolve id: links via the existing org-roam SQLite index. Pure C++, usable from ores.shell; ports the shape of ores.compass's Python org parser. |
-| [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] | BACKLOG | | | Qt panel, built on ores.orgmode, turning a test_scenario org doc's checklist into a guided test session; results and story/task context rendered in-app, not a standalone JSON file. |
+| [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] | DONE | 2026-07-06 | 2026-07-10 | Qt panel, built on ores.orgmode, turning a test_scenario org doc's checklist into a guided test session; results and story/task context rendered in-app, not a standalone JSON file. |
 
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Verify Windows and macOS CI builds]] | BACKLOG | | | Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups. |
-| [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] | STARTED | 2026-07-06 | | Qt 6.8.x references -framework AGL (removed in macOS 15); the latest supported Qt drops that dependency. CI pinned to macos-14 as stopgap. |
+| [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Verify Windows and macOS CI builds]] | ABANDONED | | 2026-07-10 | Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups. |
+| [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] | ABANDONED | 2026-07-06 | 2026-07-10 | Qt 6.8.x references -framework AGL (removed in macOS 15); the latest supported Qt drops that dependency. CI pinned to macos-14 as stopgap. |
 | [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] | DONE | 2026-07-03 | 2026-07-04 | Cache-quota fix applied but doesn't explain the magnitude (32 files changed vs. 98.6% miss rate); running a live zero-source-diff experiment. |
 | [[id:05243CFE-F838-4759-9956-9400D6C90FDC][Fix NATS port collision with legacy env and label inconsistency]] | DONE | 2026-07-03 | 2026-07-03 | solid_dirac's NATS ports collided with a stray legacy env's server; migrate to base-port-derived NATS ports and unify the config label to underscore form. |
 | [[id:83B12C2D-5202-4738-8147-5F28E566D997][Fix uninitialized asset_class/series_subclass in market_series generator]] | DONE | 2026-07-03 | 2026-07-03 | Nightly Valgrind flagged uninitialized-memory defects in market_series_mapper::map(); generate_synthetic_market_series() never set the two enum fields. |
@@ -171,7 +213,7 @@ More stories expected here over time as other consumers emerge.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:7F306A93-6C30-47AC-BD37-7D762A49B475][Improve site documentation discoverability]] | BACKLOG | | | Carried from sprint 21. |
+| [[id:7F306A93-6C30-47AC-BD37-7D762A49B475][Improve site documentation discoverability]] | ABANDONED | | 2026-07-10 | Carried from sprint 21. |
 
 ** Hotfixes
 
@@ -207,6 +249,7 @@ health review (promote to a story, move to =next=, or discard).
 |---+------------+-------+---------+-------------------------------|
 | 1 | 2026-07-04 | day 3 | RED     | [[id:FE18CB49-C6D0-4F1B-9B56-04E5738032D9][Health review 1 — sprint 22 analysis]] |
 | 2 | 2026-07-05 | day 4 | RED     | [[id:CC2B3D6B-2B92-4606-A3BE-E67FB86B2960][Health review 2 — sprint 22 mid-sprint analysis]] |
+| 3 | 2026-07-10 | day 9 | RED     | [[id:FCF5939C-FEE9-4F03-87C1-98F565C4E045][Health review 3 — sprint 22 close analysis]] |
 
 * Charts
 
@@ -248,4 +291,83 @@ Steady upward slope is healthy; plateauing signals a stall.
 
 * Retrospective
 
-(Filled at sprint close.)
+** What went well
+
+- Merge throughput and PR cycle time were genuinely healthy all
+  sprint (99 PRs merged, only one ever open at a time in the fleet
+  view, cycle times mostly under 24h) — the review/merge pipeline was
+  never the bottleneck.
+- The health-review discipline worked as designed: three System 2
+  reviews (day 3, day 4, close) caught and named the same underlying
+  problem consistently rather than drifting into optimism, and this
+  closure's scope (43 stories carried, not force-closed) was a direct
+  consequence of taking the close review's RED verdict at face value.
+- Several deep, hard pieces of infrastructure landed cleanly:
+  =ores.orgmode= + the QA Validation Runner, the org-mode literate
+  codegen proof-of-concept on =party=, and a full Currency Pairs
+  entity shipped end to end including its own two new authoring
+  recipes and a skill.
+- Root-causing over patching, twice in one sprint: the Windows
+  dllimport failure was traced to a real architectural mismatch
+  (Widgets-free logic in a Widgets-linked component) rather than
+  silencing the compiler warning, and the NATS port collision was
+  traced to the kernel's ephemeral port range rather than just
+  restarting the service until it worked.
+
+** What hurt
+
+- Twenty stories were simultaneously STARTED at close, more than
+  triple this project's own RED threshold, spanning at least seven
+  parallel entity-commissioning efforts plus codegen, Qt tooling,
+  compass tooling, and market-data work at once. This — not any
+  single story running long — is what drove both the RED sprint-load
+  verdict and the RED focus-signal verdict in every health review.
+- The sprint kept *growing* after being told it was unhealthy: 51
+  stories at the day-4 review, 70 by close — 19 net new stories added
+  in the six days after two consecutive RED verdicts, the opposite of
+  the course-correction a RED verdict should trigger.
+- =sprint.org='s own Stories table silently drifted out of sync with
+  8 stories' actual state (mostly under-reporting STARTED as
+  BACKLOG) — the sprint's own summary document was, for stretches of
+  the sprint, not a reliable source of truth for what was actually in
+  flight.
+- The initial mechanical carry-to-inbox at close swept 43 stories on
+  the assumption that anything not force-verified was incomplete; a
+  post-close re-triage against real evidence found 13 of those were
+  already substantially or fully done — individual task/story
+  =Now:=/=State:= fields had gone stale during the sprint rather than
+  being updated as work actually finished. Bookkeeping discipline
+  needs to improve: update status fields the moment work changes,
+  not in a batch reconciliation after close.
+- The mission as written ("continue commissioning ores.refdata
+  entities and correct codegen C++ drift") covered only a fraction of
+  what actually shipped or was attempted — an entire Market Data
+  epic and the Org-mode/QA-Runner epic ran through the sprint with no
+  line naming them, which made "is this sprint on-mission" an
+  unanswerable question from =sprint.org= alone.
+
+** What changed / what to do differently
+
+- Enforce a hard WIP limit on simultaneously-STARTED stories at the
+  point a story is picked up, not just observe it after the fact in
+  a health review. The data this sprint is unambiguous: PR velocity
+  was fine, story-completion slope was fine, the only broken metric
+  was concurrency.
+- Treat a RED health-review verdict as a stop-adding-scope signal,
+  not just a stop-and-look signal. This sprint's story count going
+  51 → 70 after two RED reviews is the clearest single thing to fix
+  before the next close.
+- Re-sync =sprint.org='s Stories table against each story's own
+  =story.org= state at every health review, not just at close — the
+  8-row drift found this time went undetected for at least a week.
+- When a sprint's actual work diverges this far from its stated
+  mission, update the mission mid-sprint rather than letting
+  =sprint.org= silently stop describing what's happening.
+- Update a story/task's =Now:=/=State:=/=Waiting on:=/=Next:= fields
+  the moment work actually finishes, not in a batch reconciliation
+  after close — that discipline gap is what made the post-close
+  re-triage necessary in the first place.
+
+* Release Notes
+
+See [[file:release_notes.org][release_notes.org]] for the full narrative.

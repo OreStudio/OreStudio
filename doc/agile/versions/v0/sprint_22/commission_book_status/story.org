@@ -24,12 +24,12 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | C++ codegen synced. Qt verification, shell/CLI, docs remain. |
+| Now           | Nothing.                                |
 | Waiting on    | Nothing.                               |
-| Next          | Qt UI verification, shell/CLI implementation.            |
-| Last touched  | 2026-07-06                               |
+| Next          | None.                                  |
+| Last touched  | 2026-07-10                               |
 
 * Acceptance
 
@@ -54,13 +54,13 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:3BCA4E26-A6B6-4EF4-9A8F-35D4BB25680E][Verify book_status SQL against the evaluation checklist]] | DONE | 2026-06-25 | 2026-06-25 | Thorough DDL verification against refdata_book_statuses_create.sql: every checklist criterion, plus three known security definer and bootstrap deficiencies to fix inline. |
-| [[id:62D9C151-3F21-4B18-83F7-ED9912855B8B][Verify book_status Qt UI end-to-end post-NATS]] | BACKLOG | | | List window, detail dialog, history dialog, delete, and eventing against live services post-NATS migration. |
-| [[id:B01C03BD-980F-4F3C-9294-E2AF3946D104][Implement book_status shell and CLI commands]] | BACKLOG | | | Implement the shell (list, add, remove) and CLI (list, add, remove) commands for book_status — none currently exist. |
-| [[id:3E0FC733-2595-42DD-881E-99DFDA13E302][Write book_status documentation]] | BACKLOG | | | Add the book_status entity chapter to the user manual and file Wt/HTTP backlog captures. |
+| [[id:62D9C151-3F21-4B18-83F7-ED9912855B8B][Verify book_status Qt UI end-to-end post-NATS]] | DONE | | 2026-07-10 | List window, detail dialog, history dialog, delete, and eventing against live services post-NATS migration. |
+| [[id:B01C03BD-980F-4F3C-9294-E2AF3946D104][Implement book_status shell and CLI commands]] | ABANDONED | | 2026-07-10 | Superseded by the top-level shell/CLI commands commissioning stories (product backlog inbox), same as every other entity. |
+| [[id:3E0FC733-2595-42DD-881E-99DFDA13E302][Write book_status documentation]] | DONE | | 2026-07-10 | Covered by the Books manual chapter (book_status is documented alongside book, not as a standalone chapter — it has no standalone Qt entity distinct from Book's own Status field usage in the reader's sense). Wt/HTTP captures superseded (see the dedicated task). |
 | [[id:3D2242EC-747F-4DCC-B044-0B34A806DA96][Sync C++ codegen for book_status]] | DONE | 2026-06-25 | 2026-06-25 | Create the ores.codegen.entity org model for book_status; run all-cpp codegen; reconcile diffs against existing C++ files until zero-diff. |
 | [[id:E84B1D73-7654-441F-9F0A-19C364226C65][Appraise book_status across all layers and produce evaluation checklist]] | DONE | 2026-06-26 | 2026-06-26 | Score book_status across all layers using the domain entity evaluation checklist; record findings per layer. |
 | [[id:152DE432-C6CC-4549-A098-79C7AFB30E1E][Sync SQL codegen output for book_status]] | DONE | 2026-06-26 | 2026-06-26 | Run the sql codegen profile for book_status and verify the generated DDL and DML match the appraise checklist findings. |
-| [[id:F5645D0D-1359-4A0C-8247-6888B37C7F01][Sync C++ core codegen output for book_status]] | BACKLOG | | | Run all C++ core codegen profiles (domain, repository, service, generator) for book_status and reconcile generated output with the commissioned model. |
-| [[id:5CE5A725-B167-420D-83F3-7F75B0E31951][Sync messaging codegen output for book_status]] | BACKLOG | | | Run all messaging codegen profiles (protocol, nats-eventing, nats-handler) for book_status and reconcile generated output with the commissioned model. |
-| [[id:58CB1C48-CF92-4C82-A85A-94BF0C1941F1][Sync Qt codegen output for book_status]] | BACKLOG | | | Run the qt codegen profile for book_status and verify the generated Qt UI artefacts match the commissioned model. |
-| [[id:CEF488EE-F8BC-493D-92E9-AD94EF3D91D8][File Wt and HTTP gap captures for book_status]] | BACKLOG | | | Identify Wt UI and HTTP handler gaps for book_status discovered during commissioning and file them as backlog captures for future work. |
+| [[id:F5645D0D-1359-4A0C-8247-6888B37C7F01][Sync C++ core codegen output for book_status]] | ABANDONED | | 2026-07-10 | Duplicate of "Sync C++ codegen for book_status" (DONE) from an earlier, more granular task breakdown; superseded. |
+| [[id:5CE5A725-B167-420D-83F3-7F75B0E31951][Sync messaging codegen output for book_status]] | ABANDONED | | 2026-07-10 | Duplicate of "Sync C++ codegen for book_status" (DONE); superseded. |
+| [[id:58CB1C48-CF92-4C82-A85A-94BF0C1941F1][Sync Qt codegen output for book_status]] | DONE | | 2026-07-10 | BookStatusMdiWindow, BookStatusDetailDialog, BookStatusController, ClientBookStatusModel, and BookStatusHistoryDialog all exist and are wired (projects/ores.qt/refdata/). |
+| [[id:CEF488EE-F8BC-493D-92E9-AD94EF3D91D8][File Wt and HTTP gap captures for book_status]] | ABANDONED | | 2026-07-10 | Superseded by the two top-level Wt/HTTP commissioning-story captures covering every entity. |

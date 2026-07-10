@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: E953C1DB-1FD5-415D-B777-5983315C8E22
+:END:
+#+title: Commission party, counterparty, and party_status together
+#+description: Finish commissioning party and counterparty (Qt verification, shell/CLI, manual chapter), including party_status as a dependent composite type documented alongside party, once the composite/hierarchy and temporal-versioning blockers they share are resolved.
+#+type: capture
+#+level: cross
+#+filetags: :product:refdata:commissioning:party:counterparty:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Sprint 22 opened three separate commissioning stories — [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission:
+party]], [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]], and [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] — but none
+finished, all three stuck on the same underlying blockers: the
+composite/hierarchy codegen work (no facet yet for
+auto-generated codename/sequence, per-entity queue provisioning, or
+self-referential hierarchy validation) and, for history-dialog
+verification specifically, the not-yet-landed temporal composite
+entity versioning story. Rather than carry three separate
+half-finished stories forward, this capture consolidates them: next
+sprint, once the composite/hierarchy and temporal-versioning
+blockers clear, break this into fresh per-entity tasks covering what
+each one still actually needs:
+
+- *party*: bring under codegen with zero-diff regen (blocked on the
+  hierarchy/codename/queue-provisioning facet); Qt UI end-to-end
+  verification, including history dialog, delete, and cross-session
+  eventing (blocked on both a dedicated QA session and temporal
+  composite versioning landing, since party's history dialog is
+  exactly what that story changes).
+- *counterparty*: Qt UI end-to-end verification (blocked, same
+  reasons as party — counterparty shares the same composite/history
+  machinery); write the manual chapter (not started) and NATS
+  message reference.
+- *party_status*: verify/fix SQL DDL against the evaluation
+  checklist (not started) — this is the only party_status-specific
+  item left; it does *not* need its own manual chapter, it belongs
+  as a subsection of party's chapter, the same way book_status is
+  documented alongside Book rather than standalone.
+
+- *prerequisite, not yet done*: bind the composite child-entity and
+  hierarchy Qt widgets to party and counterparty, verify feature
+  parity against the hand-maintained =EntityDetailDialog=, and retire
+  that abstraction. [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for
+  codegen]] is otherwise DONE this sprint — the reusable
+  =HierarchyTreeWidget=, the hierarchy-model-builder, the child-entity
+  Qt facet design, and the SQL/NATS hierarchy layer all shipped. Only
+  this one binding step, [[id:2AC41A6E-3F18-48FF-B389-D5CC0E1AAC8F][Bind composite child-entity and hierarchy
+  widgets to party and counterparty]], remains, and it belongs here
+  rather than in that now-closed story, since it only makes sense in
+  the context of this consolidated party/counterparty work.
+- *prerequisite, partially done*: [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity
+  versioning]] is otherwise DONE this sprint — the SQL touch-function
+  mechanism, the as-of window-join composition query, and the open
+  architectural decisions are all resolved and shipped. Two tasks
+  remain, both moved here since they're gated on the same
+  party/counterparty binding work above, not independent:
+  [[id:F41DC692-99AE-4F0C-9D6E-76BA767BB93E][Qt composite history/version dialog]] (PR #1469 landed an interim
+  flat-list implementation with steps 2-4 of its test scenario
+  passing; explicitly blocked on per-child history dialogs from the
+  binding task) and [[id:7F8A51BA-35CB-467E-B3E5-A847CB37E238][Document the composite versioning approach and
+  codegen recipe]] (gated on the mechanism being "fully implemented
+  and proven" — i.e. on the Qt dialog task above landing for real).
+
+Shell/CLI and Wt/HTTP items for all three are *not* carried here —
+they're superseded by the top-level [[id:8BCD0D1C-AAFB-4FAA-A0E3-022FC6EF93C2][Shell entity commands]], [[id:469958E3-B249-4D4C-95A9-E7CDB703F0C0][CLI
+commands]], [[id:EEE4880F-525A-4805-8082-B8638CB54ABA][Wt entity UI]], and [[id:03FC50B3-622B-4456-AE66-2F180B526723][HTTP entity endpoints]] commissioning-story
+captures, same as every other entity this sprint.
+
+* Why
+
+Party and counterparty are the two most structurally complex refdata
+entities (self-referential hierarchy, composite child entities), and
+this sprint's health reviews found the composite-hierarchy Qt
+widgets story and the temporal composite versioning story — the two
+prerequisites both party and counterparty are actually blocked on —
+themselves still mid-flight. Carrying three separate stub stories
+forward independently would just re-create the same fragmented
+tracking that made this sprint's paperwork hard to trust; one
+capture, re-broken-out once the real blockers clear, keeps the
+dependency visible in one place.
+
+* References
+
+- [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] — abandoned, points here.
+- [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] — abandoned, points here.
+- [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] — abandoned, points here.
+- [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] — the versioning
+  prerequisite, itself carried this sprint.
+- [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] — the
+  hierarchy-facet prerequisite, itself carried this sprint (its own
+  remaining task is exactly "bind to party and counterparty").
+
+* See also
+
+-

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08
-#+updated: 2026-07-08
+#+updated: 2026-07-10
 
 This is the hub note for the trading book. Each linked note is a
 single focused concept; start here and follow the links.
@@ -53,6 +53,30 @@ accounting ledger.
 - *Access control* → [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]] (allowed-currency
   constraints, the fine-grained permission model, periodic access
   review).
+
+** Where this lives in ORE Studio
+
+Book and Portfolio are modelled in =ores.refdata=, not =ores.trading=,
+and this is a deliberate classification rather than an accident of
+where they were first built. Established trading systems draw the
+reference-data/transactional-data boundary by *lifecycle and
+mutation pattern*, not by "does this relate to trading": Murex calls
+this bucket *Static Data* and Calypso calls it the *Reference Data
+domain*, and both explicitly place books and portfolios in it
+alongside counterparties, legal entities, and currencies — not
+alongside trades, positions, or cashflows. The test both systems
+apply is whether an object is created rarely (by middle/back-office
+setup) and referenced constantly by trades, versus created
+continuously as the direct output of trading activity. A trader
+books *into* an existing Book the same way they select an existing
+Counterparty or Currency; they do not create a new Book per trade the
+way a new deal record is created per transaction. [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and
+portfolios]]'s own domain description reinforces this independently:
+books are created by Finance/Accounts and *synchronised into* the
+trading system, which cannot create books itself — an externally-
+sourced, infrequently-changing master-data object is exactly what
+reference data means in this codebase, the same bucket =party= and
+=counterparty= already occupy despite also not being "pure lookups".
 
 * See also
 

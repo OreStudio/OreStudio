@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 69A50205-5C8B-4E88-BE5F-C75A33F48157
+:END:
+#+title: Story: Decommission ores.codegen.table model type
+#+description: Remove the ores.codegen.table model type from the codegen pipeline; migrate all remaining table.org files to ores.codegen.entity, which is the unified model that supersedes it.
+#+type: story
+#+level: s2
+#+filetags: :tooling:codegen:sprint_22:v0:table:entity:migration:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Eliminate the ores.codegen.table model type entirely. Every refdata table that currently uses a _table.org model must be converted to ores.codegen.entity so that all code generation (SQL, C++, Qt) flows from a single unified model. Once all table models are migrated, remove the table model type from the facet catalogue, the component catalogue, and the generator.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | ABANDONED                              |
+| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Now           | Closed — reconciled into a sibling story. |
+| Waiting on    | Nothing.                               |
+| Next          | See [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]]. |
+| Last touched  | 2026-07-10                               |
+
+* Acceptance
+
+- All _table.org files converted to ores.codegen.entity format. Zero ores.codegen.table entries remain in the codegen model corpus. The table profile is removed from the facet catalogue. Codegen regenerate runs cleanly with zero diff on the migrated entities. The schema reference doc is updated to mark table as removed.
+
+* Tasks
+
+Resolved 2026-07-10 by comparing against the sibling story [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve
+codegen model unification blockers]], which independently covered most
+of this same ground: 4 tasks below were already done there (B1-B3,
+B5), 1 was a live duplicate of still-open work there (B4), and the 2
+tasks with no equivalent were moved across as real work rather than
+left stranded in a closed story.
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5D6CA8D1-ED62-4B2B-8E54-1199FD8D4A45][Detect model type from #+type: frontmatter, not filename suffix]] | DONE | | 2026-07-10 | Done via B2 in the sibling story. |
+| [[id:9D2DD000-23C0-419B-BA65-ACD6631036C6][Unify the SQL template to support validation function and insert trigger from entity models]] | DONE | | 2026-07-10 | Done via B1 in the sibling story. |
+| [[id:CCA1C3DF-FBF7-4484-9E8B-45802EE2804B][Merge the org parsers: teach load_org_model() to parse Validation function and Insert trigger sections]] | DONE | | 2026-07-10 | Done via B3 in the sibling story. |
+| [[id:EF482985-3984-480C-B4B5-0D8B098CAD37][Add variability guards: introduce #+sql_only and #+has_qt flags to the entity schema]] | DONE | | 2026-07-10 | Superseded by B5's better property-drawer mechanism in the sibling story, which explicitly replaces this ad-hoc flag approach. |
+| [[id:A64EB006-AE16-411B-8FC5-46A6D37BCBC7][Migrate content: move _table.org sections into entity files and delete table files]] | (moved) | | 2026-07-10 | Moved to the sibling story — real remaining work, no equivalent task there. |
+| [[id:28C5656E-B302-4786-907E-922B259377B8][Collapse components: merge refdata and refdata-cpp into a single component]] | ABANDONED | | 2026-07-10 | Duplicate of B4 in the sibling story, still open there — tracked once, not twice. |
+| [[id:505820E3-FCB4-4192-AA0F-BDBDC1177088][Retire the table model type: remove the table branch from the generator and profile matrix]] | (moved) | | 2026-07-10 | Moved to the sibling story — real remaining work, no equivalent task there. |
+
+* Decisions
+
+* Out of scope
+
+- Junction table models (=party_currency_junction=, =party_country_junction=, =party_counterparty_junction=) — junction is a distinct model type and is not affected by this story.

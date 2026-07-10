@@ -15,7 +15,11 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Add =compass client start= and =compass client stop= subcommands so
+the Qt client follows the same start/stop/status convention as every
+other Operate-pillar command (=services=, =env=, =nats=), instead of
+being a flat launch-only command with no way to stop an instance via
+compass.
 
 * Status
 

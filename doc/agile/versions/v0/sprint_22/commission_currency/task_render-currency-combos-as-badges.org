@@ -43,12 +43,12 @@ as-is. This task needs to either:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
+| Now          | Complete.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -79,3 +79,9 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Done, but never marked as such. badge_key/is_badge are set for both
+monetary_nature and market_tier, in both the detail-dialog combos and
+the list-window columns (currency.org's *** Detail fields and
+*** Columns tables), landed in commit =43b5c1a16= ("Badge-annotate
+currency combos").

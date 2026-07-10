@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: E58C186C-CC2D-4EFC-8BF9-16B7FD872938
+:END:
+#+title: Task: Implement Resolve codegen model unification blockers
+#+description: Initial task for: Resolve codegen model unification blockers
+#+type: task
+#+level: s1
+#+filetags: :codegen-unification-blockers:sprint_22:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+state: ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                            |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Abandoned — superseded.                |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Never filled in beyond the auto-generated placeholder title/description
+this task was scaffolded with. Superseded by the granular B1-B11
+breakdown that the story's own =* Tasks= table actually tracks;
+marking ABANDONED rather than wiring it in as live scope, since it was
+never real work in the first place, and the =#+state: ABANDONED=
+frontmatter already recorded this — only the =* Status= table's own
+field was out of sync with it.

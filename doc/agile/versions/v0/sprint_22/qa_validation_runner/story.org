@@ -85,12 +85,12 @@ how the Qt panel surfaces it without duplicating compass's data model.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-06                               |
+| Next          | None.                                  |
+| Last touched  | 2026-07-10                               |
 
 * Acceptance
 
@@ -135,7 +135,7 @@ how the Qt panel surfaces it without duplicating compass's data model.
 | [[id:1844F421-2D4C-4E9A-8608-0E0AAD38DFEE][Build the QA Validation Runner dockable panel]] | DONE | 2026-07-08 | 2026-07-08 | Qt dockable panel (debug builds only): open a test_scenario doc, show its info and checklist, let the tester tick steps/write notes/set PASS-FAIL, and save (rewriting the doc's Results section and stamping the compass journal). |
 | [[id:37A04B38-497D-4140-94A9-F8292BCC43F8][Add the story/task context viewer]] | DONE | 2026-07-08 | 2026-07-08 | Render the driving story/task docs (goal, acceptance, status, tasks table) in the same panel or a sibling tab, using the shared structure-aware renderer, so the tester doesn't need to leave the app to recover context. |
 | [[id:CB112432-917A-46DC-99F2-00251CC91559][Surface pending scenarios across the fleet]] | ABANDONED | 2026-07-08 | 2026-07-08 | Show which worktrees/tasks in the fleet currently have a scenario waiting, sourced from compass's existing fleet/task data (not duplicated) — a companion list or panel section. Abandoned: no proper fleet coordination exists yet to build this on. |
-| [[id:CA082AA3-614F-466D-93E3-20AF10968FC2][Pilot end-to-end on a real sprint story]] | BACKLOG | | | Run the full workflow on at least one real story from this sprint: instantiate a test_scenario doc, run it through the panel, verify the Results section, journal stamp, and site rendering all come out correctly. |
+| [[id:CA082AA3-614F-466D-93E3-20AF10968FC2][Pilot end-to-end on a real sprint story]] | DONE | | 2026-07-10 | Piloted on the Currency Pairs manual chapter screenshot scenario: 5 steps run, Results written back, journal stamped, site rendered correctly. |
 | [[id:3CB90054-9B0C-45CC-B955-2EDBB93F9EB2][Add the qa_validation_runner_enabled system setting]] | DONE | 2026-07-08 | 2026-07-08 | Seed system.qa_validation_runner_enabled as a boolean system setting so the QA Validation Runner's visibility is a runtime, operator-controlled decision, not a compile-time macro. |
 | [[id:5184C0F8-9200-4A8D-9210-35736B84CC0F][Add screenshot capture to the QA Validation Runner panel]] | DONE | 2026-07-09 | 2026-07-10 | Add a 'Screenshot' toolbar action next to Open/Save: grab the full primary screen via QScreen::grabWindow(0), save as PNG next to the open scenario doc (same directory as scenarioPath_), named after the scenario slug/step/timestamp. Region-select capture (QRubberBand over a full-screen grab, drag-select, crop, save) as a documented fast-follow, not required for the first cut. |
 

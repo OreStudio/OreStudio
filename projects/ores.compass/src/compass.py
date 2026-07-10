@@ -1868,12 +1868,12 @@ def _sc_get_sprint_range(sprint):
     return start, end
 
 
-def _sc_collect_daily_metrics(start, end):
+def _sc_collect_daily_metrics(start, end, branch="origin/main"):
     metrics = defaultdict(lambda: {"commits": 0, "merges": 0, "added": 0, "deleted": 0})
     end_inc = end + datetime.timedelta(days=1)
     log = subprocess.check_output([
         "git", "log", f"--after={start}", f"--before={end_inc}",
-        "--format=COMMIT %ai", "--numstat", "--reverse", "origin/main",
+        "--format=COMMIT %ai", "--numstat", "--reverse", branch,
     ], text=True, cwd=PROJECT_ROOT).strip()
     current_date = None
     for line in log.splitlines():
@@ -1891,7 +1891,7 @@ def _sc_collect_daily_metrics(start, end):
                     pass
     log = subprocess.check_output([
         "git", "log", "--merges", f"--after={start}", f"--before={end_inc}",
-        "--format=%ai", "--reverse", "origin/main",
+        "--format=%ai", "--reverse", branch,
     ], text=True, cwd=PROJECT_ROOT).strip()
     for line in log.splitlines():
         if line.strip():
@@ -2052,7 +2052,8 @@ def cmd_sprint_charts(args):
         PROJECT_ROOT / f"build/output/sprint_{sprint:02d}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    daily = _sc_collect_daily_metrics(start, end)
+    branch = args.branch or "origin/main"
+    daily = _sc_collect_daily_metrics(start, end, branch)
     prs = _sc_get_merged_prs(start, end)
     cumulative = _sc_parse_sprint_stories(sprint, start, end)
 
@@ -2391,6 +2392,11 @@ def cmd_sprint(argv):
                     help="Override sprint end date (YYYY-MM-DD)")
     ch.add_argument("--output-dir", default=None,
                     help="Output directory (default: build/output/sprint_NN/)")
+    ch.add_argument("--branch", default=None,
+                    help="Git ref to read commit/merge activity from "
+                         "(default: origin/main). Use the current feature "
+                         "branch to include not-yet-merged work in the "
+                         "charts, e.g. --branch HEAD.")
 
     args = ap.parse_args(argv)
 

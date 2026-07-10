@@ -30,12 +30,12 @@ description for each tag and each group. Link the inventory from
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and introduce tag taxonomy]] |
-| Now          | Not yet started.                       |
+| Now          | Complete.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-11                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -67,3 +67,7 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Done, but never marked as such. =doc/meta/tag_inventory.org= exists
+(231 lines), committed =0df0f1196= ("Create tag inventory: canonical
+filetags reference in doc/meta/").

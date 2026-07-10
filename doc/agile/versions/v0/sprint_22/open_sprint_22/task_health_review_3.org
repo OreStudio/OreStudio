@@ -1,0 +1,239 @@
+:PROPERTIES:
+:ID: FCF5939C-FEE9-4F03-87C1-98F565C4E045
+:END:
+#+title: Task: Health review 3 — sprint 22 close analysis
+#+description: System 2 health review 3 of sprint 22, at close (day 9, one day past expected end).
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_22:sprint_22:v0:
+#+owner: marco
+#+branch: feature/sprint-22-health-review
+#+pr: 1499
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Third System 2 health review of sprint 22, run at close: the sprint's
+=#+end_date:= is 2026-07-09 and this review runs on 2026-07-10, one
+day past the expected end with the sprint still =STARTED= and 20
+stories still =STARTED=. Prior reviews (day 3, day 4) both verdicted
+RED. This review determines whether the sprint should close now,
+whether unfinished work carries forward, and records a final,
+unflinching verdict rather than a reassuring one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                  |
+| Parent story | [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] |
+| Now          | Complete.                              |
+| Waiting on   | Nothing.                               |
+| Next         | None — feeds the sprint-close decision. |
+| Last touched | 2026-07-10                               |
+
+* Acceptance
+
+- [X] All five dimensions analysed against the sprint-22-specific
+  evidence (commit log, PR log, story/task file scan, fleet state),
+  not just restated from the two prior reviews.
+- [X] Overall verdict recorded with the single most important concern
+  named explicitly.
+- [X] Summary row appended to sprint.org's Health Review table.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1499][#1499]] | [agile] Sprint 22 health reviews and closure |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR body claims env_init.py fix / doc-add-entity-chapter skill are in this diff (3 independent review runs, all flagged) | PR #1499 description | Accepted | Both shipped in PR #1498; PR body updated with a scope note clarifying this diff is agile bookkeeping + 2 compass fixes only. |
+| 2 | release_notes.org "Other" lists all 43 originally-carried stories untagged alongside DONE ones, duplicating "Known Issues" silently | release_notes.org | Accepted | Every carried-forward item now tagged =(carried forward)=. |
+| 3 | version.org "Now" field has a stray double space and a stale 43/70 count | version.org | Accepted | Fixed to the final 40 DONE / 30 carried split (post re-triage); double space removed. |
+
+* Result
+
+** Review on 2026-07-10 (day 9 of 7 — one day past #+end_date: 2026-07-09)
+
+Pre-data concerns (written before gathering evidence, per System 2
+discipline): the sprint's own =#+end_date:= has already passed and
+=* Status= still reads "Sprint in flight" — is this review arriving to
+rubber-stamp a close that should have happened yesterday, or to make a
+real go/no-go call? Both prior reviews (day 3, day 4) were RED; two
+RED verdicts with six days between them and no visible course
+correction is itself a finding, independent of today's numbers. The
+sprint's story count grew from 51 (review 2) to 70 (this review) —
+scope expanded mid-sprint rather than narrowing toward a close, which
+is the opposite of what a sprint under two consecutive RED verdicts
+should do.
+
+*** Goal alignment
+
+The mission names three things: continue commissioning ores.refdata
+entities, correct codegen C++ generation drift, and carry postponed
+sprint 21 stories. All three are represented, but unevenly.
+
+| Goal                          | Coverage           | Evidence                                                                          | Verdict |
+|--------------------------------+---------------------+------------------------------------------------------------------------------------+---------|
+| Entity commissioning           | Broad, still shallow | 18 "Commission: X" stories: 2 DONE (business_day_convention_type, party_type), 7 STARTED (currency 23/27 — near done; book_status 4/11, counterparty 3/7, party_status 6/11, purpose_type 4/5, book 2/4, party 2/4 — all partial), 9 still BACKLOG with zero tasks (business_centre, business_unit, contact_type, party_id_scheme, portfolio, currency_market_tier, monetary_nature, rounding_type, day_count_fraction_type) | AMBER |
+| Codegen drift correction       | Named, still mostly unworked | refactor_codegen_cpp: 6/19 tasks done, still STARTED; codegen-unification-blockers: 7/15 tasks done, still STARTED; three "unified model" phase stories (Phase 1 Qt derivation, Phase 3 temporal) are BACKLOG with zero tasks — the phased plan exists on paper only | RED |
+| Carry postponed sprint 21 work | Present but diffuse | Present across Compass, Infrastructure, and Documentation epics (compass_quality_of_life_sprint_21 DONE; several codegen guardrail/DX stories still BACKLOG) — no single tracker for what actually got carried vs re-deferred again | AMBER |
+
+Unmapped scope observed: an entire Market data generation epic (13
+stories: synthetic FX, IR rates, librarian support, temporal composite
+versioning, trade-import service layer) and a new Org-mode support epic
+(ores.orgmode + QA Validation Runner) run through this sprint with no
+line in the mission naming them. Neither is small — QA Validation
+Runner alone has 8 tasks, 6 done. A sprint whose mission statement
+covers roughly half of what's actually in flight is not a scoping
+problem discovered late; it was already true at review 2 and remains
+true today.
+
+*** Sprint load
+
+| Metric                          | Value | Target | Status |
+|-----------------------------------+-------+--------+--------|
+| Commits since 2026-07-02          | 741   | ≤ 300  | RED (2.5x over) |
+| Elapsed days                      | 9     | ≤ 7    | RED (sprint is 2 days over its own 7-day window) |
+| Commits/day average                | ~82   | —      | — |
+| Merged PRs since sprint start      | 99    | —      | — |
+| Commits per merged PR              | ~7.5  | —      | reasonable, not the driver of the overrun |
+
+Daily commit counts (2026-07-02 → 2026-07-10): 58, 123, 96, 27, 103,
+39, 137, 93, 65. No stall — the sprint has been consistently, heavily
+active for all 9 days, including two spikes (07-03: 123, 07-08: 137)
+that coincide with hotfix/CI-fix bursts rather than planned feature
+work. This is not a sprint that ran slightly hot and can be waved
+through as AMBER: 741 commits against a 300 target is worse than
+review 2's own worst-case projection (380-425), and the sprint has
+already run two days past its planned close while still producing
+65 commits today. The 300-commit / 7-day targets were breached
+early and by a wide margin, not narrowly missed at the end.
+
+*** PR velocity
+
+| Metric                              | Value | Notes |
+|---------------------------------------+-------+-------|
+| PRs merged since sprint start          | 99    | ~11/day average |
+| Currently open PRs (fleet + gh)        | 1     | #1495, opened today (2026-07-10), no long-open WIP |
+| Worktrees with journal/task drift      | several | see Story and task balance below |
+
+Merge throughput itself is healthy and not the problem — 99 PRs in 9
+days with only one currently open is a well-oiled merge pipeline. The
+sprint's problem is not that work isn't shipping; it is that far too
+much work was queued up to ship in the first place.
+
+*** Story and task balance
+
+| Metric                                     | Value | Target       | Status |
+|-----------------------------------------------+-------+---------------+--------|
+| Total stories                                | 70    | —             | — |
+| DONE stories                                  | 26    | —             | — |
+| STARTED stories                               | 20    | —             | — |
+| BACKLOG stories                               | 24    | —             | — |
+| DONE ratio (26/70)                            | 0.37  | ≥ 0.5 GREEN   | AMBER (improved from 0.27 at review 2, still below GREEN) |
+| Stories with zero tasks (undecomposed)        | 14    | —             | all 14 are BACKLOG, none STARTED — no active black-box work, unlike review 2's finding |
+| Task-level DONE ratio (186/289)                | 0.64  | —             | healthy at the task granularity — the gap is entirely at the story-commitment level |
+| sprint.org rows out of sync with story.org     | 8     | 0             | RED — see below |
+
+The 8-row drift is a distinct, concrete finding: =QA Validation
+Runner=, =Commission: purpose_type=, =Commission: book=, =Composite
+child-entity and hierarchy Qt widgets=, =Implement temporal composite
+entity versioning=, and =Commission: party= are all STARTED in their
+own =story.org= but still show BACKLOG in =sprint.org='s summary
+table; =Commission: business_day_convention_type= is DONE in its own
+file but BACKLOG in the summary; and =Rethink synthetic reference-data
+generation across entities= has a story directory with no row in
+=sprint.org= at all. Anyone reading only =sprint.org= — which is the
+document this skill and =compass bearings= point people to first —
+would materially undercount how much is actually in flight. This is a
+process gap, not just a paperwork nit: it means the 20-STARTED count
+below was invisible from the sprint's own summary table.
+
+*** Focus signal
+
+| Metric                                  | Value | Verdict |
+|--------------------------------------------+-------+---------|
+| STARTED per sprint.org's own table          | 14    | undercounts by 6 due to the drift above |
+| STARTED per actual story.org scan           | 20    | — |
+| Cross-theme spread                          | market_data, infrastructure, currency/refdata, tooling/codegen, qt/testing/fleet, 7 separate product/refdata/commissioning entities in parallel (party_status, purpose_type, book, counterparty, currency, book_status, party), documentation/compass, compass/CI, composite-entity/versioning | RED |
+| Direct overlap flagged in review 2 (counterparty vs composite-widgets vs party) | still both STARTED this review | unresolved |
+
+20 simultaneously STARTED stories is more than triple the 6-story RED
+threshold, and the theme spread is not a false positive from loosely
+related work sharing a tag — it is seven distinct entity-commissioning
+efforts (party_status, purpose_type, book, counterparty, currency,
+book_status, party) genuinely in flight at once, on top of codegen
+refactoring, Qt tooling, compass tooling, and market-data work. The
+collision flagged at review 2 (counterparty work touching the same
+code as the composite-widgets story) is still live: both are still
+STARTED today, unresolved for at least six days.
+
+*** Velocity
+
+| Metric                                    | Value | Notes |
+|----------------------------------------------+-------+-------|
+| Stories closed since review 2 (day 4)          | ~15 (26 DONE now vs ~11 implied DONE at review 2 from the 0.27 ratio over 51 stories) | steady closing rate |
+| Stories added since review 2 (day 4)           | ~19 (70 - 51) | scope grew faster than it closed |
+| Net story count change                        | +19   | growing, not shrinking, six days after two RED verdicts |
+
+The sprint is closing stories at a reasonable clip, but new stories
+are being added faster than old ones close. A sprint under a RED
+verdict that responds by adding 19 more stories over the following six
+days is not correcting course; it is compounding the original finding.
+
+*** Overall verdict
+
+| Dimension               | Verdict |
+|--------------------------+---------|
+| Goal alignment            | AMBER (entity commissioning broad-but-shallow; codegen drift correction barely moved; large chunks of actual work unmapped to the stated mission) |
+| Sprint load               | RED (741 commits vs 300 target, 2 days past the 7-day window) |
+| PR velocity               | GREEN (99 merged, 1 open, no stalled WIP — the pipeline itself is healthy) |
+| Story and task balance    | AMBER (DONE ratio improved to 0.37 but still below GREEN; 8 sprint.org rows silently out of sync with reality) |
+| Focus signal              | RED (20 STARTED stories, triple the RED threshold, seven parallel entity-commissioning efforts plus an unresolved code-collision flagged six days ago) |
+
+*Overall: RED.* Two dimensions are RED (sprint load, focus) and two
+more are AMBER, which on its own would already clear the "AMBER if two
+or more are AMBER" bar, but a sprint with any RED dimension is RED by
+this skill's own rule, and here there are two. The single most
+important concern is not the raw commit count — PR velocity shows the
+team can ship what it starts — it is that the sprint kept *starting*
+new work (19 net new stories, 20 simultaneously STARTED) for six days
+after being told twice that focus and load were already broken,
+rather than converging toward the close it is now two days past. If
+one thing should change before the next sprint opens, it is a hard
+WIP limit enforced at story-start time (e.g. no new STARTED story
+while N are already open), not a bigger hammer on commit counting
+after the fact — the data shows load follows directly from how many
+stories are open at once, not from any single story running long.
+

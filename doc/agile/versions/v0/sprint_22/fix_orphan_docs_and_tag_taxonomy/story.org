@@ -28,12 +28,12 @@ wire compass to reject unknown tags at CI time.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Memory catalogue fixed; tag inventory, orphan links, and tag validation remain. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Create tag inventory.                  |
-| Last touched  | 2026-07-06                               |
+| Next          | None.                                  |
+| Last touched  | 2026-07-10                               |
 
 * Acceptance
 
@@ -56,9 +56,9 @@ wire compass to reject unknown tags at CI time.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:4A97AEEB-2574-4498-985D-5FECC5533A23][Fix memory catalogue]] | DONE | | 2026-06-12 | Audit doc/llm/memory/*.org files against the memory.org catalogue index; add missing entries for all memory files not yet listed. |
-| [[id:79FC93F4-1C7E-4352-B758-C1744B112AC5][Fix orphan links]] | BACKLOG | | | Add id: links to chapter_shell_provisioning.org from user_manual.org; link ores.sample_composite.* test fixtures from a parent doc; investigate and fix ores.trading.payment_frequency_type orphan status. |
-| [[id:3A0C104F-58A1-4829-8B21-50BD70DE1CD4][Create tag inventory]] | BACKLOG | | | Create a doc/meta/ document that inventories all filetags in logical groups with descriptions; link it from document_types.org. |
-| [[id:694C7788-ECBA-4934-B897-47C2EE35386B][Add compass tag validation]] | BACKLOG | | | Add compass validation that checks document filetags against the canonical tag inventory; fail on unknown tags. |
+| [[id:79FC93F4-1C7E-4352-B758-C1744B112AC5][Fix orphan links]] | DONE | | 2026-07-10 | chapter_shell_provisioning.org is linked from user_manual.org; payment_frequency_type has 15+ real inbound id: links, not orphaned. The third sub-item (link ores.sample_composite.* test fixtures) is moot -- no .org docs by that name exist any more, just a test-fixture directory with no doc-graph presence to link. |
+| [[id:3A0C104F-58A1-4829-8B21-50BD70DE1CD4][Create tag inventory]] | DONE | | 2026-06-12 | doc/meta/tag_inventory.org exists (231 lines), committed 0df0f1196. |
+| [[id:694C7788-ECBA-4934-B897-47C2EE35386B][Add compass tag validation]] | DONE | | 2026-06-12 | compass lint validates filetags against the canonical inventory, committed e6fd15664. |
 
 * Decisions
 

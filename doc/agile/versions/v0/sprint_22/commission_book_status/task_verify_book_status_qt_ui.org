@@ -26,12 +26,12 @@ Verify all Qt windows for book_status work correctly post-NATS: list window (MDI
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
-| Now          | Not yet started.                       |
+| Now          | Complete.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-25                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -58,3 +58,10 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+List/detail/history/delete/eventing verified manually against the
+Qt UI landed in commit =339b9e4dc=. One residual gap:
+[[id:3D2A1FA1-20FD-4239-BDCA-591116F6357F][Test Scenario: verify book_status and regulatory type]] (badge-coloured
+Status/Regulatory Type combo verification, book_data_model_cleanup)
+is still =PENDING= — not this task's own scope, but worth running
+before the next entity-commissioning close.

@@ -27,12 +27,12 @@ move postponed sprint 21 stories into the new sprint folder.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                  |
 | Parent story | [[id:6990C56C-106D-43BF-9FB9-46B03756F954][Open sprint 22]] |
-| Now          | Sprint scaffolded; wiring manifest and moving postponed stories. |
+| Now          | Complete.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR.                          |
-| Last touched | 2026-07-02                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -61,3 +61,8 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Sprint 22 scaffolded, wired into the version manifest and agile index,
+and postponed sprint 21 stories moved in, via PR #1399 (merged
+2026-07-02). Task itself was left STARTED after the PR merged;
+closed out now as part of sprint-close bookkeeping.

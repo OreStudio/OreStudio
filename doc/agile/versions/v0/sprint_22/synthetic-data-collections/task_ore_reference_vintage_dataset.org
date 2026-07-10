@@ -8,7 +8,7 @@
 #+filetags: :synthetic-data-collections:sprint_22:v0:
 #+owner: marco
 #+branch: feature/fx-driver-rate-dataset
-#+pr:
+#+pr: 1497
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-10
@@ -179,7 +179,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1497][#1497]] | [marketdata] Publish curated FX driver-rate dataset via DQ/librarian |
 
 * Review
 

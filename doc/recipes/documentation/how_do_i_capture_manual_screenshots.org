@@ -1,0 +1,180 @@
+:PROPERTIES:
+:ID: 43A1EE0A-374D-4EA1-BC72-BADDDC525D20
+:END:
+#+title: How do I capture screenshots for a manual chapter?
+#+description: Turn a chapter's [SCREENSHOT NEEDED] placeholders into a test scenario, capture each one via the QA Validation Runner (or manually when a dialog is modal), crop to the dialog, and wire the real images in.
+#+type: recipe
+#+level: cross
+#+filetags: :documentation:docs:manual:entity:testing:recipe:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+
+Follows [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]], which leaves a chapter with every
+screenshot as a =[SCREENSHOT NEEDED]= placeholder carrying a =# Capture:=
+instruction. This recipe turns each placeholder into a real, cropped,
+correctly-named image, driven by the [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner]]. The
+[[id:A976A11A-93B1-4703-8F09-8741CF9BC0F0][Capture screenshots for the Currency Pairs manual chapter]] scenario is the
+worked exemplar this recipe generalises from.
+
+* Question
+
+How do I turn a manual chapter's =[SCREENSHOT NEEDED]= placeholders into
+real, correctly-named, correctly-cropped screenshots?
+
+* Answer
+
+** 1. Create a test scenario, one step per placeholder
+
+Count the placeholders and scaffold a =test_scenario= doc under the
+entity's story directory:
+
+#+begin_src sh :results verbatim
+grep -c "SCREENSHOT NEEDED" doc/manual/user_guide/chapter_<n>_<plural>.org
+
+./compass.sh add test_scenario \
+  --slug <plural>-manual-screenshots \
+  --parent-dir doc/agile/versions/v0/<sprint>/<story-slug> \
+  --parent-id <task-uuid> \
+  --parent-title "<the manual-chapter task's title>" \
+  --title "Capture screenshots for the <Plural> manual chapter" \
+  --description "Set up UI state and capture the N screenshot placeholders in chapter_<n>_<plural>.org."
+#+end_src
+
+Fill in =* Context= with how to reach a usable starting state (which
+provisioner to run, login credentials, whether services/client are
+already assumed running — copy the pattern from an existing scenario
+rather than re-deriving it). Then add one =** Capture <target_filename>.png=
+step per placeholder, in the chapter's top-to-bottom order, each body
+copying that placeholder's =# Capture:= instruction verbatim (adjust only
+if the concrete data on file differs from the instruction's example,
+e.g. a different pair code than the one the instruction names — note the
+substitution in the step body). Do *not* invent extra steps beyond one
+per placeholder; the scenario's step count should equal the placeholder
+count exactly.
+
+** 2. Run the scenario in the client
+
+Start (or restart) the client with the scenario preloaded so the QA
+Validation Runner panel opens with it already loaded:
+
+#+begin_src sh :results verbatim
+./compass.sh client start --colour <colour> \
+  --open-scenario /absolute/path/to/scenario_<plural>-manual-screenshots.org
+#+end_src
+
+Log in, then work each step: set up the described UI state and click the
+runner's *Screenshot* button, which saves a full-desktop PNG next to the
+scenario file (named =<scenario-slug>_step<N>_<timestamp>.png=) and links
+it into that step's =*** Result= as =Notes | [[file:...]]=, then click
+*Pass*.
+
+*A step can fail to auto-capture.* If the UI state to capture is a
+*modal* dialog (e.g. a validation-rejection warning), the runner's own
+panel cannot receive the Screenshot/Pass click while that dialog holds
+focus — the step has to be captured with the desktop's own screenshot
+tool instead (e.g. a =Screenshot from <timestamp>.png= landing wherever
+the desktop environment saves them, often a =tmp/= or =Screenshots/=
+directory) and then processed by hand through steps 3-4 below like any
+other capture. Do not treat this as a scenario-authoring mistake — file
+it as the known [[id:4DEBBF25-A373-40FD-A913-B175AE27BA66][message-box modality]] gap rather than trying to route
+around it in the scenario itself.
+
+** 3. Locate and identify each capture
+
+#+begin_src sh :results verbatim
+find doc/agile/versions/v0/<sprint>/<story-slug> \
+  -iname "<scenario-slug>_step*" -o -iname "<scenario-slug>_2026*"
+#+end_src
+
+Open each one (or the scenario doc's per-step =Notes= links) and match it
+against the placeholder it was meant to satisfy — the step title already
+names the target filename, so this is a direct lookup, not a guess.
+
+** 4. Crop to just the dialog or window, following the naming convention
+
+Every published manual screenshot is cropped tightly to the window or
+dialog of interest — never the full desktop, and never with the QA
+Validation Runner panel or other chrome in frame. Use the raw capture's
+pixel bounds for the window in question (read them off the image; a
+quick Python/Pillow one-liner is enough, no dedicated tool):
+
+#+begin_src sh :results verbatim
+python3 -c "
+from PIL import Image
+im = Image.open('<raw_capture>.png')
+im.crop((left, top, right, bottom)).save('/tmp/<crop_name>.png')
+"
+#+end_src
+
+View the crop before finalising it — check no other window's edge, no
+scenario-runner overlay, and no cut-off button bleeds into frame; widen
+the box and re-crop if anything does. Name the final file per
+[[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]]§"Name screenshots to the standard" (the
+plural/singular rule) — the target name is already fixed by the
+placeholder's =TODO_<name>.png=, so cropping just drops the =TODO_=
+prefix:
+
+#+begin_src sh :results verbatim
+cp /tmp/<crop_name>.png assets/images/<final_name>.png
+#+end_src
+
+** 5. Wire the real images into the chapter and rebuild
+
+Replace each placeholder's link and caption:
+
+#+begin_example
+,#+caption: [SCREENSHOT NEEDED] <what to show>.
+# Capture: <instruction>.
+[[proj:assets/images/TODO_<name>.png]]
+#+end_example
+
+becomes
+
+#+begin_example
+,#+caption[<Short caption>]: <Long caption describing what the reader sees, naming the concrete record shown if relevant>.
+[[proj:assets/images/<name>.png]]
+#+end_example
+
+Then rebuild and confirm every new figure appears in the List of Figures:
+
+#+begin_src sh :results verbatim
+./compass.sh build --direct manual
+pdftotext -layout doc/manual/user_guide/user_manual.pdf - | grep -A20 "List of Figures"
+#+end_src
+
+** 6. Close out
+
+Update the screenshot task's Status/Result and the scenario's Test
+Scenarios table entry, commit the chapter, the PDF, and the new images
+together, and note in the task's =* Notes= if any concrete data (pair
+codes, currency codes, dates) differs from what the chapter's
+=# Capture:= instructions originally named. At this point the chapter is
+ready for human review — nothing else in the authoring flow is
+outstanding.
+
+* Script
+
+No dedicated wrapper — =compass add test_scenario= (scaffold), the QA
+Validation Runner panel (capture), and a short inline Python/Pillow
+snippet (crop) compose the flow. See [[id:A976A11A-93B1-4703-8F09-8741CF9BC0F0][Capture screenshots for the Currency
+Pairs manual chapter]] for a fully worked example of every step above.
+
+* Tested by
+
+The manual build (=compass build --direct manual=) confirms every real
+image resolves and appears in the List of Figures; there is no automated
+check that a screenshot's *content* matches its caption — that is what
+the human review pass (recipe [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]]'s closing note)
+is for.
+
+* See also
+
+- [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]] — the recipe this one follows; defines the
+  placeholder convention and the naming standard this recipe fills in.
+- [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]]
+  — the panel this recipe drives.
+- [[id:A976A11A-93B1-4703-8F09-8741CF9BC0F0][Capture screenshots for the Currency Pairs manual chapter]] — the worked
+  exemplar scenario.
+- [[id:4DEBBF25-A373-40FD-A913-B175AE27BA66][Consolidate message boxes into one non-modal, copiable, standard-button
+  ORE Studio dialog]] — the backlog capture for the modal-dialog gap this
+  recipe currently has to work around by hand.

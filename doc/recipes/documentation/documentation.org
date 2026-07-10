@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :recipe:documentation:docs:search:index:knowledge:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-07-10
 
 Recipes for working with the documentation /as a graph/ — finding
 docs, following links, and writing new ones that satisfy the
@@ -32,7 +32,11 @@ For the codegen scripts that generate /code/ (not docs) see the
 - [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] — component scaffold
   flow; physically under [[proj:doc/recipes/codegen][=recipes/codegen/=]].
 - [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]] — the thesis chapter structure,
-  screenshot naming standard, and manual wiring for an entity's user-guide chapter.
+  prose tone, domain-knowledge sourcing, screenshot placeholders, and
+  manual wiring for an entity's user-guide chapter.
+- [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] — turns a
+  chapter's placeholders into real, cropped, correctly-named images
+  via the QA Validation Runner.
 
 * Maintenance
 

@@ -726,6 +726,11 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                         << " party_id=" << clientManager_->currentPartyId()
                         << " party_name=" << clientManager_->currentPartyName().toStdString();
                     emit partySetupDetected();
+                } else if (!clientManager_->lastPartySetupWarning().isEmpty()) {
+                    BOOST_LOG_SEV(lg(), warn) << "Party setup warning: "
+                                              << clientManager_->lastPartySetupWarning().toStdString();
+                    MessageBoxHelper::warning(
+                        this, "Party Setup", clientManager_->lastPartySetupWarning());
                 }
                 emit closeRequested();
             } else {
@@ -760,6 +765,11 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                     << ", id=" << boost::uuids::to_string(result.selected_party_id) << ")";
             } else {
                 BOOST_LOG_SEV(lg(), info) << "No party context for this account";
+            }
+            if (!result.party_setup_warning.isEmpty()) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Party setup warning: " << result.party_setup_warning.toStdString();
+                MessageBoxHelper::warning(this, "Party Setup", result.party_setup_warning);
             }
             statusLabel_->setText("Login successful!");
             emit loginSucceeded(QString::fromStdString(clientManager_->currentUsername()));

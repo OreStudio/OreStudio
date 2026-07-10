@@ -306,6 +306,7 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
                 .password_reset_required = response.password_reset_required,
                 .tenant_bootstrap_mode = response.tenant_bootstrap_mode,
                 .party_setup_required = response.party_setup_required,
+                .party_setup_warning = QString::fromStdString(response.party_setup_warning),
                 .selected_party_id = selected_party_id,
                 .available_parties = std::move(available_parties)};
 
@@ -413,6 +414,7 @@ bool ClientManager::selectParty(const boost::uuids::uuid& party_id, const QStrin
         current_party_id_ = party_id;
         current_party_name_ = party_name;
         last_party_setup_required_ = result->party_setup_required;
+        last_party_setup_warning_ = QString::fromStdString(result->party_setup_warning);
         arm_refresh_timer(result->access_lifetime_s);
         BOOST_LOG_SEV(lg(), info) << "Party selected: " << party_name.toStdString()
                                   << (result->party_setup_required ? " (setup required)" : "");

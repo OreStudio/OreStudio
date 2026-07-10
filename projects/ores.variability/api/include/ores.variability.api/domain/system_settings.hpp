@@ -79,6 +79,10 @@ inline constexpr std::array system_setting_definitions = {
     // the entity's own domain status (party.status, tenant.status): these
     // track "has this wizard run", not "is this entity active".
     // -------------------------------------------------------------------------
+    // Added for symmetry with onboarding.tenant/onboarding.party; no code
+    // reads or writes it yet — the system provisioner wizard still clears
+    // system.bootstrap_mode directly. Wire it up if/when that wizard
+    // migrates to this flag (deliberately deferred, not an oversight).
     system_setting_definition{.name = "onboarding.system",
                               .data_type = "boolean",
                               .default_value = "false",

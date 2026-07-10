@@ -92,6 +92,13 @@ struct LoginResult {
     bool bootstrap_mode = false;
     bool tenant_bootstrap_mode = false;
     bool party_setup_required = false;
+    /**
+     * @brief Set when the party provisioner wizard has completed but the
+     * party is still Inactive. Only meaningful when party_setup_required
+     * is false; the client should show this instead of re-launching the
+     * wizard.
+     */
+    QString party_setup_warning;
     boost::uuids::uuid selected_party_id;
     std::vector<PartyInfo> available_parties;
 };
@@ -368,6 +375,15 @@ public:
      */
     bool lastPartySetupRequired() const {
         return last_party_setup_required_;
+    }
+
+    /**
+     * @brief Warning from the last selectParty/login call when the party
+     * provisioner wizard has completed but the party is still Inactive.
+     * Empty when there is nothing to show.
+     */
+    const QString& lastPartySetupWarning() const {
+        return last_party_setup_warning_;
     }
 
     /**
@@ -773,6 +789,7 @@ private:
     QString current_party_name_;
     QString current_party_category_;
     bool last_party_setup_required_ = false;
+    QString last_party_setup_warning_;
 
     // HTTP server base URL discovered post-login via NATS.
     std::string http_base_url_;

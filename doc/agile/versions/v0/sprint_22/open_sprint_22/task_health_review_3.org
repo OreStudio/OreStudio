@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_22:sprint_22:v0:
 #+owner: marco
 #+branch: feature/sprint-22-health-review
-#+pr:
+#+pr: 1499
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-10
@@ -71,7 +71,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1499][#1499]] | [agile] Sprint 22 health reviews and closure |
 
 * Review
 

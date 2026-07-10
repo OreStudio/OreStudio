@@ -26,12 +26,12 @@ A single refdata component entry drives discovery and dispatch for all entity fi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned — duplicate.                  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-27                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -61,3 +61,7 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Duplicate of [[id:A59CC0AF-5ED0-4230-B93B-350F24FB0230][B4: Collapse refdata and refdata-cpp into a single component]]
+in [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] — same open work,
+tracked there instead of duplicated here.

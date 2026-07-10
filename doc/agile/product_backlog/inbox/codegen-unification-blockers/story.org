@@ -94,6 +94,8 @@ The blockers, in implementation order:
 | [[id:E286B5ED-6B1C-4738-8E67-8F62F0C1C741][B10: Retire facet_catalogue monolith + legacy literate facet/group docs]] | BACKLOG | | | Delete facet_catalogue.org and the 18 legacy literate facet/facet_group docs (cpp_qt.org, cpp_group.org, sql_schema.org, ...), remove the now-dead load_profiles/resolve_profile_templates/validate_profile_for_model code, and repoint or remove the hundreds of inbound id: links (56 to facet_catalogue alone) across the org-roam graph to the new ores.* nodes. |
 | [[id:DB8433F8-769A-48F6-A8BD-4CFAD1733D7F][B11: Migrate live codegen callers from --profile to --address]] | BACKLOG | | | Switch the live caller surfaces (codegen/qt/sql recipes, skills, runbooks, shell scripts, compass help) from the deprecated --profile to --address; resolve composite-profile cases (all, all-cpp, non-temporal) that have no single-address equivalent; leave historical agile/plan/analysis docs untouched. Then optionally remove the --profile shim. |
 | [[id:2965F6B2-D0B3-44DE-8E9F-C2CC8EBDA556][Generate data-scope populate archetypes from dataset org-models]] | DONE | 2026-06-28 | 2026-06-29 | Migrate populate/seed generation into the ores.* graph: each seeder dataset becomes a literate org model declaring its enabled ores.sql.populate archetypes via the drawer; retire get_template_mappings and the scattered data JSON. |
+| [[id:A64EB006-AE16-411B-8FC5-46A6D37BCBC7][Migrate content: move _table.org sections into entity files and delete table files]] | BACKLOG | | | For each of the 9 dual-file entities, move the Validation function and Insert trigger sections from the _table.org file into the entity file; verify byte-identical generated SQL; delete the _table.org file. Moved in from the now-closed Decommission ores.codegen.table model type story — was originally out of scope here (Step 5 of the migration path), pulled in at sprint 22 close since it's real remaining work with no home elsewhere. |
+| [[id:505820E3-FCB4-4192-AA0F-BDBDC1177088][Retire the table model type: remove the table branch from the generator and profile matrix]] | BACKLOG | | | Once no _table.org files remain, remove the table branch from get_model_type(), load_model(), and the profile matrix. Moved in from the now-closed Decommission ores.codegen.table model type story — was originally out of scope here (Step 7), pulled in at sprint 22 close for the same reason. |
 
 * Decisions
 
@@ -118,7 +120,14 @@ The blockers, in implementation order:
 
 * Out of scope
 
-- Content migration (Step 5 of the migration path): moving =_table.org= sections into entity
-  files and deleting the table files. That is a follow-on story.
-- Retiring the =ores.codegen.table= type from =get_model_type()= (Step 7): deferred until
-  all table files are gone.
+(Both items below were originally deferred to a follow-on story, [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission
+ores.codegen.table model type]]; that story closed at sprint 22's end
+without doing them, so they were pulled in here as real tasks instead
+of tracked twice — see the Tasks table.)
+
+- ~~Content migration (Step 5 of the migration path): moving
+  =_table.org= sections into entity files and deleting the table
+  files.~~ Now tracked as a task above.
+- ~~Retiring the =ores.codegen.table= type from =get_model_type()=
+  (Step 7): deferred until all table files are gone.~~ Now tracked as
+  a task above.

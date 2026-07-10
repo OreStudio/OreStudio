@@ -26,12 +26,12 @@ A single org model parser handles all entity types; load_org_table_model() is de
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] |
-| Now          | Not yet started.                       |
+| Now          | Complete — done via the sibling story.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-27                               |
+| Next         | None.                                   |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -60,3 +60,8 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Done — this is the same work as [[id:43090342-4A42-4AF4-A758-AF03194942EE][B3: Teach load_org_model() to parse table-only sections]] in
+[[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]], independently
+re-described here under a different story; no separate implementation
+needed.

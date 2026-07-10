@@ -26,12 +26,12 @@ SQL-only and Qt-less entities are expressible in ores.codegen.entity format with
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] |
-| Now          | Not yet started.                       |
+| Now          | Complete — done via the sibling story.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-27                               |
+| Next         | None.                                   |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -61,3 +61,8 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Done — this is the same work as [[id:86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F][B5: Implement element-level physical space binding via ores.* property drawer]] in
+[[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]], independently
+re-described here under a different story; no separate implementation
+needed.

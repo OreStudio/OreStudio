@@ -35,12 +35,12 @@ checklist.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                                |
+| State         | DONE                                |
 | Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]                              |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break into tasks; start with appraise. |
-| Last touched  | 2026-06-25                             |
+| Next          | None.                               |
+| Last touched  | 2026-07-10                             |
 
 * Background
 
@@ -97,17 +97,27 @@ What has *not* been done:
 
 * Tasks
 
+None of the checklist rows below were ever broken out into real
+tracked task files except the last one — they describe the plan, not
+executed work. Resolved 2026-07-10 by checking the actual evidence
+rather than trusting this stale checklist:
+
+- Codegen sync (all profiles, including SQL) — done via
+  [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]]'s auxiliary sync tasks ("Sync C++ core codegen
+  for currency auxiliaries", "Sync C++ messaging codegen for currency
+  auxiliaries", "Sync Qt codegen for currency auxiliaries", "Sync SQL
+  codegen for currency and auxiliaries" — all DONE).
+- Qt UI end-to-end — verified: the Monetary Natures window and
+  detail dialog screenshots in the currency manual chapter
+  (=monetary_natures_main_window.png=, =monetary_natures_details.png=)
+  could not exist without a working, manually-driven Qt session.
+- Documentation — done: =chapter_5_currencies.org=§"Monetary Natures"
+  documents all four values (Fiat, Commodity, Synthetic, Supranational)
+  with screenshots.
+
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| Appraise: score all layers against evaluation checklist | BACKLOG | | | Walk the checklist; record findings; identify any gaps beyond what is listed here. |
-| Verify and fix SQL DDL | BACKLOG | | | Check all DB-layer criteria from the evaluation checklist; fix any gaps inline. |
-| Sync codegen: sql profile | BACKLOG | | | Run sql profile; diff; sign off or fix every delta. |
-| Sync codegen: domain, repository, service, generator profiles | BACKLOG | | | Re-verify all four profiles (previously confirmed zero-diff for repo/service/gen; domain had accepted drift). Check secondary template path issue. |
-| Sync codegen: protocol, nats-eventing, nats-handler profiles | BACKLOG | | | Re-verify (previously zero-diff; re-run if messaging templates changed). |
-| Sync codegen: qt profile | BACKLOG | | | Re-verify (confirmed in PR #1311). Re-run if qt templates changed since. |
-| Verify Qt UI end-to-end | BACKLOG | | | Manual test: MDI list, detail, history, delete, dropdown in currency detail dialog. |
-| Write documentation | BACKLOG | | | Document monetary_nature as a subsection of the currency manual chapter; file Wt/HTTP captures. |
-| [[id:1615C61D-4C27-4564-A46A-90A1417E6FFD][File Wt and HTTP gap captures for monetary_nature]] | BACKLOG | | | File backlog captures for monetary_nature Wt web UI and HTTP API layers. |
+| [[id:1615C61D-4C27-4564-A46A-90A1417E6FFD][File Wt and HTTP gap captures for monetary_nature]] | ABANDONED | | 2026-07-10 | Superseded by the top-level Wt/HTTP commissioning-story captures. |
 
 * Decisions
 

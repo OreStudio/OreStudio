@@ -103,7 +103,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | DONE | | 2026-07-10 | 23/27 tasks done; remaining 4 abandoned (superseded by top-level shell/CLI/Wt/HTTP stories) or found already complete (badge rendering, stale bookkeeping). |
 | [[id:395AAFAD-9013-4DF8-BD60-E5B50ADA6385][Reconcile currency Qt custom features with codegen]] | DONE | 2026-07-04 | 2026-07-04 | Triaged currency's custom Qt functionality vs. the qt codegen profile, piloted the combo-field mechanism, and produced the regenerate plan for the Qt sync task. |
 | [[id:8D0431A9-8894-4686-9BB6-3EAC7331084C][Commission: rounding_type]] | ABANDONED | | 2026-07-10 | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
-| [[id:26E93F97-D7CB-4963-9DA7-5798AEE4F9BE][Commission: monetary_nature]] | ABANDONED | | 2026-07-10 | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
+| [[id:26E93F97-D7CB-4963-9DA7-5798AEE4F9BE][Commission: monetary_nature]] | DONE | | 2026-07-10 | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
 | [[id:FE0ADB0A-F8F9-4AAF-95F8-020A60191187][Commission: currency_market_tier]] | DONE | | 2026-07-10 | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
 | [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | ABANDONED | 2026-07-02 | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | DONE | | 2026-07-04 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |

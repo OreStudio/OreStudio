@@ -56,4 +56,4 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 | [[id:9AB461BD-AD46-4980-A801-BE6104270C52][Sync C++ core codegen output for book]] | DONE | 2026-07-03 | 2026-07-06 | Regenerate book's api/core/sql from the new graph-based codegen and land a build-consistent core sync. |
 | [[id:EA1377BB-EDC7-4A7A-97ED-25C0316735D9][Implement shell list/add/remove commands for book]] | ABANDONED | 2026-07-07 | 2026-07-07 | Superseded by the shell entity commands top-level commissioning story (product backlog inbox). |
 | [[id:2F991961-F55B-4403-B4D4-278DA91E4107][Implement CLI list/add/remove commands for book]] | ABANDONED | | 2026-07-07 | Superseded by the CLI commands top-level commissioning story (product backlog inbox). |
-| [[id:519D3722-34B5-41A2-B101-87A527F7CCFB][Add book entity chapter to the user manual]] | BACKLOG | | | Document Book's Qt windows (list, detail, history) and behaviours in the user manual. |
+| [[id:519D3722-34B5-41A2-B101-87A527F7CCFB][Add book entity chapter to the user manual]] | DONE | | 2026-07-08 | Document Book's Qt windows (list, detail, history) and behaviours in the user manual. |

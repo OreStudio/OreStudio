@@ -64,24 +64,25 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | [[id:8D0431A9-8894-4686-9BB6-3EAC7331084C][Commission: rounding_type]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
 | [[id:26E93F97-D7CB-4963-9DA7-5798AEE4F9BE][Commission: monetary_nature]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
 | [[id:FE0ADB0A-F8F9-4AAF-95F8-020A60191187][Commission: currency_market_tier]] | BACKLOG | | | Aux type: verify SQL, sync all codegen profiles, verify Qt UI, document in currency chapter. |
-| [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | STARTED | 2026-07-02 | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | DONE | | 2026-07-04 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | STARTED | 2026-07-06 | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Commission: party_id_scheme]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] | STARTED | | | 3/3 codegen-hardening tasks done; Qt/shell/CLI/manual scope still open. |
-| [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] | STARTED | 2026-07-02 | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | STARTED | 2026-07-06 | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]] | BACKLOG | | | Move from ores.trading to ores.refdata (zero current consumers), then commission fully to Qt; spun off from the currency pair story. |
+| [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | STARTED | 2026-07-02 | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]] | DONE | 2026-07-04 | 2026-07-07 | Move from ores.trading to ores.refdata (zero current consumers), then commission fully to Qt; spun off from the currency pair story. |
 | [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]] | BACKLOG | | | Move from ores.trading to ores.refdata (update trading_swap_legs' one reference), then commission fully to Qt; spun off from the currency pair story. |
 | [[id:D83F5588-5F05-4AF6-9CCF-98489309DE4A][Move book, book_status, and portfolio to ores.trading]] | BACKLOG | | | These are trading/booking structures, not static reference data; relocate full stack out of ores.refdata. |
 | [[id:9763FBBF-7912-4EA2-A544-67E90EA27882][Codegen: generate per-entity NATS event-mapping registrar]] | DONE | | 2026-07-08 | Hand-wired application.cpp eventing registration caused a missed-wiring regression (purpose_type); generate it per-entity instead. |
 | [[id:AF0EFC5C-899A-4AE9-BD09-7B2D4E304543][Regen entities with latest codegen templates]] | STARTED | 2026-07-09 | | Sweep already-commissioned entities (starting with country) against the shared codegen templates' substantial new capability landed via currency's commissioning. |
 | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] | STARTED | 2026-07-08 | | 2/9 tasks done (the 2 live bugs); add classification flags, rename ledger_ccy, investigate legal-entity/branch fields, add rates centre, analyse allowed lists, enrich manual with domain concepts remain. |
+| [[id:3247E7A0-73CD-459D-B2C5-119FC0D7DA33][Rethink synthetic reference-data generation across entities]] | BACKLOG | | | Currency's ad-hoc Generate feature (client-side blue-highlighted unsaved rows, per-entity hand-wiring) is half-baked and not actually save-able; design a proper cross-entity mechanism for single + batch synthetic generation before reintroducing it anywhere. |
 
 *** Epic: Market data generation
 
@@ -95,7 +96,7 @@ starting from FX and generalising to other asset classes over time.
 | [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] | DONE | | | SQL template variability (hypertable, soft-update/soft-delete triggers, GIST exclusion) + .org models for market_series, market_observation, market_fixing; prerequisite for full-stack codegen of ores.marketdata. |
 | [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] | BACKLOG | | | Drop legacy pre-codegen ores_marketdata_series/observations/fixings_tbl (superseded, zero C++ references); remove their stale validation_ignore.txt entries; preserve market_observation's hand-written repository/service overrides against codegen regeneration. |
 | [[id:366DCF08-C483-47B7-A136-229B4D2FC394][Temporal composite entity versioning]] | DONE | 2026-07-06 | 2026-07-07 | Design doc: child saves (e.g. party_identifiers) must bump the parent's version; loading a parent as-of version N must compose children as of that version. Work out enforcement across SQL/codegen and Qt composite version/history UX. Found via party LEI/BIC identifiers not bumping party.version. |
-| [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] | BACKLOG | | | Implement the target state: SQL touch-function mechanism, as-of window-join read-side composition, Qt composite history dialog. Party/counterparty are the reference case. |
+| [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]] | STARTED | 2026-07-07 | | Implement the target state: SQL touch-function mechanism, as-of window-join read-side composition, Qt composite history dialog. Party/counterparty are the reference case. |
 | [[id:C1BE59FA-F9B6-4482-A5C0-868D37D47504][Full market.txt import hits duplicate observation key]] | DONE | 2026-07-04 | 2026-07-04 | Fixed: the file genuinely repeats ~100 (date, key) pairs, not a series_key_registry bug; import_service now de-duplicates last-line-wins with a warn/error policy; unblocks the 2016-02-05 vintage import. |
 | [[id:6C515A93-C7D9-4B6C-B7B2-7AD433BACE44][Configurable feed status indicator in the FX spot grid]] | DONE | 2026-07-02 | 2026-07-03 | FX spot grid status pips use hardcoded CSS colours; replace with a configurable indicator once the right UX (badge vs. compact status dot) is settled. |
 | [[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]] | DONE | 2026-07-02 | 2026-07-03 | Chart axis labels, per-component + combined PDF display, and stochastic process component gaps (incl. Ornstein-Uhlenbeck). |
@@ -126,7 +127,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 21.
 | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] | BACKLOG | | | Fix spurious ERRORs in --component mode; add --entity filter; add entity group / tag system for domain-scoped generation. |
 | [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] | DONE | | 2026-07-04 | Replace monolithic registrar.cpp with generated per-entity sub-registrars; isolate handler compilation; unblock incremental service API migration. |
 | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] | STARTED | 2026-07-06 | | Carried from sprint 21. |
-| [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] | BACKLOG | | | Handcrafted HierarchyTreeWidget + child-entity table facet, paste-block-bound, so party/counterparty can retire their hand-maintained EntityDetailDialog. Overlaps with solid_dirac's Commission: party work — compare approaches before implementing. |
+| [[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]] | STARTED | 2026-07-04 | | Handcrafted HierarchyTreeWidget + child-entity table facet, paste-block-bound, so party/counterparty can retire their hand-maintained EntityDetailDialog. Overlaps with solid_dirac's Commission: party work — compare approaches before implementing. |
 | [[id:FBD97665-3F69-4070-B8D2-5B936B6FEE31][Codegen support for view groups (Qt detail-dialog tabs)]] | DONE | 2026-07-09 | 2026-07-10 | The pre-codegen currency dialog grouped fields into separate tabs; codegen's Qt detail-dialog template only ever generates a single tab, making entities with many fields harder to read. Add a generic view_group concept to the entity_org schema and Qt codegen templates, piloted on currency, and document the domain knowledge in the manual. |
 
 *** Epic: Compass
@@ -152,7 +153,7 @@ More stories expected here over time as other consumers emerge.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] | DONE | 2026-07-06 | 2026-07-07 | New component: parse org-mode docs into a C++ structure, resolve id: links via the existing org-roam SQLite index. Pure C++, usable from ores.shell; ports the shape of ores.compass's Python org parser. |
-| [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] | BACKLOG | | | Qt panel, built on ores.orgmode, turning a test_scenario org doc's checklist into a guided test session; results and story/task context rendered in-app, not a standalone JSON file. |
+| [[id:E4A4D94A-C9B9-4075-931E-94AA5D8044FE][QA Validation Runner: in-app test tracking for the multi-worktree fleet]] | STARTED | 2026-07-06 | | Qt panel, built on ores.orgmode, turning a test_scenario org doc's checklist into a guided test session; results and story/task context rendered in-app, not a standalone JSON file. |
 
 ** Infrastructure
 

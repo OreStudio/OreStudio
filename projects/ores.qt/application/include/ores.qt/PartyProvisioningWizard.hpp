@@ -247,11 +247,15 @@ public:
 private slots:
     void onCounterpartyWorkflowComplete(bool success);
     void onOrgWorkflowComplete(bool success);
+    void onFxSpotConfigsWorkflowComplete(bool success);
+    void onFxDriverRatesWorkflowComplete(bool success);
 
 private:
     void startCounterpartyPublish();
     void startOrgPublish();
     void startReportInstall();
+    void startFxSpotConfigsPublish();
+    void startFxDriverRatesPublish();
     void startActivate();
     void markFailed(const QString& errorMsg);
     void appendLog(const QString& msg);

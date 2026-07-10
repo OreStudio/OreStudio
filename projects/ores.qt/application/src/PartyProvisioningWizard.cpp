@@ -633,8 +633,8 @@ void PartyExecutePage::onOrgWorkflowComplete(bool success) {
         statusLabel_->setText(tr("Creating report definitions..."));
         startReportInstall();
     } else {
-        statusLabel_->setText(tr("Activating party..."));
-        startActivate();
+        statusLabel_->setText(tr("Publishing synthetic FX spot configs..."));
+        startFxSpotConfigsPublish();
     }
 }
 
@@ -671,8 +671,8 @@ void PartyExecutePage::startReportInstall() {
 
         BOOST_LOG_SEV(lg(), info) << "Phase 3 complete: " << result.created << " reports created";
         appendLog(tr("Created %1 report definition(s).").arg(result.created));
-        statusLabel_->setText(tr("Activating party..."));
-        startActivate();
+        statusLabel_->setText(tr("Publishing synthetic FX spot configs..."));
+        startFxSpotConfigsPublish();
     });
 
     QFuture<ReportResult> future =
@@ -732,12 +732,207 @@ void PartyExecutePage::startReportInstall() {
     watcher->setFuture(future);
 }
 
-// Phase 4: Mark party status as Active.
+// Phase 4: Publish the synthetic FX spot config dataset — a member of
+// the ore_analytics bundle (alongside report definitions), opted in
+// on its own so this doesn't re-trigger report creation.
+void PartyExecutePage::startFxSpotConfigsPublish() {
+    ClientManager* clientManager = wizard_->clientManager();
+
+    appendLog(tr("Phase 4: publishing synthetic FX spot configs..."));
+    BOOST_LOG_SEV(lg(), info) << "Phase 4: FX spot configs publish";
+
+    struct BundleResult {
+        bool success = false;
+        std::string error_message;
+        std::string instance_id;
+        int datasets_dispatched = 0;
+    };
+
+    auto* watcher = new QFutureWatcher<BundleResult>(this);
+    connect(watcher, &QFutureWatcher<BundleResult>::finished, this, [this, watcher]() {
+        BundleResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 4 async task threw: " << e.what();
+            result.error_message = e.what();
+        }
+        watcher->deleteLater();
+
+        if (!result.success) {
+            markFailed(QString::fromStdString(result.error_message));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "FX spot configs workflow started: instance="
+                                  << result.instance_id;
+        appendLog(tr("FX spot configs workflow started: %1 dataset(s) dispatched.")
+                      .arg(result.datasets_dispatched));
+
+        progressBar_->setVisible(false);
+        stepsWidget_->setVisible(true);
+
+        connect(stepsWidget_,
+                &WorkflowStepsWidget::instanceReachedTerminalState,
+                this,
+                &PartyExecutePage::onFxSpotConfigsWorkflowComplete,
+                Qt::SingleShotConnection);
+        stepsWidget_->setInstance(QUuid::fromString(QString::fromStdString(result.instance_id)));
+        stepsWidget_->preSeed(result.datasets_dispatched);
+    });
+
+    QFuture<BundleResult> future =
+        QtConcurrent::run([clientManager, publishedBy = publishedBy_]() -> BundleResult {
+            BundleResult result;
+            dq::messaging::publish_bundle_params params;
+            params.party_id = boost::uuids::to_string(clientManager->currentPartyId());
+            params.opted_in_datasets.push_back("synthetic.fx_spot_configs");
+
+            dq::messaging::publish_bundle_request request;
+            request.bundle_code = "ore_analytics";
+            request.mode = dq::domain::publication_mode::upsert;
+            request.published_by = publishedBy;
+            request.atomic = true;
+            request.params_json = dq::messaging::build_params_json(params);
+
+            auto resp = clientManager->process_authenticated_request(std::move(request),
+                                                                     std::chrono::minutes(5));
+
+            if (!resp) {
+                result.error_message = "Failed to communicate with server (FX spot configs publish)";
+                return result;
+            }
+            if (!resp->success) {
+                result.error_message = resp->error_message;
+                return result;
+            }
+            result.success = true;
+            result.instance_id = resp->instance_id;
+            result.datasets_dispatched = resp->datasets_dispatched;
+            return result;
+        });
+
+    watcher->setFuture(future);
+}
+
+void PartyExecutePage::onFxSpotConfigsWorkflowComplete(bool success) {
+    progressBar_->setRange(0, 0);
+    progressBar_->setVisible(true);
+
+    if (!success) {
+        markFailed(tr("FX spot configs publish workflow completed with errors."));
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Phase 4 complete: FX spot configs workflow succeeded";
+    appendLog(tr("FX spot configs published successfully."));
+    statusLabel_->setText(tr("Publishing FX driver rates..."));
+    startFxDriverRatesPublish();
+}
+
+// Phase 5: Publish the curated FX driver-rate dataset — the
+// marketdata.reference_vintage_2016_02_05 bundle's first member, so
+// the party has real market series/observations to browse.
+void PartyExecutePage::startFxDriverRatesPublish() {
+    ClientManager* clientManager = wizard_->clientManager();
+
+    appendLog(tr("Phase 5: publishing FX driver rates..."));
+    BOOST_LOG_SEV(lg(), info) << "Phase 5: FX driver rates publish";
+
+    struct BundleResult {
+        bool success = false;
+        std::string error_message;
+        std::string instance_id;
+        int datasets_dispatched = 0;
+    };
+
+    auto* watcher = new QFutureWatcher<BundleResult>(this);
+    connect(watcher, &QFutureWatcher<BundleResult>::finished, this, [this, watcher]() {
+        BundleResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 5 async task threw: " << e.what();
+            result.error_message = e.what();
+        }
+        watcher->deleteLater();
+
+        if (!result.success) {
+            markFailed(QString::fromStdString(result.error_message));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "FX driver rates workflow started: instance="
+                                  << result.instance_id;
+        appendLog(tr("FX driver rates workflow started: %1 dataset(s) dispatched.")
+                      .arg(result.datasets_dispatched));
+
+        progressBar_->setVisible(false);
+        stepsWidget_->setVisible(true);
+
+        connect(stepsWidget_,
+                &WorkflowStepsWidget::instanceReachedTerminalState,
+                this,
+                &PartyExecutePage::onFxDriverRatesWorkflowComplete,
+                Qt::SingleShotConnection);
+        stepsWidget_->setInstance(QUuid::fromString(QString::fromStdString(result.instance_id)));
+        stepsWidget_->preSeed(result.datasets_dispatched);
+    });
+
+    QFuture<BundleResult> future =
+        QtConcurrent::run([clientManager, publishedBy = publishedBy_]() -> BundleResult {
+            BundleResult result;
+            dq::messaging::publish_bundle_params params;
+            params.party_id = boost::uuids::to_string(clientManager->currentPartyId());
+
+            dq::messaging::publish_bundle_request request;
+            request.bundle_code = "marketdata.reference_vintage_2016_02_05";
+            request.mode = dq::domain::publication_mode::upsert;
+            request.published_by = publishedBy;
+            request.atomic = true;
+            request.params_json = dq::messaging::build_params_json(params);
+
+            auto resp = clientManager->process_authenticated_request(std::move(request),
+                                                                     std::chrono::minutes(5));
+
+            if (!resp) {
+                result.error_message = "Failed to communicate with server (FX driver rates publish)";
+                return result;
+            }
+            if (!resp->success) {
+                result.error_message = resp->error_message;
+                return result;
+            }
+            result.success = true;
+            result.instance_id = resp->instance_id;
+            result.datasets_dispatched = resp->datasets_dispatched;
+            return result;
+        });
+
+    watcher->setFuture(future);
+}
+
+void PartyExecutePage::onFxDriverRatesWorkflowComplete(bool success) {
+    progressBar_->setRange(0, 0);
+    progressBar_->setVisible(true);
+
+    if (!success) {
+        markFailed(tr("FX driver rates publish workflow completed with errors."));
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Phase 5 complete: FX driver rates workflow succeeded";
+    appendLog(tr("FX driver rates published successfully."));
+    statusLabel_->setText(tr("Activating party..."));
+    startActivate();
+}
+
+// Phase 6: Mark party status as Active.
 void PartyExecutePage::startActivate() {
     ClientManager* clientManager = wizard_->clientManager();
 
-    appendLog(tr("Phase 4: activating party..."));
-    BOOST_LOG_SEV(lg(), info) << "Phase 4: marking party active";
+    appendLog(tr("Phase 6: activating party..."));
+    BOOST_LOG_SEV(lg(), info) << "Phase 6: marking party active";
 
     struct ActivateResult {
         bool success = false;

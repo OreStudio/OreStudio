@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 4FD6AF0D-6A7A-4BD1-BA6B-F739A383B8C2
+:END:
+#+title: Add regression tests for tenant provisioner system-settings seeding
+#+description: No automated coverage for ores_variability_seed_tenant_system_settings_fn or a provisioner-level assertion that all system.* settings land on a freshly-provisioned tenant, flagged during PR #1496 review as valuable given this is exactly the bug class being fixed (a setting silently missing per-tenant).
+#+type: capture
+#+level: cross
+#+filetags: :ores.sql:testing:iam:variability:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a pgTAP (or equivalent) test that provisions a tenant via
+=iam_tenant_provisioner_create.sql= and asserts every current
+=system.%=-prefixed setting from the system tenant (except
+=system.bootstrap_mode=) lands on the new tenant with the same value,
+plus a direct test of
+=ores_variability_seed_tenant_system_settings_fn= in isolation
+(covering the party-scoping filter added in PR #1496 review).
+
+* Why
+
+There is currently no automated coverage for tenant provisioning at
+all in =projects/ores.sql/test/=, and this is precisely the bug class
+being fixed here — a setting silently missing per-tenant. A
+regression test would catch a future accidental exclusion
+automatically instead of relying on manual "verified live" checks
+each time.
+
+* References
+
+- PR #1496: https://github.com/OreStudio/OreStudio/pull/1496
+
+* See also
+
+- [[id:95F83186-36A6-4F73-9A8A-85FBB02453FA][System settings are tenant-scoped but only bootstrap_mode is seeded per-tenant]]

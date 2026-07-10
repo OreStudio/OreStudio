@@ -22,7 +22,7 @@ statement of what ORE Studio is, see the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597
 |------------------+-------------------------------------------------------------------|
 | State            | STARTED                                                           |
 | Target milestone | [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]                                     |
-| Now              | Sprint 22 closed (RED, 43/70 stories carried back to backlog).  |
+| Now              | Sprint 22 closed (RED, 40/70 stories done, 30 carried back to backlog). |
 | Waiting on       | Nothing.                                                          |
 | Next             | Open sprint 23.                                                  |
 | Last touched     | 2026-07-10                                                        |

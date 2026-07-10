@@ -71,40 +71,40 @@ Sprint 22 set out to continue commissioning the ores.refdata entity library and 
 -   **Fix orphan documents and tag taxonomy**: Fixed orphaned docs in org-roam graph; created a tag inventory; added compass tag validation.
 -   **QA Validation Runner: in-app test tracking for the multi-worktree fleet**: Qt panel, built on ores.orgmode, turning a test\_scenario org doc's checklist into a guided test session; results and story/task context rendered in-app, not a standalone JSON file. Piloted end to end against a real sprint story.
 -   **Regen entities with latest codegen templates**: Country regenerated and reconciled against the shared codegen templates' new capability landed via currency's commissioning — generator bug fix, SQL bootstrap-filter/clock\_timestamp fixes, and a new needs\_item\_delegate template generalization.
--   **Commission: party**: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
--   **Commission: party\_status**: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
--   **Commission: party\_id\_scheme**: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
--   **Commission: contact\_type**: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
--   **Commission: counterparty**: 3/3 codegen-hardening tasks done; Qt/shell/CLI/manual scope still open.
--   **Commission: business\_unit**: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
--   **Commission: business\_centre**: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
--   **Commission: portfolio**: Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
--   **Commission: day\_count\_fraction\_type**: Move from ores.trading to ores.refdata (update trading\_swap\_legs' one reference), then commission fully to Qt; spun off from the currency pair story.
--   **Book data model cleanup**: 2/9 tasks done (the 2 live bugs); add classification flags, rename ledger\_ccy, investigate legal-entity/branch fields, add rates centre, analyse allowed lists, enrich manual with domain concepts remain.
--   **Rethink synthetic reference-data generation across entities**: Currency's ad-hoc Generate feature (client-side blue-highlighted unsaved rows, per-entity hand-wiring) is half-baked and not actually save-able; design a proper cross-entity mechanism for single + batch synthetic generation before reintroducing it anywhere.
--   **Market data cleanup: retire dead duplicate tables and preserve hand-written overrides**: Drop legacy pre-codegen ores\_marketdata\_series/observations/fixings\_tbl (superseded, zero C++ references); remove their stale validation\_ignore.txt entries; preserve market\_observation's hand-written repository/service overrides against codegen regeneration.
+-   **Commission: party**: (carried forward) Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
+-   **Commission: party\_status**: (carried forward) Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
+-   **Commission: party\_id\_scheme**: (carried forward) Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
+-   **Commission: contact\_type**: (carried forward) Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
+-   **Commission: counterparty**: (carried forward) 3/3 codegen-hardening tasks done; Qt/shell/CLI/manual scope still open.
+-   **Commission: business\_unit**: (carried forward) Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
+-   **Commission: business\_centre**: (carried forward) Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
+-   **Commission: portfolio**: (carried forward) Verify Qt; implement shell + CLI; manual; Wt/HTTP captures.
+-   **Commission: day\_count\_fraction\_type**: (carried forward) Move from ores.trading to ores.refdata (update trading\_swap\_legs' one reference), then commission fully to Qt; spun off from the currency pair story.
+-   **Book data model cleanup**: (carried forward) 2/9 tasks done (the 2 live bugs); add classification flags, rename ledger\_ccy, investigate legal-entity/branch fields, add rates centre, analyse allowed lists, enrich manual with domain concepts remain.
+-   **Rethink synthetic reference-data generation across entities**: (carried forward) Currency's ad-hoc Generate feature (client-side blue-highlighted unsaved rows, per-entity hand-wiring) is half-baked and not actually save-able; design a proper cross-entity mechanism for single + batch synthetic generation before reintroducing it anywhere.
+-   **Market data cleanup: retire dead duplicate tables and preserve hand-written overrides**: (carried forward) Drop legacy pre-codegen ores\_marketdata\_series/observations/fixings\_tbl (superseded, zero C++ references); remove their stale validation\_ignore.txt entries; preserve market\_observation's hand-written repository/service overrides against codegen regeneration.
 -   **Full market.txt import hits duplicate observation key**: Importing the full ORE reference vintage file `external/ore/examples/Legacy/Example_56/Input/market.txt` via `ores.marketdata.core::service::import_service` (subject `marketdata.v1.import`) hits a Postgres unique-constraint violation on `_hyper_*_market_observations_observations_current_uniq`: duplicate key `(tenant_id, party_id, series_id, observation_datetime, point_id)`, e.g.
--   **IR Rates synthetic data generation**: Short-rate stochastic process + Curve Template raw instrument generation (deposits/FRAs/swaps), tenor-collision validation, tick-batch publishing — no bootstrapping, no vol surfaces, no QuantLib.
--   **Synthetic data collections: Basic and Realistic**: 6/9 tasks done — basic/realistic bundles, FX quote inversion detection, 2016 vintage import, ORE reference vintage dataset, and the vintage guard all landed; feed namespacing and Market Simulator grouping by collection remain.
--   **Move trade import orchestration to service layer**: Move ImportTradeDialog's ~300 lines of trade-import orchestration (XML parse, per-trade save, 30-way instrument dispatch) into a server-side trade\_import\_service + import\_trades\_request, so ores.shell's future trade import command doesn't duplicate it.
--   **Decommission ores.codegen.table model type**: Migrate all remaining \_table.org models to ores.codegen.entity; remove the table type from the facet catalogue.
--   **Refactor ores.codegen C++ generation**: 6/19 tasks done — the audit, template-bug fixes, model-consistency fixes, and breaking-change decisions all landed; applying the resulting safe drift to each of the 12 remaining components is next.
--   **Decommission legacy codegen bash scripts**: Replace direct bash invocations with compass or Python codegen; remove the scripts.
--   **Codegen CI zero-diff invariant**: CI job regenerating all registered components, failing on any diff vs HEAD.
--   **Codegen model safety guardrails**: Runtime guards for missing component\_include/component\_core; block dual-template SQL generation.
--   **Codegen unified model — Phase 1: Qt derivation**: Derive Qt fields from conventions; drop explicit NATS protocol class names from models.
--   **Codegen unified model — Phase 3: unify temporal templates**: Merge temporal and non-temporal C++ template families into single model-controlled templates.
--   **Codegen developer experience improvements**: Fix spurious ERRORs in &#x2013;component mode; add &#x2013;entity filter; add entity group / tag system for domain-scoped generation.
--   **Resolve codegen model unification blockers**: Carried from sprint 21.
--   **compass generate catalogue**: Auto-regenerate catalogue/index org files by scanning tagged org files.
+-   **IR Rates synthetic data generation**: (carried forward) Short-rate stochastic process + Curve Template raw instrument generation (deposits/FRAs/swaps), tenor-collision validation, tick-batch publishing — no bootstrapping, no vol surfaces, no QuantLib.
+-   **Synthetic data collections: Basic and Realistic**: (carried forward) 6/9 tasks done — basic/realistic bundles, FX quote inversion detection, 2016 vintage import, ORE reference vintage dataset, and the vintage guard all landed; feed namespacing and Market Simulator grouping by collection remain.
+-   **Move trade import orchestration to service layer**: (carried forward) Move ImportTradeDialog's ~300 lines of trade-import orchestration (XML parse, per-trade save, 30-way instrument dispatch) into a server-side trade\_import\_service + import\_trades\_request, so ores.shell's future trade import command doesn't duplicate it.
+-   **Decommission ores.codegen.table model type**: (carried forward) Migrate all remaining \_table.org models to ores.codegen.entity; remove the table type from the facet catalogue.
+-   **Refactor ores.codegen C++ generation**: (carried forward) 6/19 tasks done — the audit, template-bug fixes, model-consistency fixes, and breaking-change decisions all landed; applying the resulting safe drift to each of the 12 remaining components is next.
+-   **Decommission legacy codegen bash scripts**: (carried forward) Replace direct bash invocations with compass or Python codegen; remove the scripts.
+-   **Codegen CI zero-diff invariant**: (carried forward) CI job regenerating all registered components, failing on any diff vs HEAD.
+-   **Codegen model safety guardrails**: (carried forward) Runtime guards for missing component\_include/component\_core; block dual-template SQL generation.
+-   **Codegen unified model — Phase 1: Qt derivation**: (carried forward) Derive Qt fields from conventions; drop explicit NATS protocol class names from models.
+-   **Codegen unified model — Phase 3: unify temporal templates**: (carried forward) Merge temporal and non-temporal C++ template families into single model-controlled templates.
+-   **Codegen developer experience improvements**: (carried forward) Fix spurious ERRORs in &#x2013;component mode; add &#x2013;entity filter; add entity group / tag system for domain-scoped generation.
+-   **Resolve codegen model unification blockers**: (carried forward) Carried from sprint 21.
+-   **compass generate catalogue**: (carried forward) Auto-regenerate catalogue/index org files by scanning tagged org files.
 -   **Compass quality of life (Sprint 21)**: Improve compass quality of life with a mix of UX enhancements and bug fixes surfaced in Sprint 20 and 21 usage.
 -   **Add compass client start/stop subcommands**: Add `compass client start` and `compass client stop` subcommands so the Qt client follows the same start/stop/status convention as every other Operate-pillar command (`services`, `env`, `nats`), instead of being a flat launch-only command with no way to stop an instance via compass.
--   **Compass GitHub Actions support**: Give compass a quick overview of all GitHub Actions runs, highlight which ones are failing, and for failing runs surface the error detail via gh CLI without needing to download full logs.
--   **Verify Windows and macOS CI builds**: Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups.
--   **Upgrade Qt to latest supported version to fix macOS 15 AGL removal**: Qt 6.8.x references -framework AGL (removed in macOS 15); the latest supported Qt drops that dependency.
+-   **Compass GitHub Actions support**: (carried forward) Give compass a quick overview of all GitHub Actions runs, highlight which ones are failing, and for failing runs surface the error detail via gh CLI without needing to download full logs.
+-   **Verify Windows and macOS CI builds**: (carried forward) Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups.
+-   **Upgrade Qt to latest supported version to fix macOS 15 AGL removal**: (carried forward) Qt 6.8.x references -framework AGL (removed in macOS 15); the latest supported Qt drops that dependency.
 -   **Canary CI: near-zero sccache hit rate makes every build a cold rebuild**: Diagnose and fix why `canary-linux.yml` (`linux-gcc-debug-ninja`) gets almost no benefit from its sccache cache, so canary stops taking ~3h/run for small PRs.
 -   **Fix tenant-scoped variability system settings: permissions and per-tenant seeding**: `projects/ores.iam/core/include/ores.iam.core/messaging/tenant_handler.hpp:198-203` (`complete_tenant_provisioning`) directly constructs a `variability::service::system_settings_service` using IAM's own database context and calls `set_bootstrap_mode(false, ...)` to clear the tenant's bootstrap flag on activation.
--   **Improve site documentation discoverability**: Carried from sprint 21.
+-   **Improve site documentation discoverability**: (carried forward) Carried from sprint 21.
 -   **Hotfix: MacOS CI relevance-guard skips matrix build silently**: Restore real signal from the "Continuous MacOS" scheduled workflow: it must not report overall Success when the actual build/test matrix job was skipped.
 -   **Hotfix: refdata generator/repository test fixtures out of sync with DB constraints**: Get CI green again: 25 failing ores.refdata unit/repository tests on main, caused by two "Commission: counterparty" codegen-facet commits (`5ef46554b`, `d5762d746`) that introduced generator values violating DB check constraints and diverging from existing test expectations.
 -   **Hotfix: stale Qt plugin causes crash after ores.qt.api ABI change**: An ordinary `cmake --build --target ores.qt.exe` must never leave a QPluginLoader-loaded plugin .so stale against a freshly-linked exe's ABI — CMake needs a real build-order dependency from the exe to every plugin lib, even though none of them are link-time dependencies of it.

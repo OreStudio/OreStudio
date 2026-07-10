@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: F90CDE0A-9813-407C-A145-30BA001FAAA8
+:END:
+#+title: Sprint 22 snags: single leftover tasks from otherwise-complete stories
+#+description: Small, genuinely single-task leftovers from sprint 22 stories that were morally complete otherwise. Pull individual tasks into whichever future sprint has room, rather than re-carrying their whole parent story.
+#+type: capture
+#+level: cross
+#+filetags: :sprint_22:cleanup:snags:
+#+created: 2026-07-10
+#+updated: 2026-07-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A running list of single, genuinely-standalone leftover tasks from
+sprint 22 stories that were re-triaged at sprint close and found to
+be morally complete except for one real remaining item. Rather than
+carry the whole parent story forward (or re-open it next sprint),
+just the leftover task is listed here — pull it into whichever
+future sprint has room, or fold it into a more natural home if one
+emerges (e.g. once a related entity gets commissioned).
+
+** Write purpose_type user manual chapter
+
+From [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] (4/5 tasks done this sprint; the story
+itself is closed DONE). =purpose_type= is a lookup classifying
+Portfolio purpose, and Portfolio itself ([[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]]) hasn't
+been commissioned yet — so there's no natural parent chapter to fold
+this into the way book_status folds into Book's chapter. Write it as
+its own small chapter (or a subsection once Portfolio's chapter
+exists) covering the Qt UI (list, detail, history — all already
+shipped and verified this sprint) and the standard values.
+
+* Why
+
+Sprint 22's health review found the sprint's own paperwork
+untrustworthy — stories carried wholesale to the backlog inbox even
+when only one task genuinely remained. This capture is the
+lightweight alternative: don't re-open a story for one task, don't
+silently drop the task either.
+
+* References
+
+- [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] — the story this task came from.
+
+* See also
+
+-

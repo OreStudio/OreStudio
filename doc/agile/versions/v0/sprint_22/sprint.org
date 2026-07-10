@@ -116,7 +116,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | ABANDONED | | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | ABANDONED | | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | ABANDONED | | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | ABANDONED | 2026-07-02 | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | DONE | 2026-07-02 | 2026-07-10 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:0345DCE3-4B85-4132-9A25-E58285632F76][Commission: business_day_convention_type]] | DONE | 2026-07-04 | 2026-07-07 | Move from ores.trading to ores.refdata (zero current consumers), then commission fully to Qt; spun off from the currency pair story. |
 | [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]] | ABANDONED | | 2026-07-10 | Move from ores.trading to ores.refdata (update trading_swap_legs' one reference), then commission fully to Qt; spun off from the currency pair story. |
 | [[id:D83F5588-5F05-4AF6-9CCF-98489309DE4A][Move book, book_status, and portfolio to ores.trading]] | ABANDONED | | 2026-07-10 | These are trading/booking structures, not static reference data; relocate full stack out of ores.refdata. |

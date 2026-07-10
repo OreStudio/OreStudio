@@ -26,12 +26,12 @@ Author the purpose_type chapter in the user manual covering Qt list/detail/histo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned — moved to a lightweight snag capture. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-03                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
@@ -58,3 +58,7 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Moved to [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 snags]] — the only real remaining item in an
+otherwise-DONE story; not worth re-carrying the whole story for one
+task.

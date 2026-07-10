@@ -177,7 +177,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 21.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:3A9DF70D-07F7-46A7-8219-57A024707B64][compass generate catalogue]] | ABANDONED | | 2026-07-10 | Auto-regenerate catalogue/index org files by scanning tagged org files. |
-| [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and tag taxonomy]] | ABANDONED | 2026-07-06 | 2026-07-10 | Fix orphaned docs in org-roam graph; create tag inventory; add compass tag validation. |
+| [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and tag taxonomy]] | DONE | 2026-07-06 | 2026-07-10 | Fix orphaned docs in org-roam graph; create tag inventory; add compass tag validation. |
 | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] | DONE | | 2026-07-02 | Carried from sprint 21. |
 | [[id:25A93F0B-FD5C-4EA1-9194-093073B44C44][Add compass client start/stop subcommands]] | DONE | 2026-07-03 | 2026-07-03 | compass client was flat (launch-only); add start/stop matching the services/env/nats subcommand convention. |
 | [[id:B7C756F2-985A-49FA-BE98-D50C4F418B51][Compass GitHub Actions support]] | ABANDONED | | 2026-07-10 | Give compass a quick overview of all GitHub Actions runs, highlight which ones are failing, and for failing runs surface the error detail via gh CLI without needing to download full logs. |

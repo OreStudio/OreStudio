@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 694C7788-ECBA-4934-B897-47C2EE35386B
+:ID: 3A0C104F-58A1-4829-8B21-50BD70DE1CD4
 :END:
-#+title: Task: Add compass tag validation
-#+description: Add compass validation that checks document filetags against the canonical tag inventory; fail on unknown tags.
+#+title: Task: Create tag inventory
+#+description: Create a doc/meta/ document that inventories all filetags in logical groups with descriptions; link it from document_types.org.
 #+type: task
 #+level: s1
 #+filetags: :fix-orphan-docs-and-tag-taxonomy:sprint_22:v0:
@@ -20,30 +20,31 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Extend compass lint (or equivalent validation command) to cross-check
-every document's =#+filetags:= values against the canonical tag
-inventory. Any tag not in the inventory causes the check to fail with
-a clear error message naming the document and the unknown tag.
+Create a canonical tag inventory document under =doc/meta/= that lists
+every =#+filetags:= tag in use across the repo, organised into logical
+groups (e.g. type, version, sprint, domain, tooling), with a short
+description for each tag and each group. Link the inventory from
+=document_types.org= so it is discoverable.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and introduce tag taxonomy]] |
-| Now          | Not yet started.                       |
+| Now          | Complete.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-11                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
-- =compass lint= (or the equivalent check subcommand) fails with a
-  non-zero exit code and prints the offending document path and tag
-  when a document carries an unknown filetag.
-- All currently-used tags pass the check once the inventory is
-  complete (depends on task: Create tag inventory).
-- The check is wired into the site/lint CI step so it runs on PRs.
+- A =doc/meta/tag_inventory.org= (or equivalent) document exists,
+  carries =#+type: knowledge=, and is linked from =document_types.org=.
+- Every tag present in any =#+filetags:= header across the repo
+  appears in the inventory with a one-line description.
+- Tags are organised into named logical groups; each group has a
+  short description of its purpose.
 
 * Plan
 
@@ -66,3 +67,7 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Done, but never marked as such. =doc/meta/tag_inventory.org= exists
+(231 lines), committed =0df0f1196= ("Create tag inventory: canonical
+filetags reference in doc/meta/").

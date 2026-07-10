@@ -8,7 +8,7 @@
 #+filetags: :currency-pair-refdata:sprint_22:v0:
 #+owner: marco
 #+branch: feature/currency-pair-manual-chapter
-#+pr:
+#+pr: 1494
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -78,7 +78,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1494][#1494]] | [doc] Currency Pairs manual chapter, screenshot capture recipes, and env port fix |
 
 * Review
 

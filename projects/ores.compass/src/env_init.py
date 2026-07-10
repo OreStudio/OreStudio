@@ -102,6 +102,12 @@ def _read_env(env_file: Path) -> dict:
 # in .env until migrated by hand.
 BASE_PORT_START = 20000
 BASE_PORT_STEP = 1000
+# Conservative floor for the kernel's ephemeral port range: the default is
+# usually 32768 (see /proc/sys/net/ipv4/ip_local_port_range), but some
+# systems start lower, so _scan_ports refuses to hand out a base_port whose
+# top offset would land at or past this floor rather than silently
+# reproducing the exact collision BASE_PORT_START was moved to avoid.
+EPHEMERAL_PORT_FLOOR = 32768
 HTTP_PORT_OFFSET_DEBUG = 0
 HTTP_PORT_OFFSET_RELEASE = 1
 WT_PORT_OFFSET_DEBUG = 2
@@ -132,6 +138,14 @@ def _scan_ports(parent_dir: Path) -> tuple[int, int, int]:
     base_port = BASE_PORT_START
     while base_port in used_base:
         base_port += BASE_PORT_STEP
+        if base_port + NATS_MONITOR_PORT_OFFSET >= EPHEMERAL_PORT_FLOOR:
+            raise RuntimeError(
+                f"No free base_port below the ephemeral port floor "
+                f"({EPHEMERAL_PORT_FLOOR}) — {len(used_base)} environments "
+                f"already claim a base_port from {BASE_PORT_START}. Free up "
+                f"a stale checkout's .env, or raise BASE_PORT_STEP's ceiling "
+                f"deliberately rather than let this wrap into the kernel's "
+                f"ephemeral range.")
     nats_port = base_port + NATS_PORT_OFFSET
     nats_monitor_port = base_port + NATS_MONITOR_PORT_OFFSET
     return base_port, nats_port, nats_monitor_port

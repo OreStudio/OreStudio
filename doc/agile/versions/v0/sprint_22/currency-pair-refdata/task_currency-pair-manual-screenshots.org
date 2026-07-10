@@ -2,7 +2,7 @@
 :ID: 78BEBD36-0A8A-43B7-B62C-934A78542CC5
 :END:
 #+title: Task: Capture screenshots for the Currency Pairs manual chapter
-#+description: Test plan and execution checklist for capturing the seven screenshot placeholders added in chapter_5b_currency_pairs.org.
+#+description: Test plan and execution checklist for capturing the five screenshot placeholders added in chapter_5b_currency_pairs.org.
 #+type: task
 #+level: s1
 #+filetags: :currency-pair-refdata:sprint_22:v0:

@@ -43,28 +43,28 @@ current behaviour; that's not shipped.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                  |
 | Parent story | [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] |
-| Now          | Goal/acceptance updated for the current field set; starting implementation. |
+| Now          | Complete — chapter written, wired in, all five screenshots captured, manual PDF and Qt help rebuilt. |
 | Waiting on   | Nothing.                               |
-| Next         | Find the manual's existing chapter structure and write the new sections. |
-| Last touched | 2026-07-08                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-10                               |
 
 * Acceptance
 
-- [ ] User manual has a Currency Pairs section explaining pair_code
+- [X] User manual has a Currency Pairs section explaining pair_code
   derivation/immutability, classification, and duplicate/inverted-pair
   rejection on create.
-- [ ] User manual has a Currency Pair Conventions section explaining
+- [X] User manual has a Currency Pair Conventions section explaining
   the pair_code picker (create-only, locked after) and
   pip_factor/tick_size/decimal_places/advance_calendar/business day
   convention/spot_relative/end_of_month, plus the Conventions
   cross-navigation toolbar button.
-- [ ] No mention of deliverable/NDF/settlement currency as current,
+- [X] No mention of deliverable/NDF/settlement currency as current,
   shipped behaviour.
-- [ ] Screenshots (or placeholders) included per the manual's existing
+- [X] Screenshots (or placeholders) included per the manual's existing
   convention.
-- [ ] Manual PDF rebuilds cleanly with the new content.
+- [X] Manual PDF rebuilds cleanly with the new content.
 
 * Plan
 
@@ -87,3 +87,18 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Shipped =chapter_5b_currency_pairs.org=, covering base/quote
+precedence, major/minor/exotic/commodity classification, pip/tick/
+settlement conventions (sourced from the [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] domain hub), and
+the Qt UI for both =currency_pair= and =currency_pair_convention= —
+including the duplicate/inverted-pair rejection and the Conventions
+cross-navigation toolbar button. Deliverability/NDF explicitly scoped
+out as unshipped per the Goal above. All five screenshot placeholders
+captured and wired in (see [[id:78BEBD36-0A8A-43B7-B62C-934A78542CC5][the sibling screenshots task]]); manual PDF
+and Qt-embedded HTML help both rebuild cleanly. Along the way, this
+work also generalised the authoring process into two recipes
+([[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]], [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual
+chapter?]]) and a skill ([[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][doc-add-entity-chapter]]) chaining them, and fixed
+an unrelated NATS port-collision bug in the dev environment scheme
+discovered while readying up the environment for screenshot capture.

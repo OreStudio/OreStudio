@@ -61,7 +61,7 @@ Create the chapter under =doc/manual/user_guide= as =chapter_<n>_<plural>.org=
   --slug chapter_<n>_<plural> \
   --parent-dir doc/manual/user_guide \
   --title "<Plural>" \
-  --description "<Entity> management in OreStudio: the standard, the Qt UI, history and revert, shell and CLI commands."
+  --description "<Entity> management in ORE Studio: the standard, the Qt UI, history and revert, shell and CLI commands."
 #+end_src
 
 The frontmatter follows the exemplars: =#+type: manual=, =#+level: cross=,
@@ -81,7 +81,7 @@ sections, top to bottom:
 
    #+begin_example
    @@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /country/ as a
-   reference-data entity in OreStudio. ...
+   reference-data entity in ORE Studio. ...
 
    # Restore the heading gap that the lettrine paragraph suppresses.
    #+latex: \bigskip
@@ -111,7 +111,7 @@ sections, top to bottom:
 
 4. *Body sections* — the entity's standard lifecycle, in this order:
    - the *standard / identity* section (e.g. "ISO 3166-1 and its
-     limitations") — what identifies the entity and the gaps OreStudio's
+     limitations") — what identifies the entity and the gaps ORE Studio's
      extensions fill;
    - *The <Plural> window* — the list view, paging, reloading;
    - *<Entity> Details* — the detail dialog, one =***= subsection per tab

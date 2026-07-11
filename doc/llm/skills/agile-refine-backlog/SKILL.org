@@ -2,17 +2,19 @@
 :ID: 5358EC5A-F7FD-473A-A8AB-AF77E4D83A58
 :END:
 #+title: Agile Refine Backlog
-#+description: Run a backlog housekeeping session: scan, clarify, cull, and re-prioritise captures in the next/deferred buckets.
+#+description: Run a backlog housekeeping session (standard) or a full deep refinement sweep across inbox/next/deferred with a written report.
 #+type: skill
 #+level: cross
-#+filetags: :llm:skill:skills:claude_code:agile:backlog:
+#+filetags: :llm:skill:skills:claude_code:agile:backlog:deep:
 #+created: 2026-05-24
-#+updated: 2026-06-06
+#+updated: 2026-07-11
 
 #+begin_export markdown
 ---
 name: agile-refine-backlog
-description: Run a backlog housekeeping session: scan the next/deferred captures, clarify descriptions, cull stale items, and re-prioritise between buckets.
+description: |
+  Run a backlog housekeeping session: scan the next/deferred captures, clarify descriptions, cull stale items, and re-prioritise between buckets.
+  For a full audit — every capture in inbox, next, and deferred checked against the live codebase, duplicates merged, buckets re-scored against the current sprint's mission, and a written report — invoke this skill's deep refinement mode (trigger words: "deep backlog refinement", "deep refine the backlog").
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -25,7 +27,25 @@ backlog healthy: pruning stale captures, clarifying vague ones,
 moving items between [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] and [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]], or filing new ideas as they
 come up.
 
-* How to use this skill
+Two modes:
+
+- *Standard* (default) — the lightweight sweep in "How to use this
+  skill" below: scan next/deferred, clarify, cull, re-prioritise.
+  Good for a quick tidy between sprints.
+- *Deep* (explicit trigger: user says "deep", "thorough", "full audit",
+  or similar) — see "Deep refinement mode" further down. A slower,
+  System-2 audit of *every* capture in *all three* buckets (inbox
+  included), each one checked against the live codebase rather than
+  taken on its own word, duplicates merged, and every bucket
+  reassigned by scoring against the current sprint's mission. Ends
+  with a written report, structured like [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][agile-review-sprint]]'s health
+  reviews: a persistent story, one numbered task per run, the full
+  report in that task's =* Result=, with an org-roam =id:= link to
+  every file the run touched and one line on what happened to it.
+  Expensive — expect to read every capture in the backlog — so only
+  run it when the user actually asks for the deep variant.
+
+* How to use this skill — standard mode
 
 1. /List both buckets/ to get a full picture before changing anything:
 
@@ -40,9 +60,13 @@ come up.
 
 2. /Read each capture/ in the target bucket. For each one assess:
 
-   - *Validity* — is the idea still relevant? If the work was done
-     in a past sprint or the need has gone away, mark =ABANDONED=
-     and commit.
+   - *Validity* — is the idea still relevant? If the work was done in
+     a past sprint or the need has gone away, move the file to
+     =discarded/= (=git mv=, =:ID:= unchanged) and add a bolded reason
+     line under the "in the *discarded* bucket" intro explaining what
+     resolved it and linking the doc that did (see an existing file
+     under =discarded/= for the exact convention). Captures have no
+     =#+todo= state field — the bucket/folder *is* the state.
    - *Clarity* — is the =#+title= and =#+description= specific
      enough that someone could act on it without back-channel
      context? If not, sharpen both in place.
@@ -51,8 +75,12 @@ come up.
      renaming the file path; the =:ID:= stays unchanged so
      existing links keep working.
    - *Duplicates* — if two captures describe the same idea, merge
-     them: keep the richer one, absorb the other's notes, mark the
-     absorbed one =ABANDONED=.
+     them: keep the richer one, fold in every fact the other has that
+     the survivor doesn't (check paragraph by paragraph — do not
+     assume "richer" means "complete"), move the absorbed one to
+     =discarded/= with a "Duplicate, merged into" reason line, and
+     repoint any =id:= links that pointed at the absorbed capture to
+     the survivor (=grep -rl "<absorbed-id>" doc/= to find them all).
 
 3. /File new captures/ as they surface during the review. Use the
    =agile-product-owner= skill's codegen step to scaffold each one:
@@ -76,6 +104,198 @@ come up.
    git commit -m "[agile] Backlog refinement — next bucket housekeeping"
    #+end_src
 
+* Deep refinement mode
+
+Triggered explicitly — the user asks for a *deep* backlog refinement,
+a thorough audit, or similar. Unlike standard mode, deep mode covers
+*all three* buckets (=inbox=, =next=, =deferred=), verifies each
+capture against the live codebase rather than trusting its own text,
+and produces a written, linkable report. Model this on
+[[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][agile-review-sprint]]'s health-review pattern: a persistent story, one
+numbered task per run, the full narrative in that task's =* Result=.
+This is slow by design — reading every capture and checking a
+meaningful fraction against the codebase is the point; do not shortcut
+it to make the run faster.
+
+** Step 1 — Inventory all three buckets
+
+#+begin_src sh :results verbatim
+find doc/agile/product_backlog/inbox doc/agile/product_backlog/next doc/agile/product_backlog/deferred \
+  -maxdepth 1 \( -name "*.org" -o -type d \) | sort
+#+end_src
+
+Note the total count per bucket up front — it anchors the report's
+"before" picture and lets the summary state a concrete before/after
+delta.
+
+** Step 2 — Read every capture and story folder
+
+For each entry (a lone =.org= file, or a folder with =story.org= plus
+task files), read it in full — title, description, What/Why,
+References, See also. Group entries that look related by shared
+keywords/tags/entity names before deciding anything, so duplicates
+(Step 4) are caught by grouping, not by memory across a long session.
+
+** Step 3 — Verify each one against the live codebase
+
+Do not take a capture's premise on faith — this is what makes the
+mode "deep." For each entry:
+
+- If it claims something is missing (a field, a function, a
+  mechanism), =grep=/=find= for it. If it already exists, the capture
+  is resolved — move to =discarded/= with a reason note citing the
+  file/PR that closed it (see the standard-mode Validity bullet for
+  the exact convention).
+- If it references another story/task by =id:= link, check that
+  target's current state — a capture can be silently resolved by
+  work done under a *different* title.
+- If it's a story folder with tasks, check each task's State against
+  reality the same way; a task marked BACKLOG that the codebase shows
+  is actually done is a paperwork bug to fix, not just a note.
+
+This step is the majority of the time a deep run takes. Budget for it.
+
+** Step 4 — Merge duplicates
+
+Where Step 2's grouping surfaces two or more captures describing the
+same idea: keep the richer one (most complete References/Why/context),
+merge in every fact unique to the others (check paragraph by
+paragraph), move the others to =discarded/= with a "Duplicate, merged
+into" reason line pointing at the survivor, and repoint every inbound
+=id:= link found via =grep -rl "<absorbed-id>" doc/= at the survivor's
+=:ID:=. Verify no content was lost before deleting/moving anything —
+diff the merged survivor against each absorbed capture's original
+text if there's any doubt.
+
+** Step 5 — Score bucket fit against the current sprint's mission
+
+Read the current sprint's =sprint.org= mission and goals. For every
+capture that survives Steps 3–4, ask: does this fit the *next*
+version's likely near-term direction (the current sprint's mission is
+the best available signal for that), or is it genuinely longer-horizon
+(→ =deferred=)? Move files between buckets accordingly (=git mv=,
+=:ID:= unchanged). A capture with no clear relationship to any
+foreseeable near-term direction and no standalone urgency is a
+candidate for =next=; only demote to =deferred= for items that are
+clearly not next-in-line, not merely "not this sprint's theme" — next
+should hold real candidates for the *next* planning session, not only
+things thematically matching whatever sprint happens to be open right
+now.
+
+** Step 6 — Regenerate indexes and run the sprint audit
+
+#+begin_src sh :results verbatim
+python3 projects/ores.codegen/scripts/regenerate_backlog_indexes.py
+./compass.sh sprint audit
+#+end_src
+
+=discarded.org= is not regenerated by the script (a known gap) — if
+this run discarded anything, that index will be stale; note it in the
+report rather than silently leaving it inconsistent.
+
+** Step 7 — Scaffold (or continue) the deep-refinement story and its report task
+
+*** 7a — The story (once, ever)
+
+If =doc/agile/product_backlog/backlog_deep_refinement/story.org=
+doesn't exist yet, scaffold it once:
+
+#+begin_src sh :results verbatim
+./compass.sh add story \
+  --parent-dir doc/agile/product_backlog \
+  --parent-id D4219199-7B17-4A89-B4BC-6019738642DA \
+  --slug backlog_deep_refinement \
+  --title "Backlog deep refinement" \
+  --description "Recurring deep audits of the product backlog: every capture in inbox/next/deferred verified against the codebase, duplicates merged, buckets re-scored against the current sprint's mission."
+#+end_src
+
+This story is not sprint-scoped — it is a standing home for every
+deep-refinement run, the same way the sprint-health-review pattern
+gives each sprint one story with N numbered review tasks.
+
+*** 7b — The report task (every run)
+
+Count existing =task_deep_refinement_*.org= files under that story
+and increment. Scaffold:
+
+#+begin_src sh :results verbatim
+./compass.sh add task \
+  --parent-dir doc/agile/product_backlog/backlog_deep_refinement \
+  --slug deep_refinement_<number> \
+  --title "Deep refinement <number> — <date>" \
+  --description "Deep backlog refinement run <number>: inbox/next/deferred audit."
+#+end_src
+
+** Step 8 — Write the full report into the task's =* Result=
+
+Every file touched this run gets one row, linked by =id:= (org-roam
+link, not a path — paths move). "Touched" means read *and acted on*;
+a capture that was read, verified still valid, and left exactly where
+it was does not need a row (note the total count instead), but
+anything moved, merged, discarded, or edited does.
+
+#+begin_example
+,* Result
+
+,** Run on <date>
+
+,*** Before / after
+
+| Bucket   | Before | After | Notes |
+|----------+--------+-------+-------|
+| inbox    |     <n> |    <n> |       |
+| next     |     <n> |    <n> |       |
+| deferred |     <n> |    <n> |       |
+
+,*** Captures discarded (resolved)
+
+| Capture | Resolved by |
+|---------+-------------|
+| [[id:UUID][Title]] | [[id:UUID][What closed it]] — one line why |
+
+,*** Duplicates merged
+
+| Kept | Absorbed | Notes |
+|------+----------+-------|
+| [[id:UUID][Title]] | [[id:UUID][Title]] | what was folded in; links repointed |
+
+,*** Bucket moves
+
+| Capture | From | To | Why |
+|---------+------+----+-----|
+| [[id:UUID][Title]] | inbox | next | fits sprint N's mission: <one line> |
+
+,*** Clarity fixes
+
+| Capture | What changed |
+|---------+--------------|
+| [[id:UUID][Title]] | title/description sharpened: <one line> |
+
+,*** Paperwork bugs found
+
+[Any task/story State that didn't match reality — same class of
+finding as this session's sprint-22 mislabeled-ABANDONED stories.
+Link each one and note the fix.]
+
+,*** Summary
+
+[One paragraph: total captures reviewed, net bucket-size deltas,
+biggest single finding, and one recommendation for what the next
+deep run should watch for.]
+#+end_example
+
+Mark the task =State: DONE= and =Now: Complete.= once written.
+
+** Step 9 — Commit
+
+One atomic commit for the whole run (docs move together with the
+report that explains them):
+
+#+begin_src sh :results verbatim
+git add doc/agile/product_backlog/ doc/agile/versions/
+git commit -m "[agile] Deep backlog refinement <number>"
+#+end_src
+
 * Recipes
 
 - [[id:7870BDC8-839B-4E46-9E32-F0EA9F7D5936][How do I refine the backlog?]] — the human-readable checklist for
@@ -92,6 +312,8 @@ come up.
   this skill orchestrates.
 - [[id:FB451B15-9674-4B61-A9F8-7DAEEB4B365A][Sprint planner]] — use instead when the goal is to select stories
   for a specific sprint.
+- [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][Agile review sprint]] — the health-review pattern deep refinement
+  mode is modelled on (persistent parent + numbered report tasks).
 
 * Artefacts                                                        :noexport:
 

@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 40781D42-C34B-47F3-8612-7FA9C2202E5B
+:END:
+#+title: Task: Design the history diff architecture and testing strategy
+#+description: Investigation and design: where field-string mappers live, the generic NATS history-diff message shape, whether diff model and logic warrant a dedicated ores.diff component, how HistoryDialogBase adoption proceeds incrementally across 67 dialogs, and how each layer is tested.
+#+type: task
+#+level: s1
+#+filetags: :qt:design:architecture:history:consolidate_history_dialogs:sprint_23:v0:
+#+owner: marco
+#+branch: feature/history-diff-design
+#+pr: https://github.com/OreStudio/OreStudio/pull/1072
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce the design for the history-dialog consolidation: where the
+field-string mappers live, the shape of the extended history
+messages, whether the diff model and logic warrant a dedicated
+ores.diff component, how HistoryDialogBase adoption proceeds
+incrementally across the 67 dialogs without racing the in-flight
+codegen migration, and how each layer is tested.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing — task closed.                 |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- Architecture and overall approach recorded in the story
+  (Architecture and Decisions sections).
+- Implementation specifics distributed into the Plans of the raised
+  implementation tasks.
+- The codegen dependency question answered explicitly: phases A/B
+  codegen-free, template rollout gated, codegen'd mappers deferred.
+- Testing strategy defined per layer.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1072][#1072]] | [agile] Scaffold the history dialog consolidation story: design and tasks |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1-3 | DONE task carried placeholder Goal/Acceptance and stale Plan template | task_history-diff-design.org | Fixed in 23a4da76a | Goal and Acceptance filled; transient Plan cleared. |
+
+* Result
+
+Design produced and distributed per convention: the architecture and
+overall approach (three layers — ores.diff component, server-side
+per-entity field mappers, history responses extended with fields and
+changes — plus the A-D migration sequence and its codegen gating)
+live in the story's Architecture and Decisions sections; the
+implementation specifics live in the Plans of the six tasks raised
+from the design. Key findings: the 67 history dialogs are
+codegen-generated (bulk migration is a template edit), the base is a
+stub with one adopter, and the detail panel's need for full values
+shapes the message to carry both fields and diffs.

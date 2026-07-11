@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: B4526411-7FDC-48E8-A346-DA69B5F66BDD
+:END:
+#+title: Task: pair_code inline flag icon renders tiny regardless of keyFlagIconSize()
+#+description: The QLineEdit-hosted pair-code flag (set_line_edit_flag_icon in FlagIconHelper.hpp) stays small no matter what QSize is passed, unlike QComboBox/QTableView icons which correctly scale. Attempted fix (reaching into the internal QToolButton and forcing setFixedSize/updateGeometry) made no visible difference and was reverted -- needs proper investigation, parked for now.
+#+type: task
+#+level: s1
+#+filetags: :sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-09
+#+updated: 2026-07-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]]. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The pair-code inline flag on =CurrencyPairDetailDialog='s Pair Code
+field (and any other =has_key_flag_icon= entity's key field) stays
+visibly tiny regardless of the =QSize= passed to =keyFlagIconSize()=,
+unlike the same flags rendered via =QComboBox= (Base/Quote/Settlement
+Currency) or =QTableView= (list grids), which correctly respect
+=single_flag_icon_size()=/=currency_pair_icon_size()=.
+
+Root mechanism: =set_line_edit_flag_icon()=
+(=projects/ores.qt/api/include/ores.qt/FlagIconHelper.hpp=) adds the
+icon via =QLineEdit::addAction()=, which Qt renders through an
+internal =QToolButton= — reaching into it via
+=findChild<QToolButton*>()->setIconSize(...)= is the documented
+approach but had no visible effect in testing. A follow-up attempt
+that also forced =setFixedSize()= and =updateGeometry()= on both the
+button and the line edit *also* made no difference and was reverted
+(too much complexity for an unconfirmed fix) — see
+=set_line_edit_flag_icon()='s current comment.
+
+Needs proper investigation: attach a debugger or add temporary
+logging to confirm whether =findChild<QToolButton*>()= is even
+finding the right widget (timing — is it created synchronously by
+=addAction()=, or lazily on first paint?), and whether the style in
+use has its own icon-size override that's winning over the widget
+property.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-09                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

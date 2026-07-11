@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: 037B474D-84ED-4888-9054-D58AB1FB10D2
+:END:
+#+title: Story: Consolidate history dialogs onto HistoryDialogBase
+#+description: All 67 entity history dialogs duplicate the version-list/load/stale pipeline and 6 hand-roll field diffs with four different idioms. Compute diffs server-side via a domain-to-field-strings mapper and a generic NATS history message; adopt HistoryDialogBase everywhere with DiffResult and a calculateDiff template method in the base.
+#+type: story
+#+level: s2
+#+filetags: :sprint_23:v0:
+#+created: 2026-06-05
+#+updated: 2026-07-11
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Carried from [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] (4/7 tasks done); the codegen org-model migration gate ([[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]]) cleared 2026-06-11, so Phase C can now proceed.
+
+* Goal
+
+Every entity history dialog derives from =HistoryDialogBase= and shares
+one implementation of the common machinery, so that fixes and UX
+changes land once instead of 67 times, and the per-dialog code shrinks
+to what is genuinely entity-specific (field comparisons and labels).
+
+Survey (2026-06-05, the day the CI broke on exactly this duplication):
+
+- 67 =*HistoryDialog= classes across ores.qt sub-libraries.
+- =HistoryDialogBase= already exists in ores.qt.api (signals,
+  =markAsStale()=, =code()=) but has exactly one adopter
+  (=WorkspaceHistoryDialog=).
+- 64 dialogs duplicate the version-list/load pipeline
+  (=onVersionSelected=, =loadHistory=, =QFutureWatcher= plumbing).
+- 6 dialogs (Account, SystemSetting, ChangeReason,
+  ChangeReasonCategory, Country, Currency) hand-roll a changes tab
+  with field-level diffs using four different idioms: a free
+  function, per-call lambdas, a =CHECK_DIFF_STRING= macro, and inline
+  if-blocks. The Account variant named a class-private alias from an
+  anonymous-namespace function, breaking GCC/AppleClang builds
+  (fixed tactically; this story is the proper fix).
+
+Design direction — two layers:
+
+1. /Server-side diffs (the deeper fix)./ Computing field-level diffs
+   in the UI is the wrong place: when history views are added to the
+   shell, Wt and HTTP frontends the same comparison code would be
+   repeated in each. Instead:
+   - A per-entity mapper converts a domain type to an ordered list of
+     (field name, value) strings — one definition per entity, server
+     side, reusable by every frontend and candidate for codegen from
+     the entity models.
+   - A generic NATS history message returns the computed diffs
+     between consecutive versions (field, old value, new value),
+     rather than shipping two full versions for the client to
+     compare. Frontends only render.
+
+2. /Qt consolidation onto the base./
+   - =DiffResult= (list of (field, (old, new)) rows) is defined once
+     in =HistoryDialogBase=.
+   - The base owns the changes-tab rendering flow and calls an
+     abstract =calculateDiff(current, previous)= template method;
+     derived dialogs implement only the per-entity field
+     comparisons. Once the server-side diff message lands,
+     =calculateDiff= implementations collapse into rendering the
+     server-provided rows, and the template method may disappear
+     entirely.
+   - Shared =checkString= / =checkInt= / =checkBool= helpers live
+     with the base so all dialogs format values identically in the
+     interim.
+   - Version-list population, async load, stale handling and toolbar
+     wiring migrate into the base (or an intermediate templated CRTP
+     helper if the version types resist a common interface).
+
+* Architecture
+
+Three layers, from the wire up; full implementation detail lives in
+each task's Plan.
+
+1. /ores.diff/ — a dependency-light leaf component owning the
+   vocabulary of "what changed": =field_value=, =diff_entry=,
+   =diff_result=, and a =compute= engine. Every domain service
+   computes with it; every frontend renders from it; std + rfl only.
+2. /Per-entity field mappers, server side/ — domain type → ordered,
+   human-labelled, rendered field list, living beside the entity's
+   other mappers. Hand-written for the pilot; a codegen candidate
+   later.
+3. /Extended history responses/ — the existing typed per-entity
+   subjects remain; each version gains =fields= (full render — the
+   detail panel needs complete values) and =changes= (diff vs the
+   previous version). Frontends — Qt today; shell, Wt, HTTP tomorrow —
+   are dumb renderers. Full domain payloads stay during migration.
+
+Migration runs A→D: grow the base and migrate the six hand-rolled
+dialogs (codegen-free); pilot currency end to end (codegen-free);
+template rollout (gated on the codegen org-model migration — a
+template-only edit, but the regeneration sweep must not race the
+in-flight model migration); codegen the mappers (deferred).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Gate cleared (org-model migration DONE 2026-06-11); Phase C ready to start. |
+| Waiting on    | Nothing.                               |
+| Next          | Phase C: template rollout across the ~61 remaining generated dialogs. |
+| Last touched  | 2026-07-11                               |
+
+* Acceptance
+
+- Every entity history dialog derives from =HistoryDialogBase=; the
+  per-dialog code is limited to what is genuinely entity-specific.
+- Field-level diffs are computed server-side; no frontend holds
+  comparison logic.
+- ores.diff exists with exhaustive engine tests; mappers and handlers
+  are tested at their own layers.
+- The shell can render history as a unified diff.
+- No codegen change is forced while the org-model migration is in
+  flight; the template rollout is explicitly gated.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:40781D42-C34B-47F3-8612-7FA9C2202E5B][Design the history diff architecture and testing strategy]] | DONE | 2026-06-05 | 2026-06-05 | Design distributed into this story's Architecture and the tasks' Plans. |
+| [[id:E9348344-C7A1-4B4A-969D-BDB56C96DE9A][Grow HistoryDialogBase and migrate the six hand-rolled dialogs]] | DONE | 2026-06-05 | 2026-06-05 | Scope grew to all 64 version-history dialogs; event-log dialogs renamed to Audit. PR 1080. |
+| [[id:83B7239F-5C29-4C52-900E-C9623C608DFD][Create the ores.diff component]] | DONE | 2026-06-05 | 2026-06-05 | Flat diff model + engine, std+rfl only; 14 tests. PR 1091. |
+| [[id:D575DCF0-2341-4630-9C47-F428F82C2FCE][Pilot server-side history diffs end to end on currency]] | DONE | 2026-06-05 | 2026-06-05 | Currency mapper + extended response + handler compose; dialog renders server rows; dogfooded. PR 1097. |
+| [[id:7B2998F0-3B7B-4A11-8A44-7464BF3F4CBB][Adopt the base in the history-dialog template and roll out]] | BACKLOG | | | Phase C: template target form + per-domain rollout. Gated on codegen org-model migration. |
+| [[id:D759765E-85A3-47B6-91C5-23FF938B0B34][Codegen field mappers from entity models]] | BACKLOG | | | Phase D, deferred: generate mappers once the hand-written shape is proven. |
+| [[id:F455B2BE-5562-4561-B8D2-9D85E218B669][Show history as a unified diff in ores.shell]] | DONE | 2026-06-05 | 2026-06-06 | Unified-diff rendering of the changes rows in the shell; no comparison logic client-side. |
+
+* Decisions
+
+- A dedicated =ores.diff= component (not a corner of ores.utility):
+  the types cross every domain service and every frontend; a leaf
+  component keeps the dependency arrows clean and matches the
+  many-small-components style.
+- Keep the typed per-entity history subjects; extend responses rather
+  than introducing a generic untyped subject.
+- Responses carry both =fields= and =changes= — mildly redundant, but
+  it makes every frontend a dumb renderer, which is the point.
+- Phases A and B are codegen-free by construction; the template
+  rollout is gated on the codegen org-model migration to avoid a
+  circular dependency; codegen'd mappers are deferred outright.
+
+* Out of scope
+
+-

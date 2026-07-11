@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: D759765E-85A3-47B6-91C5-23FF938B0B34
+:END:
+#+title: Task: Codegen field mappers from entity models
+#+description: Phase D (deferred): generate per-entity field-string mappers from the entity org models once the hand-written currency shape is proven and the codegen migration is complete.
+#+type: task
+#+level: s1
+#+filetags: :codegen:deferred:consolidate_history_dialogs:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Deferred: generate the per-entity field-string mappers from the
+entity org models, which already know field names, labels and types.
+Only after the hand-written currency shape is proven and the codegen
+org-model migration is complete.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- Mappers generated for all entities with history support.
+- Hand-written mappers retired.
+- Zero-diff guardrails green.
+
+* Plan
+
+1. Add a mapper template to ores.codegen mirroring the hand-written
+   currency mapper.
+2. Derive labels/formatting from model properties; extend models where
+   display metadata is missing.
+3. Replace hand-written mappers with generated ones, zero-diff where
+   the hand-written shape was followed.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: D575DCF0-2341-4630-9C47-F428F82C2FCE
+:END:
+#+title: Task: Pilot server-side history diffs end to end on currency
+#+description: Phase B2: hand-written currency field mapper; extend the currency history response with fields and changes; handler composes map+diff; CurrencyHistoryDialog renders server rows; handler and mapper tests; dogfood before/after.
+#+type: task
+#+level: s1
+#+filetags: :refdata:nats:qt:history:consolidate_history_dialogs:sprint_23:v0:
+#+owner: marco
+#+branch: feature/currency-history-pilot
+#+pr: 1097
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Prove the server-side diff architecture end to end on one entity:
+currency. After this task the currency history dialog renders rows the
+server computed, with no comparison logic client-side.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- Currency history response carries fields and changes; old payload
+  retained.
+- CurrencyHistoryDialog holds no field-comparison code.
+- Mapper and handler tests green; full build green; dogfood pass
+  recorded.
+
+* Plan
+
+1. Hand-write =currency_field_mapper= in ores.refdata.core: domain
+   type → ordered =field_value= list ("ISO Code" → "AOA"); formatting
+   per the conventions of the existing dialogs (Yes/No booleans,
+   standard timestamp rendering).
+2. Extend =get_currency_history_response=: per version add =fields=
+   (mapper output) and =changes= (=diff_result= vs previous; empty for
+   the oldest). Keep the full domain payloads during migration so
+   other clients are untouched.
+3. Handler composes: load versions → map each → diff consecutive
+   pairs via ores.diff.
+4. =CurrencyHistoryDialog= renders =fields= in the detail panel and
+   =changes= in the changes tab; its =calculateDiff= retires.
+5. Tests: mapper unit tests against the currency generator (field
+   order, labels, each type's formatting); handler test via
+   scoped_database_helper — write three versions, assert the changes
+   rows between consecutive versions and the fields of the latest.
+6. Dogfood: currency history dialog against a live backend before and
+   after; identical visible behaviour.
+
+* Notes
+
+- Dogfood (2026-06-05, live backend): bootstrapped a fresh
+  environment, created currency ZZD and amended it twice (name, then
+  symbol and fractions). =currencies history ZZD= in ores.shell — an
+  untouched pre-pilot client — rendered all three versions correctly
+  through the extended response, confirming the old payload is
+  retained and the new handler path (mapper + diff compose) serves
+  real traffic. Qt visual pass confirmed by Marco on a live desktop session: history dialog renders the server rows correctly (2026-06-05).
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1097][#1097]] | [refdata,qt,compass] Pilot server-side history diffs on currency; add compass shell; retire build.sh |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Round 1 raised no comments on the pilot itself | - | - | All three review comments targeted compass shell; recorded in its task. Fixes in . |
+
+* Result
+
+Merged in [[https://github.com/OreStudio/OreStudio/pull/1097][PR 1097]]. The server-side diff architecture is proven end to
+end on currency: each history version carries rendered fields (mapper
+order) and the field-level diff against its predecessor, computed by
+currency_field_mapper + the ores.diff engine in the handler; the full
+domain payload is retained for existing consumers. The Qt dialog is a
+pure renderer (server rows in the changes tab; a Field/Value details
+table) with no comparison code. Five mapper/compose tests plus a
+three-version repository round trip; dogfooded against a live backend
+via ores.shell (untouched client renders the extended response) and
+visually in the Qt UI by Marco. Review round 1 drew no comments on
+the pilot itself.

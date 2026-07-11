@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: CAC82ABE-5306-4B01-841A-0A98B25CD674
+:END:
+#+title: Task: Fix is_trading_book domain type from int to bool
+#+description: is_trading_book is modeled as type: integer / cpp_type: int even though it is semantically boolean; type: boolean/cpp_type: bool is natively supported elsewhere (e.g. zero_convention, market_series). Fix across domain/SQL/repository/protocol layers.
+#+type: task
+#+level: s1
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
+#+owner: marco
+#+branch: feature/fix-book-status-and-trading-flag
+#+pr: 1477
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+is_trading_book was modeled as type: integer / cpp_type: int for what
+is actually the Basel III/IV FRTB trading book / banking book
+classification -- a crucial regulatory concept, not a bare flag. Scope
+grew from a type fix (int -> bool) into modeling it properly: a
+regulatory_book_type lookup entity (Trading/Banking) with full Qt CRUD,
+badge-coloured combo, and a dedicated knowledge note on the Basel
+boundary.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-09                               |
+
+* Acceptance
+
+- [X] is_trading_book (bare int 1/0) replaced by a regulatory_book_type
+  lookup entity (Trading/Banking), FK-validated, full Qt CRUD wired
+  into the Trading menu.
+- [X] Book's regulatory_book_type field renders as a badge-coloured
+  combo, backed by the real lookup table (no hardcoded value list).
+- [X] New FRTB trading book / banking book boundary knowledge note
+  with the Basel III/IV regulatory treatment.
+- [X] All direct C++ consumers migrated to constants +
+  is_trading_book()/is_banking_book() utility functions instead of raw
+  int/string comparisons.
+- [X] DQ artefact staging pipeline (hand-maintained SQL, not codegen
+  output) updated to match.
+- [X] validate_schemas.sh passes clean (0 warnings).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1477][#1477]] | [ores.refdata,ores.qt] Fix book_status/is_trading_book modeling bugs |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Replaced is_trading_book with a proper regulatory_book_type lookup
+entity (mirroring book_status), full Qt CRUD + badge combo + Trading
+menu wiring, constants + is_trading_book()/is_banking_book() utility
+functions, new FRTB knowledge note. Reconciled combo handling onto
+main's independently-landed populateDynamicCombo mechanism (extended
+it with an on_success hook for badges). Fixed the same class of bug in
+the hand-maintained DQ artefact staging pipeline. Verified with a full
+rebuild, a real Barclays GLEIF provisioning run, and a clean
+validate_schemas.sh pass (added the RLS_001 ignore-list entry every
+other lookup_entity table already carries; filed the underlying
+codegen gap separately).

@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: DCC5853D-1B41-4EB0-8A85-07E2A8FABC07
+:END:
+#+title: Story: Refdata entity NATS event registrar audit
+#+description: Audit all refdata entities with a changed_event type and wire NATS event registrars for the ones still missing (26 of 34), closing the eventing gap systematically.
+#+type: story
+#+level: s2
+#+filetags: :sprint_23:v0:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every refdata entity with a =*_changed_event= type
+(=ores.refdata.api/eventing/=) should have a working NATS event
+registrar (=ores.refdata.service/messaging/*_event_registrar.cpp=)
+wired into =event_registrar.cpp=, so downstream consumers (audit
+trail, cache invalidation, other services) reliably learn when the
+entity changes. Investigation at planning time found only 8 of 34
+entities wired: =book=, =business_day_convention_type=, =country=,
+=currency=, =currency_pair=, =currency_pair_convention=,
+=party_type=, =purpose_type=. The remaining 26 have a defined event
+type but no registrar — audit and close the gap for all of them. The
+registrar work itself is simple and mechanical per entity (mirrors
+the existing =currency_event_registrar.cpp= pattern); the value here
+is systematic completeness, not novel design.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-11                               |
+
+* Acceptance
+
+- Every entity in [[*Entities missing a registrar][Entities missing a registrar]] below has a
+  =*_event_registrar.{hpp,cpp}= following the existing
+  =currency_event_registrar= pattern, registered in
+  =event_registrar.cpp=.
+- Each new registrar is exercised by at least one test confirming
+  the NATS message is published when the entity changes.
+- No entity with a =*_changed_event= type is left unwired by story
+  close (bar any explicitly deferred and recorded under * Decisions).
+
+* Entities missing a registrar
+
+Has a =*_changed_event= type but no =*_event_registrar.cpp= (26):
+=business_centre=, =business_unit=, =cds_convention=,
+=contact_type=, =counterparty=, =counterparty_contact_information=,
+=counterparty_identifier=, =currency_group=, =currency_market_tier=,
+=currency_pair_classification=, =deposit_convention=,
+=fra_convention=, =ibor_index_convention=, =monetary_nature=,
+=ois_convention=, =overnight_index_convention=, =party=,
+=party_contact_information=, =party_identifier=, =party_id_scheme=,
+=party_status=, =portfolio=, =regulatory_book_type=,
+=rounding_type=, =swap_convention=, =zero_convention=.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+Planned tasks (not yet scaffolded as task docs) — one task per small
+batch of entities, grouped by domain family:
+
+1. Party family: =party=, =party_status=, =party_identifier=,
+   =party_id_scheme=, =party_contact_information=, =counterparty=,
+   =counterparty_identifier=, =counterparty_contact_information=.
+2. Currency/FX family: =currency_group=, =currency_market_tier=,
+   =currency_pair_classification=, =monetary_nature=,
+   =rounding_type=.
+3. Convention family: =cds_convention=, =deposit_convention=,
+   =fra_convention=, =ibor_index_convention=, =ois_convention=,
+   =overnight_index_convention=, =swap_convention=, =zero_convention=.
+4. Books/portfolios/misc: =business_centre=, =business_unit=,
+   =contact_type=, =portfolio=, =regulatory_book_type=.
+5. Add a test per new registrar confirming NATS publication on
+   change (may fold into each batch's task above rather than a
+   separate task, depending on effort).
+
+* Decisions
+
+* Out of scope
+
+- Adding =*_changed_event= types to entities that don't have one yet
+  — this story only wires registrars for events that already exist.

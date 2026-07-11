@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: 9C428EBD-E6B2-4616-9225-D374C0555904
+:END:
+#+title: Task: Import the 2016-02-05 ORE reference vintage
+#+description: Import FX spot values from external/ore/examples/Legacy/Example_56/Input/market.txt into ores.marketdata as market_observation rows tagged source=ore.reference.
+#+type: task
+#+level: s1
+#+filetags: :synthetic-data-collections:sprint_23:v0:
+#+owner: marco
+#+branch: feature/import-2016-vintage
+#+pr: 1447
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-03
+#+updated: 2026-07-05
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Using the (possibly extended) import mechanism from
+[[id:32D9596A-ADB6-4ECE-9307-025B58C4C82A][Review and extend ores.marketdata import for ORE reference vintages]],
+import FX spot values from
+=external/ore/examples/Legacy/Example_56/Input/market.txt= (the
+richest FX quote set at the dominant ORE anchor date) into
+=ores.marketdata= as =market_observation= rows: =observation_datetime=
+=2016-02-05= (the ORE vintage date), =source = "ore.reference"=,
+=point_id = "SPOT"=. At minimum EURUSD (=1.132337=) and GBPUSD
+(≈=1.3946=, derived via EUR/GBP); include EURCHF/USDCHF/EURJPY if
+straightforward.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-05                               |
+
+* Acceptance
+
+- =market_observation= rows exist for at least EURUSD and GBPUSD,
+  dated =2016-02-05=, tagged =source = "ore.reference"=.
+- Values match the source file exactly (EURUSD =1.132337=).
+- Import is re-runnable (idempotent or safely repeatable) rather than
+  a one-shot manual script.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+Both blockers are now merged: =ores.shell='s =marketdata import=
+command (=47DEAA57=) and the duplicate-key fix for
+=Legacy/Example_56/Input/market.txt= (=C1BE59FA=) — verified live
+during that work: =✓ Imported 176 series, 7777 observation(s), 0
+fixing(s)= with 103 duplicate warnings, no errors.
+
+1. Recreate the DB fresh (=compass db recreate -y -k=), provision a
+   tenant/party (e.g. via the Barclays GLEIF recipe, or whatever the
+   synthetic collections story's environment actually needs — check
+   sibling tasks/decisions for the expected tenant setup), start
+   services.
+2. Run =marketdata import --file
+   external/ore/examples/Legacy/Example_56/Input/market.txt --source
+   ore.reference= (recipe:
+   [[id:DD527011-4F5E-4716-97A2-6AA8C70F3BB6][How do I import the 2016-02-05 ORE reference vintage market data?]]).
+3. Verify acceptance directly via SQL: =market_observation= rows exist
+   for EURUSD (=1.132337=) and GBPUSD (derived via EUR/GBP,
+   ≈=1.3946=) dated =2016-02-05=, =source = 'ore.reference'=. Check
+   EURCHF/USDCHF/EURJPY too if straightforward — note the story's
+   Decisions section already flags a known FX key-order bug in some
+   vendored =market.txt= files (=FX/RATE/USD/GBP= etc. storing
+   EUR-cross values, not USD-in-GBP as the key implies) — verify
+   against that context rather than assuming raw values are correct
+   as-is.
+4. Confirm re-runnability: running the same import twice should not
+   error or duplicate rows (import_service upserts market_series and
+   the observation dedup logic within one call; check what happens
+   across two separate calls with the same source/date/point_id —
+   probably fine since the unique constraint means a second identical
+   call would need its own duplicate-handling check, verify this
+   empirically rather than assuming).
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1447][#1447]] | [marketdata] Import 2016-02-05 ORE reference vintage |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | SPOT default applied to every observation, not just scalar series (raised on 3 review passes) | import_service.cpp | Accepted | Fixed in 7f5180833 — gated on is_scalar, threaded out of find_or_create_series |
+| 2 | No test coverage for the point_id default | service_import_service_tests.cpp | Accepted | Added scalar-SPOT and non-scalar-short-key-empty regression tests in 7f5180833 |
+| 3 | Pre-existing point_id='' rows in other environments won't be superseded by a re-run | import_service.cpp | Declined | No other environment has run this import path yet; nothing to backfill |
+| 4 | Domain test/docs still say scalar point_id is empty, contradicting the import's SPOT convention | domain_market_observation_tests.cpp | Declined | Out of scope for this task; struct default vs. import convention are distinct concerns — can file a follow-up |
+
+* Result
+
+DB recreated fresh, Barclays tenant/party provisioned (GLEIF bundle,
+81 parties), services started. Ran =marketdata import= against
+=Legacy/Example_56/Input/market.txt=: =✓ Imported 176 series, 7777
+observation(s), 0 fixing(s)= with the expected 103 duplicate-key
+warnings, no errors.
+
+Verified via SQL (=ores_marketdata_market_series_tbl= /
+=ores_marketdata_market_observations_tbl=, current rows only —
+=valid_to = ores_utility_infinity_timestamp_fn()=), all dated
+=2016-02-05=, =source = 'ore.reference'=, =point_id = 'SPOT'=:
+
+| Pair    | Series qualifier | Value             |
+|---------+-------------------+--------------------|
+| EURUSD  | EUR/USD           | 1.132337 (exact)   |
+| GBPUSD  | USD/GBP           | 1.394610179594994  |
+| EURCHF  | EUR/CHF           | 1.125046           |
+| USDCHF  | USD/CHF           | 1.006480623903378  |
+| EURJPY  | EUR/JPY           | 128.15046          |
+
+GBPUSD is stored as series =USD/GBP= (the known key-order quirk —
+value is the EUR-cross-derived GBP/USD rate, not USD-in-GBP),
+consistent with the story's =* Decisions=. EUR/USD ÷ EUR/GBP
+(=1.132337 / 0.811938 ≈ 1.3946=) matches the stored =USD/GBP= value,
+confirming it is correct.
+
+Confirmed re-runnability: ran the same import a second time —
+=✓ Imported 0 series, 7777 observation(s), 0 fixing(s)=, no errors.
+Observation table is bitemporal: the first run's 7777 rows were
+closed out (=valid_to= set) and 7777 fresh current rows written; no
+duplicate *current* rows, and EUR/USD's current value is still
+exactly =1.132337=.
+
+All acceptance criteria met.

@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: B3A445A2-F4E1-4315-BDEC-BC9FD9072B9D
+:END:
+#+title: Task: Drop legacy pre-codegen marketdata tables
+#+description: Remove ores_marketdata_series_tbl, ores_marketdata_observations_tbl and ores_marketdata_fixings_tbl: their \ir includes in marketdata_create.sql/marketdata_drop.sql, their entries in marketdata_rls_policies_create.sql/drop.sql, and their nodes in ores_schema.puml. Zero C++ references exist; superseded by market_series/market_observations/market_fixings (codegen-managed).
+#+type: task
+#+level: s1
+#+filetags: :marketdata_legacy_table_cleanup:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-02
+#+updated: 2026-07-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Delete =create/marketdata/marketdata_series_create.sql=,
+=marketdata_observations_create.sql=, =marketdata_fixings_create.sql=
+and their =drop/= counterparts; remove their =\ir= includes from
+=marketdata_create.sql=/=marketdata_drop.sql=; remove their entries
+from =marketdata_rls_policies_create.sql=/=drop.sql=; remove their
+nodes from =ores_schema.puml=. Verify with a fresh
+=compass db recreate=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-02                               |
+
+* Acceptance
+
+- All three legacy create/drop SQL files removed, includes cleaned up.
+- =ores_schema.puml= no longer shows the legacy tables.
+- =compass db recreate -y -k= succeeds and neither legacy table exists afterwards.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

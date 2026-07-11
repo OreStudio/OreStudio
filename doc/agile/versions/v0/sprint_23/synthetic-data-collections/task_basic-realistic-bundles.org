@@ -1,0 +1,209 @@
+:PROPERTIES:
+:ID: 73E7622C-CBD2-48C8-96B9-DEA8AA7C45C6
+:END:
+#+title: Task: Seed Basic and Realistic dataset bundles
+#+description: Create the Basic and Realistic dataset bundles, both seeding initial spot from the imported 2016-02-05 vintage, differing only in GMM/process parameters.
+#+type: task
+#+level: s1
+#+filetags: :synthetic-data-collections:sprint_23:v0:
+#+owner: marco
+#+branch: feature/seed-basic-realistic-bundles
+#+pr: 1498
+#+blocked_on: [[id:C236C0DC-4ED1-4EEE-8DDD-CD841CED3AB2][Publish a curated FX driver-rate dataset for 2016-02-05]]
+#+blocked_since: 2026-07-10
+#+created: 2026-07-03
+#+updated: 2026-07-03
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create =Basic= and =Realistic= dataset bundles (mirroring how
+=ore_analytics= was created in
+[[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]]), each seeding its
+FX configs' initial price from the imported =2016-02-05= vintage
+([[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]]). The two bundles differ
+only in GMM/process parameters: =Basic= uses simple/exaggerated
+dynamics (easy to eyeball, exercises every UI feature); =Realistic=
+uses dynamics calibrated to look like actual FX behaviour. Decide
+during implementation whether these sit alongside or replace
+=ore_analytics=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-10                               |
+
+* Acceptance
+
+- =synthetic_basic= and =synthetic_realistic= dataset bundles exist,
+  each with FX configs for all 8 major driver pairs (EUR/USD, GBP/USD,
+  USD/CHF, USD/JPY, USD/SEK, AUD/USD, USD/CAD, NZD/USD) — widened from
+  the original "at least EUR/USD and GBP/USD" once the full driver-rate
+  dataset made all 8 pairs available.
+- Both bundles' initial prices match the imported curated FX
+  driver-rate dataset ([[id:C236C0DC-4ED1-4EEE-8DDD-CD841CED3AB2][2016-02-05 vintage]]) exactly (no independently
+  hand-typed numbers) — via =price_source = 'vintage'=, same guard
+  mechanism as =ore_analytics=.
+- Provisioning a party with either bundle produces working feed
+  configs end to end (matching the existing =ore_analytics=
+  verification pattern), each pair carrying a real, calibrated GMM
+  mixture rather than a single hardcoded placeholder component.
+
+* Plan
+
+Decided to keep =Basic= and =Realistic= as two *new*, separate bundles
+(=synthetic_basic=, =synthetic_realistic=) alongside =ore_analytics=,
+not a replacement — =ore_analytics= keeps its existing 2-pair starter
+set unchanged (default provisioning still uses it), while the new
+bundles are opt-in alternatives a party can additionally publish. Each
+new bundle carries its own dataset
+(=synthetic.fx_spot_configs.basic=/=.realistic=) plus the existing
+=ore.report_definitions= member.
+
+Made the publish function properly data-driven rather than
+hardcoding a vintage tag and a single GMM component in PL/pgSQL (the
+prior code's own comment flagged this as the thing to fix once a
+dataset carries its own vintage — see
+=synthetic_publish_from_dq_create.sql='s old comment, now removed):
+- Added =price_source=/=vintage_source=/=vintage_date= columns to
+  =ores_dq_synthetic_fx_spot_configs_artefact_tbl= (previously
+  hardcoded to =ore.reference=/=2016-02-05= for every dataset).
+- Added a new =ores_dq_synthetic_gmm_components_artefact_tbl= —
+  per-pair, per-dataset GMM component rows — so each dataset supplies
+  its own calibrated mixture instead of the publish function inserting
+  one hardcoded placeholder component for every config. Falls back to
+  the old single placeholder only if a dataset supplies no component
+  artefact rows (keeps any future dataset that skips this optional
+  table working, just uncalibrated).
+- Backfilled =ore_analytics='s existing =synthetic.fx_spot_configs=
+  dataset with the equivalent explicit rows so its published behaviour
+  is unchanged (still =ore.reference=/=2016-02-05=, still a single
+  placeholder component).
+
+Process/parameter choices for =Realistic= (also updated =Basic= to
+cover all 8 pairs, previously would have inherited only 2):
+- *Basic*: single-component geometric process, =ticks_per_hour = 3600=
+  (1/sec), one exaggerated =stdev = 0.0008= applied uniformly to all 8
+  pairs — deliberately simple and easy to eyeball, exercises every UI
+  feature (ticking, charting, GMM editing).
+- *Realistic*: geometric (GBM), not Ornstein-Uhlenbeck — all 8 pairs
+  are freely-floating G10 majors with no active peg/defended band in
+  2016 (CHF's franc floor was abandoned Jan 2015; none of the others
+  were ever pegged), so they behave close to a random walk at the
+  tick/intraday horizons this generator models; real FX mean reversion
+  only shows up at multi-year PPP horizons, far beyond this generator's
+  scope. OU would misrepresent these pairs. =ticks_per_hour = 1800=
+  (every 2 seconds — revised down from an initial once/minute choice,
+  see Result: the feed loop sleeps a full tick period before its
+  *first* publish, so once/minute meant a full 60s wait with nothing
+  visible after starting a feed). Each pair gets a 2-component Gaussian mixture: a primary component
+  (weight 0.95) calibrated to that pair's approximate 2016 annualised
+  realised vol (converted to per-tick stdev via
+  =vol / sqrt(ticks_per_year)=), plus a low-weight tail component
+  (weight 0.05, 4x the primary's stdev) adding the fat tails a single
+  Gaussian understates. Zero mean on both components (a random walk has
+  no systematic drift over this horizon).
+
+Found and fixed a real bug during manual verification (not caught by
+the initial db-recreate smoke test, only surfaced by switching a party
+between bundles): publishing =synthetic_realistic= (2 GMM components
+per pair) then =synthetic_basic= (1 component per pair) for the same
+party left Realistic's tail component (=component_index = 1=) orphaned
+— still =valid_to = infinity= — because =upsert= mode only
+inserted/updated matching indices, never voided indices no longer
+present in the new dataset. Fixed by voiding any existing component
+whose index isn't part of the current dataset's mixture for that pair,
+unconditionally (not just under =replace_all=) — the mixture is a
+complete set per (pair, dataset), not a sparse independently-upserted
+list. Re-verified: switching Realistic → Basic → Realistic now leaves
+exactly the expected component count each time, no orphans.
+
+Confirmed by design (raised by the user, not a bug): a party cannot
+have both =Basic= and =Realistic= active simultaneously for the same
+pair, because =fx_spot_generation_config= is keyed by
+=(tenant, party, base_currency, quote_currency)= — publishing one
+after the other overwrites the same row/=source_name=/NATS subject,
+it does not create parallel feeds. Making them coexist needs
+namespacing the feed identity by collection, which is exactly the
+scope of the sibling backlog task
+[[id:A3787A77-1F23-496D-B0E8-A198BE237735][Namespace feed source_name/NATS subject by collection]] (still
+BACKLOG) — Basic/Realistic are designed as mutually-exclusive
+archetypes a party picks one of until that task lands.
+
+Verified end-to-end via a full =db recreate= → =barclays_system_provision.ores=
+run from scratch, then hand-published =synthetic_realistic= and
+=synthetic_basic= (not part of standard provisioning — new opt-in
+bundles) via =bundles publish <code> --wait --party-id <id>=: all 8
+pairs land correctly for each bundle with the expected process
+type/tick cadence/GMM mixture, sourced from the curated vintage, and
+switching between the two bundles leaves no orphaned components.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1498][#1498]] | [synthetic] Seed Basic and Realistic FX spot config bundles |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =ClientMarketFixingModel= has the same unfiltered-fetch-then-client-filter truncation bug this PR fixed for observations | =ClientMarketFixingModel.cpp= | Declined (for now) | Needs a protocol change (=series_id= field), different scope; captured as =fixings_model_unfiltered_page_truncation= |
+| 2 | =total_available_count= stays unfiltered by =series_id= after this PR's fix, inconsistent with the (now-filtered) result rows | =market_observation_handler.hpp= | Declined | Pre-existing, not user-visible today (field unused by the window); noted in the fixings capture for whoever picks it up |
+| 3 | No unique constraint on =(dataset_id, base_currency_code, quote_currency_code, component_index)= for the new GMM components artefact table | =dq_synthetic_gmm_components_artefact_create.sql= | Declined | Defense-in-depth suggestion; nothing in current populate scripts can produce a duplicate, downstream unique index would catch it loudly if that changed |
+| 4 | Literate codegen source (=.org=) doesn't declare =price_source=/=vintage_source=/=vintage_date=, drifted from the hand-edited generated SQL | =ores.dq.synthetic_fx_spot_config_lookup_entity.org= | Accepted | Fixed in 98ebe0f40 — added the 3 missing column sections, verified by hand against the mustache template's rendering logic |
+| 5 | Fallback (=else=) branch of the GMM voiding fix has no equivalent orphan-voiding step | =synthetic_publish_from_dq_create.sql= | Accepted | Fixed in 98ebe0f40 — mirrors the primary branch's voiding logic; verified live against a real DB |
+
+* Result
+
+Delivered: =synthetic_basic= and =synthetic_realistic= bundles, each
+covering all 8 major driver pairs, seeded from the curated 2016-02-05
+vintage, with a genuinely calibrated per-pair GMM mixture instead of a
+hardcoded placeholder. Both went through five rounds of PR review;
+every finding was triaged (2 fixed and verified live, 3 declined with
+recorded reasoning — see =* Review=).
+
+Two issues surfaced during manual end-to-end testing, after the code
+itself was already reviewed and merged-clean:
+
+- *Realistic's tick cadence was originally too slow to be usable*:
+  =ticks_per_hour = 60= (once/minute) meant a full 60-second wait with
+  nothing visible after starting a feed, because
+  =fx_spot_feed::start= (=projects/ores.synthetic/service/src/fx_spot_feed.cpp:64-106=)
+  always sleeps a full tick period before its *first* publish — there
+  is no immediate tick on start. Revised to =ticks_per_hour = 1800=
+  (every 2 seconds), recalibrating each pair's per-tick stdev for the
+  new tick rate (annualised vol / 3970.9, replacing / 725.0) so the
+  target annualised volatility is unchanged. Captured
+  [[id:C75D1DCC-ED4A-48D0-9035-0B9E4D9C2593][varying tick timing itself stochastically]] as a future refinement,
+  out of this task's scope.
+- Diagnosed (with the user) why a party can't run =Basic= and
+  =Realistic= simultaneously for the same pair: both are keyed by
+  =(tenant, party, base_currency, quote_currency)=, so publishing one
+  after the other overwrites the same feed identity rather than
+  creating a parallel one — confirmed as the existing, tracked scope of
+  [[id:A3787A77-1F23-496D-B0E8-A198BE237735][Namespace feed source_name/NATS subject by collection]], not a new gap.
+
+Also found and captured two adjacent, out-of-scope issues while testing
+this task's feeds against the Qt client (both filed separately, not
+fixed here): [[id:9A614F60-45C5-4759-AF7D-80F9FBFA1103][the FX Spot chart doesn't refresh when feed bindings change
+while it's already open]], and a Gemini UI review surfaced
+[[id:B6422FA1-D61A-4D9D-B6B8-DFE3CD12E1C5][several readability issues in the FX Spot Monitor widget]] (color
+fatigue, alignment, JPY decimal convention, redundant status text).
+
+Verified end-to-end multiple times via full =db recreate= →
+=barclays_system_provision.ores= → hand-published =synthetic_basic=/=synthetic_realistic=
+(new opt-in bundles, not part of standard provisioning) → live query
+confirmation of tick cadence, GMM mixture, and no orphaned components
+across bundle switches.

@@ -1,0 +1,343 @@
+:PROPERTIES:
+:ID: 86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F
+:END:
+#+title: Task: B5: Implement supported/target set model for physical space binding
+#+description: Replace --profile with a supported/target set model. The entity's ores.* :PROPERTIES: drawer declares its supported set (what it can generate). An optional CLI --address declares the target set (what to generate this run; defaults to supported). What actually generates = target ∩ supported. Target ∩ supported = ∅ → warning. --profile is removed. Replaces the ad-hoc #+sql_only and #+has_qt flags.
+#+type: task
+#+level: s1
+#+filetags: :codegen-unification-blockers:sprint_23:v0:
+#+owner: marco
+#+branch: feature/codegen-physical-space-binding
+#+pr: 1361
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Introduce the supported/target set model for physical-space generation, following the
+[[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD variability]] convention used by Dogen. Physical space is a "set of sets":
+technical-space → facet → archetype. Two named sets govern generation for each run:
+
+- *Supported set (S_e)* — what entity =e= can generate. Derived from =ores.*= properties in
+  its =:PROPERTIES:= drawer (specificity-resolved) intersected with the model-types filter.
+  Entities with no =ores.*= properties: S_e = all archetypes matching the model-type (backward
+  compatible with current behaviour).
+- *Target set (T)* — what to generate this run. Default: T = S_e. The CLI =--address= argument
+  sets T = the set of all archetypes matching that address (hierarchically expanded from the
+  facet catalogue).
+
+*What actually generates* for entity =e= = T ∩ S_e.
+*Warning condition*: T ∩ S_e = ∅ → emit warning "=<entity>=: nothing to generate for address
+=<addr>=="; continue with other entities.
+*Error condition*: =--address= value is not a valid address in the facet catalogue → error.
+
+** Supported set: ores.* property-drawer syntax
+
+The address hierarchy is =ores.{technical_space}[.{facet}[.{archetype}]].enabled=:
+
+| Address | Level | Example effect on S_e |
+|---------+-------+-----------------------|
+| =:ores.sql.enabled: false= | technical space | removes all SQL facets from S_e |
+| =:ores.cpp.enabled: false= | technical space | removes all C++ facets from S_e |
+| =:ores.cpp.qt.enabled: false= | facet | removes only =qt= from S_e |
+| =:ores.cpp.domain.class_header.enabled: false= | archetype | removes one archetype from S_e |
+
+*Specificity resolution*: more-specific address overrides less-specific. =:ores.cpp.enabled:
+true= + =:ores.cpp.qt.enabled: false= → S_e includes all C++ facets except Qt. This replicates
+Dogen's =:masd.cpp.enabled:= / =:masd.csharp.enabled:= semantics exactly.
+
+** Target set: CLI --address
+
+#+begin_src sh
+# Generate everything the entity supports (T = S_e)
+./projects/ores.codegen/codegen.sh generate --component refdata
+
+# Generate only the sql technical space (T = all sql archetypes)
+./projects/ores.codegen/codegen.sh generate --component refdata --address sql
+
+# Generate only the qt facet (T = cpp.qt archetypes)
+./projects/ores.codegen/codegen.sh generate --component refdata --address cpp.qt
+#+end_src
+
+=--profile= is removed. The entity's =ores.*= binding IS the profile; =--address= is only a
+filter, never an expansion. Updating all existing compass commands and skills to remove
+=--profile= invocations is in scope.
+
+** Technical-space to facet map
+
+For hierarchical address resolution, the TS→facet map lives in a new =* Technical spaces=
+section of =facet_catalogue.org= (single authoritative source):
+
+| Technical space | Member facets |
+|-----------------+---------------|
+| =sql= | =sql=, =non-temporal-sql= |
+| =cpp= | =domain=, =generator=, =repository=, =service=, =protocol=, =nats-eventing=, =nats-handler=, =qt=, =non-temporal-domain=, =non-temporal-repository= |
+
+** Implementation notes
+
+- Add =* Technical spaces= section to =facet_catalogue.org=.
+- Implement in a dedicated module (=codegen/physical_space.py=):
+  - =compute_supported_set(properties, facet_catalogue, model_type) -> frozenset[str]= — resolves
+    =ores.*= properties with specificity ordering into a set of facet names for this entity.
+  - =compute_target_set(address, facet_catalogue) -> frozenset[str]= — expands a CLI address
+    to the matching set of facet names; raises on unknown address.
+  - =resolve_generation_set(supported, target) -> frozenset[str]= — returns =supported ∩ target=;
+    warns if the intersection is empty.
+- *Not* inline in =core.py= or =generator.py= — keep generation-set logic independently testable.
+- Remove =--profile= from the CLI arg parser; add =--address= (optional).
+- Scan and update all compass commands and skills that pass =--profile=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Nothing — shipped via PR #1361 (merged 2026-06-28). |
+| Waiting on   | Nothing. (B1 landed first via PR #1355, 2026-06-27.) |
+| Next         | Follow-ups tracked as B9/B10/B11 (rename templates, retire facet_catalogue, migrate --profile callers). |
+| Last touched | 2026-06-29                               |
+
+* Acceptance
+
+** Supported-set resolution
+- Entity with =:ores.cpp.enabled: false= → S_e excludes all C++ facets; SQL output only.
+- Entity with =:ores.cpp.qt.enabled: false= → S_e includes all C++ facets except Qt.
+- Combined: =:ores.cpp.enabled: true= + =:ores.cpp.qt.enabled: false= → S_e = all C++ except
+  Qt (more-specific address wins).
+- Entity with no =ores.*= properties → S_e = all archetypes matching model-types filter
+  (backward-compatible; no regression).
+
+** Target-set and intersection
+- Running with no =--address= → generates all of S_e (T = S_e).
+- Running =--address sql= → T = all sql facets; generates T ∩ S_e.
+- Running =--address cpp= for entity with =:ores.cpp.enabled: false= → T ∩ S_e = ∅; warning
+  emitted; run continues for other entities.
+- Running =--address UNKNOWN= → error (unknown address not in facet catalogue).
+
+** CLI and skills
+- =--profile= argument is removed from the codegen CLI.
+- All existing compass commands and skills updated to remove =--profile= invocations.
+- =--address= (optional) replaces =--profile= as the generation scope filter.
+
+** Facet catalogue
+- =facet_catalogue.org= has a =* Technical spaces= section mapping each TS to its member
+  facets; loaded by =generator.py= at startup.
+
+** Isolation and testing
+- All supported/target set logic lives in =codegen/physical_space.py= — zero logic inline
+  in =core.py= or =generator.py=.
+- Unit tests cover every combination: no properties (backward compat), TS-level disable,
+  facet-level disable, combined TS-enable + facet-disable override, target ⊆ supported
+  (normal filter), target ∩ supported = ∅ (warn path), target completely outside supported
+  (warn), unknown =--address= (error path). Test file: =tests/test_physical_space.py=.
+- All existing regression tests pass.
+
+* Plan
+
+Design decisions taken (2026-06-27):
+1. *Doc-per-node graph* — *one org document per node at every level*: a root
+   (=ores.org=), one per technical space (=ores.cpp.org=), one per facet
+   (=ores.cpp.qt.org=), one per archetype (=ores.cpp.qt.controller.org=).
+   Each doc links *down* to its children (a table of =id:= links) and *up*
+   to its parent. The monolithic =facet_catalogue.org= (all facets as
+   headings in one file) is *wrong* and gets decomposed into these per-node
+   docs, then retired. Likewise the duplicated literate =facet=/=facet_group=
+   docs collapse into this single graph.
+2. *Scaffold every node via compass* — never hand-write these org files.
+   =doc_generate.py= grows the doc types needed: =technical_space= (lists its
+   facets) and =archetype= (the leaf); =facet= already exists (it lists its
+   archetypes); the root =ores.org=. Any doc-template gap is fixed in
+   compass, not worked around.
+
+Codegen traverses this doc graph: root → technical space → facet →
+archetype, every edge an org-roam =id:= link, with each node linking back up
+to its parent.
+
+*Core invariant — node name = address = drawer key*, normalised *with the
+=ores= root prefix* everywhere (node names, =--address= values, and
+=:PROPERTIES:= drawer keys are the identical string):
+| Level | Node name / address / drawer key |
+|-------+----------------------------------|
+| root (general TS index) | =ores= |
+| technical space | =ores.cpp= / =ores.sql= |
+| facet | =ores.cpp.qt= / =ores.sql.schema= |
+| archetype | =ores.cpp.qt.controller= / =ores.sql.schema.create= |
+The =ores= root node IS the general technical-spaces index page; it links to
+each technical space. =:ores.cpp.qt.enabled: false= disables a facet and
+=:ores.cpp.qt.controller.enabled: false= disables one archetype, by pure
+name match — no separate address→node lookup table. =--address ores.cpp.qt=
+uses the same string.
+
+*Archetype naming* follows the same standard convention (matching Dogen's
+=masd.cpp.types.class_header=): *one archetype per output artefact*, so a
+header and its implementation are two distinct archetypes, each with a clean
+descriptive leaf — never the raw filename, never an =_hpp=/=_cpp= suffix.
+E.g. =cpp_domain_type_class.hpp.mustache= → archetype
+=ores.cpp.domain.class_header=; =..._entity.cpp.mustache= →
+=ores.cpp.domain.entity_implementation=. The template filename is an
+*attribute* of the archetype node, not its identity. A standard
+filename→leaf mapping is derived once in Stage 4 and applied across all
+~106 archetypes.
+
+Node set (each its own document, name = address):
+- *Technical spaces*: =ores.cpp=, =ores.sql=, =ores.doc= (=ores.cmake=/
+  =ores.assets= fold in later). Each lists its facets.
+  - =ores.doc= is the *documentation* technical space — the doc-generation
+    system is just its slice of the same graph. Its archetypes are the
+    =doc_*.org.mustache= templates (=doc_facet=, =doc_knowledge=,
+    =doc_technical_space=, =doc_archetype=, the agile/task/story scaffolds, …),
+    grouped into doc facets. *Self-hosting*: the templates that scaffold
+    technical-space / facet / archetype nodes are themselves archetypes in
+    =ores.doc=. The literate =doc.org= facet + =doc_group.org= are its seed.
+- *Facets* (TS-qualified names): each lists its archetypes.
+  - =ores.sql= → =ores.sql.schema= (schema create/drop/trigger — what the
+    monolith mislabels =** sql :facet:=), =ores.sql.populate=,
+    =ores.sql.service=, =ores.sql.non-temporal=.
+  - =ores.cpp= → =ores.cpp.domain=, =ores.cpp.generator=,
+    =ores.cpp.repository=, =ores.cpp.service=, =ores.cpp.protocol=,
+    =ores.cpp.nats-eventing=, =ores.cpp.nats-handler=, =ores.cpp.qt=,
+    =ores.cpp.non-temporal-domain=, =ores.cpp.non-temporal-repository=,
+    =ores.cpp.enum=, =ores.cpp.field-group=.
+- *Archetypes*: one per output artefact (the existing =templates/*.mustache.org=
+  literate docs), retyped =archetype= and addressed =ores.{ts}.{facet}.{leaf}=.
+
+NB: the old B5 spec's TS→facet map (=sql → {sql, non-temporal-sql}=) was
+imprecise — =sql= is the technical space, its create facet is =ores.sql.schema=.
+
+Stage 3c decisions (2026-06-27):
+- *Scope*: the ~50 entity-facet templates (15 facets). Accurate counts —
+  domain 7, qt 12, repository 6, non-temporal-repository 6, sql.schema 7,
+  generator 2, service 2, non-temporal-domain 3, and singletons.
+- *Shared archetypes*: =json_io.hpp/.cpp= are *duplicated* per facet —
+  =ores.cpp.domain.json_io_*= AND =ores.cpp.non-temporal-domain.json_io_*=,
+  each owning its own node tangling the same source.
+- *plantuml*: its own technical space =ores.plantuml= (not under =ores.doc=);
+  =plantuml_er= → an archetype under an =ores.plantuml= facet.
+- *Component-scaffolding archetypes* (=cmake_*=, =cpp_component_*=,
+  =cpp_service_app_*=, =sql_service_*=, =shell_*=, the =* Component archetypes=)
+  are *deferred* to a follow-up task — component-scope, driven by other
+  commands, not needed for B5's per-entity =--address= model.
+- *Mustache filenames match the address*: =ores.cpp.domain.class_header= →
+  =ores_cpp_domain_class_header.mustache= (dots→underscores). Renamed in
+  *Stage 5* (atomically with the =:tangle= targets, =core.py= output-path
+  map, and generator lookup) to avoid a broken intermediate.
+
+Stages (commit each):
+1. ✓ Link the 106 archetype cells in =facet_catalogue.org= to their
+   archetype docs; parser strips the link to the bare template name. (Interim
+   — the monolith is decomposed away in later stages.)
+2. Extend compass: add =technical_space= + =archetype= doc types to
+   =doc_generate.py= (templates + registration + =compass add= help).
+3. Scaffold the node docs via =compass add=: root =ores.org=, the technical
+   spaces (=ores.cpp=, =ores.sql=), the facets, retype the archetype docs.
+4. Wire the graph *by automation, never by hand*. Up-links are frontmatter
+   parent keywords set once at scaffold time (=#+facet_group:= on a facet,
+   new =#+facet:= on an archetype; technical spaces are discovered by type).
+   Down-link child tables are *generated*: extend the existing
+   =scripts/regenerate_facet_inventories.py= into a graph-wide inventory
+   generator that rewrites, from the doc frontmatter:
+   - =ores.org= =* Technical spaces= ← all =#+type: technical_space= docs
+   - each TS =* Facets= ← =#+type: facet= with matching =#+facet_group:=
+   - each facet =* Archetypes= ← =#+type: archetype= with matching =#+facet:=
+   Keep the =--check= CI gate. Migrate facet/archetype content out of the
+   monolith + duplicated literate =facet=/=facet_group= docs; retire them.
+5. Rewire codegen to traverse the doc graph (root → TS → facet → archetype)
+   instead of reading =facet_catalogue.org=; implement =codegen/physical_space.py=
+   (=compute_supported_set= / =compute_target_set= / =resolve_generation_set=).
+   (The =.mustache= rename to address form is *deferred to task B9* — it is
+   cosmetic, touches the legacy =get_schema_template_mappings= path, and is
+   safer as a self-contained change. The graph uses the =:tangle= indirection,
+   so filenames need not change for the rewire to work.)
+   5f — *functional retirement done*: nothing reads =facet_catalogue.org= for
+   generation any more (=load_profiles=/=resolve_profile_templates= have no
+   callers — dead code). The *physical* deletion of the monolith + 18 legacy
+   literate facet/group docs + dead code + repointing the hundreds of inbound
+   =id:= links (56 to the monolith alone) is *deferred to task B10* — a
+   delicate graph-wide link migration best done on its own.
+6. Remove =--profile=; add =--address= — *--address added, --profile kept as a
+   deprecated shim* (5e). Updating all compass commands + skills off =--profile=
+   is the remaining part of stage 6.
+7. =tests/test_physical_space.py= covering every supported/target combination.
+
+*Merge gate (decided 2026-06-28):* do NOT merge this branch until *all* of
+B8, B9, B10, B11 are complete *and* the in-flight commissions are off
+=--profile=. Merging B5 alone would leave main in a half-migrated state
+(stale =facet_catalogue.org= monolith + duplicated legacy docs + dead
+=load_profiles= code + mixed =--profile=/=--address= callers). The whole
+physical-space migration lands as one coherent change.
+
+Mitigation for the long-held branch: rebase on =origin/main= periodically
+(the commissions are actively changing codegen) to bound rebase drift.
+
+* Notes
+
+Replaces the originally planned B5 (=#+sql_only: true=) and B6 (=#+has_qt: false=) tasks.
+See [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] and [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] for the full design.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1374][#1374]] | [agile] Reconcile sprint-21 task bookkeeping drift |
+| [[https://github.com/OreStudio/OreStudio/pull/1361][#1361]] | [codegen] B5: physical-space address graph (merged 2026-06-28) |
+
+* Review
+
+Round 1 (PR #1361, @claude, 2026-06-28):
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| P1 | facets_under("ores") dead code — --address ores returned 0 on live graph | physical_space.py | Accepted | Fixed c8bf447c5: root check moved first |
+| P2 | No live-graph test for facets_under("ores") | test_physical_space.py | Accepted | Fixed c8bf447c5: added regression test (16 tests) |
+| m1 | Silent skip of archetypes with empty template/output or bad pattern | generate.py | Accepted | Fixed b32c04df1: log.debug on both skip paths |
+| m2 | --profile deprecation silent at runtime | generate.py | Accepted | Fixed b32c04df1: runtime warning naming the --address equivalent |
+| m3 | Keyword regex inconsistent with inventory script | physical_space.py | Accepted | Fixed b32c04df1: unified to \w[\w-]* |
+| m4 | Facets without model_types implicitly universal | facet docs | Deferred | Empty facets own no archetypes; B8 adds model_types when populating |
+
+Round 2 (PR #1374 — bookkeeping reconciliation, @claude, 2026-06-29):
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | "Future" date 2026-06-30 in verify_codegen | task_verify_codegen.org / story.org | Declined | Accurate — that task was reconciled after midnight (journal 2026-06-30 00:00); B5/qt-upgrade fixes were 2026-06-29 |
+| 2 | Story-row description still ABANDONED-language after DONE | commission_country/story.org | Accepted | Fixed 69c48269d: reworded to "goal met via unified-model migration tasks; see Result" |
+| 3 | #+environment merry_newton→prime_origin not noted | b5 / qt-upgrade scaffold tasks | Acknowledged | Auto-stamped by compass task done from the running environment; expected noise |
+
+* Result
+
+Shipped via PR #1361 (merged 2026-06-28, merge commit =65eaed5d3=), with B1
+(PR #1355) landing first as required. The original merge gate ("hold until
+B8–B11") was lifted and B5 landed on its own; the remaining migration work is
+tracked as separate backlog tasks (B9 template rename, B10 facet_catalogue
+retirement, B11 --profile caller migration).
+
+What landed on =main=:
+- =codegen/physical_space.py= — the isolated supported/target set engine:
+  =compute_supported_set= (resolves =ores.*= drawer properties with
+  specificity ordering), =compute_target_set= (expands a =--address= to its
+  facet set), =resolve_generation_set= (= supported ∩ target, warns on empty).
+- The per-node doc graph: =ores.org= root → technical-space docs
+  (=ores.cpp.org=, =ores.sql.org=) → facet docs → archetype docs (85
+  =archetype=-typed + 11 =technical_space=-typed docs), each linked via
+  org-roam =id:= up/down edges; codegen traverses this graph instead of the
+  monolith. Node name = address = drawer key, =ores=-prefixed throughout.
+- CLI: =--address= added (optional filter, defaults to the entity's supported
+  set); =--profile= retained as a deprecated runtime-warning shim (full
+  removal deferred to B11).
+- =tests/test_physical_space.py= — covers backward-compat (no properties),
+  TS-level disable, facet-level disable, combined override, normal filter,
+  empty-intersection warn, and unknown-address error (16 tests).
+
+Review round 1 (6 comments) addressed in =c8bf447c5= / =b32c04df1=; one item
+(m4) deferred to B8. Acceptance criteria for supported/target resolution,
+intersection, CLI, facet catalogue, and isolation/testing all met.
+
+Bookkeeping note: this task's state was corrected to DONE on 2026-06-29 — the
+PR merged 2026-06-28 but the sprint health review updated only B1, leaving B5
+showing STARTED. No code change; bookkeeping reconciliation only.

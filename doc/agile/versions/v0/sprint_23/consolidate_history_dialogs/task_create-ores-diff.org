@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 83B7239F-5C29-4C52-900E-C9623C608DFD
+:END:
+#+title: Task: Create the ores.diff component
+#+description: Phase B1: scaffold ores.diff with the component-creator/codegen flow; diff model (field_value, diff_entry, diff_result) and compare engine; exhaustive unit tests.
+#+type: task
+#+level: s1
+#+filetags: :diff:component:architecture:consolidate_history_dialogs:sprint_23:v0:
+#+owner: marco
+#+branch: feature/create-ores-diff
+#+pr: 1091
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create =ores.diff=: a dependency-light leaf component owning the
+vocabulary of "what changed", usable by every domain service and every
+frontend.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- Component builds and links; CI green on all platforms.
+- Exhaustive engine unit tests: identical inputs, changed values,
+  added/removed fields, ordering preservation, empty lists.
+- No dependency beyond std/rfl (and project logging if conventional).
+
+* Plan
+
+1. Scaffold with the component-creator / codegen flow (not by hand),
+   following the standard component layout.
+2. Domain types: =field_value= (field name, rendered value);
+   =diff_entry= (field, old, new); =diff_result= (ordered entries).
+   rfl-serialisable so messages can embed them.
+3. Engine: =compute(previous_fields, current_fields)= → =diff_result=;
+   field-name keyed; added/removed fields surface with the absent side
+   empty; mapper field order preserved.
+4. Dependencies: std + rfl only. The component stays deliberately
+   small — its value is the clean dependency direction.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1091][#1091]] | [diff] Create the ores.diff component |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | export.hpp pulls boost/config into public headers | export.hpp | Accepted | Standard preprocessor checks instead; 669ca3aac. Visibility flags out of scope (project-wide policy). |
+| 2 | Missing unordered_set include | compare.cpp | Accepted | 8ddea0fa8 |
+| 3 | unordered_map<sv,bool> as a set is an anti-pattern | compare.cpp | Accepted | unordered_set; 8ddea0fa8 |
+| 4 | Same for seen_in_previous | compare.cpp | Accepted | 8ddea0fa8 |
+| 5 | Test runner registers database listener it does not need | tests/main.cpp | Partially accepted | Database listener dropped; logging listener kept for compass test logging integration; 2530254a7 |
+| 6 | Trim unused test target dependencies | tests/CMakeLists.txt | Partially accepted | faker and utility dropped; testing/logging kept for the listener; 2530254a7 |
+
+* Result
+
+Merged in [[https://github.com/OreStudio/OreStudio/pull/1091][PR 1091]]. ores.diff exists as a flat leaf component:
+field_value / diff_entry / diff_result domain types (rfl-serialisable,
+defaulted equality) and a compute engine keyed by field name with
+current-order output, removed fields appended, and
+first-occurrence-wins on duplicates. Dependencies are std + rfl only,
+with Boost-free export macros. Fourteen unit tests cover the engine
+exhaustively plus rfl JSON round-trips. The flatness decision and the
+name-as-path convention for nested entities are documented in the
+component overview; the structured-topology extension is captured in
+the backlog. One review round: four comments accepted, two partially
+(logging listener and its libraries retained for compass test logging
+integration).

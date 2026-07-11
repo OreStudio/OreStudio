@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 78A340FA-94F0-49F4-B521-89950A32B1F1
+:END:
+#+title: Task: Build ORE's comma-joined calendar string only at the XML export boundary
+#+description: ores.ore's conventions_mapper (or successor) should build ORE's comma-joined calendar-name string from the FK relationship(s) only when exporting to XML — the domain model itself never stores the joined string.
+#+type: task
+#+level: s1
+#+filetags: :calendar-reference-data:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 1F43998E-BD20-4CBC-8C05-509F1ABF0E0C
+#+blocked_since: 2026-07-08
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores.ore='s =conventions_mapper= (or successor) should build
+ORE's comma-joined calendar-name string from the new FK
+relationship(s) only at the XML export boundary — the domain model
+itself must never store the joined string, only the individual
+calendar FK(s).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] landing first. |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- [ ] Exporting a currency_pair_convention to ORE XML produces the
+  correct comma-joined calendar string, derived from the junction
+  table at export time.
+- [ ] No code path writes a comma-joined string back into the domain
+  model.
+- [ ] Round-trip (import → export) tested against a real conventions.xml
+  fragment.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

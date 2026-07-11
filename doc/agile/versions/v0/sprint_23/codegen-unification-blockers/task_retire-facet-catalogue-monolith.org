@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: E286B5ED-6B1C-4738-8E67-8F62F0C1C741
+:END:
+#+title: Task: B10: Retire facet_catalogue monolith + legacy literate facet/group docs
+#+description: Delete facet_catalogue.org and the 18 legacy literate facet/facet_group docs (cpp_qt.org, cpp_group.org, sql_schema.org, ...), remove the now-dead load_profiles/resolve_profile_templates/validate_profile_for_model code, and repoint or remove the hundreds of inbound id: links (56 to facet_catalogue alone) across the org-roam graph to the new ores.* nodes.
+#+type: task
+#+level: s1
+#+filetags: :codegen:physical-space:cleanup:codegen-unification-blockers:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+facet_catalogue.org and the legacy literate facet/facet_group docs are gone; the dead profile-resolution code in core.py is removed; every inbound id: link is repointed to the corresponding ores.* graph node (or removed); the site builds with no unresolved links and codegen still generates byte-identically.
+
+*Precondition — port useful content first (do NOT delete before this):* the
+legacy docs carry substantive hand-written prose that the scaffolded ores.*
+nodes lack (they only have the brief #+description). Before any deletion,
+port each doc's real content to its corresponding new node:
+- group doc (e.g. =cpp_group.org=) Summary + shared-conventions prose →
+  the technical-space node (=ores.cpp.org=).
+- facet doc (e.g. =cpp_qt.org=, =sql_schema.org=) Summary, "The <facet>
+  facet" projection prose, and Mustache-incantations notes →
+  the facet node (=ores.cpp.qt.org=, =ores.sql.schema.org=).
+- =facet_catalogue.org= per-archetype descriptions → already captured as
+  =#+description= on the archetype/facet nodes; verify none are lost.
+Audit every legacy doc for non-placeholder prose and confirm it has a home
+in the graph before removing the source.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-28                               |
+
+* Acceptance
+
+- Every legacy doc's non-placeholder prose is ported to its corresponding ores.* node BEFORE deletion (group→technical_space, facet→facet); a content audit confirms nothing useful is lost.
+- facet_catalogue.org + 18 legacy docs deleted; core.py has no load_profiles/resolve_profile_templates/validate_profile_for_model; grep finds no inbound links to the deleted IDs; old regenerate_facet_inventories.py removed; deploy_site is green; full regeneration byte-identical.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

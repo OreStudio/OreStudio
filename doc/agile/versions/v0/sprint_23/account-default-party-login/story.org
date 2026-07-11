@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B
+:END:
+#+title: Story: Add a default party per account with a quick-login checkbox
+#+description: Let an account carry a default party so login can skip the party-selection step via a Log in to default party checkbox, and update provisioning scripts to set it.
+#+type: story
+#+level: s2
+#+filetags: :sprint_23:v0:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Add a =default_party_id= to the account entity, and a "Log in to
+default party" checkbox on the login dialog. When ticked (and the
+account has a default party set), login skips the
+=PartyPickerDialog= step entirely and calls =select_party_request=
+directly with the stored default, rather than making the user pick
+the same party from the list on every login. Also update the
+tenant/party provisioning scripts (e.g.
+=projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+and the Acme/synthetic equivalent) to set the newly-provisioned party
+as the provisioning account's default, so freshly-provisioned
+environments come up ready for one-click login out of the box.
+
+Every manual verification or screenshot-capture session currently
+repeats "log in, then pick the same single party from the list"
+every single time a service restart or environment ready-up happens —
+pure friction for the common single-tenant-per-checkout case this
+whole dev fleet uses. A stored default plus a quick-login checkbox
+removes a manual step from that sequence without removing the
+ability to switch parties when an account genuinely has more than
+one.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-11                               |
+
+* Acceptance
+
+- Account entity gains a =default_party_id= field (nullable FK to
+  party), across domain/SQL/repository/protocol layers.
+- Login dialog shows a "Log in to default party" checkbox, enabled
+  only when the account has a default party set.
+- When ticked, login calls =select_party_request= directly with the
+  stored default party, skipping =PartyPickerDialog= entirely.
+- When unticked, or no default is set, login behaves exactly as
+  today (party picker shown).
+- The account can still switch parties after login (this only
+  short-circuits the *login-time* picker step, not party-switching
+  in general).
+- =barclays_system_provision.ores= and the Acme/synthetic provisioning
+  equivalent set the newly-provisioned party as the provisioning
+  account's default, so freshly-provisioned environments come up
+  ready for one-click login.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+Planned tasks (not yet scaffolded as task docs):
+
+1. Add =default_party_id= field to the account entity (domain, SQL,
+   repository, protocol layers).
+2. Add "Log in to default party" checkbox to the login dialog; wire
+   it to call =select_party_request= directly when ticked, bypassing
+   =PartyPickerDialog=.
+3. Update =barclays_system_provision.ores= and the Acme/synthetic
+   provisioning script to set the provisioning account's default
+   party.
+
+* Decisions
+
+* Out of scope
+
+- Per-tenant default parties (this is a per-account default, one
+  party regardless of which tenant/context the account is used in).
+- Removing or hiding =PartyPickerDialog= for accounts with multiple
+  parties — the picker remains available whenever the checkbox is
+  off or no default is set.
+
+* References
+
+- =projects/ores.qt/api/src/PartyPickerDialog.cpp= — the dialog a
+  default-party quick-login would bypass.
+- =projects/ores.qt/api/src/ClientManager.cpp= — issues
+  =select_party_request= after party selection; a default-party path
+  would call this directly.
+- =projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+  — the provisioning script to update to set the default party.

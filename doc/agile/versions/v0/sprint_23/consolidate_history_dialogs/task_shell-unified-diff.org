@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: F455B2BE-5562-4561-B8D2-9D85E218B669
+:END:
+#+title: Task: Show history as a unified diff in ores.shell
+#+description: Render entity history in the shell as a unified diff (or provide an option to display it that way), consuming the same fields/changes history response as the Qt dialogs.
+#+type: task
+#+level: s1
+#+filetags: :shell:history:ux:consolidate_history_dialogs:sprint_23:v0:
+#+owner: marco
+#+branch: feature/shell-unified-diff
+#+pr: 1105
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shell's history output gains a unified-diff view: consecutive
+versions rendered in the familiar +/- format (or via an option such as
+=--diff=), consuming the same fields/changes history response as the
+Qt dialogs — demonstrating that frontends need no comparison logic.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- Shell history shows (or can show) a unified diff between
+  consecutive versions.
+- No field-comparison logic in ores.shell.
+- Shell recipe updated; verified against the running system.
+
+* Plan
+
+1. Extend the shell history command with a unified-diff rendering of
+   the =changes= rows (and =fields= context), defaulting per UX
+   discussion — either the default view or behind a =--diff= flag.
+2. Reuse ores.diff types; no comparison logic in the shell.
+3. For the unified-diff /rendering/ itself, prefer an established
+   vcpkg library over hand-rolling the format (survey candidates:
+   e.g. diff-match-patch, dtl — pick whichever is maintained and fits
+   the std+rfl dependency posture). Hand-roll only if nothing
+   suitable exists in the registry.
+3. Update the shell recipes documenting the history command.
+4. Depends on the pilot task for the extended response (currency
+   first; per-entity availability follows the rollout).
+
+* Notes
+
+- Library survey outcome (Marco's decision: drop the library): dtl is
+  available in vcpkg (v1.21) and diff-match-patch candidates exist,
+  but both are diff *computation* libraries. After the currency pilot
+  the server already supplies the computed changes rows, and the
+  acceptance forbids comparison logic in the shell — so the
+  unified-diff view is pure formatting of server rows (context lines
+  from fields, +/- pairs from changes). No new dependency.
+- UX: a separate =currencies history-diff <iso>= command beside the
+  table view, as the cli menu library favours commands over flags.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1105][#1105]] | [shell] Show currency history as a unified diff |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | No review comments | - | - | Review bot exhausted its daily quota on PR 1105; round closed on CI alone. |
+
+* Result

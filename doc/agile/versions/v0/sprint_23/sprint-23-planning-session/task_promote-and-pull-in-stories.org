@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: 6E41F1C5-8B1E-450E-BFB2-993F687DE197
+:END:
+#+title: Task: Promote and pull in sprint 23 stories from the backlog
+#+description: Promote well-specified backlog captures into sprint 23 stories and pull in misfiled/mislabeled sprint-22/sprint-19 stories, verifying each against the live codebase before acting.
+#+type: task
+#+level: s1
+#+filetags: :sprint-23-planning-session:sprint_23:v0:
+#+owner: marco
+#+branch: feature/sprint-23-planning
+#+pr: 1503
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1014DD4F-B011-4102-8C60-983364E9BFBE][Sprint 23 planning session]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Populate sprint 23 with a real, verified set of stories: promote
+well-specified backlog captures, pull in misfiled/mislabeled
+sprint-22 and sprint-19 stories, and resolve any conflicts found
+along the way — each action backed by checking the live codebase,
+not just the capture's own claims.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1014DD4F-B011-4102-8C60-983364E9BFBE][Sprint 23 planning session]] |
+| Now          | Nothing — 16 stories now in sprint 23.  |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+- Sprint 23's Stories table lists a working set of verified,
+  well-specified stories.
+- Every story pulled in from a past sprint has its filetags,
+  parent-sprint link, and Stories-table wiring corrected.
+- Every conflict or paperwork inconsistency found (mislabeled
+  ABANDONED rows, contradictory captures, duplicate captures) is
+  resolved with the user, not silently picked one way.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1503][#1503]] | [agile] Sprint 23 planning |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+[[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] went from 1 story ("Open sprint 23", scaffolding only) to
+16, sourced from three places: backlog captures promoted outright,
+past-sprint stories that turned out to be misfiled or mislabeled and
+were pulled in (or, where fully resolved, corrected back to their
+real sprint instead), and the product backlog's =next= bucket. Every
+story below is linked by its =:ID:= for traceability. In order of
+action:
+
+** Captures promoted into new sprint 23 stories
+
+- [[id:263C0B6B-D983-44F7-8D57-BB095972445A][DQ/Refdata service boundary cleanup]]
+- [[id:3C8912A0-78C8-4CD5-BA75-EF63D606FEF4][IAM/Refdata service boundary cleanup]]
+- [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] (absorbed 4 already-written task docs
+  parked at sprint 22 close, unchanged)
+- [[id:DCC5853D-1B41-4EB0-8A85-07E2A8FABC07][Refdata entity NATS event registrar audit]] (scope investigated
+  live: 8/34 entities wired, not the 3 the capture originally named)
+- [[id:C75D1DCC-ED4A-48D0-9035-0B9E4D9C2593][Stochastic tick arrival times for synthetic feeds]] (merged with
+  duplicate [[id:36581D84-E9AE-4EE8-A475-6A882C1E2A78][Vary synthetic feed tick frequency stochastically]], which
+  moved to =discarded/=; refined with a shared arrival-profile-config
+  design and the GMM-vs-MMPP correction from review)
+- [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]]
+- [[id:D58CD39D-BFBA-45DF-A05B-01EDD7115C45][Audit refdata entities for composite (temporal-versioned) child
+  relationships]] (net-new story scoping the generalisation the user
+  actually wanted, after [[id:2D7D890B-12D0-4B7C-B4C9-490401A47B72][book_hierarchy_support.org]] turned out to
+  contradict a later decision and was discarded instead)
+
+** Stories pulled in from past sprints (misfiled or mislabeled)
+
+- [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] — misfiled in =product_backlog/inbox/=
+  despite sprint 22's table correctly listing it as STARTED.
+- [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] and
+  [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] — same misfiling;
+  the latter's =--profile=/=--component= wording updated to =--address=
+  to match the CLI reality landed by the former.
+- [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables]] — misfiled,
+  never started; verified all 3 tasks still live in the codebase.
+- [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] — carried from
+  sprint 19; its Phase C gate (codegen org-model migration) completed
+  2026-06-11, well after the story was last touched, so it was
+  unblocked and updated to say so.
+- [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] and
+  [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] — both mislabeled
+  ABANDONED in sprint 22's table with no corresponding decision
+  recorded in the story doc; verified their remaining tasks were
+  still genuinely open and carried them forward instead.
+- Three ABANDONED-but-fully-reconciled stories moved back to their
+  correct =sprint_22/= folder (not sprint 23 — nothing left to do):
+  [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]], [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]],
+  [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]], and [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table
+  model type]] — each verified task-by-task to trace cleanly to a
+  sibling story or superseding capture; zero orphaned work.
+
+** Stories pulled in from the product backlog's =next= bucket
+
+- [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]]
+- [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] (thin original acceptance criteria
+  expanded into a concrete task plan following the domain model's
+  concept map)
+
+** Backlog hygiene fixes made along the way
+
+- Moved a stray capture out of =doc/agile/inbox/= (wrong location
+  entirely) into the real =product_backlog/inbox/=.
+- Corrected an earlier mistake in this same session: a discarded
+  duplicate capture ([[id:36581D84-E9AE-4EE8-A475-6A882C1E2A78][Vary synthetic feed tick frequency stochastically]])
+  had been =git rm='d outright instead of moved to =discarded/= with
+  a reason note — fixed in a follow-up commit.
+- Discarded [[id:4A2A1DBD-39D0-4537-82FC-CEDF415635CC][Sweep pre-template-fix entities: add security definer and
+  active-rows bootstrap filter]] as fully resolved by natural
+  recommissioning (verified against generated SQL for all 10 entities
+  it named).
+- Discarded [[id:2D7D890B-12D0-4B7C-B4C9-490401A47B72][Add net-new self-referencing hierarchy support to book]] as
+  superseded by a later, more considered decision that book-to-book
+  hierarchy is deliberately not a feature.
+- Stripped shell/CLI implementation scope from 5 near-identical
+  =commission_*= template stories still in inbox — that work is now
+  owned by the top-level Shell/CLI commissioning stories, not
+  per-entity ones: [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]],
+  [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]], [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]],
+  [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Commission: party_id_scheme]], [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]].
+
+** Skill work
+
+Extended =agile-refine-backlog= with a deep refinement mode (see
+[[id:BF5F062F-49DB-490C-B1B0-89B55A550173][Deep backlog refinement]], the sibling task that will exercise it) —
+added to the existing skill rather than creating a new one, per
+explicit instruction to avoid skill proliferation.
+
+** Site and index maintenance
+
+Rebuilt the compass search index (=compass index --rebuild
+--org-roam-db-sync=) once mid-session, and the documentation site
+twice (the first rebuild raced with in-flight file moves and failed;
+the second, after all moves had settled, succeeded).

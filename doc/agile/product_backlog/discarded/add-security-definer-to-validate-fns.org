@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 4A2A1DBD-39D0-4537-82FC-CEDF415635CC
+:END:
+#+title: Sweep pre-template-fix entities: add security definer and active-rows bootstrap filter
+#+description: All ores_refdata_validate_*_fn and insert trigger functions generated before PR #1300 (commit 1cb85c9a, sprint 21) lack security definer + set search_path and use a bare not-exists bootstrap check without a valid_to filter. The template is now fixed; this capture tracks whether a coordinated sweep of the existing generated files is warranted before natural recommissioning catches them.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-06-25
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved by natural recommissioning, exactly as this capture predicted*
+(2026-07-11 verification): all 10 affected entities' =validate_*_fn= and
+insert-trigger functions now carry =security definer set search_path =
+public, pg_temp=, and every bootstrap not-exists check filters on
+=valid_to = ores_utility_infinity_timestamp_fn()=. Checked directly
+against the generated SQL in =projects/ores.sql/create/refdata/= — no
+proactive sweep was needed; each entity's own commission story closed
+the gap via its verify-SQL task, as anticipated in this capture's Why
+section.
+
+* What
+
+All =ores_refdata_validate_*_fn= functions and insert trigger functions
+generated before PR #1300 (commit =1cb85c9a=, sprint 21) carry two
+architectural gaps: they lack =security definer set search_path = public,
+pg_temp=, and their bootstrap pass-through checks for any rows rather than
+active rows (=valid_to = ores_utility_infinity_timestamp_fn()=).  The
+affected entities include currencies, rounding_types, monetary_natures,
+currency_market_tiers, party_id_schemes, party_statuses, party_types,
+book_statuses, contact_types, and purpose_types — all 10 entities currently
+generated from =sql_schema_create.mustache=.  The template has been fixed in
+PR #1300; future entity generations are correct automatically.  This capture
+tracks whether a coordinated sweep of the existing files is warranted before
+they are each naturally recommissioned.
+
+* Why
+
+The two gaps are architectural correctness issues: =security definer= +
+=set search_path= prevents search-path injection from a service role with a
+manipulated path; the active-rows bootstrap filter prevents a confusing
+"Must be one of: (empty list)" error when a table has only soft-deleted
+historical rows.  Both are now documented as mandatory rules in
+[[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] and as checklist criteria
+in [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]].  The analysis and rationale live in
+[[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country § Analysis]].
+
+The commissioning pipeline will repair each entity naturally (each
+commission story's verify-SQL task now checks for these items via the
+checklist).  A proactive sweep would close the gap sooner but is only
+warranted if any of the affected entities are used as soft-FK targets in
+production before they are commissioned.
+
+* References
+
+- PR #1300: [[https://github.com/OreStudio/OreStudio/pull/1300][Commission country: verify SQL, add validate_country_fn, document trigger categories]]
+- Commit: =1cb85c9a= — fix validate fn security definer and bootstrap valid_to filter
+
+* See also
+
+- [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] — Analysis section documents the rationale in full
+- [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] — canonical rules
+- [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] — checklist criteria that ensure future commission stories pick this up
+- [[id:9C11F389-EB60-4BE2-A0D7-DBF3CEB86A26][sql_schema_create.mustache]] — the fixed template

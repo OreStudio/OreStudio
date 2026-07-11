@@ -7,12 +7,14 @@
 #+level: cross
 #+filetags: :agile:backlog:recipe:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-07-11
 
 Backlog refinement operates on the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]] — the =next/=|=deferred and
 next/=|=deferred/= capture buckets under =doc/agile/product_backlog/=. For
-automated orchestration, use the [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][agile-refine-backlog]] skill. For sprint
-selection specifically, use [[id:2C2E794B-7565-4FD8-BD26-E7949C874E43][How do I plan a sprint?]].
+automated orchestration, use the [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][agile-refine-backlog]] skill (its *deep*
+mode also audits =inbox/=, verifies each capture against the live
+codebase, and writes a report). For sprint selection specifically, use
+[[id:2C2E794B-7565-4FD8-BD26-E7949C874E43][How do I plan a sprint?]].
 
 * Question
 
@@ -31,9 +33,10 @@ next/=|=deferred/=?
 
 2. /For each capture, apply the VBCD checklist/:
 
-   - *V — Valid?* Is the need still real? If the work shipped or
-     the idea was abandoned, mark =ABANDONED= in the capture's
-     status table and commit.
+   - *V — Valid?* Is the need still real? If the work shipped or the
+     idea's need has gone away, move the file to =discarded/= (=git
+     mv=, =:ID:= unchanged) with a reason line citing what closed it.
+     Captures have no =#+todo= state field — the bucket is the state.
    - *B — Bucket?* Does it belong in =next/=|=deferred (next version) or
      next/=|=deferred/= (longer horizon)? Move by renaming the file; =:ID:=
      stays unchanged.
@@ -41,8 +44,9 @@ next/=|=deferred/=?
      description specific enough to act on? Sharpen both in place
      if not.
    - *D — Duplicate?* Is a similar capture already in the backlog?
-     Merge by absorbing content into the richer one and marking
-     the absorbed one =ABANDONED=.
+     Merge by absorbing content into the richer one and moving the
+     absorbed one to =discarded/= with a "Duplicate, merged into"
+     reason line; repoint any inbound =id:= links at the survivor.
 
 3. /File new captures/ that surface during the review:
 

@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 3D2A1FA1-20FD-4239-BDCA-591116F6357F
+:END:
+#+title: Test Scenario: Verify book_status and regulatory_book_type combos
+#+description: Manual verification that Book's Status and Regulatory Book Type combos are FK-backed, badge-coloured, and save correctly, following the bug fixes to book_status/is_trading_book.
+#+type: test_scenario
+#+level: s1
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
+#+target_dialog: BookDetailDialog
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment:
+#+todo: PENDING | PASSED FAILED
+
+This page documents a test scenario verifying [[id:2F3BD151-754F-4E9B-B5AB-DC1E15E04C79][Fix book_status to reference the book_statuses lookup table]] in [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:2F3BD151-754F-4E9B-B5AB-DC1E15E04C79][Fix book_status to reference the book_statuses lookup table]] |
+| Parent story  | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]   |
+| Target dialog | BookDetailDialog                        |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Status combo shows only Active/Closed/Frozen
+
+Open an existing book's detail dialog. Click the Status combo open.
+Confirm exactly three values appear — Active, Closed, Frozen — each
+rendered as a colour-coded badge pill. Inactive and Pending must NOT
+appear (they were removed as bogus values not backed by any real row
+in ores_refdata_book_statuses_tbl).
+
+** Status combo closed-box shows a badge pill
+
+With a status selected, close the dropdown. Confirm the closed box
+shows the selected status as a coloured badge pill (not plain text).
+
+** Status saves successfully
+
+Change the Status to a different value and click Save. Confirm the
+save succeeds with no error (previously, saving certain values would
+fail against the real lookup table's FK constraint).
+
+** Regulatory Book Type combo shows Trading/Banking
+
+Click the Regulatory Book Type combo open. Confirm exactly two values
+appear — Trading, Banking — each rendered as a colour-coded badge
+pill, and the closed box shows the selection as a badge too.
+
+** Regulatory Book Type saves successfully
+
+Change Regulatory Book Type to the other value and click Save.
+Confirm the save succeeds and the grid's Regulatory Book Type column
+reflects the new value as a badge.
+
+** Trading menu has Regulatory Book Types entry
+
+Open the Trading menu → Trading Codes submenu. Confirm a "Regulatory
+Book Types" entry exists alongside "Book Statuses", and that it opens
+a list window showing the two seeded rows (Trading, Banking) with
+their descriptions.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

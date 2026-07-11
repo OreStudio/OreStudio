@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 1014DD4F-B011-4102-8C60-983364E9BFBE
+:END:
+#+title: Story: Sprint 23 planning session
+#+description: Promote and pull in backlog captures/stories into sprint 23, clean up misfiled/mislabeled sprint-22 and sprint-19 stories, resolve conflicts, and extend the agile-refine-backlog skill with a deep refinement mode.
+#+type: story
+#+level: s2
+#+filetags: :sprint_23:v0:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Give sprint 23 a real starting backlog: work through the product
+backlog and past-sprint carry-overs, promoting well-specified
+captures into sprint 23 stories and pulling in stories that were
+misfiled (wrong bucket/sprint folder) or mislabeled (marked ABANDONED
+in a sprint table with no corresponding decision recorded), verifying
+each one's premise against the live codebase rather than trusting its
+own text. Also extend the =agile-refine-backlog= skill with a deep
+mode, so future backlog audits of this kind are a repeatable,
+reported procedure rather than one-off manual work.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Initial promote/pull-in pass done; deep refinement not yet run. |
+| Waiting on    | Nothing.                               |
+| Next          | Run the deep backlog refinement task.  |
+| Last touched  | 2026-07-11                               |
+
+* Acceptance
+
+- Sprint 23 has a working set of well-specified, verified stories to
+  pick up (not just "Open sprint 23" scaffolding).
+- Every misfiled/mislabeled sprint-22/sprint-19 story found is
+  corrected: moved to its correct sprint folder, filetags/parent-links
+  fixed, and wired into the correct sprint's Stories table.
+- Every promoted capture is verified against the current codebase
+  before being trusted (confirmed still-unaddressed, not already
+  resolved elsewhere).
+- Duplicate captures are merged with no content loss, not silently
+  deleted.
+- =agile-refine-backlog= gains a deep mode covering inbox/next/deferred
+  with a written report, so this kind of audit doesn't require
+  re-deriving the process each time.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6E41F1C5-8B1E-450E-BFB2-993F687DE197][Promote and pull in sprint 23 stories from the backlog]] | DONE | 2026-07-11 | 2026-07-11 | Promote well-specified backlog captures into sprint 23 stories and pull in misfiled/mislabeled sprint-22/sprint-19 stories, verifying each against the live codebase before acting. |
+| [[id:BF5F062F-49DB-490C-B1B0-89B55A550173][Deep backlog refinement]] | BACKLOG | | | Run the agile-refine-backlog skill's deep mode: audit every capture in inbox/next/deferred against the live codebase, merge duplicates, and re-score bucket fit against sprint 23's mission. |
+
+* Decisions
+
+* Out of scope
+
+-

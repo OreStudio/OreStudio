@@ -1,0 +1,196 @@
+:PROPERTIES:
+:ID: F3CB17FB-6472-4DEB-BC5B-EC764C1368F8
+:END:
+#+title: Task: Detect and correct reversed FX spot quotes during market data import
+#+description: Wire fx_quote_convention_checker into ores.marketdata's import_service, fed from ores.refdata's currency_pair reference data, so a reversed FX/RATE key (e.g. the Legacy/Example_56 FX/RATE/USD/GBP quirk) is auto-corrected and clearly reported at import time instead of silently mis-keying market data.
+#+type: task
+#+level: s1
+#+filetags: :synthetic-data-collections:sprint_23:v0:
+#+owner: marco
+#+branch: feature/fx-quote-inversion-detection
+#+pr: 1492
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-08
+#+updated: 2026-07-08
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Some vendored ORE example =market.txt= files store an FX spot quote
+under a reversed key — e.g. Legacy/Example_56's
+=FX/RATE/USD/GBP 1.394610179594994= is, by triangulation against its
+own EUR/GBP and EUR/USD rows, mathematically the *GBP/USD* rate, not
+USD-in-GBP as the key order implies (found while building the
+vintage-availability guard; the DQ-seeded =synthetic.gbpusd= config's
+natural =ore_key= of =FX/RATE/GBP/USD= could never match this,
+currently patched with a one-off special-case in
+=synthetic_publish_from_dq_create.sql= that this task should let us
+remove). Rather than special-casing individual pairs, wire the
+already-built, already-tested [[id:E468C540-0CE0-4F89-870D-7ED2CFCDF219][fx_quote_convention_checker]] into
+=ores.marketdata='s =import_service= so a reversed key is detected and
+corrected generically, using =ores.refdata='s =currency_pair=
+reference data (now merged) as the source of canonical base/quote
+order — and clearly reported to the user (before/after key, value
+unchanged) rather than silently massaging the data.
+
+This is an import-time *heuristic*, not guaranteed 100% correct: it
+only ever swaps the two currency codes in a key when the reversed pair
+is a recognised =currency_pair=; the quoted value is never touched (so
+it can never introduce floating-point error), and an unrecognised pair
+is left alone rather than guessed at.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-08                               |
+
+* Acceptance
+
+- Importing Legacy/Example_56's =market.txt= auto-corrects
+  =FX/RATE/USD/GBP= to =FX/RATE/GBP/USD= (value unchanged), and the
+  import response includes a clear, human-readable warning naming the
+  original key, the corrected key, and the value (shown for both, even
+  though unchanged, so the report is unambiguous on its own).
+- The one-off =case when base='GBP' and quote='USD'= special-case in
+  =ores_synthetic_publish_fx_spot_configs_from_dq_fn= (in
+  =synthetic_publish_from_dq_create.sql=) is removed — the DQ-seeded
+  config's natural =FX/RATE/GBP/USD= now matches what import actually
+  persists.
+- A pair with no matching =currency_pair= reference entry (either
+  order) is left completely untouched — no guessing.
+- =ores.marketdata.core.tests= covers: reversed key corrected;
+  canonical key left alone; unrecognised pair left alone; multiple FX
+  rows in one file, only the reversed one flagged; empty/failed
+  currency-pairs fetch degrades to "no correction, warn once" rather
+  than failing the whole import.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+Groundwork already done (this task inherits it, not from scratch):
+
+- [[id:E468C540-0CE0-4F89-870D-7ED2CFCDF219][fx_quote_convention_checker]] (=ores.ore.core/market/=): a small,
+  dependency-free class — constructed with a
+  =std::set<std::pair<base,quote>>= of known canonical pairs,
+  =check(base, quote)= returns ={base, quote, status}= where status is
+  =unchanged= / =key_swapped= / =unknown_pair=. Never touches the
+  value. Debug-level logging throughout. 8 Catch2 cases already
+  passing, no DB/NATS dependency — already committed on
+  =feature/vintage-guard=.
+- Confirmed via [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] (merged): refdata's
+  =currency_pair.pair_code= is "always stored in canonical
+  base-currency-precedence order" (per =currency.base_precedence=),
+  and =get_currency_pairs_request= (subject
+  =refdata.v1.currency_pairs.list=) already exists to fetch them.
+
+Remaining work — five pieces, all new plumbing (=ores.marketdata= has
+so far only ever been a NATS *server*, never a *caller* of another
+service):
+
+1. *Service-account NATS client in =ores.marketdata.service='s
+   =main.cpp=*: construct an authenticated =nats_client= via
+   =ores::iam::client::make_service_token_provider(nats,
+   cfg.database.user, cfg.database.password())=, exactly mirroring
+   =ores.synthetic.service/app/application.cpp= lines ~150-153 (that
+   service already calls =ores.marketdata= the same way, for series/
+   observations).
+2. *IAM permission grant*: the =MarketdataService= role needs read
+   access to list currency pairs (whatever the =refdata::
+   currency_pairs:*:read=-style permission constant actually is) —
+   check =ores.refdata='s =get_currency_pairs_request= handler for the
+   exact =has_permission(...)= string it checks, then add the grant
+   wherever =MarketdataService='s role permissions are provisioned
+   (likely alongside the other service-role grants in the IAM
+   provisioning SQL/seed data).
+3. *=import_handler=*: thread the new =nats_client&= through to
+   =import_service= (constructor param, matching how =feed_controller=
+   takes =auth_nats=).
+4. *=import_service=*: at the start of =import()=, call
+   =get_currency_pairs_request= (paginate via =offset=/=limit= if
+   =total_available_count= exceeds one page — check the actual
+   response shape), build the =std::set<std::pair<std::string,
+   std::string>>= from each returned pair's =base_currency=/
+   =quote_currency=, construct =fx_quote_convention_checker=. For each
+   parsed datum where =series_type == "FX" && metric == "RATE"= and
+   the qualifier splits into exactly two currency segments, call
+   =check(a, b)=; on =key_swapped=, set =d.qualifier = corrected_base +
+   "/" + corrected_quote= and push a warning to =resp.warnings=
+   stating the original key, corrected key, and value (unchanged) —
+   e.g. ~FX/RATE/USD/GBP = 1.394610179594994 -> FX/RATE/GBP/USD (value
+   unchanged): reversed relative to refdata's canonical currency pair.~
+   If the currency-pairs fetch itself fails (refdata unreachable,
+   permission denied, etc.), do not fail the whole import — log/warn
+   once and proceed with no corrections (equivalent to an empty known-
+   pairs set).
+5. *CMake*: link =ores.refdata.api.lib= (protocol-only header, no
+   service logic) into =ores.marketdata.core=.
+
+Then: remove the =case when base='GBP' and quote='USD'= special-case
+from =synthetic_publish_from_dq_create.sql= (see Acceptance), re-run
+=barclays_system_provision.ores= +
+=import_legacy_example_56.ores=, and confirm =synthetic.gbpusd='s
+=ore_key= naturally lands on =FX/RATE/GBP/USD= with the vintage guard
+still passing (the earlier direct-SQL patch of the seeded row's
+=ore_key= to =FX/RATE/USD/GBP= — a bitemporal update, version bumped
+to 2 — should also be re-verified/reverted against a freshly
+reprovisioned DB once this lands).
+
+* Notes
+
+Motivating investigation and the reversed-key math (triangulation via
+EUR/GBP÷EUR/USD) are recorded on
+[[id:E468C540-0CE0-4F89-870D-7ED2CFCDF219][Vintage-availability guard in ores.synthetic]]'s own Plan/Notes — this
+task generalises that one-off finding into reusable import-time
+detection.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1492][#1492]] | [marketdata] Detect and correct reversed FX spot quotes during import |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Refdata round-trip runs unconditionally even for non-FX imports | =import_service.cpp= | Fixed | =std::any_of= short-circuit before the fetch/checker; =0e661d505=. |
+| 2 | Include not alphabetically sorted | =application.cpp= | Fixed | Same commit. |
+| 3 | Swap-on-match path only indirectly tested (no fake NATS server for =currency_pairs.list=) | =service_import_service_tests.cpp= | Declined (informational) | Covered by =fx_quote_convention_checker='s own 8 unit tests plus manual live-stack verification; not worth new test infra for one PR. |
+
+* Result
+
+Delivered per plan. =fx_quote_convention_checker= (=ores.ore.core=) is a
+pure, dependency-free class — 8 unit tests — that swaps an FX pair's two
+currencies when reversed relative to a known-pairs set, never touching
+the value. Wired into =import_service= via =ores.marketdata.service='s
+first outbound service-to-service call: a client-credentials
+=nats_client= plus per-request On-Behalf-Of delegation of the importing
+caller's token (=currency_pair= is party-scoped, so the service's own
+identity alone can't see it — this failure mode, and the correct fix,
+are now documented in
+=doc/knowledge/architecture/service_to_service_auth_patterns.org=). The
+one-off SQL special-case hardcoding GBP/USD's =ore_key= is removed;
+=synthetic.gbpusd= now naturally resolves to =FX/RATE/GBP/USD=.
+
+Verified end-to-end against a live stack: the correction fires
+importing Legacy/Example_56's =market.txt=, the resulting series lands
+on canonical =GBP/USD=, and a started =synthetic.gbpusd= feed's first
+tick (=1.394465=) matches the real imported vintage spot
+(=1.394610179594994=).
+
+Merged via PR #1492, two review-round fixes applied (unconditional
+refdata round-trip → short-circuited for non-FX imports; include-sort
+nit).

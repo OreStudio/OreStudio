@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 5C89033D-224E-4105-A8CF-B0336C2A9014
 :END:
-#+title: Task: Add book classification flags: is_reserve_book, is_ledger_book, is_funding_book, is_sweepable, is_manual_ledger_book
-#+description: The domain notes describe a book carrying independent boolean classification flags rather than a single type enum, and mention 5 not yet modeled: Is Reserve Book, Is Ledger Book, Is Funding Book, Sweepable (only Sweepable books participate in cash sweeping), and manual ledger book (not fed from a source book, updated by hand). Add all 5 as boolean fields, following the exact same pattern as the existing is_trading_book field (detail field checkbox, list column, generator).
+#+title: Task: Add book_purpose_type lookup entity to book
+#+description: Rescoped from the original 5-boolean-flags ask after analysis (see Plan): add book_purpose_type as a lookup entity, mirroring the regulatory_book_type pattern, with mutually-exclusive values Trading (default/ordinary), Reserve, Funding, Wash, Write-off, Test, Sales, Sweep target, and Remittance target. Companion fields (ledger_feed_type, is_sweepable, Wash's paired-risk-book link) are split into their own tasks under this story.
 #+type: task
 #+level: s1
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
@@ -65,34 +65,28 @@ target and Remittance target — which look combinable at first glance
 Mixing them on one book would blur the audit/reconciliation separation
 these processes exist to provide.
 
-Revised design — 2 new lookup FKs + 1 boolean, no cross-axis
+Full revised design — 2 new lookup FKs + 1 boolean, no cross-axis
 constraints (per the Basel/FRTB analysis: no regulatory rule ties risk
 role to trading/banking classification, so regulatory type, ledger
 feed, and purpose combine freely with each other; only *within*
 =book_purpose_type= are the values mutually exclusive):
 
-| Field                 | Type                         | Values                                          |
-|-----------------------+-------------------------------+--------------------------------------------------|
-| =book_purpose_type=   | FK -> new lookup entity      | Trading (default/ordinary), Reserve, Funding, Wash, Write-off, Test, Sales, Sweep target, Remittance target |
-| =ledger_feed_type=    | FK -> new lookup entity (or 3-value enum) | None, Automatic, Manual                        |
-| =is_sweepable=        | bool                         | independent of the above; governs spot-sweep eligibility only, not ledger sweep; UI may default false for Reserve purpose but no DB constraint |
+| Field                 | Type                         | Values                                          | Task |
+|-----------------------+-------------------------------+--------------------------------------------------+------|
+| =book_purpose_type=   | FK -> new lookup entity      | Trading (default/ordinary), Reserve, Funding, Wash, Write-off, Test, Sales, Sweep target, Remittance target | this task |
+| =ledger_feed_type=    | FK -> new lookup entity (or 3-value enum) | None, Automatic, Manual                        | [[id:DC13CC83-2807-4AA9-B56E-BA7D6BA896D2][Add ledger_feed_type lookup entity to book]] |
+| =is_sweepable=        | bool                         | independent of the above; governs spot-sweep eligibility only, not ledger sweep; UI may default false for Reserve purpose but no DB constraint | [[id:FA28F852-012F-47A7-94E7-FEDAEF2F2DF9][Add is_sweepable flag to book]] |
+| Wash paired risk book | nullable self-FK to book     | set only when purpose = Wash                    | [[id:077F2C20-50AE-4E23-A4E1-0FC053854313][Add paired risk-book link for Wash-purpose books]] (BACKLOG, discovered scope) |
 
 =regulatory_book_type= (Trading/Banking) is unchanged — already
 correctly modeled, and confirmed independent of purpose/ledger-feed by
 the FRTB analysis.
 
-Follow the =regulatory_book_type= implementation as the pattern for
-the 2 new lookup entities (domain/SQL/repository/protocol/Qt CRUD +
-badge-coloured combo), not the originally-scoped checkbox pattern.
-Render =is_sweepable= as a yes/no badge in the Book list, consistent
-with the =regulatory_book_type= badge-coloured combo, rather than a
-plain checkbox column.
-
-Wash books additionally require a *paired risk book* — a book-to-book
-relationship (nullable FK to book), not a flag, since every wash
-back-to-back trade needs a routing target. Whether this FK is in scope
-for this task or deferred as a follow-on is still open — flag at PR
-time if descoped.
+*This task's scope is now =book_purpose_type= only.* Follow the
+=regulatory_book_type= implementation as the pattern (domain/SQL/
+repository/protocol/Qt CRUD + badge-coloured combo), not the
+originally-scoped checkbox pattern. The companion fields above split
+into their own sibling tasks under this story.
 
 * Notes
 

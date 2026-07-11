@@ -7,9 +7,19 @@
 #+level: cross
 #+filetags: 
 #+created: 2026-06-25
-#+updated: 2026-06-25
+#+updated: 2026-07-11
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved by natural recommissioning, exactly as this capture predicted*
+(2026-07-11 verification): all 10 affected entities' =validate_*_fn= and
+insert-trigger functions now carry =security definer set search_path =
+public, pg_temp=, and every bootstrap not-exists check filters on
+=valid_to = ores_utility_infinity_timestamp_fn()=. Checked directly
+against the generated SQL in =projects/ores.sql/create/refdata/= — no
+proactive sweep was needed; each entity's own commission story closed
+the gap via its verify-SQL task, as anticipated in this capture's Why
+section.
 
 * What
 

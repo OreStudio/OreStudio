@@ -293,6 +293,19 @@ public:
      */
     std::string update_my_email(const boost::uuids::uuid& account_id, const std::string& new_email);
 
+    /**
+     * @brief Sets the default party for a user's own account.
+     *
+     * Self-service; the caller is responsible for verifying the party is
+     * one the account is actually associated with before calling this.
+     *
+     * @param account_id The ID of the account to update
+     * @param party_id The party to set as the account's default
+     * @return empty string on success, error message on failure
+     */
+    std::string set_my_default_party(const boost::uuids::uuid& account_id,
+                                     const boost::uuids::uuid& party_id);
+
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;

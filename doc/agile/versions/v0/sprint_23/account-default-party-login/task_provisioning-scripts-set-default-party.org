@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 18F72AD6-A5A1-4D7A-902F-1213075E0E4C
+:END:
+#+title: Task: Update provisioning scripts to set the account's default party
+#+description: Update barclays_system_provision.ores and the Acme/synthetic provisioning script so the provisioning account's default_party_id is set to the newly-provisioned party, so fresh environments come up ready for one-click login.
+#+type: task
+#+level: s1
+#+filetags: :account-default-party-login:sprint_23:v0:
+#+owner: marco
+#+branch: feature/add-default-party-id-field
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give provisioning scripts a way to set the just-provisioned party as
+the provisioning account's quick-login default, and use it in both
+=barclays_system_provision.ores= and =acme_system_provision.ores= so
+freshly-provisioned dev environments come up ready for one-click
+login.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+- A new self-service NATS request (=set_my_default_party_request=,
+  subject =iam.v1.accounts.set-default-party=) lets a logged-in account
+  set its own =default_party_id=, validated server-side against the
+  account's actual party memberships (mirrors =select_party='s
+  membership check).
+- A new shell command, =accounts set-default-party <party-uuid-or-full-name>=,
+  resolves the party (by UUID or exact full name, same lookup as
+  =provision party=) and calls the new request.
+- =barclays_system_provision.org= and =acme_system_provision.org= (the
+  recipes, source of truth) call =accounts set-default-party= right
+  after =provision party= succeeds, while still logged in as the
+  tenant admin.
+- =barclays_system_provision.ores= and =acme_system_provision.ores=
+  regenerated via =compass build --direct tangle_shell_scripts= to
+  reflect the recipe change (never hand-edited).
+
+* Plan
+
+1. Considered doing this transparently inside the existing
+   =provision party= command vs. adding an explicit new shell
+   subcommand called from the scripts. Chose the explicit subcommand
+   (per direction) — matches the task's literal ask to edit the
+   scripts, and keeps "provision a party" and "make it my default"
+   as two separately-visible, separately-testable steps.
+2. Protocol: =set_my_default_party_request=/=response= in
+   =account_protocol.hpp=, self-service (identity from the JWT, like
+   =update_my_email_request=, not an admin-on-behalf-of-another-account
+   operation).
+3. Service: =account_service::set_my_default_party()=, mirroring
+   =update_my_email='s read-modify-write-via-temporal-versioning shape.
+4. Handler: =account_handler::set_default_party()= — extracts the
+   account id from the bearer token, validates the requested party is
+   one of the account's actual memberships (same check as
+   =select_party=), then calls the service. Registered in
+   =registrar.cpp=.
+5. Shell: =accounts_commands::process_set_default_party()= — resolves
+   the party by UUID or exact full name via =get_parties_request=
+   (same lookup =provision_commands::process_party= already uses),
+   then calls the new request. New =accounts set-default-party=
+   subcommand.
+6. Edited both =.org= recipes (never the tangled =.ores= directly) and
+   regenerated with =compass build --direct tangle_shell_scripts=;
+   confirmed only the two intended =.ores= files changed.
+
+* Notes
+
+- Ordering: the tenant-admin-to-party association happens during
+  =provision tenant='s phase 3 (associates the admin with every
+  Operational party), which runs *before* =provision party= in both
+  scripts — so by the time =accounts set-default-party= runs, the
+  membership check server-side always finds the account already
+  associated.
+- =account_party_repository= was already included in
+  =account_handler.hpp= (used by =login=/=select_party=), so no new
+  dependency was needed there.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Added a self-service "set my default party" path and wired both
+provisioning scripts to use it:
+
+- [[proj:projects/ores.iam/api/include/ores.iam.api/messaging/account_protocol.hpp][account_protocol.hpp]] — =set_my_default_party_request=/=response=.
+- [[proj:projects/ores.iam/core/include/ores.iam.core/service/account_service.hpp][account_service.hpp]] / [[proj:projects/ores.iam/core/src/service/account_service.cpp][account_service.cpp]] — =set_my_default_party()=.
+- [[proj:projects/ores.iam/core/include/ores.iam.core/messaging/account_handler.hpp][account_handler.hpp]] — =set_default_party()= handler, with the same
+  party-membership validation =select_party= uses.
+- [[proj:projects/ores.iam/core/src/messaging/registrar.cpp][registrar.cpp]] — subscribes the new handler.
+- [[proj:projects/ores.shell/include/ores.shell/app/commands/accounts_commands.hpp][accounts_commands.hpp]] / [[proj:projects/ores.shell/src/app/commands/accounts_commands.cpp][accounts_commands.cpp]] — =accounts set-default-party=
+  shell command, resolving the party by UUID or full name.
+- [[proj:doc/recipes/shell/provisioning/barclays_system_provision.org][barclays_system_provision.org]] / [[proj:doc/recipes/shell/provisioning/acme_system_provision.org][acme_system_provision.org]] — call
+  =accounts set-default-party "<party>"= right after =provision party=,
+  regenerated into [[proj:projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores][barclays_system_provision.ores]] / [[proj:projects/ores.shell/scripts/library/provisioning/acme_system_provision.ores][acme_system_provision.ores]] via
+  =compass build --direct tangle_shell_scripts=.
+
+Verification: rebuilt =ores.iam.api.lib=, =ores.iam.core.lib=,
+=ores.shell.lib= clean under =linux-clang-debug-make=; ran =ctest
+--preset linux-clang-debug-make -R "iam|shell"= — =ores.iam.api.tests=,
+=ores.iam.core.tests=, =ores.iam.service.tests=, =ores.shell.tests= all
+green (100% pass, 0 failed). Did not run the provisioning scripts
+themselves end-to-end against a live NATS+DB stack (that's a manual
+integration check, not covered by ctest) — flagged as a manual QA gap
+rather than claimed as covered.

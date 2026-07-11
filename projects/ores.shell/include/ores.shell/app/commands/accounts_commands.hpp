@@ -236,6 +236,21 @@ public:
     static void process_account_info(std::ostream& out,
                                      ores::nats::service::nats_client& session,
                                      std::string username);
+
+    /**
+     * @brief Process a set-default-party request for the currently logged-in account.
+     *
+     * Sets the party the account logs into automatically when the login
+     * dialog's quick-login checkbox is ticked. The account must already
+     * be associated with the party (validated server-side).
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param party_ref Party UUID or exact full name.
+     */
+    static void process_set_default_party(std::ostream& out,
+                                          ores::nats::service::nats_client& session,
+                                          std::string party_ref);
 };
 
 }

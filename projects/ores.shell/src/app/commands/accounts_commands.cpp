@@ -28,6 +28,7 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -264,6 +265,13 @@ void accounts_commands::register_commands(cli::Menu& root_menu,
             process_account_info(std::ref(out), std::ref(session), std::move(username));
         },
         "Show comprehensive account info (username) - details, roles, permissions");
+
+    accounts_menu->Insert(
+        "set-default-party",
+        [&session](std::ostream& out, std::string party_ref) {
+            process_set_default_party(std::ref(out), std::ref(session), std::move(party_ref));
+        },
+        "Set the logged-in account's default party for quick-login (party-uuid-or-full-name)");
 
     root_menu.Insert(std::move(accounts_menu));
 
@@ -746,6 +754,59 @@ void accounts_commands::process_get_account_history(std::ostream& out,
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->history.versions.size()
                               << " history records.";
     out << std::endl << result->history.versions << std::endl;
+}
+
+void accounts_commands::process_set_default_party(std::ostream& out,
+                                                  nats_client& session,
+                                                  std::string party_ref) {
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    refdata::messaging::get_parties_request parties_req;
+    parties_req.limit = 1000;
+    auto parties = do_auth_request<refdata::messaging::get_parties_response>(
+        out,
+        session,
+        refdata::messaging::get_parties_request::nats_subject,
+        rfl::json::write(parties_req));
+    if (!parties)
+        return;
+
+    std::optional<boost::uuids::uuid> ref_uuid;
+    try {
+        ref_uuid = boost::lexical_cast<boost::uuids::uuid>(party_ref);
+    } catch (const boost::bad_lexical_cast&) {
+    }
+
+    std::optional<refdata::domain::party> party;
+    for (const auto& p : parties->parties) {
+        if ((ref_uuid && p.id == *ref_uuid) || (!ref_uuid && p.full_name == party_ref)) {
+            party = p;
+            break;
+        }
+    }
+    if (!party) {
+        fail(out) << "Party not found (by UUID or exact full name): " << party_ref << std::endl;
+        return;
+    }
+
+    iam::messaging::set_my_default_party_request req;
+    req.party_id = boost::uuids::to_string(party->id);
+
+    auto result = do_auth_request<iam::messaging::set_my_default_party_response>(
+        out, session, iam::messaging::set_my_default_party_request::nats_subject, rfl::json::write(req));
+    if (!result)
+        return;
+
+    if (result->success) {
+        BOOST_LOG_SEV(lg(), info) << "Default party set to: " << party->full_name;
+        out << "✓ Default party set to '" << party->full_name << "'." << std::endl;
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to set default party: " << result->message;
+        fail(out) << "Failed to set default party: " << result->message << std::endl;
+    }
 }
 
 void accounts_commands::process_account_info(std::ostream& out,

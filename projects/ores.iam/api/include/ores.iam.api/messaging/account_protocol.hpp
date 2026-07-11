@@ -146,6 +146,17 @@ struct update_my_email_response {
     std::string message;
 };
 
+struct set_my_default_party_request {
+    using response_type = struct set_my_default_party_response;
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.set-default-party";
+    std::string party_id;
+};
+
+struct set_my_default_party_response {
+    bool success = false;
+    std::string message;
+};
+
 struct select_party_request {
     using response_type = struct select_party_response;
     static constexpr std::string_view nats_subject = "iam.v1.accounts.select-party";

@@ -46,6 +46,7 @@
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <memory>
 #include <stdexcept>
@@ -595,6 +596,84 @@ public:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, update_my_email_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void set_default_party(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<set_my_default_party_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto token = acct_extract_bearer_token(msg);
+            if (token.empty()) {
+                reply(nats_,
+                      msg,
+                      set_my_default_party_response{.success = false,
+                                                    .message = "Missing authorization token"});
+                return;
+            }
+            auto claims_result = signer_.validate(token);
+            if (!claims_result) {
+                reply(nats_,
+                      msg,
+                      set_my_default_party_response{.success = false,
+                                                    .message = "Invalid or expired token"});
+                return;
+            }
+            boost::uuids::string_generator sg;
+            auto account_id = sg(claims_result->subject);
+
+            boost::uuids::uuid party_id;
+            try {
+                party_id = sg(req->party_id);
+            } catch (const std::exception&) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "set_default_party: invalid party_id: " << req->party_id;
+                reply(nats_,
+                      msg,
+                      set_my_default_party_response{.success = false,
+                                                    .message = "Invalid party_id format"});
+                return;
+            }
+
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+
+            repository::account_party_repository ap_repo(ctx);
+            auto parties = ap_repo.read_latest_by_account(account_id);
+            const bool is_member = std::any_of(
+                parties.begin(), parties.end(), [&](const auto& ap) { return ap.party_id == party_id; });
+            if (!is_member) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "set_default_party: party " << req->party_id
+                    << " not in account's party list (account has " << parties.size()
+                    << " parties)";
+                reply(nats_,
+                      msg,
+                      set_my_default_party_response{.success = false,
+                                                    .message = "User is not a member of requested party"});
+                return;
+            }
+
+            service::account_service svc(ctx);
+            auto err = svc.set_my_default_party(account_id, party_id);
+            if (err.empty()) {
+                BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, set_my_default_party_response{.success = true});
+            } else {
+                reply(nats_, msg, set_my_default_party_response{.success = false, .message = err});
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, set_my_default_party_response{.success = false, .message = e.what()});
         }
     }
 

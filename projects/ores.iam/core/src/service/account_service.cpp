@@ -572,4 +572,34 @@ std::string account_service::update_my_email(const boost::uuids::uuid& account_i
     return ""; // Empty string indicates success
 }
 
+std::string account_service::set_my_default_party(const boost::uuids::uuid& account_id,
+                                                   const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Setting default party for account: "
+                               << boost::uuids::to_string(account_id);
+
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Attempted to set default party for non-existent account: "
+                                  << boost::uuids::to_string(account_id);
+        return "Account does not exist";
+    }
+
+    if (accounts[0].default_party_id == party_id) {
+        return "New default party is the same as current default party";
+    }
+
+    auto account = accounts[0];
+    account.default_party_id = party_id;
+    account.change_reason_code = std::string{reason::codes::non_material_update};
+    account.change_commentary = "Default party changed";
+    // Note: version is NOT incremented here - the database trigger handles it
+
+    account_repo_.write(account);
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully set default party for account: "
+                              << boost::uuids::to_string(account_id);
+
+    return ""; // Empty string indicates success
+}
+
 }

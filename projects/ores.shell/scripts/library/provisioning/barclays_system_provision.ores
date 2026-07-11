@@ -15,4 +15,5 @@ logout
 
 login tenant_admin@barclays_plc Secure-Password-123
 provision party "BARCLAYS PLC" --dataset-size small --reports all
+accounts set-default-party "BARCLAYS PLC"
 logout

@@ -7,9 +7,18 @@
 #+level: cross
 #+filetags: :codegen:refdata:book:hierarchy:
 #+created: 2026-07-05
-#+updated: 2026-07-05
+#+updated: 2026-07-11
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Superseded by a later, more considered decision*: [[id:2AB4A475-B883-4FE6-BC27-3D6742F9E2C8][Task: Document that
+book-to-book hierarchy is not supported; hierarchy is via
+portfolios]] (2026-07-08, in [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]) established that
+book-to-book hierarchy is a deliberate non-feature — hierarchy is
+expressed entirely via the portfolio tree (Portfolio has
+self-referencing =parent_portfolio_id=; Book links to exactly one
+portfolio). Adding =parent_book_id= as this capture proposed would
+contradict that decision. Discarded rather than promoted.
 
 * What
 

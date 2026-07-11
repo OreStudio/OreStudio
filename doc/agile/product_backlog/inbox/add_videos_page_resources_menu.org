@@ -22,6 +22,7 @@ capture, four videos exist there:
 - [[https://www.youtube.com/watch?v=OpZtZPi49rA][ORE Studio Overview - part 2]] — addresses community feedback, demonstrates bug fixes using the Claude Code setup, shows the counterparties wizard.
 - [[https://www.youtube.com/watch?v=kYpU9NDRR4E][ORE Studio Overview - part 3]] — the Karpathian approach taken in ORE Studio, including a brief explanation of AAD, referencing Micrograd.
 - [[https://www.youtube.com/watch?v=NDxW12FNhrU][ORE Studio: Sprint 17 Demo]] — demonstrates work completed during Sprint 17.
+- [[https://www.youtube.com/watch?v=5oxheZhqsJ8][ORE Studio: Sprint 22 Demo]] — demonstrates work completed during Sprint 22.
 
 Then wire the new page into the site's *Resources* nav-group in
 =projects/ores.lisp/src/ores-build-site.el= (around line 148-153,

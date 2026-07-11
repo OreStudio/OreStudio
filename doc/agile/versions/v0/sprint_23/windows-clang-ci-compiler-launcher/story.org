@@ -33,11 +33,11 @@ otherwise pick the sccache/ccache binary directly) gets a chance to run.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Diagnosis complete, implementing fix.  |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Split the launcher env override out of the shared clang/gcc presets so it no longer reaches windows-clang. |
+| Next          | Nothing.                               |
 | Last touched  | 2026-07-11                               |
 
 * Acceptance
@@ -49,10 +49,12 @@ otherwise pick the sccache/ccache binary directly) gets a chance to run.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:74ED93D0-A565-401B-BD24-BCA4EEBAC379][Scaffold story: Hotfix: Windows Clang CI compiler-launcher wrapper]] | STARTED | 2026-07-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:82F67C49-73B9-4BE8-B586-32246D68A068][Implement Hotfix: Windows Clang CI compiler-launcher wrapper]] | STARTED | 2026-07-11 | | Initial task for: Hotfix: Windows Clang CI compiler-launcher wrapper |
+| [[id:74ED93D0-A565-401B-BD24-BCA4EEBAC379][Scaffold story: Hotfix: Windows Clang CI compiler-launcher wrapper]] | DONE | 2026-07-11 | 2026-07-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:82F67C49-73B9-4BE8-B586-32246D68A068][Implement Hotfix: Windows Clang CI compiler-launcher wrapper]] | DONE | 2026-07-11 | 2026-07-11 | Initial task for: Hotfix: Windows Clang CI compiler-launcher wrapper |
 
 * Decisions
+
+- Split the launcher =environment= override out of the shared =clang=/=gcc= hidden presets into a new =unix-compiler-cache-wrapper= preset, inherited only by the Linux clang/gcc presets, rather than making CMakeLists.txt's WIN32 branch run before =project()= (not possible) or adding a Windows-specific override in =windows-clang= (would leave the same footgun for future Unix-inheriting presets).
 
 * Out of scope
 

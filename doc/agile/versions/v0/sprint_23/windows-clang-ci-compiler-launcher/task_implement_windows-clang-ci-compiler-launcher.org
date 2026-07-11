@@ -29,11 +29,11 @@ back to =CMakeLists.txt='s existing =WIN32=-aware launcher logic.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C4755E35-7E5D-4276-8AAE-53FA8557FAEF][Hotfix: Windows Clang CI compiler-launcher wrapper]] |
-| Now          | Fix implemented and verified locally.  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open PR.                               |
+| Next         | Nothing. |
 | Last touched | 2026-07-11                               |
 
 * Acceptance
@@ -97,3 +97,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Extracted the compiler-cache launcher's =environment= override out of
+the shared =clang=/=gcc= hidden presets into a new
+=unix-compiler-cache-wrapper= hidden preset, wired only into the 8
+Linux clang/gcc presets. =windows-clang= and =macos-clang*= no longer
+inherit it, so =windows-clang-debug-ninja=/=windows-clang-release-ninja=
+fall back to =CMakeLists.txt='s =WIN32=-aware launcher logic instead of
+leaking the =.sh= wrapper into =project()=-time compiler detection.
+
+Verified locally with =linux-clang-debug-make=: full build and test
+suite green. Both PR checks (build/lint/review/site) and two automated
+Claude code reviews passed with no blocking issues.

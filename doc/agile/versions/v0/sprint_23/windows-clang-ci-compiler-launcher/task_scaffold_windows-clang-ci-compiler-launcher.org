@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C4755E35-7E5D-4276-8AAE-53FA8557FAEF][Hotfix: Windows Clang CI compiler-launcher wrapper]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-11                               |
 
 * Acceptance
@@ -69,3 +69,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Scaffolded the hotfix branch, story, and both tasks via
+=compass story new --kind hotfix=; wired into sprint 23's =** Hotfixes=
+table. Rides PR #1502 alongside the implementation task.

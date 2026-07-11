@@ -5,7 +5,7 @@
 #+description: Phase A: move DiffResult, check helpers, the changes-tab flow with a calculateDiff template method, and the version-list/async-load/stale plumbing into HistoryDialogBase; migrate Account, SystemSetting, ChangeReason, ChangeReasonCategory, Country and Currency dialogs onto it, eliminating the four diff idioms.
 #+type: task
 #+level: s1
-#+filetags: :qt:refactor:history:consolidate_history_dialogs:sprint_19:v0:
+#+filetags: :qt:refactor:history:consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch: feature/grow-history-dialog-base
 #+pr: 1080

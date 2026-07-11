@@ -5,7 +5,7 @@
 #+description: Phase B2: hand-written currency field mapper; extend the currency history response with fields and changes; handler composes map+diff; CurrencyHistoryDialog renders server rows; handler and mapper tests; dogfood before/after.
 #+type: task
 #+level: s1
-#+filetags: :refdata:nats:qt:history:consolidate_history_dialogs:sprint_19:v0:
+#+filetags: :refdata:nats:qt:history:consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch: feature/currency-history-pilot
 #+pr: 1097

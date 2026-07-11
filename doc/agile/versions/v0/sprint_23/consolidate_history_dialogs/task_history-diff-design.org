@@ -5,7 +5,7 @@
 #+description: Investigation and design: where field-string mappers live, the generic NATS history-diff message shape, whether diff model and logic warrant a dedicated ores.diff component, how HistoryDialogBase adoption proceeds incrementally across 67 dialogs, and how each layer is tested.
 #+type: task
 #+level: s1
-#+filetags: :qt:design:architecture:history:consolidate_history_dialogs:sprint_19:v0:
+#+filetags: :qt:design:architecture:history:consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch: feature/history-diff-design
 #+pr: https://github.com/OreStudio/OreStudio/pull/1072

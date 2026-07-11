@@ -5,7 +5,7 @@
 #+description: Phase B1: scaffold ores.diff with the component-creator/codegen flow; diff model (field_value, diff_entry, diff_result) and compare engine; exhaustive unit tests.
 #+type: task
 #+level: s1
-#+filetags: :diff:component:architecture:consolidate_history_dialogs:sprint_19:v0:
+#+filetags: :diff:component:architecture:consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch: feature/create-ores-diff
 #+pr: 1091

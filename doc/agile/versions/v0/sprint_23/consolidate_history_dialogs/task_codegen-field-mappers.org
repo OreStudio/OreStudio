@@ -5,7 +5,7 @@
 #+description: Phase D (deferred): generate per-entity field-string mappers from the entity org models once the hand-written currency shape is proven and the codegen migration is complete.
 #+type: task
 #+level: s1
-#+filetags: :codegen:deferred:consolidate_history_dialogs:sprint_19:v0:
+#+filetags: :codegen:deferred:consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

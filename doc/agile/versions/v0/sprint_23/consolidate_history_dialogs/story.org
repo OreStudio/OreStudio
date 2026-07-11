@@ -5,12 +5,14 @@
 #+description: All 67 entity history dialogs duplicate the version-list/load/stale pipeline and 6 hand-roll field diffs with four different idioms. Compute diffs server-side via a domain-to-field-strings mapper and a generic NATS history message; adopt HistoryDialogBase everywhere with DiffResult and a calculateDiff template method in the base.
 #+type: story
 #+level: s2
-#+filetags: :sprint_19:v0:
+#+filetags: :sprint_23:v0:
 #+created: 2026-06-05
-#+updated: 2026-06-05
+#+updated: 2026-07-11
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Carried from [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] (4/7 tasks done); the codegen org-model migration gate ([[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]]) cleared 2026-06-11, so Phase C can now proceed.
 
 * Goal
 
@@ -97,11 +99,11 @@ in-flight model migration); codegen the mappers (deferred).
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | STARTED                              |
-| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Shell unified diff; phase C gated on codegen migration. |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Gate cleared (org-model migration DONE 2026-06-11); Phase C ready to start. |
 | Waiting on    | Nothing.                               |
-| Next          | Phase C: template rollout (gated on codegen migration). |
-| Last touched  | 2026-06-05                               |
+| Next          | Phase C: template rollout across the ~61 remaining generated dialogs. |
+| Last touched  | 2026-07-11                               |
 
 * Acceptance
 

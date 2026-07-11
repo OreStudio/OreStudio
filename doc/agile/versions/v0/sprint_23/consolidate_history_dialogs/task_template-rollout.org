@@ -5,7 +5,7 @@
 #+description: Phase C: update cpp_qt_history_dialog templates to the target form (render fields/changes from the response); regenerate per component as org-model migration settles; handler/mapper rollout per domain. Gated on the codegen org-model migration.
 #+type: task
 #+level: s1
-#+filetags: :codegen:qt:rollout:consolidate_history_dialogs:sprint_19:v0:
+#+filetags: :codegen:qt:rollout:consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -23,10 +23,10 @@ Bring the 61 generated history dialogs onto the target form: the
 base renders =fields= and =changes= straight from the response, and
 the per-entity dialogs shrink to generated declarations.
 
-*Gated on the codegen org-model migration*: this task must not force
-codegen changes while entity models migrate. It proceeds component by
-component as each component's models settle, or waits for the
-migration to complete.
+*Was gated on the codegen org-model migration*: this task could not
+force codegen changes while entity models migrated. That migration
+([[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]]) completed
+2026-06-11 — the gate is clear.
 
 * Status
 
@@ -34,10 +34,10 @@ migration to complete.
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
+| Now          | Gate cleared; ready to start.          |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-06-05                               |
+| Last touched | 2026-07-11                               |
 
 * Acceptance
 

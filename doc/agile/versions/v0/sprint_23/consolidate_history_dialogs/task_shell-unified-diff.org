@@ -5,7 +5,7 @@
 #+description: Render entity history in the shell as a unified diff (or provide an option to display it that way), consuming the same fields/changes history response as the Qt dialogs.
 #+type: task
 #+level: s1
-#+filetags: :shell:history:ux:consolidate_history_dialogs:sprint_19:v0:
+#+filetags: :shell:history:ux:consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch: feature/shell-unified-diff
 #+pr: 1105

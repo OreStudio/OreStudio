@@ -74,10 +74,19 @@ Five files carry the version string. Edit them as a single commit.
       =0.0.<NEW>=, the commits-since badge moves from
       =v0.0.<OLD-1>= to =v0.0.<OLD>=.
 
-   d. The *screenshot asset* reference is deliberately left alone
-      here — at bump time (sprint open) the new sprint's screenshot
-      doesn't exist yet. It's captured and wired in at sprint close
-      instead: see [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]] step 6.
+   d. The *screenshot asset* reference: the readme shows the *last
+      released* version, so point it at the just-closed sprint's
+      screenshot — =assets/images/ore_studio-v0.0.<OLD>.png=,
+      captured at that sprint's close (see
+      [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]] step 6). It should already
+      exist by the time you're opening the next sprint; if it
+      doesn't, capture it now rather than leaving the reference
+      stale:
+
+      #+begin_src diff
+      -[[./assets/images/ore_studio-v0.0.<OLD-1>.png]]
+      +[[./assets/images/ore_studio-v0.0.<OLD>.png]]
+      #+end_src
 
 6. /Verify/. Sanity-check that nothing else mentions the old
    version:

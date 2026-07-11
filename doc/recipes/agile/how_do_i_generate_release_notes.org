@@ -79,22 +79,14 @@ on =main=).
    ./compass.sh release-notes export --sprint <N>
    #+end_src
 
-6. /Capture and wire in the readme screenshot/. Take a fresh
-   screenshot of the running Qt client (e.g. via the QA Validation
-   Runner panel's screenshot button, or a desktop screenshot tool)
-   and save it as =assets/images/ore_studio-v0.0.<N>.png=. Update
-   =readme.org='s screenshot reference
-   (=[[./assets/images/ore_studio-v0.0.<N>.png]]=, currently near
-   "What is ORE Studio?") to point at it. This is easy to miss
-   because the version-bump recipe's screenshot step only fires "if
-   a new screenshot exists" — at bump time (sprint open) it never
-   does, since the screenshot for sprint =N= is only captured here,
-   at its close. Sanity-check nothing still points at the previous
-   version's screenshot:
-
-   #+begin_src sh :results verbatim
-   grep -n "ore_studio-v0\.0\." readme.org
-   #+end_src
+6. /Capture the readme screenshot/. Take a fresh screenshot of the
+   running Qt client (e.g. via the QA Validation Runner panel's
+   screenshot button, or a desktop screenshot tool) and save it as
+   =assets/images/ore_studio-v0.0.<N>.png=. Do *not* wire it into
+   =readme.org= here — the readme should show the *last released*
+   version, so it only gets pointed at this screenshot once sprint
+   =N= itself closes and =N+1= opens; see
+   [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] step 5d.
 
 7. /Commit/: stage, commit, and push =release_notes.org=/=.md=, the
    four chart PNGs, the new screenshot, and the readme update. There

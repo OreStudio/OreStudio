@@ -52,17 +52,19 @@ struct diff_entry final {
 
     /**
      * @brief Byte ranges into old_value that changed relative to
-     * new_value; empty when the field was added (old_value is
-     * already empty) or when the whole value changed with no
-     * meaningful sub-range to highlight.
+     * new_value; empty only when the field was added (old_value is
+     * already empty). A value that changed entirely (no common
+     * prefix/suffix with new_value) still gets a single span covering
+     * the whole string, not an empty vector.
      */
     std::vector<diff_span> old_spans;
 
     /**
      * @brief Byte ranges into new_value that changed relative to
-     * old_value; empty when the field was removed (new_value is
-     * already empty) or when the whole value changed with no
-     * meaningful sub-range to highlight.
+     * old_value; empty only when the field was removed (new_value is
+     * already empty). A value that changed entirely (no common
+     * prefix/suffix with old_value) still gets a single span covering
+     * the whole string, not an empty vector.
      */
     std::vector<diff_span> new_spans;
 

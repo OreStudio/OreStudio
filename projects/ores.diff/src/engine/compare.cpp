@@ -68,8 +68,7 @@ void diff_line_into(std::string_view a,
     // side is equivalent.
     while (prefix_len > 0 && prefix_len < a.size() && is_utf8_continuation_byte(a[prefix_len]))
         --prefix_len;
-    while (suffix_len > 0 && a.size() - suffix_len < a.size()
-          && is_utf8_continuation_byte(a[a.size() - suffix_len]))
+    while (suffix_len > 0 && is_utf8_continuation_byte(a[a.size() - suffix_len]))
         --suffix_len;
 
     const std::size_t a_mid_start = prefix_len;

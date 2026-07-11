@@ -37,7 +37,6 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <format>
 #include <optional>
 #include <rfl/json.hpp>
 #include <span>
@@ -58,6 +57,16 @@ inline auto& dataset_handler_lg() {
     static auto instance = ores::logging::make_logger("ores.dq.messaging.dataset_handler");
     return instance;
 }
+
+/**
+ * @brief params_json payload for the per-dataset publish-from-DQ SQL
+ * functions. Deliberately narrower than publish_bundle_params, which
+ * carries bundle-only fields (opted_in_datasets, lei_parties) that don't
+ * apply to this path.
+ */
+struct dataset_publish_params {
+    std::optional<std::string> party_id;
+};
 } // namespace
 
 class dataset_handler {
@@ -230,9 +239,10 @@ public:
 
             const auto tenant_id_str = boost::uuids::to_string(ctx.tenant_id().to_uuid());
             const std::string mode_str = to_string(req->mode);
-            const std::string params_json = ctx.party_id()
-                ? std::format(R"({{"party_id":"{}"}})", boost::uuids::to_string(*ctx.party_id()))
-                : "{}";
+            dataset_publish_params publish_params;
+            if (ctx.party_id())
+                publish_params.party_id = boost::uuids::to_string(*ctx.party_id());
+            const std::string params_json = rfl::json::write(publish_params);
 
             ores::dq::workflow::bundle_publish_workflow_request wf_req;
             wf_req.tenant_id = tenant_id_str;

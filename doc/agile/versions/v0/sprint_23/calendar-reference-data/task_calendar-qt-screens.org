@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: F348285C-7ECE-4D59-9CD1-13931D2C90DE
+:ID: 24FCC62F-D1AB-4872-8337-E806675EBF7C
 :END:
-#+title: Task: Migrate currency_pair_convention.advance_calendar onto the calendar model
-#+description: Replace advance_calendar's comma-joined free-text value with a junction table validated against the calendar entity. Resolve the naming question along the way: is 'advance_calendar' idiomatic, or should it just be 'holiday_calendar'/'calendar'?
+#+title: Task: Qt screens for calendars: list/add/edit, combo picker, flag display
+#+description: Build the usual entity CRUD Qt screens for calendar (list/add/edit/history), a reusable combo picker widget for other screens to select a calendar (showing the calendar's flag if it has one), and a toolbar button in Currency Pair Conventions' main window into Calendars.
 #+type: task
 #+level: s1
-#+filetags: :calendar-reference-data:next:product_backlog:
+#+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -20,13 +20,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-=currency_pair_convention.advance_calendar= is currently a
-comma-joined free-text value (e.g. "UnitedStates,SouthKorea") with no
-validation. Replace it with a junction table validated against the
-=calendar= entity, mirroring the currency-to-calendar relationship.
-Resolve the naming question along the way: is =advance_calendar= an
-idiomatic name for this field, or should it just be
-=holiday_calendar=/=calendar= (matching =currency='s field name)?
+Build the usual entity CRUD Qt screens for =calendar=
+(list/add/edit/history, following the standard pattern), a reusable
+combo-picker widget other screens can embed to select a calendar
+(showing the calendar's flag if it has one), and a toolbar button in
+Currency Pair Conventions' main window that opens Calendars.
 
 * Status
 
@@ -41,13 +39,14 @@ idiomatic name for this field, or should it just be
 
 * Acceptance
 
-- [ ] A junction table links =currency_pair_convention= to one or more
-  =calendar= rows, replacing the free-text =advance_calendar= column.
-- [ ] Naming decision made and recorded in this story's =* Decisions=;
-  applied consistently across domain/SQL/UI.
-- [ ] Existing seeded data (from
-  [[id:155FA378-9953-4EA0-8495-7C61E40BE81C][Add librarian support for currency pairs]]) migrated onto the new
-  model.
+- [ ] Calendar list/add/edit/history Qt screens exist, following the
+  standard entity CRUD pattern.
+- [ ] A reusable calendar combo-picker widget exists and shows the
+  calendar's flag when one is set.
+- [ ] The combo picker is used wherever a calendar is selected (currency
+  detail, currency_pair_convention detail).
+- [ ] Currency Pair Conventions' main window toolbar has a button into
+  Calendars.
 
 * Plan
 

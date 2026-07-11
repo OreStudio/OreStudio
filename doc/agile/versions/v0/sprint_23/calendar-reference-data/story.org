@@ -5,13 +5,15 @@
 #+description: Currency and currency_pair currently reference holiday calendars by free-text name (ORE's own comma-joined calendar-name convention), with no validation and no proper domain model. Model calendars as a first-class ORE Studio entity with FK-referenceable relationships (including a currency-to-calendar relationship, since one currency can need more than one calendar), plus Qt screens to manage them; map to ORE's comma-joined string convention only at the XML export boundary.
 #+type: story
 #+level: s2
-#+filetags: :refdata:calendar:market_data:next:product_backlog:
+#+filetags: :refdata:calendar:market_data:sprint_23:v0:
 #+created: 2026-07-04
-#+updated: 2026-07-04
+#+updated: 2026-07-11
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Pulled in from the [[proj:doc/agile/product_backlog/product_backlog.md][product backlog]]'s *next* bucket as a not-yet-started BACKLOG story.
 
 * Goal
 
@@ -42,7 +44,7 @@ placeholder text field.
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
-| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
 | Next          | Break the story into tasks.            |

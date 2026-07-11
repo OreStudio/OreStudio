@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 24FCC62F-D1AB-4872-8337-E806675EBF7C
+:ID: 78A340FA-94F0-49F4-B521-89950A32B1F1
 :END:
-#+title: Task: Qt screens for calendars: list/add/edit, combo picker, flag display
-#+description: Build the usual entity CRUD Qt screens for calendar (list/add/edit/history), a reusable combo picker widget for other screens to select a calendar (showing the calendar's flag if it has one), and a toolbar button in Currency Pair Conventions' main window into Calendars.
+#+title: Task: Build ORE's comma-joined calendar string only at the XML export boundary
+#+description: ores.ore's conventions_mapper (or successor) should build ORE's comma-joined calendar-name string from the FK relationship(s) only when exporting to XML — the domain model itself never stores the joined string.
 #+type: task
 #+level: s1
-#+filetags: :calendar-reference-data:next:product_backlog:
+#+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -20,11 +20,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Build the usual entity CRUD Qt screens for =calendar=
-(list/add/edit/history, following the standard pattern), a reusable
-combo-picker widget other screens can embed to select a calendar
-(showing the calendar's flag if it has one), and a toolbar button in
-Currency Pair Conventions' main window that opens Calendars.
+=ores.ore='s =conventions_mapper= (or successor) should build
+ORE's comma-joined calendar-name string from the new FK
+relationship(s) only at the XML export boundary — the domain model
+itself must never store the joined string, only the individual
+calendar FK(s).
 
 * Status
 
@@ -39,14 +39,13 @@ Currency Pair Conventions' main window that opens Calendars.
 
 * Acceptance
 
-- [ ] Calendar list/add/edit/history Qt screens exist, following the
-  standard entity CRUD pattern.
-- [ ] A reusable calendar combo-picker widget exists and shows the
-  calendar's flag when one is set.
-- [ ] The combo picker is used wherever a calendar is selected (currency
-  detail, currency_pair_convention detail).
-- [ ] Currency Pair Conventions' main window toolbar has a button into
-  Calendars.
+- [ ] Exporting a currency_pair_convention to ORE XML produces the
+  correct comma-joined calendar string, derived from the junction
+  table at export time.
+- [ ] No code path writes a comma-joined string back into the domain
+  model.
+- [ ] Round-trip (import → export) tested against a real conventions.xml
+  fragment.
 
 * Plan
 

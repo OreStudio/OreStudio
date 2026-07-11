@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 78A340FA-94F0-49F4-B521-89950A32B1F1
+:ID: 30563983-1E0E-44D2-8D9D-9BBE7086BF68
 :END:
-#+title: Task: Build ORE's comma-joined calendar string only at the XML export boundary
-#+description: ores.ore's conventions_mapper (or successor) should build ORE's comma-joined calendar-name string from the FK relationship(s) only when exporting to XML — the domain model itself never stores the joined string.
+#+title: Task: Migrate currency.holiday_calendar to a real FK relationship
+#+description: Replace currency.holiday_calendar's free-text value with a proper (soft or hard) FK relationship to the new calendar entity, supporting a currency needing more than one calendar via a junction table.
 #+type: task
 #+level: s1
-#+filetags: :calendar-reference-data:next:product_backlog:
+#+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -20,11 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-=ores.ore='s =conventions_mapper= (or successor) should build
-ORE's comma-joined calendar-name string from the new FK
-relationship(s) only at the XML export boundary — the domain model
-itself must never store the joined string, only the individual
-calendar FK(s).
+Replace =currency.holiday_calendar='s free-text value with a
+proper FK relationship to the new =calendar= entity, via a junction
+table so a currency can reference more than one calendar (e.g. a
+country calendar and a financial-centre calendar).
 
 * Status
 
@@ -39,13 +38,11 @@ calendar FK(s).
 
 * Acceptance
 
-- [ ] Exporting a currency_pair_convention to ORE XML produces the
-  correct comma-joined calendar string, derived from the junction
-  table at export time.
-- [ ] No code path writes a comma-joined string back into the domain
-  model.
-- [ ] Round-trip (import → export) tested against a real conventions.xml
-  fragment.
+- [ ] A =currency_calendar= (or similarly named) junction table exists,
+  FK-referencing both =currency= and =calendar=.
+- [ ] =currency.holiday_calendar='s existing free-text values are
+  migrated onto the junction table.
+- [ ] The old free-text column is retired.
 
 * Plan
 

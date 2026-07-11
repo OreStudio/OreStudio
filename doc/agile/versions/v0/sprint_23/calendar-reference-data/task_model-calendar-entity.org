@@ -5,7 +5,7 @@
 #+description: Model a calendar domain entity enumerating valid ORE/QuantLib calendar codes (name, optional flag image, etc.) ready to drive ores.codegen.entity.
 #+type: task
 #+level: s1
-#+filetags: :calendar-reference-data:next:product_backlog:
+#+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

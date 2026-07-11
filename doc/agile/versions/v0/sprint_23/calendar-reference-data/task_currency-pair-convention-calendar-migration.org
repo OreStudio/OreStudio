@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 30563983-1E0E-44D2-8D9D-9BBE7086BF68
+:ID: F348285C-7ECE-4D59-9CD1-13931D2C90DE
 :END:
-#+title: Task: Migrate currency.holiday_calendar to a real FK relationship
-#+description: Replace currency.holiday_calendar's free-text value with a proper (soft or hard) FK relationship to the new calendar entity, supporting a currency needing more than one calendar via a junction table.
+#+title: Task: Migrate currency_pair_convention.advance_calendar onto the calendar model
+#+description: Replace advance_calendar's comma-joined free-text value with a junction table validated against the calendar entity. Resolve the naming question along the way: is 'advance_calendar' idiomatic, or should it just be 'holiday_calendar'/'calendar'?
 #+type: task
 #+level: s1
-#+filetags: :calendar-reference-data:next:product_backlog:
+#+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -20,10 +20,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Replace =currency.holiday_calendar='s free-text value with a
-proper FK relationship to the new =calendar= entity, via a junction
-table so a currency can reference more than one calendar (e.g. a
-country calendar and a financial-centre calendar).
+=currency_pair_convention.advance_calendar= is currently a
+comma-joined free-text value (e.g. "UnitedStates,SouthKorea") with no
+validation. Replace it with a junction table validated against the
+=calendar= entity, mirroring the currency-to-calendar relationship.
+Resolve the naming question along the way: is =advance_calendar= an
+idiomatic name for this field, or should it just be
+=holiday_calendar=/=calendar= (matching =currency='s field name)?
 
 * Status
 
@@ -38,11 +41,13 @@ country calendar and a financial-centre calendar).
 
 * Acceptance
 
-- [ ] A =currency_calendar= (or similarly named) junction table exists,
-  FK-referencing both =currency= and =calendar=.
-- [ ] =currency.holiday_calendar='s existing free-text values are
-  migrated onto the junction table.
-- [ ] The old free-text column is retired.
+- [ ] A junction table links =currency_pair_convention= to one or more
+  =calendar= rows, replacing the free-text =advance_calendar= column.
+- [ ] Naming decision made and recorded in this story's =* Decisions=;
+  applied consistently across domain/SQL/UI.
+- [ ] Existing seeded data (from
+  [[id:155FA378-9953-4EA0-8495-7C61E40BE81C][Add librarian support for currency pairs]]) migrated onto the new
+  model.
 
 * Plan
 

@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 7454EE7E-1763-495B-94F4-0AFC9BADB2C5
+:END:
+#+title: Task: GitHub-style diff view in history changes tab
+#+description: Render the history changes tab like a GitHub diff: red old / green new with intra-line highlight, handling multiline fields.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_history_dialogs:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the entity history "Changes" tab render diffs like GitHub: the old
+value on a red background, the new value on a green background, with the
+actually-changed characters/tokens highlighted in a darker shade
+(GitHub dark-theme palette — line bg red =rgba(248,81,73,.15)= / green
+=rgba(63,185,80,.15)=; intra-line highlight red =rgba(248,81,73,.40)= /
+green =rgba(46,160,67,.40)=). Implement centrally in
+=HistoryDialogBase::displayChangesTab= (=projects/ores.qt/api/src/HistoryDialogBase.cpp=,
+~line 208–254) — it already produces a 3-column =[field | old | new]=
+table from =calculateDiffAt()='s =DiffResult=, so this is a render-only
+change in one place: no per-entity code, no templates, no regen, and
+every entity's history view upgrades at once. Optionally add a =+=/=−=
+gutter glyph for the full GitHub look.
+
+*Must handle multiline.* Short single-line fields (codes, names, dates)
+get an inline char highlight via common prefix/suffix. Long multi-line
+fields (e.g. =change_commentary=) must render a real line-by-line diff
+with intra-line (word/char) highlighting — i.e. a proper line diff
+(LCS over lines) plus per-line token diff, not just prefix/suffix on the
+whole string. Render via =QLabel= rich-text HTML (or =QTextEdit=) so
+backgrounds and spans show; size the cells to the content.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-06-29 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Make the entity history "Changes" tab render diffs like GitHub: the old
+value on a red background, the new value on a green background, with the
+actually-changed characters/tokens highlighted in a darker shade
+(GitHub dark-theme palette — line bg red =rgba(248,81,73,.15)= / green
+=rgba(63,185,80,.15)=; intra-line highlight red =rgba(248,81,73,.40)= /
+green =rgba(46,160,67,.40)=). Implement centrally in
+=HistoryDialogBase::displayChangesTab= (=projects/ores.qt/api/src/HistoryDialogBase.cpp=,
+~line 208–254) — it already produces a 3-column =[field | old | new]=
+table from =calculateDiffAt()='s =DiffResult=, so this is a render-only
+change in one place: no per-entity code, no templates, no regen, and
+every entity's history view upgrades at once. Optionally add a =+=/=−=
+gutter glyph for the full GitHub look.
+
+*Must handle multiline.* Short single-line fields (codes, names, dates)
+get an inline char highlight via common prefix/suffix. Long multi-line
+fields (e.g. =change_commentary=) must render a real line-by-line diff
+with intra-line (word/char) highlighting — i.e. a proper line diff
+(LCS over lines) plus per-line token diff, not just prefix/suffix on the
+whole string. Render via =QLabel= rich-text HTML (or =QTextEdit=) so
+backgrounds and spans show; size the cells to the content.
+
+** Why
+
+The current changes tab shows old/new as plain text, which makes it hard
+to see exactly what changed — especially for near-identical values
+(=2025= → =2026=) or long commentary. A GitHub-style diff makes the delta
+obvious at a glance and matches a UI users already know. Because the
+history widget is fully abstracted into =HistoryDialogBase=, the
+improvement is cheap and universal.
+
+** References
+
+- =projects/ores.qt/api/src/HistoryDialogBase.cpp= — =displayChangesTab()=
+  (render seam), =changeCellWidget()=, =calculateDiffAt()=, =DiffResult=.
+- =projects/ores.qt/api/include/ores.qt/HistoryDialogBase.hpp=
+- Reference image: GitHub line + intra-line diff (red/green + token highlight).

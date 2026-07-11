@@ -8,7 +8,7 @@
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch: feature/template-rollout
-#+pr:
+#+pr: 1507
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1507][#1507]] | [refdata,agile] Redesign history-diff architecture, add ores.diff intra-value spans |
 
 * Review
 

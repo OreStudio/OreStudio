@@ -37,6 +37,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <format>
 #include <optional>
 #include <rfl/json.hpp>
 #include <span>
@@ -229,6 +230,9 @@ public:
 
             const auto tenant_id_str = boost::uuids::to_string(ctx.tenant_id().to_uuid());
             const std::string mode_str = to_string(req->mode);
+            const std::string params_json = ctx.party_id()
+                ? std::format(R"({{"party_id":"{}"}})", boost::uuids::to_string(*ctx.party_id()))
+                : "{}";
 
             ores::dq::workflow::bundle_publish_workflow_request wf_req;
             wf_req.tenant_id = tenant_id_str;
@@ -239,7 +243,7 @@ public:
                 ds.dataset_code = entry.dataset_code;
                 ds.target_subject = entry.target_subject;
                 ds.mode = mode_str;
-                ds.params_json = "{}";
+                ds.params_json = params_json;
                 wf_req.datasets.push_back(std::move(ds));
             }
 

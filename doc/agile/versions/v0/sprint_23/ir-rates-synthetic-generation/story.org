@@ -81,6 +81,43 @@ vol surfaces).
   sufficient for a future bootstrap consumer to group "ticks belonging
   to one generation cycle" without building that consumer here.
 
+* Analysis: does a single short-rate draw actually guarantee a bootstrappable curve? (resolved, see Decisions)
+
+Flagged against [[id:ADA913CE-E719-4B5D-9D8C-5C0186B788A0][ab-notebook: reproducible interest rate curve
+bootstrapping]] (Ballabio's replication of Ametrano & Bianchetti 2013)
+— the reference case study for what a consistent multi-instrument
+curve actually requires to bootstrap cleanly.
+
+The Goal and Acceptance above say the short-rate process "drives" the
+Curve Template, but never spell out *how* individual instrument
+quotes (deposit, FRA, swap, at whatever tenors the template
+specifies) are derived from one process realisation so that they
+remain *mutually consistent*. That distinction matters:
+
+- If each tenor's tick is generated from an *independent* draw/noise
+  term (the same pattern as the FX spot engines, where each currency
+  pair is its own independent process), nothing guarantees the
+  resulting instrument grid is internally consistent — a downstream
+  bootstrapper could easily fail on exactly the "iterative solver
+  collapse" this story's tenor-collision validator was designed to
+  prevent, just from a different cause (inconsistent quotes rather
+  than colliding tenors).
+- Mean-reverting short-rate models (Vasicek, CIR, Hull-White) admit a
+  *closed-form affine zero-coupon bond price*,
+  =P(t,T) = A(t,T)·exp(-B(t,T)·r_t)=, as a function of the single
+  short-rate state =r_t= at generation time. This is the "latent IR
+  curve": every instrument's rate (deposit, FRA, swap) at every tenor
+  in the Curve Template should be *derived from that one =P(t,T)=
+  formula, evaluated at the current =r_t=* — not from separate
+  independent noise per tenor. Doing so guarantees the published tick
+  batch is, by construction, a slice of one coherent curve that a
+  future bootstrapper can actually reconstruct.
+
+Resolved — see the corresponding Decision below and the
+short-rate-process and curve-template-config tasks' Acceptance,
+which now require the process to expose =P(t,T)=, not just a path of
+=r_t= samples.
+
 * Explicitly not required (would over-scope this story)
 
 - Curve bootstrapping itself (deterministic yield-curve construction,
@@ -134,6 +171,22 @@ vol surfaces).
   out of scope — this story's only obligation to it is ensuring the
   tick-batch contract (shared =observation_datetime=) carries enough
   signal for a future consumer to throttle.
+- *Resolved (2026-07-11): instrument quotes derive from one latent
+  curve, not independent per-tenor noise.* Every instrument rate in a
+  tick batch (deposit, FRA, swap) is computed from the short-rate
+  process's closed-form affine zero-coupon bond price,
+  =P(t,T) = A(t,T)·exp(-B(t,T)·r_t)=, evaluated at the batch's single
+  =r_t= draw — never from an independent noise term per tenor (the FX
+  spot pattern, where cross-pair consistency isn't a concern). This
+  guarantees the published grid is, by construction, a slice of one
+  internally consistent curve a future bootstrapper can actually
+  reconstruct, rather than risking the same "iterative solver
+  collapse" failure mode from inconsistent quotes that the
+  tenor-collision validator already guards against from colliding
+  tenors. See [[id:ADA913CE-E719-4B5D-9D8C-5C0186B788A0][ab-notebook: reproducible interest rate curve
+  bootstrapping]] for the reference case study this was checked
+  against. Reflected in the short-rate-process and
+  curve-template-config tasks' Acceptance.
 
 * Out of scope
 

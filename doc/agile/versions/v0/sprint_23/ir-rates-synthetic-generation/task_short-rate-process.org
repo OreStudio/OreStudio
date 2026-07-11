@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
-#+updated: 2026-07-03
+#+updated: 2026-07-11
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -50,6 +50,18 @@ closed-form math, no QuantLib.
 - Parameters (kappa, theta, sigma — or the CIR/Hull-White equivalents)
   are validated via =ores.synthetic.api::domain::validate_process_parameters=
   (extend it for the new engine, don't duplicate its rules).
+- The process exposes the model's closed-form affine zero-coupon bond
+  price, =P(t,T) = A(t,T)·exp(-B(t,T)·r_t)=, as a function of the
+  current short-rate state =r_t= and maturity =T= — not just a path
+  of =r_t= samples. This is the "latent curve": every instrument
+  quote the Curve Template config task derives (deposit, FRA, swap,
+  at whatever tenor) must come from evaluating this one =P(t,T)=
+  formula at the current =r_t=, so the whole tick batch is
+  guaranteed, by construction, to be a slice of one internally
+  consistent curve rather than independently-noised, potentially
+  inconsistent quotes. See the parent story's "Open question: does a
+  single short-rate draw actually guarantee a bootstrappable curve?"
+  section.
 
 * Plan
 

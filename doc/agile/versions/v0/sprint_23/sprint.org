@@ -47,6 +47,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:3C8912A0-78C8-4CD5-BA75-EF63D606FEF4][IAM/Refdata service boundary cleanup]] | BACKLOG | 2026-07-11 | | Replace ores.iam.core's direct refdata table access with NATS calls. |
 | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] | BACKLOG | 2026-07-11 | | Close out four standalone leftover tasks parked at sprint 22 close. |
 | [[id:DCC5853D-1B41-4EB0-8A85-07E2A8FABC07][Refdata entity NATS event registrar audit]] | BACKLOG | 2026-07-11 | | Wire NATS event registrars for the 26 refdata entities still missing one. |
+| [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] | STARTED | 2026-07-08 | | Carried from sprint 22 (3/9 tasks done): classification flags, hierarchy documentation, legal entity/branch investigation, rates centre, ledger_ccy rename, allowed-list analysis. |
 
 ** Hotfixes
 

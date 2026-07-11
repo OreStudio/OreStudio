@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: DE683A9D-4FBC-45CB-94B8-30ABBE2DD04F
+:ID: 5C89033D-224E-4105-A8CF-B0336C2A9014
 :END:
-#+title: Task: Add rates centre to book, reusing business_centre
-#+description: Each book should be assigned a rates centre so books sharing a centre revalue against consistent market data (see book_groups_and_rates_centres.org). Check whether the existing business_centre entity (Commission: business_centre story) is the right fit to reuse for this, rather than modeling a new rates-centre entity, and add the FK to book.
+#+title: Task: Add book classification flags: is_reserve_book, is_ledger_book, is_funding_book, is_sweepable, is_manual_ledger_book
+#+description: The domain notes describe a book carrying independent boolean classification flags rather than a single type enum, and mention 5 not yet modeled: Is Reserve Book, Is Ledger Book, Is Funding Book, Sweepable (only Sweepable books participate in cash sweeping), and manual ledger book (not fed from a source book, updated by hand). Add all 5 as boolean fields, following the exact same pattern as the existing is_trading_book field (detail field checkbox, list column, generator).
 #+type: task
 #+level: s1
-#+filetags: :book_data_model_cleanup:sprint_22:v0:
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

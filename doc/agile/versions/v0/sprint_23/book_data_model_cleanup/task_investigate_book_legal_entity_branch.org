@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: ACB04B8D-06E6-4776-8396-0A9279BF200D
+:ID: 18E04DB0-B55C-4D3D-8CCE-3A58C490807C
 :END:
-#+title: Task: Analyse allowed-currency and allowed-product lists for book (needs further design)
-#+description: Book Currencies (domain notes): each book has a set of allowed currencies; only instruments whose currency intersects that set may be booked into it. Likely also needs an allowed-product-type list (books carry trading rules restricting which deals may be booked). Both probably need an explicit 'All' wildcard state distinct from an enumerated set. Needs further design analysis before implementation -- data shape (multi-value column vs junction table), UI (multi-select vs checkbox-per-value), and how 'All' interacts with an otherwise-enumerated list.
+#+title: Task: Investigate legal entity and branch fields for book
+#+description: The domain notes state a book belongs to exactly one legal entity, business, and branch. Book currently has party_id and an optional owner_unit_id (business unit) but no legal entity or branch field, and no Legal Entity or Branch entity exists in the codebase at all. Investigate whether party/business_unit already cover this semantically, or whether new fields/entities are needed, and produce a recommendation.
 #+type: task
 #+level: s1
-#+filetags: :book_data_model_cleanup:sprint_22:v0:
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

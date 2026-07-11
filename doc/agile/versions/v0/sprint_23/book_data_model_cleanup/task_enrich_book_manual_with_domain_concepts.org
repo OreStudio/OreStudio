@@ -5,7 +5,7 @@
 #+description: chapter_7_books.org currently documents only the Qt UI mechanics. Weave in the domain concepts from the new Book knowledge cluster (classification, books vs portfolios, lifecycle, ledger connection) so the manual explains what a book represents and why, not just how to click through its dialogs.
 #+type: task
 #+level: s1
-#+filetags: :book_data_model_cleanup:sprint_22:v0:
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch: feature/book-domain-knowledge-expansion
 #+pr: 1495

@@ -5,13 +5,15 @@
 #+description: Fix book_status/is_trading_book modeling bugs, add missing classification flags, rename ledger_ccy to functional_currency, investigate legal-entity/branch fields, add rates centre, analyse allowed-currency/allowed-product lists, and enrich the Books manual chapter with domain concepts -- surfaced by the Book domain knowledge write-up.
 #+type: story
 #+level: s2
-#+filetags: :sprint_22:v0:
+#+filetags: :sprint_23:v0:
 #+created: 2026-07-08
-#+updated: 2026-07-08
+#+updated: 2026-07-11
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Carried from [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]], where 3 of 9 tasks were completed.
 
 * Goal
 
@@ -26,11 +28,11 @@ enrichment).
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | STARTED                              |
-| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | 3/9 tasks done; 6 remain in BACKLOG. |
 | Waiting on    | Nothing.                               |
 | Next          | Pick up the next BACKLOG task.            |
-| Last touched  | 2026-07-09                               |
+| Last touched  | 2026-07-11                               |
 
 * Acceptance
 

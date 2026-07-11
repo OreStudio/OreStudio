@@ -5,7 +5,7 @@
 #+description: ledger_ccy is described in the domain notes as the book's functional/accounting currency, designated by the ledger. Rename the field (and its Qt label, column header, etc.) to functional_currency to match domain terminology precisely.
 #+type: task
 #+level: s1
-#+filetags: :book_data_model_cleanup:sprint_22:v0:
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

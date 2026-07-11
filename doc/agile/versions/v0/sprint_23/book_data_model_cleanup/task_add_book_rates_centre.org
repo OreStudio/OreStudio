@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 18E04DB0-B55C-4D3D-8CCE-3A58C490807C
+:ID: DE683A9D-4FBC-45CB-94B8-30ABBE2DD04F
 :END:
-#+title: Task: Investigate legal entity and branch fields for book
-#+description: The domain notes state a book belongs to exactly one legal entity, business, and branch. Book currently has party_id and an optional owner_unit_id (business unit) but no legal entity or branch field, and no Legal Entity or Branch entity exists in the codebase at all. Investigate whether party/business_unit already cover this semantically, or whether new fields/entities are needed, and produce a recommendation.
+#+title: Task: Add rates centre to book, reusing business_centre
+#+description: Each book should be assigned a rates centre so books sharing a centre revalue against consistent market data (see book_groups_and_rates_centres.org). Check whether the existing business_centre entity (Commission: business_centre story) is the right fit to reuse for this, rather than modeling a new rates-centre entity, and add the FK to book.
 #+type: task
 #+level: s1
-#+filetags: :book_data_model_cleanup:sprint_22:v0:
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

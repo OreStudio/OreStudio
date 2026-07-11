@@ -5,7 +5,7 @@
 #+description: Manual verification that Book's Status and Regulatory Book Type combos are FK-backed, badge-coloured, and save correctly, following the bug fixes to book_status/is_trading_book.
 #+type: test_scenario
 #+level: s1
-#+filetags: :book_data_model_cleanup:sprint_22:v0:
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+target_dialog: BookDetailDialog
 #+created: 2026-07-08
 #+updated: 2026-07-08

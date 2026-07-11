@@ -5,7 +5,7 @@
 #+description: is_trading_book is modeled as type: integer / cpp_type: int even though it is semantically boolean; type: boolean/cpp_type: bool is natively supported elsewhere (e.g. zero_convention, market_series). Fix across domain/SQL/repository/protocol layers.
 #+type: task
 #+level: s1
-#+filetags: :book_data_model_cleanup:sprint_22:v0:
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch: feature/fix-book-status-and-trading-flag
 #+pr: 1477

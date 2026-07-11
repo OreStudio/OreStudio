@@ -5,7 +5,7 @@
 #+description: Recapture the Book manual chapter's screenshots (Books window, General tab, Status combo) which still show the retired Trading Book checkbox and 5-value status list, capture the new Regulatory Book Type combo screenshot, and verify the new book lifecycle diagram renders legibly with its pastel palette.
 #+type: test_scenario
 #+level: s1
-#+filetags: :book_data_model_cleanup:sprint_22:v0:
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+target_dialog:
 #+created: 2026-07-09
 #+updated: 2026-07-09

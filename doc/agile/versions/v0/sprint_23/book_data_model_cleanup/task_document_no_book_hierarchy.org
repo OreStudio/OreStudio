@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 5C89033D-224E-4105-A8CF-B0336C2A9014
+:ID: 2AB4A475-B883-4FE6-BC27-3D6742F9E2C8
 :END:
-#+title: Task: Add book classification flags: is_reserve_book, is_ledger_book, is_funding_book, is_sweepable, is_manual_ledger_book
-#+description: The domain notes describe a book carrying independent boolean classification flags rather than a single type enum, and mention 5 not yet modeled: Is Reserve Book, Is Ledger Book, Is Funding Book, Sweepable (only Sweepable books participate in cash sweeping), and manual ledger book (not fed from a source book, updated by hand). Add all 5 as boolean fields, following the exact same pattern as the existing is_trading_book field (detail field checkbox, list column, generator).
+#+title: Task: Document that book-to-book hierarchy is not supported; hierarchy is via portfolios
+#+description: The domain notes describe an accounting-side book hierarchy (a book containing child books via ledger setup, a single Root Book). ORE Studio does not model this: Book has no self-referencing parent field. This is a deliberate design decision, not a gap -- hierarchy is expressed entirely via the portfolio tree (Portfolio has self-referencing parent_portfolio_id; Book links to exactly one portfolio). Update the Book domain knowledge docs (books_and_portfolios.org) and the manual chapter to state this explicitly as a design choice, not an open gap.
 #+type: task
 #+level: s1
-#+filetags: :book_data_model_cleanup:sprint_22:v0:
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

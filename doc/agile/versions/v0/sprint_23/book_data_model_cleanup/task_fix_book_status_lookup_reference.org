@@ -5,7 +5,7 @@
 #+description: book_status is currently a static_combo with a hand-typed 5-value list (Active/Inactive/Closed/Frozen/Pending) that does not match the real ores_refdata_book_statuses_tbl (seeded with only Active/Closed/Frozen). Once out of bootstrap mode, saving Inactive or Pending is rejected by ores_refdata_validate_book_status_fn. Fix by referencing the lookup table properly (FK-style combo, like currency's rounding_type/market_tier), and keep badge colours in sync with the real values.
 #+type: task
 #+level: s1
-#+filetags: :book_data_model_cleanup:sprint_22:v0:
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch: feature/fix-book-status-and-trading-flag
 #+pr:

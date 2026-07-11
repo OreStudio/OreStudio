@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 2AB4A475-B883-4FE6-BC27-3D6742F9E2C8
+:ID: ACB04B8D-06E6-4776-8396-0A9279BF200D
 :END:
-#+title: Task: Document that book-to-book hierarchy is not supported; hierarchy is via portfolios
-#+description: The domain notes describe an accounting-side book hierarchy (a book containing child books via ledger setup, a single Root Book). ORE Studio does not model this: Book has no self-referencing parent field. This is a deliberate design decision, not a gap -- hierarchy is expressed entirely via the portfolio tree (Portfolio has self-referencing parent_portfolio_id; Book links to exactly one portfolio). Update the Book domain knowledge docs (books_and_portfolios.org) and the manual chapter to state this explicitly as a design choice, not an open gap.
+#+title: Task: Analyse allowed-currency and allowed-product lists for book (needs further design)
+#+description: Book Currencies (domain notes): each book has a set of allowed currencies; only instruments whose currency intersects that set may be booked into it. Likely also needs an allowed-product-type list (books carry trading rules restricting which deals may be booked). Both probably need an explicit 'All' wildcard state distinct from an enumerated set. Needs further design analysis before implementation -- data shape (multi-value column vs junction table), UI (multi-select vs checkbox-per-value), and how 'All' interacts with an otherwise-enumerated list.
 #+type: task
 #+level: s1
-#+filetags: :book_data_model_cleanup:sprint_22:v0:
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

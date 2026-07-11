@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :move_book_to_refdata:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-book-qt-to-refdata-plugin
 #+pr:
 #+blocked_on:
 #+blocked_since:

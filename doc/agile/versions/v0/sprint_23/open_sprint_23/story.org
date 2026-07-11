@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 32C37202-5194-4B10-8705-DA77A5073D53
+:END:
+#+title: Story: Open sprint 23
+#+description: Scaffold sprint 23, wire version manifest, move postponed stories.
+#+type: story
+#+level: s2
+#+filetags: :open_sprint_23:sprint_23:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Scaffolding sprint 23 and wiring the version manifest. |
+| Waiting on    | Nothing.                               |
+| Next          | Move postponed stories from sprint 22, raise PR. |
+| Last touched  | 2026-07-11                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F367C855-75B1-411C-AAC6-2A8345844CE2][Task: Open sprint 23]] | STARTED | 2026-07-11 | | Scaffold sprint 23, wire version manifest, move postponed stories. |
+
+* Decisions
+
+* Out of scope
+
+-

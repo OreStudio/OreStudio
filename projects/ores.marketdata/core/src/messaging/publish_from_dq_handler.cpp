@@ -78,7 +78,7 @@ bool is_known_fn(std::string_view fn_name) {
 } // namespace
 
 publish_from_dq_handler::publish_from_dq_handler(ores::nats::service::client& nats,
-                                                  ores::database::context ctx)
+                                                 ores::database::context ctx)
     : nats_(nats)
     , ctx_(std::move(ctx)) {}
 

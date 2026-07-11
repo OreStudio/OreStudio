@@ -799,7 +799,8 @@ void PartyExecutePage::startFxSpotConfigsPublish() {
                                                                      std::chrono::minutes(5));
 
             if (!resp) {
-                result.error_message = "Failed to communicate with server (FX spot configs publish)";
+                result.error_message =
+                    "Failed to communicate with server (FX spot configs publish)";
                 return result;
             }
             if (!resp->success) {
@@ -896,7 +897,8 @@ void PartyExecutePage::startFxDriverRatesPublish() {
                                                                      std::chrono::minutes(5));
 
             if (!resp) {
-                result.error_message = "Failed to communicate with server (FX driver rates publish)";
+                result.error_message =
+                    "Failed to communicate with server (FX driver rates publish)";
                 return result;
             }
             if (!resp->success) {

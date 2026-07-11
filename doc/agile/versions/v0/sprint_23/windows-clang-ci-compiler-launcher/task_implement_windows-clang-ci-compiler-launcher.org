@@ -8,7 +8,7 @@
 #+filetags: :windows-clang-ci-compiler-launcher:sprint_23:v0:
 #+owner: marco
 #+branch: hotfix/windows-clang-ci-compiler-launcher
-#+pr:
+#+pr: 1502
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1502][#1502]] | [build] Fix windows-clang CI configure failure |
 
 * Review
 

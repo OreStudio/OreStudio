@@ -56,6 +56,18 @@ being architecturally wrong. Answer, in order:
    PR 1105) generalises into the shell's one render path for every
    entity, not a currency-specific command.
 
+4. /Composite/referenced entities: delegate, don't inline./ When
+   entity A references entity B (e.g. by id/foreign key) and B's own
+   version changed, decide whether that surfaces in A's history at
+   all (only if A embeds a snapshot of B, not merely a reference), and
+   if so, whether A's changes row for that field navigates to/opens
+   B's own =HistoryDialogBase= rather than attempting to render B's
+   diff inline. This is distinct from the existing backlog capture
+   [[id:7F55F750-4AB5-4F51-A944-B743C83CB54D][ores.diff: structured topology for nested entities]],
+   which is about flattening *embedded* nested structure (e.g.
+   instrument legs) within one entity's own diff render, not
+   cross-entity delegation to another entity's history.
+
 Output: this story's Architecture and Decisions sections rewritten to
 match, and the template-rollout task's (7B2998F0) Plan revised to
 implement the new design rather than the reverted pilot's shape.
@@ -84,6 +96,11 @@ implement the new design rather than the reverted pilot's shape.
   per-entity branching on the consuming side.
 - Story's Architecture and Decisions sections updated to match.
 - template-rollout task's Plan revised to implement this design.
+- Composite/referenced-entity handling decided: when it surfaces in
+  the referencing entity's history at all, and whether it delegates
+  to the referenced entity's own HistoryDialogBase instead of
+  inlining a diff; distinguished explicitly from the structured-
+  topology capture (embedded nesting, not cross-entity reference).
 
 * Plan
 

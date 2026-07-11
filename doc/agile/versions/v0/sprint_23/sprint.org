@@ -59,6 +59,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:D58CD39D-BFBA-45DF-A05B-01EDD7115C45][Audit refdata entities for composite (temporal-versioned) child relationships]] | BACKLOG | 2026-07-11 | | Generalise temporal composite entity versioning (proven on party/counterparty) across refdata: inventory which entities have genuine composite children and apply the mechanism where warranted. |
 | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] | BACKLOG | 2026-07-11 | | Pulled in from product backlog next: first-class calendar entity with FK-referenceable relationships, replacing free-text holiday_calendar/advance_calendar fields; Qt screens; ORE XML export mapping. |
 | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] | BACKLOG | 2026-07-11 | | Pulled in from product backlog next: driver/derived spanning-tree topology, no-arbitrage triangulation, risk recentering, management UI in ores.marketdata. |
+| [[id:1014DD4F-B011-4102-8C60-983364E9BFBE][Sprint 23 planning session]] | STARTED | 2026-07-11 | | Promote/pull-in pass done (16 stories seeded); deep backlog refinement still to run. |
 
 ** Hotfixes
 

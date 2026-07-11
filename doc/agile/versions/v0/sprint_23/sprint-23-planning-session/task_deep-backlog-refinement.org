@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: BF5F062F-49DB-490C-B1B0-89B55A550173
+:END:
+#+title: Task: Deep backlog refinement
+#+description: Run the agile-refine-backlog skill's deep mode: audit every capture in inbox/next/deferred against the live codebase, merge duplicates, and re-score bucket fit against sprint 23's mission.
+#+type: task
+#+level: s1
+#+filetags: :sprint-23-planning-session:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1014DD4F-B011-4102-8C60-983364E9BFBE][Sprint 23 planning session]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run the =agile-refine-backlog= skill's new deep refinement mode
+(added this same session) end to end: a full audit of every capture
+in =inbox=, =next=, and =deferred=, each one verified against the live
+codebase, duplicates merged, and every bucket re-scored against
+sprint 23's mission. This is the first real exercise of the deep
+mode — expect to find and fix gaps in the skill's own instructions
+along the way, not just backlog issues.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1014DD4F-B011-4102-8C60-983364E9BFBE][Sprint 23 planning session]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Invoke agile-refine-backlog's deep mode.  |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+- The =agile-refine-backlog= skill's deep mode is run to completion
+  across all three buckets.
+- Its report task (=backlog_deep_refinement/task_deep_refinement_1=)
+  exists with a filled-in =* Result= per the skill's Step 8 template.
+- Any gap found in the skill's own instructions while running it for
+  the first time is fixed in the skill doc, not worked around
+  silently.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

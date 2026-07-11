@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: B38B3869-02FD-4CC7-99BD-9A77904ACA19
+:END:
+#+title: Story: Cross-rates matrix (CRM)
+#+description: Implement the FX cross-rates matrix in ores.marketdata: driver/derived spanning-tree topology, no-arbitrage triangulation/derivation, and management UI. Future work under the Market data generation epic.
+#+type: story
+#+level: s2
+#+filetags: :market_data:crm:fx:sprint_23:v0:
+#+created: 2026-06-28
+#+updated: 2026-07-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Future work under the Market data generation epic. Domain model:
+[[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] and its linked notes.
+
+* Goal
+
+Implement the FX cross-rates matrix in =ores.marketdata= so derived rates are
+computed from drivers and the matrix is always arbitrage-free — the consistency
+engine the architecture relies on.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Pulled in from product backlog next; broken into tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Model the graph/topology entity first (everything else depends on it). |
+| Last touched  | 2026-07-11                               |
+
+* Acceptance
+
+- Driver/derived [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree topology]] with cycle detection (never set both sides).
+- Derived rates computed by [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][triangulation]] through the pivot; direct preferred.
+- Risk recentering (star-shaped on the aggregation currency) supported.
+- A management UI to view/edit drivers and inspect derived rates.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+Planned tasks (not yet scaffolded as task docs), following the domain
+model's concept map:
+
+1. Model the driver/derived spanning-tree topology
+   ([[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][CRM graph topology and spanning tree]]): the graph structure over
+   currency pairs, cycle detection so a pair is never set on both
+   sides (driver and derived simultaneously).
+2. Implement triangulation/derivation
+   ([[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][Triangulation and cross rates]],
+   [[id:6F7DFFDF-9E22-4870-916C-7680DE1EB065][spot rate derivation mechanics]]): compute a derived rate from the
+   spanning tree via its pivot currency, preferring a direct
+   driver-to-driver quote over a multi-hop path when both exist.
+3. Implement risk recentering
+   ([[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]]): re-root the tree star-shaped
+   on a chosen aggregation currency without changing the derived
+   rates' actual values.
+4. Wire the CRM into the =ores.marketdata= authority's ingest path
+   (see [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]): producers publish driver rates only;
+   the CRM computes and publishes the derived set on the official
+   tenant-scoped stream.
+5. Management UI: view/edit drivers, inspect derived rates and the
+   current spanning-tree structure.
+
+* Decisions
+
+* Out of scope
+
+- Correlation management and volatility-surface driving
+  ([[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][Correlation management]], [[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][Volatility surface driving]]) — these reuse
+  the same driver/derived pattern but for a different asset class;
+  separate future stories once the CRM mechanism itself is proven on
+  FX spot.
+- Spot rate governance workflow (local/global approval,
+  [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]]) — an operational process layered on top of
+  the CRM, not part of building the CRM itself.

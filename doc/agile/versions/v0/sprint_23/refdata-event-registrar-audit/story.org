@@ -29,6 +29,23 @@ registrar work itself is simple and mechanical per entity (mirrors
 the existing =currency_event_registrar.cpp= pattern); the value here
 is systematic completeness, not novel design.
 
+*Caveat (found in PR #1503 review):* 10 of the 26 entities below —
+=business_unit=, =counterparty=, =counterparty_contact_information=,
+=counterparty_identifier=, =currency_market_tier=,
+=monetary_nature=, =party=, =party_contact_information=,
+=party_identifier=, =portfolio= — have *stale* =changed_event.hpp=
+output per [[id:BA5BCF3B-8953-455D-85F9-1E05A49D9623][Migrate remaining refdata entities to generated
+event-mapping registrar]]: the id field is the old plain =ids=
+instead of the current template's ={{entity_singular_short}}_ids=.
+Regenerating those 10 entities' =nats-eventing= output to add a
+registrar is therefore a *breaking change* to any existing consumer
+of the old field name — check every consumer (Qt controllers,
+handlers, anything referencing =.ids= on that entity's
+changed_event) *before* regenerating, not after. This applies to all
+10 of those entities in the "Party family" and "Currency/FX family"
+task groups below, plus =business_unit= and =portfolio= in "Books/
+portfolios/misc".
+
 * Status
 
 | Field         | Value                                  |
@@ -76,14 +93,21 @@ batch of entities, grouped by domain family:
 1. Party family: =party=, =party_status=, =party_identifier=,
    =party_id_scheme=, =party_contact_information=, =counterparty=,
    =counterparty_identifier=, =counterparty_contact_information=.
+   *Except =party_status= and =party_id_scheme=, every entity here
+   has stale =changed_event.hpp= output (see Goal's caveat) — check
+   all consumers of the old =ids= field before regenerating.*
 2. Currency/FX family: =currency_group=, =currency_market_tier=,
    =currency_pair_classification=, =monetary_nature=,
-   =rounding_type=.
+   =rounding_type=. *=currency_market_tier= and =monetary_nature= have
+   stale =changed_event.hpp= output (see Goal's caveat) — check
+   consumers before regenerating.*
 3. Convention family: =cds_convention=, =deposit_convention=,
    =fra_convention=, =ibor_index_convention=, =ois_convention=,
    =overnight_index_convention=, =swap_convention=, =zero_convention=.
 4. Books/portfolios/misc: =business_centre=, =business_unit=,
-   =contact_type=, =portfolio=, =regulatory_book_type=.
+   =contact_type=, =portfolio=, =regulatory_book_type=. *=business_unit=
+   and =portfolio= have stale =changed_event.hpp= output (see Goal's
+   caveat) — check consumers before regenerating.*
 5. Add a test per new registrar confirming NATS publication on
    change (may fold into each batch's task above rather than a
    separate task, depending on effort).
@@ -94,3 +118,10 @@ batch of entities, grouped by domain family:
 
 - Adding =*_changed_event= types to entities that don't have one yet
   — this story only wires registrars for events that already exist.
+
+* References
+
+- [[id:BA5BCF3B-8953-455D-85F9-1E05A49D9623][Migrate remaining refdata entities to generated event-mapping
+  registrar]] — the 10-entity stale-=changed_event.hpp= caveat in the
+  Goal above; check this capture before regenerating any of its 10
+  named entities.

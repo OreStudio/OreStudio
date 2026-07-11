@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 33F09157-72DB-44A0-9686-BD9143053284
+:END:
+#+title: Integrate the org-mode user manual into Qt's native help sys…
+#+description: Integrate the org-mode user manual into Qt's native help system: a Python script compiles the exported HTML into a .qch file via qhelpgenerator, and the Qt application loads it via QHelpEngine with a ToC sidebar connected to a QTextBrowser.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Promoted (2026-06-08)* into the story [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]]
+in Sprint 20 — misfiled in =next/= since then rather than moved to
+=discarded/=. Fixed during deep backlog refinement (2026-07-11).
+
+* What
+
+Integrate the org-mode user manual into Qt's native help system: a build
+step compiles the exported manual HTML into a =.qch= collection via
+=qhelpgenerator=, and the application loads it through =QHelpEngine= with a
+contents/index/search sidebar and a =QTextBrowser= content pane. Promoted
+to a story — see that story for the scoped tasks and the
+approach decision (native Qt help over a web view).
+
+* Why
+
+The user manual is the single source of truth for how to drive the app,
+but it lives only on the website. Surfacing it inside the application as
+searchable, offline help means users do not leave the app to find
+guidance, and the help tracks the manual automatically because it is built
+from the same source.
+
+* References
+
+-
+
+* See also
+
+-

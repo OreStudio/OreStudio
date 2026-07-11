@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: AAB20201-0D81-40B5-9DAB-2D13514E04B2
+:END:
+#+title: Filter counterparty dataset size for evaluation tenants
+#+description: Filter counterparty dataset size for evaluation tenants
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: Already implemented: projects/ores.qt/application/src/PartyProvisioningWizard.cpp has a PartyCounterpartySetupPage with a 'datasetSizeCombo_' letting the user 'Select the GLEIF dataset size to use for counterparty import' (line 148), building a dataset code like 'gleif.lei_counterparties.' + size (line 437); projects/ores.shell/src/app/commands/provision_commands.cpp:544-554 has matching opted_in_datasets logic with a dataset_size parameter.
+
+Evaluation tenants currently import too many counterparties from GLEIF data. Add
+options to limit the dataset to a configurable percentage or count, providing
+enough data to evaluate the system without overwhelming the tenant.

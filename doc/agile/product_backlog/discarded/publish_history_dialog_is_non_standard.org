@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: D21E3D57-13AD-4869-9E27-2E3A836273C6
+:END:
+#+title: Publish history dialog is non-standard
+#+description: Publish history dialog is non-standard
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: DatasetHistoryDialog.cpp (the dataset publish history dialog) now inherits from the shared HistoryDialogBase (projects/ores.qt/api/include/ores.qt/HistoryDialogBase.hpp), the same base class used by other standard entity history dialogs. Git history shows DatasetHistoryDialog.cpp last touched 2026-06-08, after the capture's 2026-05-21 creation date, indicating it was standardized post-capture.
+
+- always on top.
+- no paging.

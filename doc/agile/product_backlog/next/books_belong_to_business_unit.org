@@ -1,19 +1,30 @@
 :PROPERTIES:
 :ID: 3D83489C-F7E5-43E9-B42D-FA45EE9AFAF4
 :END:
-#+title: Books must belong to a business unit; portfolio explorer toggle
-#+description: Books need a business unit FK. The portfolio explorer should have a show/hide option for business unit nodes in the tree.
+#+title: Portfolio explorer toggle to show/hide business-unit nodes
+#+description: The portfolio explorer tree mixes books, portfolios, and business units with no way to toggle business-unit nodes on/off.
 #+type: capture
 #+level: cross
 #+filetags: :ui:domain:database:
 #+created: 2026-05-22
-#+updated: 2026-05-22
+#+updated: 2026-07-11
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 
-(One paragraph: the idea.)
+*Narrowed during deep backlog refinement (2026-07-11)*: this capture
+originally asked for two things. Part 1 (book → business unit FK) is
+already done — =book.hpp= has =std::optional<boost::uuids::uuid>
+owner_unit_id=, documented as the FK to =business_units=. Only Part 2
+remains and is what this capture now tracks:
+
+The portfolio explorer tree mixes books, portfolios, and business
+units with no way to toggle business-unit nodes on/off. Add a toolbar
+toggle "Show Business Units" that inserts business-unit nodes between
+the party level and the book/portfolio level when enabled. Checked
+=PortfolioExplorerTreeModel.cpp=/=PortfolioExplorerMdiWindow.cpp= — no
+such toggle exists yet.
 
 * Why
 
@@ -26,7 +37,3 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next
 * See also
 
 -
-Two related gaps:
-
-1. *Book → Business Unit FK* — books currently have a =party_id= but no =business_unit_id=. Add the FK (nullable for migration safety) and enforce it in new creates.
-2. *Portfolio explorer toggle* — the portfolio explorer tree mixes books, portfolios, and potentially business units. Add a toolbar toggle "Show Business Units" that inserts business-unit nodes between the party level and the book/portfolio level when enabled.

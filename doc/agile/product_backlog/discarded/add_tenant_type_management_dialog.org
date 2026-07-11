@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 80F17029-F692-4092-8B3D-621C4E55E1B0
+:END:
+#+title: Add tenant type management dialog
+#+description: Add tenant type management dialog
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.qt/admin/ has TenantTypeMdiWindow.cpp, TenantTypeDetailDialog.cpp/.ui, TenantTypeHistoryDialog.cpp/.ui, TenantTypeController.cpp, and ClientTenantTypeModel.cpp, wired into AdminPlugin.cpp -- a full list/view/edit/history dialog for tenant types already exists in the administration area.
+
+There is currently no UI to view or manage tenant types. Add a dialog accessible
+from the administration menu to list, view, and edit tenant type reference data.

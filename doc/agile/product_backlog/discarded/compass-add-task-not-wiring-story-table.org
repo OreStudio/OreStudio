@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: BE1EB2DC-677A-4E03-B8F8-B8C10572E853
+:END:
+#+title: compass add task does not wire the story Tasks table
+#+description: The agile-add-task skill states the story's * Tasks table row is wired automatically, but 'compass add task' only creates the task doc with a correct parent link — the story.org * Tasks table keeps its empty placeholder row. Verified on the commission_purpose_type story (sprint 22): five tasks created, all show in 'compass story status' via the link graph, but story.org's table stayed empty. A wire-probe task reproduced it deterministically. Either fix add task to append the row, or add a 'compass story sync-tasks' command, or update the skill to stop promising auto-wiring.
+#+type: capture
+#+level: cross
+#+filetags: :compass:agile:bug:codegen:
+#+created: 2026-07-03
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.compass/src/compass.py now contains _add_wire_task() ('Wire a freshly added task into its story's * Tasks table'), plus helper functions '_append_task_row'-equivalent logic that appends the task's BACKLOG row to the story's Tasks table (lines ~3321-3460) and moves rows between stories (~4165-4266). The wiring gap described in the capture has been implemented.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

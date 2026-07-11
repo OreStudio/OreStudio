@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 1096E3EC-3FEB-4397-B8BA-88B268543A6F
+:END:
+#+title: story new does not wire its scaffolded tasks into the story table
+#+description: compass story new generates the scaffold task and the first real task via codegen directly, which unlike compass add task does not append rows to the story's * Tasks table — both rows were missing on the CI retune story (caught by Claude's first PR review). Wire the rows in story new, or route its task scaffolding through the same path as add task.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-06-06
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.compass/src/compass.py's _scaffold_and_branch (used by 'story new') now calls _wire_task_into_story at lines 3702 and 3709 for both the scaffold task and the first real task, appending rows to the story's * Tasks table.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

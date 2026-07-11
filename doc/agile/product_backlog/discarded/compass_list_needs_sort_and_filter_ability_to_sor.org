@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 4478AD9B-CD18-4531-BADB-B72ABC7E1050
+:END:
+#+title: compass list needs sort and filter: ability to sort results …
+#+description: compass list needs sort and filter: ability to sort results by date (e.g. list recent recipes), and filter by additional criteria beyond type/tag. Use case: list recently added recipes to find newly merged docs without needing to grep git log.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-06-26
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.compass/src/doc_list.py already implements --sort (choices title/updated/path, so date-based recency sort exists) plus --regex/--tag/--type/--under/--version filters, going beyond type/tag as requested.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

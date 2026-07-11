@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 0A03AE8C-6C02-4EDE-B540-C00EBA654295
+:END:
+#+title: My Account session history dialog shows no bytes sent/receiv…
+#+description: My Account session history dialog shows no bytes sent/received and sessions are not populated. Either remove the dialog entirely or implement session event recording (at minimum: login and logout events).
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: MyAccountDialog.cpp has a 'View Session Audit' button (onViewSessionsClicked, emits viewSessionAuditRequested) wired to loadSessionInfo()/getActiveSessions(). SessionAuditDialog.cpp fully implements bytes_sent/bytes_received columns (lines 100-114) and updateActiveBytesFromClient() (line 189) which actively updates live session byte counts -- the dialog is populated and shows byte counts, contradicting the capture's claim.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

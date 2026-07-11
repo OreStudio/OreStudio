@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 3D714695-29E2-4FEC-BE83-506E89EC8142
+:END:
+#+title: compass review reply 404s on conversation comments
+#+description: review list shows issue (conversation) comment ids, but review reply only posts to the pulls/{pr}/comments/{id}/replies endpoint, which 404s for them (Parent comment not found). Route by comment kind: line-comment ids use the replies endpoint; issue-comment ids should post a new issue comment via issues/{pr}/comments. See compass_review.py _cmd_reply.
+#+type: capture
+#+level: cross
+#+filetags: :compass:github:bug:
+#+created: 2026-06-07
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.compass/src/compass_review.py _cmd_reply already routes by comment kind: it calls _comment_kind() and for kind=='issue' posts to repos/{owner}/{repo}/issues/{pr}/comments (issues endpoint), while kind=='review' uses pulls/.../replies — exactly the fix requested.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

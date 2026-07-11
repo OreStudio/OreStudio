@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 9EA30AD4-9D79-4C28-B2E7-4FC9F605D075
+:END:
+#+title: Codegen approach: generate eventing registrar for service application.cpp
+#+description: The eventing pipeline in service application.cpp is hand-written and grows unboundedly as entities are added. The pattern per entity is:
+
+  (1) register_mapping<entity_changed_event>(event_source, "component.entity", "sql_table_name");
+  (2) auto entity_sub = event_bus.subscribe<entity_changed_event>([&nats](const entity_changed_event& e) {
+          publish_entity_event(nats,
+              std::string(event_traits<entity_changed_event>::name),
+              entity_change_event{.entity = "component.entity",
+                                  .timestamp = e.timestamp,
+                                  .entity_ids = e.entity_ids,
+                                  .tenant_id = e.tenant_id});
+      });
+
+For synthetic, the three missing blocks are:
+  - gmm_component: table=ores_synthetic_gmm_components, ids field=gmm_component_ids
+  - fx_spot_generation_config: table=ores_synthetic_fx_spot_generation_configs, ids field=fx_spot_generation_config_ids
+  - market_data_generation_config: table=ores_synthetic_market_data_generation_configs, ids field=market_data_generation_config_ids
+
+Suggested approach — mirror the messaging registrar pattern:
+  - Add a new codegen address (e.g. ores.cpp.service.eventing) that generates a per-component eventing_registrar.hpp header
+  - The header exposes a single inline function: register_eventing(event_source, event_bus, nats)
+  - application.cpp includes one header per component and calls register_eventing() once
+  - Each entity contributes its register_mapping + subscribe block inside that function
+  - The entity model already has all required knobs: tablename (SQL), changed_event_class, changed_event_include, entity_plural (ids field name)
+  - This eliminates the hand-edit gap entirely: adding an entity to codegen automatically extends the eventing registrar
+#+type: capture
+#+level: cross
+#+filetags: :codegen:eventing:synthetic:refdata:architecture:
+#+created: 2026-06-30
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.refdata/service/src/messaging/event_registrar.cpp and .hpp now exist, generated via projects/ores.codegen/library/templates/cpp_nats_event_registrar.hpp.mustache and .cpp.mustache, exactly matching the proposed per-component eventing_registrar.hpp approach (register_event_mappings() called once from application.cpp).
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

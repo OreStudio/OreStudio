@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 0CF906C6-E7B9-4298-838D-FE5CFE0DDF31
+:END:
+#+title: compass story: add a 'done' verb to close a story
+#+description: compass task has a 'done' verb but compass story does not — closing a story means hand-editing the Status table and #+todo: state. Add 'compass story done' to mirror 'task done': flip the story to DONE, stamp the journal, and verify all child tasks are resolved.
+#+type: capture
+#+level: cross
+#+filetags: :compass:tooling:agile:dx:
+#+created: 2026-06-10
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.compass/src/compass.py:3771 registers a 'done' subparser under cmd_story ('Close a story: flip DONE, update sprint row, stamp journal'), matching exactly what the capture asked for.
+
+* What
+
+=compass task= exposes =new=, =start=, =done=, and =move=, but
+=compass story= only exposes =new=, =status=, and =tasks=. There is no
+=compass story done=. Closing a story today is a manual edit: flip the
+=State= row in the story's =* Status= table to =DONE=, set =Now/Waiting
+on/Next= to "Nothing.", bump =Last touched=, and (if the workflow wants
+it) stamp the journal. This is exactly the kind of bookkeeping the
+=task done= verb already automates one level down.
+
+Add =compass story done <story>= mirroring =task done=:
+
+- flip the story's =* Status= =State= to =DONE= (and the =#+todo:= keyword
+  if it lives in frontmatter);
+- normalise =Now= / =Waiting on= / =Next= to "Nothing." and stamp
+  =Last touched=;
+- *guard*: refuse (or warn) if any child task is still open — i.e. not
+  in =DONE= / =ABANDONED= / moved out — so a story cannot be closed with
+  live tasks under it;
+- stamp the per-worktree journal, as =task done= does.
+
+* Why
+
+Story close-out is currently hand-done and therefore easy to get subtly
+wrong (a forgotten =Last touched=, a =Now= left stale, a child task
+quietly still =BACKLOG=). The asymmetry with =task done= is a small but
+real DX gap: the lifecycle verb exists for tasks and for PRs (=pr
+merge=) but stops short of the story. The guard on open child tasks is
+the part that earns its keep — it turns "did I close everything under
+this?" from a manual audit into a tool invariant.
+
+Surfaced while closing story 812403BE (Create MASD model catalogues and
+org-mode variability profiles), where the close had to be done by hand.
+
+* References
+
+- =projects/ores.compass/= — the compass CLI implementing =task done=;
+  =story= subcommands are defined alongside it.
+
+* See also
+
+-

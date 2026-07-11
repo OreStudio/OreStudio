@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 0EA51F00-4A5D-4358-A0F9-13E90CB23A5A
+:END:
+#+title: Add claude continuous learning skill
+#+description: Add claude continuous learning skill
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:deferred:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: The repo already has an extensive, actively maintained skill system under doc/llm/skills (skill-add, skill-review, skill-delete, skill-show-catalogue, doc-add-memory skills, plus the memory contract in doc/llm/memory/) which achieves the same underlying goal (durable, reusable knowledge capture across sessions) described in this capture, via a different mechanism (deliberate memory/skill authoring rather than automatic skill generation from debugging sessions).
+
+#+begin_quote
+Every time you use an AI coding agent, it starts from zero. You spend an hour
+debugging some obscure error, the agent figures it out, session ends. Next time
+you hit the same issue? Another hour.
+
+This skill fixes that. When Claude Code discovers something non-obvious (a
+debugging technique, a workaround, some project-specific pattern), it saves that
+knowledge as a new skill. Next time a similar problem comes up, the skill gets
+loaded automatically.
+#+end_quote
+
+Links:
+
+- [[https://github.com/blader/claude-code-continuous-learning-skill][GH: claude-code-continuous-learning-skill]]

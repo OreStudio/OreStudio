@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: DD4A0265-9134-4A95-8677-68873357F043
+:END:
+#+title: compass task new switches branches mid-scaffold
+#+description: Each compass task new creates AND checks out its own branch. Scaffolding a story with several task new calls leaves the worktree on the last task's branch, so the scaffold commit and PR ride the wrong branch (saw with PR 1165: scaffold rode feature/timeline-environment-stamp). task new should create the branch without switching, or restore the original branch.
+#+type: capture
+#+level: cross
+#+filetags: :compass:bug:agile:
+#+created: 2026-06-07
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: compass.py's 'task new' subcommand (parser at line 4285) creates the branch via 'git branch <branch> <base>' (not 'git switch -c') per _scaffold_and_branch's new_story=False path (lines ~3628-3651), explicitly leaving the worktree unchanged ('created branch ...; worktree unchanged') — only 'story new' switches branches immediately.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

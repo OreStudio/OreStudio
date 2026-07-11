@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 32AA31C3-D8C5-475D-B52C-59207AE1FC63
+:END:
+#+title: pr merge: retry on mergeability race after close-out
+#+description: After pushing the close-out commit, the immediate gh pr merge can race GitHub mergeability recompute; add a short retry loop.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-06-05
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.compass/src/compass_pr.py:415-427 already implements a 3-attempt retry loop with 3s sleep around 'gh pr merge', specifically retrying on the transient 'Base branch was modified' GraphQL race after a push. The exact mechanism requested already exists (though targeting a slightly different error string than the capture's example).
+
+* What
+
+A short retry loop (e.g. three attempts, ~3s apart) around the
+=gh pr merge= call in =compass pr merge= when a close-out commit was
+just pushed, so the transient "Pull Request is not mergeable" state
+does not fail the command.
+
+* Why
+
+Observed merging PR #1100: the close-out push happens immediately
+before the merge call, and GitHub recomputes mergeability
+asynchronously — the first merge attempt failed with "Pull Request is
+not mergeable" and the manual retry succeeded. Unattended flows need
+the retry built in.
+
+* References
+
+-
+
+* See also
+
+-

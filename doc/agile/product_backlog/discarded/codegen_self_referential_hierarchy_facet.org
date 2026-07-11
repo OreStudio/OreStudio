@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 3402B369-FFC1-4B46-9EA0-528973D88618
+:END:
+#+title: Generalize self-referential hierarchy validation into a codegen facet
+#+description: Add a has_parent_id-style codegen facet for the parent_<entity>_id soft-FK hierarchy pattern duplicated by hand across party and counterparty (and likely others).
+#+type: capture
+#+level: cross
+#+filetags: :codegen:refdata:hierarchy:template:
+#+created: 2026-07-04
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: The capture file itself contains a '* Superseded' section stating it was promoted to task 54C76A81-AA42-4404-B02D-C3AB5D934A50 on the 'Composite child-entity and hierarchy Qt widgets for codegen' story, which widens scope to cover CTE and NATS as well. The idea lives on under that task, not this capture.
+
+* What
+
+Add a codegen facet (e.g. =has_parent_id: true= in the entity's org
+model) for the self-referential hierarchy pattern currently hand-rolled
+in both =refdata_parties_create.sql= (=parent_party_id=) and
+=refdata_counterparties_create.sql= (=parent_counterparty_id=): a
+nullable soft-FK to the entity's own table, validated in the insert
+trigger against active rows, forming a group/org hierarchy. The facet
+should generate the column, the trigger validation block, and any
+recursive-CTE helper (party already has one traversing the hierarchy
+from a root id) from a single template.
+
+* Why
+
+Found while appraising =party= for commissioning: its insert trigger
+has a =parent_party_id= validation block with no codegen facet, which
+initially looked like one-off hand-written specialisation blocking
+=party='s migration to unified codegen. Checking =counterparty=
+confirmed the identical pattern exists there too (independently
+hand-written) — this is a real, recurring architectural feature
+across at least two entities (likely more, e.g. =book=), not a
+disposable one-off. Generalizing it into a facet would let both
+entities (and future ones) migrate to unified codegen cleanly instead
+of each carrying a hand-maintained divergence.
+
+* Superseded
+
+Promoted to a task on the =Composite child-entity and hierarchy Qt
+widgets for codegen= story: [[id:54C76A81-AA42-4404-B02D-C3AB5D934A50][Generalize self-referential hierarchy into a
+codegen facet (SQL, CTE, NATS)]]. That task widens the scope beyond
+this capture's SQL-only framing to also cover the recursive-CTE
+hierarchy query and generic NATS message, and extends coverage to
+=book= (net-new hierarchy support) in addition to party/counterparty.
+
+* Decisions
+
+Prefer a proper template facet over a generic =:implements= paste
+block (=<<paste:d4e8e136-...>>=, landed in PR #1424 for a different,
+genuinely one-off validation) precisely because this pattern is
+shared by 2+ entities — paste blocks are the right tool for one-off
+hand-written logic, not for recurring structure. By contrast, party's
+codename-generation and per-party queue-provisioning logic (also
+found during the same appraisal) are confirmed party-only — no other
+entity has an equivalent — so those should stay hand-maintained
+(paste block or excluded from regen scope), not generalized.
+
+* References
+
+- =projects/ores.sql/create/refdata/refdata_parties_create.sql= (parent_party_id, lines ~28, 42, 93, 129-137)
+- =projects/ores.sql/create/refdata/refdata_counterparties_create.sql= (parent_counterparty_id, lines ~28-29, 40, 89-97)
+- =projects/ores.refdata/modeling/ores.refdata.party.org= (recursive CTE hierarchy traversal, lines ~436-460)
+
+* See also
+
+-

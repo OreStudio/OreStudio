@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: 57060FAB-8DA3-4B00-A156-CCC56125BFD7
+:END:
+#+title: Update currency details to use tabs
+#+description: Update currency details to use tabs
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: CurrencyDetailDialog.ui already implements a QTabWidget with tabs: General (incl. Icon), Formatting, Rounding, Provenance -- the Provenance tab serves the 'system tab with temporal data, read-only' role described in the capture. Confirmed via projects/ores.qt/refdata/ui/CurrencyDetailDialog.ui and CurrencyDetailDialog.cpp (tabWidget() accessor).
+
+We need a main tab with the currency related properties, then a "system" tab
+with temporal data which is read-only even on edit and a "image" tab with the
+image used to represent the currency. It could also contain some description or
+notes.

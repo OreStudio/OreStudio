@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 8FF2DF33-C51B-4D82-85EB-337216FEF402
+:END:
+#+title: Design and implement instrument/trade integration
+#+description: Instruments and trades are not yet integrated. Design the linkage (instrument attached to trade, shared fields strategy) and implement end-to-end.
+#+type: capture
+#+level: cross
+#+filetags: :code:trades:design:
+#+created: 2026-05-22
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: Design and implementation already completed: doc/plans/2026-03-31-instrument-trade-model-and-export.org (ID D4D975DB-A525-45E3-B383-581E51AEA8DB) is the design note resolving instrument-trade linkage (nullable trade_id FK on instrument tables, instrument_family discriminator), and doc/agile/versions/v0/sprint_16/ore_import_pipeline/task_instrument_trade_model_refactor.org (ID 1A8EBDCE-D5E9-44E1-8E17-4FFD64350139) is marked State: DONE, completed 2026-04-04, delivering instrument_family + instrument_id linkage, get_instrument_for_trade and export_portfolio NATS endpoints.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Instruments and trades are currently treated as independent entities. The intended model:
+
+- A trade references one or more instruments (the underlying).
+- The trade form shows instrument economics alongside booking fields.
+- Creating a trade optionally creates the instrument inline, or links to an existing one.
+
+Open design questions:
+- Should instrument creation be a sub-step in the trade wizard, or a separate workflow?
+- How does the instrument variant (equity, FX forward, bond, …) drive the trade form's conditional sections?
+- Should instrument history (amendments) be linked to trade amendment events?
+
+Write a design note (plan doc) resolving these questions before implementing.

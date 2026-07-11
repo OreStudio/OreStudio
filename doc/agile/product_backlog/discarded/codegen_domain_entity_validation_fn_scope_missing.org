@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 84D85607-DEE2-4064-B643-3BD3BB57235F
+:END:
+#+title: Codegen: domain_entity SQL validate_fn never computes scope flags
+#+description: sql_schema_domain_entity_create.mustache reads domain_entity.validation_fn.scope_both/system/tenant, but only the legacy table-model path (normalise_sql_table_context) computes those flags — domain_entity models get a validate_fn that only checks null/empty and returns unconditionally, silently dropping soft-FK enforcement.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:sql:bug:validation:
+#+created: 2026-07-06
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.codegen/src/codegen/core.py (around line 1764) now explicitly syncs scope_system/scope_both/scope_tenant from the projected table's validation_fn back onto domain_entity['validation_fn'], with a comment stating exactly this fix. git log shows commit 304d1c7ff '[codegen] Fix duplicate change_reason_code emission and lost validation_fn scope flags' which implements this exact fix.
+
+* What
+
+`projects/ores.codegen/library/templates/sql_schema_domain_entity_create.mustache`
+(the =ores.sql.schema.domain_entity_create= archetype, the one that
+actually fires for =domain_entity= model-type SQL creates) renders its
+validate function body from
+=domain_entity.validation_fn.scope_system/scope_both/scope_tenant=. But
+those three booleans are only ever computed by
+=normalise_sql_table_context()= in =core.py=, which mutates the
+projected =table= context used by the *legacy* table-model path
+(=sql_schema_create.mustache=, =#+model_types: table=) — it never
+touches the raw =domain_entity= dict. So for every =domain_entity=
+model with a =* Validation function= section, the generated validate
+function silently degrades to just a null/empty check followed by an
+unconditional =return p_value=; the existence-check block (bootstrap
+pass-through + =errcode 23503= on mismatch) never renders, regardless
+of =:tenant_scope:=. Confirmed by regenerating
+=ores.refdata.currency_market_tier.org= (a known-good, previously
+hand-verified sibling) with the live codegen tool — it reproduces the
+identical bug, so every =domain_entity= model with a validation
+function is exposed, not just newly-authored ones (existing checked-in
+files are simply stale relative to the current templates). Fix:
+compute the same =scope_system=/=scope_both=/=scope_tenant= flags on
+=domain_entity.validation_fn= wherever =domain_entity_to_table_context=
+or its caller runs, before the =sql_schema_domain_entity_create=
+template renders — not just on the projected =table= copy.
+
+* Why
+
+Found and worked around by hand during PR #1442 (five review passes
+flagged =ores_refdata_validate_business_day_convention_type_fn=
+silently accepting any non-empty string,
+[[id:F7C39C66-DFA0-4A10-B473-F3827B8A7187][see task]]). Regenerating via
+codegen was not a safe fix — it reproduces the bug — so the SQL create
+script was hand-edited instead, and the codegen fix deferred here to
+avoid scope-creeping the entity-migration PR. Left unfixed, every
+future =domain_entity= with a soft-FK-style validation function will
+silently lose referential-integrity enforcement on regeneration, and
+any entity regenerated today (even long-standing ones) would revert.
+
+* References
+
+- =projects/ores.codegen/library/templates/sql_schema_domain_entity_create.mustache= — the archetype with the bug.
+- =projects/ores.codegen/src/codegen/core.py:normalise_sql_table_context= — where the flags are computed today, only for the =table= projection.
+- =projects/ores.codegen/src/codegen/org_loader.py:domain_entity_to_table_context= — projects =domain_entity= to =table=; the flags should also be set on the source =domain_entity= dict, or this projection's output should be what actually renders.
+
+* See also
+
+- [[id:F7C39C66-DFA0-4A10-B473-F3827B8A7187][Move business_day_convention_type to ores.refdata and commission fully]] — the task where this was discovered and worked around.

@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: C9AB5860-2FA4-46AC-89A3-BC1E9544760C
+:END:
+#+title: Add currency and country party-visibility junctions
+#+description: Add currency and country party-visibility junctions
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: Found projects/ores.sql/create/refdata/refdata_party_currency_create.sql and refdata_party_country_create.sql, both auto-generated junction tables explicitly described as 'controlling which currencies/countries are visible to which parties' with currency/country definitions remaining shared at tenant level -- exactly matching the capture's acceptance criteria. Corresponding drop scripts (refdata_party_currencies_drop.sql, refdata_party_countries_drop.sql) also exist.
+
+Add junction tables (=party_currencies=, =party_countries=) that control which
+currencies and countries a given party can see and use. The underlying reference
+data definitions remain shared at the tenant level; only visibility is
+per-party.
+
+**** Acceptance Criteria
+
+- Junction tables created with proper constraints.
+- Party-scoped queries for currencies and countries filter through junctions.
+- Default: all currencies/countries visible to all parties (opt-in restriction).

@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 5B0BF2A0-912D-4501-8CA0-ED4E0F6ACCE3
+:END:
+#+title: Consider adding "global search" via typesense
+#+description: Consider adding "global search" via typesense
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:deferred:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: grep -rli typesense across the repo only turns up this capture and doc mentioning it; but the same functional need (searching across docs) is already met by compass search per doc/recipes/compass/how_do_i_search_docs_with_compass.org and the doc-find skill ('Search every document in the repository: full-text search and structured filters over the org-roam graph'), which delivers global search without typesense.
+
+Typesense:
+
+#+begin_quote
+Typesense is a fast, typo-tolerant search engine for building delightful search
+experiences.
+#+end_quote
+
+We could pump specially crafted documents into typesense with IDs and types and
+then let users search across any type of entity.
+
+
+Links:
+
+- [[https://github.com/typesense/typesense][GH typesense]]
+- [[https://github.com/timescale/pg_textsearch][GH pg_textsearch]]: Modern ranked text search for Postgres.
+  - Simple syntax: ORDER BY content <@> 'search terms'
+  - BM25 ranking with configurable parameters (k1, b)
+  - Works with Postgres text search configurations (english, french, german, etc.)
+  - Supports partitioned tables
+  - Goal: state-of-the-art performance and scalability

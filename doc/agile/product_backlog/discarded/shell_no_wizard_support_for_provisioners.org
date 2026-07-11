@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 668A4C15-3B21-478F-8CC3-8A6E8E76FA8E
+:END:
+#+title: Shell: no wizard support for system, tenant, and party provisioners
+#+description: The shell REPL lacks wizard-style provisioners for system setup, tenant creation, and party creation — commands exist but no guided multi-step flow.
+#+type: capture
+#+level: cross
+#+filetags: :shell:wizard:provisioner:ux:gap:
+#+created: 2026-05-29
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.shell/src/app/commands/provision_commands.cpp implements a guided provision-tenant flow with wizard-parity defaults, timeouts, and validation ('provision the first tenant (wizard single-tenant defaults)', 'wizard's generous timeouts', 'wizard pre-fills the tenant admin email') — the shell has gained wizard-equivalent provisioning support since this capture was filed.
+
+* What
+
+The shell REPL has individual commands for system setup, tenant creation, and party creation,
+but no guided multi-step wizard flow. Users must know the exact sequence of commands and
+supply all parameters manually. The Qt desktop UI has provisioner wizards for these
+operations; the shell offers no equivalent.
+
+* Why
+
+Provisioning a system, tenant, or party involves several dependent steps that are error-prone
+without guidance. The Qt wizards walk users through each step in order; shell users lack this
+support, making the shell unsuitable for first-time setup or low-frequency provisioning tasks.
+
+

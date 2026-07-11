@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: 1060F374-C693-409C-B113-CC56031ECA86
+:END:
+#+title: System provisioner needs an icon
+#+description: System provisioner needs an icon
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.qt/application/src/SystemProvisionerWizard.cpp:51 already calls setWindowIcon(IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor)) -- a distinct, non-default icon is set.
+
+Dialog is using default ORE icon.

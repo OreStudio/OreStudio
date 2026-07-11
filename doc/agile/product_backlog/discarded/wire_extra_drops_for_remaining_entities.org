@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 31E3C840-F948-489D-B255-00B916F398C4
+:END:
+#+title: Wire 5E47F108 extra-drops kind for remaining entities
+#+description: Several entities with validate functions (business_unit_types, party_categories, purpose_types, book_statuses) are not yet wired to the extra-drops block kind.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:sql:refdata:templates:
+#+created: 2026-06-07
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: Checked drop scripts: projects/ores.sql/drop/refdata/refdata_business_unit_types_drop.sql, refdata_party_categories_drop.sql, refdata_purpose_types_drop.sql, and refdata_book_statuses_drop.sql all now contain 'drop function if exists ores_refdata_validate_<entity>_fn' — all four named entities are wired to the extra-drops block kind.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

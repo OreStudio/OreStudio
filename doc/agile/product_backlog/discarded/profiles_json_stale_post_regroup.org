@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 12450E70-EF24-49D9-B156-808B7529932A
+:END:
+#+title: profiles.json output patterns stale after component regroup
+#+description: Several output patterns in ores.codegen profiles.json still target the pre-regroup layout (projects/ores.qt.{component}, projects/ores.{component_include}); regeneration writes into nonexistent directories. The field-group pattern was fixed in the instrument-models task; audit and fix the rest, ideally with a CI zero-diff check.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-06-05
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: No profiles.json file exists anywhere in projects/ores.codegen (find returned nothing). The codegen system has since migrated to per-entity org-mode models (migrate_json_to_org.py, migrate_field_group_to_org.py) with component_include/component_core fields set directly on each model, superseding the profiles.json output-pattern mechanism this capture describes as stale.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

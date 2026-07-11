@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 08850964-F6C7-414F-8EB2-0F0474E06EA1
+:END:
+#+title: Add a skill that processes a capture buffer entry by entry a…
+#+description: Add a skill that processes a capture buffer entry by entry and decides whether each belongs in the current sprint backlog, a new story, or the product backlog.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: doc/llm/skills/agile-add-capture exists and per the skill catalogue files inbox captures into the backlog; combined with agile-refine-backlog and agile-plan-sprint skills, the described entry-by-entry triage (sprint backlog / new story / product backlog) capability already exists as a set of skills, even though no single skill is named exactly 'drain capture buffer'.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

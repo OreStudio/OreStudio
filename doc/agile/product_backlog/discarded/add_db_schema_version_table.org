@@ -1,0 +1,26 @@
+:PROPERTIES:
+:ID: 7952DFED-7624-4C70-8A64-169CA0D7DB20
+:END:
+#+title: Add DB schema version table
+#+description: Add DB schema version table
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.sql/create/database/database_database_infos_create.sql already defines a database_infos table whose comment states it 'Stores the schema version, git commit, and build environment inserted at database creation time', and projects/ores.sql/utility/dump_database_version.sh / database_info_fn_create.sql provide accessors. The capture's claim of no way to know schema version is no longer true.
+
+At present we have no way of knowing what version of the schema we are running.
+We should probably look into sqitch.
+
+Links:
+
+- [[https://github.com/golang-migrate/migrate][GH: golang-migrate]]: "Database migrations written in Go. Use as CLI or import as
+  library."
+- [[https://github.com/jackc/tern][GH: tern]]: "Tern is a standalone migration tool for PostgreSQL. It includes
+  traditional migrations as well as a separate optional workflow for managing
+  database code such as functions and views."
+- [[https://github.com/sqitchers/sqitch][GH: sqitch]]: "Sqitch is a database change management application."

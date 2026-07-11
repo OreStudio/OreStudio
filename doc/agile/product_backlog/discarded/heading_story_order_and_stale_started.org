@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: D5494573-F401-4626-A03F-632CF4E33A0A
+:END:
+#+title: compass heading ignores story task order and stale STARTED state
+#+description: compass heading ranks any BACKLOG task from the active story without respecting table order, and does not prompt to close STARTED tasks whose PR has merged.
+#+type: capture
+#+level: cross
+#+filetags: :compass:heading:agile:backlog:
+#+created: 2026-06-16
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.compass/src/compass.py cmd_heading (line 5125) now respects story-table task order via _task_uuids_from_story sort (lines 5247-5254) and 'break # only the first BACKLOG task per story matters' (line 5333), and detects stale STARTED tasks whose PR merged via pr_state(t_pr) == 'MERGED' check (lines 5292-5303) that surfaces a 'close' suggestion pointing at 'compass task done'. Both gaps described are addressed.
+
+* What
+
+Two related gaps in =compass heading=. First, when the active story has multiple BACKLOG tasks,
+heading scores them freely and can surface task N+3 while N, N+1, N+2 are still untouched —
+it does not prefer the first BACKLOG entry in story table order. Second, heading has no mechanism
+to detect that a STARTED task's PR has merged and the task is effectively done; the entry
+persists as a ghost candidate at reduced score until someone runs =compass task done= manually.
+Improvements: (1) when ranking tasks within the active story, prefer the first BACKLOG row in
+table order rather than open scoring; (2) after =compass pr merge=, prompt or auto-invoke
+=compass task done= on any STARTED task whose branch was just deleted.
+
+* Why
+
+Developers following the story sequence expect heading to guide them through tasks top-to-bottom.
+Free scoring breaks that expectation and forces the user to cross-check the story table manually.
+The ghost STARTED entry also inflates the in-flight count and can mislead sprint audits.
+
+* References
+
+- =projects/ores.compass/src/compass_heading.py= (or equivalent heading scorer)
+- Observed during sprint 21 session 2026-06-16: after merging PR #1283 (task 93813CFA),
+  heading still showed the task as STARTED at score 50 and picked a lower-order story task
+  (=integrate_install_packages=) over the first BACKLOG task (=update_bootstrap_docs=).
+
+* See also
+
+- [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Story: Environment provisioning overhaul]]

@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 556F7392-1B01-406A-BC4B-80394633C12F
+:END:
+#+title: Use exponential backoff for database problems
+#+description: Use exponential backoff for database problems
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.database/src/service/postgres_listener_service.cpp already implements exponential backoff (min_backoff=1s, max_backoff=5s, backoff = min(backoff*2, max_backoff), reset on success) and ores.nats/src/service/jwks.cpp uses retry_with_backoff. The constant-5-second-retry log line quoted in the capture (ores.comms.service 'Database still unavailable, retrying in 5 seconds') no longer exists in the codebase (grep found no match).
+
+At present we have a constant retry:
+
+#+begin_quote
+2026-02-08 14:56:43.670204 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
+2026-02-08 14:56:48.685224 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
+2026-02-08 14:56:53.698886 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
+2026-02-08 14:56:58.712379 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
+2026-02-08 14:57:03.726010 [INFO] [ores.comms.service.app.application] Database still unavailable, retrying in 5 seconds...
+#+end_quote
+
+Notes:
+
+- we should allow clients to connect and return an error stating DB is
+  unavailable.
+- stop service does not show any log lines about shutting down.

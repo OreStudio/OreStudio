@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 8AFB72CD-44B5-4DCD-A3A8-B12FEF693011
+:END:
+#+title: Wire service token provider for all services
+#+description: Only ores.reporting.service currently has make_service_token_provider wired up. All outbound-NATS services need it; add the dependency and wiring as each service grows.
+#+type: capture
+#+level: cross
+#+filetags: :code:security:infrastructure:
+#+created: 2026-05-22
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: grep for make_service_token_provider now shows it wired in application.cpp for ores.workflow, ores.synthetic, ores.reporting, ores.marketdata, and ores.ore services (plus the provider implementation in ores.iam.client) -- no longer limited to ores.reporting.service as the capture states.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Only =ores.reporting.service= has =make_service_token_provider= wired up so it can authenticate outbound NATS calls as a service principal. Every service that makes outbound NATS calls needs the same wiring:
+
+- Add =ores.iam.client.lib= as a dependency.
+- Call =make_service_token_provider= in the service initialisation.
+- Pass the resulting provider to any NATS client or service stub that makes authenticated calls.
+
+At the time of capture, the other services make no outbound NATS calls, so this can be deferred until each service grows outbound calls.

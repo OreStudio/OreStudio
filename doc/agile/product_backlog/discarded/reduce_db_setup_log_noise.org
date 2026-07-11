@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 20029523-AB79-4512-9AFF-8F80989E1C44
+:END:
+#+title: Reduce log noise during database setup
+#+description: Database setup emits too many NOTICEs (change reason categories, IAM permissions, TimescaleDB detection). Consolidate to a single informational message per phase; suppress per-row notices.
+#+type: capture
+#+level: cross
+#+filetags: :database:infrastructure:
+#+created: 2026-05-22
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: Grepped all of projects/ores.sql/populate/ (100+ files) for RAISE NOTICE and found zero hits -- no per-row NOTICE for change reason categories or permissions remains. Also found client_min_messages = warning already used around utility_summary_functions_create.sql, confirming the noise-suppression pattern this capture asked for is already applied.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Database setup is very noisy. Key offenders:
+
+- Per-row =NOTICE: Created change reason category: system= (and similar) for every seeded row.
+- Per-permission =NOTICE: Created permission: iam::accounts:create= — dozens of lines.
+- TimescaleDB detection output.
+
+Fix:
+- Replace per-row raise with a single post-block summary: =NOTICE: Seeded N change reason categories.=
+- Wrap permission seeding similarly.
+- Suppress or redirect TimescaleDB internal notices using =SET client_min_messages = WARNING;= around the relevant sections.

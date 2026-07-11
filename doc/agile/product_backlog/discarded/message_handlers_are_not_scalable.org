@@ -1,0 +1,26 @@
+:PROPERTIES:
+:ID: 123EDDFD-6722-4DD5-A3F6-CC6D03538FF4
+:END:
+#+title: Message handlers are not scalable
+#+description: Message handlers are not scalable
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: The monolithic projects/ores.dq/src/messaging/dq_message_handler.cpp cited in the capture no longer exists (git log shows commit 612e1a34c '[dq] Refactor dq_message_handler to use per-request tenant context' and later restructuring). Current projects/ores.dq/core include/messaging directory has 14 separate per-type handler files (badge_handler.hpp, dataset_handler.hpp, dimension_handler.hpp, lei_entity_handler.hpp, publication_handler.hpp, etc.), i.e. the requested split by message type has already happened.
+
+Claude just mentioned this in passing:
+
+#+begin_quote
+Read(projects/ores.dq/src/messaging/dq_message_handler.cpp)
+  ⎿  Error: File content (25665 tokens) exceeds maximum allowed tokens (25000). Please use offset and limit parameters to read specific portions of the file, or use the GrepTool to search for specific content.
+● Read(projects/ores.dq/src/messaging/dq_message_handler.cpp)
+  ⎿  Read 200 lines
+#+end_quote
+
+This will not work when we have hundreds of types in a component. We need to
+split these files by message type.

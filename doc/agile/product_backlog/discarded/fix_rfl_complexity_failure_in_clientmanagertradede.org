@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 367D0D5F-24BB-4AA1-B784-D79E95C15A16
+:END:
+#+title: Fix rfl complexity failure in ClientManagerTradeDetail (Windows + macOS)
+#+description: ClientManagerTradeDetail.cpp fails on both MSVC (C1202 recursive type too complex) and Clang (fold expression with 502 arguments exceeds nesting limit of 256) because get_trade_detail_instrument_wrapper contains an rfl::Literal with 502 fields.
+#+type: capture
+#+level: cross
+#+filetags: :capture:portability:windows:macos:rfl:ores_qt_api:
+#+created: 2026-05-29
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.qt.api/src/ClientManagerTradeDetail.cpp no longer exists (find returned nothing); get_trade_detail_instrument_wrapper is not found anywhere in the codebase. ores.trading.api domain headers (instrument_identity.hpp, commodity_instrument.hpp, credit_instrument.hpp) now carry explicit comments 'Extracted as a plain nested sub-struct to keep each rfl::Literal below [limit]', indicating the same complexity issue was already addressed via type restructuring, matching the referenced prior fix pattern (story D8B1A670).
+
+* What
+
+=ClientManagerTradeDetail.cpp= in =ores.qt.api= fails to compile on both
+Windows (MSVC) and macOS (Clang) because
+=ores::trading::messaging::get_trade_detail_instrument_wrapper= contains an
+=rfl::Literal= with 502 string fields. Both compilers hit their respective
+template/constexpr depth limits.
+
+Fix approaches (same strategy used for prior RFL complexity stories):
+
+- Split =ClientManagerTradeDetail.cpp= into smaller TUs so no single
+  translation unit instantiates the full type.
+- Or reduce the number of fields in =get_trade_detail_instrument_wrapper=
+  (e.g. split the =rfl::Literal= into a hierarchy or use a different
+  encoding).
+- Investigate whether =rfl= has a workaround for large =Literal= types
+  (e.g. chunking or a two-phase approach).
+- For Clang: =-fbracket-depth=512= (or higher) may be a short-term
+  workaround; for MSVC there is no equivalent — structural change is
+  required.
+
+* Why
+
+Both Windows and macOS CI builds are RED. Until fixed, no Windows or macOS
+artefacts can be produced. High priority for sprint 19.
+
+* Errors
+
+** Windows (MSVC 2022)
+
+#+begin_example
+Error in file:
+  rfl/internal/no_duplicate_field_names.hpp(35):
+  fatal error C1202: recursive type or function dependency context too complex
+
+D:\a\OreStudio\OreStudio\build\output\windows-msvc-debug-ninja\vcpkg_installed\x64-windows\include\rfl\internal/no_duplicate_field_names.hpp(35): fatal error C1202: recursive type or function dependency context too complex
+[1139/4922] Building CXX object projects\ores.qt.api\src\CMakeFiles\ores.qt.api.lib.dir\ClientManager.cpp.obj
+[1140/4922] Building CXX object projects\ores.qt.api\src\CMakeFiles\ores.qt.api.lib.dir\ClientManagerTrades.cpp.obj
+[1141/4922] Building CXX object projects\ores.qt.api\src\CMakeFiles\ores.qt.api.lib.dir\ClientResultItemDelegate.cpp.obj
+[1142/4922] Building CXX object projects\ores.qt.api\src\CMakeFiles\ores.qt.api.lib.dir\ClientResultModel.cpp.obj
+[1143/4922] Building CXX object projects\ores.qt.api\src\CMakeFiles\ores.qt.api.lib.dir\CronEditorDialog.cpp.obj
+[1144/4922] Building CXX object projects\ores.qt.api\src\CMakeFiles\ores.qt.api.lib.dir\CronExpressionWidget.cpp.obj
+[1145/4922] Building CXX object projects\ores.qt.api\src\CMakeFiles\ores.qt.api.lib.dir\DelegatePaintUtils.cpp.obj
+[1146/4922] Building CXX object projects\ores.qt.api\src\CMakeFiles\ores.qt.api.lib.dir\ClientManagerTradeDetail.cpp.obj
+FAILED: projects/ores.qt.api/src/CMakeFiles/ores.qt.api.lib.dir/ClientManagerTradeDetail.cpp.obj
+
+D:\a\OreStudio\OreStudio\build\output\windows-msvc-debug-ninja\vcpkg_installed\x64-windows\include\rfl\Literal.hpp(416):
+  note: while evaluating constexpr function
+  'rfl::Literal<version, tenant_id, id, instrument_id, leg_number,
+  leg_type_code, day_count_fraction_code, business_day_convention_code,
+  payment_frequency_code, floating_index_code, fixed_rate, spread,
+  notional, currency, modified_by, performed_by, change_reason_code, ...
+  (502 fields total)>'
+
+D:\a\OreStudio\OreStudio\build\output\windows-msvc-debug-ninja\vcpkg_installed\x64-windows\include\rfl\internal/no_duplicate_field_names.hpp(35):
+  note: the template instantiation context (the oldest one first) is
+D:\a\OreStudio\OreStudio\projects\ores.qt.api\src\ClientManagerTradeDetail.cpp(56):
+  note: see reference to function template instantiation
+  'rfl::Result<ores::trading::messaging::get_trade_detail_instrument_wrapper>
+   rfl::json::read<ores::trading::messaging::get_trade_detail_instrument_wrapper,
+   rfl::AddTagsToVariants>(const std::string_view, const yyjson_read_flag)'
+  being compiled
+
+Compile flags already set (insufficient):
+  /constexpr:depth100000 /constexpr:steps10000000
+#+end_example
+
+** macOS (Clang, arm64)
+
+#+begin_example
+/OreStudio/build/output/macos-clang-release-ninja/vcpkg_installed/arm64-osx/include/rfl/../rfl/internal/StringLiteral.hpp:18:63:
+  fatal error: instantiating fold expression with 502 arguments exceeded expression nesting limit of 256
+
+   18 |     requires (std::is_same_v<decltype(_chars), const char> && ...)
+      |              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~
+
+[574/2566] Building CXX object projects/ores.qt.api/src/CMakeFiles/ores.qt.api.lib.dir/ClientManagerTradeDetail.cpp.o
+FAILED: projects/ores.qt.api/src/CMakeFiles/ores.qt.api.lib.dir/ClientManagerTradeDetail.cpp.o
+
+Include chain:
+  ClientManagerTradeDetail.cpp:20
+  → ores.qt/ClientManager.hpp:35
+  → rfl/json.hpp:4 → rfl.hpp:10
+  → rfl/AddStructName.hpp:6 → rfl/Field.hpp:8
+  → rfl/Literal.hpp:15
+  → rfl/internal/StringLiteral.hpp:18  ← FAILS HERE
+
+Clang default fold/bracket depth: 256. Possible workaround: -fbracket-depth=512
+#+end_example
+
+* References
+
+- Failing file: =projects/ores.qt.api/src/ClientManagerTradeDetail.cpp=
+- Failing type: =ores::trading::messaging::get_trade_detail_instrument_wrapper=
+- Prior fix story: [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] — same pattern, different TUs
+
+* See also
+
+-

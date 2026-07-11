@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: 2B6ADBAA-D57E-4FDF-856A-38FE756E596B
+:END:
+#+title: Change reason and categories need permissions
+#+description: Change reason and categories need permissions
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: iam_permissions_populate.sql already defines dq::change_reasons:read/write/delete and dq::change_reason_categories:read/write/delete permissions (lines 238-245).
+
+We need some very specific permissions as these are reg-sensitive.

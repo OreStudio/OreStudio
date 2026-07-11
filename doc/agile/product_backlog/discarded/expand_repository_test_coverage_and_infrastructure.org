@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: 6F7F7D67-2815-47C8-B91D-C50F15A6970A
+:END:
+#+title: Expand repository test coverage and infrastructure
+#+description: Expand repository test coverage and infrastructure
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.dq/core/tests/repository_change_reason_repository_tests.cpp and repository_change_reason_category_repository_tests.cpp already exist (change-reason repository tests). Generators for roles/permissions also already exist: projects/ores.iam/api/src/generators/role_generator.cpp and permission_generator.cpp. The two concrete gaps named in the capture are both already addressed; the third bullet (test suites logging version at startup) was not verified further but the two primary claims are stale.
+
+Test coverage gaps and infrastructure improvements needed.
+
+- No repository tests for change reason entity. Audit all entities for coverage.
+- No generators for roles and permissions; add them.
+- Test suites should log version at startup. Info script needs to grep log for
+  version across all suites.

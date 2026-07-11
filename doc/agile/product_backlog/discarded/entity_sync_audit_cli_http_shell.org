@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 17C3FE61-9E04-4D43-9869-7595D9070EFB
+:END:
+#+title: Create a document tracking which entities have full CLI/HTTP…
+#+description: Create a document tracking which entities have full CLI/HTTP/shell coverage and which are missing layers. Use it as a prioritised backlog for bringing entities into sync, adding recipes as gaps are closed.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: doc/analysis/entity_coverage_matrix.org already exists and does exactly what the capture asks: a legend of SQL/Domain/TblIO/JSONIO/Qt/HTTP/CLI/Shell/Wt columns per entity, per component (e.g. ores.refdata), used to track and prioritise coverage gaps.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

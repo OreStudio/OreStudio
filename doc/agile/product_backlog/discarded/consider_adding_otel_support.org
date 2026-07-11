@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: 5F669F9A-526A-4A74-A97F-ADD161DE2BB6
+:END:
+#+title: Consider adding otel support
+#+description: Consider adding otel support
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:deferred:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.telemetry/core exists with exporting/log_exporter.hpp, file_log_exporter, hybrid_log_exporter and ores.logging integrates telemetry (ores.logging.hpp, lifecycle_manager.hpp reference telemetry); a working telemetry/logging framework is already in place, addressing the underlying need this capture flagged (though full OTLP-collector export is still tracked separately in add_otlp_exporter_for_opentelemetry_collector.org).
+
+Links:
+
+- [[https://github.com/destrex271/postgresexporter][GH postgresexporter]]: "Unofficial Postgres Exporter for OTEL"
+- [[https://opentelemetry-cpp.readthedocs.io/en/latest/otel_docs/classopentelemetry_1_1sdk_1_1trace_1_1SpanExporter.html][SpanExporter]]: create your own exporter.

@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 9CBEE91B-8575-4344-A07A-6302B4F4208B
+:END:
+#+title: Committed IAM service SQL is stale vs templates
+#+description: Regenerating the service-registry archetypes from current templates/model drops content present in committed projects/ores.sql/create/iam/iam_service_db_grants_create.sql (an _ores_grant_execute_fn block + refdata DML grant for synthetic_service) and reverts a 'compass db recreate' wording in projects/ores.sql/service_vars.sh. The committed generated SQL was hand-edited or generated from a richer model than projects/modeling/service_registry.org now holds. Reconcile: either fold the missing grants into the model/template or regenerate and commit. Surfaced during B8 layer (a) service-registry migration.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-06-28
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.sql/create/iam/iam_service_db_grants_create.sql already contains _ores_grant_execute_fn (line 230) and the refdata DML grant for synthetic_service (line 189: select _ores_grant_dml_fn('ores_refdata_', :'synthetic_service_user')); git log shows commit beb3532b2 '[synthetic] Fix synthetic service DML grant' and 8857a8fa0 already addressed this drift.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

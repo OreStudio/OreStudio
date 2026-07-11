@@ -8,7 +8,7 @@
 #+filetags: :sprint_23:v0:
 #+created: 2026-07-11
 #+updated: 2026-07-11
-#+environment:
+#+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -29,11 +29,11 @@ reported procedure rather than one-off manual work.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Initial promote/pull-in pass done; deep refinement not yet run. |
+| Now           | Nothing — both tasks done.              |
 | Waiting on    | Nothing.                               |
-| Next          | Run the deep backlog refinement task.  |
+| Next          | Nothing.                               |
 | Last touched  | 2026-07-11                               |
 
 * Acceptance
@@ -57,7 +57,7 @@ reported procedure rather than one-off manual work.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:6E41F1C5-8B1E-450E-BFB2-993F687DE197][Promote and pull in sprint 23 stories from the backlog]] | DONE | 2026-07-11 | 2026-07-11 | Promote well-specified backlog captures into sprint 23 stories and pull in misfiled/mislabeled sprint-22/sprint-19 stories, verifying each against the live codebase before acting. |
-| [[id:BF5F062F-49DB-490C-B1B0-89B55A550173][Deep backlog refinement]] | BACKLOG | | | Run the agile-refine-backlog skill's deep mode: audit every capture in inbox/next/deferred against the live codebase, merge duplicates, and re-score bucket fit against sprint 23's mission. |
+| [[id:BF5F062F-49DB-490C-B1B0-89B55A550173][Deep backlog refinement]] | DONE | 2026-07-11 | 2026-07-11 | Ran the agile-refine-backlog skill's deep mode: audited all 559 items in inbox/next/deferred against the live codebase, discarded/relocated 71, merged 1 duplicate pair. Next→deferred rescoring flagged as a follow-on run. |
 
 * Decisions
 

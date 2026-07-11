@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 8C53F763-1DB4-4287-AB72-7471E1A7DE29
+:END:
+#+title: Add a sample set of gravatars for profiles
+#+description: Add a sample set of gravatars for profiles
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+#+state: ABANDONED
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*ABANDONED 2026-06-10* — Superseded by [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] (Sprint 20), which uses the FaceStudio API to generate pre-tagged faces covering gender, age, and ethnicity. The Kaggle dataset labelling approach is no longer needed.
+
+We've downloaded the [[https://www.kaggle.com/datasets/osmankagankurnaz/human-profile-photos-dataset][Human Profile Photos Dataset]]. The images are not labelled
+(img123.jpg etc). There are also too many of them. We need to label them so we
+can use them to generate synthetic profiles to test the system and to ensure
+diversity. We probably need the following classes: race (course approximation is
+fine), gender, age (again course approximation - kid, teenager, adult, senior or
+some such classification). Then we need to create a subset of the dataset which
+is a representative sample.
+
+Gemini script that uses ollama:
+
+#+begin_src python
+import ollama
+import os
+import pandas as pd
+import json
+
+# Configuration
+IMAGE_FOLDER = './human-profile-photos' # Path to your dataset
+OUTPUT_FILE = 'labeled_dataset.csv'
+MODEL = 'llama3.2-vision'
+
+# Prompt designed for structured output
+PROMPT = """
+Analyze the person in this image and provide a JSON response with exactly these keys:
+- "race": (e.g., White, Black, Asian, Hispanic, etc.)
+- "gender": (Male, Female)
+- "age_group": (Kid, Teenager, Adult, Senior)
+
+Return ONLY the JSON object.
+"""
+
+def label_images():
+    results = []
+    image_files = [f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+
+    print(f"Starting labeling for {len(image_files)} images...")
+
+    for filename in image_files:
+        path = os.path.join(IMAGE_FOLDER, filename)
+
+        try:
+            response = ollama.chat(
+                model=MODEL,
+                format='json', # Forces the model to output valid JSON
+                messages=[{
+                    'role': 'user',
+                    'content': PROMPT,
+                    'images': [path]
+                }]
+            )
+
+            # Parse the response
+            data = json.loads(response['message']['content'])
+            data['filename'] = filename
+            results.append(data)
+            print(f"Labeled: {filename}")
+
+        except Exception as e:
+            print(f"Error processing {filename}: {e}")
+
+    # Save to CSV
+    df = pd.DataFrame(results)
+    df.to_csv(OUTPUT_FILE, index=False)
+    print(f"Done! Results saved to {OUTPUT_FILE}")
+
+if __name__ == "__main__":
+    label_images()
+#+end_src

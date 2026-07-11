@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: 45F696E5-34EE-4DCF-8F8F-76CB19ACA855
+:END:
+#+title: Currencies: Currency Taxonomy Enrichment
+#+description: Currencies: Currency Taxonomy Enrichment
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: ores_refdata_currencies_tbl already has both requested fields: 'monetary_nature' (projects/ores.sql/create/refdata/refdata_currencies_create.sql:44, validated via ores_refdata_validate_monetary_nature_fn against a dedicated ores_refdata_monetary_natures_tbl) covering the asset_class purpose, and 'market_tier' (line 45, validated against ores_refdata_currency_market_tiers_tbl with its own CRUD/history UI in ores.qt/refdata CurrencyMarketTier* files) covering the market_tier/g10/emerging purpose -- the taxonomy enrichment shipped, just under the field names monetary_nature/market_tier rather than asset_class/market_tier.
+
+- Goal: Enhance the ores_refdata_currencies_tbl to support logical grouping,
+  reporting, and basic behavior defaults.
+- Requirements:
+  - Field 1: asset_class (Enum/Varchar)
+    Purpose: Defines the nature of the instrument.
+    Allowed Values: fiat, commodity (for XAU/XAG), synthetic, supranational.
+  - Field 2: market_tier (Enum/Varchar)
+    Purpose: Drives UI priority, liquidity expectations, and risk limits.
+    Allowed Values: majors (g10), emerging, exotic, frontier, historical.
+- Example Entries:
+  : USD | fiat | g10
+  :  BRL | fiat | emerging

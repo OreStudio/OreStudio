@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 47687276-F206-43E1-AFE2-DEABC2820B17
+:END:
+#+title: Add missing pgtab extension to database setup
+#+description: The pgtab extension is referenced but not installed during database setup. Add it to the extension installation block.
+#+type: capture
+#+level: cross
+#+filetags: :database:infrastructure:
+#+created: 2026-05-22
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: No reference to a 'pgtab' extension exists anywhere in the codebase (grep -rli 'pgtab' returns only this capture file itself). projects/ores.sql/setup_extensions.sql:85-141 already conditionally installs 'pgtap' (the real pgTAP testing extension) via 'create extension if not exists pgtap;' and reports it in the extension summary -- the capture appears to be a mis-spelled/stale duplicate of already-resolved pgtap support.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+The =pgtab= PostgreSQL extension is referenced in the codebase but is not installed during database setup. Add =CREATE EXTENSION IF NOT EXISTS pgtab;= to the extension installation block in =setup_database.sh= (or the equivalent create script), ensuring it is installed before any objects that depend on it are created.

@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: 5F6CC067-6836-460F-9B19-83CFA75EF9E9
+:END:
+#+title: Create basic manual
+#+description: Create basic manual
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: A user manual already exists and is actively maintained: doc-add-entity-chapter and doc-update-manual skills exist, devops-deploy-manual skill builds and publishes a PDF, and the manual is linked from the site per recent memory/skill catalogue entries -- the underlying ask (start a manual, PDF build, site link, skill to keep it updated) has shipped, superseding this capture.
+
+We should start populating the manual from the start. Ensure there is a claude
+skill that updates the manual as we add new entities. Create a PDF build for it.
+We can use templates from thesis. Link it to site so that yuo can browse it.

@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 0DFEBC29-C89D-4BDB-A9D4-8AC7559BF7BB
+:END:
+#+title: Add compass story done command
+#+description: compass task done exists but compass story done does not. Closing a story requires manually editing story.org (State, Now, Next, Last touched) and the sprint table. A compass story done command should set State DONE, stamp End date, update the sprint stories table row, and journal the close — analogue of compass task done.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-06-23
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (deep backlog refinement, 2026-07-11)*: projects/ores.compass/src/compass.py already implements this: cmd_story (line 3742) dispatches to _cmd_story_done (line 4101) with docstring 'compass story done <slug-or-uuid> — close a story.' The requested command exists.
+
+* What
+
+Add a =compass story done <slug>= command that closes a story in one step: sets
+State → DONE, stamps the End date, updates the parent sprint's =* Stories= table
+row, and journals the close. Analogue of the existing =compass task done= command.
+
+* Why
+
+Closing a story currently requires manually editing =story.org= (State, Now, Next,
+Last touched) and the sprint table row — error-prone and easy to leave inconsistent.
+=compass task done= already automates the equivalent flow for tasks; stories deserve
+the same treatment.
+
+* References
+
+- [[id:31C868B9-306E-4282-BA8C-07E647021B34][Task]] — for comparison with the existing task lifecycle.
+
+* See also
+
+-

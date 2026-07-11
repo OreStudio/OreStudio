@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :sprint-23-planning-session:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/deep-backlog-refinement
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
 #+updated: 2026-07-11
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1014DD4F-B011-4102-8C60-983364E9BFBE][Sprint 23 planning session]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,11 +32,11 @@ along the way, not just backlog issues.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1014DD4F-B011-4102-8C60-983364E9BFBE][Sprint 23 planning session]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing — full audit complete, see Result. |
 | Waiting on   | Nothing.                               |
-| Next         | Invoke agile-refine-backlog's deep mode.  |
+| Next         | Nothing.                               |
 | Last touched | 2026-07-11                               |
 
 * Acceptance
@@ -81,3 +81,220 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Run on 2026-07-11
+
+First real exercise of the =agile-refine-backlog= skill's new deep
+refinement mode (added this same session). Ran as a workflow: a
+discovery agent listed every item in =inbox=/=next=/=deferred=, then
+28 parallel batch agents (20 items each) verified each one against
+the live codebase, then 13 parallel adjudication agents checked
+keyword-clustered duplicate candidates. A follow-up single-agent run
+covered 10 items one batch under-returned on the first pass.
+
+*** Before / after
+
+| Bucket   | Before | After | Notes |
+|----------+--------+-------+-------|
+| inbox    |    240 |   208 | -32: discarded or moved to their real sprint |
+| next     |    258 |   223 | -35: discarded, merged, or moved |
+| deferred |     61 |    56 | -5: discarded |
+| *Total*  |  *559* | *487* | *-72* |
+
+*** Coverage
+
+All 559 items in the three buckets were read and checked against the
+live codebase (240 inbox + 258 next + 61 deferred). Status breakdown:
+
+| Status | Count | Meaning |
+|--------+-------+---------|
+| resolved | 73 | codebase already has it, or work shipped elsewhere |
+| valid | 342 | still genuinely unaddressed; left in place |
+| unclear | 144 | opinion/research capture, or couldn't confirm either way |
+
+Of the 73 "resolved" verdicts, 2 were caught as misclassified during
+a trustworthiness spot-check (below) and reclassified as valid, for
+*71 genuine discards/relocations*.
+
+*** Trustworthiness check on "resolved" verdicts
+
+Before bulk-acting on 73 "resolved" classifications, spot-checked a
+random sample plus every short/terse evidence string, then ran a
+keyword scan across all 73 for self-contradictory reasoning (phrases
+like "treating as valid", "still open", "Part 1 ... Part 2"). Found
+2 real errors, both the same failure mode — a capture asking for
+*two* things where only one had shipped, and the agent's own prose
+said so but the status field said "resolved" anyway:
+
+| Capture | What was wrong | Fix |
+|---------+-----------------+-----|
+| [[id:058DF966-13E0-4D97-9A8B-F22301411015][Entity evaluation skill and runbook]] | Evidence literally said "treating as valid"; status field said resolved | Left in place, unchanged (already correctly valid in substance) |
+| [[id:3D83489C-F7E5-43E9-B42D-FA45EE9AFAF4][Portfolio explorer toggle to show/hide business-unit nodes]] | Part 1 (book→business-unit FK) shipped; Part 2 (explorer toggle) didn't | Retitled/narrowed to just Part 2, noted Part 1 shipped, kept in =next= |
+
+No other errors found in the remaining 71 after this check; every
+other resolved verdict cited a concrete, checkable fact (a grep
+result, a line number, a sibling story/task ID) that held up.
+
+*** Captures/stories discarded or relocated (71)
+
+69 moved to =product_backlog/discarded/= with a bolded resolution
+note citing the evidence. 3 were not simple captures but whole
+stories misfiled in the backlog buckets despite already being
+DONE/ABANDONED and correctly recorded in their real sprint's table —
+those were restored to their actual sprint folder instead:
+
+| Story | Real home | Issue |
+|-------+-----------+-------|
+| [[id:C3B6F514-559F-4038-A1D7-947BC9F7F398][Add Downloads and Agile nav entries to the site]] | Sprint 18 | DONE story misfiled in inbox with a stale "BACKLOG"/"deferred" note; sprint 18's own table already said DONE |
+| [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal templates]] | Sprint 22 | State field said BACKLOG but all 3 tasks were ABANDONED with the resolution recorded in Decisions |
+| [[id:D83F5588-5F05-4AF6-9CCF-98489309DE4A][Move book, book_status, and portfolio to ores.trading]] | Sprint 22 | Already correctly ABANDONED, just misfiled in inbox |
+
+Full list of the 69 discarded (title — one-line reason; each file
+carries the complete evidence in its own discard note):
+
+| Capture | Reason (see file for full evidence) |
+|---------+--------------------------------------|
+| [[id:7BD9F806-1E51-46AF-AD05-6C1EF61963D7][Add a compass client stop command]] | projects/ores.compass/src/compass_services.py defines cmd_client_stop (line 497) and run_client() registers a 'stop' subparser (line 566) di... |
+| [[id:0DFEBC29-C89D-4BDB-A9D4-8AC7559BF7BB][Add compass story done command]] | projects/ores.compass/src/compass.py already implements this: cmd_story (line 3742) dispatches to _cmd_story_done (line 4101) with docstring... |
+| [[id:68FAE9B4-81DF-435D-A8C2-DBD4C96B867D][Make badges a first-class entity with a colour-editing UI]] | Confirmed ores.dq.badge_definition/badge_severity already have generated Qt UI: BadgeDefinitionController and BadgeSeverityController exist ... |
+| [[id:84D85607-DEE2-4064-B643-3BD3BB57235F][Codegen: domain_entity SQL validate_fn never computes scope flags]] | projects/ores.codegen/src/codegen/core.py (around line 1764) now explicitly syncs scope_system/scope_both/scope_tenant from the projected ta... |
+| [[id:9ECEAAB2-1E3C-4545-BE69-964926753894][Codegen-generate the get_hierarchy NATS message once proven]] | The capture file itself contains a '* Resolved' section stating the has_parent_id-gated blocks were added to protocol/repository/service/nat... |
+| [[id:5F035BA6-3FC2-4B4D-A4F2-103C1F6B87EF][Codegen new-entity recipe/skill stale; register ores.synthetic as a codegen component]] | Part 2 (register ores.synthetic) is done: projects/ores.codegen/library/component_catalogue.org line 23 now has a 'synthetic' row mapping to... |
+| [[id:3402B369-FFC1-4B46-9EA0-528973D88618][Generalize self-referential hierarchy validation into a codegen facet]] | The capture file itself contains a '* Superseded' section stating it was promoted to task 54C76A81-AA42-4404-B02D-C3AB5D934A50 on the 'Compo... |
+| [[id:4BC71850-0F1C-4C63-9FF2-957F62129957][How do I run codegen? recipe is missing the codegen.sh / org-entity path]] | Read doc/recipes/codegen/how_do_i_run_codegen.org: it now documents 'compass codegen entity generate <entity> --profile <profile>', 'compass... |
+| [[id:BE1EB2DC-677A-4E03-B8F8-B8C10572E853][compass add task does not wire the story Tasks table]] | projects/ores.compass/src/compass.py now contains _add_wire_task() ('Wire a freshly added task into its story's * Tasks table'), plus helper... |
+| [[id:4478AD9B-CD18-4531-BADB-B72ABC7E1050][compass list needs sort and filter: ability to sort results …]] | projects/ores.compass/src/doc_list.py already implements --sort (choices title/updated/path, so date-based recency sort exists) plus --regex... |
+| [[id:706390BA-C55C-48E9-BA41-9D2C19302A26][Compass search: bucketed results by dimension]] | projects/ores.compass/src/compass.py cmd_search (line 406) already implements bucketed output with per-bucket labels, independent --limit fe... |
+| [[id:0CF906C6-E7B9-4298-838D-FE5CFE0DDF31][compass story: add a 'done' verb to close a story]] | projects/ores.compass/src/compass.py:3771 registers a 'done' subparser under cmd_story ('Close a story: flip DONE, update sprint row, stamp ... |
+| [[id:847B0AE4-B857-4B9D-AC8B-A8C2D8D5D667][Create a skill to find bearings]] | doc/llm/skills already contains an 'agile-find-bearings' skill ('Initialise a session — compass-first operation, recipe search for command i... |
+| [[id:9239D31D-A4A1-4B43-BFD9-E38957DCDC68][Enforce task result written before PR merge]] | projects/ores.compass/src/compass_pr.py lines ~355-381 already implement a guard: 'Guard: * Result section must have substantive prose' and ... |
+| [[id:900F8BB7-15F6-4DB4-A49A-DAFF4F7E7D4D][Fix operational-party association bug in tenant provisioning]] | Capture's own Update section documents root cause and fix; verified stamp_account_party() exists in projects/ores.iam/core/include/ores.iam.... |
+| [[id:367D0D5F-24BB-4AA1-B784-D79E95C15A16][Fix rfl complexity failure in ClientManagerTradeDetail (Windows + macOS)]] | projects/ores.qt.api/src/ClientManagerTradeDetail.cpp no longer exists (find returned nothing); get_trade_detail_instrument_wrapper is not f... |
+| [[id:D5494573-F401-4626-A03F-632CF4E33A0A][compass heading ignores story task order and stale STARTED state]] | projects/ores.compass/src/compass.py cmd_heading (line 5125) now respects story-table task order via _task_uuids_from_story sort (lines 5247... |
+| [[id:03A8CA42-A764-46B3-9D0D-3C2E4BC272AC][pr merge close-out should tolerate already-closed tasks]] | projects/ores.compass/src/compass_pr.py around line 287-300 already guards the 'nothing to commit' case explicitly: it checks 'git diff --ca... |
+| [[id:32AA31C3-D8C5-475D-B52C-59207AE1FC63][pr merge: retry on mergeability race after close-out]] | projects/ores.compass/src/compass_pr.py:415-427 already implements a 3-attempt retry loop with 3s sleep around 'gh pr merge', specifically r... |
+| [[id:12450E70-EF24-49D9-B156-808B7529932A][profiles.json output patterns stale after component regroup]] | No profiles.json file exists anywhere in projects/ores.codegen (find returned nothing). The codegen system has since migrated to per-entity ... |
+| [[id:7FC1A168-C14C-4B36-BF9D-130E6FF150FE][Regenerate already-synced entities after Delete change-reason category template fix]] | grep across projects/ores.qt for 'OperationType::Delete, false, "system"' returns zero matches; all 10 matches found use 'common' (the fixed... |
+| [[id:C16ADE66-2FE6-4041-9146-06505327E027][Remove 3 stale *_protocol.cpp build files (protocol is header-only)]] | find for *_protocol.cpp under projects/ores.dq/api/src/messaging returns nothing — the three named files (badge_definition/badge_severity/co... |
+| [[id:3D714695-29E2-4FEC-BE83-506E89EC8142][compass review reply 404s on conversation comments]] | projects/ores.compass/src/compass_review.py _cmd_reply already routes by comment kind: it calls _comment_kind() and for kind=='issue' posts ... |
+| [[id:668A4C15-3B21-478F-8CC3-8A6E8E76FA8E][Shell: no wizard support for system, tenant, and party provisioners]] | projects/ores.shell/src/app/commands/provision_commands.cpp implements a guided provision-tenant flow with wizard-parity defaults, timeouts,... |
+| [[id:9CBEE91B-8575-4344-A07A-6302B4F4208B][Committed IAM service SQL is stale vs templates]] | projects/ores.sql/create/iam/iam_service_db_grants_create.sql already contains _ores_grant_execute_fn (line 230) and the refdata DML grant f... |
+| [[id:1096E3EC-3FEB-4397-B8BA-88B268543A6F][story new does not wire its scaffolded tasks into the story table]] | projects/ores.compass/src/compass.py's _scaffold_and_branch (used by 'story new') now calls _wire_task_into_story at lines 3702 and 3709 for... |
+| [[id:DD4A0265-9134-4A95-8677-68873357F043][compass task new switches branches mid-scaffold]] | compass.py's 'task new' subcommand (parser at line 4285) creates the branch via 'git branch <branch> <base>' (not 'git switch -c') per _scaf... |
+| [[id:9EA30AD4-9D79-4C28-B2E7-4FC9F605D075][Codegen approach: generate eventing registrar for service application.cpp]] | projects/ores.refdata/service/src/messaging/event_registrar.cpp and .hpp now exist, generated via projects/ores.codegen/library/templates/cp... |
+| [[id:31E3C840-F948-489D-B255-00B916F398C4][Wire 5E47F108 extra-drops kind for remaining entities]] | Checked drop scripts: projects/ores.sql/drop/refdata/refdata_business_unit_types_drop.sql, refdata_party_categories_drop.sql, refdata_purpos... |
+| [[id:8C53F763-1DB4-4287-AB72-7471E1A7DE29][Add a sample set of gravatars for profiles]] | File itself carries #+state: ABANDONED with note: superseded by id 9246285C-5ACC-43F8-8F9C-ED086273F51D 'Accumulate a tagged face dataset fo... |
+| [[id:22EE28A3-F123-4E73-B5D3-1B98E00ADCF7][Add composite primary keys]] | The capture's own body is a PR review-comment thread where the author (mcraveiro) explicitly marked the suggestion 'Won't fix', explaining t... |
+| [[id:C9AB5860-2FA4-46AC-89A3-BC1E9544760C][Add currency and country party-visibility junctions]] | Found projects/ores.sql/create/refdata/refdata_party_currency_create.sql and refdata_party_country_create.sql, both auto-generated junction ... |
+| [[id:7952DFED-7624-4C70-8A64-169CA0D7DB20][Add DB schema version table]] | projects/ores.sql/create/database/database_database_infos_create.sql already defines a database_infos table whose comment states it 'Stores ... |
+| [[id:80F17029-F692-4092-8B3D-621C4E55E1B0][Add tenant type management dialog]] | projects/ores.qt/admin/ has TenantTypeMdiWindow.cpp, TenantTypeDetailDialog.cpp/.ui, TenantTypeHistoryDialog.cpp/.ui, TenantTypeController.c... |
+| [[id:310C9ED9-4FCC-4902-AFDA-CCE21F3BE792][Allow super admin to reset tenant admin accounts]] | reset_password_request/response protocol, account_handler::reset_password with permission check 'iam::accounts:reset_password', and Qt Accou... |
+| [[id:2B6ADBAA-D57E-4FDF-856A-38FE756E596B][Change reason and categories need permissions]] | iam_permissions_populate.sql already defines dq::change_reasons:read/write/delete and dq::change_reason_categories:read/write/delete permiss... |
+| [[id:BCA7EFA9-B9DA-43FC-8D70-45B315FC24C2][Implement recursive CTE in compute_visible_party_ids]] | projects/ores.sql/create/refdata/refdata_party_functions_create.sql lines 100-120 define ores_refdata_visible_party_ids_fn with a `WITH RECU... |
+| [[id:CCCE264F-BE1F-4D97-BBC2-D4267FD0A9AF][Fix country combo box sizing in tenant wizard]] | projects/ores.qt/api/include/ores.qt/WidgetUtils.hpp:133-138 defines setupComboBoxes() which calls combo->setMaxVisibleItems(10) and install... |
+| [[id:5F6CC067-6836-460F-9B19-83CFA75EF9E9][Create basic manual]] | A user manual already exists and is actively maintained: doc-add-entity-chapter and doc-update-manual skills exist, devops-deploy-manual ski... |
+| [[id:45F696E5-34EE-4DCF-8F8F-76CB19ACA855][Currencies: Currency Taxonomy Enrichment]] | ores_refdata_currencies_tbl already has both requested fields: 'monetary_nature' (projects/ores.sql/create/refdata/refdata_currencies_create... |
+| [[id:6F7F7D67-2815-47C8-B91D-C50F15A6970A][Expand repository test coverage and infrastructure]] | projects/ores.dq/core/tests/repository_change_reason_repository_tests.cpp and repository_change_reason_category_repository_tests.cpp already... |
+| [[id:636F5860-F6A6-439E-8257-A442E2D471FF][Extend login flow with party selection]] | Fully implemented: login_protocol.hpp has available_parties/selected_party_id fields (projects/ores.iam/api/include/ores.iam.api/messaging/l... |
+| [[id:AAB20201-0D81-40B5-9DAB-2D13514E04B2][Filter counterparty dataset size for evaluation tenants]] | Already implemented: projects/ores.qt/application/src/PartyProvisioningWizard.cpp has a PartyCounterpartySetupPage with a 'datasetSizeCombo_... |
+| [[id:8E10AC52-DB01-46D0-8544-D7F4F614D928][It is not possible to override saved connection details in the connection manager dialog]] | AddItemDialog already supports edit mode for connections: projects/ores.qt/application/src/AddItemDialog.cpp:saveConnection() branches on is... |
+| [[id:0A03AE8C-6C02-4EDE-B540-C00EBA654295][My Account session history dialog shows no bytes sent/received and sessions are not populated]] | MyAccountDialog.cpp has a 'View Session Audit' button (onViewSessionsClicked, emits viewSessionAuditRequested) wired to loadSessionInfo()/ge... |
+| [[id:33F09157-72DB-44A0-9686-BD9143053284][Integrate the org-mode user manual into Qt's native help sys…]] | File itself states: 'Promoted (2026-06-08) into the story [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] i... |
+| [[id:123EDDFD-6722-4DD5-A3F6-CC6D03538FF4][Message handlers are not scalable]] | The monolithic projects/ores.dq/src/messaging/dq_message_handler.cpp cited in the capture no longer exists (git log shows commit 612e1a34c '... |
+| [[id:47687276-F206-43E1-AFE2-DEABC2820B17][Add missing pgtab extension to database setup]] | No reference to a 'pgtab' extension exists anywhere in the codebase (grep -rli 'pgtab' returns only this capture file itself). projects/ores... |
+| [[id:246AE596-0B8C-42BF-AD82-6B81FCBB8954][Provisioned accounts: force password reset on first login]] | password_reset_required is fully implemented end-to-end: column in iam_login_info_create.sql, account_service::set_password_reset_required, ... |
+| [[id:D21E3D57-13AD-4869-9E27-2E3A836273C6][Publish history dialog is non-standard]] | DatasetHistoryDialog.cpp (the dataset publish history dialog) now inherits from the shared HistoryDialogBase (projects/ores.qt/api/include/o... |
+| [[id:20029523-AB79-4512-9AFF-8F80989E1C44][Reduce log noise during database setup]] | Grepped all of projects/ores.sql/populate/ (100+ files) for RAISE NOTICE and found zero hits -- no per-row NOTICE for change reason categori... |
+| [[id:81239BB2-C708-4C8F-87BB-B61382B63BE8][Remove all stub files from the codebase]] | find projects -iname stub.hpp and find projects -iname stub_tests.cpp both return zero results -- no stub files remain in the codebase. |
+| [[id:F942DC51-461C-47C2-B435-8F4343EB16BE][Scheduler: complete Qt UI and promote to top-level menu]] | All 'missing' items in the capture's own table now exist: JobInstanceController, ClientJobInstanceModel, JobInstanceMdiWindow, JobInstanceDe... |
+| [[id:717AC51C-2F23-441C-8619-B9A65A095E71][Populate service_password_hash at database setup time]] | projects/ores.sql/create/seed/upsert_functions_create.sql:652 defines ores_iam_service_accounts_upsert_fn which hashes the supplied password... |
+| [[id:08850964-F6C7-414F-8EB2-0F0474E06EA1][Add a skill that processes a capture buffer entry by entry]] | doc/llm/skills/agile-add-capture exists and per the skill catalogue files inbox captures into the backlog; combined with agile-refine-backlo... |
+| [[id:B347A156-5AC1-485B-A637-4E9055C1B698][Source report definitions from DQ instead of hardcoded C++]] | The capture's own 2026-07-02 update note states the storage/DQ side is done (ores_reporting_publish_report_definitions_from_dq_fn, reporting... |
+| [[id:1060F374-C693-409C-B113-CC56031ECA86][System provisioner needs an icon]] | projects/ores.qt/application/src/SystemProvisionerWizard.cpp:51 already calls setWindowIcon(IconUtils::createRecoloredIcon(Icon::Settings, I... |
+| [[id:57060FAB-8DA3-4B00-A156-CCC56125BFD7][Update currency details to use tabs]] | CurrencyDetailDialog.ui already implements a QTabWidget with tabs: General (incl. Icon), Formatting, Rounding, Provenance -- the Provenance ... |
+| [[id:556F7392-1B01-406A-BC4B-80394633C12F][Use exponential backoff for database problems]] | projects/ores.database/src/service/postgres_listener_service.cpp already implements exponential backoff (min_backoff=1s, max_backoff=5s, bac... |
+| [[id:8AFB72CD-44B5-4DCD-A3A8-B12FEF693011][Wire service token provider for all services]] | grep for make_service_token_provider now shows it wired in application.cpp for ores.workflow, ores.synthetic, ores.reporting, ores.marketdat... |
+| [[id:A9B0EE8B-CD11-4524-9A94-7DD65E153E21][Work units should use a combo box]] | ores.compute already has a full WorkunitDetailDialog (projects/ores.qt/compute/src/WorkunitDetailDialog.cpp, ui/WorkunitDetailDialog.ui) wit... |
+| [[id:0EA51F00-4A5D-4358-A0F9-13E90CB23A5A][Add claude continuous learning skill]] | The repo already has an extensive, actively maintained skill system under doc/llm/skills (skill-add, skill-review, skill-delete, skill-show-... |
+| [[id:6A0950D7-BE0B-4775-B244-9F57779CD067][Add skill to review product backlog]] | doc/llm/skills/agile-refine-backlog exists: 'Run a backlog housekeeping session: scan the next/deferred captures, clarify descriptions, cull... |
+| [[id:5B0BF2A0-912D-4501-8CA0-ED4E0F6ACCE3][Consider adding "global search" via typesense]] | grep -rli typesense across the repo only turns up this capture and doc mentioning it; but the same functional need (searching across docs) i... |
+| [[id:5F669F9A-526A-4A74-A97F-ADD161DE2BB6][Consider adding otel support]] | projects/ores.telemetry/core exists with exporting/log_exporter.hpp, file_log_exporter, hybrid_log_exporter and ores.logging integrates tele... |
+| [[id:8FF2DF33-C51B-4D82-85EB-337216FEF402][Design and implement instrument/trade integration]] | Design and implementation already completed: doc/plans/2026-03-31-instrument-trade-model-and-export.org (ID D4D975DB-A525-45E3-B383-581E51AE... |
+| [[id:17C3FE61-9E04-4D43-9869-7595D9070EFB][Create a document tracking which entities have full CLI/HTTP...]] | doc/analysis/entity_coverage_matrix.org already exists and does exactly what the capture asks |
+| [[id:16C5FE93-698D-4FF9-981E-2C85CF4F5339][Error with new tenant]] | The generic ores_dq_bundles_publish_fn no longer exists; superseded by the per-domain publish pattern |
+
+Plus 1 duplicate absorbed (see next section) also moved to
+=discarded/=, for 69 total files now under that bucket from this run.
+
+*** Duplicates merged (1 of 13 candidate clusters)
+
+Keyword-similarity clustering flagged 13 candidate duplicate groups
+among the non-resolved items; each was checked by reading every file
+in full. 12 of 13 were false positives (shared a keyword like
+"codegen" or "party" but were different ideas) and left untouched.
+1 was a genuine duplicate:
+
+| Kept | Absorbed | What was folded in |
+|------+----------+---------------------|
+| [[id:6177FFE4-126F-4F2E-8396-BA93F864D17C][Financial workflows: trade-expiry and barrier-event]] | [[id:C06027B8-66EE-418F-920C-BEB6EED68A4A][Extend ores.workflow: barrier-event workflow]] | The =workflow.v1.barrier-event= NATS subject, =workflow_handler=/=registrar.cpp= registration targets, a Qt trigger-from-trade-detail task, and barrier-event-specific integration-test phrasing |
+
+*** Bucket re-scoring against sprint 23's mission
+
+*Scope note, not silently skipped*: individually re-scoring all 342
+"valid" + 144 "unclear" items against sprint 23's mission (continue
+commissioning ores.refdata entities and codegen C++ drift
+correction) was not done item-by-item in this run — 486 items is a
+second full pass at the same scale as this one. What *was* done: the
+standard-mode promote/pull-in work earlier this same session already
+moved every refdata/codegen-drift-relevant candidate found by
+inspection into sprint 23 (see the sibling task [[id:6E41F1C5-8B1E-450E-BFB2-993F687DE197][Promote and pull in
+sprint 23 stories]]). Recommend a follow-on deep-refinement run scoped
+specifically to next↔deferred rescoring now that resolved/duplicate
+noise is cleared out — it will be a cleaner, smaller pass over 486
+items instead of 559.
+
+*** Items flagged for human follow-up (not resolved by this run)
+
+- [[id:082EFDBB-1B07-43A2-86CC-8A01B61B30AF][Do not disable cert verification]] — security-sensitive; the agent
+  could not locate the referenced cert-verification hack anywhere in
+  a greppable form (source, config, or script). Left as =unclear=,
+  not discarded — this should get a human look rather than being
+  assumed fixed.
+- [[id:5B662F1E-B5DF-4EAA-B848-E12C14252730][Ensure applications work under OSX using github images]] — genuinely
+  requires manual testing on real macOS hardware; no amount of
+  grepping resolves it either way.
+
+*** Process notes
+
+- The workflow's =args= parameter failed twice on a large (~42KB)
+  JSON payload with "undefined is not an object" — worked around by
+  having the workflow discover the file lists itself via an internal
+  =find= agent instead of relying on external =args=. Worth knowing
+  for future large-payload workflow runs.
+- One verify batch silently returned 10 fewer items than the 20 it
+  was given; caught by diffing the discovered list against the
+  returned list (not by an error — the batch just returned short).
+  A follow-up single-agent run covered the gap. Future runs of this
+  skill should diff verified paths against the discovered list as a
+  matter of course, not assume a batch returning without error
+  covered everything it was asked.
+- This report lives under the =sprint-23-planning-session= story's
+  task rather than the skill's own documented convention (a
+  standalone, persistent =backlog_deep_refinement= story with one
+  numbered =task_deep_refinement_N= per run) — this task already
+  existed before the skill was written. A future run should follow
+  the skill's actual convention.
+
+*** Summary
+
+559 backlog items read and checked against the live codebase; 71
+were genuinely stale (discarded or restored to their real sprint
+home) and 1 pair of duplicates merged, for a net reduction from 559
+to 487 live items (13% smaller). Two "resolved" verdicts were caught
+as misclassified by a deliberate trustworthiness check before acting
+on any of them — both the same failure mode (a multi-part capture
+where only one part had shipped) — and corrected rather than
+silently discarded. The biggest open question is bucket fit: next/
+deferred re-scoring against the current sprint's mission is flagged
+as a follow-on run rather than attempted wholesale here, since doing
+it properly for 486 remaining items is its own full-scale pass.

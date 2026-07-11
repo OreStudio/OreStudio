@@ -5,7 +5,7 @@
 #+description: Create the Basic and Realistic dataset bundles, both seeding initial spot from the imported 2016-02-05 vintage, differing only in GMM/process parameters.
 #+type: task
 #+level: s1
-#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+filetags: :synthetic-data-collections:sprint_23:v0:
 #+owner: marco
 #+branch: feature/seed-basic-realistic-bundles
 #+pr: 1498

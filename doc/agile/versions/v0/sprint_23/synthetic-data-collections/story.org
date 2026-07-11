@@ -6,13 +6,15 @@
 #+type: story
 #+level: s2
 #+category: feature
-#+filetags: :market_data:synthetic:librarian:collections:sprint_22:v0:
+#+filetags: :market_data:synthetic:librarian:collections:sprint_23:v0:
 #+created: 2026-07-03
-#+updated: 2026-07-03
+#+updated: 2026-07-11
 #+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Carried from [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] (6/8 tasks done). Sprint 22's Stories table incorrectly marked this ABANDONED; the story doc records no such decision — its blocker (shell import command) resolved via a since-DONE spun-off story, so it is being carried forward as real remaining work.
 
 * Goal
 
@@ -80,11 +82,11 @@ two archetypes, and closes the gaps that surfaced while designing it:
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | STARTED                              |
-| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Blocked on [[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] (spun off as its own story); working other tasks in the meantime where possible. |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Blocker resolved ([[id:47DEAA57-C548-45BF-9D42-33207D4587CB][ores.shell command for market data import]] is DONE); 6/8 tasks done. |
 | Waiting on    | Nothing.                               |
-| Next          | Work remaining tasks in order.         |
-| Last touched  | 2026-07-03                               |
+| Next          | Feed namespacing by collection; Market Simulator tree grouping. |
+| Last touched  | 2026-07-11                               |
 
 * Acceptance
 

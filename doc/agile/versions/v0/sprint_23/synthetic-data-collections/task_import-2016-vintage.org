@@ -5,7 +5,7 @@
 #+description: Import FX spot values from external/ore/examples/Legacy/Example_56/Input/market.txt into ores.marketdata as market_observation rows tagged source=ore.reference.
 #+type: task
 #+level: s1
-#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+filetags: :synthetic-data-collections:sprint_23:v0:
 #+owner: marco
 #+branch: feature/import-2016-vintage
 #+pr: 1447

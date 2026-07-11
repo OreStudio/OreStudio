@@ -53,6 +53,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] | BACKLOG | 2026-07-02 | | Carried from sprint 22: drop legacy marketdata tables (superseded, zero C++ references); remove stale validation_ignore.txt entries; protect market_observation's hand-written overrides from codegen regeneration. |
 | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] | STARTED | 2026-06-05 | | Carried from sprint 19 (4/7 tasks done); codegen org-model migration gate cleared — Phase C template rollout across ~61 dialogs is next. |
 | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] | BACKLOG | 2026-07-03 | | Carried from sprint 22 (mislabeled ABANDONED there, no such decision recorded): short-rate stochastic process, Curve Template raw instrument generation, tenor-collision validation, tick-batch publishing. |
+| [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] | STARTED | 2026-07-03 | | Carried from sprint 22 (6/8 tasks done, mislabeled ABANDONED there): feed namespacing by collection and Market Simulator tree grouping remain. |
 
 ** Hotfixes
 

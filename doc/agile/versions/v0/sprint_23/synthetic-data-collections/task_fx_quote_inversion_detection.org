@@ -5,7 +5,7 @@
 #+description: Wire fx_quote_convention_checker into ores.marketdata's import_service, fed from ores.refdata's currency_pair reference data, so a reversed FX/RATE key (e.g. the Legacy/Example_56 FX/RATE/USD/GBP quirk) is auto-corrected and clearly reported at import time instead of silently mis-keying market data.
 #+type: task
 #+level: s1
-#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+filetags: :synthetic-data-collections:sprint_23:v0:
 #+owner: marco
 #+branch: feature/fx-quote-inversion-detection
 #+pr: 1492

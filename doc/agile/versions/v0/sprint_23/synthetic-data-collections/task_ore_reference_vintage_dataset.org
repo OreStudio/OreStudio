@@ -5,7 +5,7 @@
 #+description: Publish a first-class DQ/librarian dataset (new artefact table, methodology, catalog, publish-from-dq function) of real Federal Reserve H.10 FX driver rates — a minimal USD-hub spanning tree over EUR/USD/GBP/CHF/JPY/SEK/AUD/CAD/NZD, across 25 vintages spanning 2016 (not a single date) — fit for purpose as the future Cross-Rates Matrix's driver input — replacing reliance on ORE's own approximate bundled market.txt values (found to be off by 1.28%-5.54% against real Fed closes), published the same way currency_pairs already is.
 #+type: task
 #+level: s1
-#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+filetags: :synthetic-data-collections:sprint_23:v0:
 #+owner: marco
 #+branch: feature/fx-driver-rate-dataset
 #+pr: 1497

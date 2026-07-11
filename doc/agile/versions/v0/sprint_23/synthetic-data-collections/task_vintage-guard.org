@@ -5,7 +5,7 @@
 #+description: Validate required vintage data exists in ores.marketdata before a dependent feed starts, plus a Market Simulator toolbar action to validate every configured entry on demand.
 #+type: task
 #+level: s1
-#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+filetags: :synthetic-data-collections:sprint_23:v0:
 #+owner: marco
 #+branch: feature/vintage-guard
 #+pr: 1467

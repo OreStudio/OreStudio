@@ -5,7 +5,7 @@
 #+description: Manual Qt client steps to verify the vintage-availability guard, the Market Simulator Validate Vintage action, and the Fixed/From-vintage-data price source selector in the FX spot rate editor.
 #+type: test_scenario
 #+level: s1
-#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+filetags: :synthetic-data-collections:sprint_23:v0:
 #+target_dialog: Market Data > Synthetic > Market Simulator
 #+created: 2026-07-08
 #+updated: 2026-07-08

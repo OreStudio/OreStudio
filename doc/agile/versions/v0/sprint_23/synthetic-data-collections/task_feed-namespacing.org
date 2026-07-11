@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: E3DEBE80-3B35-42D4-97B6-F1994D671F4F
+:ID: A3787A77-1F23-496D-B0E8-A198BE237735
 :END:
-#+title: Task: Group Market Simulator feed tree by collection
-#+description: Change the Market Data Feeds tree's top-level node from a feed-source label to the owning collection (Basic / Realistic).
+#+title: Task: Namespace feed source_name/NATS subject by collection
+#+description: Prefix synthetic feed source_name and NATS subjects with the owning collection (synthetic.basic.<pair> / synthetic.realistic.<pair>) so concurrent collections don't collide.
 #+type: task
 #+level: s1
-#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+filetags: :synthetic-data-collections:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -20,13 +20,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Today the Market Data Feeds tree's top-level node is a feed-source
-label ("Synthetic FX Spot: EUR/USD") with all configured pairs
-flattened underneath regardless of collection. Since every entry can
-be enabled simultaneously across collections, group the top level by
-collection instead (=Basic= / =Realistic=), with pairs nested under
-their owning collection — in
-=projects/ores.qt/synthetic/src/MarketSimulatorWindow.cpp=.
+Today =source_name=/NATS subjects are per-pair only (e.g.
+=synthetic.eurusd=), so two collections configuring the same pair would
+collide. Prefix with the owning collection:
+=synthetic.basic.eurusd= / =synthetic.realistic.eurusd=, in
+=projects/ores.synthetic/service/src/feed_controller.hpp= and wherever
+=source_name= is derived/displayed in the Qt client
+(=FxSpotRateEditor=, =MarketSimulatorWindow=).
 
 * Status
 
@@ -41,11 +41,12 @@ their owning collection — in
 
 * Acceptance
 
-- With both =Basic= and =Realistic= collections configured, the tree
-  shows two top-level nodes (one per collection), each containing its
-  own pairs.
-- A pair enabled in both collections is visually distinguishable (two
-  separate tree entries, not merged/ambiguous).
+- Running the same pair (e.g. EUR/USD) under both =Basic= and
+  =Realistic= collections concurrently produces two distinct,
+  non-colliding NATS subjects and =market_observation.source= values.
+- Existing single-collection deployments (=ore_analytics=) keep working
+  — namespacing is additive, not a breaking rename without a migration
+  path.
 
 * Plan
 

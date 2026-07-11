@@ -5,7 +5,7 @@
 #+description: Review existing import_service/import_protocol against the need to import ORE market.txt data as dated, source-tagged market_observation rows; extend as needed.
 #+type: task
 #+level: s1
-#+filetags: :synthetic-data-collections:sprint_22:v0:
+#+filetags: :synthetic-data-collections:sprint_23:v0:
 #+owner: marco
 #+branch: story/synthetic-data-collections
 #+pr: 1423

@@ -8,7 +8,7 @@
 #+filetags: :sprint-23-planning-session:sprint_23:v0:
 #+owner: marco
 #+branch: feature/sprint-23-planning
-#+pr:
+#+pr: 1503
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
@@ -70,7 +70,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1503][#1503]] | [agile] Sprint 23 planning |
 
 * Review
 

@@ -50,11 +50,23 @@ Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=. In the
 party picker, select =BARCLAYS PLC=. Confirm the main window enables
 its menus (Reference Data, Trading, etc.) once logged in.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Book Statuses list window opens and shows seeded rows
 
 Open Trading > Trading Codes > Book Statuses. Confirm exactly three
 rows appear — Active, Closed, Frozen — each with Description and
 Display Order populated, no error banner.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Detail dialog opens and displays fields correctly
 
@@ -62,11 +74,23 @@ Double-click the "Active" row. Confirm the detail dialog opens showing
 Code (read-only), Name, Description, Display Order, Version, and
 Modified By populated correctly, with no crash or blank fields.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Edit and save a book status
 
 Change the "Active" row's Description to something new and Save.
 Confirm the save succeeds with no error, the grid refreshes to show
 the new description, and Version increments by 1.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** History dialog opens and shows the new version
 
@@ -76,6 +100,12 @@ appear in the history grid, each with distinct valid_from/valid_to
 timestamps, and that closing the history dialog does *not* close the
 whole application (regression class from PR #1449's =window()->close()=
 bug — confirm it only closes the history sub-window).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** No error toast or log error during the whole flow
 
@@ -87,14 +117,21 @@ success-check added to ClientBookStatusModel.cpp), which would
 indicate the backend rejected a request that the UI didn't surface as
 a visible error.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | you need to check this. |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-11T15:08:41Z |
+| Branch        | feature/regenerate-book-status-canary |
+| Commit        | 5d51f47dd |
+| Worktree      | bright_faraday |
 
 * Notes

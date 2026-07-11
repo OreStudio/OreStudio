@@ -169,6 +169,7 @@ drop function if exists ores_refdata_validate_book_status_fn;
 :key_field:              code
 :has_uuid_primary_key:   false
 :has_pagination:         true
+:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_book_statuses_request
 :get_response_class:     refdata::messaging::get_book_statuses_response
 :get_message_type:       get_book_statuses_request

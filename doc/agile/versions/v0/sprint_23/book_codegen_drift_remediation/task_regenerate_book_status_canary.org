@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
-| Now          | Reviewing the diff before regenerating.  |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Run compass codegen entity generate book_status, then build and manually test. |
+| Next         | Nothing.                  |
 | Last touched | 2026-07-11                               |
 
 * Acceptance
@@ -39,9 +39,39 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Diff-reviewed =compass codegen entity generate book_status --diff=
+before running for real: all changes were safe template evolution
+(new NATS event registrar, a real bug fix in ClientBookStatusModel.cpp
+missing a =result->success= check, a real bug fix in the insert
+trigger — =current_timestamp= -> =clock_timestamp()= for
+same-transaction multi-write safety, a new unique index on
+(tenant_id, name), and cosmetic formatting). Ran the real generation,
+wired the new event registrar into event_registrar.cpp (previously
+missing there for book_status), and built cleanly.
+
+=db recreate= applied the modified SQL with no errors; a manual SQL
+insert confirmed the version-bump/bitemporal-close trigger path.
+
+Manual QA via the scenario below surfaced a real regression:
+=book_status.org='s Qt section was missing =:has_change_reason_cache:
+true= (present on both =currency.org= and =book.org=) — the exact bug
+class PR #1449 found for =book= itself. Save silently no-op'd with no
+error (client-side: the change-reason prompt/cache was never wired, so
+the save request likely never fired). Fixed the model, regenerated the
+Qt layer, and found a second issue: =BookStatusController='s
+constructor gained a =ChangeReasonCache*= parameter but its only call
+site — in =ores.qt/trading/src/TradingPlugin.cpp=, a leftover from the
+book Qt-layer relocation in PR #1449 — wasn't updated. Fixed the call
+site to pass =ctx_.change_reason_cache= (mirroring how =BookController=
+already does). Rebuilt cleanly; re-ran the scenario — all steps
+passed, zero ERROR-level log lines.
+
+That TradingPlugin.cpp call site is itself a symptom of a wider issue
+— =BookStatusController=/=RegulatoryBookTypeController= live in
+=ores.qt/refdata= but are still constructed and menu-wired from
+=ores.qt/trading=. Filed as a follow-on task:
+[[id:EE3C93E9-7907-4E18-BB82-3737E0E778C7][Move book type-lookup controllers from TradingPlugin to
+RefdataPlugin]].
 
 * Notes
 
@@ -54,7 +84,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:0ECFC829-658D-4EC0-8851-F700AD4F076D][Verify book_status list/detail/history after codegen regeneration]] | PENDING | |
+| [[id:0ECFC829-658D-4EC0-8851-F700AD4F076D][Verify book_status list/detail/history after codegen regeneration]] | PASSED | Failed first pass (missing has_change_reason_cache); fixed and passed on re-run. |
 
 * PRs
 
@@ -69,3 +99,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+book_status is fully regenerated against current codegen templates
+(=compass codegen entity show book_status= is all-✅), builds cleanly
+across api/core/service/qt.refdata/qt.trading, and passes its manual
+end-to-end QA scenario with zero ERROR-level log lines. Two real bugs
+found and fixed along the way: a missing =has_change_reason_cache=
+model flag (silent save no-op, no visible error) and a stale
+=TradingPlugin.cpp= call site left over from PR #1449's Qt-layer
+move. A third finding — the controllers being wired from the wrong
+plugin entirely — is scoped as its own follow-on task rather than
+fixed inline here.

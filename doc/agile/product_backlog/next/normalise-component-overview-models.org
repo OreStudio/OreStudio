@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 5019671D-92AE-49C8-829C-CDC1558613D2
+:END:
+#+title: Component overview models are unloadable (bare #+type, missing names)
+#+description: All 99 component_overview.org models fail get_model_type: they declare bare '#+type: component' but the resolver only accepts the prefixed 'ores.codegen.component' (entities already use ores.codegen.table etc.). 60 of the 99 also lack #+name/#+full_name (use #+title only), so resolve_output_path cannot compute {component_full}. Net effect: component generation is currently broken via both the legacy --profile path and the new graph path (confirmed: codegen.sh generate --profile component-api raises ValueError). Normalisation needed before component archetypes (B8) can generate or be byte-identically verified: (1) #+type -> ores.codegen.component; (2) add #+name/#+full_name where missing (derive from #+title/path); (3) add #+component_kind (flat|api|core|service from the path: /api,/core,/service subdir, else flat) — note non-standard subcomponents (qt/*, http/server, iam/client, compute/wrapper, telemetry/database, etc.) need per-component kind decisions. Discovered during B8 component-archetype migration; the graph+kind engine itself is verified correct against well-formed synthetic models.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-06-28
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID:       AEE11EE6-6666-4D71-BC05-A2D16B6DC582
+:END:
+#+title: Use badges in the history dialog
+#+description: Make history dialog consistent with main window and details dialog for badges by using badges there too.
+#+type: capture
+#+level: cross
+#+filetags: :inbox:capture:
+#+created: 2026-06-04
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+At present we only have badges in the main window. We are adding them to
+details, but we do not have them in the history dialog. Claude:
+
+#+begin_quote
+One gap worth noting: the history dialog shows historical account rows but has
+no delegate wiring, so Status, Locked, and AccountType appear as plain text in
+history. That's consistent with every other entity's history dialog — badges
+aren't applied there anywhere — so it's not a regression, just a general
+limitation.
+#+end_quote
+
+* Why
+
+UX should be consistent across dialogs.
+
+* References
+
+-
+
+* See also
+
+-

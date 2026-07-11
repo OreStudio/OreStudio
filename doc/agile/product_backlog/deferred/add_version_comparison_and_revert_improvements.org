@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: E07BBE70-F5BB-44C9-B0CD-E5FD97E6F717
+:END:
+#+title: Add version comparison and revert improvements
+#+description: Add version comparison and revert improvements
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Improvements to entity version history and comparison features.
+
+- In the history diff dialog, add a "from version" combo box that lets users
+  compare against any previous version (not just the immediately preceding one).
+- Revert-to-version should be a server-side operation taking current version and
+  target version parameters.

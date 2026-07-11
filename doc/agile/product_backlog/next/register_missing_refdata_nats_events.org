@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 6908F023-0F48-4BB7-B0D8-E05CE63E5033
+:END:
+#+title: Register missing refdata *_changed_event types for NATS eventing
+#+description: Several ores.refdata *_changed_event types aren't registered/subscribed in application.cpp, so their changes don't propagate cross-session; contact_type and party_id_scheme have Qt history windows and likely share the same gap just fixed for party_status.
+#+type: capture
+#+level: cross
+#+filetags: :ores.refdata.service:eventing:nats:bug:
+#+created: 2026-07-08
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+PR #1462 fixed party_status's cross-session eventing by registering
+its =party_status_changed_event= mapping and NATS publish subscription
+in =ores.refdata.service/src/app/application.cpp=. A review of the PR
+found several other =*_changed_event= types under
+=ores.refdata.api/eventing/= (e.g. =contact_type_changed_event=,
+=party_id_scheme_changed_event=, =book_status_changed_event=, and
+various convention types) that are similarly unregistered. Audit all
+=*_changed_event= types against =application.cpp= and register any
+still missing.
+
+* Why
+
+=contact_type= and =party_id_scheme= both have Qt controllers with
+history windows, so they may have the same "changes don't propagate
+across sessions" gap that was just fixed for party_status.
+
+* References
+
+- PR #1462: https://github.com/OreStudio/OreStudio/pull/1462
+
+* See also
+
+-

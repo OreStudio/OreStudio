@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 41D87DC9-12B8-46AB-87C0-3B28AAF75021
+:END:
+#+title: Add ISO 20022 Support
+#+description: Add ISO 20022 Support
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+As per Gemini:
+
+#+begin_quote
+Summary Mapping for your C++ Logic
+
+| Internal Event  | ISO 20022 Message | Action                                          |
+|-----------------+-------------------+-------------------------------------------------|
+| TradeExecuted   | fxtr.014          | Confirm terms with counterparty.                |
+| Send Funds      | pacs.009          | Instruct the  bank to move cash.                |
+| Check Progress  | pacs.002          | Update UI "Settlement Status" to 'In Progress'. |
+| Funds Confirmed | camt.054          | Update UI to 'Settled'.                         |
+| EOD Reconcile   | camt.053          | Verify internal ledger vs bank balance.         |
+|                 |                   |                                                 |
+
+Pro-Tip for your Implementation: Since you're using C++, don't try to build
+every message at once:
+
+- Start with pacs.009 (Sending money).
+- Follow with pacs.002 (Handling the response).
+- Add camt.053 (Reconciling at night).
+
+*ISO 20022 Asset Class Mapping*
+
+If you move beyond FX, you switch "prefixes." Here is how the ISO 20022 world is
+carved up:
+
+| Message Prefix | Asset Class / Domain  | Example Use Case                                     |
+|----------------+-----------------------+------------------------------------------------------|
+| fxtr           | Foreign Exchange      | "Spot, Forwards, NDFs, FX Swaps."                    |
+| sese           | Securities Settlement | "Settlement of Equities, Bonds, ETNs."               |
+| semt           | Securities Management | "Custody statements, holding reports."               |
+| setr           | Securities Trade      | Trade capture/subscription for Mutual Funds.         |
+| auth           | Regulatory Reporting  | "OTC Derivatives (IRS, CDS), Transaction reporting." |
+| pacs           | Payments              | The cash resulting from any of the above.            |
+
+*FPML vs ISO 20022*
+
+For Swaps and other Derivatives, the messaging is split between Trade Reporting
+and Lifecycle/Confirmation.
+
+- auth (Authorities): In the modern MX world, Interest Rate Swaps are largely
+  reported using the auth series (specifically under EMIR or MiFIR regulations).
+  - auth.030: Derived from the "Trade Reporting" business area, used for
+    Reporting of OTC derivatives.
+- FpML (The "De Facto" standard): As we discussed earlier, while ISO 20022 has
+  auth messages for regulation, FpML remains the industry standard for the
+  actual bilateral confirmation of IRS trades. Most modern systems use FpML for
+  the "contract" and then use pacs for the resulting cash flows.
+
+| Feature         | FpML (Financial products Markup Language)                                   | ISO 20022 (MX)                                                          |
+|-----------------+-----------------------------------------------------------------------------+-------------------------------------------------------------------------|
+| Primary Domain  | "Derivatives & OTC Trades (Swaps, Options, Forwards)."                      | Payments & Securities Settlement.                                       |
+| Focus           | "The economics of the trade (strike price, tenors, floating rate indexes)." | "The movement of value (sender, receiver, amount, intermediary banks)." |
+| Lifecycle Stage | "Front-to-Middle Office: Execution, Affirmation, and Confirmation."         | "Back Office: Payment clearing, settlement, and reporting."             |
+| Complexity      | Extremely deep. Can describe a 30-year complex interest rate swap.          | Broad. Designed to move money across any border or system.              |
+#+end_quote

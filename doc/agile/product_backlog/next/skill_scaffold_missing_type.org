@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 54D115AA-A763-4CCD-BC8A-BAD76E406112
+:END:
+#+title: Fix skill scaffold template missing #+type and empty #+filetags
+#+description: The doc_skill.org.mustache template never emits #+type/#+level/#+description at the org level and renders #+filetags empty, so compass show reports Type: (none) for 44 of 75 shipped skills.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:compass:skills:documentation:
+#+created: 2026-07-10
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.codegen/library/templates/doc_skill.org.mustache= (tangled
+from =doc_skill.org=), the template =compass add skill= renders, never
+emits =#+type:=, =#+level:=, or =#+description:= at the org-file level —
+only =#+title:=, =#+author:=, =#+options:=, =#+startup:=,
+=#+export_exclude_tags:=, =#+filetags: {{filetags}}=, =#+created:=, and
+=#+updated:=, followed by the markdown export block where =description:=
+does appear (but only inside that block, invisible to org-level tooling).
+Confirmed by scaffolding a fresh skill
+(=doc/llm/skills/doc-add-entity-chapter/SKILL.org=, this session) and
+running =compass show <uuid>=, which reports =Type: (none)=. A repo-wide
+sweep (=grep -L '^#+type:' doc/llm/skills/*/SKILL.org=) shows *44 of the
+75* shipped skills lack =#+type:= entirely — this is not a one-off, it is
+the template's steady-state output whenever a skill was scaffolded via
+=compass add skill= rather than hand-authored/back-filled afterwards. A
+second, related gap: =#+filetags: {{filetags}}= rendered fully empty
+(=#+filetags: =) on the fresh scaffold above even though =--tags= is a
+documented generic flag for =compass add= — worth checking during the fix
+whether =--tags= is simply not threaded through for =--type skill=, or
+whether it needs to be passed explicitly and the recipe/skill docs telling
+people how to scaffold a skill don't mention it.
+
+* Why
+
+=compass show= and any tooling that filters or displays documents by
+=#+type:= (search ranking, the doc-graph validator, "list --type skill")
+silently misses or misclassifies the majority of skills, since they
+report as type =(none)= rather than =skill=. This was only found
+incidentally while wiring a brand-new skill this session; the same gap
+has presumably been silently present since whichever earlier session
+first produced this template variant (compare
+=doc/llm/skills/doc-add-recipe/SKILL.org= and
+=doc/llm/skills/skill-add/SKILL.org=, an older/different template variant
+that *does* carry =#+type: skill=, =#+level: cross=, and
+=#+description:=, proving the contract is achievable and was regressed,
+not merely never implemented).
+
+* Also: normalise skill directories to snake_case
+
+Separately, but discovered in the same pass: skill directories should be
+normalised to *snake_case* (=doc_add_entity_chapter=, not
+=doc-add-entity-chapter=). Today 72 of 75 skill directories under
+[[proj:doc/llm/skills][=doc/llm/skills/=]] use kebab-case, and [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] currently
+documents kebab-case as the required form — both the shipped skills and
+that convention doc need to flip to snake_case together, not just the
+directories in isolation, or the two will disagree again immediately.
+=compass add skill='s own scaffold already defaults to snake_case (it
+produced =doc_add_entity_chapter= unprompted this session, before it was
+manually renamed to kebab-case to match the — apparently wrong —
+majority); that default is corroborating evidence for which form is
+actually intended. This normalisation should land as its own piece of
+work (rename every skill directory, update every =name:= frontmatter
+field to match, update the naming-conventions doc's examples and register
+tables, update the skills catalogue's links if they encode the path, and
+rebuild the shipped bundle) rather than folded into the =#+type:=
+template fix above — the two are unrelated defects that happened to
+surface in the same session.
+
+* References
+
+- =projects/ores.codegen/library/templates/doc_skill.org.mustache= — the
+  broken template (tangled from =doc_skill.org= in the same directory;
+  edit the org source, not the =.mustache= directly).
+- =doc/llm/skills/doc-add-entity-chapter/SKILL.org= — the fresh scaffold
+  that surfaced this, hand-patched this session to restore =#+filetags:=
+  (still missing =#+type:=/=#+level:=/=#+description:= at present).
+- =doc/llm/skills/doc-add-recipe/SKILL.org=,
+  =doc/llm/skills/skill-add/SKILL.org= — older-variant skills that show
+  the contract working correctly, useful as the target shape to restore.
+- =grep -L '^#+type:' doc/llm/skills/*/SKILL.org= — reproduces the full
+  44-skill list affected today.
+
+* See also
+
+-

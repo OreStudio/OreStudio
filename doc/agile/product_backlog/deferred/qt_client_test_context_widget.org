@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: E7963370-DA32-4751-A924-C1B94EDB7F6A
+:END:
+#+title: Persistent test-context widget for the Qt client, seeded at launch
+#+description: A floating, always-on-top widget showing what's being tested in a given client instance, seeded from a CLI flag pointing at a JSON file (free text or a tickable checklist).
+#+type: capture
+#+level: cross
+#+filetags: :qt:devops:testing:ux:
+#+created: 2026-07-06
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+With 8 worktree environments each spawning their own Qt client
+instances (=compass client start --colour <c> --instance-name <name>=)
+for manual UI testing, it's easy to lose track of which running client
+is testing which feature/scenario. Add a new CLI flag (e.g.
+=--test-context <path.json>=, wired alongside =--instance-name=/
+=--instance-color= in
+=projects/ores.qt/application/src/CommandLineParser.cpp=) that points
+at a JSON file describing what this instance is for. On launch, the
+client parses it and shows a small, floating, always-on-top widget
+(not modal — must stay visible and interactive while the user clicks
+through other app windows) rendering either free text or a tickable
+checklist, depending on the JSON shape — e.g. =\{"text": "..."\}= vs
+=\{"checklist": ["step 1", "step 2", ...]\}=. Checked items could
+persist back to the file so progress survives a client restart.
+
+* Why
+
+Manual QA across many parallel environments currently has no
+in-app memory of "what am I testing right now, and what's left to
+verify" — that state lives only in the tester's head or a separate
+scratch note, disconnected from the actual running instance. A
+seeded, persistent widget makes the test plan travel with the client
+instance itself.
+
+* References
+
+- =projects/ores.qt/application/src/CommandLineParser.cpp= — existing
+  =--instance-name=/=--instance-color= options; natural place to add
+  =--test-context=.
+- =compass client start --colour <c> --instance-name <name>= — current
+  launch command this would extend.
+
+* See also
+
+-

@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 8797AF0E-EAD1-40F2-AA76-EF38BAC0A240
+:END:
+#+title: Add shell introduction to Provisioning from the Shell chapter
+#+description: The manual chapter 'Provisioning from the Shell' dives straight into commands without first introducing the shell itself.
+#+type: capture
+#+level: cross
+#+filetags: :manual:documentation:shell:ux:
+#+created: 2026-06-12
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a brief introductory section to the "Provisioning from the Shell"
+manual chapter before the first command block. The intro should cover
+what the ORE Studio shell is, how to open it, and any prerequisites
+(e.g. services running, environment loaded). A short paragraph and
+perhaps a screenshot of the shell prompt is sufficient — the goal is
+that a first-time reader knows where they are before commands start
+appearing.
+
+* Why
+
+Readers arriving at the chapter cold have no context for what "the
+shell" is in the ORE Studio sense. Without an intro they must infer it
+from the commands themselves, which increases confusion and reduces the
+chapter's value as onboarding material.
+
+* References
+
+- Manual chapter: =doc/manual/provisioning_from_the_shell/=
+
+* See also
+
+- [[id:0983A789-E6A9-4739-8A86-F64986C1ACB2][Handle long lines in manual with line wrapping]]

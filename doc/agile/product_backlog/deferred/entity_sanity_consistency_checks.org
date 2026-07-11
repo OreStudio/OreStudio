@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 3B4E9F6F-AF3F-407D-A1B1-480B0CA94C39
+:END:
+#+title: Entity sanity/consistency checks (did-you-really-mean-X)
+#+description: A rules-based sanity checker that flags suspicious-but-valid entity data (e.g. missing party/tenant) against an accumulating catalogue of common mistakes.
+#+type: capture
+#+level: cross
+#+filetags: :validation:data-quality:refdata:ux:
+#+created: 2026-06-29
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add an entity *sanity* / *consistency* checker: a rules engine that inspects
+entity data and flags things that are technically valid but *suspicious* —
+"did you really mean X?" — rather than malformed input. This is distinct from
+the existing schema/validation-function layer (NOT NULL, FK existence, type
+checks), which already rejects malformed data. Sanity checks instead surface
+plausible-but-probably-wrong data the schema happily accepts.
+
+Examples of the kind of thing to flag:
+- An entity with a missing/empty party or tenant where one is almost always
+  expected (e.g. a record pinned to the system tenant that looks tenant-scoped).
+- A reference pointing at the system tenant when a real tenant was likely meant
+  (or vice-versa).
+- Fields that are individually valid but jointly odd (e.g. an alpha-2/alpha-3
+  country code pair that don't correspond; a numeric code out of the ISO range).
+- Newly-created records that duplicate an existing record bar one trivial field.
+- Audit fields that look like placeholders (modified_by = "system" on a
+  user-initiated change, empty change_reason on a material edit, etc.).
+
+Design notes:
+- Maintain an *accumulating catalogue of known mistakes* — each check is a named
+  rule with a severity (warn / suspicious / info), a human message ("did you
+  really mean …?"), and the entity/field scope it applies to. New foot-guns get
+  appended as we discover them.
+- Checks are advisory: they warn, they do not block. Surfaced at create/edit
+  time (Qt detail dialog, shell/CLI add) and ideally runnable as a batch audit
+  over existing data.
+- Prefer a data-driven rule catalogue (org/SQL/config) over hard-coded C++, so
+  rules can be added without a rebuild and shared across access layers.
+- Decide where rules live relative to the existing dq (data-quality) component
+  and the validation-function layer — likely a new advisory tier alongside them.
+
+* Why
+
+The schema layer guarantees data is *well-formed*, but not that it is *sensible*.
+Users can enter valid data that is almost certainly a mistake (wrong tenant,
+placeholder audit fields, mismatched code pairs). Catching these early — with a
+gentle "did you really mean X?" — prevents subtle data-quality problems that are
+expensive to find and fix later, and the accumulating catalogue turns each
+incident into a permanent guard.
+
+* References
+
+- Existing data-quality component: =projects/ores.dq= (validation functions,
+  change-reason validation).
+- Insert-trigger validation pattern: =projects/ores.sql/create/...= and the
+  =sql_schema= templates.
+
+* See also
+
+-

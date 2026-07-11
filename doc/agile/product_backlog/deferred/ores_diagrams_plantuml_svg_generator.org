@@ -1,0 +1,256 @@
+:PROPERTIES:
+:ID: 0EF70DFB-3CEE-4522-9C9B-A71F1BB4B789
+:END:
+#+title: ores.diagrams — PlantUML/SVG diagram generator (C++, SQL, org-mode)
+#+description: New Python component that generates PlantUML source from C++ headers, SQL DDL, and org-mode codegen model files, then renders to clickable SVG. Replaces manually-maintained .puml files and provides the diagram backend for a future SVG viewer app.
+#+type: capture
+#+level: cross
+#+filetags: :capture:diagrams:plantuml:svg:codegen:
+#+created: 2026-06-12
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Create a new Python component =ores.diagrams= that generates PlantUML source
+files from three distinct data sources — C++ headers, SQL DDL, and org-mode
+codegen model files — and renders them to clickable SVG via the PlantUML CLI.
+The component follows the same intermediate-JSON-model + Mustache-template
+pattern already established by the SQL ER diagram generator in
+=projects/ores.codegen/=.  All SVGs embed =[[url]]= links per class/entity so a
+separate viewer app can intercept clicks and show associated documentation.
+
+* Why
+
+** Current pain points
+
+The project currently has ~90 manually-maintained =.puml= component diagrams
+(one per C++ project under =projects/*/modeling/=) that produce =.png= output
+via the =make_all_diagrams= CMake target.  These are hand-authored, fall out of
+sync with the actual code, and produce only PNG (no clickable links, no
+scalable vector output).
+
+The SQL ER diagram (=ores.sql/modeling/ores_schema.puml=) IS auto-generated —
+via =plantuml_er_parse_sql.py= + Mustache template — but only covers SQL and only
+renders to PNG.
+
+No diagram at all exists for the MASD codegen domain model (the ~127 org-mode
+entity/config files that drive the code generator).  Attempts to build an
+interactive JavaScript visualiser for the codegen model (see abandoned story
+[[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]]) confirmed that:
+
+1. A knowledge-graph style (circles + force layout) adds nothing over the
+   existing KG app.
+2. UML-style node rendering is correct in form, but d3-force is the wrong
+   layout engine for 127 nodes: the physics simulation is non-deterministic,
+   nodes fly off-screen, and the layout does not respect namespace/package
+   boundaries.  [[file:../../../assets/images/ores_diagrams/d3force_layout_problem.png][Screenshot: d3-force layout with only 2 of 127 nodes visible.]]
+3. PlantUML's Graphviz-backed renderer produces clean, hierarchical, deterministic
+   diagrams and supports embedded URL links in SVG output.
+
+The required diagram style (UML class boxes with stereotype headers, attribute
+compartments, coloured by OMC archetype, with UML notes showing descriptions)
+was confirmed from a reference screenshot:
+[[file:../../../assets/images/ores_diagrams/plantuml_uml_class_with_notes.png][Screenshot: target UML class diagram style with notes.]]
+
+The structure of the MASD codegen model (entities, field groups, lookup entities,
+modules as namespaces, etc.) was referenced:
+[[file:../../../assets/images/ores_diagrams/masd_model_mind_map.png][Screenshot: existing MASD model structure overview.]]
+
+* Investigation findings
+
+** Existing PlantUML infrastructure
+
+- 90 =.puml= files at =projects/*/modeling/*.puml= — manually written, produce PNG
+  via: =java -jar plantuml.jar <name>.puml= (compile-command in each file's
+  =Local Variables=).
+- CMake target =make_all_diagrams= (alias =mad=) runs all diagram generation targets.
+- Each project's =modeling/CMakeLists.txt= wires its own =generate_<name>_diagram=
+  target; =ores.codegen= is a Python project and has NO CMakeLists.txt, so its
+  =ores.codegen.puml= has never been rendered.
+- PlantUML is found at =/usr/share/plantuml/plantuml.jar=; configured in root
+  =CMakeLists.txt= with =-DPLANTUML_LIMIT_SIZE=131072= and headless Java flags.
+
+** Existing Python ER generator (pattern to follow)
+
+Location: =projects/ores.codegen/src/plantuml_er_parse_sql.py= (1 432 lines) and
+=projects/ores.codegen/src/plantuml_er_generate.py= (102 lines).
+
+Data flow:
+
+#+begin_example
+SQL CREATE/DROP files
+      │
+      ▼  plantuml_er_parse_sql.py  (SQLParser class)
+JSON intermediate model  →  build/output/codegen/plantuml_er_model.json
+      │
+      ▼  plantuml_er_generate.py  +  plantuml_er.mustache
+ores.sql/modeling/ores_schema.puml
+      │
+      ▼  PlantUML CLI
+ores.sql/modeling/ores_schema.png
+#+end_example
+
+The JSON model groups tables by =package= (component name), with table
+definitions, column lists, and inferred FK relationships.  The Mustache template
+renders =package "name" { entity X { ... } }= blocks plus relationship arrows.
+The =plantuml_er_generate.sh= shell script orchestrates the whole pipeline.
+
+The new =ores.diagrams= component should follow exactly this pattern, extended to
+three source adapters.
+
+** Three source adapters
+
+*** Adapter 1: C++ headers (tree-sitter)
+
+- Parse =.hpp/.h= files using the =tree-sitter-cpp= grammar (Python bindings via
+  =tree-sitter= + =tree-sitter-cpp= packages).
+- Extract: classes, structs, enums, public member variables, public methods
+  (signatures only), inheritance relationships (=:= public Base), and
+  =[[nodiscard]]= / concept annotations.
+- Map to common intermediate model: =class= nodes with =attributes= and
+  =relationships=.
+- Component grouping: derive from CMake target name or directory structure
+  (=projects/<name>/src/...=).
+- Colour: use component colour from an OMC-style map (to be defined per
+  component type — domain classes, repositories, Qt widgets, etc.).
+- Link: each class box links to the corresponding file on GitHub
+  (=https://github.com/OreStudio/OreStudio/blob/main/<rel-path>#L<line>=).
+
+*** Adapter 2: SQL DDL (extend existing parser)
+
+- Build on =plantuml_er_parse_sql.py= — it already correctly parses all SQL
+  entities into the JSON intermediate model.
+- Change: output SVG instead of PNG (=-tsvg= flag to PlantUML).
+- Change: embed =[[/OreStudio/...html]]= links on each entity where an org-mode
+  page for that entity exists (cross-reference via entity name lookup against
+  graphdata.json).
+- Keep existing validation logic, naming checks, and package/component grouping.
+
+*** Adapter 3: org-mode codegen model
+
+- Input: =graphdata.json= (already exported by =ores-org-roam-export-graph-json=
+  each build) or direct org-mode file parsing.
+- Node filter: nodes where =level=0= and =#+type:= ∈ =CODEGEN_TYPES= (same set as
+  the abandoned JS dashboard):
+  =ores.codegen.entity=, =ores.codegen.lookup_entity=, =ores.codegen.field_group=,
+  =ores.codegen.table=, =ores.codegen.junction=, =ores.codegen.service_registry=,
+  =ores.codegen.module=, =ores.codegen.facet_catalogue=,
+  =ores.codegen.component_catalogue=, =ores.codegen.modeline_catalogue=.
+- Attribute parsing pipeline (already proven in the JS dashboard =data.js=,
+  should be ported to Python):
+  - =parseColumns()=: =* Primary key= → =#pk : type=; =* Columns → ** col_name= → =+col : type=
+  - =parseFields()=: =* Fields → ** field_name= → =+field : cpp_type=
+  - =parseJunction()=: =* Left= / =* Right= sections
+- Namespace grouping: =#+component:= keyword gives the top-level package;
+  =ores.codegen.module= nodes represent sub-namespaces within each component.
+  See namespace design discussion below.
+- Link: each class box links to =/OreStudio/<node.file>.html=.
+
+** OMC colour mapping (from abandoned story — preserve exactly)
+
+| MASD type | OMC archetype | Hex |
+|-----------+---------------+-----|
+| =ores.codegen.entity= | Party/Place/Thing | =#2da44e= |
+| =ores.codegen.field_group= | Structural part | =#1abc9c= |
+| =ores.codegen.lookup_entity= | Description/Catalog | =#0075ca= |
+| =ores.codegen.table= | Description/Catalog (SQL) | =#4a90d9= |
+| =ores.codegen.junction= | Moment-Interval | =#e05c8a= |
+| =ores.codegen.service_registry= | Infrastructure config | =#d93b00= |
+| =ores.codegen.module= | Namespace / organisational grouping | =#8b949e= |
+| =ores.codegen.facet_catalogue= | Generator meta-config | =#7c3aed= |
+| =ores.codegen.component_catalogue= | Generator meta-config | =#7c3aed= |
+| =ores.codegen.modeline_catalogue= | Generator meta-config | =#7c3aed= |
+
+OMC Yellow (Role) has no equivalent in the codegen type system and is omitted.
+
+** Namespace / package design (from abandoned JS investigation)
+
+The MASD codegen model has a two-level namespace hierarchy:
+
+1. *Component* (=#+component:= value, e.g. =refdata=, =trading=, =analytics=) —
+   top-level PlantUML =package= block.  Components group domain entities.
+2. *Module* (=ores.codegen.module= node) — rendered as a UML Package shape
+   (tab-folder) inside or alongside the component package.  Each module indexes
+   entities within one namespace of the component.
+
+Generator-config types (facet_catalogue, component_catalogue,
+modeline_catalogue) carry no =#+component:= keyword — they belong to a cross-
+cutting =«generator config»= package.
+
+Decision rationale: modules are *modeled as nodes* in org-roam and represent
+explicit namespace boundaries in the MASD terminology.  Components are keyword
+values, not nodes — they appear as package labels on the diagram.  This mapping
+was confirmed during the JS dashboard investigation as the most natural UML
+representation.
+
+** Link classification (from abandoned JS investigation)
+
+Cross-entity relationships should use these UML arrow styles in PlantUML:
+
+| Relationship | PlantUML syntax | When |
+|--------------+-----------------+------|
+| Association | =A --> B= | entity → entity |
+| Composition | =A *-- B= | entity → field_group |
+| Dependency | =A ..> B= | entity → lookup_entity or table |
+| Containment | =Package +-- A= | module → its member entities |
+
+** UML notes
+
+PlantUML supports =note right of ClassName: "..."= natively.  The =#+description:=
+keyword on each node should be rendered as a UML note attached to the class box.
+This is preferable to cramming the description into an attribute compartment row.
+Reference screenshot showing UML notes:
+[[file:../../../assets/images/ores_diagrams/plantuml_uml_class_with_notes.png][Screenshot: PlantUML class boxes with UML notes showing descriptions.]]
+
+** org-mode parser consideration
+
+The user noted that a Python org-mode parser may exist.  Candidates:
+- =orgparse= (pure Python, reads org headings/properties/keywords)
+- =org-python=
+- Custom regex approach (already validated in the JS dashboard — regex over the
+  =content= field of graphdata.json is sufficient and requires no extra dependency)
+
+Recommended: use graphdata.json as the input (already available each build) with
+the regex-based attribute parsing ported from =data.js=.  Add direct org-mode
+file parsing only if graphdata.json proves insufficient.
+
+* Component name
+
+*=ores.diagrams=* — describes the output capability (produces diagrams), not the
+tool (plantuml) or style (uml).  Parallel to =ores.codegen= (generates code) and
+=ores.sql= (manages SQL).
+
+=ores.uml= was considered and rejected: it over-constrains the scope to UML
+specifically, whereas the component may later produce other diagram types (e.g.
+sequence, activity).
+
+* Scope
+
+In scope:
+- Three source adapters: C++ (tree-sitter), SQL (extend existing), org-mode
+- Common intermediate JSON model
+- Mustache templates for each source type
+- PlantUML → SVG rendering with =-tsvg= flag
+- Embedded =[[url]]= links per class/entity in SVG
+- CMake integration (extend =make_all_diagrams= target)
+- OMC colour mapping applied to codegen entities
+
+Out of scope:
+- The JS viewer app (separate capture: [[id:2D2F9D3E-6DFD-4D4A-81C9-F9BA00B72F77][SVG diagram viewer JS app]])
+- Non-UML diagram types (sequence, activity, etc.)
+- Real-time / live generation (static, build-time only)
+
+* References
+
+- [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Abandoned story: Codegen Model Dashboard]] — post-mortem and investigation findings
+- =projects/ores.codegen/src/plantuml_er_parse_sql.py= — existing SQL parser (1 432 lines)
+- =projects/ores.codegen/src/plantuml_er_generate.py= — existing Mustache renderer
+- =projects/ores.codegen/library/templates/plantuml_er.mustache= — existing ER template
+- =projects/ores.sql/modeling/ores_schema.puml= — example of generated PlantUML output
+- =CMakeLists.txt= (root) — PlantUML CMake configuration
+
+* See also
+
+- [[id:2D2F9D3E-6DFD-4D4A-81C9-F9BA00B72F77][SVG diagram viewer JS app]] — the companion viewer story

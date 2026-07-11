@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 1F9BD472-2D6D-4A67-A159-130B9AA63040
+:END:
+#+title: Add EOD Cut to book
+#+description: Each book has exactly one EOD Cut associated with it, determining which end-of-day run produces its revaluation (REVAL) reports. Not modeled today. Deferred until proper cut support exists elsewhere in the system.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:book:eod:domain:
+#+created: 2026-07-08
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

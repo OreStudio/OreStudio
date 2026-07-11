@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: 6C78B869-0470-4BE5-97BF-F8403A7EAA69
+:END:
+#+title: Add high-watermark support
+#+description: Add high-watermark support
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Whenever we request entities, we should also return the watermark for that
+entity. This is the highest timestamp of all entities within a set (across all
+pages). This is so we can redo the exact same query with an "as of" and get
+exactly the same result set. Do some analysis with Claude on how best to do
+this. Maybe we should always query as of so that we know what the watermark is
+up front.
+
+Notes:
+
+- once we have watermark, we need to add a staleness indicator to all dialogs.
+  This will require thresholds. If the data is older than X the staleness
+  indicator goes yellow, older than Y it goes red.

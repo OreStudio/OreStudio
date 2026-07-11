@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: 6150B5F5-9BF2-4ED3-980B-1605FF874559
+:END:
+#+title: Add skill to improve UI design
+#+description: Add skill to improve UI design
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Make the UI more professional.
+
+Links:
+
+- [[https://github.com/VoltAgent/awesome-claude-skills][Awesome Claude Skills]]
+- [[https://github.com/ComposioHQ/awesome-claude-skills][another awesome-claude-skills]]
+- [[https://github.com/diet103/claude-code-infrastructure-showcase/tree/main][claude-code-infrastructure-showcase]]

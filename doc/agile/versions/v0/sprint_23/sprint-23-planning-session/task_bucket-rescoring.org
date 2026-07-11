@@ -1,0 +1,502 @@
+:PROPERTIES:
+:ID: AC95FC60-B2FE-4ADE-9671-0EAF2CD56285
+:END:
+#+title: Task: Bucket rescoring against sprint 23's mission
+#+description: Follow-on to the deep backlog refinement: score every surviving inbox/next/deferred item's bucket fit against sprint 23's mission and move accordingly.
+#+type: task
+#+level: s1
+#+filetags: :sprint-23-planning-session:sprint_23:v0:
+#+owner: marco
+#+branch: feature/bucket-rescoring
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1014DD4F-B011-4102-8C60-983364E9BFBE][Sprint 23 planning session]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The deep backlog refinement (task [[id:BF5F062F-49DB-490C-B1B0-89B55A550173][Deep backlog refinement]]) verified every
+item against the live codebase and discarded/merged what was stale,
+but explicitly did not re-score bucket fit — this task does that
+half. Score every surviving item's fit against sprint 23's mission
+("Continue commissioning ores.refdata entities and codegen C++ drift
+correction") and move it to =next= or =deferred= accordingly.
+=inbox= is not a valid resting bucket for this pass: every item
+currently in =inbox= must end this task filed into either =next= or
+=deferred=, not left in =inbox=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1014DD4F-B011-4102-8C60-983364E9BFBE][Sprint 23 planning session]] |
+| Now          | Nothing — inbox empty, 310 items rebucketed. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+- Every item in =inbox= at task start ends the task filed into =next=
+  or =deferred= — =inbox= is empty of pre-existing items by the end
+  (new captures filed during the run, if any, are the only exception).
+- Every =next=/=deferred= item is scored against sprint 23's mission
+  and moved if the current bucket doesn't fit; items already
+  correctly bucketed are left in place.
+- =:ID:= preserved on every move (=git mv=, not delete+recreate).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** Run on 2026-07-11
+
+Follow-on to [[id:BF5F062F-49DB-490C-B1B0-89B55A550173][Deep backlog refinement]], which explicitly deferred this
+half. Ran as a workflow: a discovery agent listed every surviving
+item across =inbox= (208), =next= (224), =deferred= (56) = 488 total,
+then 26 parallel batch agents (20 items each) scored each one's
+=next=/=deferred= fit against sprint 23's mission ("Continue
+commissioning ores.refdata entities and codegen C++ drift
+correction"), with an explicit instruction that =inbox= is not a
+valid recommendation — every inbox item had to resolve to =next= or
+=deferred=.
+
+*** Data-quality check before applying moves
+
+489 scored entries came back for 488 discovered items. Diffed
+scored-vs-discovered paths and found two anomalies, both handled
+before applying anything:
+
+- One agent expanded a directory item's path to its =story.org=
+  child (=trade-import-service-layer/story.org= instead of the
+  directory) — cosmetic, normalized back to the directory path.
+- One agent fabricated an entry with an empty =:ID:=/title
+  (=pricing_model_parameter_table.org_dup_placeholder=, a file that
+  does not exist) recommending =next= → =next= (a no-op). Discarded
+  outright rather than acted on — never trust a schema-shaped
+  response without checking the file it claims to describe exists.
+
+*** Moves applied
+
+| From → To | Count |
+|-----------+-------|
+| inbox → next | 123 |
+| inbox → deferred | 85 |
+| next → deferred | 88 |
+| deferred → next | 14 |
+| *Total moved* | *310* |
+
+All 310 applied via =git mv= (=:ID:= preserved); 0 errors (no
+missing source, no destination collision). 269 of the 310 also had
+their intro-paragraph bucket text ("...in the *X* bucket of the
+product backlog...") updated to match the new location and their
+=#+updated:= timestamp refreshed. The other 41 are =#+type: story=
+documents (stories carried into the backlog from a past sprint,
+e.g. the =commission_*= template stories, =entity_evaluation_skill=)
+that never had bucket text in the first place — their template says
+"documents a story in Sprint N" or "...in the product backlog" with
+no bucket label to update; their new folder location is the only
+bucket signal they carry, same as before the move.
+
+*** Full move list (310), for traceability
+
+Every moved item, linked by =:ID:=, grouped by direction. Each row's
+rationale is the scoring agent's one-line justification against
+sprint 23's mission.
+
+**** inbox → next (123)
+
+| Item | Rationale |
+|------+-----------|
+| [[id:6F689F0C-3D74-4F78-9E03-C86BD3950867][Recipe: how do I build the site locally?]] | Small, well-scoped documentation task mirroring an existing recipe, easy to pick up soon. |
+| [[id:CA0ABE33-3EC7-43B6-BE34-8C32E08DBA91][Add regression tests for onboarding.party wizard-completion checks]] | Well-scoped regression-test backfill flagged in a recent PR review for a bug class that has recurred twice, real near-term urgency. |
+| [[id:7639E917-356F-4F5D-B46E-716E00B1A661][Add postponed state to agile dashboard]] | Concrete, well-scoped dashboard/agile tooling improvement with a clear rationale from sprint 20 experience, standalone and pickup-ready. |
+| [[id:4FD6AF0D-6A7A-4BD1-BA6B-F739A383B8C2][Add regression tests for tenant provisioner system-settings seeding]] | Concrete, well-scoped test coverage gap flagged during a recent PR review for the exact bug class just fixed, real urgency. |
+| [[id:1B201FC8-09CF-4C5E-94D3-1316254F6937][Add a Videos page and link it from the Resources menu]] | Small, fully-scoped site content/navigation task with a concrete implementation plan, easy to pick up soon. |
+| [[id:FC2EF34E-F873-4793-BA38-4026BD78E7FE][AppVersionHistoryDialog diff rows mislabelled]] | Concrete, well-scoped bug fix with identified root cause and files, ready to pick up soon. |
+| [[id:C3CD2AE6-8B87-4142-B2C2-2AC580E69189][Atomic batch-save endpoint for FX spot config + components]] | Well-scoped robustness fix for a real UX/data-consistency gap flagged in PR review, standalone and reasonably prioritized. |
+| [[id:32B11CDE-02D7-48D7-8F64-1311B2F5FD06][Bulk-regenerate synthetic generators to fix hardcoded r.version = 1]] | Concrete, well-scoped codegen bug fix causing real spurious version-conflict errors across ores.refdata entities, directly aligned with this sprint's codegen-drift-correction mission. |
+| [[id:247E026A-540B-4835-A1CD-FD051A12A416][Story: Add tenant discovery to CLI and compass]] | Already a fully fleshed-out story with concrete tasks and clear developer-workflow value, ready for near-term pickup. |
+| [[id:469958E3-B249-4D4C-95A9-E7CDB703F0C0][CLI commands — top-level commissioning story]] | Directly extends codegen commissioning for CLI entities, aligning with the sprint's codegen focus. |
+| [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Story: Codegen CI zero-diff invariant]] | A codegen drift-correction guardrail that fits the sprint mission directly. |
+| [[id:A804195D-0F50-4691-9389-B79F10098C72][codegen --component run generates all entities not just the target]] | A concrete, well-scoped codegen bug directly relevant to the current codegen drift-correction focus. |
+| [[id:0A83CC74-C3FC-47DD-A396-AEAF74B1E666][Codegen CLI legacy renderer emits empty files for minimal org models]] | A specific codegen correctness bug fitting the sprint's codegen drift-correction theme. |
+| [[id:E510A1A8-F82D-441C-BCA2-B69C1D1722D1][Generate messaging registrars via codegen]] | A scoped codegen enhancement supporting the entity commissioning pipeline that the sprint is advancing. |
+| [[id:A72E617F-5443-4009-8173-A605D8F01485][Downgrade profile/model-type incompatibility from error to skip in --component mode]] | Small, well-defined codegen fix directly tied to the sprint's codegen correction work. |
+| [[id:5533E643-BB14-4F93-B6CA-43BC1AE47690][Add regression tests for domain_entity SQL template fixes]] | Well-scoped regression-test hardening directly supporting the codegen drift-correction effort this sprint. |
+| [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Story: Codegen model safety guardrails]] | Guardrails against codegen model errors align closely with the sprint's codegen correction mission. |
+| [[id:D583B57B-B896-48A6-AD66-1F01FAE3FA3D][Reconcile SQL codegen template drift on synthetic validation fn]] | A direct codegen drift-correction item explicitly matching the sprint's stated mission. |
+| [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Story: Commission: business_centre]] | A refdata entity commissioning story directly matching the sprint mission. |
+| [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Story: Commission: business_unit]] | A refdata entity commissioning story directly matching the sprint mission. |
+| [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Story: Commission: contact_type]] | A refdata entity commissioning story directly matching the sprint mission. |
+| [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Story: Commission: day_count_fraction_type]] | A refdata entity commissioning story directly matching the sprint mission. |
+| [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Story: Commission: party_id_scheme]] | A well-scoped refdata commissioning story directly aligned with the sprint's refdata mission. |
+| [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Story: Commission: portfolio]] | Refdata commissioning story directly matching the sprint mission with clear, bounded scope. |
+| [[id:F70CF285-C22F-4A09-A36C-5FE7A834F056][Add RESTRICTIVE party-isolation RLS policies for the four marketdata tables]] | A real bug causing validate_schemas.sh --strict to fail has genuine urgency and should be picked up soon. |
+| [[id:A09EB5C6-5C99-430E-A83F-8B64525218F8][compass add component stamps #+type: component instead of ores.codegen.component]] | Small, well-defined codegen scaffolding bug that's cheap to fix and affects every fresh component scaffold. |
+| [[id:E5793A8B-CA4F-47C8-8F84-D8C8592D69BF][compass should own backlog index regeneration]] | Small, standalone tooling improvement with a clear fix path, plausible for near-term pickup. |
+| [[id:3A9DF70D-07F7-46A7-8219-57A024707B64][Story: compass generate catalogue: auto-generate index org files from tagged content]] | Well-scoped tooling story already tagged for sprint_22, a plausible near-term pickup. |
+| [[id:B7C756F2-985A-49FA-BE98-D50C4F418B51][Story: Compass GitHub Actions support]] | Well-scoped CI tooling story with clear value and defined scope, plausible for near-term work. |
+| [[id:7A80DC2A-DC53-4419-A9DC-3DE62F6DBC22][compass needs to support a help command]] | Small, well-defined DX gap (no help command) that's cheap to fix and broadly useful. |
+| [[id:15CE567F-489C-4A80-9CEC-27FCF95E5C36][ores.compass Product Backlog — next and deferred listing]] | Standalone, reasonably scoped compass command addition mirroring existing functionality. |
+| [[id:ACDA1D59-23B2-4DFF-82D5-B2F6B52F133E][compass show needs a full-content variant]] | Small, well-defined CLI feature gap that's cheap to address and improves everyday tooling ergonomics. |
+| [[id:CB6F6BE8-5675-448A-AA97-A3A66B4241E2][compass sprint close: automate carrying unfinished stories to inbox]] | Well-scoped automation of an existing manual workflow step with concrete near-term value. |
+| [[id:AD31F926-64B9-41B2-999A-8AC8CD908394][compass sprint pull: move carried stories from inbox into a sprint]] | Counterpart automation to the sprint-close carry, well-scoped and plausible for near-term pickup. |
+| [[id:3480A8FC-364B-4F81-A842-D7200F8A6100][Add a compass wait-for-CI command]] | Well-scoped, standalone CI tooling addition that's practical to build soon. |
+| [[id:58C3071A-5364-4FD0-BA0C-AE433E7AF57E][Component codegen output paths use dotted {component_full}, not the nested regrouped layout]] | A concrete codegen path-mismatch bug affecting component scaffolding, directly relevant to the sprint's codegen focus. |
+| [[id:D48BEA76-F879-4C16-8310-933B7EAEBCDF][ores.controller.service crashes with corrupted UTF-8 byte after launching a service]] | A production crash bug has real urgency and should be prioritized for near-term investigation regardless of sprint theme. |
+| [[id:03FC50B3-622B-4456-AE66-2F180B526723][HTTP entity endpoints — top-level commissioning story]] | Directly matches the sprint mission of commissioning ores.refdata entities via codegen (HTTP layer commissioning). |
+| [[id:4228F282-F0E6-4560-8C14-FF9140F47C52][Currency combo boxes should group by classification (major/minor/exotic)]] | Small, well-scoped UI improvement on an existing refdata entity that could be picked up soon regardless of theme. |
+| [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Story: Decommission legacy ores.codegen bash scripts]] | Directly aligned with the sprint's codegen C++ drift correction theme, cleaning up legacy codegen tooling. |
+| [[id:27BEC5E8-D6BD-4738-AF4A-5ED9FB9A6A30][Document history diff and complete its task record]] | Small well-defined documentation/cleanup task completing existing work, plausible to pick up soon. |
+| [[id:0D1976E2-5149-4DF2-8A4D-870896A98592][Document pg_notify rename as breaking change in deployment runbook]] | Small, well-scoped documentation fix addressing a real deployment risk that has real urgency. |
+| [[id:F1DCD4D8-B9B8-4B5F-976D-78E951C031FA][Enforce optimistic concurrency version checks at the DB layer (remove the version=0 bypass)]] | Well-scoped bug/robustness fix removing an unsafe bypass at the DB layer, with real urgency. |
+| [[id:FDEAC2F6-A87F-4281-82CC-437B06D5B02F][Enforce process parameter validation at save/feed-start time]] | Well-scoped server-side validation hardening item that stands on its own and has real urgency. |
+| [[id:058DF966-13E0-4D97-9A8B-F22301411015][Story: Entity evaluation skill and runbook]] | Supports commissioning of refdata entities by building an evaluation runbook/skill, aligned with sprint mission. |
+| [[id:9F538D0C-C3CB-4B25-B6B7-1469919216C3][Entity-org scaffold should pre-populate codegen knobs]] | Directly supports the sprint's codegen drift-correction/commissioning theme by improving codegen scaffolding. |
+| [[id:03B0CF5B-1DB6-4799-B6A1-EF38ECFA83C3][Use entity display name (not key) in detail/history window titles]] | Small, well-scoped, standalone UI fix that could plausibly be picked up soon. |
+| [[id:3DD10722-9E5C-4C2B-BDD6-11C7F89B3A88][The My Account password change dialog does not have a show/h…]] | Small, well-defined bug fix (missing show/hide password toggle) with real standalone urgency. |
+| [[id:63873DD9-BFF3-410C-9893-8EAC59DB2DC4][Fix ClientXModel::fetch_* pagination no-op (offset/limit never applied to request)]] | Well-scoped systemic bug in a shared codegen template with clear fix and regen sweep, urgent and standalone. |
+| [[id:3C96C458-DD17-456C-8201-AF57A59191D4][Fix batch currency generation UX and audit-field leakage]] | Small well-defined UX/correctness bug that could be picked up soon regardless of sprint theme. |
+| [[id:81542C7D-0DA2-47C5-ADAD-552DFA0926B3][cpp_enum.hpp.mustache prints 8-bit enum underlying types as raw characters]] | Concrete, well-scoped codegen template fix directly aligned with this sprint's C++ codegen drift-correction theme. |
+| [[id:8E266A23-F282-4142-93B5-CECEEA3FE380][Fix missing history-window close button wiring in 7 controllers]] | Small, well-scoped bug fix with a known pattern to replicate across 7 controllers, real near-term candidate. |
+| [[id:EEE4CB47-15A9-45C3-B7AC-D5BBD2860BAE][ClientMarketFixingModel truncates series on unfiltered page fetch]] | Known bug pattern already fixed elsewhere (PR #1498), well-scoped and urgent data-correctness fix. |
+| [[id:82A24629-DBD4-454E-8EF1-2E3C0728ECC9][Two small ref-data UI bugs: (1) market tiers has an icon but…]] | Small, well-defined UI bug fixes in refdata, directly touching the sprint's refdata entities. |
+| [[id:1AD4C3A2-1A35-4BD9-B715-308AAE906772][Fix trading_trade_party_roles pg_notify channel name]] | Tiny, well-scoped naming-convention fix in SQL, low risk quick win. |
+| [[id:808653D6-36BD-443D-89ED-46B1A36A6380][Fix window-key separator mismatch in Workspace/SystemSetting controllers]] | Concrete bug silently disabling staleness propagation, well-scoped and worth near-term attention. |
+| [[id:C810AAA1-E088-449D-ACF5-CF38055CB702][Fix notification toast blocking FX chart Y-axis area]] | Small, well-scoped UI z-order bug fix, plausible quick win regardless of sprint theme. |
+| [[id:9A614F60-45C5-4759-AF7D-80F9FBFA1103][FX Spot chart doesn't refresh on feed binding change]] | Concrete bug causing a chart to silently show stale/no data, well-scoped and worth near-term fixing. |
+| [[id:8219B2CA-1C15-4AAF-87FC-DF27220EF462][Gate unordered_set include in the generator template on actual need]] | Small, well-scoped codegen template cleanup directly aligned with this sprint's C++ codegen drift-correction theme. |
+| [[id:2DC36AEA-FBF4-4EC6-BEF2-A7C16F81D1E7][Add CONFIGURE_DEPENDS to file(GLOB) for .ui/source forms]] | Small, well-defined CMake fix addressing a real developer-experience build-break annoyance, low effort quick win. |
+| [[id:4B43E9AF-8EFC-4FB1-BDFD-7A79FFB86249][No cycle guard in hierarchy CTEs and build_tree()]] | Concrete, well-scoped defensive fix flagged by multiple PR reviews with a clear test-case plan, low severity but real and actionable. |
+| [[id:79D1413C-8EF5-445C-80EA-40A6C3B635FC][IAM's party_cache is never invalidated on party changes]] | A confirmed, reproduced bug causing stale data in production-like flows (IAM cache never refreshes on party save) -- real urgency, well-scoped fix. |
+| [[id:C6350BAD-5E4E-443B-9CA3-496A3B84B699][Illustrative org-roam links in doc bodies break the site build]] | A recurring, well-scoped CI-breaking doc-authoring foot-gun with a clear fix (lint check or exporter tolerance), worth picking up soon. |
+| [[id:B6422FA1-D61A-4D9D-B6B8-DFE3CD12E1C5][Improve FX Spot Monitor widget UI/UX]] | Concrete, well-scoped UX fixes (alignment, decimals, badge) from a completed review, a standalone item that could plausibly be picked up soon. |
+| [[id:4941A490-0D66-4F09-9B1F-3BC928022A41][Fix instruments not visible in UI]] | A tagged bug carried forward from a prior sprint with no acceptance criteria filled in yet, but it's a real functional defect worth prioritizing soon. |
+| [[id:F39D2239-1398-42AE-8272-78FED3C2C9FE][lookup_entity codegen path can't generate DQ artefact tables]] | Directly touches ores.codegen/refdata entity generation gaps -- fits the current sprint's codegen-drift-correction theme and is well-scoped. |
+| [[id:1679C85E-E26B-4FDF-B5BA-68B0B6E25637][lookup_entity codegen tables never get an RLS policy]] | A concrete security gap (11/11 lookup tables missing RLS) directly in codegen for refdata entities, matching the sprint's theme and urgent from a tenant-isolation standpoint. |
+| [[id:E3E201CD-6A62-4772-8307-730D763BBEE9][Lower default per-service DB connection pool size]] | A small, well-scoped operational fix with observed real-world pain (connection exhaustion across worktrees), quick to apply and plausibly pickup-able soon. |
+| [[id:F3042A14-1BCF-432C-9B0E-1539901B043C][Merge regenerate_backlog_indexes into compass]] | A small, well-scoped tooling consolidation refactor (move a script into compass as a subcommand) that is standalone and easy to pick up. |
+| [[id:2EA2D2A9-FBDD-4138-A324-1F8AE0982E14][Merge release notes collector script into compass]] | Small, well-scoped tooling consolidation with a clear concrete plan that could be picked up soon. |
+| [[id:008F2F44-3040-43E1-8A7C-1828FE136C8C][Migrate ores.refdata generators to change_reason_constants.hpp]] | Directly fits the sprint's refdata/codegen drift-correction mission. |
+| [[id:BA5BCF3B-8953-455D-85F9-1E05A49D9623][Migrate remaining refdata entities to generated event-mapping registrar]] | Directly matches the sprint mission of commissioning refdata entities and codegen drift correction. |
+| [[id:BC9416AC-4452-4B63-B844-B0E1EBC8934B][Move compass sql under the db command]] | Small, well-defined CLI consistency fix that could be picked up soon regardless of sprint theme. |
+| [[id:2554F7A6-8F2A-4545-9D5E-CE52EB852560][Move Portfolio's Qt CRUD UI from ores.qt/trading to ores.qt/refdata]] | Well-scoped, standalone consistency refactor with a clear precedent already established (Book/BookStatus). |
+| [[id:5019671D-92AE-49C8-829C-CDC1558613D2][Component overview models are unloadable (bare #+type, missing names)]] | Describes an active bug that currently breaks component generation, giving it real urgency. |
+| [[id:8D295781-33E7-4812-AAC6-134BD7CD0DDC][Rebuild org-roam DB independently from CMake]] | Small, well-defined build/devx improvement that could plausibly be picked up soon. |
+| [[id:1CB75099-4522-493B-90BD-63FDD25261E8][Write org-timestamps to the build output directory]] | Small, well-defined build hygiene fix that is easy to pick up soon. |
+| [[id:2F19F264-6E6D-46AC-A314-CAA3B41791B7][Parameterize raw SQL in the synthetic organisation publisher]] | Small, well-scoped security hardening fix flagged by a prior PR review, worth prioritising soon. |
+| [[id:5D345B02-7CCF-4BD1-9957-F50DF571B52C][Persist per-tag colour and add a tag create/edit dialog]] | Well-scoped, standalone UI improvement that could plausibly be picked up soon. |
+| [[id:E12C15D3-DF09-4BBC-9D0A-4CC30937000F][Promote cross-tenant read to a codegen flag]] | Directly aligned with the sprint's codegen drift-correction theme and is a well-scoped, standalone improvement. |
+| [[id:E69BFCB1-0E34-4BEC-916A-C00ECBD309FA][Promote recurring custom repository methods to template variability flags]] | Codegen template variability work fits directly into the current codegen/drift-correction sprint mission. |
+| [[id:1CAA4761-AF7A-4264-8A41-C514083A4FA9][publish_from_dq codegen facet: hand-writing artefact tables is a recurring cost]] | A codegen facet reducing recurring hand-written maintenance cost, directly relevant to the codegen theme. |
+| [[id:5DCF4057-B569-4835-A06E-778007019080][Qt codegen: introduce to_display_key() helper to unify UUID/string key display]] | Small, well-scoped codegen fix that overlaps with the sprint's codegen drift-correction focus. |
+| [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Story: Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] | Fixes a real platform-breaking bug (macOS 15 AGL removal) with genuine urgency, already scaffolded with tasks. |
+| [[id:285A8782-E934-4F17-B989-5739115D40A4][Add recipes for doc list commands (compass list, search, etc…]] | Small, well-defined documentation task that could plausibly be picked up soon regardless of sprint theme. |
+| [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Story: Refactor ores.codegen C++ generation]] | Directly matches the sprint mission of codegen C++ drift correction and is already scaffolded with many in-flight tasks. |
+| [[id:E9A4AA97-C515-4D6E-A28B-AC85B0AB40BB][Centralise test target boilerplate into a shared CMake macro]] | Well-scoped, standalone build-system refactor that could be picked up soon independent of sprint theme. |
+| [[id:6908F023-0F48-4BB7-B0D8-E05CE63E5033][Register missing refdata *_changed_event types for NATS eventing]] | Directly touches refdata entities, aligning with the sprint's refdata commissioning focus. |
+| [[id:5B7C4B18-3CF2-4546-A73E-95F46228DBD2][Fix account registration NATS SSL error]] | A concrete bug fix with real urgency, a strong near-term candidate regardless of sprint theme. |
+| [[id:632DE8AC-62DB-4DB5-838B-76CDED24E305][Regression test for zero-volatility GMM component]] | Small, well-defined test-coverage gap that is a reasonable near-term pickup. |
+| [[id:DECC7038-D5A1-4D47-A083-BC5FDD611CD5][Reload Qt client caches after tenant provisioning completes]] | Well-scoped correctness fix for tenant provisioning flow with plausible near-term priority. |
+| [[id:C0D0DADB-3FC9-4BC6-B6FF-68292FD8074C][Remove legacy pgmq extension residue from ores.compute]] | Small, well-defined cleanup task with no large prerequisites, reasonable to pick up soon. |
+| [[id:F1F7E212-0095-496B-AA78-3106F31EC583][Rename _protocol.hpp messaging files for the NATS world]] | Small, well-scoped rename cleanup that can be picked up any time regardless of sprint theme. |
+| [[id:86E3CEA4-B44D-498A-90EB-88CBCE440C70][sccache's cache is on GitHub's built-in actions/cache, capped…]] | Concrete CI infra limitation with real urgency (cache capacity capped) that's standalone and actionable soon. |
+| [[id:BBCCBAC3-3ED1-4D48-8B9A-802EFB3CDA86][sccache daemon inherits vcpkg lock fd from cmake]] | A concrete build-system bug fix, well-scoped and worth prioritizing soon. |
+| [[id:CB0B445A-592B-4AF5-BE5B-F695D2CE2038][Script the project version bump for sprint opening]] | Small, well-defined automation improvement to an existing recurring workflow. |
+| [[id:671860F1-0671-4DB1-8F5D-320C54F4F660][Separate trade and instrument detail dialogs]] | Well-scoped standalone UI refactor that could plausibly be picked up soon. |
+| [[id:E1F7B1C6-0588-4215-B752-5BBCB180ECE5][Compass command to tail and grep service logs]] | Small, well-defined tooling addition with clear near-term utility. |
+| [[id:01494D08-687A-48E5-87E9-2B5BC88CAEBA][Compass services restart command]] | Small, self-contained compass tooling command, easy to pick up soon. |
+| [[id:8797AF0E-EAD1-40F2-AA76-EF38BAC0A240][Add shell introduction to Provisioning from the Shell chapter]] | Small, well-scoped documentation fix with no dependency blockers. |
+| [[id:8BCD0D1C-AAFB-4FAA-A0E3-022FC6EF93C2][Shell entity commands — top-level commissioning story]] | Directly relevant to the current codegen/commissioning sprint theme and well-scoped as a top-level tracking story. |
+| [[id:9B90399C-09DF-45A7-8097-59F39338DE00][Apply -fvisibility=hidden to ores.shell (visibility-migration straggler)]] | Small, well-defined leftover fix completing an existing migration, easy to pick up soon. |
+| [[id:54D115AA-A763-4CCD-BC8A-BAD76E406112][Fix skill scaffold template missing #+type and empty #+filetags]] | Small, concrete bug fix to a template, low-risk and quick to address. |
+| [[id:B0D6AD25-0CB4-4394-94EF-1A15784A3009][Do not upload Linux/macOS debug build packages as CI artifacts]] | Small, well-scoped CI cost/efficiency fix that can be picked up any time. |
+| [[id:C67A7360-124E-4420-BE3C-7ADC25AA5DDD][compass sprint charts --output-dir is ignored by the gnuplot render step]] | Concrete, well-scoped bug fix in an actively used tooling command. |
+| [[id:84EF8C0D-B0F5-4CC5-A50D-CA6C03F2C131][Define and regenerate the standard codegen repository method set]] | Directly aligns with the current sprint's codegen drift-correction mission. |
+| [[id:8DA74BFC-F213-4A02-A872-91A7D6C8D4F7][Standardise timeline bucket generation as a compass writer (for the snapshot skill)]] | Well-scoped standalone refactor supporting an existing skill, plausible near-term pickup. |
+| [[id:7F306A93-6C30-47AC-BD37-7D762A49B475][Story: Improve site documentation discoverability]] | An already-decomposed story with concrete tasks (catalogue menu/glossary links) that is standalone and ready to pick up. |
+| [[id:F1512913-AA39-4E90-9DAB-BA011E7D17F0][Sweep missing reflectors.hpp IWYU include across entity repositories]] | A well-scoped, standalone codegen/refdata drift-correction sweep that directly matches this sprint's mission. |
+| [[id:934D010C-73D2-4F76-8B83-E6F1669231F0][Sweep remaining already-commissioned entities against latest codegen templates]] | Directly matches the sprint's mission of commissioning refdata entities and correcting codegen C++ drift. |
+| [[id:09FADA01-8581-4A82-943B-F608A86F885F][Synthetic parties are created Active, bypassing the party setup flow]] | A concrete, well-scoped bug/design-decision item (parties bypass provisioning flow) with real near-term relevance to refdata entity correctness. |
+| [[id:A8EF5B18-045A-46DC-B857-34B4F834AB6B][task start crashes after switching to a stale branch]] | A concrete compass bug causing crashes and unstamped journals, a well-scoped fix with real urgency regardless of sprint theme. |
+| [[id:0CD7A581-8C72-40E9-B87D-62C80BBD342D][Unify junction entity timestamp type to db_timestamp alias]] | A codegen template drift-correction item directly aligned with this sprint's C++ codegen drift-correction mission. |
+| [[id:2DFD3188-C5DA-4180-AE79-A5579F281BB2][contact_information entities lack a NATS handler — no sub-registrar]] | A concrete codegen/refdata gap needing a decision and fix, well aligned with the sprint's codegen drift-correction focus. |
+| [[id:F2EBFBC2-D636-47FD-AE32-27AD1340D183][Timeline snapshot agent column shows #+todo: frontmatter instead of env name]] | A concrete, well-scoped compass display bug affecting multiple snapshot entries, a small fix worth picking up soon. |
+| [[id:0E3B7794-95A0-4C9E-9D9D-42D770F841F7][Replace hardcoded timestamp sentinels with MAX/MIN_TIMESTAMP constexprs]] | A well-scoped codegen/template cleanup touching 137 entity headers, aligning with the sprint's codegen C++ drift-correction theme. |
+| [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Story: Unify entity timestamp handling — throw on failure, fix optional<db_timestamp>]] | A well-scoped, standalone correctness fix (throw-on-failure semantics, optional<db_timestamp> bug) that touches entity commissioning directly relevant to ongoing refdata work. |
+| [[id:AEE11EE6-6666-4D71-BC05-A2D16B6DC582][Use badges in the history dialog]] | Small, well-defined UI improvement to an existing dialog that could be picked up soon regardless of sprint theme. |
+| [[id:53E29725-BA0A-4ED0-AEA8-BABE8C3DB689][Validate GMM simulate params at request boundary]] | Standalone input-validation fix with real correctness/robustness urgency at a request boundary. |
+| [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Story: Verify Windows and macOS CI builds]] | Concrete, actionable CI verification task with real near-term value independent of sprint theme. |
+| [[id:97C772E4-C613-4C35-B993-99448D763542][Cache-bust site asset links at build time]] | Small, well-scoped build-time fix (cache-busting) that is easy to pick up soon. |
+| [[id:F5C813D4-49E7-48BC-B098-FE0BE2277BBC][Warn when creating account without a role assignment]] | Small, well-defined UX safeguard for account creation with clear near-term scope. |
+| [[id:835CE154-2A0D-44C8-89BF-5059F156105A][System wizard single-tenant default hostname collides with seeded Root Tenant]] | A concrete bug in the setup wizard with real user-facing impact, standalone and well-scoped. |
+
+**** inbox → deferred (85)
+
+| Item | Rationale |
+|------+-----------|
+| [[id:ADA913CE-E719-4B5D-9D8C-5C0186B788A0][ab-notebook: reproducible interest rate curve bootstrapping]] | Exploratory research/reproducibility idea with no concrete scoped action or near-term plan. |
+| [[id:1D286AC1-D951-4062-87D9-C7C9E3B55874][Add a link to the Claude Code settings page in the LLM docum…]] | Body is unfilled boilerplate (no What/Why detail) so it's not concrete enough to plan soon. |
+| [[id:469F26AD-ECD9-4264-93F6-03129740B21F][Add compass pr comment command for PR conversation replies]] | Body is unfilled boilerplate with only a title-level idea, not yet scoped enough for near-term pickup. |
+| [[id:97D298C8-7FF3-4605-B449-625DAE9ED05A][compass add sprint: automatically wire the sprint into its version]] | Body is unfilled boilerplate with no concrete detail beyond the title, a nice-to-have tooling automation with no near-term plan. |
+| [[id:84BC9BB5-8871-47BB-BB3D-3EACF252B866][regenerate_backlog_indexes.py only rewrites inbox.org, next.…]] | Body is unfilled boilerplate; a minor tooling gap with no urgency and not yet scoped. |
+| [[id:0CD11BEF-1D04-4984-97C4-BB498B81579B][Badge rendering inside QComboBox selected state]] | Explicitly says to defer until the pattern is needed in more than one place, a nice-to-have UI polish item. |
+| [[id:847E30FE-FA31-4940-B332-3A56B27B1334][Book cost_center should reference a real accounts entity]] | Speculative data-modeling redesign requiring a new accounts-domain component that doesn't yet exist, a large prerequisite not in motion. |
+| [[id:EC1CAE87-3DA9-4F46-A749-99230E52C2E5][Normalize book's cost_center into a real Cost Centre entity]] | Explicitly deferred until proper ledger support lands, a prerequisite not yet in motion. |
+| [[id:1F9BD472-2D6D-4A67-A159-130B9AA63040][Add EOD Cut to book]] | Explicitly deferred until proper cut support exists elsewhere in the system, blocked on an unbuilt prerequisite. |
+| [[id:62AA911E-CABE-40B4-A214-B97E95F3E930][Model source-book primary/secondary/tertiary relationship]] | Explicitly deferred pending a real notion of ledger book distinct from source book, a large unresolved prerequisite. |
+| [[id:8B05E561-92CD-4D7C-B7F7-3D1EE0FB70E1][Model book_status as a workflow state, not a flat enum]] | Large speculative workflow-modeling redesign with no immediate plan, deliberately separated from the near-term bug fix task. |
+| [[id:E5A55B8A-0A9F-4659-928D-7896C8F3E20D][Introduce clang-tidy and Lizard via PR-delta ratchet strategy]] | A tooling-adoption strategy with no near-term plan and unrelated to the refdata/codegen sprint mission. |
+| [[id:A16A6F10-1362-4009-9BFB-44402D7A9403][Set up clang-tidy static analysis]] | Overlaps with the ratchet-strategy item and is a speculative tooling setup with no urgency tied to the current sprint. |
+| [[id:CF1F3E3F-F6D7-479A-808A-E09E22B43344][Story: Clear component documentation debt]] | Broad, open-ended documentation-debt cleanup with no defined scope or urgency. |
+| [[id:149C6E94-5E5B-454C-89C0-60DED784C5A8][Add codegen templates to generate Qt plugin class]] | A new feature template addition rather than drift correction, with no stated urgency for the current sprint. |
+| [[id:FD6ECEE5-5C29-411E-AB07-DF1EABD4BFDC][Codegen terminology is inconsistent and misaligned with MASD…]] | A cosmetic terminology-alignment concern with no functional urgency or concrete near-term plan. |
+| [[id:BF7130D0-1415-4DC1-AD84-A04AA84D3228][Introduce type primitive registry to replace ad-hoc type flags in codegen]] | A large speculative internal redesign of codegen's type system, not a near-term scoped task. |
+| [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Story: Codegen unified model — Phase 1: derive Qt fields from conventions]] | A multi-phase architectural redesign of the codegen model, exploratory and not immediately actionable. |
+| [[id:E953C1DB-1FD5-415D-B777-5983315C8E22][Commission party, counterparty, and party_status together]] | Explicitly blocked on unresolved composite/hierarchy and temporal-versioning prerequisites not yet in motion, so it cannot be picked up soon despite matching the refdata theme. |
+| [[id:665A94EB-3CB0-41C5-898B-967BF868F1DC][Show blocked story dependency tree in compass where]] | A nice-to-have visualization enhancement with no urgency and no current plan to implement. |
+| [[id:5B8E8BB5-F410-4815-8FFF-4B3C71B3A7D2][compass single-environment mode for plain clones]] | A broader UX redesign for a use case (plain clones) not currently in active use, with no near-term plan. |
+| [[id:1A0C030C-954B-41AF-BFAD-07102392BB4F][Consider extending compass to use vector database techniques…]] | Purely exploratory research idea into an external library with no concrete near-term implementation plan. |
+| [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Story: Consolidate standalone scripts into compass]] | A large speculative redesign requiring inventorying ~61 scripts and redesigning compass pillars, not a near-term scoped item. |
+| [[id:62E7C0B3-02C8-4DFE-9C56-6FB36CB5121B][Custom jump distributions and cross-rate correlation matrices]] | Speculative analytics/modeling enhancement with no near-term plan, unrelated to current commissioning work. |
+| [[id:4540672C-3AD5-4BA4-92E2-603174FBE208][Add tag badges and filter widget to agile dashboard]] | Nice-to-have tooling polish for the agile dashboard with no urgency or link to current sprint work. |
+| [[id:72C1BFB2-BCBD-4DFB-A8CB-C90A6112F411][Explore diffusion models for synthetic trade generation]] | Exploratory research idea with no near-term plan or prerequisites in motion. |
+| [[id:98D6A549-01D5-4E99-A530-9AFB9CFFD858][Dissolve ores.qt.party plugin; migrate its entities into ores.qt.refdata]] | Large speculative restructuring of Qt plugin architecture not currently in motion, beyond immediate commissioning scope. |
+| [[id:3BC19819-6BEB-456E-9647-F6AB258A6635][Document hand-patched ORE vendor files against future refresh]] | Documentation for a future, not-yet-scheduled vendor refresh event; no near-term urgency. |
+| [[id:40B50055-EB09-4B5B-B26C-24F0F9CD1C5B][Story: Entity manual: add shell documentation per chapter]] | Broad documentation backfill effort across many chapters, a nice-to-have with no immediate urgency. |
+| [[id:3B4E9F6F-AF3F-407D-A1B1-480B0CA94C39][Entity sanity/consistency checks (did-you-really-mean-X)]] | A broader UX/validation feature idea without concrete near-term scope or urgency. |
+| [[id:8790130B-FAE4-4FDA-AE92-990AB65A2091][Add a connection type derived from the local .env]] | Minor tooling convenience feature with no stated urgency or dependency on current sprint work. |
+| [[id:B5A279DE-316F-49F1-B0D7-26167388BE19][Evaluate adding screamer to ores.analytics]] | Exploratory technology-evaluation idea with no near-term plan. |
+| [[id:27B62327-0A68-4D89-AAA3-15B3CC453F95][Show per-environment operational status in compass fleet]] | A speculative devops enhancement with no near-term plan and not related to the current sprint's focus. |
+| [[id:18C84DDB-26DE-4098-A997-0D11E928E870][Fold sql_schema_artefact_create into the graph (needs content-predicate activation)]] | Explicitly deferred from B8, blocked on a larger schema-path graph migration prerequisite not yet in motion. |
+| [[id:A752E521-9E9C-4DCA-BC0F-205EE4C3B1D9][Add pixel-stride downsampling or MA smoothing to FX line chart]] | Nice-to-have chart enhancement with no urgency and no near-term plan. |
+| [[id:43A233C1-FE17-43E2-9E97-0C6529D852BE][Replace stacked MDI sub-windows with QSplitter panel for FX charts]] | Larger speculative layout redesign, a nice-to-have UX improvement with no near-term urgency. |
+| [[id:75252EFB-55B6-4B14-B00B-EA04B459CCD5][Model FX settlement type per currency pair (physical vs. NDF, business-centre dependent)]] | A larger speculative data-modeling redesign requiring a new junction model, not yet scoped for near-term work. |
+| [[id:9B1B2CCB-8342-45C6-ABE4-4B9682B21098][Gaussian GenAI: synthetic market data generation paper]] | Exploratory research paper reference with no concrete near-term implementation plan. |
+| [[id:7454EE7E-1763-495B-94F4-0AFC9BADB2C5][GitHub-style diff view in history changes tab]] | A larger UX feature (intra-line diff rendering) that's a nice-to-have with no urgency or near-term plan. |
+| [[id:4EE11531-E6AB-4094-8297-F0E7DB12EC39][Hoist duplicated Qt chart theme colours into a shared helper]] | Small, well-understood tech-debt cleanup but purely cosmetic/non-urgent with no dependency, fine to pick up opportunistically later rather than in immediate planning. |
+| [[id:84635A47-0E1A-4B67-A775-15F256D54A2D][Implement jump/Poisson stochastic process component]] | A speculative new feature explicitly scoped out of the prior GMM story to keep it focused, with no near-term plan pulling it back in. |
+| [[id:59759BDE-575C-46CA-81A2-902291C4010B][Improve UX of Librarian dataset detail dialogs]] | A larger speculative redesign (full layout rework with sidebar/header restructuring) based on a review, more of a bigger initiative than a quick near-term pickup. |
+| [[id:5D68C073-D58D-4873-8EFE-C81CD94E91F6][Investigate sitmo/cgmm for market data simulator]] | Explicitly an exploratory research idea into a candidate library with no concrete near-term plan to act on it. |
+| [[id:097B6F3F-81F5-4DDB-90F6-3E08B8900734][Investigate open no-auth FX spot rate sources for seeding]] | A research/investigation task with no urgency or blocking dependency, nice-to-have for seeding convenience rather than near-term work. |
+| [[id:D87F645D-857B-4894-B4A6-0DA2E35F26D3][Properties and options visible in org-mode (e.g. right-panel...)]] | An empty, unfleshed-out capture with no details filled in (What/Why sections blank), not yet actionable or scoped for near-term planning. |
+| [[id:A54DB993-A61C-44D3-AEE0-964EBD457D0E][Make DB connection pool size runtime-configurable]] | The durable but larger follow-on to the pool-size mitigation, touching config plumbing across 17 services -- reasonable to defer once the quicker fix lands. |
+| [[id:0983A789-E6A9-4739-8A86-F64986C1ACB2][Handle long lines in manual with line wrapping]] | A minor documentation-styling nice-to-have with no urgency or blocking issue, fine to defer. |
+| [[id:61144EA9-6E09-42F7-B2CA-C87395E04DA6][Market Simulator option to show data in pips]] | A nice-to-have UX enhancement to the synthetic market simulator with no urgency, better suited to a later polish pass. |
+| [[id:0F7A442F-8742-48DA-A5D6-C8AF16ACFDDB][Three-level hierarchy in Market Simulator config tree]] | A speculative UI restructuring anticipating future IR-rate config types that don't exist yet, a larger redesign without immediate need. |
+| [[id:C9256CD3-5AE4-46FC-AA48-57A9F9CABD9A][Create MASD personas and link to cybernetic levels]] | Explicitly blocked on resolving codegen/reference-implementation drift, a documentation initiative with a stated prerequisite not yet in motion. |
+| [[id:D2A77801-5AE5-4077-B48E-731E790B0ED0][Add a memory for the meaning of key project directories: tmp...]] | An empty, unfleshed-out capture (What/Why blank) with no urgency, not concrete enough for near-term planning. |
+| [[id:1BAD6E5B-600F-4DE7-8BCD-797072A490D7][Write the ORE Studio development methodology manual]] | Large speculative documentation effort with no near-term plan or urgency. |
+| [[id:B33705E4-2FF0-4F83-B16B-14CE9FD2FB7F][Mine Karpathy's wiki-based system for compass ideas]] | Open-ended research idea with no defined near-term deliverable. |
+| [[id:0B099F52-9011-4339-A346-78089A8D5815][Move generic quant primitives to ores.analytics]] | Architecture refactor with no immediate driver or urgency; can wait. |
+| [[id:FE9BB4DA-FC98-4C08-B784-104DCF3A6687][Story: Move trade-instrument parsing out of ores.qt.api]] | Stale story tied to a since-closed sprint (19) with an ABANDONED todo state option, indicating no active near-term plan. |
+| [[id:CC7CEDA1-A3F1-4E4E-BDE9-5DAF0D5BCD23][Detect and report NATS disconnection]] | Carried forward from an old sprint with no active plan and not urgent enough to displace current work. |
+| [[id:D495A1B3-7677-4884-935F-1B6E6D65C983][ORE sample data]] | Long-carried, open-ended data sourcing effort from a prior sprint with no concrete near-term plan. |
+| [[id:0EF70DFB-3CEE-4522-9C9B-A71F1BB4B789][ores.diagrams — PlantUML/SVG diagram generator (C++, SQL, org-mode)]] | Large speculative new component with no near-term plan. |
+| [[id:7F55F750-4AB5-4F51-A944-B743C83CB54D][ores.diff: structured topology for nested entities]] | Explicitly deferred by its own description until a first nested-entity consumer materialises. |
+| [[id:84C10B13-51E2-4D8D-B82A-F38F8DB10E86][Work through all types required for ORE Example 1]] | Large, long-carried exploratory effort from a prior sprint with no active near-term plan. |
+| [[id:E95556B8-D5D3-4774-991E-5D722CC924C2][Tangle dataset manifest and methodology from org]] | Nice-to-have documentation/tooling improvement with no urgency or near-term driver. |
+| [[id:8D521BEC-8E5A-4D3B-90A9-C79D58EB062F][Define what a product vision is before stating ORE Studio's]] | Exploratory conceptual/vision work with no near-term plan or dependency on current sprint work. |
+| [[id:42EB2329-CD49-430D-A78A-49D2D14987BD][Accumulate a tagged face dataset for profile pictures]] | Long-horizon data-accumulation idea with no urgency or current dependency. |
+| [[id:E7963370-DA32-4751-A924-C1B94EDB7F6A][Persistent test-context widget for the Qt client, seeded at launch]] | A nice-to-have developer-experience feature with no urgency and unrelated to the current sprint theme. |
+| [[id:B3EBD70C-DAFA-4854-92F3-54E7D90D22C7][Qt: instrument creation in TradeDetailDialog]] | A sizeable standalone Qt feature unrelated to the current refdata/codegen sprint with no stated urgency. |
+| [[id:E82FFE23-51DB-41CB-9528-61FE54F0F02F][Redesign how currency_pair.deliverable/settlement_currency are derived]] | A speculative larger redesign of derivation logic without an immediate plan or driving urgency. |
+| [[id:67DA3C48-9D9D-4315-8AB6-684D548B6917][Rename compass to something like swiss knife]] | A speculative naming/branding idea with no urgency or concrete near-term plan. |
+| [[id:1518B7E1-582F-45DC-B2BA-EC6BD0BE74D4][Rename or split the project glossary]] | A nice-to-have documentation reorganisation with no urgency and unrelated to the current sprint. |
+| [[id:3247E7A0-73CD-459D-B2C5-119FC0D7DA33][Story: Rethink synthetic reference-data generation across entities]] | An exploratory cross-entity redesign of synthetic generation with no concrete near-term plan. |
+| [[id:113CA705-2A6D-46A3-8E05-C6D27CF8C672][Compass search: self-improving mode for failed queries]] | Speculative research feature (self-improving search) with no near-term plan or urgency. |
+| [[id:13BBAE0C-8EA9-4266-85D1-77F7F603B71B][Split the user manual into Qt and Wt manuals]] | Large speculative documentation restructuring with no near-term trigger or urgency. |
+| [[id:4DEBBF25-A373-40FD-A913-B175AE27BA66][Consolidate message boxes into one non-modal, copiable, standard-button ORE Studio dialog]] | A larger cross-application UI consolidation effort without an immediate driver, better suited to a future planning cycle. |
+| [[id:8114A1D0-18F7-400E-BEAE-0EF4024E5D10][On-demand PR and CI overview panel on story cards]] | A speculative dashboard UI feature unrelated to refdata/codegen with no urgency or near-term plan. |
+| [[id:7B16D632-08E7-4089-A6A6-168CA7153F65][story new: support content flags and first-task control]] | A tooling nice-to-have improving compass ergonomics, not urgent and not tied to current sprint work. |
+| [[id:2D2F9D3E-6DFD-4D4A-81C9-F9BA00B72F77][SVG diagram viewer — interactive JS wrapper for ores.diagrams SVGs]] | Explicitly depends on a prerequisite (ores.diagrams) not yet in motion, making it a longer-horizon item. |
+| [[id:CBD5D0CA-F151-41AD-B302-BBC1E07170BA][History and change-eventing for synthetic config entities]] | A sizeable feature addition to synthetic config entities with no immediate urgency or direct tie to the current sprint theme. |
+| [[id:9A1C69A6-5740-406D-8901-1DB43F40C127][Synthetic FX generation should respect currency pair conventions]] | A data-quality enhancement to synthetic generation that is standalone but not urgent and not aligned with the codegen/refdata drift focus. |
+| [[id:C1F02A47-1EFE-4251-9C0A-F1D8A0C56849][Synthetic service active configuration selection]] | An open-ended mechanism-design item for the synthetic service with no concrete near-term plan. |
+| [[id:7F8A51BA-35CB-467E-B3E5-A847CB37E238][Task: Document the composite versioning approach and codegen recipe]] | Explicitly blocked on the mechanism being fully implemented and proven first, so not yet actionable. |
+| [[id:F41DC692-99AE-4F0C-9D6E-76BA767BB93E][Task: Qt composite history/version dialog]] | Explicitly blocked_on another unfinished task providing the widgets it needs to build on. |
+| [[id:1FEE0D30-0466-41F0-9137-97864DA6DA3E][Codegen gap: service application.cpp eventing pipeline not generated for new entities]] | Names a longer-term codegen target as the real fix, with the interim hand-wiring being a separate simple task; the described work here is exploratory template design without a concrete near-term plan. |
+| [[id:57DB2B98-0013-4AED-BA7A-315DC8BD8623][Story: Move trade import orchestration to service layer]] | A larger architectural refactor for trade import with no direct tie to the current refdata/codegen sprint and no indicated urgency. |
+| [[id:46914D3F-646A-4842-B434-AED60DB5AC31][Trim compass bearings: --limit and heading integration]] | A tooling/UX improvement to compass bearings that is nice-to-have but not urgent or blocking current work. |
+| [[id:74E3F0D0-CF33-44C4-84EC-A0078EE48541][Unify Account and Administration menus into a single menu]] | An exploratory UX investigation item ('investigate how other systems name these') with no concrete near-term plan. |
+| [[id:EEE4880F-525A-4805-8082-B8638CB54ABA][Wt entity UI — top-level commissioning story]] | Explicitly scoped to be picked up only after all entities are commissioned, making it a large, prerequisite-blocked horizontal restructuring not ready for near-term planning. |
+
+**** next → deferred (88)
+
+| Item | Rationale |
+|------+-----------|
+| [[id:CEBAB022-2039-47A4-AAB2-BB2FFBA5507C][Add a dashboard for users]] | Large, loosely-scoped UI feature backed only by rough screenshot mockups and open-ended notes, not ready for imminent planning. |
+| [[id:6B9D309A-3FA0-4183-BAC4-31C347DD740A][Add a generic tagging system]] | A cross-cutting generic tagging capability spanning multiple entities is a speculative, larger-horizon design not yet scoped for near-term work. |
+| [[id:6379CAA6-6710-4F07-B386-1BFEB3D0E954][Add a message queue]] | Adding a new message-queue infrastructure component is a significant architectural undertaking still at the exploratory/linked-article stage, not near-term ready. |
+| [[id:7B9F27E1-9815-451C-9A37-7084E39E4947][Add batch editing with staging workflow]] | Exploratory UX idea still needing terminology and iconography decisions before it is even well-scoped. |
+| [[id:8BB2B76B-3043-4B68-8D8C-693934EDF41D][Add counterparty party scoping (librarian Phase 2)]] | Explicitly blocked on the publication_params_schema story merging first, which is itself not yet in motion. |
+| [[id:766BAAD8-08C3-4737-B255-756A79CEAF63][Add database support for tests]] | Open-ended exploratory infrastructure idea (test telemetry DB design) with no concrete near-term plan. |
+| [[id:5B31ABE6-EF9D-45F3-8872-91A2D6F1FAD6][Add entity related charts]] | "Have a think" brainstorm of possible chart ideas with no concrete scope or plan yet. |
+| [[id:AA65B657-A731-41CE-9891-24B380944F36][Add HBAC support for books and portfolios]] | Large speculative access-control redesign (hierarchical RBAC with groups/ACL inheritance) with no near-term plan. |
+| [[id:B84E61BA-A712-4F84-91B9-54175EA6C23D][Add heat map of user sessions]] | Exploratory analytics idea blocked on a session table and further research ("mine github for ideas"). |
+| [[id:6C78B869-0470-4BE5-97BF-F8403A7EAA69][Add high-watermark support]] | Still requires design analysis ("do some analysis with Claude on how best to do this") before it is a concrete, pickup-ready item. |
+| [[id:41D87DC9-12B8-46AB-87C0-3B28AAF75021][Add ISO 20022 Support]] | Large speculative messaging-integration effort spanning multiple ISO 20022 message types with no concrete near-term plan. |
+| [[id:7A4B5E75-91CB-407C-8D14-1247050A3110][Story: Additional market data producers (e.g. Bloomberg)]] | Future vendor-integration epic proving architecture genericity, with no concrete near-term driver. |
+| [[id:C2CBFABD-0358-4038-9867-63048565391A][Add KYC workflow for counterparty onboarding]] | Large compliance workflow requiring integration with a four-eyes authorisation framework not yet built, so it is not near-term ready. |
+| [[id:50A15C5A-1947-4F67-8FC9-182D81893E1A][Add ores.compute or ores.grid]] | Large speculative new-component epic (BOINC-style financial compute grid) with no near-term plan. |
+| [[id:EF479AE6-689B-4FA9-99A0-BF03148FD348][Add party level currency and country restrictions]] | Explicitly framed as a partial/experimental RLS framework exploration ("won't be able to do a full implementation right now"), not a near-term concrete item. |
+| [[id:98A223C0-FD32-4782-A893-C91228625692][Add purge button to all entities]] | A cross-cutting UI/permission feature affecting all entities with no clear near-term driver or design decided yet, best refined later. |
+| [[id:0E1122D5-7D0F-4421-9471-60F25E25CC3E][Add self-registration and approval for production tenants]] | A large speculative workflow (self-service tenant onboarding with approval queue) with no near-term plan or prerequisite in motion. |
+| [[id:8AFCD56E-FFA6-4ADC-BB47-A2BE3B6128F0][Add sign-up approval workflow]] | Vague, underspecified workflow feature (invite codes etc.) with no concrete near-term plan. |
+| [[id:6150B5F5-9BF2-4ED3-980B-1605FF874559][Add skill to improve UI design]] | Vague aspirational goal ('make UI more professional') with no scoped deliverable, better suited to longer-horizon exploration. |
+| [[id:52FCD613-1283-4A04-A1F6-7679CD8926EA][Add sound assets]] | A nice-to-have cosmetic feature (event sounds) unrelated to current priorities and not urgent. |
+| [[id:7D52E4D1-4A2C-4BEB-A661-372D60FFD676][Add staging support]] | Explicitly a preparatory step for a not-yet-built authorisation queue framework, i.e. blocked on a large prerequisite not in motion. |
+| [[id:2DA978B3-A990-422E-ADB0-2A88660ADD1A][Add support for row signing]] | A speculative security/audit feature ('would be good to have') with no concrete scope or urgency. |
+| [[id:3A2445EB-6F40-402B-A1FD-F687D03CE97B][Add trace context propagation to messaging protocol]] | Cross-cutting distributed-tracing infrastructure work with no near-term driver, more of a longer-horizon platform investment. |
+| [[id:9E5C2BB2-95BC-42E5-AD63-9B103A5D59F2][Add "uptime" screen]] | An exploratory UI idea referencing external inspiration with no concrete scope defined yet. |
+| [[id:E07BBE70-F5BB-44C9-B0CD-E5FD97E6F717][Add version comparison and revert improvements]] | Vague, unscoped set of 'improvements' to versioning/history with no concrete near-term plan. |
+| [[id:F5061FB4-B658-4578-A76B-3EA7B3DE4AB2][Add virtual portfolio tree support]] | A large speculative reporting/aggregation redesign unrelated to the refdata sprint and not yet scoped. |
+| [[id:C492E717-9D0D-44E2-A3A4-1DC682BABF15][Analyse caching at dialog level]] | This is an open-ended architectural exploration (immer-based workspace caching layer across Qt/Wt/shell clients) with no concrete near-term plan, fitting the deferred/large-speculative-redesign profile. |
+| [[id:D7C6A8EA-91BF-4F91-BF15-87CECD357272][Analysis on database name service]] | A one-line exploratory question ('is this used?') with no scoped action, i.e. research with no near-term plan. |
+| [[id:CE182523-5777-466F-B6DC-057EFCC0A0C7][Consider adding an "entity waterfall"]] | Speculative UX feature ("it would be nice") with no concrete scope or plan, purely exploratory. |
+| [[id:E2ED68D4-E9F3-485B-9929-E5F73A5CBCC8][Consider adding log command line options to qt]] | Phrased as a "maybe" idea to explore rather than a committed near-term change. |
+| [[id:FBCD3280-79B0-4DFA-9918-B40C757907EF][Consider adding MCP support]] | Research-stage idea sourced from an external course with no defined scope or near-term plan. |
+| [[id:1A86FD34-5D0C-44E1-AECD-118154C23D65][Consider using UUID in the database layer]] | Large speculative cross-cutting redesign of the database layer's type representation, not shovel-ready. |
+| [[id:C8B4449D-E82E-4184-8E0B-50F070FAF22B][Story: Correlations and derived volatility surfaces]] | Explicitly scoped as future work under a not-yet-started Market data generation epic, no near-term plan. |
+| [[id:3BD017E7-9C3C-4FB3-ACD0-CBBD47CADCE8][Create a AAD build of ORE]] | Explicitly flagged as "requires further investigation", a research prerequisite before any real work can start. |
+| [[id:BF06BA65-50BE-4589-ABB7-34A3EF114D9C][Create named profiles]] | A larger speculative UI/window-management feature with no immediate urgency or concrete near-term plan. |
+| [[id:8765CDD5-08EB-4C3E-B7EA-0A6A9A81AAF2][Create shared object interfaces]] | Large speculative redesign of the shared-object/DLL build architecture with no near-term trigger. |
+| [[id:3BD0DF71-7856-475D-BE2C-C44993238DC1][Create span collection and export infrastructure]] | Sizable new telemetry subsystem with no current driver or dependent work in flight. |
+| [[id:FA9C26E9-5633-4606-A326-12248D040088][Create subsets of datasets]] | Explicitly unresolved design question ("or maybe these are just separate datasets?") with no concrete scope. |
+| [[id:A52C791C-F71B-4374-BADA-1A7A50DED25B][Currencies: Contractual Settlement (The "Agreements" Table)]] | Speculative large modeling exercise for a new settlement/agreements domain concept, not yet designed or prioritized. |
+| [[id:09F1172E-67DF-464B-9C92-BC0A5BB6BF4B][Currencies: Party-Specific Settlement Rules]] | Large speculative domain-modeling exercise for party-specific rules with no concrete near-term plan. |
+| [[id:A18AFE26-0F1F-44AF-8260-DC1E08EA9600][Digital signatures]] | Large speculative security feature with no near-term plan or scoping, unrelated to current work in flight. |
+| [[id:C70C3D05-88BD-4468-ABCB-3DBF165090FC][Evaluate change reasons for role permission tables]] | Purely exploratory analysis item ('should we...') with no concrete implementation plan or urgency. |
+| [[id:88BE7882-6512-40DB-9541-F1FB98A19DC7][Event Viewer advanced features]] | Explicitly a collection of nice-to-have features beyond the initial implementation, not prioritized or urgent. |
+| [[id:2DF59230-AD91-45CA-8130-F8856075996F][Extend ores.workflow: trade-expiry workflow]] | A large multi-step new financial workflow feature tied to a separate long-range plan, not near-term standalone work. |
+| [[id:9F03AA00-B3BA-4D49-8E85-AA39F6915BED][Faker with seeds]] | Terse, unscoped capture with no clear near-term plan or urgency, more of a nice-to-have testing infra idea. |
+| [[id:6177FFE4-126F-4F2E-8396-BA93F864D17C][Financial workflows: trade-expiry and barrier-event]] | Large speculative financial-workflow feature with no concrete scope, unrelated to current refdata/codegen focus and not urgent. |
+| [[id:60D1955B-4FED-4F8B-8E40-75C2AFB1E69E][Fine-tune grants for each service account]] | Terse capture describing a broad security hardening effort with no immediate scope or urgency signaled. |
+| [[id:07A18CD7-2185-4243-B61C-B9BC501F0A0F][Fix "informations" plural naming in contact information entities]] | Cosmetic naming cleanup with no urgency and only a one-line description, not blocking anything. |
+| [[id:21CDFD5E-7C76-460D-A2CF-6352B665BFC9][FX trade UX improvements: tabs, currency pairs, rate computation]] | Multi-part UX redesign of FX forward product, unrelated to current sprint and sizable enough to be speculative rather than immediately actionable. |
+| [[id:39554896-F580-4004-8CEC-6CCB6700B4E7][General session dialog]] | Vague one-line capture with no defined scope or urgency, needs clarification before it can be planned. |
+| [[id:E67C0404-6BF0-4FB0-8BDD-ECB975F474C4][Generate C++ code for FPML]] | Large speculative codegen effort with no concrete scope beyond a title, more exploratory than near-term despite codegen theme overlap. |
+| [[id:DE20623A-C8F5-4A9C-8297-5C9DFEC250BA][Generate protocol docs via codegen]] | Thin, unscoped capture describing a nice-to-have tooling idea with no near-term plan. |
+| [[id:12F85A5B-A253-4CA8-AAC5-F19700689D72][Replace hardcoded permission strings with per-component constants]] | A codebase-wide refactor with clear scope but no urgency or blocking issue, better suited to a later cleanup pass. |
+| [[id:BD5CA6DB-0A1E-417A-B0CE-0C860E477024][Implement entity history in shell]] | Terse, unscoped feature capture with no near-term plan or urgency indicated. |
+| [[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][Implement four-eyes authorisation framework]] | Large speculative authorization-framework redesign with only a title, clearly a longer-horizon initiative. |
+| [[id:ADBBCF2D-2D17-4650-948D-13D30A221374][Improve error message boxes]] | Vague, unscoped UX nice-to-have with no urgency or detail to act on soon. |
+| [[id:6763F42B-C8CE-4047-B609-FFC5B9361C3E][Investigate dashql for ideas]] | Purely exploratory research into a third-party project for inspiration with no concrete plan or scope. |
+| [[id:6666FB7A-D7B4-4F81-BD89-9B96AF358997][Local versus remote connectivity]] | Large speculative architectural change (dual local/remote and sqlite support) with no near-term plan or prerequisites in motion. |
+| [[id:8C70BBA0-9A5E-47BB-9C1D-A7620F9D7BD9][Long-running bundle publishes need progress reporting and async execution]] | Requires a nontrivial async-execution and progress-reporting redesign spanning server and client, not a near-term standalone pickup. |
+| [[id:F58DADE3-D0DB-4366-B559-AF8906A656A6][Make UI/UX look more professional]] | Vague, open-ended aesthetic overhaul with no concrete scope or near-term plan. |
+| [[id:E4BB125C-832A-43C9-910F-A2F4A2AB552F][Management of roles]] | Explicitly calls for analysis of the best design approach before any implementation, i.e. exploratory with no near-term plan. |
+| [[id:8EA3EE8D-F53D-424C-A988-1D5E6BFF442F][Mine dexter for ideas]] | Purely exploratory idea-mining task with no concrete near-term deliverable. |
+| [[id:5A76028F-AB95-49F5-9FBD-2B49FFBD7B53][Missing shell functionality]] | Broad, open-ended ambition to exercise the entire comms protocol via CLI, lacking a concrete near-term scope. |
+| [[id:41B3531D-D4ED-456C-981D-94A1A70593C5][Modes of operation]] | Explicitly needs a stakeholder discussion before any design decision, i.e. exploratory with no near-term plan. |
+| [[id:BAA559FB-3F6D-4584-B537-7B75680EF44E][Notification of deletes]] | Describes an open design problem ("one way to do this is...") requiring further exploration before implementation, not yet well-scoped. |
+| [[id:36D07819-B603-4559-9A6C-864F02314999][Add party explorer]] | Still a bare template with no fleshed-out What/Why and no connection to the refdata/codegen sprint mission, so it's speculative UI exploration rather than near-term work. |
+| [[id:92179E97-49E0-47E1-AD6F-BA1458B8FC00][Portfolio types]] | Just a one-line idea to generalise virtual/non-virtual portfolios into a type with no acceptance criteria or scoping, and unrelated to the current refdata/codegen focus. |
+| [[id:BBE74820-0AA6-44D4-AC05-B66519D0BA33][Add pricing model parameter validation table]] | Still an unfilled template (What/Why sections blank) representing a larger speculative validation-table redesign with no near-term plan. |
+| [[id:A3CCEC66-6624-4006-9DE3-B4C074712539][Recipes do not show variables in org-babel]] | A nice-to-have documentation/tooling polish item with no urgency and no concrete plan of attack (just links to explore). |
+| [[id:F767B1CC-B50D-42E7-BBEE-43D9A498D93A][Redesign Qt ImageCache invalidation strategy]] | Explicitly noted in the capture itself as blocked pending a move to workspaces, a large prerequisite not yet in motion. |
+| [[id:5A832213-3DF9-4C5E-9630-BC0D86CA492C][Reduce duplicated Qt code and clean up technical debt]] | A grab-bag of loosely related cleanup ideas with no single well-scoped deliverable, more of a nice-to-have eventually list. |
+| [[id:F58F9A64-1776-47C0-96FE-0A7252DCE616][Reduce messaging handler boilerplate]] | Still an unfilled template with no concrete What/Why detail, a speculative architecture refactor with no near-term plan. |
+| [[id:5B949EFC-4950-4F88-8F6D-D188A1711852][Remember dialog sizes and positions]] | Small nice-to-have UX polish item with no urgency and no scoping beyond a one-line idea. |
+| [[id:1236B577-D847-4D1E-9EDB-DC93BB044D67][Restore detached window state after login]] | A well-described but large, speculative UX feature (multi-monitor detached window persistence) with no urgency and not tied to current priorities. |
+| [[id:330F686B-A967-46C8-B544-938159F1713E][Restore detail and history windows after login]] | Explicitly described as significantly more complex than the list-only restore, making it a larger speculative UI feature with no near-term plan. |
+| [[id:1F0F5819-88BC-45FC-BFAA-7915C28A91C5][Retrieve NAT'ed IP address from local IP]] | A speculative 'would be nice' infra idea with no defined scope or urgency. |
+| [[id:64F6850F-B207-4B04-A2F9-7801FFA03B56][Review of Wt]] | An open-ended exploratory review/research item rather than a scoped actionable task. |
+| [[id:E0C103B9-CCED-4446-82AB-B8657A3B46C3][Service command-line configuration dialog with bitemporal support]] | A sizable new feature (dialog plus bitemporal audit history) with no near-term urgency or alignment to the current sprint. |
+| [[id:1B4EA854-17C0-4192-A781-205A2E81FA8F][Standardise Qt window behaviour and UI consistency]] | Described only as 'several inconsistencies' with no enumerated scope, indicating a broad speculative UI redesign rather than a scoped near-term item. |
+| [[id:07F05C2C-C4E0-404A-9A10-D5186B661315][Tracing: OpenTelemetry identifiers across Qt and NATS]] | Tagged as analysis/background research with no concrete near-term implementation plan. |
+| [[id:02E293A4-B5FA-4551-8C1B-7C6FC956EA9E][Trade-aware market data filtering for report execution]] | A sizable workflow redesign proposal (filtering market data fetch by trade relevance) with no near-term scoping or urgency indicated. |
+| [[id:96A91098-921F-4C1D-AE0E-12E2E687C43C][Triage existing sprint capture.org files]] | Blocked on the per-file capture workflow being in place first, and is agile-process cleanup with no urgency, so it is a longer-horizon item. |
+| [[id:6AD0E8A2-9335-4F40-BBB1-A73DF3D805CA][UML class diagrams are missing relationships between classes…]] | A documentation nice-to-have with no urgency or direct sprint connection; not standalone/prioritized enough for near-term pickup. |
+| [[id:C0EEEE00-0E8E-425A-B976-242D453B43A3][Understanding Settlements and SSI]] | An open-ended research/analysis task on a complex domain topic with no concrete scope or near-term plan, fitting the exploratory-deferred criteria. |
+| [[id:C9669586-41BB-41B7-B6DA-5A1181055D52][Unify compute wrapper nodes as replicated services]] | A speculative infrastructure redesign of compute wrapper nodes with no immediate driver or scoping, better suited to longer horizon. |
+| [[id:96A141D5-41FF-4772-9A0F-9E72F8FB3F60][Update timestamps to use timezone]] | Vague, unscoped placeholder capture with no concrete plan or urgency evident from its content. |
+| [[id:2B65E321-DF8C-4C34-B8C0-E176F92B1C1D][User interface options]] | An open-ended tracking list of future UI configuration points rather than a scoped near-term item. |
+| [[id:2D640A42-ECCE-4A76-80D1-169430E7D219][Users should be able to add picture to profile]] | A nice-to-have UI feature with no urgency and no direct bearing on current priorities. |
+
+**** deferred → next (14)
+
+| Item | Rationale |
+|------+-----------|
+| [[id:FEA0593A-8ECB-43FB-83F9-6EFF120492EB][Add serialisation tests for analytics domain types]] | Small, well-scoped, standalone test-coverage item that could be picked up soon regardless of sprint theme. |
+| [[id:62F216A9-1BDF-4889-9A85-01EBA7CBB24E][api and core are not namespaces — fix naming]] | A concrete, well-defined naming/correctness fix with real near-term value, not a speculative idea. |
+| [[id:A1E08C28-2906-4B8E-A3D0-FDED89FED20A][Convert CODE_OF_CONDUCT.md and CONTRIBUTING.md from Markdown to org]] | Small, well-scoped documentation conversion that could plausibly be picked up soon. |
+| [[id:749E7016-A97C-4EE0-9074-1ADF90FF3135][Implement missing equity instrument types]] | Concrete, well-scoped domain-coverage gap that is a real near-term candidate. |
+| [[id:3A6BA429-3B7C-4490-902B-257D66CD97BE][Support expiry date shorthand with calendar integration]] | Concrete, well-defined feature with clear near-term applicability, not merely speculative. |
+| [[id:76B891F5-750C-4EA7-80F1-D840A0AF0E20][Implement missing FX instrument types]] | A well-scoped, standalone list of concrete missing instrument types that could be picked up as normal feature work regardless of sprint theme. |
+| [[id:DAD79C37-0F35-4523-958D-EA41D96D4D5B][Replace optional JWT verifier with explicit modes]] | A small, well-defined security/clarity fix (optional -> enum mode) that is standalone and could be picked up soon. |
+| [[id:3CFCA9CD-50D7-482F-847B-60676A801CAB][Rename the Knowledge Graph menu item to Knowledge]] | Small, concrete, well-scoped UI/nav change that could be picked up quickly regardless of sprint theme. |
+| [[id:A3E9FDCE-F1B9-40C2-9E57-53DBA05FE3E6][Simplify verbose handler log names]] | Small, well-defined codegen/logging cleanup affecting generated templates, standalone and low-risk to pick up soon. |
+| [[id:BE577E9E-32D2-4191-B8E3-99AEDA4BEAF4][Review pricing engine type tenant vs party design]] | A small, well-defined design review question about an existing entity's FK/tenant defaulting, plausible to pick up soon. |
+| [[id:A759E29B-28B5-45C1-94B0-E27E1B6DBE5E][Rename the modeling/ directory to docs/ in all components]] | A small, mechanical, well-scoped rename across components that could be done quickly whenever convenient. |
+| [[id:43C835A9-8F80-428F-9690-7021B46CADEA][Replace parent entity combo box with server-side searchable widget]] | This is a well-scoped, standalone fix for a real data-truncation bug (silent 1000-row limit) with clearly identified affected code sites, making it a plausible near-term pickup regardless of sprint theme. |
+| [[id:0EAB0568-FA7D-49F0-B0D4-C6522FD3F0FB][Setup code quality actions]] | Flags a real security gap (secret scanning didn't catch a planted test password) plus a broken CI build, giving it genuine urgency as a near-term infra fix. |
+| [[id:30D73951-A942-4452-8438-9AB9115AD53A][Windows WiX installer: break through the v3 size and file-count limits]] | This is an active, currently-blocking packaging issue on Windows builds with prior attempted fixes documented, giving it real urgency for near-term work. |
+
+*** Outcome
+
+| Bucket | Before | After |
+|--------+--------+-------|
+| inbox | 208 | *0* |
+| next | 224 | 273 |
+| deferred | 56 | 215 |
+
+=inbox= is empty of pre-existing items, satisfying the acceptance
+criterion. Notably, more items ended up in =deferred= (215) than
+=next= (273 is still larger, but deferred nearly quadrupled) —
+consistent with =inbox= having accumulated years of speculative/
+research/nice-to-have ideas never triaged, most of which are
+genuinely long-horizon rather than near-term candidates.
+
+*** Scope note
+
+Scoring rubric explicitly did *not* require sprint-23-theme fit as
+the sole =next= criterion — a well-scoped bug fix or standalone
+improvement was scored =next= on its own merits (urgency, standalone
+scope, readiness), not only if it matched the refdata/codegen theme.
+This avoided the failure mode the skill's own Step 5 warns against:
+demoting everything that isn't this sprint's specific theme to
+=deferred=, which would make =next= useless for the *following*
+sprint's planning session.
+
+No per-item spot-check of all 310 moves was performed given the
+volume — this is a scope/thoroughness trade-off worth flagging, not
+a silent gap: a sample-based trustworthiness check (à la the deep
+refinement's discard check) would be a reasonable addition for a
+future run at this scale.

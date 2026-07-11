@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: C6350BAD-5E4E-443B-9CA3-496A3B84B699
+:END:
+#+title: Illustrative org-roam links in doc bodies break the site build
+#+description: Org document prose that uses placeholder link syntax (e.g. id:... in double-brackets) as an illustrative example causes the site builder to attempt link resolution, failing with 'Unable to resolve link'. The fix is verbatim markup; the harder fix is making the exporter tolerate unresolvable links.
+#+type: capture
+#+level: cross
+#+filetags: :documentation:org_roam:ci:site_build:
+#+created: 2026-06-12
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+When a document uses =[[id:...][label]]= or similar placeholder syntax as an
+illustrative example in prose, the org-roam site builder treats it as a real
+link and tries to resolve the ID. If the ID is not real (e.g. =id:...= or
+=id:UUID=) the build fails with =Unable to resolve link: "..."=. The safe
+workaround is to wrap any illustrative link syntax in a code span (=...=) so
+org-mode treats it as verbatim text rather than a link. A harder fix would be
+to update the site-build configuration or the org export pipeline to tolerate
+unresolvable links with a warning rather than an error; or to add a lint check
+that catches bare placeholder IDs before they reach CI.
+
+* Why
+
+This pattern caused a CI failure in PR #1277: the task Goal section used
+=[[id:...][Sprint NN]]= as an example to describe the link format being added,
+which broke the site build. The error is non-obvious — the doc looks correct in
+Emacs, the problem only surfaces during the Emacs batch export on CI. Any doc
+that explains org-roam link conventions (runbooks, recipes, task docs) is
+vulnerable to the same mistake.
+
+* References
+
+- PR #1277 — first instance of this failure: =task_add_next_sprint_links.org= Goal section.
+- The site build error message: =Build failed: Unable to resolve link: "..."=.
+
+* See also
+
+- [[id:E767A313-2E08-4682-8586-39138529385C][Agile Add Capture]] — the skill whose illustrative link syntax in the runbook could trigger the same issue.

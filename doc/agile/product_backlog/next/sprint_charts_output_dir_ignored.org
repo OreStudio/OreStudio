@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: C67A7360-124E-4420-BE3C-7ADC25AA5DDD
+:END:
+#+title: compass sprint charts --output-dir is ignored by the gnuplot render step
+#+description: The Python data-prep step honours --output-dir for its CSVs, but every tangled *.gnuplot script hardcodes both its CSV input path and PNG output path to build/output/sprint_NN/ and doc/agile/versions/v0/sprint_NN/, so passing a non-default --output-dir silently renders charts from stale data in the hardcoded location instead.
+#+type: capture
+#+level: cross
+#+filetags: :compass:tooling:agile:charts:
+#+created: 2026-07-10
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass sprint charts --output-dir <dir>= advertises a general output
+location override, and its Python data-prep step honours it (writes
+=sprint_activity.csv=, =sprint_progress.csv=, =pr_cycle_times.csv=
+into =<dir>=). But the four tangled gnuplot scripts under
+[[proj:scripts][=scripts/=]] (=sprint_prs_commits.gnuplot=, =sprint_line_churn.gnuplot=,
+=sprint_pr_cycle.gnuplot=, =sprint_stories_done.gnuplot=, all tangled
+from [[proj:doc/agile/sprint_charts.org][=doc/agile/sprint_charts.org=]]) each hardcode both their CSV input
+path (=build/output/sprint_%s/sprint_activity.csv=, printf-formatted
+from the sprint number alone) and their PNG =set output= path
+(=doc/agile/versions/v0/sprint_%s/<name>.png=) — neither honours
+=--output-dir= at all. Reproduced this session: ran
+=compass sprint charts --sprint 22 --output-dir
+doc/agile/versions/v0/sprint_22=, which happened to still find a
+*stale* =build/output/sprint_22/sprint_activity.csv= left over from an
+earlier run (5 days of data, cut off at 2026-07-05, with a spurious
+2026-06-30 row) and silently rendered all four charts from it — 4 days
+short of the sprint's actual 9 days of activity. The bug was only
+caught because the charts visibly stopped mid-sprint; a same-day
+regeneration for the *default* output dir would have masked it
+entirely by coincidence.
+
+* Why
+
+Silent stale-data rendering is worse than an outright failure: the
+charts looked plausible (axes, legend, and styling all correct) and
+would have shipped into the sprint's health-review record showing 4
+days of activity instead of 9, understating both commit load and PR
+velocity right when a health review most needs accurate numbers. The
+=--output-dir= flag's own =--help= text promises a general override
+with no caveat that only half the pipeline respects it.
+
+* References
+
+- =scripts/sprint_prs_commits.gnuplot=,
+  =scripts/sprint_line_churn.gnuplot=, =scripts/sprint_pr_cycle.gnuplot=,
+  =scripts/sprint_stories_done.gnuplot= — all four hardcode
+  =build/output/sprint_%s/= as the CSV read path and
+  =doc/agile/versions/v0/sprint_%s/= as the PNG write path.
+- [[proj:doc/agile/sprint_charts.org][=doc/agile/sprint_charts.org=]] — literate source these scripts tangle
+  from; the fix belongs there, then re-tangle.
+- Reproduced 2026-07-10 on sprint 22: stale
+  =build/output/sprint_22/sprint_activity.csv= (5 rows, last day
+  2026-07-05) silently used instead of the fresh 9-row CSV written to
+  =doc/agile/versions/v0/sprint_22/= by the same invocation.
+
+* See also
+
+-

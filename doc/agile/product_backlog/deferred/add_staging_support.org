@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 7D52E4D1-4A2C-4BEB-A661-372D60FFD676
+:END:
+#+title: Add staging support
+#+description: Add staging support
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We need to add support for staging for all entities, in preparation of
+authorisation queue. We probably should just call this "authq" rather than
+staging.
+
+Notes:
+
+- server side writes to staging table instead of production table. Write
+  contains signature.
+- user opens authq for an entity and sees entry. Authorises, which signs the
+  row. If there are enough signatures, row is promoted into production with the
+  last signature. This happens via stored proc which checks where we are in the
+  state machine. If we have finished, we mark the row in staging as completed
+  and copy it into production.
+- end users open the entity dialog. This shows all live rows (e.g. those in
+  production) plus recent deletes, plus "pre-live" rows which are rows waiting
+  for authorisation.

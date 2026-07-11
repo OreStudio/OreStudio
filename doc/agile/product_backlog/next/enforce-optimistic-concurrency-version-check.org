@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: F1DCD4D8-B9B8-4B5F-976D-78E951C031FA
+:END:
+#+title: Enforce optimistic concurrency version checks at the DB layer (remove the version=0 bypass)
+#+description: Replace the undocumented version=0 'skip the check' sentinel in every codegen'd entity's insert trigger with an explicit, separate force/upsert signal, so a genuine duplicate-key create is rejected at the DB layer for every client, not just caught by a per-entity Qt-side pre-check.
+#+type: capture
+#+level: cross
+#+filetags: :database:versioning:concurrency:codegen:architecture:
+#+created: 2026-07-09
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every codegen'd entity's insert trigger
+(=sql_schema_domain_entity_create.mustache=) treats a caller-supplied
+=version = 0= as "skip the optimistic-concurrency check, accept
+regardless of the row's current version" — a sentinel silently
+overloaded across four different write intents (interactive create,
+DQ publish/upsert, synthetic generation, revert-to-history). Introduce
+an explicit, separate signal (protocol-level =force_version: bool=,
+or a dedicated upsert path distinct from the plain insert) for the
+three intentional-upsert use cases, then remove the =version = 0=
+bypass from the trigger entirely so a genuine duplicate-key create is
+rejected — at the DB layer, for every client (Qt, shell, HTTP, future
+UIs), not just wherever someone remembered to add a client-side
+pre-check.
+
+* Why
+
+Currently a genuine create-with-colliding-key silently overwrites an
+unrelated existing row instead of being rejected — found and fixed
+for =currency_pair= specifically via a client-side pre-check (see
+[[id:03FDF102-2379-4C73-BFD8-FA71BF670BF5][Creating a Currency Pair with an already-used pair_code silently
+versions the existing row]]), but that fix only covers one entity and
+one client; every other codegen'd entity with a Qt create flow has
+the same latent hole, exploitable by any client that skips the
+(currently nonexistent, DB-level) check.
+
+* References
+
+- =projects/ores.codegen/library/templates/sql_schema_domain_entity_create.mustache=
+  — the shared insert-trigger template to change.
+- =projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql=
+  — a batch-upsert consumer that needs the new explicit force signal.
+- =projects/ores.codegen/library/templates/cpp_domain_type_generator.cpp.mustache=
+  — synthetic generators, another =version = 0= consumer.
+
+* See also
+
+- [[id:CE4752C0-7A3C-46B4-AC97-922C5B940BB1][Optimistic Concurrency Versioning: the version=0 Overload and Why
+  It's a Problem]] — the full write-up: mechanism, all four use cases
+  with concrete examples, and the proposed fix (this capture is that
+  document's "Recommendation" section, option A).
+- [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — a sibling gap
+  in the same insert-trigger template; should be designed together,
+  not sequentially (see that document's cross-reference).
+- [[id:32B11CDE-02D7-48D7-8F64-1311B2F5FD06][Bulk-regenerate synthetic generators to fix hardcoded r.version = 1]]
+  — a second bug from getting the same undocumented sentinel wrong.

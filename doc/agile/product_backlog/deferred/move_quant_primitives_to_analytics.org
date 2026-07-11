@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 0B099F52-9011-4339-A346-78089A8D5815
+:END:
+#+title: Move generic quant primitives to ores.analytics
+#+description: Relocate quant building blocks (stochastic processes, etc.) that are not synthetic-data-specific from ores.synthetic to ores.analytics.
+#+type: capture
+#+level: cross
+#+filetags: :ores.synthetic:ores.analytics:architecture:refactor:
+#+created: 2026-06-29
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+While building the synthetic market-data generation feature we added
+generic quant primitives to =ores.synthetic= — notably the stochastic
+price processes under
+=projects/ores.synthetic/service/src/processes/= (=gmm_process=,
+=arithmetic_gmm_process=, the =process_factory=, and the
+=IStochasticProcess= abstraction currently in
+=projects/ores.marketdata.api/domain/i_stochastic_process.hpp=). These
+are general quantitative building blocks (Gaussian mixture models,
+Brownian-motion engines, RNG-driven path generation) that are not
+specific to synthetic-data generation. Audit =ores.synthetic= (and
+=ores.marketdata=) for such quant code and relocate it to
+=ores.analytics=, leaving =ores.synthetic= to depend on
+=ores.analytics= for the maths and keep only the data-generation
+orchestration (feed configs, GMM component persistence, the simulate
+handler wiring).
+
+* Why
+
+=ores.analytics= is the designated home for quantitative/analytical
+code; =ores.synthetic= is specifically about generating synthetic
+datasets. Keeping reusable quant primitives in =ores.synthetic= buries
+them where other components (pricing, risk, scenario analytics) cannot
+discover or reuse them, and blurs the component boundaries. Moving them
+to =ores.analytics= makes the maths reusable across the system and keeps
+each component's responsibility crisp.
+
+* References
+
+- =projects/ores.synthetic/service/src/processes/gmm_process.{hpp,cpp}= — GMM stochastic price process.
+- =projects/ores.synthetic/service/src/processes/arithmetic_gmm_process.{hpp,cpp}= — arithmetic Brownian variant.
+- =projects/ores.synthetic/service/src/process_factory.{hpp,cpp}= — engine factory.
+- =projects/ores.marketdata.api/domain/i_stochastic_process.hpp= — the process abstraction.
+
+* See also
+
+-

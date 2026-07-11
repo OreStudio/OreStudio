@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 82A24629-DBD4-454E-8EF1-2E3C0728ECC9
+:END:
+#+title: Two small ref-data UI bugs: (1) market tiers has an icon but…
+#+description: Two small ref-data UI bugs: (1) market tiers has an icon button that does nothing — wire it or remove it; (2) deleting a rounding type does not auto-refresh the list — trigger a refresh on delete.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

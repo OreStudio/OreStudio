@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 5B8E8BB5-F410-4815-8FFF-4B3C71B3A7D2
+:END:
+#+title: compass single-environment mode for plain clones
+#+description: Users who clone the repo without following the ores_dev_prime_origin convention should get a fully functional but simplified compass experience with no fleet, no genesis warnings, and no worktree concepts.
+#+type: capture
+#+level: cross
+#+filetags: :compass:env:ux:fleet:bearings:
+#+created: 2026-06-16
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+When a user clones the repo into any directory (e.g. =~/OreStudio=) without following the
+=ores_dev_prime_origin= genesis convention, compass should auto-detect the "single environment"
+mode and suppress all multi-worktree concepts. In this mode: =compass bearings= shows no
+genesis warning and no fleet section; =compass fleet= reports just the current checkout with a
+note that fleet mode is inactive; =compass env provision= is hidden or warns that it requires a
+genesis env to operate; and =compass bearings= guides the user through the simple
+clone → configure → build path without mentioning worktrees. The mode is detected heuristically
+— the checkout name does not match =ores_dev_*= and no sibling =ores_dev_*= directories exist
+in the parent — and requires no user configuration.
+
+* Why
+
+The genesis/worktree model is designed for power users managing multiple parallel environments.
+Regular contributors (open-source users, occasional contributors, CI agents) just want to clone,
+build, and work. Surfacing genesis warnings, fleet sections, and worktree provisioning commands
+to them creates noise and confusion. A single-environment mode makes compass approachable for
+the common case while keeping the full fleet model available for those who opt into it by
+following the naming convention.
+
+* References
+
+- Current genesis detection added in =projects/ores.compass/src/compass.py= =cmd_bearings()=
+  (sprint 21, task 27985F41): the fresh-clone branch could be extended to set a mode flag.
+- =compass fleet= in =compass.py= — currently shows all worktrees unconditionally.
+- Detection heuristic: check =PROJECT_ROOT.name.startswith("ores_dev_")= and
+  =any(p.name.startswith("ores_dev_") for p in PROJECT_ROOT.parent.iterdir())=.
+
+* See also
+
+- [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Story: Environment provisioning overhaul]]
+- [[id:27985F41-8221-417B-8E89-3AA015D17DEC][Task: Update bootstrap docs and add compass bearings warning for missing genesis env]]

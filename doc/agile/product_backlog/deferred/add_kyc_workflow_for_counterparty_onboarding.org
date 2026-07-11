@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: C2CBFABD-0358-4038-9867-63048565391A
+:END:
+#+title: Add KYC workflow for counterparty onboarding
+#+description: Add KYC workflow for counterparty onboarding
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+In production tenants, counterparty creation requires a KYC (Know Your Customer)
+process with supporting documentation. Each operational party manages their own
+counterparties independently. The workflow should integrate with the four-eyes
+authorisation framework.
+
+**** Acceptance Criteria
+
+- Counterparty creation in production tenants goes through KYC workflow.
+- Supporting documentation can be attached.
+- Four-eyes approval required before counterparty is active.
+- Each party's counterparties are isolated from other parties.

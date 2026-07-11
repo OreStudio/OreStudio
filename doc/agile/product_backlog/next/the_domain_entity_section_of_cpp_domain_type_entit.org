@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 0CD7A581-8C72-40E9-B87D-62C80BBD342D
+:END:
+#+title: Unify junction entity timestamp type to db_timestamp alias
+#+description: The domain_entity section of cpp_domain_type_entity_hpp.org uses db_timestamp (via db_types.hpp) for valid_from/valid_to after PR #1316, but the junction section still uses sqlgen::Timestamp directly. These should be unified for consistency. The composite-PK interaction with sqlgen must be validated first (valid_from is part of the junction PK). See * Design notes in cpp_domain_type_entity_hpp.org for full pros/cons. Recommend a dedicated template-cleanup task after validating with a test junction entity.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:templates:cpp:refdata:
+#+created: 2026-06-25
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

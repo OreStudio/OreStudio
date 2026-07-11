@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: D48BEA76-F879-4C16-8310-933B7EAEBCDF
+:END:
+#+title: ores.controller.service crashes with corrupted UTF-8 byte after launching a service
+#+description: ores.controller.service dies shortly after starting a supervised service (observed with ores.wt.service) with a non-deterministic invalid-UTF8-byte error (0x99, then 0x8f on a second run) in the SET app.current_service context query at service_instance_repository::update_phase(); looks like memory corruption, not a data issue.
+#+type: capture
+#+level: cross
+#+filetags: :controller:bug:memory-safety:blocker:
+#+created: 2026-07-03
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Investigate and fix a crash in =ores.controller.service=: shortly after
+=process_supervisor= launches a supervised service (reproduced with
+=ores.wt.service[0]=), =service_instance_repository::update_phase()=
+checks out a fresh pooled connection, and =tenant_aware_pool='s
+=SELECT set_config('app.current_service', '<value>', false)= hook fails
+with =ERROR: invalid byte sequence for encoding "UTF8": 0x<byte>= — a
+different byte each run (=0x99= then =0x8f= across two consecutive
+=compass services start= attempts in environment =solid_dirac=, both on
+a freshly recreated, empty database). The =<value>= being set is the
+per-process constant =service_account_= string (e.g.
+=ores_solid_dirac_controller_service=), which is identical and clean on
+every one of the four earlier successful calls to the same statement
+earlier in the same process's lifetime — only this specific call site
+(the connection checked out for the first =update_phase= write after a
+launch) corrupts it, and the byte value is non-deterministic across
+runs. The controller process then goes silent and dies (no crash log,
+no further output) — =compass services status= reports it and the
+child service as dead moments later.
+
+* Why
+
+A non-deterministic single-byte corruption at a fixed call site, varying
+between runs, is the signature of a memory-safety bug (uninitialised
+read, use-after-free, or small-buffer overrun) rather than a data
+problem — worth an ASAN/valgrind pass on =ores.controller.service=,
+focused on =process_supervisor.cpp= (=update_phase= call path) and
+=tenant_aware_pool.hpp='s connection-checkout hook
+(=projects/ores.database/include/ores.database/domain/tenant_aware_pool.hpp:227-236=).
+This blocks any workflow that needs the controller-supervised fleet up
+(e.g. the =solid_dirac= environment's party_type Qt UI verification
+task), so likely affects other developers/environments once hit.
+
+* References
+
+- =projects/ores.controller/core/src/repository/service_instance_repository.cpp:88-102= (=update_phase=)
+- =projects/ores.controller/core/src/service/process_supervisor.cpp= (launch → phase-update sequence)
+- =projects/ores.database/include/ores.database/domain/tenant_aware_pool.hpp:227-236= (service-context =SET= hook)
+- Crash log (run 1, byte =0x99=) and (run 2, byte =0x8f=) captured 2026-07-03 in environment =solid_dirac=, both immediately after =compass db recreate -y -k=.
+
+* See also
+
+- [[id:21E5D45B-9CAD-4146-8ECF-1ACDB6398508][Task: Verify party_type Qt UI end-to-end post-NATS]] — blocked on this.

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 2554F7A6-8F2A-4545-9D5E-CE52EB852560
+:END:
+#+title: Move Portfolio's Qt CRUD UI from ores.qt/trading to ores.qt/refdata
+#+description: Portfolio's backend already lives in ores.refdata, and Book/BookStatus's Qt UI already lives under ores.qt/refdata to match -- but Portfolio's own CRUD Qt files (detail/history/MDI/controller/client model) are still under ores.qt/trading, inconsistent with its own backend and with the Book precedent.
+#+type: capture
+#+level: cross
+#+filetags: :qt:refdata:trading:portfolio:consistency:
+#+created: 2026-07-10
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Move Portfolio's own entity-CRUD Qt files from
+=projects/ores.qt/trading/= to =projects/ores.qt/refdata/=:
+=PortfolioMdiWindow=, =PortfolioDetailDialog=, =PortfolioHistoryDialog=,
+=PortfolioController=, and =ClientPortfolioModel= (=.hpp=/=.cpp=/=.ui=
+as applicable), plus their wiring in =RefdataPlugin=/=TradingPlugin=
+menu registration and any CMake component-library assignment. Do
+*not* move =PortfolioExplorerMdiWindow=,
+=PortfolioExplorerTreeModel=, or =PortfolioExplorerTradeModel= — that
+cluster is a distinct trading-analysis feature (browsing trades via
+the portfolio tree), a *consumer* of portfolio data rather than
+portfolio's own CRUD, and legitimately belongs in =ores.qt/trading=
+the same way it would if it browsed trades via the book tree instead.
+
+* Why
+
+Discovered while abandoning [[id:D83F5588-5F05-4AF6-9CCF-98489309DE4A][Move book, book_status, and portfolio to
+ores.trading]] and documenting why book/portfolio belong in
+=ores.refdata= (see [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]]§"Where this lives in ORE Studio"). Checking
+the Qt layer for the same consistency found: =Book= and =BookStatus=
+already got this right — their Qt UI lives under =ores.qt/refdata/=,
+matching their backend home — but =Portfolio='s own CRUD Qt files
+were never moved to match, even though its backend
+(=ores.refdata.portfolio.org=) has lived in =ores.refdata= the whole
+time. The mismatch is Qt-layer-only; nothing about the backend
+placement decision is in question here.
+
+* References
+
+- =projects/ores.qt/refdata/= — where =Book=/=BookStatus='s Qt UI
+  already lives; the pattern to match.
+- =projects/ores.qt/trading/src/Portfolio{MdiWindow,DetailDialog,
+  HistoryDialog,Controller}.cpp=, =ClientPortfolioModel.cpp= — the
+  files to move.
+- =projects/ores.qt/trading/src/PortfolioExplorer*.cpp= — explicitly
+  out of scope; stays in =ores.qt/trading=.
+- =projects/ores.refdata/modeling/ores.refdata.portfolio.org= — the
+  backend model these Qt files should sit alongside.
+
+* See also
+
+- [[id:D83F5588-5F05-4AF6-9CCF-98489309DE4A][Move book, book_status, and portfolio to ores.trading]] — the
+  abandoned story that surfaced this.
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — the knowledge hub recording the refdata-placement reasoning
+  this capture extends to the Qt layer.

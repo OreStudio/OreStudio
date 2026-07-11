@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 149C6E94-5E5B-454C-89C0-60DED784C5A8
+:END:
+#+title: Add codegen templates to generate Qt plugin class
+#+description: Codegen should generate the plugin class (MarketdataPlugin pattern) alongside the other Qt files for a domain entity component.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:qt:templates:
+#+created: 2026-06-30
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+When codegen generates Qt files for a domain entity component (e.g. =feed_binding=
+producing =FeedBindingController=, =FeedBindingMdiWindow=, dialogs, etc.), it should
+also generate the component-level plugin class — the =MarketdataPlugin= equivalent.
+This means adding three templates: =cpp_qt_plugin.hpp.mustache=,
+=cpp_qt_plugin.cpp.mustache=, and =MarketdataExport.hpp.mustache= (the export macro
+header). The plugin wires one controller per entity into =on_login= / =setup_menus= /
+=on_logout=, registers with =Q_PLUGIN_METADATA=, and contributes entries to the
+relevant shared menu. The =CMakeLists.txt= template should also emit
+=target_compile_definitions(... PRIVATE ORES_QT_<COMPONENT>_LIBRARY)=,
+=-fvisibility=hidden=, and =LIBRARY_OUTPUT_DIRECTORY= pointing at the plugin dir.
+Currently this is all hand-written (see =projects/ores.qt/marketdata/= for the
+reference implementation created in task D8008A82).
+
+* Why
+
+Without generated plugin scaffolding, every new component requires hand-writing
+the plugin class, export header, and CMakeLists wiring — several hundred lines of
+boilerplate that are error-prone (wrong =load_order=, missing export macro, forgetting
+=-fvisibility=hidden=, landing the =.so= in the wrong output directory). The
+=MarketdataPlugin= was hand-written in this sprint precisely because codegen did not
+cover it; capturing this now ensures the next component gets it for free.
+
+* References
+
+- Reference implementation: =projects/ores.qt/marketdata/include/ores.qt/MarketdataPlugin.hpp=
+- Reference implementation: =projects/ores.qt/marketdata/src/MarketdataPlugin.cpp=
+- Reference export header: =projects/ores.qt/marketdata/include/ores.qt/MarketdataExport.hpp=
+- Reference CMakeLists: =projects/ores.qt/marketdata/src/CMakeLists.txt=
+- Existing Qt templates: =projects/ores.codegen/library/templates/cpp_qt_*.mustache=
+
+* See also
+
+-

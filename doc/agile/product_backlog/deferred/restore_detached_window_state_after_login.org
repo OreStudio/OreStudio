@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 1236B577-D847-4D1E-9EDB-DC93BB044D67
+:END:
+#+title: Restore detached window state after login
+#+description: Restore detached window state after login
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Extend session restore to preserve whether windows were detached (floating) or
+attached to the MDI area. Save the detach state and screen-absolute geometry for
+detached windows. On restore, recreate detached windows as floating =Qt::Window=
+instances at their saved screen positions.
+
+Also handle edge cases:
+
+- Saved geometry references a monitor that no longer exists: fall back to
+  attaching the window to the MDI area
+- Per-user session storage using =session/<username>/windows= QSettings key, so
+  different users get their own workspace layout
+
+Files to modify:
+
+- =MainWindow.cpp= - extend save/restore to include detach state and absolute
+  geometry
+- =DetachableMdiSubWindow.hpp/cpp= - add =isDetached()= accessor if not present;
+  add =restoreDetachedState()= method
+
+Depends on: "Restore detail and history windows after login"
+
+Acceptance criteria:
+
+- Detached windows reappear as floating windows at their saved screen positions
+- Attached windows reappear inside the MDI area at their saved positions
+- Invalid screen geometry gracefully falls back to MDI-attached
+- Different usernames get independent session layouts

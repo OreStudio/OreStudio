@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 5DCF4057-B569-4835-A06E-778007019080
+:END:
+#+title: Qt codegen: introduce to_display_key() helper to unify UUID/string key display
+#+description: Qt codegen currently handles UUID vs string key field display via mustache prefix/suffix variables injected by core.py (key_to_string_prefix / key_to_string_suffix). This works but is fragile. When a second UUID-keyed entity goes through codegen, introduce a small free function ores::qt::to_display_key() with overloads for boost::uuids::uuid (calls boost::uuids::to_string) and std::string (identity). Replace the prefix/suffix template pattern with a single {{to_display_key(item.field)}} call. Do not introduce this until the pattern is confirmed stable across at least two UUID-keyed entities.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:qt:uuid:refactor:
+#+created: 2026-06-30
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

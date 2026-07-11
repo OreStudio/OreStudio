@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 0D1976E2-5149-4DF2-8A4D-870896A98592
+:END:
+#+title: Document pg_notify rename as breaking change in deployment runbook
+#+description: The ores_{component}_{entity_plural} channel rename requires SQL triggers and application binary to be updated atomically; a partial deploy silently drops all change events.
+#+type: capture
+#+level: cross
+#+filetags: :sql:eventing:deployment:runbook:pg_notify:
+#+created: 2026-06-07
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

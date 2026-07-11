@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: FEA0593A-8ECB-43FB-83F9-6EFF120492EB
+:END:
+#+title: Add serialisation tests for analytics domain types
+#+description: No tests exist for analytics domain types (pricing engine type, pricing model config, etc.). Add basic round-trip serialisation tests for each.
+#+type: capture
+#+level: cross
+#+filetags: :code:testing:analytics:
+#+created: 2026-05-22
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+No automated tests exist for the analytics domain types (=PricingEngineType=, =PricingModelConfig=, etc.). At minimum, add basic round-trip tests:
+
+- Construct a domain object with known field values.
+- Serialise to the wire format (JSON / proto / SQL round-trip via the service).
+- Deserialise and assert field equality.
+
+These are unit-level tests and do not require a running database.

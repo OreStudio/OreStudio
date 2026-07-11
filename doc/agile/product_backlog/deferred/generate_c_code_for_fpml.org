@@ -1,0 +1,14 @@
+:PROPERTIES:
+:ID: E67C0404-6BF0-4FB0-8BDD-ECB975F474C4
+:END:
+#+title: Generate C++ code for FPML
+#+description: Generate C++ code for FPML
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We need to fix any limitations we may have in xsdcpp.

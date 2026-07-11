@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: C70C3D05-88BD-4468-ABCB-3DBF165090FC
+:END:
+#+title: Evaluate change reasons for role permission tables
+#+description: Evaluate change reasons for role permission tables
+#+type: capture
+#+level: cross
+#+filetags: :analysis:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Should role and permission junction tables have change reason support? Analyse
+whether the audit trail benefit justifies the additional complexity for these
+administrative tables.

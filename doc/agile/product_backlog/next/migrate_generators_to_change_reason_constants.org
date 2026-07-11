@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 008F2F44-3040-43E1-8A7C-1828FE136C8C
+:END:
+#+title: Migrate ores.refdata generators to change_reason_constants.hpp
+#+description: Replace hardcoded change-reason-code string literals across ~30 remaining ores.refdata generator files with the shared ores.dq.api change_reason_constants.hpp constants.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:codegen:tech-debt:generators:
+#+created: 2026-07-04
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+~33 =ores.refdata= generator files hardcode change-reason-code string
+literals (=\"system.test\"=, =\"system.new\"=) instead of referencing
+=ores.dq.api/domain/change_reason_constants.hpp=. During the
+refdata-test-fixture-drift hotfix, two new constants were added there
+(=codes::synthetic_new=, =codes::synthetic_test_data=) and wired into 3
+generators (=counterparty_generator.cpp=,
+=party_identifier_generator.cpp=,
+=counterparty_identifier_generator.cpp=) as part of the fix. The
+remaining ~30 generators (currency, party, book, business_centre,
+business_unit, the convention family, etc.) still use raw literals.
+Migrate them all to the shared constants, and check whether the
+per-entity =.org= codegen sources (where =business_center_code=-style
+facets are templated) or the =cpp_domain_type_generator.cpp.mustache=
+template itself should emit the constant reference instead of a
+literal, so future codegen regens can't silently drift the value
+again.
+
+* Why
+
+This exact class of bug — a codegen regen commit silently changing a
+literal string with no compiler-enforced link to the canonical value —
+caused a CI-breaking test/DB-constraint drift (fixed via the
+refdata-test-fixture-drift hotfix). Using named constants throughout
+would make any future accidental change a compile error (typo in a
+constant name) rather than a silent runtime/test failure.
+
+* References
+
+- =projects/ores.dq/api/include/ores.dq.api/domain/change_reason_constants.hpp=
+- =projects/ores.refdata/api/src/generators/= (all generator files)
+- =projects/ores.codegen/library/templates/cpp_domain_type_generator.cpp.mustache=
+
+* See also
+
+-

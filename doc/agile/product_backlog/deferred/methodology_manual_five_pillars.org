@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 1BAD6E5B-600F-4DE7-8BCD-797072A490D7
+:END:
+#+title: Write the ORE Studio development methodology manual
+#+description: A manual documenting the five-pillar development methodology used to build ORE Studio: the Karpathy vibe-coding approach, Cybernetics, MASD, Agile, and LLMs — explaining how they integrate into a unified product-development practice with concrete examples.
+#+type: capture
+#+level: cross
+#+filetags: :methodology:manual:documentation:llm:
+#+created: 2026-06-07
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Create a user manual chapter (or standalone manual) that documents the
+five-pillar methodology ORE Studio uses to develop itself. The five
+pillars are: (1) the *Karpathy vibe-coding approach* — human sets
+direction and judges outcomes, LLM handles execution, with rapid
+iterative cycles and trust in the model's judgment on implementation
+details; (2) *[[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]]* — feedback loops, requisite variety, the Viable
+System Model as an organising principle for the information architecture;
+(3) *[[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]]* — Model Assisted Software Development: logical/physical space,
+facets, archetypes, the backout strategy, and LLM-adapted codegen;
+(4) *[[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]]* — sprint-based delivery, story/task decomposition, capture
+triage, and the compass toolchain that keeps the process frictionless;
+(5) *[[id:3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6][LLMs]]* — the dual human/LLM audience, skill authoring, memory
+management, and session continuity practices. The manual must explain
+not just each pillar in isolation but how they compose: cybernetics
+provides the control theory; MASD provides the modelling discipline;
+agile provides the delivery cadence; LLMs provide the execution layer;
+the Karpathy approach provides the human-machine collaboration model.
+Concrete examples should include: compass commands for common workflows,
+skill authoring and deployment, session orientation with bearings, PR
+lifecycle, capture-to-story promotion, and codegen via literate templates.
+
+* Why
+
+ORE Studio has a distinctive and non-obvious methodology that is not
+documented as a coherent whole. New contributors (human or LLM) must
+piece it together from scattered references — cybernetics in =doc/meta/=,
+MASD in =doc/knowledge/masd/=, agile in =doc/agile/=, LLMs in =doc/llm/=.
+A unified methodology manual would (a) onboard contributors faster,
+(b) make the design decisions legible to external readers, and (c) serve
+as the canonical reference when the methodology itself evolves.
+
+* References
+
+- [[https://x.com/karpathy/status/2039805659525644595][Karpathy on vibe-coding (X post)]] — the primary reference for the human-direction / LLM-execution collaboration model.
+- [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — existing knowledge doc: feedback, variety, regulation, Beer's VSM.
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — existing knowledge doc: full methodology overview with Dogen references.
+- [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] — existing knowledge doc: agile information architecture index.
+- [[id:3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6][ORE Studio as an LLM-first system]] — existing knowledge doc: philosophy, dual audience, contribution model.
+
+* See also
+
+- [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — pillar 2.
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — pillar 3.
+- [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] — pillar 4.
+- [[id:3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6][ORE Studio as an LLM-first system]] — pillar 5.

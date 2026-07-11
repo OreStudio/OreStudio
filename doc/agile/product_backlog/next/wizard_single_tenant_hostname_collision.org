@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 835CE154-2A0D-44C8-89BF-5059F156105A
+:END:
+#+title: System wizard single-tenant default hostname collides with seeded Root Tenant
+#+description: The SystemProvisionerWizard's single-tenant mode pre-fills tenant hostname 'localhost', but the database seed now creates the Root Tenant on hostname 'localhost' and tenant hostnames are unique — so the wizard's default path fails with a duplicate-key error. Found live while verifying provision_all.ores (the shell porcelain inherited the same default and had to override with --tenant-hostname default). Fix the wizard default (e.g. derive hostname from code) or the seed.
+#+type: capture
+#+level: cross
+#+filetags: :qt:iam:provisioning:
+#+created: 2026-06-07
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

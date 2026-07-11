@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 27BEC5E8-D6BD-4738-AF4A-5ED9FB9A6A30
+:END:
+#+title: Document history diff and complete its task record
+#+description: Document the shell history-diff feature properly (manual/shell docs and recipe narrative) and fill the empty * Result on the [[id:F455B2BE-5562-4561-B8D2-9D85E218B669][Show history as a unified diff in ores.shell]] task — it closed before the merge-writes-Result convention firmed up. Shipped in PR #1105; server-computed diff via ores.diff, command: currencies history-diff <iso>.
+#+type: capture
+#+level: cross
+#+filetags: :shell:history:diff:documentation:
+#+created: 2026-06-06
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -1,0 +1,177 @@
+:PROPERTIES:
+:ID: F58DADE3-D0DB-4366-B559-AF8906A656A6
+:END:
+#+title: Make UI/UX look more professional
+#+description: Make UI/UX look more professional
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Links:
+
+- [[https://www.claude.com/blog/improving-frontend-design-through-skills][Improving frontend design through Skills]]
+- [[https://github.com/VoltAgent/awesome-claude-skills][Awesome Claude Skills]]
+- [[https://devexperts.com/blog/ui/][Designing User Interface in the Trading Software]]
+- [[https://www.businesswire.com/news/home/20240109821427/en/The-New-B2Core-v4---Modern-Interfaces-and-Revamped-Designs][The New B2Core v4 - Modern Interfaces and Revamped Designs]]
+
+Analysis from Gemini:
+
+#+begin_src markdown
+To make your Qt application look like an advanced trading system—even for a
+simple CRUD operation screen—requires moving beyond basic desktop application
+styles toward the dense, high-contrast, data-rich aesthetic of platforms like
+Bloomberg or professional broker terminals.
+
+The current look (a dark table with simple data rows) is a great foundation.
+Here are targeted suggestions for your Qt UI to elevate it to a professional,
+advanced trading system aesthetic:
+
+## I. Color and Contrast (The Dark Theme)
+
+Your current dark gray background is good, but trading systems use specific
+contrast to highlight data significance.
+
+1.  **Define a Palette:** Adopt a limited, functional color palette:
+
+      ,* **Primary Background:** A very dark, near-black charcoal (`#1A1A1A` or
+        `#1E1E1E`). This is the foundation.
+      ,* **Foreground/Text:** Clean white or light gray (`#F0F0F0`).
+      ,* **Accent Color (Neutral):** A subdued corporate blue/cyan (`#007ACC` or
+        a subtle green/gold from your branding) for selected rows, borders, and
+        input focus.
+      ,* **Data Status Colors:**
+          ,* **Positive (Gains):** Bright, high-contrast green (`#00C853`).
+          ,* **Negative (Losses):** High-contrast red (`#FF3333`).
+          ,* *(While CRUD isn't about gains/losses, you can use these colors for
+            status, like 'Active' vs. 'Inactive' currencies).*
+
+2.  **Subtle Depth:** Avoid flat black. Use a slightly lighter shade of gray
+    (`#2A2A2A`) for embedded panels, sidebars, and control areas to create
+    visual segmentation, giving the impression of modularity.
+
+## II. Typography and Data Presentation
+
+Trading UIs prioritize density and scannability.
+
+1.  **Monospace Font:** For the currency codes and numerical columns, switch to
+    a clear, legible **monospace font** (like Consolas, Fira Code, or a custom
+    font in Qt). Monospace fonts ensure that all numbers align perfectly in
+    columns, which is essential for rapid data comparison.
+2.  **Font Sizing:** Use a small, consistent font size (e.g., 10pt or 11pt) to
+    fit more data on screen. Use bolding sparingly, primarily for the Currency
+    Code (e.g., USD, EUR).
+3.  **Visual Alignment:**
+      ,* **Text Columns** (Currency Name): Left-aligned.
+      ,* **Code Columns** (ISO Code, Symbol): Center-aligned.
+      ,* **Numerical Columns** (Rounding, Precision): Right-aligned. **This is
+        critical** for financial UIs, as it allows users to compare magnitude
+        instantly.
+
+## III. Advanced Table View Enhancements (QTableView/QTableWidget)
+
+Since the core of this screen is a table, focus on making the table look
+high-tech.
+
+1.  **Header Styling:**
+
+      ,* Make column headers slightly stand out with a subtle dark gradient or a
+        distinct, slightly brighter background color (e.g., `#282828`).
+      ,* Ensure the header font is crisp (perhaps slightly bolder than the row
+        data).
+      ,* Add tiny, clear **sort indicators** to show the current sort direction.
+
+2.  **Row Selection:**
+
+      ,* The selected row should use your accent color (e.g., a thin blue left
+        border or a light blue background fill) with white or light gray text
+        for high visibility.
+      ,* Introduce **subtle, faint horizontal rules** (1px in a color like
+        `#333333`) to separate rows, which aids readability in dense tables.
+
+3.  **Interactive Elements (Hover):** Implement a very subtle change on row
+    hover (e.g., the background darkens by 5%) to indicate interactivity, even
+    if clicking doesn't change the view.
+
+## IV. UI Layout and Modularity
+
+Advanced UIs are rarely monolithic; they are built from modular panels.
+
+1.  **Toolbar (Top):** Create a clean, dedicated toolbar area at the top for
+    your CRUD operations (`Add`, `Edit`, `Delete`) and your system icons
+    (Connection, Reference Data).
+
+      ,* Use the Fluent UI System Icons you researched (`globe-32-regular`,
+        `money-32-regular`).
+      ,* Buttons should be flat, high-contrast text or icons only. On hover, they
+        should reveal a subtle gray background or a thin accent border.
+
+2.  **Side Panel (Right or Left):** Instead of a simple dialog for *editing*,
+    use a dedicated side panel that slides out or appears next to the table when
+    a row is selected.
+
+      ,* This panel would house the detail view for the selected currency. This
+        makes the UI feel like a single workspace rather than navigating modal
+        windows.
+      ,* Give this panel a slightly different background shade (`#2A2A2A`).
+
+3.  **Status Bar (Bottom):** Add a sleek, minimal status bar at the bottom. This
+    is where you would place your connection status icon (using your proposed
+    `globe-32-regular` or `plug-connected-32-regular` icon). It reinforces the
+    "system is live" feel.
+
+## V. Qt-Specific Implementation via Stylesheets
+
+In Qt, you achieve this professional look primarily through **QSS (Qt Style
+Sheets)**. You will be targeting specific widgets (like `QTableView`,
+`QPushButton`, `QLineEdit`) with CSS-like rules.
+
+```css
+/* Example QSS Snippets for the Trading Look */
+
+QTableView {
+    /* Base style for the data area */
+    background-color: #1A1A1A; /* Primary Background */
+    gridline-color: #333333; /* Faint row separators */
+    color: #F0F0F0;
+    border: 1px solid #007ACC; /* Subtle border using accent color */
+    selection-background-color: #007ACC; /* Accent Color for selection */
+    selection-color: white;
+}
+
+QHeaderView::section {
+    /* Style for Column Headers */
+    background-color: #282828; /* Slightly lighter shade for headers */
+    color: #FFFFFF;
+    border: none;
+    padding: 6px;
+    font-size: 11pt;
+    font-weight: bold;
+}
+
+QLineEdit {
+    /* Style for input fields (e.g., in the side panel or search) */
+    background-color: #1A1A1A;
+    border: 1px solid #444444;
+    color: #F0F0F0;
+    padding: 5px;
+}
+
+QPushButton {
+    /* Flat button style for toolbar */
+    background-color: transparent;
+    border: none;
+    color: #F0F0F0;
+    padding: 8px 12px;
+}
+
+QPushButton:hover {
+    /* Hover effect */
+    background-color: #2A2A2A;
+    border: 1px solid #007ACC;
+}
+```
+#+end_src

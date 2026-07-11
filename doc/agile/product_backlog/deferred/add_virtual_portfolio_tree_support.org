@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: F5061FB4-B658-4578-A76B-3EA7B3DE4AB2
+:END:
+#+title: Add virtual portfolio tree support
+#+description: Add virtual portfolio tree support
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+A virtual portfolio is a reporting overlay that aggregates trades from real
+portfolios and books without owning them directly. Because a book has a single
+=parent_portfolio_id=, virtual portfolio membership requires a separate junction
+table. This story adds the full stack for virtual portfolios:
+
+**** Acceptance Criteria
+
+- New junction table =ores_refdata_virtual_portfolio_books= mapping virtual
+  portfolios to books, with the full SQL machinery (triggers, RLS, notify).
+- Domain type, repository, service, and protocol messages for the junction.
+- Virtual portfolios (=is_virtual = 1=) are shown in the
+  =PortfolioBookTreeMdiWindow= as a separate tree section below the real tree,
+  using =briefcase_20_regular= icons.
+- Selecting a virtual portfolio node or any of its book leaves filters the trade
+  table using the junction membership list.
+- Stale indicator responds to changes on the virtual portfolio membership.

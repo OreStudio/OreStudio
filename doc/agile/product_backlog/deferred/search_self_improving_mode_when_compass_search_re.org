@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 113CA705-2A6D-46A3-8E05-C6D27CF8C672
+:END:
+#+title: Compass search: self-improving mode for failed queries
+#+description: Search self-improving mode: when compass search returns no results or the user resorts to manual commands to find what they wanted, enter a self-improving mode. Track subsequent compass searches and shell commands used to compensate. Once the user locates the target document, auto-create a detailed capture recording the failed query, the workaround path taken, the found document, and a suggested improvement to the scoring/indexing. This corpus of failures becomes training data for tuning the search algorithm.
+#+type: capture
+#+level: cross
+#+filetags: :compass:search:llm:improvement:
+#+created: 2026-06-30
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

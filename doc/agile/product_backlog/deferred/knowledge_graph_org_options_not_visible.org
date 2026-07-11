@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D87F645D-857B-4894-B4A6-0DA2E35F26D3
+:END:
+#+title: Properties and options visible in org-mode (e.g. right-panel…
+#+description: Properties and options visible in org-mode (e.g. right-panel properties drawer) do not appear in the org-roam knowledge graph view. Investigate whether this is a graph rendering limitation or a configuration gap.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

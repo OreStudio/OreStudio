@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 63873DD9-BFF3-410C-9893-8EAC59DB2DC4
+:END:
+#+title: Fix ClientXModel::fetch_* pagination no-op (offset/limit never applied to request)
+#+description: Systemic bug across essentially all ClientXModel::fetch_* implementations in ores.qt (e.g. ClientPartyStatusModel, ClientBadgeSeverityModel, ClientTenantModel): fetch_* constructs the get_X_request without copying its own offset/limit parameters into request.offset/request.limit, so load_page() always re-fetches the default first page. Found while reviewing PR #1443. Likely a shared codegen template gap in cpp_qt_client_model.cpp.mustache; needs a template fix plus a regen sweep across all synced entities.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-07-06
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

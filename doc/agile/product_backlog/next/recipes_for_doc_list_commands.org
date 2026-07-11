@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 285A8782-E934-4F17-B989-5739115D40A4
+:END:
+#+title: Add recipes for doc list commands (compass list, search, etc…
+#+description: Add recipes for doc list commands (compass list, search, etc.) and link them to the relevant skills in the skills catalogue.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-05-28
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

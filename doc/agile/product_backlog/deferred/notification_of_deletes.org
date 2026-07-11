@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: BAA559FB-3F6D-4584-B537-7B75680EF44E
+:END:
+#+title: Notification of deletes
+#+description: Notification of deletes
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present it is easy to see new rows or modified rows in an entity dialog. It
+is not possible to see deleted rows. One way to do this is to preserve state
+from before reload by key. Any entities which are not present after reload can
+be shown as red. History then allows users to re-instate deleted entities.

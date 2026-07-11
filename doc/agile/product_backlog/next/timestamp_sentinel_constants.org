@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 0E3B7794-95A0-4C9E-9D9D-42D770F841F7
+:END:
+#+title: Replace hardcoded timestamp sentinels with MAX/MIN_TIMESTAMP constexprs
+#+description: 137 entity headers and the codegen template hardcode '9999-12-31 23:59:59' as the valid_from/valid_to default. Move MAX_TIMESTAMP from helpers.hpp to db_types.hpp, add a MIN_TIMESTAMP counterpart, and switch the template plus all entities to use them.
+#+type: capture
+#+level: cross
+#+filetags: :database:codegen:time:cleanup:
+#+created: 2026-06-04
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Introduce named sentinel constants for the bitemporal timestamp range and use
+them everywhere the literals appear today:
+
+- Move =MAX_TIMESTAMP= (="9999-12-31 23:59:59"=) from
+  =ores.database/repository/helpers.hpp= to =db_types.hpp=, next to
+  =db_timestamp= itself. =helpers.hpp= already includes =db_types.hpp= so all
+  existing users keep working.
+- Add a =MIN_TIMESTAMP= counterpart for the start-of-time sentinel.
+- Switch the codegen template
+  (=cpp_domain_type_entity.hpp.mustache=) and all ~137 entity headers from the
+  hardcoded literal to =db_timestamp valid_from = MAX_TIMESTAMP;=.
+- While in the template, also fix the pre-unification drift: lines 56-57 still
+  emit the =optional<sqlgen::Timestamp>= variant that the timestamp
+  unification story eliminated.
+
+* Why
+
+The literal ="9999-12-31 23:59:59"= is hardcoded in 137 entity headers, the
+codegen template, and =CurrencyDetailDialog.hpp= — yet =MAX_TIMESTAMP= already
+exists as a constexpr in =helpers.hpp=. Entities cannot include =helpers.hpp=
+cheaply (it drags in boost exception diagnostics, =sqlgen/postgres.hpp= and
+logging), which is why the duplication arose. A magic string repeated 280+
+times is a single-point-of-change hazard; the constant belongs in the same
+lightweight header as the type it parameterises.
+
+Surfaced during review of PR #1036 (timestamp unification mop-up), where
+badge_mapping_entity copied the hardcoded-literal idiom from its 136 siblings.
+
+* References
+
+- =projects/ores.database/include/ores.database/repository/helpers.hpp:40= — existing =MAX_TIMESTAMP=.
+- =projects/ores.codegen/library/templates/cpp_domain_type_entity.hpp.mustache:56-57,98-99= — template hardcoding (and optional<> drift).
+- =projects/ores.qt/refdata/include/ores.qt/CurrencyDetailDialog.hpp:181= — duplicate local constant.
+- PR #1036 review thread on =badge_mapping_entity.hpp=.
+
+* See also
+
+- [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Story: Unify entity timestamp handling]] — the story this fell out of.

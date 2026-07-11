@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: DE20623A-C8F5-4A9C-8297-5C9DFEC250BA
+:END:
+#+title: Generate protocol docs via codegen
+#+description: Generate protocol docs via codegen
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present protocol documentation is very behind. We are not consistently
+generating it. Also, we keep making manual changes to document. We need to split
+it into two documents, the overview document which we maintain manually, and the
+list of versions, messages etc which is automatically generated. We should use
+mustache.

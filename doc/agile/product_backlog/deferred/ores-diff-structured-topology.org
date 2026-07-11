@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 7F55F750-4AB5-4F51-A944-B743C83CB54D
+:END:
+#+title: ores.diff: structured topology for nested entities
+#+description: Extend the flat diff model with an optional path (ordered segments) on field_value/diff_entry and list-identity-aware mapping guidance, so instruments and other nested entities can diff with real topology (grouping, collapse, leg-aware changes) instead of stringly path names. Design deliberately when the first nested consumer lands.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-06-05
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Extend the deliberately flat =ores.diff= model for nested entities:
+an optional =path= (ordered segments, e.g. =["Legs", "1",
+"Schedule"]=) on =field_value= / =diff_entry= alongside the display
+name, plus mapper guidance for list identity (match legs by a stable
+key, not by index, so reordering or inserting a leg does not show as
+a wall of changed fields). Flat consumers — the history dialogs'
+Field/Old/New tables — are unaffected; richer UIs gain grouping,
+collapse and "all changes under leg 2" addressing without string
+parsing.
+
+* Why
+
+The v1 model is one flat ordered list of (name, rendered value) pairs
+per version; nested entities flatten in the mapper with topology
+encoded in path-style display names. That is exactly right for every
+current consumer (currency pilot, the 64 history dialogs, the shell
+unified diff), but instruments and trades will eventually need real
+topology. Designing the extension deliberately when the first nested
+consumer lands beats retrofitting it in a rush — and the extension
+point (optional path next to the display name) is already documented
+in the component overview so the flat model does not paint us into a
+corner.
+
+* References
+
+- [[proj:projects/ores.diff/modeling/component_overview.org][=projects/ores.diff/modeling/component_overview.org=]] — the flatness
+  decision and extension path.
+- [[proj:projects/ores.diff/include/ores.diff/engine/compare.hpp][=projects/ores.diff/include/ores.diff/engine/compare.hpp=]] — "the
+  engine never interprets names".
+
+* See also
+
+-

@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 21CDFD5E-7C76-460D-A2CF-6352B665BFC9
+:END:
+#+title: FX trade UX improvements: tabs, currency pairs, rate computation
+#+description: Split the FX forward product into tabs for clarity; introduce a currency pair concept so users select a pair not two individual currencies; compute rate automatically from notional amounts.
+#+type: capture
+#+level: cross
+#+filetags: :ui:trades:ux:
+#+created: 2026-05-22
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Three related UX gaps in the FX forward trade form:
+
+1. *Tabs* — the FX forward form has too many fields on one page. Split into logical tabs (e.g. Economics, Optionality, Settlement).
+2. *Currency pair* — users currently select =Pay Currency= and =Receive Currency= independently. Introduce a =Currency Pair= entity; the user selects a pair (EUR/USD) and the two currency fields populate automatically.
+3. *Rate computation* — the rate (price) should be computable from the notional amounts and the user's input direction. Provide a "Calculate" button or live derivation when two of the three values are filled.

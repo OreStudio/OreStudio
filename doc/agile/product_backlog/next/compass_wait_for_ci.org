@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 3480A8FC-364B-4F81-A842-D7200F8A6100
+:END:
+#+title: Add a compass wait-for-CI command
+#+description: Poll a PR's CI checks in a sleep/poll/report loop until the checks of interest are green, harvesting failure logs into the project tmp dir when red.
+#+type: capture
+#+level: cross
+#+filetags: :compass:github:ci:tooling:
+#+created: 2026-06-07
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A =compass pr wait= (or =compass ci wait=) command that sleeps, polls all
+the CI checks on a PR, prints a status update, and sleeps again until done.
+Behaviour:
+
+- Polls /all/ checks each round but the user can name the checks they are
+  /interested in/ (e.g. =--only check,claude-review=); the command finishes
+  when the interested set is green, regardless of the rest.
+- All interested checks green: exit success. If only a subset was watched,
+  say so explicitly — "watched checks green; merge will need
+  =compass pr merge --force= while the others are pending".
+- Any interested check red: stop, fetch useful failure information from
+  GitHub (failed job log, annotations) and copy it into the project tmp
+  dir — suggested layout =tmp/ci/<run-number>/= — then tell the user to
+  investigate that directory.
+
+* Why
+
+Today the post-push ritual is manual: repeatedly running =compass pr
+checks=, eyeballing the output, and digging through the GitHub UI when
+something goes red. An LLM session burns context doing this polling
+inline, and failure logs end up pasted piecemeal into the conversation. A
+single blocking command makes "wait for CI then merge" a one-liner for
+both humans and LLM sessions, and lands failure evidence in a predictable
+local place for investigation.
+
+* References
+
+- =compass pr checks= — the existing one-shot status command this builds on.
+- proj:projects/ores.compass/src/compass_review.py — gh api plumbing.
+- =tmp/= — project scratch directory convention for the harvested logs.
+
+* See also
+
+-

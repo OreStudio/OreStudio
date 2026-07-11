@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 3BD017E7-9C3C-4FB3-ACD0-CBBD47CADCE8
+:END:
+#+title: Create a AAD build of ORE
+#+description: Create a AAD build of ORE
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Requires further investigation.
+
+Links:
+
+- [[https://github.com/auto-differentiation/QuantLibAAD][GH: QuantLibAAD]]: "As a demonstrator of integration of the XAD automatic
+  differentiation tool with real-world code, the latest release of QuantLib can
+  calculate risks (sensitivities) with the help of XAD. The performance achieved
+  on sample applications is many-fold superior to what has been reported
+  previously with other tools. This demonstrates production quality use of the
+  XAD library in a code-base of several hundred thousand lines."
+- [[https://github.com/auto-differentiation/xad][GH: xad]]: "XAD is a high-performance C++ automatic differentiation library
+  designed for large-scale, performance-critical systems. It provides forward
+  and adjoint (reverse) mode automatic differentiation via operator overloading,
+  with a strong focus on: Low runtime overhead; Minimal memory footprint;
+  Straightforward integration into existing C++ codebases. For Monte Carlo and
+  other repetitive workloads, XAD also offers optional JIT backend support,
+  enabling record-once / replay-many execution for additional performance boost."
+- [[https://github.com/da-roth/forge][GH: forge]]: "Forge compiles mathematical expressions to optimized x86-64
+  machine code with automatic gradient computation. It follows a record-once,
+  compile-once, evaluate-many paradigm designed for workloads where the same
+  computation is repeated with varying inputs."
+- [[https://github.com/da-roth/xad-forge][GH: xad-forge]]: "Forge JIT backends for XAD automatic differentiation. This
+  library implements JIT backends for XAD using the Forge C API as the code
+  generation engine. When XAD records a computation graph, xad-forge compiles it
+  to native x86-64 machine code for fast re-evaluation."
+- [[https://sourceforge.net/p/quantlib/mailman/message/59293906/][[Quantlib-users] QuantLibAAD: AAD with JIT Replay (Record-Once / Replay-Many)]]:
+  email discussing XAD and montecarlo.

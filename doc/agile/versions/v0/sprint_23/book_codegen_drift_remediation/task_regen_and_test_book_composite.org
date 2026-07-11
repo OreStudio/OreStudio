@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 01304B6F-C431-4BD3-885A-CE713114B5A4
+:ID: 504E021C-A112-42CA-8DC2-B583A2904C4D
 :END:
-#+title: Task: Migrate book to composite-entity versioning
-#+description: Codegen's book_repository templates now generate read_at_version and other composite-entity scaffolding (confirmed via compass codegen entity diff book), but book.org does not yet declare its lookup children (book_status, regulatory_book_type, and the new book_purpose_type/ledger_feed_type). Register book as a composite parent per the Temporal Composite Entity Versioning target-state doc (id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A) and align with whatever the party/counterparty pilot implementation lands on, before regenerating book cleanly.
+#+title: Task: Regenerate and re-test book after composite migration
+#+description: After book is registered as a composite parent, regenerate all its layers again, diff-review, build, and re-run the end-to-end manual test scenario -- confirm read_at_version and composite history/version composition behave as the target-state doc describes before unblocking new-work tasks.
 #+type: task
 #+level: s1
-#+filetags: :book_data_model_cleanup:sprint_23:v0:
+#+filetags: :book_data_model_cleanup:sprint_23:v0:book_codegen_drift_remediation:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
+| Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: F0DAFC8D-3C94-4F97-B546-D7AF7469A29E
+:END:
+#+title: Story: Book codegen drift remediation
+#+description: Regenerate book, book_status, and regulatory_book_type against current codegen templates, restore any silently-dropped SQL validations (insert-trigger/FK checks) via paste blocks or variability knobs, end-to-end test book, then migrate book to composite-entity versioning and regen/test again. Blocks Book data model cleanup's remaining new-work tasks.
+#+type: story
+#+level: s2
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Get book, book_status, and regulatory_book_type onto a clean,
+fully-regenerated, end-to-end-tested codegen baseline, then migrate
+book to composite-entity versioning and re-verify — so the new-work
+tasks parked in [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] (book_purpose_type,
+ledger_feed_type, is_sweepable, Wash risk-book link, child-entity
+toolbar buttons) build on solid ground rather than compounding
+existing drift.
+
+Discovered via =compass codegen entity show=: book has almost no ✅
+files (nearly every layer stale against current templates) despite
+being fully codegen-synced as recently as PR #1449 (Sprint 22,
+"Commission: book") — the templates themselves have evolved since
+(composite-entity versioning support, NATS event registrars, a Qt
+client-model bug fix, license-header format). That same PR's history
+is a cautionary tale worth repeating here: its first regeneration
+attempt silently dropped book's 5 insert-trigger validations (soft FKs
+on parent_portfolio_id/party_id/owner_unit_id; value checks on
+ledger_ccy/book_status) because book.org lacked =* Foreign keys=/=*
+Insert trigger= sections at the time — caught only by 3 independent PR
+review bot passes, not by the regen itself.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Tasks scaffolded; starting regeneration and drift analysis. |
+| Waiting on    | Nothing.                               |
+| Next          | Regenerate book_status as a canary, diff-verify, build. |
+| Last touched  | 2026-07-11                               |
+
+* Acceptance
+
+- book, book_status, and regulatory_book_type show all-✅ in =compass
+  codegen entity show= (fully regenerated against current templates).
+- The 5 insert-trigger validations identified in PR #1449 (and any
+  others found stale) are confirmed present in the regenerated SQL —
+  via paste blocks or variability knobs in the .org models, not
+  hand-patched post-generation.
+- book builds cleanly on the configured preset; end-to-end manual test
+  (login, list, add, edit, save, rename, history) passes with no
+  regressions.
+- book is migrated to composite-entity versioning per
+  [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]], regenerated
+  again, and re-tested end to end.
+- [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]'s remaining new-work tasks are unblocked.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7D81393A-2025-4E77-9CCF-2DB9A9DB7E77][Regenerate book_status as a drift canary]] | BACKLOG | | | book_status is the smallest of the 3 stale entities (mostly ~ with only the event registrar files fully missing). Regenerate it first, diff-review every change, build, and manually verify the Book Status list/detail/history windows still work -- establishes confidence in the current templates before tackling book itself. |
+| [[id:CCED67A5-5003-4B5F-A747-0C4F79C72228][Regenerate regulatory_book_type]] | BACKLOG | | | Regenerate regulatory_book_type against current templates (also missing its NATS event registrar), diff-review, build, and manually verify the Regulatory Book Type list/detail/history windows. |
+| [[id:0C185CE4-63E5-44CC-94AF-F3FF1E194986][Regenerate book and restore insert-trigger validations]] | BACKLOG | | | Regenerate book (currently almost entirely stale). Diff the resulting SQL against ores_refdata_books_create.sql on disk specifically for the 5 insert-trigger validations from PR #1449 (soft FKs on parent_portfolio_id/party_id/owner_unit_id; value checks on ledger_ccy/book_status) plus any others -- confirm book.org's Foreign keys/Insert trigger sections still produce them. Fix via paste blocks or variability knobs in the .org model if anything is missing, not hand-patched SQL. |
+| [[id:EBEBDC25-7789-4C70-A4D2-E9314E873D85][End-to-end test book after regeneration]] | BACKLOG | | | Build refdata/qt cleanly, then manually exercise the Book list/detail/history windows end to end (login, list, add, edit, save, rename, delete, history) to catch regressions like the ones PR #1449 surfaced (change-reason cache, is_key/uuid handling, history dialog close behaviour). |
+| [[id:01304B6F-C431-4BD3-885A-CE713114B5A4][Migrate book to composite-entity versioning]] | BACKLOG | | | Codegen's book_repository templates now generate read_at_version and other composite-entity scaffolding, but book.org does not yet declare its lookup children (book_status, regulatory_book_type, and the new book_purpose_type/ledger_feed_type). Register book as a composite parent per the Temporal Composite Entity Versioning target-state doc, aligned with the party/counterparty pilot implementation. |
+| [[id:504E021C-A112-42CA-8DC2-B583A2904C4D][Regenerate and re-test book after composite migration]] | BACKLOG | | | After book is registered as a composite parent, regenerate all its layers again, diff-review, build, and re-run the end-to-end manual test scenario -- confirm read_at_version and composite history/version composition behave as the target-state doc describes before unblocking new-work tasks. |
+
+* Decisions
+
+* Out of scope
+
+-

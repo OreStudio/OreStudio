@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/add-book-classification-flags
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: F0DAFC8D-3C94-4F97-B546-D7AF7469A29E
+#+blocked_since: 2026-07-11
 #+created: 2026-07-08
 #+updated: 2026-07-11
 #+environment: bright_faraday
@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Now          | book_purpose_type entity model scaffolded ([[id:F2DD5F1F-759C-44E3-8BBD-EB451494E9A0][ores.refdata.book_purpose_type.org]]), generation paused. |
+| Waiting on   | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] -- book must be on a clean, composite-entity-versioned codegen baseline before adding this FK. |
+| Next         | Resume once the drift remediation story is DONE.        |
+| Last touched | 2026-07-11                               |
 
 * Acceptance
 

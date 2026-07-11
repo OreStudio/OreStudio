@@ -8,6 +8,7 @@
 #+filetags: :sprint_23:v0:
 #+created: 2026-06-05
 #+updated: 2026-07-11
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -125,7 +126,7 @@ in-flight model migration); codegen the mappers (deferred).
 | [[id:E9348344-C7A1-4B4A-969D-BDB56C96DE9A][Grow HistoryDialogBase and migrate the six hand-rolled dialogs]] | DONE | 2026-06-05 | 2026-06-05 | Scope grew to all 64 version-history dialogs; event-log dialogs renamed to Audit. PR 1080. |
 | [[id:83B7239F-5C29-4C52-900E-C9623C608DFD][Create the ores.diff component]] | DONE | 2026-06-05 | 2026-06-05 | Flat diff model + engine, std+rfl only; 14 tests. PR 1091. |
 | [[id:D575DCF0-2341-4630-9C47-F428F82C2FCE][Pilot server-side history diffs end to end on currency]] | DONE | 2026-06-05 | 2026-06-05 | Currency mapper + extended response + handler compose; dialog renders server rows; dogfooded. PR 1097. |
-| [[id:7B2998F0-3B7B-4A11-8A44-7464BF3F4CBB][Adopt the base in the history-dialog template and roll out]] | BACKLOG | | | Phase C: template target form + per-domain rollout. Gated on codegen org-model migration. |
+| [[id:7B2998F0-3B7B-4A11-8A44-7464BF3F4CBB][Adopt the base in the history-dialog template and roll out]] | STARTED | 2026-07-11 | | Phase C: template target form + per-domain rollout. Gated on codegen org-model migration. |
 | [[id:D759765E-85A3-47B6-91C5-23FF938B0B34][Codegen field mappers from entity models]] | BACKLOG | | | Phase D, deferred: generate mappers once the hand-written shape is proven. |
 | [[id:F455B2BE-5562-4561-B8D2-9D85E218B669][Show history as a unified diff in ores.shell]] | DONE | 2026-06-05 | 2026-06-06 | Unified-diff rendering of the changes rows in the shell; no comparison logic client-side. |
 

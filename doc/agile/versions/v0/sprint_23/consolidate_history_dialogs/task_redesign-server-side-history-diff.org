@@ -76,11 +76,11 @@ implement the new design rather than the reverted pilot's shape.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Architecture document written; story sync pending. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Update story Architecture/Decisions and template-rollout Plan, then close. |
+| Next         | Nothing. |
 | Last touched | 2026-07-11                               |
 
 * Acceptance
@@ -110,6 +110,20 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+Testing requirement for the implementation that follows this design:
+=ores.diff::engine::compute='s =diff_span= computation must be
+exhaustively tested in =projects/ores.diff/tests/= (currently 14 tests
+across =engine_compare_tests.cpp= and =domain_serialisation_tests.cpp=,
+covering field-level compute only). New cases needed once spans land:
+single-character change, whole-word change, common-prefix-only,
+common-suffix-only, no-overlap (entirely different values), multiline
+commentary requiring line-by-line LCS, per-line token diff within a
+changed multiline block, added field (empty old_value), removed field
+(empty new_value), identical values (no spans), empty string vs
+non-empty, and unicode/multi-byte content (span offsets must not split
+a multi-byte code point). Whichever task implements the =ores.diff=
+extension should treat this list as a acceptance floor, not a ceiling.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -134,3 +148,41 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Produced [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]], superseding the reverted currency
+pilot. Key decisions, distilled into the story's Architecture/Decisions:
+
+- One generic NATS history subject (=history.v1.get=, entity type +
+  entity id), dispatched server side via a runtime lookup table —
+  reapplying the existing entity-composed-registrars meta-pattern —
+  instead of a typed per-entity subject. No typed domain payload
+  crosses the wire for history.
+- Per-entity field mapper is codegen'd, plain, generated code from the
+  outset — rejected both hand-writing (the pilot's mistake) and a
+  generic =rfl=-reflection framework (hard to read/step through).
+- A generated =entity_type_of()= free-function trait is the single
+  source of truth for the dispatch key, kept off the domain struct
+  itself.
+- =ores.diff::diff_entry= gains =old_spans=/=new_spans=
+  (character/token ranges), computed once inside
+  =ores.diff::engine::compute= — this layer stays fully generic since
+  it never sees a domain type.
+- =HistoryDialogBase= and its 61+ per-entity derived classes are
+  replaced by one non-templated =HistoryDialog= widget and one shell
+  renderer; =Open=/=Revert= carry =(entity_type, entity_id, version)=
+  only, dispatched through a small codegen'd per-entity action
+  registry (same meta-pattern, client side) that opens the entity's
+  own typed detail dialog — accepting one extra fetch-by-id round trip
+  in exchange for zero per-entity Qt code.
+- Composite/referenced-entity delegation needs no special code path:
+  opening another entity's history is constructing the same dialog
+  with a different entity id. Distinguished explicitly from the
+  separate, still-open embedded-nesting capture and the still-separate
+  temporal composite entity versioning story.
+
+Filed a follow-up backlog capture generalising the =entity_type_of()=
++ dispatch-table pattern beyond history, scoped out of this document
+deliberately.
+
+The template-rollout task's (7B2998F0) Plan is revised separately to
+implement this design.

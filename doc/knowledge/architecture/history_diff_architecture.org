@@ -185,6 +185,15 @@ pure string algorithm work with no entity knowledge, so it lives
 entirely inside =ores.diff::engine=, tested there exhaustively; every
 frontend renders spans without ever computing them.
 
+Span computation needs test coverage for at least: single-character
+change, whole-word change, common-prefix-only, common-suffix-only,
+no-overlap (entirely different values), multiline commentary requiring
+line-by-line LCS, per-line token diff within a changed multiline
+block, added field (empty old_value), removed field (empty
+new_value), identical values (no spans), empty-vs-non-empty string,
+and unicode/multi-byte content (span offsets must not split a
+multi-byte code point).
+
 ** One HistoryDialog, no per-entity Qt classes
 
 Because the response is already generic — rendered field strings and

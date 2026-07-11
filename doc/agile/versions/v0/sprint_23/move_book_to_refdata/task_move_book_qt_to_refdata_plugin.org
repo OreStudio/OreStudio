@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: EE3C93E9-7907-4E18-BB82-3737E0E778C7
 :END:
-#+title: Task: Move book type-lookup controllers from TradingPlugin to RefdataPlugin
-#+description: BookStatusController and RegulatoryBookTypeController classes live in ores.qt/refdata (per PR #1449's move), but their construction and Trading Codes menu wiring is still hand-coded in ores.qt/trading/src/TradingPlugin.cpp -- a leftover from the migration. Move both (and, once built, BookPurposeTypeController/LedgerFeedTypeController) to RefdataPlugin.cpp, contributing to the same shared trading_codes_menu the same way RefdataPlugin already does for Purpose Types (see its 'Trading Codes menu -- contribute Purpose Types' block). Book itself stays wired in TradingPlugin -- it is genuinely trading-facing (Portfolio/Org Explorer, trade booking), unlike its type/lookup children.
+#+title: Task: Move Book, BookStatus, and RegulatoryBookType Qt CRUD to RefdataPlugin
+#+description: Architectural decision: Book, BookStatus, and RegulatoryBookType (backend already in ores.refdata) must have zero cross-component leakage on the Qt side -- CRUD Qt code and plugin wiring belong entirely in ores.qt/refdata under RefdataPlugin, not ores.qt/trading under TradingPlugin. Book's Qt classes already physically moved in PR #1449, but TradingPlugin.cpp still constructs and menu-wires all three (BookController, BookStatusController, RegulatoryBookTypeController) -- move that construction and Trading Codes menu wiring to RefdataPlugin.cpp, contributing to the shared trading_codes_menu the same way RefdataPlugin already does for Purpose Types. TradingPlugin keeps only the composite trading-workflow views (PortfolioExplorerMdiWindow, OrgExplorerMdiWindow, TradeController) that consume BookController via a pointer but do not construct/own it. Portfolio's equivalent relocation is explicitly out of scope -- tracked separately (capture: Move Portfolio's Qt CRUD UI from ores.qt/trading to ores.qt/refdata) so it can proceed in parallel in a different environment.
 #+type: task
 #+level: s1
-#+filetags: :book_data_model_cleanup:sprint_23:v0:book_codegen_drift_remediation:
+#+filetags: :move_book_to_refdata:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E63013B-3B02-4968-A9EA-ED85C00EC7AF][Move book to refdata]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
+| Parent story | [[id:0E63013B-3B02-4968-A9EA-ED85C00EC7AF][Move book to refdata]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

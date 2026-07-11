@@ -66,12 +66,13 @@ site to pass =ctx_.change_reason_cache= (mirroring how =BookController=
 already does). Rebuilt cleanly; re-ran the scenario — all steps
 passed, zero ERROR-level log lines.
 
-That TradingPlugin.cpp call site is itself a symptom of a wider issue
-— =BookStatusController=/=RegulatoryBookTypeController= live in
-=ores.qt/refdata= but are still constructed and menu-wired from
-=ores.qt/trading=. Filed as a follow-on task:
-[[id:EE3C93E9-7907-4E18-BB82-3737E0E778C7][Move book type-lookup controllers from TradingPlugin to
-RefdataPlugin]].
+That TradingPlugin.cpp call site is itself a symptom of a wider
+architectural issue — =BookController=/=BookStatusController=/
+=RegulatoryBookTypeController= live in =ores.qt/refdata= but are still
+constructed and menu-wired from =ores.qt/trading=. Rather than patch
+it inline again for the next two entities, filed a dedicated story to
+fix it once for all three and unblock this one:
+[[id:0E63013B-3B02-4968-A9EA-ED85C00EC7AF][Move book to refdata]].
 
 * Notes
 
@@ -108,5 +109,5 @@ found and fixed along the way: a missing =has_change_reason_cache=
 model flag (silent save no-op, no visible error) and a stale
 =TradingPlugin.cpp= call site left over from PR #1449's Qt-layer
 move. A third finding — the controllers being wired from the wrong
-plugin entirely — is scoped as its own follow-on task rather than
-fixed inline here.
+plugin entirely — is scoped as its own blocking story,
+[[id:0E63013B-3B02-4968-A9EA-ED85C00EC7AF][Move book to refdata]], rather than fixed inline here.

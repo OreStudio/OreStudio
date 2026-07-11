@@ -50,6 +50,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] | STARTED | 2026-07-08 | | Carried from sprint 22 (3/9 tasks done): classification flags, hierarchy documentation, legal entity/branch investigation, rates centre, ledger_ccy rename, allowed-list analysis. |
 | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] | STARTED | 2026-06-27 | | Carried from sprint 22 (8/15 tasks done): B4 (collapse refdata/refdata-cpp), content migration, and table-model retirement remain. |
 | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] | BACKLOG | 2026-06-25 | | Carried from sprint 22: downgrade address/type mismatch to skip in --component mode; add --entity filter; add entity group/tag system; literate template commentary. |
+| [[id:D6C90C13-555C-471F-B494-CAF6A7902519][Market data cleanup: retire dead duplicate tables and preserve hand-written overrides]] | BACKLOG | 2026-07-02 | | Carried from sprint 22: drop legacy marketdata tables (superseded, zero C++ references); remove stale validation_ignore.txt entries; protect market_observation's hand-written overrides from codegen regeneration. |
 
 ** Hotfixes
 

@@ -5,7 +5,7 @@
 #+description: market_observation_repository.{hpp,cpp}, market_observation_service.{hpp,cpp} and market_observation_protocol.hpp carry hand-written customizations (a series_id filter param on the paginated list query, plus custom pagination logic) layered on top of codegen output. These are silently reverted every time 'compass codegen regenerate --component marketdata --profile all-cpp' runs. Either model the series_id filter properly in ores.marketdata.market_observation.org so codegen produces it, or clearly mark these files/blocks as hand-maintained so future regenerations don't clobber them.
 #+type: task
 #+level: s1
-#+filetags: :marketdata_legacy_table_cleanup:sprint_22:v0:
+#+filetags: :marketdata_legacy_table_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

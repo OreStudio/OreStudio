@@ -54,7 +54,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:0ECFC829-658D-4EC0-8851-F700AD4F076D][Verify book_status list/detail/history after codegen regeneration]] | PENDING | |
 
 * PRs
 

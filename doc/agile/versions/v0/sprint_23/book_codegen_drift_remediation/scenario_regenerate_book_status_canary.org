@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 0ECFC829-658D-4EC0-8851-F700AD4F076D
+:END:
+#+title: Test Scenario: Verify book_status list/detail/history after codegen regeneration
+#+description: Manual Qt client steps confirming the regenerated book_status entity (list, detail, history windows, save, event registrar) works end to end with no regressions after being brought onto the current codegen templates.
+#+type: test_scenario
+#+level: s1
+#+filetags: :book_data_model_cleanup:sprint_23:v0:book_codegen_drift_remediation:
+#+target_dialog:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:7D81393A-2025-4E77-9CCF-2DB9A9DB7E77][Regenerate book_status as a drift canary]] in [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:7D81393A-2025-4E77-9CCF-2DB9A9DB7E77][Regenerate book_status as a drift canary]] |
+| Parent story  | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]]   |
+| Target dialog | BookStatusMdiWindow / BookStatusDetailDialog / BookStatusHistoryDialog |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A fresh, Barclays-provisioned database:
+  #+begin_src sh :results verbatim
+  compass db recreate -y -k
+  compass services start
+  compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+  #+end_src
+- A running Qt client, not yet logged in.
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Log in and select Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=. In the
+party picker, select =BARCLAYS PLC=. Confirm the main window enables
+its menus (Reference Data, Trading, etc.) once logged in.
+
+** Book Statuses list window opens and shows seeded rows
+
+Open Trading > Trading Codes > Book Statuses. Confirm exactly three
+rows appear — Active, Closed, Frozen — each with Description and
+Display Order populated, no error banner.
+
+** Detail dialog opens and displays fields correctly
+
+Double-click the "Active" row. Confirm the detail dialog opens showing
+Code (read-only), Name, Description, Display Order, Version, and
+Modified By populated correctly, with no crash or blank fields.
+
+** Edit and save a book status
+
+Change the "Active" row's Description to something new and Save.
+Confirm the save succeeds with no error, the grid refreshes to show
+the new description, and Version increments by 1.
+
+** History dialog opens and shows the new version
+
+Right-click "Active" > View History (or the equivalent toolbar
+action). Confirm both versions (before and after the edit above)
+appear in the history grid, each with distinct valid_from/valid_to
+timestamps, and that closing the history dialog does *not* close the
+whole application (regression class from PR #1449's =window()->close()=
+bug — confirm it only closes the history sub-window).
+
+** No error toast or log error during the whole flow
+
+Check the client's log tail
+(=build/output/<preset>/publish/log/ores.qt.<colour>.log=) for any
+ERROR-level line logged during the steps above — in particular,
+confirm no "Server reported failure" message appears (the new
+success-check added to ClientBookStatusModel.cpp), which would
+indicate the backend rejected a request that the UI didn't surface as
+a visible error.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

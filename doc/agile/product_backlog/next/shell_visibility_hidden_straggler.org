@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 9B90399C-09DF-45A7-8097-59F39338DE00
+:END:
+#+title: Apply -fvisibility=hidden to ores.shell (visibility-migration straggler)
+#+description: The symbol-visibility migration set -fvisibility=hidden per shared library, but ores.shell never received the flag (it was slated to become static instead and stayed shared). Its Linux .so exports ~34k symbols by default, which masked the missing ORES_SHELL_EXPORT macros that broke the Windows test link (hotfix PR #1166). Add the flag (and -fvisibility-inlines-hidden) to projects/ores.shell/src/CMakeLists.txt like its peers, fix whatever additional exports surface, so Linux catches missing macros at dev time.
+#+type: capture
+#+level: cross
+#+filetags: :shell:build:infrastructure:
+#+created: 2026-06-07
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

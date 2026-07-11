@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 62F216A9-1BDF-4889-9A85-01EBA7CBB24E
+:END:
+#+title: api and core are not namespaces — fix naming
+#+description: Project component names like ores.qt.api and ores.compute.core use api/core as if they were namespaces, but they are not. Clarify the naming convention or rename accordingly.
+#+type: capture
+#+level: cross
+#+filetags: :code:architecture:housekeeping:
+#+created: 2026-05-22
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Component names like =ores.qt.api= and =ores.compute.core= use =api= and =core= as sub-component qualifiers but these words are not C++ namespaces — the actual C++ namespace is =ores::qt= or =ores::compute=. This causes confusion when reading include paths vs namespace paths.
+
+Options:
+1. Accept the mismatch and document the convention (component directory name ≠ C++ namespace).
+2. Rename components so the directory structure mirrors the namespace hierarchy.
+
+Resolve the naming convention in a design note before touching any includes.

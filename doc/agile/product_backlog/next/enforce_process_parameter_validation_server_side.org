@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: FDEAC2F6-A87F-4281-82CC-437B06D5B02F
+:END:
+#+title: Enforce process parameter validation at save/feed-start time
+#+description: validate_process_parameters exists but isn't called by gmm_component_handler::save or feed_controller::start, so bad configs can still be persisted or crash a feed thread.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:validation:backlog:
+#+created: 2026-07-03
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+[[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]]
+added =ores::synthetic::domain::validate_process_parameters()=
+(=projects/ores.synthetic/api/include/ores.synthetic.api/domain/process_parameter_validation.hpp=)
+as the shared source of truth for whether a (means, stdevs, weights,
+initial_price) tuple is valid for a given =process_type=, and wired it
+into =process_factory::make_process()=
+(=projects/ores.synthetic/service/src/process_factory.cpp=) and the Qt
+client (=FxSpotRateEditor::onSaveClicked()=). It is *not* yet called
+by:
+- =gmm_component_handler::save()=
+  (=projects/ores.synthetic/core/include/ores.synthetic.core/messaging/gmm_component_handler.hpp=)
+  — persists whatever weight/stdev the client sends, with no
+  validation beyond ID-nil checks in
+  =gmm_component_service::save_gmm_component=.
+- =feed_controller::start()=
+  (=projects/ores.synthetic/service/src/feed_controller.hpp=) — calls
+  =process_factory::make_process()= with no surrounding =try/catch=, so
+  an invalid persisted config could throw uncaught inside the feed
+  thread rather than being rejected up front.
+
+Wire =validate_process_parameters()= into both: reject invalid
+=gmm_component= saves with a clear error before persisting, and guard
+=feed_controller::start()= so a bad config can't start (or crash) a
+feed thread.
+
+* Why
+
+=gmm_component= and =fx_spot_generation_config= (which carries
+=process_type=) are saved via two separate requests (not atomic — see
+also the pre-existing =atomic_batch_save_fx_spot_config= backlog
+item), so cross-entity validation at save time needs some thought
+about when both pieces are actually known together. Scoped out of the
+GMM improvements story to avoid rushing a fix into the persistence
+layer; the client-side and =process_factory=-side validation already
+close the most common path (the Qt editor), but a config written via
+any other path (API script, future admin tool, a bug) is still
+unguarded server-side.
+
+* References
+
+- =projects/ores.synthetic/api/include/ores.synthetic.api/domain/process_parameter_validation.hpp=
+- =projects/ores.synthetic/core/include/ores.synthetic.core/messaging/gmm_component_handler.hpp=
+- =projects/ores.synthetic/service/src/feed_controller.hpp=
+
+* See also
+
+-

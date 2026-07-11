@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 86E3CEA4-B44D-498A-90EB-88CBCE440C70
+:END:
+#+title: sccache's cache is on GitHub's built-in actions/cache, cappe…
+#+description: sccache's cache is on GitHub's built-in actions/cache, capped at a fixed, non-purchasable 10 GB per repository shared across every OS/compiler/buildtype variant (linux-gcc/clang, windows-clang, macos-clang x debug/release) plus vcpkg/Qt caches. Confirmed via live experiment (sprint 22, story canary_ctest_ignores_cancellation): a PR with essentially zero source diff got a 0.00% sccache hit rate because the Linux-gcc-debug cache had been evicted entirely by GitHub's LRU policy to make room for other platforms' caches touched more recently by continuous-*.yml runs. Recommended fix: move sccache to an external cache backend it natively supports (S3/GCS/Azure Blob, or a self-hosted Redis/webdav endpoint) so the cache is bounded by provisioned storage, not GitHub's shared 10GB quota, and isn't subject to cross-platform eviction or the 7-day-unused cleanup. Needs bucket/credentials/IAM setup and workflow changes across every platform's workflow file (canary-linux.yml, continuous-linux.yml, continuous-macos.yml, continuous-windows.yml) — a real infra project, not a quick fix.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-07-03
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Move sccache's cache off GitHub's built-in =actions/cache= onto an
+external backend sccache natively supports (S3, GCS, Azure Blob, or a
+self-hosted Redis/webdav endpoint). The cache would then be bounded
+by whatever storage is provisioned rather than GitHub's fixed 10 GB
+per-repository quota, would no longer compete with unrelated
+OS/compiler variants for that shared quota, and would no longer be
+subject to GitHub's 7-day-unused eviction policy.
+
+* Why
+
+GitHub's =actions/cache= is capped at a fixed, non-purchasable 10 GB
+per repository, shared across *every* OS/compiler/buildtype variant
+(linux-gcc/clang, windows-clang, macos-clang × debug/release) plus
+the vcpkg and Qt install caches. Confirmed via a live experiment in
+sprint 22 (story =canary_ctest_ignores_cancellation=): a PR with
+essentially zero source diff still got a *0.00%* sccache hit rate,
+because the Linux-gcc-debug cache that =canary-linux.yml= depends on
+(and which gates every PR) had been evicted entirely by GitHub's LRU
+policy to make room for other platforms' caches, touched more
+recently by =continuous-*.yml= runs elsewhere in the repo.
+
+The immediate mitigation landed in PR #1418 (stop persisting sccache
+for windows/macos continuous builds, so Linux gets the shared quota
+to itself) only reduces the contention — it doesn't remove it, and
+doesn't scale as more variants or heavier builds are added. An
+external backend removes the constraint at the root instead of
+continuing to ration a fixed 10 GB across a growing set of build
+variants.
+
+* References
+
+- [[id:3545641D-96DD-41DA-B4FF-B5FE43D56CA2][Canary CI: near-zero sccache hit rate makes every build a cold rebuild]] — the story that diagnosed this.
+- PR #1418 — the immediate (partial) mitigation.
+- [[https://github.com/mozilla/sccache/blob/main/docs/S3.md][sccache S3 backend docs]] (and sibling docs for GCS/Azure/Redis/webdav in the same =docs/= directory) — configuration reference for whichever backend is chosen.
+
+* See also
+
+-

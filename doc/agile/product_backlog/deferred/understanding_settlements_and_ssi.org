@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: C0EEEE00-0E8E-425A-B976-242D453B43A3
+:END:
+#+title: Understanding Settlements and SSI
+#+description: Understanding Settlements and SSI
+#+type: capture
+#+level: cross
+#+filetags: :analysis:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+This is a very complicated topic. We should try to summarise it and see what is
+the smallest subset that we need in order to see full trade lifecycle.
+
+Links:
+
+- [[https://www.cslucas.com/user-guide/how-to-set-up-counterparty-ssi/][How to Set Up Counterparty SSI]]
+- [[https://docs.oracle.com/cd/E99951_01/html/Settlements/Settlements_Manual_Intro_002.htm][Settlements Service]]

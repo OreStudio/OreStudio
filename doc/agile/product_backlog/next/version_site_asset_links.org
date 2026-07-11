@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 97C772E4-C613-4C35-B993-99448D763542
+:END:
+#+title: Cache-bust site asset links at build time
+#+description: Version the stylesheet and asset links the site build emits (e.g. style.css?v=<short-sha>) so returning visitors do not see stale CSS after a restyle.
+#+type: capture
+#+level: cross
+#+filetags: :site:build:css:emacs:
+#+created: 2026-06-07
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The site build emits plain asset links — =<link rel="stylesheet"
+href="/OreStudio/assets/style.css">= in =html-header=, the nav-injection
+in =ores-inject-site-nav=, and the org-publish pages — with no version
+token. Append a build-time cache-buster (e.g. =style.css?v=<short-sha>=
+from =git rev-parse --short HEAD=) in =ores-build-site.el= wherever asset
+URLs are emitted, so a restyle invalidates browser caches automatically.
+
+* Why
+
+After the hierarchical menu landed, a returning browser on the locally
+served site kept the pre-menu =assets/style.css= and rendered all
+dropdowns permanently expanded with bullets — diagnosed as stale CSS
+cache, fixed only by a hard refresh. GitHub Pages visitors hit the same
+class of problem after any restyle: HTML revalidates but subresources
+often do not.
+
+* References
+
+- proj:projects/ores.lisp/src/ores-build-site.el — =html-header=,
+  =site-html-preamble=, =ores-inject-site-nav=.
+- Observed 2026-06-07 testing the agile board timeline view.
+
+* See also
+
+-

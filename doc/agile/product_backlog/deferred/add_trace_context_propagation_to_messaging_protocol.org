@@ -1,0 +1,23 @@
+:PROPERTIES:
+:ID: 3A2445EB-6F40-402B-A1FD-F687D03CE97B
+:END:
+#+title: Add trace context propagation to messaging protocol
+#+description: Add trace context propagation to messaging protocol
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+To enable distributed tracing across client and server, trace context needs to
+be propagated in the messaging protocol.
+
+Tasks:
+
+- Extend frame header to include optional trace_id and span_id fields.
+- Update frame serialization/deserialization.
+- Client includes trace context in outgoing request frames.
+- Server extracts trace context and creates child spans linked to client's
+  trace.

@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: C9669586-41BB-41B7-B6DA-5A1181055D52
+:END:
+#+title: Unify compute wrapper nodes as replicated services
+#+description: Unify compute wrapper nodes as replicated services
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Currently compute wrapper nodes are a special case: hardcoded instance names
+(=node1=, =node2=, ...), pattern-matched separately in =status-services.sh=,
+and given a dedicated "nodes" section in the service dashboard. All other
+services are singletons and need no such handling.
+
+The goal is a uniform service model where any service type has a
+=replica_count= (defaulting to 1). Wrappers set theirs to N. Scripts and the
+dashboard treat all services identically — showing =running/desired= — with no
+special-casing for nodes.
+
+The one non-trivial aspect is =--host-id= assignment: each wrapper replica
+needs a stable, unique UUID for heartbeat tracking and telemetry. Options are
+static UUIDs assigned per replica slot in a config file, or UUIDs generated
+once at first start and persisted to a state file.
+
+Tasks:
+
+- [ ] Define a service manifest format (e.g. =services.toml=) with a
+  =replicas= field per service type.
+- [ ] Rewrite =start-services.sh= and =status-services.sh= to drive from the
+  manifest rather than hardcoded names; remove =*node*= pattern matching.
+- [ ] Generate or persist per-replica =host-id= values so restarts reuse the
+  same UUID (avoids host churn in =ores_compute_hosts_tbl=).
+- [ ] Update the service dashboard to show =running/desired= uniformly for all
+  service types; remove the separate "nodes" counter.
+- [ ] Remove the =nodes_running= / =nodes_stopped= special cases from the
+  summary output.

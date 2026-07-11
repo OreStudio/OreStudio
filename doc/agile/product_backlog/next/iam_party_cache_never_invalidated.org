@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 79D1413C-8EF5-445C-80EA-40A6C3B635FC
+:END:
+#+title: IAM's party_cache is never invalidated on party changes
+#+description: ores.iam.core's party_cache is documented to reload on refdata.v1.parties.changed notifications, but ores.refdata's party save handler never actually publishes that event, so the cache silently goes stale after any party update (e.g. activation) until the IAM service restarts.
+#+type: capture
+#+level: cross
+#+filetags: :iam:refdata:caching:bug:
+#+created: 2026-07-10
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores::iam::service::party_cache= (=projects/ores.iam/core/include/ores.iam.core/service/party_cache.hpp=)
+is an in-process per-tenant cache of refdata party data, whose own
+docstring says it is "populated via NATS request to
+=refdata.v1.parties.read= at startup and reloaded on receipt of
+=refdata.v1.parties.changed= notifications." Grepping
+=ores.refdata.core='s party save handler
+(=projects/ores.refdata/core/include/ores.refdata.core/messaging/party_handler.hpp=)
+for any publish of that event finds nothing — the save path never
+actually emits =refdata.v1.parties.changed=. =party_cache= therefore
+has a documented invalidation mechanism that is dead code on the
+producer side: once a tenant's parties are loaded, =lookup_party=
+serves that same snapshot forever, until the IAM process itself
+restarts and reloads at startup.
+
+Fix is either side: make =party_handler='s save path publish
+=refdata.v1.parties.changed= (matching the cache's own documented
+contract), or have =party_cache= subscribe to whatever event
+=party_handler= *does* already publish (if any), or fall back to a
+short TTL/reload-on-miss strategy if no reliable event exists yet.
+
+* Why
+
+Reproduced directly: =barclays_system_provision.ores= activates the
+party via the normal =save_party_request= handler (not a raw SQL
+bypass), yet the very next login against an IAM instance that had
+already cached the party pre-activation showed "Party setup
+completed, but the party is still marked Inactive" — =p->status= read
+from the stale cached snapshot, even though a direct SQL check
+confirmed the party row itself had been =Active= for many minutes.
+Cosmetic today (login still succeeds), but any future logic that
+trusts =party_cache= for a real authorization/visibility decision
+would silently act on stale data indefinitely in a long-lived IAM
+process.
+
+* References
+
+- =projects/ores.iam/core/include/ores.iam.core/service/party_cache.hpp= —
+  the cache and its (unfulfilled) documented contract.
+- =projects/ores.refdata/core/include/ores.refdata.core/messaging/party_handler.hpp= —
+  the save path that should, but doesn't, publish the change event.
+- =projects/ores.iam/core/include/ores.iam.core/messaging/auth_handler.hpp=
+  lines ~345-355 — where the stale read surfaces as the login warning.
+
+* See also
+
+-

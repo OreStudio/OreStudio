@@ -1,0 +1,15 @@
+:PROPERTIES:
+:ID: 5B949EFC-4950-4F88-8F6D-D188A1711852
+:END:
+#+title: Remember dialog sizes and positions
+#+description: Remember dialog sizes and positions
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present we need to resize dialogs frequently. We should write this to
+QSettings.

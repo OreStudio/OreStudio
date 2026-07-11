@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: E0C103B9-CCED-4446-82AB-B8657A3B46C3
+:END:
+#+title: Service command-line configuration dialog with bitemporal support
+#+description: A dialog to view and change each service's command-line options (log level, telemetry flags, etc.) saved to the database with bitemporal history so changes are audited.
+#+type: capture
+#+level: cross
+#+filetags: :ui:infrastructure:database:
+#+created: 2026-05-22
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Operators currently change service command-line options (log level, telemetry endpoint, feature flags) by editing start scripts and restarting the service. Instead:
+
+- Add a =ores_infra_service_configs_tbl= with bitemporal + audit columns storing per-service parameter overrides.
+- Seed it at database setup with defaults.
+- Add a "Service Configuration" dialog in the admin area of the Qt app: select a service, edit its parameters, save.
+- The service reads its effective config on startup (or on a NATS signal) from the database, merging with CLI defaults.
+
+Bitemporal support means operators can see who changed what and when, and roll back to a previous configuration.

@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 12F85A5B-A253-4CA8-AAC5-F19700689D72
+:END:
+#+title: Replace hardcoded permission strings with per-component constants
+#+description: Permission strings like analytics::pricing_engine_types:write are hardcoded inline. Each component should declare a typed permission list; handlers reference the constants.
+#+type: capture
+#+level: cross
+#+filetags: :code:security:architecture:
+#+created: 2026-05-22
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Handlers currently inline permission strings:
+
+#+begin_src c++
+if (!has_permission(req_ctx, "analytics::pricing_engine_types:write")) {
+#+end_src
+
+This makes permissions impossible to enumerate, audit, or test without grepping.
+
+Proposed approach:
+- Each component gets a =permissions.hpp= header (or namespace block in the component header) declaring =constexpr std::string_view= constants for every action the component exposes.
+- Handlers reference the constant; the inline string literal disappears.
+- A companion unit test verifies that every declared constant appears in the IAM permissions seed data.

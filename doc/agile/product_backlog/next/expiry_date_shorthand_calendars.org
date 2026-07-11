@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 3A6BA429-3B7C-4490-902B-257D66CD97BE
+:END:
+#+title: Support expiry date shorthand with calendar integration
+#+description: Allow expiry date entry as a shorthand (e.g. 9Y). Requires calendar support — either from QuantLib or another library. Backlog until calendar infrastructure is in place.
+#+type: capture
+#+level: cross
+#+filetags: :trades:ux:calendars:
+#+created: 2026-05-22
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Users should be able to enter expiry dates as a shorthand (e.g. =9Y=, =6M=, =1W=) rather than a full calendar date. This requires:
+
+1. A calendar service or integration (QuantLib =Calendar= or equivalent).
+2. A settlement rule (which business day convention, which holiday calendar).
+3. UI: a field that accepts either a date or a shorthand string; the resolved date is shown alongside.
+
+This depends on calendar infrastructure that is not yet in place. Backlog until that work is scoped.

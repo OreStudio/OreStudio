@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: E5A55B8A-0A9F-4659-928D-7896C8F3E20D
+:END:
+#+title: Introduce clang-tidy and Lizard via PR-delta ratchet strategy
+#+description: Safe rollout of clang-tidy and Lizard on a large legacy C++ codebase: enforce new standards only on lines/files changed in each PR (ratchet), leaving existing technical debt untouched.
+#+type: capture
+#+level: cross
+#+filetags: :cmake:ci:cpp:tooling:clang-tidy:lizard:
+#+created: 2026-06-10
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Introduce Clang-Tidy and Lizard into the CI pipeline using a
+*ratchet strategy*: both tools enforce standards only on lines or files
+that are *new or changed in the current PR*, leaving the existing
+codebase untouched. Technical debt is frozen in place and decreases
+naturally every time a developer touches a file.
+
+The implementation has two parts:
+
+- *Lizard* (complexity: CCN, length, arguments, nesting) — use
+  =dorny/paths-filter= to build the list of modified =.cpp=/.hpp=
+  files and pass it to =lizard --warnings_only=. Nothing runs if no
+  C++ files changed. Note: =dorny/paths-filter= with =list-files:
+  shell= produces a space-separated list suitable for shell expansion;
+  without that option the output is newline-separated and requires
+  =tr '\n' ' '= before passing to Lizard as arguments.
+
+- *Clang-Tidy* — use =cpp-linter/cpp-linter-action= with
+  =lines-changed-only: true= and =files-changed-only: true=. The
+  action compiles every modified file against =compile_commands.json=
+  but only *fails the build and posts PR comments* for lines actually
+  added or changed. A legacy file with 500 pre-existing warnings on
+  unmodified lines passes clean.
+
+Rollout happens in three phases:
+
+1. *Observation (week 1–2)*: run both jobs with =continue-on-error:
+   true=. Developers see inline PR comments without build breakage.
+2. *Soft enforcement (week 3–4)*: remove =continue-on-error=; enable
+   Lizard and Clang-Tidy readability/modernize checks as hard
+   failures for new lines.
+3. *Hard enforcement (month 2+)*: add =bugprone-*= and
+   =cppcoreguidelines-*= checks.
+
+The story task list would be: add Lizard job (with paths-filter delta
+guard), add Clang-Tidy job (cpp-linter-action, lines-changed-only),
+wire both into the pr-gate check, write the =.clang-tidy= config
+(include per-file suppressions for generated code — OreStudio generates
+C++ and generated files touching a PR must not trigger ratchet
+failures), tune thresholds, run the observation phase, flip to hard
+enforcement.
+
+* Why
+
+OreStudio has a large, accumulated C++ codebase. Turning on Clang-Tidy
+or Lizard against the whole tree today would produce hundreds of
+failures, forcing a multi-week freeze to fix them before CI is green
+again — unacceptable while features are shipping. The ratchet approach
+avoids that entirely: the debt is frozen, not ignored, and shrinks
+with every PR. The existing =clang_tidy_static_analysis= capture
+describes the general setup; this capture records the specific safe
+rollout strategy needed to act on it without disrupting the team.
+
+* References
+
+- =cpp-linter/cpp-linter-action= — GitHub Action with built-in
+  =lines-changed-only= support (key parameter for legacy repos).
+- =dorny/paths-filter= — GitHub Action; use =list-files: shell= to
+  get a space-separated list directly usable as Lizard arguments.
+- Suggested Lizard thresholds: =--length 150 --CCN 15 --arguments 8
+  --nested_level 4=.
+
+* See also
+
+- [[id:A16A6F10-1362-4009-9BFB-44402D7A9403][Set up clang-tidy static analysis]] — general clang-tidy setup
+  capture (CMake targets, compile_commands, nightly workflow); this
+  capture is the /how-to-introduce-it-safely/ companion.

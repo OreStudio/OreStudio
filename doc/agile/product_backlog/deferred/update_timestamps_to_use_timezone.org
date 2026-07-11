@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: 96A141D5-41FF-4772-9A0F-9E72F8FB3F60
+:END:
+#+title: Update timestamps to use timezone
+#+description: Update timestamps to use timezone
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Links:
+
+- [[https://justatheory.com/2012/04/postgres-use-timestamptz/][Always Use TIMESTAMP WITH TIME ZONE]]

@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 469958E3-B249-4D4C-95A9-E7CDB703F0C0
+:END:
+#+title: CLI commands — top-level commissioning story
+#+description: ores.cli entity commands have no codegen profile and are hand-written per entity. Tackle CLI command commissioning once across entities — establish the pattern, templatize into a codegen facet, roll out — mirroring the shell/HTTP/Wt top-level stories.
+#+type: capture
+#+level: cross
+#+filetags: :ores.cli:codegen:refdata:
+#+created: 2026-07-03
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make *CLI entity commands* a top-level story rather than an "implement CLI
+commands" task buried in each =commission_*= story. =ores.cli= has *no codegen
+profile* (confirmed in the =codegen-add-cli-entity= skill's "Codegen gap"
+section) — entity commands are hand-written. Identical situation to the shell
+layer: establish the per-entity pattern on a reference entity, add a generated
+aggregator for registration, templatize into a codegen CLI facet, then roll out
+per entity. Per-commission "implement CLI commands" tasks are superseded by this
+and should be closed in favour of it. *Pick up after entities are commissioned* —
+CLI is a horizontal layer, templatized once.
+
+* Why
+
+Like shell/HTTP/Wt, CLI is an entity-facing layer with no codegen and no home,
+producing an identical deferred task in every commission story. One top-level
+story removes the per-entity toil and gives every entity a consistent, generated
+CLI surface.
+
+* References
+
+- Codegen gap: =.claude/skills/codegen-add-cli-entity/SKILL.md= ("Codegen gap").
+- Hand-written CLI command units under =projects/ores.cli/=.
+
+* See also
+
+- [[id:8BCD0D1C-AAFB-4FAA-A0E3-022FC6EF93C2][Shell entity commands — top-level commissioning story]] (sibling; same approach).
+- [[id:03FC50B3-622B-4456-AE66-2F180B526723][HTTP entity endpoints — top-level commissioning story]] (sibling).
+- [[id:EEE4880F-525A-4805-8082-B8638CB54ABA][Wt entity UI — top-level commissioning story]] (sibling).

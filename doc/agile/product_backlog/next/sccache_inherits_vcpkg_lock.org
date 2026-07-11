@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: BBCCBAC3-3ED1-4D48-8B9A-802EFB3CDA86
+:END:
+#+title: sccache daemon inherits vcpkg lock fd from cmake
+#+description: sccache server started by cmake inherits the vcpkg-running.lock file descriptor, blocking subsequent cmake --preset runs until sccache --stop-server is called.
+#+type: capture
+#+level: cross
+#+filetags: :cmake:vcpkg:sccache:build:
+#+created: 2026-06-09
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+When =cmake --preset= runs, it spawns a vcpkg process that takes a filesystem lock on
+=vcpkg_installed/vcpkg/vcpkg-running.lock=. cmake also starts an sccache daemon
+(=sccache --start-server=) as a compiler wrapper. Because sccache inherits all open
+file descriptors from its parent cmake process, it holds the lock fd open long after
+vcpkg and cmake have exited. Any subsequent =cmake --preset= run then blocks on
+"waiting to take filesystem lock..." indefinitely. The workaround is =sccache --stop-server=,
+which closes the inherited fd and releases the lock.
+
+* Why
+
+This causes every repeated =cmake --preset= invocation to hang, appearing to be a vcpkg
+network or install problem. Developers waste time waiting or killing the process, not
+realising sccache is the culprit. The fix is to ensure the sccache server is started with
+=FD_CLOEXEC= on the lock (cmake side) or to close inherited fds before exec (sccache side),
+or to configure cmake to call =sccache --stop-server= after configure completes.
+
+* References
+
+- Lock path: =build/output/linux-clang-debug-make/vcpkg_installed/vcpkg/vcpkg-running.lock=
+- Workaround: =sccache --stop-server=
+- Diagnosis: =fuser <lock-path>= identifies sccache (not vcpkg) as the holder
+
+* See also
+
+-

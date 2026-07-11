@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 0CD11BEF-1D04-4984-97C4-BB498B81579B
+:END:
+#+title: Badge rendering inside QComboBox selected state
+#+description: Account type combo in AccountDetailDialog shows plain text in closed state. Full badge rendering requires QComboBox subclass overriding paintEvent, or a coloured swatch QLabel next to the combo. Defer until the pattern is needed in more than one place.
+#+type: capture
+#+level: cross
+#+filetags: :qt:badge:ux:combo:
+#+created: 2026-06-04
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

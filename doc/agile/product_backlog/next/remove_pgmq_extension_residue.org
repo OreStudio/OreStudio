@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: C0D0DADB-3FC9-4BC6-B6FF-68292FD8074C
+:END:
+#+title: Remove legacy pgmq extension residue from ores.compute
+#+description: Remove the unused pgmq PostgreSQL extension residue: conditional grant block in create_database.sql and pgmq_msg_id field threaded through ores.compute.
+#+type: capture
+#+level: cross
+#+filetags: :compute:sql:cleanup:legacy:
+#+created: 2026-07-04
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The pgmq PostgreSQL extension has been replaced by a custom native-RLS
+queue implementation (=ores_mq_queues_tbl= and friends in
+=projects/ores.sql/create/mq/=), but residue remains: (1) a defensive
+conditional grant block in =projects/ores.sql/create_database.sql=
+(only fires =if exists (select 1 from pg_extension where extname =
+'pgmq')=), and (2) a genuine =pgmq_msg_id= field threaded through
+=ores.compute='s results pipeline (=result_entity.hpp=,
+=result.hpp=, =result_mapper.cpp=, =result_generator.cpp=,
+=domain_result_tests.cpp=). Remove both, unless =ores.compute= has a
+still-live reason to depend on the pgmq extension directly (verify
+before removing the column).
+
+* Why
+
+Discovered while appraising the =party= entity's commissioning story:
+its per-party queue provisioning uses the new
+=ores_mq_queues_create_fn=, not pgmq, and was initially mislabeled as
+pgmq in an appraisal report. Dead extension dependencies and unused
+columns are confusing to future readers and worth cleaning up.
+
+* References
+
+- =projects/ores.sql/create_database.sql= lines ~88-111
+- =projects/ores.compute/core/include/ores.compute.core/repository/result_entity.hpp=
+- =projects/ores.compute/api/include/ores.compute.api/domain/result.hpp=
+
+* See also
+
+-

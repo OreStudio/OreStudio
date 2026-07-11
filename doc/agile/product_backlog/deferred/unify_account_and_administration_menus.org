@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 74E3F0D0-CF33-44C4-84EC-A0078EE48541
+:END:
+#+title: Unify Account and Administration menus into a single menu
+#+description: The Account and Administration submenus under System are confusing; investigate how other systems name these and consolidate into one coherent menu.
+#+type: capture
+#+level: cross
+#+filetags: :qt:ux:menus:iam:admin:
+#+created: 2026-06-04
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The Qt System menu currently has two separate submenus — =Account= and
+=Administration= — whose split is not intuitive. Account-related
+functionality is spread across both and it is not obvious to a user
+which submenu to reach for. The menus should be consolidated into a
+single, clearly named menu (e.g. =Accounts=, =Identity=, =Users=, or
+similar). Before deciding on the name and structure, investigate how
+comparable desktop applications (financial workstations, ERP systems,
+admin tooling) label and group this kind of functionality.
+
+* Why
+
+Users have found the dual-menu layout confusing. A single well-named
+menu reduces cognitive overhead and is consistent with how most
+applications handle account/user management. The rename and
+reorganisation should be driven by precedent from comparable systems,
+not guesswork.
+
+* References
+
+- [[proj:projects/ores.qt/admin/src/AdminPlugin.cpp][=projects/ores.qt/admin/src/AdminPlugin.cpp=]] — where the Account
+  and Administration submenus are wired into the System menu.
+
+* See also
+
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — how plugins contribute to the System menu via =setup_menus= / =create_menus=.

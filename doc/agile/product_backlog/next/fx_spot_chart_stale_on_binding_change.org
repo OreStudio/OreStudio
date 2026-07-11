@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 9A614F60-45C5-4759-AF7D-80F9FBFA1103
+:END:
+#+title: FX Spot chart doesn't refresh on feed binding change
+#+description: FX Spot chart window resolves feed bindings only once at open time, so it shows nothing and never updates if opened before a pair's binding exists, with no stale-data indicator to the user.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:ux:qt:
+#+created: 2026-07-10
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The FX Spot chart window (=projects/ores.qt/mktdata/src/FxSpotChartWindow.cpp=)
+resolves which feed(s) to subscribe to only once, at open time. If it's
+opened before a currency pair's =feed_binding= row exists — or a
+=feed_binding= is created afterward while the window stays open (e.g.
+via =SyntheticBindingDialog='s bulk "Bind synthetic..." action, or
+Market Simulator's auto-bind-on-start in
+=MarketSimulatorWindow.cpp=) — the window shows nothing and never
+picks up the new binding. There's no stale-data indicator on the
+screen itself, so the only way to notice is the absence of any chart
+movement; the only fix is to close and reopen the window. Reproduced
+directly: started 8 synthetic feeds via Market Simulator (which
+auto-created their bindings correctly — confirmed via the Feed
+Bindings window showing all 8, enabled), but the already-open FX Spot
+screen kept showing nothing until manually closed and reopened.
+
+* Why
+
+Makes basic FX Spot usage confusing during exactly the moment a user
+most needs feedback — right after starting feeds or binding a pair for
+the first time. The underlying data pipeline (synthetic feed →
+=feed_binding= → =ores.marketdata= ingest → =market_observation=) all
+worked correctly and quickly (verified via logs, ticks published
+within a second of feed start); the chart's failure to reflect that is
+purely a stale-subscription bug in the Qt window, not a backend issue.
+Likely needs the window to either re-resolve its subscription set on a
+=feed_binding= change notification, or subscribe more broadly (e.g. to
+=marketdata.v1.tick.<tenant_id>.*= and filter client-side) instead of
+binding to a fixed subscription set computed once at open time.
+
+* References
+
+- =projects/ores.qt/mktdata/src/FxSpotChartWindow.cpp=
+- =projects/ores.qt/marketdata/src/SyntheticBindingDialog.cpp= (=bindFromSynthetic=)
+- =projects/ores.qt/synthetic/src/MarketSimulatorWindow.cpp= (auto-bind-on-start, ~line 1386)
+- =projects/ores.marketdata/modeling/ores.marketdata.feed_binding.org=
+
+* See also
+
+- [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Story: Synthetic data collections: Basic and Realistic]] — surfaced while testing the new Basic/Realistic bundles' end-to-end feed flow.

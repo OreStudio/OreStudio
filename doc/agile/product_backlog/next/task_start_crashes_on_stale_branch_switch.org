@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: A8EF5B18-045A-46DC-B857-34B4F834AB6B
+:END:
+#+title: task start crashes after switching to a stale branch
+#+description: compass task start resolves the task doc path, switches to the task's branch, then re-reads the doc — but on a branch that diverged before a sprint transition the file lives elsewhere (or compass itself is older), producing FileNotFoundError tracebacks and an unstamped journal. Re-resolve the doc after the switch, or read everything needed before switching; also consider warning when the target branch's compass predates the running one.
+#+type: capture
+#+level: cross
+#+filetags: :compass:bug:task:workflow:
+#+created: 2026-06-06
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make =compass task start= robust when the task's branch predates the
+current documentation layout: re-resolve the task document after the
+branch switch (or read everything needed before switching), so a
+stale branch cannot crash the command mid-flight.
+
+* Why
+
+Found 2026-06-06 resuming the currency documentation task: its
+branch diverged before the sprint-19→20 transition, so after =task
+start= switched branches the task file no longer existed at the
+resolved path and the command died with a =FileNotFoundError=
+traceback — branch switched but state unflipped and journal
+unstamped, leaving a half-picked-up task. The checked-out compass on
+such a branch can also be older than the one running, which makes
+the traceback line numbers lie. Candidate fixes: complete all doc
+reads/writes before the switch; re-resolve after the switch; warn
+when the target branch's compass differs from the running one.
+
+* References
+
+-
+
+* See also
+
+-

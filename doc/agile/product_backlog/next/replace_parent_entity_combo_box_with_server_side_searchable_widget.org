@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 43C835A9-8F80-428F-9690-7021B46CADEA
+:END:
+#+title: Replace parent entity combo box with server-side searchable widget
+#+description: Replace parent entity combo box with server-side searchable widget
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:deferred:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+The parent entity combo boxes in =EntityDetailDialog= (used by both
+=PartyDetailOperations= and =CounterpartyDetailOperations=) use a single request
+with =offset=0, limit=1000= which silently truncates results if there are more
+than 1000 entities. The same pattern exists in =LookupFetcher= for country and
+business centre lookups.
+
+The fix is to replace the plain =QComboBox= with a searchable/type-ahead widget
+using =QCompleter= that searches server-side as the user types (like the
+=ClientPartyModel=/=ClientCounterpartyModel= pagination used in the MdiWindow
+list views).
+
+Affected code sites:
+- =CounterpartyDetailOperations.cpp:117= - =load_all_entities()=
+- =PartyDetailOperations.cpp:118= - =load_all_entities()=
+- =EntityDetailDialog.cpp:346= - =loadAllEntities()=
+- =LookupFetcher.cpp:80,145= - country and business centre fetches
+
+Note: this is low priority - won't impact us until we have >1000 entities.

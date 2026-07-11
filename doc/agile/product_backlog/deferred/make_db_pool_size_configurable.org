@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: A54DB993-A61C-44D3-AEE0-964EBD457D0E
+:END:
+#+title: Make DB connection pool size runtime-configurable
+#+description: Move pool_size out of the codegen template literal into database_options/database_configuration, sourced from a CLI flag and ORES_<APP>_DB_POOL_SIZE env var.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:database:postgres:ops:
+#+created: 2026-07-03
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add =pool_size= (and possibly =num_attempts=/=wait_time_in_seconds=)
+to =ores::database::database_options= and
+=database_configuration::read_options=
+(=projects/ores.database/src/config/database_configuration.cpp=),
+sourced from a new =--db-pool-size= CLI flag and/or
+=ORES_<APP>_DB_POOL_SIZE= env var, following the existing
+=ORES_<APP>_DB_*= convention (see =database_user_arg=,
+=database_password_arg= etc in that file), defaulting to =4=. Update
+the =component-service= codegen archetype
+(=projects/ores.codegen/library/templates/ores.cpp.service-app.application_impl.org=)
+so generated =application.cpp= emits =.pool_size = db_opts.pool_size=
+instead of a literal, then re-tangle and regenerate all 17 domain
+services.
+
+* Why
+
+=pool_size= is currently a compile-time literal duplicated identically
+across all 17 generated =application.cpp= files, so tuning it requires
+a template edit, full codegen regeneration, and rebuild of every
+service. Making it configurable lets pool size be dialed per
+environment without a rebuild — small pools for hosts running many
+concurrent dev environments (fleet observed with ~10 worktrees), large
+pools for a single perf-testing environment — and is the durable fix
+behind the quicker mitigation of just lowering the template default.
+
+* References
+
+- doc/recipes/sql/how_do_i_solve_postgres_max_connections.org
+
+* See also
+
+- [[id:E3E201CD-6A62-4772-8307-730D763BBEE9][Lower default per-service DB connection pool size]] — companion capture: the quick template-literal fix

@@ -31,7 +31,7 @@ reported procedure rather than one-off manual work.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Nothing — both tasks done.              |
+| Now           | Nothing — all three tasks done.         |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-07-11                               |
@@ -58,6 +58,7 @@ reported procedure rather than one-off manual work.
 |------+-------+-------+-----+-------------|
 | [[id:6E41F1C5-8B1E-450E-BFB2-993F687DE197][Promote and pull in sprint 23 stories from the backlog]] | DONE | 2026-07-11 | 2026-07-11 | Promote well-specified backlog captures into sprint 23 stories and pull in misfiled/mislabeled sprint-22/sprint-19 stories, verifying each against the live codebase before acting. |
 | [[id:BF5F062F-49DB-490C-B1B0-89B55A550173][Deep backlog refinement]] | DONE | 2026-07-11 | 2026-07-11 | Ran the agile-refine-backlog skill's deep mode: audited all 559 items in inbox/next/deferred against the live codebase, discarded/relocated 71, merged 1 duplicate pair. Next→deferred rescoring flagged as a follow-on run. |
+| [[id:AC95FC60-B2FE-4ADE-9671-0EAF2CD56285][Bucket rescoring against sprint 23's mission]] | DONE | 2026-07-11 | 2026-07-11 | Scored all 488 surviving items against sprint 23's mission; moved 310, emptied inbox (208→0), next 224→273, deferred 56→215. |
 
 * Decisions
 

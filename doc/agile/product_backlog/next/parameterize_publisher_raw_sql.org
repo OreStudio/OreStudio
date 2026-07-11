@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 2F19F264-6E6D-46AC-A314-CAA3B41791B7
+:END:
+#+title: Parameterize raw SQL in the synthetic organisation publisher
+#+description: organisation_publisher_service.cpp concatenates internally-generated UUIDs directly into SQL (set_party_context call, BU-type dedup query) instead of parameterizing. Risk is low — values are generated UUIDs, not user input — and the pattern is a pre-existing codebase convention, but it should be hardened in a cleanup pass. Flagged by review on PR #1163.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:database:security:
+#+created: 2026-06-07
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

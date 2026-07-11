@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 13BBAE0C-8EA9-4266-85D1-77F7F603B71B
+:END:
+#+title: Split the user manual into Qt and Wt manuals
+#+description: Split the single user manual into separate Qt and Wt manuals — near-identical except where the apps differ — possibly using codegen to share the identical content.
+#+type: capture
+#+level: cross
+#+filetags: :documentation:manual:wt:qt:
+#+created: 2026-06-08
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Today ORE Studio has a single user manual (under =doc/manual/=). As the
+[[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt]] web front-end grows alongside the [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt]] desktop client, one manual
+covering both surfaces will become unwieldy. Split it into two: a *Qt user
+manual* and a *Wt user manual*. The Wt manual should be near-identical to the
+Qt one, diverging only where the apps genuinely differ (interaction model,
+navigation, deployment, screenshots). To avoid maintaining duplicate prose,
+consider driving the shared, identical sections through codegen — a single
+source rendered into both manuals — reserving hand-written content for the
+app-specific deltas. Codegen sharing is only feasible where the text is
+*truly identical*; anything that paraphrases per app stays hand-written.
+
+* Why
+
+A single manual that interleaves Qt and Wt is harder to read and to keep
+correct: a reader of one surface has to wade through the other's specifics.
+Two focused manuals serve each audience directly. But naive duplication
+doubles the maintenance burden and invites drift between the near-identical
+sections — so the identical core should be generated from one source rather
+than copy-pasted. This also fits the existing model: the Doc technical space
+already generates manual chapters via codegen (see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]]).
+
+* References
+
+- =doc/manual/= — the current single user manual.
+- [[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt facet]] / [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt facet]] — the two application surfaces.
+
+* See also
+
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the Doc technical space and codegen of doc artefacts.

@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 84635A47-0E1A-4B67-A775-15F256D54A2D
+:END:
+#+title: Implement jump/Poisson stochastic process component
+#+description: Add a jump/Poisson process type as a selectable synthetic FX spot price-process engine.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:gmm:process:backlog:
+#+created: 2026-07-03
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a jump/Poisson process type as a synthetic FX spot price-process
+engine, alongside the existing geometric/arithmetic GMM engines and
+the Ornstein-Uhlenbeck engine added by
+[[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]].
+Should support configurable jump intensity (Poisson rate) and a
+jump-size distribution, wired the same way OU was: a new process
+class implementing =IStochasticProcess=
+(=projects/ores.marketdata/api/include/ores.marketdata.api/domain/i_stochastic_process.hpp=),
+a new branch in
+=process_factory::make_process()=
+(=projects/ores.synthetic/service/src/process_factory.cpp/.hpp=), and
+UI exposure in =FxSpotRateEditor=.
+
+* Why
+
+Currently listed as a placeholder ("Planned — not yet available") in
+the FxSpotRateEditor "Component Tools" disclosure panel
+(=projects/ores.qt/synthetic/src/FxSpotRateEditor.cpp=,
+=buildAdvancedControls()=); no implementation exists anywhere under
+=projects/=. Reviewed during the GMM improvements story's
+process-tools inventory task and explicitly scoped out to keep that
+story focused on Ornstein-Uhlenbeck.
+
+* References
+
+- =projects/ores.qt/synthetic/src/FxSpotRateEditor.cpp= (Component Tools panel)
+- =projects/ores.synthetic/service/src/process_factory.cpp/.hpp=
+- =projects/ores.synthetic/service/src/processes/ou_process.hpp= (pattern to follow)
+
+* See also
+
+-

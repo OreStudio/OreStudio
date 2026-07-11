@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: C492E717-9D0D-44E2-A3A4-1DC682BABF15
+:END:
+#+title: Analyse caching at dialog level
+#+description: Analyse caching at dialog level
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We seem to have a lot of caches lying around at the dialog level. It makes more
+sense to have a common core (i.e. non-Qt specific) data-structure that caches
+different types of data which is shared by the different dialogs. This would
+also be reused by different clients such as Wt, shell, etc.
+
+Instead of locking we should use immutable data structures. We should also take
+into account notifications coming in for data changes. It should enable you to
+notify all clients, load the data in the background in a way that does not
+affect dialogs.
+
+We could create workspace component which has all of the data needed, stored
+using immer containers:
+
+- it can have a comms aspect, so that the UI does not need to worry about any of
+  that. You just request say currencies page N, workspace then deals with that.
+  It can just give you the current version. If none, it will load via comms. It
+  also knows about subscriptions so it will tell you about pending subscriptions
+  for a collection you are interested in. As you load more pages, we load these
+  into immer containers ordered by page.
+- once we implement workspaces, we should then make all references to foreign
+  keys "clickable". For example, if you are in a business centre and it has a
+  country we should be able to click on it and open the country. At present we
+  can't do this because the data is kept at the main dialog level.
+- ideally we want a way to cache data in Qt format. We don't need to save this
+  data to the local database. However, we don't want to make the
+  =ores.workspace= library depend on Qt. Maybe we just need some kind of
+  "extensions" on each frontend (e.g. Wt etc), sort of a qt.workspace which
+  contains the original workspace plus any Qt specific representations. Or maybe
+  use composition.
+- we should add a UI to visualise the workspace, or at least be able to see size
+  usage etc. Baobab style map.
+
+Notes:
+
+- actually this is not "workspace", its ores.caching.
+- caching seems more like a component-level phenomena rather than having a
+  dedicated component in the entire product. A component like ores.caching would
+  have to depend on every component anyways, and it would not provide a lot of
+  valuable services. Makes more sense to have a =ores.refdata/caching= and so
+  on, with possibly a front-end service which deals with cache misses/hits and
+  can persist data locally into say SQLite. It could also handle the look up
+  data locally first, then do a remote get etc. All of this is transparent from
+  a client perspective. We could also have a feature flag to enable/disable
+  caching (in memory, local storage, etc).
+
+Analysis with Gemini:
+
+#+begin_src markdown
+## User Story: Implement a High-Performance Reactive Caching Service for Reference Data
+
+- **As a** system architect,
+- **I want** a centralized Reference Data Service that manages data via a
+  multi-tiered caching strategy (L1 Memory, L2 Disk) and incremental updates,
+- **So that** my application can access large volumes of lookup data with
+  near-zero latency, maintain thread safety without lock contention, and
+  minimize network overhead.
+
+---
+
+### Acceptance Criteria
+
+#### 1. Multi-Tiered "Smart" Loading Logic
+
+- **Cold Start:** On initialization, the service must check the **L2 (SQLite)**
+  cache for an existing "Page" snapshot.
+- **As-Of Load:** If no L2 cache exists, the service must perform a full "As-Of"
+  load from the remote connection for a specific timestamp.
+- **Since (Delta) Load:** If an L2 snapshot exists, the service must only
+  request "Since" updates (changes/deltas) from the remote connection based on
+  the last known timestamp in the L2 store.
+- **L2 Persistence:** All data fetched via "As-Of" or "Since" must be mapped
+  back to its data representation and persisted to **SQLite** to facilitate
+  future warm starts.
+
+#### 2. Immutable L1 Cache (immer)
+
+- **Thread Safety:** The L1 (in-memory) cache must use **immer** persistent data
+  structures (`immer::map`) to provide lock-free read access for concurrent
+  threads.
+- **Structural Sharing:** Updates to the cache via "Since" loads must use
+  immer’s **transient/persistent** pattern to update only changed entities while
+  sharing memory for unchanged data.
+- **Atomic Swaps:** The service must provide an atomic mechanism to swap the
+  "current" version of the page, ensuring readers always see a consistent
+  snapshot.
+
+#### 3. Reactive Subscription & Staleness
+
+- **Notifications:** The service must subscribe to data change notifications.
+- **Stale State Management:** Upon receiving a notification, the service must
+  mark the relevant collection as stale and trigger an automated "Since" load to
+  synchronize the L1 and L2 tiers.
+
+#### 4. Data Mapping
+
+- **Bi-Directional Mapping:** The service must utilize mappers to translate
+  between raw data representations (for SQLite storage) and domain entities (for
+  L1 memory storage).
+
+---
+
+### Technical Notes
+
+- **L1:** `immer::map<std::string, std::shared_ptr<const Entity>>`.
+- **L2:** SQLite table indexed by `page_id` and `timestamp` storing serialized
+  blobs.
+- **Performance Goal:** Reading from L1 should require no mutex locking, relying
+  on the immutability of the underlying immer structure.
+#+end_src
+
+Links:
+
+- [[https://github.com/arximboldi/immer][GH: immer]]: "immer is a library of persistent and immutable data structures
+  written in C++. These enable whole new kinds of architectures for interactive
+  and concurrent programs of striking simplicity, correctness, and performance."
+- [[https://learn.microsoft.com/en-us/aspnet/core/performance/caching/memory?view=aspnetcore-10.0][Cache in-memory in ASP.NET Core]]: get ideas for the caching interfaces and
+  requirements.
+
+Merged stories:
+
+*Add workspace as a container*
+
+Core needs to have a container for all of the data stored within a context.
+
+Actually, according to Data Priented Principles, we may not need it. This may be
+a UI concept but not a code concept.

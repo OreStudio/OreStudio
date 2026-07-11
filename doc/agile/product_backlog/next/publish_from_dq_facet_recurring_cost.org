@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 1CAA4761-AF7A-4264-8A41-C514083A4FA9
+:END:
+#+title: publish_from_dq codegen facet: hand-writing artefact tables is a recurring cost
+#+description: The publish_from_dq codegen facet (generate the DQ artefact table, publish-from-dq SQL function, NATS handler, registrar wiring from an entity's codegen model) was designed then abandoned. Every DQ-published dataset since (currency_pairs, synthetic fx_spot_configs, and now the FX driver-rate dataset) has had to hand-write its artefact table + publish function from scratch, each a near-identical shape. Revisit implementing the facet — the design task's own worked-example approach (regenerate report_definitions with zero behavioural diff) is still sound, there's now three real hand-written instances to generalise from instead of one.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-07-10
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Implement the =publish_from_dq= codegen facet (designed but never
+built — see References) so a DQ-published dataset's artefact table,
+publish-from-dq SQL function, NATS handler, and registrar wiring are
+generated from the owning entity's existing codegen model, instead of
+hand-written per dataset.
+
+* Why
+
+Discovered while raising a task to publish a curated FX driver-rate
+dataset via DQ/librarian, the same way =refdata.currency_pairs= is
+published: there is no codegen model anywhere in the tree for a DQ
+artefact table (confirmed by grep across every =modeling/= directory)
+— =dq_currency_pairs_artefact_tbl=, the synthetic FX spot configs
+artefact, and now this new dataset's artefact table all had to be
+hand-written from scratch, each shape near-identical to the last
+(dataset_id/tenant_id/version + domain columns, a publish-from-dq
+=SECURITY DEFINER= function reading the artefact and upserting into
+the real domain table). The facet's own design task called for
+proving it against =report_definitions= with zero behavioural diff —
+that reference target and design still stand; there are now three
+real hand-written instances to generalise from instead of one.
+
+* References
+
+- [[id:1AA74B93-B0F4-4B30-8AEA-5EB7C1A8940B][Design the publish_from_dq codegen facet]] — ABANDONED.
+- [[id:60DC5E3A-ADB4-4A9F-8841-56B080330A10][Implement the publish_from_dq codegen facet]] — ABANDONED.
+- [[id:C236C0DC-4ED1-4EEE-8DDD-CD841CED3AB2][Publish a curated FX driver-rate dataset for 2016-02-05]] — the task
+  that hit this gap a third time.
+
+* See also
+
+- [[id:E5EC80BB-789B-4BD6-B6E5-DC7AA790692A][Synthetic data librarian support: FX foundation]] — the story both
+  abandoned facet tasks belonged to.

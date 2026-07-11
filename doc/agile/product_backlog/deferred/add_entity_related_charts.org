@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 5B31ABE6-EF9D-45F3-8872-91A2D6F1FAD6
+:END:
+#+title: Add entity related charts
+#+description: Add entity related charts
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Have a think on things that could benefit from a graphical display at the entity
+level. Some ideas:
+
+- entity history: number of additions, edits, deletions over time. Bar chart.
+  Makes it easier to pick up weird system problems. This is overall across all
+  instances.
+- single entity history. In the history tab for that entity, graph showing the
+  changes to the entity over time.
+
+In addition, we need to be able to support charts in ASCII so that we can see
+them in the REPL. This will be used by the AI agents.
+
+Links:
+
+- [[https://github.com/Civitasv/asciichart][GH asciichart]]

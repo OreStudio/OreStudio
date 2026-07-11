@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 5533E643-BB14-4F93-B6CA-43BC1AE47690
+:END:
+#+title: Add regression tests for domain_entity SQL template fixes
+#+description: Guard the change_reason_code_declared dedup and validation_fn scope sync-back fixes with unit/golden tests in ores.codegen's test suite.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:testing:refdata:sql:
+#+created: 2026-07-06
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add unit/golden tests in =projects/ores.codegen/tests/= covering two
+fixes made to =ores.sql.schema.domain_entity_create.org= /
+=core.py= while migrating =purpose_type=: (1) a model with an explicit
+=change_reason_code= row in its =insert_trigger= validations table
+should emit that assignment exactly once, not twice (guarded by
+=change_reason_code_declared=); (2) a model with a tenant-scoped
+=validation_fn= (=tenant_scope: system/tenant/both=) should regenerate
+a =validate_<entity>_fn= body that includes the bootstrap-passthrough
+and FK-existence check, not a no-op stub (guarded by syncing
+=validation_fn= scope flags from =table= back onto =domain_entity= in
+=core.py=).
+
+* Why
+
+Both bugs were silent: the SQL still compiled and ran, it just did the
+wrong thing (duplicate assignment; no real validation). They were only
+caught by manually diffing regenerated output against a hand-written
+file during the =purpose_type= entity migration (PR #1451). Nothing in
+=ores.codegen='s test suite currently exercises either code path, so a
+future refactor of =generate_from_model= / =normalise_sql_table_context=
+could silently reintroduce either regression with no test failure to
+catch it.
+
+* References
+
+- PR #1451: https://github.com/OreStudio/OreStudio/pull/1451
+- =projects/ores.codegen/src/codegen/core.py= — =change_reason_code_declared=,
+  the =validation_fn= scope sync-back (search for =has_tenant_in_pk=).
+- =projects/ores.codegen/library/templates/ores.sql.schema.domain_entity_create.org=
+
+* See also
+
+- [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] — the story where these bugs were found and fixed.

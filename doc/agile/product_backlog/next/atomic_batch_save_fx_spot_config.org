@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: C3CD2AE6-8B87-4142-B2C2-2AC580E69189
+:END:
+#+title: Atomic batch-save endpoint for FX spot config + components
+#+description: Add a server-side transactional endpoint that saves an fx_spot config and its GMM components in one unit so a mid-way failure cannot leave a partially-updated state.
+#+type: capture
+#+level: cross
+#+filetags: :ores.synthetic:robustness:api:
+#+created: 2026-06-29
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a server-side endpoint that persists an =fx_spot_generation_config=
+together with its full =gmm_component= set (and the deletion of removed
+components) inside a single database transaction. The Qt editor
+(=FxSpotRateEditor::onSaveClicked=,
+=projects/ores.qt/synthetic/src/FxSpotRateEditor.cpp=) currently does
+this as a sequence of independent NATS requests: save config → save each
+component → delete removed components. A failure partway through leaves
+the config header updated while only some components are saved. Replace
+the client-side sequence with one batch request the service commits
+atomically; on failure nothing is applied.
+
+* Why
+
+The multi-step save has no rollback. The temporal-history model means a
+partial save does not corrupt data (older versions survive), but the UI
+can show an inconsistent config until a reload, and the failure mode is
+invisible to the user. A transactional batch-save makes the operation
+all-or-nothing and lets the UI report a clean success/failure. Raised in
+PR #1367 review.
+
+* References
+
+- =projects/ores.qt/synthetic/src/FxSpotRateEditor.cpp= — onSaveClicked multi-step save.
+- PR #1367 — review thread that raised this.
+
+* See also
+
+-

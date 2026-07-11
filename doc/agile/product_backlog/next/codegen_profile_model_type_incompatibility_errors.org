@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: A72E617F-5443-4009-8173-A605D8F01485
+:END:
+#+title: Downgrade profile/model-type incompatibility from error to skip in --component mode
+#+description: Running a profile with --component emits loud ERRORs for entity types that do not support the profile (e.g. table/junction when running the qt profile); they should be silently skipped in --component mode, not treated as errors.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:ux:dx:
+#+created: 2026-06-25
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+When =codegen.sh regenerate --component <C> --profile <P>= is invoked, the codegen
+discovers all entity models in the component and iterates over them.  Each profile
+declares the model types it supports (e.g. =qt= only supports =domain_entity=).
+Any model whose type is not in the supported set currently emits an =ERROR= line
+and increments the error counter:
+
+#+begin_example
+ERROR Profile 'qt' is not compatible with model type 'table'. Supported types: domain_entity
+ERROR Profile 'qt' is not compatible with model type 'junction'. Supported types: domain_entity
+...
+ERROR 13 error(s) during regeneration.
+#+end_example
+
+Running =--component refdata-cpp --profile qt= produces 13 such messages because
+=ores.refdata= contains five =table= models and eight =junction= models alongside
+the =domain_entity= models the Qt profile targets.
+
+The fix: in =--component= mode, incompatible-type encounters should be silently
+skipped (or at most a =DEBUG=-level log line).  Only explicit single-entity runs
+on an incompatible type should remain an ERROR, since those represent a genuine
+user mistake.
+
+Optionally, a =--strict= flag could restore current behaviour for callers who need
+to verify that a profile applies to every entity in the run.
+
+* Why
+
+In =--component= mode the caller does not name models individually — the codegen
+discovers them automatically.  A component is a heterogeneous collection of model
+types by design: =ores.refdata= has domain entities, lookup tables, and junction
+tables in the same component because they share a database, an API library, and a
+service boundary.  Encountering a model whose type is incompatible with the
+requested profile is expected and correct behaviour in this context, not a failure.
+
+The current ERROR-level messages cause three concrete problems:
+
+1. *False-positive error count.* The final =N error(s) during regeneration= summary
+   conflates genuine generation failures with expected skips.  Callers cannot gate
+   on a zero-error run to confirm success.
+
+2. *Output noise.* Thirteen spurious ERROR lines appear before any real output,
+   drowning out genuine failures.  A developer scanning for problems must know in
+   advance which errors are expected — defeating the purpose of structured logging.
+
+3. *CI fragility.* A CI job that checks for an error-free codegen run will fail
+   on any legitimate =qt= or =protocol= profile invocation against =refdata-cpp=,
+   or must suppress the exit code and thereby hide real failures.
+
+This was observed during =commission_currency= sprint work: every run of
+=codegen.sh regenerate --component refdata-cpp --profile qt= produced 13 ERROR
+lines.  The operator had to mentally filter them on every iteration to check
+whether the real generation step succeeded.
+
+* References
+
+- First observed: =doc/agile/versions/v0/sprint_21/commission_currency/task_sync_qt_codegen_currency_auxiliaries.org=
+- Codegen entry point: =projects/ores.codegen/codegen.sh=
+- Generator: =projects/ores.codegen/src/generator.py=
+- Profile definitions: =projects/ores.codegen/library/profiles/=
+
+* See also
+
+- [[id:A804195D-0F50-4691-9389-B79F10098C72][codegen --component run generates all entities not just the target]] — companion
+  issue: even when skips are silent, =--component= still generates more files than
+  the caller intended; an =--entity= filter flag is needed to scope runs to a
+  named subset of entities within a component.

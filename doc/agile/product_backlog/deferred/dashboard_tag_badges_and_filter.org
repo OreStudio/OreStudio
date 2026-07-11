@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 4540672C-3AD5-4BA4-92E2-603174FBE208
+:END:
+#+title: Add tag badges and filter widget to agile dashboard
+#+description: Display story/task tags as badges on agile dashboard cards and add a tag filter widget to the sprint and product backlog views.
+#+type: capture
+#+level: cross
+#+filetags: :agile:dashboard:ux:tags:
+#+created: 2026-06-07
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Story cards in the agile dashboard (sprint view and product backlog)
+should display their =#+filetags:= values as small badges so the
+component area is visible at a glance without opening the card. Both
+sprint and backlog views need a tag filter widget: selecting one or
+more tags (e.g. =codegen=, =refdata=, =compass=) narrows the visible
+cards to only those carrying all selected tags. The filter state
+should survive page reload (query param or localStorage). Tasks
+inherit their parent story's tags for filtering purposes so that a
+sprint filtered to =codegen= shows both stories and their tasks.
+
+* Why
+
+Sprints routinely contain work from several components — codegen,
+refdata, compass, site — and scrolling through all cards to find
+relevant ones is slow. Tag badges give instant visual orientation;
+the filter widget lets a team member focus on their area without
+opening each card. Currently there is no way to ask "show me all
+codegen work in this sprint" without reading every card.
+
+* References
+
+- Agile dashboard source: [[proj:projects/ores.agile][=projects/ores.agile=]]
+
+* See also
+
+-

@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: CEBAB022-2039-47A4-AAB2-BB2FFBA5507C
+:END:
+#+title: Add a dashboard for users
+#+description: Add a dashboard for users
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+#+startup: inlineimages
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+As per screenshots:
+
+[[proj:doc/agile/product_backlog/next/user_dashboard_core_ui.png]]
+
+[[proj:doc/agile/product_backlog/next/dashboard_ideas.png]]
+
+[[proj:doc/agile/product_backlog/next/dashboard_ideas_II.png]]
+
+Notes:
+
+- add command to shell to list sessions.

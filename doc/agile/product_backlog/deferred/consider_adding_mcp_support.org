@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: FBCD3280-79B0-4DFA-9918-B40C757907EF
+:END:
+#+title: Consider adding MCP support
+#+description: Consider adding MCP support
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+From Kaggle course:
+
+#+begin_quote
+Model Context Protocol (MCP) is an open standard that lets agents use
+community-built integrations. Instead of writing your own integrations and API
+clients, just connect to an existing MCP server.
+
+MCP enables agents to:
+
+- Access live, external data from databases, APIs, and services without custom
+  integration code
+- Leverage community-built tools with standardized interfaces
+- Scale capabilities by connecting to multiple specialized servers
+
+2.1: How MCP Works
+
+MCP connects your agent (the client) to external MCP servers that provide tools:
+
+- MCP Server: Provides specific tools (like image generation, database access)
+- MCP Client: Your agent that uses those tools
+
+All servers work the same way - standardized interface Architecture:
+
+┌──────────────────┐
+│   Your Agent     │
+│   (MCP Client)   │
+└────────┬─────────┘
+         │
+         │ Standard MCP Protocol
+         │
+    ┌────┴────┬────────┬────────┐
+    │         │        │        │
+    ▼         ▼        ▼        ▼
+┌────────┐ ┌─────┐ ┌──────┐ ┌─────┐
+│ GitHub │ │Slack│ │ Maps │ │ ... │
+│ Server │ │ MCP │ │ MCP  │ │     │
+└────────┘ └─────┘ └──────┘ └─────┘
+#+end_quote
+
+Links:
+
+- [[https://github.com/hkr04/cpp-mcp][GH: cpp-mcp]]. We need to add a vcpkg port first. See [[https://github.com/hkr04/cpp-mcp/issues/37#issuecomment-3895040671][#37: Ading cpp-mcp to
+  vcpkg]].
+- [[https://github.com/Qihoo360/TinyMCP][GH: TinyMCP]]

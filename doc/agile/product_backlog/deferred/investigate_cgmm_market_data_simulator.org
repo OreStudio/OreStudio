@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 5D68C073-D58D-4873-8EFE-C81CD94E91F6
+:END:
+#+title: Investigate sitmo/cgmm for market data simulator
+#+description: Evaluate the sitmo/cgmm conditional Gaussian mixture model library as a potential port for our synthetic market data simulator.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:marketdata:gmm:research:
+#+created: 2026-07-04
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Investigate [[https://github.com/sitmo/cgmm][sitmo/cgmm]], a Python library implementing Conditional Gaussian
+Mixture Models (GMMs) with full scikit-learn compatibility, as a candidate to
+port (in concept or algorithm) into our C++ synthetic market data generation
+pipeline (=ores.synthetic=). The library fits a standard =GaussianMixture= on
+data, then "conditions" on a subset of variables to obtain the posterior
+distribution of the remaining ones. Key pieces: =GMMConditioner= (turns a
+fitted mixture into a conditional mixture over target variables given
+conditioning indices) and =ConditionalGMMRegressor= (an sklearn-compatible
+regressor exposing =.predict()= and =.predict_cov()=, supporting multimodal
+posteriors rather than single point estimates). BSD-3-Clause licensed.
+Relevant capabilities highlighted in its docs: multimodal regression with
+predictive confidence bands, stochastic scenario simulation/forecasting,
+missing-value imputation, and inverse problems — it ships a VIX example doing
+daily log-return modelling and "stochastic futures" simulation, which maps
+closely onto our own synthetic market data / stochastic process generation
+work (GMM improvements story, IR rates synthetic data generation).
+
+* Why
+
+Our synthetic data generator (=ores.synthetic=) already uses Gaussian Mixture
+Models for market data simulation (see the sprint 22 "GMM improvements" story
+and stochastic-process component work). cgmm's conditional-mixture approach —
+sampling one set of variables conditioned on another — could let us simulate
+correlated market observations (e.g. an FX rate conditioned on a curve
+tenor, or a curve point conditioned on other tenors) more principled than
+ad-hoc correlation injection, and its multimodal posterior support could
+improve scenario realism over single-point conditional means. Worth an
+appraisal task to determine whether the underlying maths is portable to our
+C++ generator, or whether it is only useful as an algorithmic reference.
+
+* References
+
+- https://github.com/sitmo/cgmm
+
+* See also
+
+-

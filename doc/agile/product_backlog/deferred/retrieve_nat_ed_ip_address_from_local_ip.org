@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 1F0F5819-88BC-45FC-BFAA-7915C28A91C5
+:END:
+#+title: Retrieve NAT'ed IP address from local IP
+#+description: Retrieve NAT'ed IP address from local IP
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+It would be nice to be able to resolve to the NAT'ed IP address. Gemini:
+
+#+begin_src cpp
+#include <iostream>
+#include <string>
+#include <boost/asio.hpp>
+
+using boost::asio::ip::tcp;
+
+std::string get_public_ip() { try { boost::asio::io_context io_context;
+
+    // 1. Resolve the address for api.ipify.org
+    tcp::resolver resolver(io_context);
+    tcp::resolver::results_type endpoints = resolver.resolve("api.ipify.org", "http");
+
+    // 2. Connect to the server
+    tcp::socket socket(io_context);
+    boost::asio::connect(socket, endpoints);
+
+    // 3. Formulate the HTTP GET request
+    std::string request =
+        "GET / HTTP/1.1\r\n"
+        "Host: api.ipify.org\r\n"
+        "Connection: close\r\n\r\n";
+
+    // 4. Send the request
+    boost::asio::write(socket, boost::asio::buffer(request));
+
+    // 5. Read the response
+    boost::asio::streambuf response;
+    boost::asio::read_until(socket, response, "\r\n");
+
+    // Check the status line (optional but recommended)
+    std::istream response_stream(&response);
+    std::string http_version;
+    unsigned int status_code;
+    response_stream >> http_version >> status_code;
+
+    if (status_code != 200) {
+        return "Error: HTTP Status " + std::to_string(status_code);
+    }
+
+    // Skip the HTTP headers
+    boost::asio::read_until(socket, response, "\r\n\r\n");
+
+    // The remaining data in the buffer (and what's left to read) is the IP
+    std::string public_ip;
+    while (boost::asio::read(socket, response, boost::asio::transfer_at_least(1), boost::system::error_code())) {
+        // Keep reading until EOF
+    }
+
+    // Convert the body content to a string
+    std::stringstream ss;
+    ss << &response;
+    public_ip = ss.str();
+
+    // api.ipify.org returns only the IP as plain text in the body
+    return public_ip;
+
+} catch (std::exception& e) {
+    return std::string("Exception: ") + e.what();
+}
+}
+
+int main() {
+        stdout::cout << "Fetching public IP..." << std::endl;
+        std::string ip = get_public_ip();
+        std::cout << "Your Public IP is: " << ip << std::endl;
+        return 0;
+}
+#+end_src

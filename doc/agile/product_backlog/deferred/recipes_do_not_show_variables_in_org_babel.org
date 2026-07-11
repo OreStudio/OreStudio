@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: A3CCEC66-6624-4006-9DE3-B4C074712539
+:END:
+#+title: Recipes do not show variables in org-babel
+#+description: Recipes do not show variables in org-babel
+#+type: capture
+#+level: cross
+#+filetags: :infra:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present when we look at a recipe in the site, we cannot tell what the
+environment variables are:
+
+#+begin_src sh
+./ores.console import ${log_args} --currency-configuration ${currency_config_dir}/currencies.xml
+#+END_SRC
+
+It would be nice if =log_args= etc showed up in the recipe.
+
+Links:
+
+- [[https://kitchingroup.cheme.cmu.edu/blog/2019/02/12/Using-results-from-one-code-block-in-another-org-mode/][Using results from one code block in another org-mode]]

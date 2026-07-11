@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: A3E9FDCE-F1B9-40C2-9E57-53DBA05FE3E6
+:END:
+#+title: Simplify verbose handler log names
+#+description: Handler log names like pricing_engine_type_handler_lg() should just be lg(). Affects all generated handler templates.
+#+type: capture
+#+level: cross
+#+filetags: :code:logging:codegen:
+#+created: 2026-05-22
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+Generated handlers name their Boost.Log logger with the full entity name:
+
+#+begin_src c++
+BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug) << ...;
+#+end_src
+
+The verbose name adds nothing over a simple =lg()= because the log category is already embedded in the Boost.Log channel / severity filter. Change the code generator templates to emit =lg()= universally, deriving the log sink name from the compilation unit at registration time.

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 7A80DC2A-DC53-4419-A9DC-3DE62F6DBC22
+:END:
+#+title: compass needs to support a help command. currently 'compass …
+#+description: compass needs to support a help command. currently 'compass help' returns an error. there should be a top-level help subcommand that lists all available commands with a one-line description, and 'compass help <command>' should show the full usage for that command.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-06-27
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

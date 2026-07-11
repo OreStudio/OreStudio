@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 8219B2CA-1C15-4AAF-87FC-DF27220EF462
+:END:
+#+title: Gate unordered_set include in the generator template on actual need
+#+description: cpp_domain_type_generator.cpp.mustache unconditionally includes <unordered_set>, but only entities with a hand-added bulk-unique-generator addendum (e.g. currency's generate_unique_synthetic_currencies) actually use it — every other generated *_generator.cpp carries an unused include (confirmed on country, plus 2 other already-regenerated entities). Compute a needs_unordered_set flag and gate the include.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:templates:cleanup:
+#+created: 2026-07-09
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.codegen/library/templates/cpp_domain_type_generator.cpp.mustache=
+(tangled from =ores.cpp.generator.generator_impl.org=) unconditionally
+emits =#include <unordered_set>= for every generated
+=<entity>_generator.cpp=, but the header is only actually used by
+entities that also carry a hand-added bulk-unique-generator addendum
+(e.g. currency's =generate_unique_synthetic_currencies=, which uses a
+=std::unordered_set<std::string> seen= dedup set). Every other
+generated generator file — confirmed on country plus 2 other already-
+regenerated entities — carries the include unused. Compute a
+=needs_unordered_set= flag (true if the entity has the bulk-unique-
+generator addendum) and gate the =#include= on it.
+
+* Why
+
+Flagged as a minor nit during PR #1487's review (country codegen
+regen). Declined fixing by hand-editing the generated file, since the
+include is emitted by the shared template for every entity, not
+something that PR introduced — hand-patching one output file would
+just drift back on the next regen. The real fix belongs in the
+template and affects every already-regenerated entity that doesn't
+have the bulk-unique-generator addendum, so it's a small, independent
+cleanup rather than something to bundle into an unrelated PR.
+
+* References
+
+- PR #1487: https://github.com/OreStudio/OreStudio/pull/1487
+
+* See also
+
+-

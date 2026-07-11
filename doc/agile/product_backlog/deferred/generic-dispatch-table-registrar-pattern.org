@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: B38D0D2A-0D5D-4051-A41D-604D73EA47DA
+:END:
+#+title: Generated entity_type_of() identifier + generic dispatch-tab…
+#+description: Generated entity_type_of() identifier + generic dispatch-table registrars, as a pattern beyond history: the history-diff redesign (see doc/knowledge/architecture/history_diff_architecture.org) introduces a codegen'd entity_type_of(entity) free-function trait per entity (a single-source-of-truth string identifier, not a struct member) plus a *sibling* registrar shape to the existing entity-composed registrars (doc/knowledge/architecture/entity_composed_registrars.org): one shared subject/endpoint with a runtime dispatch table keyed by entity_type, instead of N compile-time-distinct per-entity subjects. This does NOT replace the existing typed CRUD registrars (save/get/delete genuinely need typed per-entity payloads, so distinct subjects stay correct there); it's the right shape specifically for operations whose payload is already generic/string-based across every entity, where history is the first instance. Worth considering for future generic cross-entity operations as they arise: audit trail, generic search/autocomplete, generic cross-navigation. When the first such second consumer appears, extract entity_type_of() and the dispatch-table registrar shape into a reusable codegen facet rather than duplicating history's.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

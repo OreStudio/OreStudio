@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A52C791C-F71B-4374-BADA-1A7A50DED25B
+:END:
+#+title: Currencies: Contractual Settlement (The "Agreements" Table)
+#+description: Currencies: Contractual Settlement (The "Agreements" Table)
+#+type: capture
+#+level: cross
+#+filetags: :code:capture:next:
+#+created: 2026-05-21
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+- Goal: Define the "How." This is the bridge you mentioned for specific
+  counterparties.
+- Table: =ores_refdata_settlement_agreements.=
+- Logic: "Even though London can settle NDFs, for this specific Hedge Fund, we
+  always settle in USD."
+
+Fields:
+
+| Schema                 | Description             |
+|------------------------+-------------------------|
+| party_id               | Our side.               |
+| counterparty_id        | Their side.             |
+| currency_code          | The currency.           |
+| agreed_settlement_type | NDF, Physical, Net_USD. |
+| agreement_ref          | e.g., "ISDA-2023-GS".   |

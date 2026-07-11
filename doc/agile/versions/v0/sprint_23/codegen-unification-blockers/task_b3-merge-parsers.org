@@ -5,7 +5,7 @@
 #+description: Extend load_org_model() in org_loader.py to parse * Validation function, * Insert trigger / ** Validations, and the #+has_tenant_id, #+coding_scheme, #+image_id frontmatter keys that currently only load_org_table_model() handles.
 #+type: task
 #+level: s1
-#+filetags: :codegen-unification-blockers:sprint_22:v0:
+#+filetags: :codegen-unification-blockers:sprint_23:v0:
 #+owner: marco
 #+branch: feature/codegen-unification-blockers
 #+pr:

@@ -5,7 +5,7 @@
 #+description: Change get_model_type() and load_model() in core.py to resolve the model type from the #+type: frontmatter key rather than filename suffix; keep suffix fallback for files without #+type:.
 #+type: task
 #+level: s1
-#+filetags: :codegen-unification-blockers:sprint_22:v0:
+#+filetags: :codegen-unification-blockers:sprint_23:v0:
 #+owner: marco
 #+branch: feature/codegen-unification-blockers
 #+pr:

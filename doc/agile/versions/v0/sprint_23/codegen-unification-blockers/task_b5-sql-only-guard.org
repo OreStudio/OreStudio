@@ -5,7 +5,7 @@
 #+description: Replace --profile with a supported/target set model. The entity's ores.* :PROPERTIES: drawer declares its supported set (what it can generate). An optional CLI --address declares the target set (what to generate this run; defaults to supported). What actually generates = target ∩ supported. Target ∩ supported = ∅ → warning. --profile is removed. Replaces the ad-hoc #+sql_only and #+has_qt flags.
 #+type: task
 #+level: s1
-#+filetags: :codegen-unification-blockers:sprint_22:v0:
+#+filetags: :codegen-unification-blockers:sprint_23:v0:
 #+owner: marco
 #+branch: feature/codegen-physical-space-binding
 #+pr: 1361

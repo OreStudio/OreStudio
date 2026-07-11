@@ -5,13 +5,15 @@
 #+description: The codegen model unification analysis (D2256981) identifies six concrete blockers that prevent merging the dual entity+table org files into a single entity file. This story resolves five of them (B6 is superseded by B5's generic MASD address mechanism) so that the content migration (Step 5) can proceed.
 #+type: story
 #+level: s2
-#+filetags: :tooling:codegen:unification:sprint_22:v0:
+#+filetags: :tooling:codegen:unification:sprint_23:v0:
 #+created: 2026-06-27
-#+updated: 2026-06-29
+#+updated: 2026-07-11
 #+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Carried from [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]], where 8 of 15 tasks were completed (one abandoned, superseded).
 
 * Goal
 
@@ -38,7 +40,7 @@ The blockers, in implementation order:
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | STARTED                              |
-| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | B1, B2, B3, B5, and B8 done; B4 (collapse refdata/refdata-cpp components) is the next open blocker. |
 | Waiting on    | Nothing.                               |
 | Next          | Implement B4.                          |

@@ -5,7 +5,7 @@
 #+description: ABANDONED — superseded by B5. The generic ores.* property-drawer mechanism covers this use case: :ores.cpp.qt.enabled: false disables the Qt facet without requiring a new boolean flag.
 #+type: task
 #+level: s1
-#+filetags: :codegen-unification-blockers:sprint_22:v0:
+#+filetags: :codegen-unification-blockers:sprint_23:v0:
 #+owner: marco
 #+branch: feature/codegen-unification-blockers
 #+pr:

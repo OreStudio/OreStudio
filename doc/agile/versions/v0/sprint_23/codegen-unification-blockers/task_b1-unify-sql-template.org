@@ -5,7 +5,7 @@
 #+description: Extend sql_schema_domain_entity_create.mustache to render coding_scheme columns, image_id, the validation_fn block, and insert_trigger.validations — the sections that previously only sql_schema_create.mustache (table pathway) produced — so a merged entity model generates byte-identical SQL to the table pathway.
 #+type: task
 #+level: s1
-#+filetags: :codegen-unification-blockers:sprint_22:v0:
+#+filetags: :codegen-unification-blockers:sprint_23:v0:
 #+owner: marco
 #+branch: feature/codegen-unification-blockers
 #+pr: 1355

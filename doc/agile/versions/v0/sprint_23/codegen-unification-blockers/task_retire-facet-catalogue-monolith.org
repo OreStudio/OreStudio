@@ -5,7 +5,7 @@
 #+description: Delete facet_catalogue.org and the 18 legacy literate facet/facet_group docs (cpp_qt.org, cpp_group.org, sql_schema.org, ...), remove the now-dead load_profiles/resolve_profile_templates/validate_profile_for_model code, and repoint or remove the hundreds of inbound id: links (56 to facet_catalogue alone) across the org-roam graph to the new ores.* nodes.
 #+type: task
 #+level: s1
-#+filetags: :codegen:physical-space:cleanup:codegen-unification-blockers:sprint_22:v0:
+#+filetags: :codegen:physical-space:cleanup:codegen-unification-blockers:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 1BDF8A2E-EC7D-4B54-8949-DF76D4B5A050
+:ID: DB8433F8-769A-48F6-A8BD-4CFAD1733D7F
 :END:
-#+title: Task: B9: Rename .mustache template files to MASD address form
-#+description: Rename the 50 entity-facet .mustache templates to address form (ores_cpp_domain_class_header.mustache) atomically with their :tangle targets, core.py get_schema_template_mappings, and doc-string references; verify byte-identical generation across the graph path and the legacy schema path.
+#+title: Task: B11: Migrate live codegen callers from --profile to --address
+#+description: Switch the live caller surfaces (codegen/qt/sql recipes, skills, runbooks, shell scripts, compass help) from the deprecated --profile to --address; resolve composite-profile cases (all, all-cpp, non-temporal) that have no single-address equivalent; leave historical agile/plan/analysis docs untouched. Then optionally remove the --profile shim.
 #+type: task
 #+level: s1
-#+filetags: :codegen:physical-space:cleanup:codegen-unification-blockers:sprint_22:v0:
+#+filetags: :codegen:physical-space:docs:cleanup:codegen-unification-blockers:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every entity-facet .mustache file is named for its MASD address (dots->underscores), matching its archetype node and doc, with all references (tangle targets, get_schema_template_mappings, generator lookup, doc-strings) updated atomically and generation proven byte-identical.
+Every live caller of codegen generation uses --address with the correct physical-space address; the layer recipes map to their facet (qt->ores.cpp.qt, sql->ores.sql.schema, ...); composite profiles are replaced with explicit addresses or documented multi-step guidance; historical records are left as-is. Once no live caller uses --profile, the deprecated shim (_PROFILE_TO_FACETS, --profile args) can be removed.
 
 * Status
 
@@ -35,7 +35,7 @@ Every entity-facet .mustache file is named for its MASD address (dots->underscor
 
 * Acceptance
 
-- All 50 entity-facet .mustache renamed; tangle produces the new names with no orphans; get_schema_template_mappings and doc-strings updated; both the domain_entity graph path and the is_entity_schema_model path generate byte-identical output; codegen tests pass.
+- grep for --profile in doc/llm/skills, doc/recipes, doc/llm/runbooks, and projects/ores.codegen/*.sh returns nothing (excluding historical agile/plans/analysis); each layer recipe uses the right --address; compass help shows --address; codegen still generates byte-identically; optionally --profile shim removed with a note.
 
 * Plan
 

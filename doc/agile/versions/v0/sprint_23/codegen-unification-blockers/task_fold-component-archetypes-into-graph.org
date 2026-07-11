@@ -5,7 +5,7 @@
 #+description: Migrate the component-scope archetypes (cmake_*, cpp_component_*, cpp_service_app_*, sql_service_*, shell_*, the * Component archetypes) into the ores.* physical-space doc graph, after B5 lands the entity-facet graph.
 #+type: task
 #+level: s1
-#+filetags: :codegen:physical-space:codegen-unification-blockers:sprint_22:v0:
+#+filetags: :codegen:physical-space:codegen-unification-blockers:sprint_23:v0:
 #+owner: marco
 #+branch: feature/codegen-physical-space-binding
 #+pr: 1361

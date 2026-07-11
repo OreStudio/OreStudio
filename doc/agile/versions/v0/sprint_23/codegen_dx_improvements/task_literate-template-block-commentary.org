@@ -5,7 +5,7 @@
 #+description: For every template org under ores.codegen/library/templates, split the single mustache tangle block into multiple same-target blocks interleaved with detailed human-level prose explaining what each block does and why; generated code stays comment-free.
 #+type: task
 #+level: s1
-#+filetags: :codegen_dx_improvements:sprint_22:v0:
+#+filetags: :codegen_dx_improvements:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

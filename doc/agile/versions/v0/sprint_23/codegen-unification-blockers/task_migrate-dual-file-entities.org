@@ -5,7 +5,7 @@
 #+description: For each of the 9 dual-file entities (book_status, contact_type, country, currency_market_tier, monetary_nature, party_id_scheme, party_status, party_type, rounding_type), move the * Validation function and * Insert trigger sections from the _table.org file into the entity file. Verify generated SQL is byte-identical to the table-pathway output. Delete the _table.org file. For purpose_type (the sole table-only entity), create a sql_only entity file and delete purpose_type_table.org. For currency, delete currency_table.org directly once commission-currency sync tasks complete — the entity model (ores.refdata.currency.org) already exists with full C++, Qt, and NATS layers. Validate each migrated entity with the domain entity evaluation checklist.
 #+type: task
 #+level: s1
-#+filetags: :codegen-unification-blockers:sprint_22:v0:
+#+filetags: :codegen-unification-blockers:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

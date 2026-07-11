@@ -5,7 +5,7 @@
 #+description: Add a new 'archetypes' subcommand to compass codegen entity that lists the physical space catalogue using ores.ts.facet.archetype notation. With --entity, shows the entity's supported set with enabled/disabled status per archetype, making the address system self-documenting for users.
 #+type: task
 #+level: s1
-#+filetags: :codegen-unification-blockers:sprint_22:v0:
+#+filetags: :codegen-unification-blockers:sprint_23:v0:
 #+owner: marco
 #+branch: feature/codegen-unification-blockers
 #+pr:

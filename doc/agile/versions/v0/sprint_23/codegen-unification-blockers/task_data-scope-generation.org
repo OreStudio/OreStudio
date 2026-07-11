@@ -5,7 +5,7 @@
 #+description: Migrate populate/seed generation into the ores.* graph: each seeder dataset becomes a literate org model declaring its enabled ores.sql.populate archetypes via the drawer; retire get_template_mappings and the scattered data JSON.
 #+type: task
 #+level: s1
-#+filetags: :codegen-unification-blockers:sprint_22:v0:
+#+filetags: :codegen-unification-blockers:sprint_23:v0:
 #+owner: marco
 #+branch: feature/data-scope-generation
 #+pr: 1369

@@ -55,7 +55,7 @@ running ORE — persistent storage for inputs and outputs, CRUD management, and 
 simple three-layer architecture (client / service / [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL]]) designed to be
 easy to understand and extend. ORE Studio was started by [[https://mcraveiro.github.io/][Marco Craveiro]].
 
-[[./assets/images/ore_studio-v0.0.21.png]]
+[[./assets/images/ore_studio-v0.0.22.png]]
 
 The project is built for people who want to *learn quantitative finance by
 building*. All the heavy mathematical lifting stays in ORE and QuantLib; ORE

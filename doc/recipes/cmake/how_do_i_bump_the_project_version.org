@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :cmake:build:release:version:recipe:
 #+created: 2026-05-21
-#+updated: 2026-06-12
+#+updated: 2026-07-11
 
 The version bump is housekeeping that always accompanies [[id:47032D2E-4922-4A43-B594-AD76F0213E10][Open a new sprint]]. Land it as a separate commit on the same sprint-open PR.
 
@@ -74,8 +74,10 @@ Five files carry the version string. Edit them as a single commit.
       =0.0.<NEW>=, the commits-since badge moves from
       =v0.0.<OLD-1>= to =v0.0.<OLD>=.
 
-   d. The *screenshot asset* reference: if a new =assets/images/ore_studio-v0.0.<NEW>.png=
-      screenshot exists, update the prose reference to point to it.
+   d. The *screenshot asset* reference is deliberately left alone
+      here — at bump time (sprint open) the new sprint's screenshot
+      doesn't exist yet. It's captured and wired in at sprint close
+      instead: see [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]] step 6.
 
 6. /Verify/. Sanity-check that nothing else mentions the old
    version:

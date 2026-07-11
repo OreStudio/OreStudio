@@ -7,13 +7,20 @@
 #+level: cross
 #+filetags: :llm:runbook:pr:review:github:
 #+created: 2026-05-26
-#+updated: 2026-06-05
+#+updated: 2026-07-11
 
 This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
 
 * Goal
 
-Handle one complete review round: sync with main, read all review comments, decide accept/decline per comment, apply fixes, push, reply to every comment, resolve threads, and record the round in the task.
+Handle one complete review round: sync with main, read all review
+comments, decide accept/decline per comment, apply fixes bundled with
+the round's =* Review= table update, push once, reply to every
+comment, resolve threads, and — if this was the final round — merge
+immediately on green CI. Task/story bookkeeping is not part of this
+runbook: it happens before the PR exists (see [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to
+merged PR]]), so no bookkeeping-only commit should ever follow a
+review round.
 
 * Preconditions
 
@@ -50,9 +57,14 @@ In execution order:
 
 4. /Decide per comment./ For each comment, make an explicit accept/decline decision. Never silently ignore a comment.
 
-5. /Apply fixes./ One commit per logical fix. Never amend commits on a branch under review. Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]].
+5. /Apply fixes./ One commit per logical fix. Never amend commits on a
+   branch under review. Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]]. Build and run tests
+   locally before pushing — the only local verification this round
+   gets. Update the task's =* Review= table for this round (what step
+   10 used to do as a separate step) now, so it lands in the same
+   commit set as the fixes — never as a later, code-free commit.
 
-6. /Push./ =git push=.
+6. /Push./ =git push= — fixes and the =* Review= table update together.
 
 7. /Verify CI is green./ Re-run =compass pr checks <N>= (or =--watch= to poll) and wait until no checks are pending. If any check fails, fix, commit, push, and repeat this step. Do not reply to review comments while CI is red.
 
@@ -60,20 +72,28 @@ In execution order:
 
 9. /Resolve threads./ =compass review resolve <N>= (=--dry-run= to preview).
 
-10. /Record the round./ Add or update the =* Review= table in the task doc per step 7 of the review recipe.
+Replying (step 8) and resolving (step 9) are GitHub API calls, not
+commits — they never trigger CI, so they're safe to do after step 7's
+green check without starting a new cycle.
 
-11. /If this was the final round and the PR delivers the task/, end
-    the bookkeeping now so it rides the PR: =compass task done
-    <slug>=, write the =* Result=, commit, push. Then merge —
-    =compass pr merge= never touches task state.
+10. /If this was the final round and the PR delivers the task, merge
+    immediately./ Task/story bookkeeping should already be in place
+    from *before* the PR was raised (see [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]] — it runs
+    ahead of [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][pr-raise]], not after review). Do not push a bookkeeping
+    commit now: that would force a fresh CI cycle for a change with no
+    code content, on a PR that was already green and approved. Go
+    straight to [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]].
 
 * Postconditions
 
 - All CI checks on the PR are green.
 - All review comments have replies.
 - All threads are resolved.
-- Review round is recorded in the task's =* Review= table.
+- Review round is recorded in the task's =* Review= table, committed
+  together with this round's fixes (not a separate commit).
 - Branch is pushed and PR is updated.
+- If this was the final round: the PR is merged, with no commits
+  pushed after the last green CI run.
 
 * See also
 

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :github:pr:gh:recipe:
 #+created: 2026-05-21
-#+updated: 2026-06-08
+#+updated: 2026-07-11
 
 The body content should be assembled via [[id:1882D6DF-4012-4C6E-BF62-0D943EF805B0][How do I generate a PR
 summary?]] before running the =gh= command here.
@@ -19,14 +19,23 @@ correctly-formatted title and a structured body?
 
 * Answer
 
-1. /Build and run tests locally first/. CI does not run a full C++
-   build/test job on PRs (the old "canary" job was removed — it took
-   too long and slowed down development), so this local step is the
-   only thing that catches a broken build before review: =cmake
-   --build --preset <preset>= then =ctest --preset <preset>=, both
-   clean, before proceeding.
+1. /Build and run tests locally first — mandatory, never skip/. CI
+   does not run a full C++ build/test job on PRs (the old "canary" job
+   was removed — it took too long and slowed down development), so
+   this local step is the only thing that catches a broken build
+   before review, and the PR description (step 2) is the only record
+   that it happened: =cmake --build --preset <preset>= then =ctest
+   --preset <preset>=, both clean, before proceeding.
 
-2. /Create the PR/ with =compass pr create=. It validates the title
+2. /Close task/story bookkeeping now, if not already done/ — task
+   =DONE=, =* Result= written, story/sprint rows synced (see
+   [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]]). This happens *before* raising the PR, so the
+   bookkeeping commit is part of the very first push, not a follow-up
+   after review.
+
+3. /Create the PR/ with =compass pr create=, including the step-1
+   verification result as a =--change= bullet so it's visible in the
+   description without asking. It validates the title
    convention, assembles the body (Summary, Changes, and the
    =## Traceability= table derived from the branch's task and story
    docs, with an =Environment= row alongside Story and Task), pushes
@@ -37,7 +46,8 @@ correctly-formatted title and a structured body?
    #+begin_src sh :results verbatim
    ./compass.sh pr create --title "[component] One-line description" \
      --summary "What changes, why." \
-     --change "First change" --change "Second change"
+     --change "First change" --change "Second change" \
+     --change "Verification: local build clean (<preset>); ctest <N>/<N> passed"
    #+end_src
 
    Use =--draft= for a draft PR, =--task <uuid-or-slug>= when the
@@ -46,7 +56,7 @@ correctly-formatted title and a structured body?
    =#+environment:= frontmatter field, e.g. =prime_origin=; falls
    back to =(none)= if the task doesn't record one).
 
-3. /Confirm the PR URL/ it prints. There is nothing else to do — the
+4. /Confirm the PR URL/ it prints. There is nothing else to do — the
    task-doc record is already committed and pushed.
 
 * Conventions

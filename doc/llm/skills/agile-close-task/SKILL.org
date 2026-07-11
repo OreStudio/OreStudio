@@ -8,19 +8,31 @@
 #+export_exclude_tags: noexport
 #+filetags: :llm:skill:skills:claude_code:compass:
 #+created: 2026-06-06
-#+updated: 2026-06-06
+#+updated: 2026-07-11
 
 #+begin_export markdown
 ---
 name: agile-close-task
-description: Close a task's bookkeeping at the end of the review round: DONE, Result, story and sprint sync; cascades to the story when it is the last open task.
+description: Close a task's bookkeeping before raising its PR (not after review): DONE, Result, story and sprint sync; cascades to the story when it is the last open task.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
 * When to use this skill
 
-Ending a task at the end of its review round — /before/ the merge, so the bookkeeping rides the PR. Never close bookkeeping in a follow-up PR.
+As soon as implementation is complete and locally verified (build +
+tests green) — /before/ raising the PR and /before/ requesting
+review. The task is done as far as the developer is concerned; review
+is a post-done validation activity, not a step that bookkeeping waits
+on. Never close bookkeeping after review approves, and never in a
+follow-up PR/commit once CI has already gone green — either wastes a
+full CI cycle for a change with no code content.
+
+If a review round turns up a real functional gap that reopens the
+work, that's an exception to "done" (the implementation genuinely
+wasn't finished) — fix it as part of that round's own commit and
+amend =* Result=/=* Decisions= in the same commit, rather than treating
+routine review feedback as reopening the task by default.
 
 * How to use this skill
 
@@ -37,7 +49,11 @@ Ending a task at the end of its review round — /before/ the merge, so the book
 
 4. /Cascade if last task/: when no open tasks remain, set the story DONE in =story.org= /and/ its row in =sprint.org= — both files in the same commit.
 
-5. /Commit on the PR branch/ per [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]]: =[agile] Close <task>=. Then merge with =pr-merge=.
+5. /Commit/ per [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]]: =[agile] Close <task>=. This commit is
+   part of what =pr-raise= pushes when it opens the PR — not a
+   follow-up. Once the PR is open, CI and review run against a branch
+   that already reflects the task as done; when CI goes green
+   post-approval, merge immediately with =pr-merge=, no further commits.
 
 * Recipes
 

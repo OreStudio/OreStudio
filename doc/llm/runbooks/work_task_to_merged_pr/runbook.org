@@ -7,13 +7,21 @@
 #+level: cross
 #+filetags: :llm:agile:task:pr:review:merge:
 #+created: 2026-05-26
-#+updated: 2026-06-03
+#+updated: 2026-07-11
 
 This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
 
 * Goal
 
-Take an existing task from =BACKLOG= through implementation, PR creation, review rounds, and merge — the full development lifecycle.
+Take an existing task from =BACKLOG= through implementation, PR
+creation, review rounds, and merge — the full development lifecycle.
+Task/story bookkeeping happens *before* the PR is raised, not after
+review approves: the work is done as far as the developer is
+concerned by the time review starts, and review is a post-done
+validation activity. This ordering exists specifically so that once
+CI goes green after the final review round, merge is the only
+remaining action — no bookkeeping-only commit forces one more,
+otherwise-avoidable CI cycle.
 
 * Preconditions
 
@@ -55,22 +63,20 @@ In execution order:
 
 4. /Commit./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]]: =[component] Imperative summary= with a =Co-Authored-By:= trailer. One logical change per commit. Never amend commits on a branch under review.
 
-5. /Open a PR./ =compass pr create= per [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — it pushes, builds the body with Traceability, records the PR on the task, and stamps the journal.
+5. /Build and test locally./ Same preset the CI would use:
 
-6. /Monitor CI./ Wait for checks to pass. If a check fails, follow [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]].
+   #+begin_src sh :results verbatim
+   cmake --build --preset <preset>
+   ctest --preset <preset>
+   #+end_src
 
-7. /Handle review./ When review comments arrive, follow [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]]:
-   - Sync with =main= first (rebase).
-   - Decide accept/decline per comment.
-   - Apply fixes (one commit per logical fix).
-   - Push, reply to every comment, resolve threads.
-   - Record the review round in the task's =* Review= table.
+   Do not proceed until both are clean — this is the only full
+   build/test verification the change gets before review, since CI no
+   longer runs one.
 
-   Repeat step 7 for each review round until the PR is approved.
-
-8. /Close out — before the merge./ When the final review round is
-   done and the PR delivers this task, end the bookkeeping on the PR
-   branch so it rides the PR — never a follow-up PR:
+6. /Close out task/story bookkeeping now — before the PR exists./ The
+   task is done as far as the developer is concerned; review is a
+   post-done validation activity, not something bookkeeping waits on:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh task done <slug>
@@ -78,28 +84,65 @@ In execution order:
 
    Task and story row flip to DONE with end date. Write the task's
    =* Result= by hand, distill any =* Plan= into the parent story's
-   =* Decisions=, commit, and push. A task spanning several PRs stays
-   open — close it on the PR that completes it.
+   =* Decisions=. If this was the final task in the story, update
+   both files in the same commit:
 
-9. /Sync story and sprint state./ If this was the final task in the story, update both files in the same commit — still before the merge, so the sync rides the PR too:
+   a. In *story.org* =* Status=: state → =DONE=, =Now= → =Nothing.=, fill =End= date.
+   b. In *sprint.org* =* Stories=: update the story row to =DONE= and fill =End=.
 
-   a. In the *story.org* =* Status= table: state → =DONE=, set =Now= to =Nothing.=, fill =End= date.
-   b. In the *sprint.org* =* Stories= table: update the story row to =DONE= and fill the =End= column.
+   Both files must stay in sync — a story =DONE= in =story.org= but
+   =STARTED=/=BACKLOG= in =sprint.org= is a silent inconsistency the
+   sprint health review will not catch automatically. Commit this
+   bookkeeping now; it will be part of the PR from its very first
+   push, not a follow-up. A task spanning several PRs stays open —
+   close it on the PR that completes it.
 
-   Both files must stay in sync. A story marked =DONE= in =story.org= but =STARTED= or =BACKLOG= in =sprint.org= is a silent inconsistency that the sprint health review will not catch automatically.
+7. /Open a PR./ =compass pr create= per [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — it pushes
+   (bookkeeping commit included), builds the body with Traceability,
+   records the PR on the task, and stamps the journal. Include the
+   step-5 build/test result as an explicit =--change= bullet so it's
+   visible in the PR description.
 
-10. /Merge./ =compass pr merge= — the guards refuse while threads are
-    unresolved or CI is not green; merge never touches task state (a
-    STARTED task only draws a warning), retries GitHub's transient
+8. /Monitor CI./ Wait for checks to pass. If a check fails, follow [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]].
+
+9. /Handle review./ When review comments arrive, follow [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]]:
+   - Sync with =main= first (rebase).
+   - Decide accept/decline per comment.
+   - Apply fixes (one commit per logical fix); build and test locally
+     before pushing.
+   - Push once — fixes and this round's =* Review= table update
+     together, never a separate bookkeeping-only commit afterward.
+   - Reply to every comment, resolve threads (API calls, not commits —
+     safe to do after CI is green without starting a new cycle).
+
+   Repeat step 9 for each review round until the PR is approved.
+
+10. /Merge — immediately once CI is green post-approval./ Nothing
+    should be pushed between the last green CI run and the merge:
+    task/story bookkeeping already rode in with step 6, and review-
+    round bookkeeping already rode in with each round's fixes (step
+    9). The only things that legitimately delay a merge after green
+    CI are a real merge conflict with =main= (rebase and let CI run
+    once more) or a genuinely new review round.
+
+    #+begin_src sh :results verbatim
+    ./projects/ores.compass/compass.sh pr merge
+    #+end_src
+
+    The guards refuse while threads are unresolved or CI is not
+    green; merge never touches task state (a STARTED task is a hard
+    stop, not a warning — see [[id:D36BCA19-8926-4E06-8C0B-7F607BD3D4EC][pr-merge]]), retries GitHub's transient
     base-branch-modified race, and deletes the remote branch. See
     [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]].
 
 * Postconditions
 
-- Task is =DONE= with =* Result= filled, and the close-out commit is
-  /inside/ the merged PR.
-- PR is merged into =main=.
-- Review rounds are recorded in the task's =* Review= table.
+- Task is =DONE= with =* Result= filled, and the close-out commit rode
+  in with the *first* push of the PR, not a late one.
+- PR is merged into =main= with no commits after the last green CI
+  run other than genuine review-round fixes or a rebase.
+- Review rounds are recorded in the task's =* Review= table, each
+  entry committed together with that round's fixes.
 - Parent story reflects any decisions from the task's =* Plan=.
 - If the story is complete: =story.org= and =sprint.org= both show =DONE= with matching end dates.
 

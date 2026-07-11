@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0E63013B-3B02-4968-A9EA-ED85C00EC7AF][Move book to refdata]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-07-11                               |
 
 * Acceptance
@@ -39,9 +39,51 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** BookStatus and RegulatoryBookType (full relocation)
+
+Moved construction (=on_login=), menu wiring, and =on_logout= cleanup
+from =TradingPlugin.cpp= to =RefdataPlugin.cpp= entirely -- no trace
+left in TradingPlugin. Initially wired both into the shared
+=trading_codes_menu= (Trading > Trading Codes, alongside Purpose
+Types), mirroring the existing Purpose Types pattern. Manual QA
+(scenario below) flagged this as wrong: Book Statuses and Regulatory
+Book Types are reference-data classification lookups, not trading
+codes, and don't belong in a Trading-owned menu regardless of which
+plugin constructs them. Moved them into a new *Reference Data > Book
+&Codes* submenu instead (mirroring the existing *Currency &Codes*
+submenu pattern) -- room for Book Purpose Types, Ledger Feed Types,
+and portfolio-side codes as they land. Trading Codes now shows only
+Purpose Types.
+
+** Book (non-owning pointer, stays wired in TradingPlugin's Trading menu)
+
+Book's Qt classes already live in =ores.qt/refdata= (PR #1449), and
+its *ownership/construction* moved here too -- but its "&Books" menu
+action stays in TradingPlugin's own Trading menu (unlike
+BookStatus/RegulatoryBookType, this passed manual QA unchanged), since
+PortfolioExplorerMdiWindow/OrgExplorerMdiWindow (composite
+trading-workflow views, staying in TradingPlugin per the earlier scope
+decision) also need a BookController pointer.
+
+Added =RefdataPlugin::book_controller()= (non-owning accessor).
+TradingPlugin resolves it in =on_login()= via
+=PluginRegistry::instance().plugins()= + =dynamic_cast<RefdataPlugin*>=
+(RefdataPlugin's =load_order()= of 100 runs before TradingPlugin's 200,
+so the real object always exists by then); =bookController_= changed
+from =std::unique_ptr= to a raw, non-owning pointer. Logout order is
+safe without extra guarding: =PluginRegistry= tears plugins down in
+*reverse* load-order (TradingPlugin before RefdataPlugin), so
+TradingPlugin always nulls its pointer before RefdataPlugin destroys
+the real object.
+
+** Cross-shared-library RTTI
+
+The =dynamic_cast<RefdataPlugin*>= across the =ores.qt.trading= /
+=ores.qt.refdata= =.so= boundary failed to load
+(=undefined symbol: _ZTIN4ores2qt13RefdataPluginE=) until
+=RefdataPlugin= got the =ORES_QT_REFDATA_EXPORT= macro -- the same
+class of bug PR #1449 hit for =BookController= itself (built with
+=-fvisibility=hidden=, typeinfo/vtable not exported by default).
 
 * Notes
 
@@ -54,7 +96,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:C4C15D17-478E-453C-8F45-7B17E8BFA813][Verify Book/BookStatus/RegulatoryBookType windows and menus after RefdataPlugin relocation]] | PASSED | First pass: plugin failed to load (RTTI export), and Book Statuses/Regulatory Book Types were mis-placed in Trading Codes. Both fixed; re-test all 7 steps PASS. |
 
 * PRs
 
@@ -69,3 +111,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Book, BookStatus, and RegulatoryBookType Qt CRUD and plugin wiring
+moved from TradingPlugin/ores.qt.trading to RefdataPlugin/ores.qt.refdata
+-- no cross-component leakage. Book's controller is owned by
+RefdataPlugin but resolved as a non-owning pointer by TradingPlugin for
+its "&Books" menu action and Portfolio/Org Explorer views (safe by
+construction: RefdataPlugin's load_order runs first on login, and
+TradingPlugin nulls its pointer first on logout, per PluginRegistry's
+ascending/reverse ordering). BookStatus and RegulatoryBookType are
+fully owned and menu-wired by RefdataPlugin, in a new Reference Data >
+Book Codes submenu (not Trading Codes, per manual QA feedback).
+
+Two real bugs found and fixed beyond the mechanical move: a missing
+ORES_QT_REFDATA_EXPORT on RefdataPlugin broke the cross-.so
+dynamic_cast TradingPlugin needs to find it (same bug class as
+PR #1449's BookController export fix), and the initial menu placement
+(Trading Codes) was architecturally wrong for reference-data lookups.
+
+Also filed a UX capture:
+[[id:D8B2BC60-6CCA-42B5-88CA-09BBA8CD576C][QA Validation Runner: no unsaved-changes warning when closing the
+app]] -- closing the client with unsaved scenario step results silently
+discards them.
+
+Manual QA scenario: all 7 steps PASS.

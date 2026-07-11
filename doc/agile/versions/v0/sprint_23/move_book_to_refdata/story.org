@@ -31,11 +31,11 @@ parallel, in a different environment) without contention here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Task scaffolded; blocks Book codegen drift remediation. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Move BookController/BookStatusController/RegulatoryBookTypeController construction and menu wiring to RefdataPlugin.cpp. |
+| Next          | Nothing -- Book codegen drift remediation unblocked.                  |
 | Last touched  | 2026-07-11                               |
 
 * Acceptance
@@ -50,7 +50,7 @@ parallel, in a different environment) without contention here.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:EE3C93E9-7907-4E18-BB82-3737E0E778C7][Move Book, BookStatus, and RegulatoryBookType Qt CRUD to RefdataPlugin]] | BACKLOG | | | Move BookController/BookStatusController/RegulatoryBookTypeController construction and Trading Codes menu wiring from TradingPlugin.cpp to RefdataPlugin.cpp. Book's Qt classes already physically live in ores.qt/refdata (PR #1449); only the plugin-wiring leftover needs to move. TradingPlugin keeps only the composite Explorer/Trade views that consume BookController via pointer. One consolidated manual retest of all 3 entities' windows at the end -- not per-entity. |
+| [[id:EE3C93E9-7907-4E18-BB82-3737E0E778C7][Move Book, BookStatus, and RegulatoryBookType Qt CRUD to RefdataPlugin]] | DONE | 2026-07-11 | 2026-07-11 | Moved; also fixed a missing ORES_QT_REFDATA_EXPORT (cross-.so RTTI) and relocated Book Statuses/Regulatory Book Types to a new Reference Data > Book Codes submenu (not Trading Codes) per manual QA feedback. All 7 scenario steps PASS. |
 
 * Decisions
 

@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: C4C15D17-478E-453C-8F45-7B17E8BFA813
+:END:
+#+title: Test Scenario: Verify Book/BookStatus/RegulatoryBookType windows and menus after RefdataPlugin relocation
+#+description: Consolidated manual Qt client check confirming Book, Book Statuses, and Regulatory Book Types all still open, list, edit, save, and show history correctly after their controllers moved from TradingPlugin to RefdataPlugin, and that the Portfolio/Org Explorer views (which consume BookController via a non-owning pointer) still work.
+#+type: test_scenario
+#+level: s1
+#+filetags: :move_book_to_refdata:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:EE3C93E9-7907-4E18-BB82-3737E0E778C7][Move Book, BookStatus, and RegulatoryBookType Qt CRUD to RefdataPlugin]] in [[id:0E63013B-3B02-4968-A9EA-ED85C00EC7AF][Move book to refdata]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:EE3C93E9-7907-4E18-BB82-3737E0E778C7][Move Book, BookStatus, and RegulatoryBookType Qt CRUD to RefdataPlugin]] |
+| Parent story  | [[id:0E63013B-3B02-4968-A9EA-ED85C00EC7AF][Move book to refdata]]   |
+| Target dialog | RefdataPlugin (Reference Data > Book Codes menu), TradingPlugin (Trading menu, Portfolio/Org Explorer) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A fresh, Barclays-provisioned database:
+  #+begin_src sh :results verbatim
+  compass db recreate -y -k
+  compass services start
+  compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+  #+end_src
+- A running Qt client, not yet logged in.
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Log in and select Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
+=BARCLAYS PLC=. Confirm all menus enable with no errors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Books opens from the Trading menu and behaves normally
+
+Open Trading > Books. Confirm the list window opens, shows seeded
+rows, and that add/edit/save/history all work exactly as before —
+this is the non-owning-pointer path (RefdataPlugin owns
+BookController; TradingPlugin's menu action just calls into it).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Book Statuses and Regulatory Book Types open from Reference Data > Book Codes
+
+Open Reference Data > Book Codes. Confirm Book Statuses and Regulatory
+Book Types both appear in this new submenu (not in Trading > Trading
+Codes, which should now show only Purpose Types), each opening its
+list window correctly with add/edit/save/history working.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Portfolio Explorer still works
+
+Open Trading > Portfolio Explorer. Confirm it opens with no crash and
+shows books/portfolios correctly — this view consumes the same
+non-owning BookController pointer TradingPlugin now resolves from
+RefdataPlugin at login.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Org Explorer still works
+
+Open Trading > Org Explorer. Confirm it opens with no crash and shows
+the org/book tree correctly.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Logout and re-login works cleanly
+
+Log out, then log back in (same or different party). Confirm no
+crash, no dangling-pointer symptoms (e.g. Books menu action doing
+nothing or crashing) — this exercises the reverse-order on_logout()
+(TradingPlugin nulls its pointer before RefdataPlugin destroys the
+real controller) and re-resolution on the next on_login().
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** No error toast or log error during the whole flow
+
+Check the client's log tail
+(=build/output/<preset>/publish/log/ores.qt.<colour>.log=) for any
+ERROR-level line, and specifically confirm the "RefdataPlugin's
+BookController not found" warning (added as a defensive log line) does
+*not* appear — its presence would mean the non-owning pointer
+resolution failed.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-11T17:21:41Z |
+| Branch        | feature/move-book-qt-to-refdata-plugin |
+| Commit        | 9d72eb03f |
+| Worktree      | bright_faraday |
+
+* Notes

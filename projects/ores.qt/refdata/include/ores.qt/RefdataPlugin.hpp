@@ -20,6 +20,7 @@
 #define ORES_QT_REFDATA_PLUGIN_HPP
 
 #include "ores.qt/PluginBase.hpp"
+#include "ores.qt/RefdataExport.hpp"
 #include <QList>
 #include <memory>
 
@@ -65,6 +66,9 @@ class CurrencyPairController;
 class CurrencyPairConventionController;
 class CdsConventionController;
 class PartyTypeController;
+class BookController;
+class BookStatusController;
+class RegulatoryBookTypeController;
 
 /**
  * @brief Reference data plugin: currencies, countries, dimensions, coding
@@ -73,7 +77,7 @@ class PartyTypeController;
  * Loaded as a shared library by QPluginLoader at application startup.
  * Owns the Reference Data, Data Transfer catalogue, and related menus.
  */
-class RefdataPlugin : public PluginBase {
+class ORES_QT_REFDATA_EXPORT RefdataPlugin : public PluginBase {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "ores.qt.IPlugin/1.0")
     Q_INTERFACES(ores::qt::IPlugin)
@@ -94,6 +98,17 @@ public:
     QList<QMenu*> create_menus() override;
     QList<QAction*> toolbar_actions() override;
     void on_logout() override;
+
+    /**
+     * @brief Non-owning access to the Book controller for other plugins
+     * (e.g. TradingPlugin's Portfolio/Org Explorer views) that consume it
+     * without constructing or owning it -- Book's backend and Qt CRUD
+     * both live in ores.refdata/ores.qt.refdata; only composite
+     * trading-workflow views built on top of it belong to TradingPlugin.
+     */
+    BookController* book_controller() const noexcept {
+        return bookController_.get();
+    }
 
 private:
     plugin_context ctx_;
@@ -136,6 +151,9 @@ private:
     std::unique_ptr<CurrencyPairController> currencyPairController_;
     std::unique_ptr<CurrencyPairConventionController> currencyPairConventionController_;
     std::unique_ptr<CdsConventionController> cdsConventionController_;
+    std::unique_ptr<BookController> bookController_;
+    std::unique_ptr<BookStatusController> bookStatusController_;
+    std::unique_ptr<RegulatoryBookTypeController> regulatoryBookTypeController_;
 
     // Data Catalogue controllers (owned here, contributed to data_management_menu)
     std::unique_ptr<DataDomainController> dataDomainController_;

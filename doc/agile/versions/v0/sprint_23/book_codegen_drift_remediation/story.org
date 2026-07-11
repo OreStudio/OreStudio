@@ -42,9 +42,9 @@ review bot passes, not by the regen itself.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | book_status canary DONE: regenerated, 2 real bugs found and fixed (missing change-reason cache flag, stale TradingPlugin.cpp call site). Paused pending plugin relocation. |
-| Waiting on    | [[id:0E63013B-3B02-4968-A9EA-ED85C00EC7AF][Move book to refdata]] -- relocating Book/BookStatus/RegulatoryBookType Qt CRUD out of TradingPlugin first, so the remaining regen/test work here happens against the correctly-owned code and isn't retested twice. |
-| Next          | Resume with Regenerate regulatory_book_type once the relocation story is DONE. |
+| Now           | book_status canary DONE. Move book to refdata is DONE -- unblocked, resuming. |
+| Waiting on    | Nothing.                               |
+| Next          | Regenerate regulatory_book_type (apply the has_change_reason_cache/call-site checks proactively this time). |
 | Last touched  | 2026-07-11                               |
 
 * Acceptance

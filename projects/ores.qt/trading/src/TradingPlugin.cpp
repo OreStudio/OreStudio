@@ -19,14 +19,14 @@
 #include "ores.qt/TradingPlugin.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/BookController.hpp"
-#include "ores.qt/BookStatusController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/OreImportController.hpp"
 #include "ores.qt/OrgExplorerMdiWindow.hpp"
+#include "ores.qt/PluginRegistry.hpp"
 #include "ores.qt/PortfolioController.hpp"
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
-#include "ores.qt/RegulatoryBookTypeController.hpp"
+#include "ores.qt/RefdataPlugin.hpp"
 #include "ores.qt/TradeController.hpp"
 #include <QAction>
 #include <QMainWindow>
@@ -42,6 +42,17 @@ namespace {
 auto& lg() {
     static auto instance = make_logger("ores.qt.trading_plugin");
     return instance;
+}
+
+// RefdataPlugin (load_order 100) always runs on_login() before TradingPlugin
+// (load_order 200), so its controllers are constructed by the time this
+// runs; see PluginRegistry::plugins(), sorted ascending by load_order.
+BookController* find_book_controller() {
+    for (auto* plugin : PluginRegistry::instance().plugins()) {
+        if (auto* refdata = dynamic_cast<RefdataPlugin*>(plugin))
+            return refdata->book_controller();
+    }
+    return nullptr;
 }
 }
 
@@ -79,27 +90,15 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
                                                                  this);
     connectControllerSignals(portfolioController_.get());
 
-    bookController_ = std::make_unique<BookController>(ctx_.main_window,
-                                                       ctx_.mdi_area,
-                                                       ctx_.client_manager,
-                                                       ctx_.image_cache,
-                                                       ctx_.change_reason_cache,
-                                                       ctx_.username,
-                                                       ctx_.badge_cache,
-                                                       this);
-    connectControllerSignals(bookController_.get());
-
-    bookStatusController_ = std::make_unique<BookStatusController>(ctx_.main_window,
-                                                                    ctx_.mdi_area,
-                                                                    ctx_.client_manager,
-                                                                    ctx_.change_reason_cache,
-                                                                    ctx_.username,
-                                                                    this);
-    connectControllerSignals(bookStatusController_.get());
-
-    regulatoryBookTypeController_ = std::make_unique<RegulatoryBookTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connectControllerSignals(regulatoryBookTypeController_.get());
+    // Book, BookStatus, and RegulatoryBookType are owned by RefdataPlugin --
+    // no cross-component leakage. Resolve a non-owning pointer for the
+    // "&Books" menu action and the composite Explorer views below.
+    bookController_ = find_book_controller();
+    if (bookController_)
+        connectControllerSignals(bookController_);
+    else
+        BOOST_LOG_SEV(lg(), warn) << "RefdataPlugin's BookController not found -- "
+                                  << "Books menu/Explorer views will be non-functional.";
 
     tradeController_ = std::make_unique<TradeController>(ctx_.main_window,
                                                          ctx_.mdi_area,
@@ -124,24 +123,10 @@ void TradingPlugin::setup_menus(const shared_menus_context& smc) {
     };
 
     // Save reference so create_menus() can append it to the Trading menu.
+    // RefdataPlugin contributes Purpose Types, Book Statuses, and Regulatory
+    // Book Types to this same shared menu -- TradingPlugin no longer adds
+    // entries here itself, only carries the reference through to display it.
     trading_codes_menu_ = smc.trading_codes_menu;
-
-    // ---- Trading Codes — add Book Statuses (RefdataPlugin adds Purpose Types) --
-    if (trading_codes_menu_) {
-        auto* actBookStatuses =
-            trading_codes_menu_->addAction(ico(Icon::Flag), tr("Book &Statuses"));
-        connect(actBookStatuses, &QAction::triggered, this, [this]() {
-            if (bookStatusController_)
-                bookStatusController_->showListWindow();
-        });
-
-        auto* actRegulatoryBookTypes =
-            trading_codes_menu_->addAction(ico(Icon::Flag), tr("Regulatory Book &Types"));
-        connect(actRegulatoryBookTypes, &QAction::triggered, this, [this]() {
-            if (regulatoryBookTypeController_)
-                regulatoryBookTypeController_->showListWindow();
-        });
-    }
 
     // ---- Data Management menu — contribute Import ORE Data --------------
     if (smc.data_management_menu) {
@@ -193,7 +178,7 @@ QList<QMenu*> TradingPlugin::create_menus() {
 
         BOOST_LOG_SEV(lg(), info) << "DIAG: creating PortfolioExplorerMdiWindow";
         auto* window = new PortfolioExplorerMdiWindow(ctx_.client_manager,
-                                                      bookController_.get(),
+                                                      bookController_,
                                                       portfolioController_.get(),
                                                       tradeController_.get(),
                                                       oreImportController_.get(),
@@ -244,7 +229,7 @@ QList<QMenu*> TradingPlugin::create_menus() {
 
         auto* window = new OrgExplorerMdiWindow(ctx_.client_manager,
                                                 nullptr,
-                                                bookController_.get(),
+                                                bookController_,
                                                 tradeController_.get(),
                                                 ctx_.username,
                                                 ctx_.main_window);
@@ -308,9 +293,7 @@ void TradingPlugin::on_logout() {
     }
 
     tradeController_.reset();
-    bookStatusController_.reset();
-    regulatoryBookTypeController_.reset();
-    bookController_.reset();
+    bookController_ = nullptr; // non-owning; RefdataPlugin destroys the real object
     portfolioController_.reset();
     oreImportController_.reset();
 

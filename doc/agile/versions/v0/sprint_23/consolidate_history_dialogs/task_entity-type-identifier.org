@@ -8,7 +8,7 @@
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch: feature/entity-type-identifier
-#+pr:
+#+pr: 1509
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
@@ -132,7 +132,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1509][#1509]] | [refdata,codegen] Add entity_type_of() identifier trait |
 
 * Review
 

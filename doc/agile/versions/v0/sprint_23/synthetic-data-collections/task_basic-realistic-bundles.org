@@ -186,7 +186,7 @@ itself was already reviewed and merged-clean:
   (every 2 seconds), recalibrating each pair's per-tick stdev for the
   new tick rate (annualised vol / 3970.9, replacing / 725.0) so the
   target annualised volatility is unchanged. Captured
-  [[id:36581D84-E9AE-4EE8-A475-6A882C1E2A78][varying tick timing itself stochastically]] as a future refinement,
+  [[id:C75D1DCC-ED4A-48D0-9035-0B9E4D9C2593][varying tick timing itself stochastically]] as a future refinement,
   out of this task's scope.
 - Diagnosed (with the user) why a party can't run =Basic= and
   =Realistic= simultaneously for the same pair: both are keyed by

@@ -1,0 +1,192 @@
+:PROPERTIES:
+:ID: C75D1DCC-ED4A-48D0-9035-0B9E4D9C2593
+:END:
+#+title: Story: Stochastic tick arrival times for synthetic feeds
+#+description: Replace the fixed-interval tick clock with random inter-arrival times drawn from a realistic distribution (Poisson/Hawkes), so synthetic feed ticks arrive irregularly like real market data.
+#+type: story
+#+level: s2
+#+filetags: :sprint_23:v0:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Today the synthetic FX spot feed emits a tick on a FIXED clock — a
+constant interval derived from =ticks_per_hour= (=fx_spot_feed::start=,
+=projects/ores.synthetic/service/src/fx_spot_feed.cpp:64-106=), sleeping
+the full period before every publish including the first. Real market
+data does not arrive on a fixed cadence: trades/quotes cluster and gap,
+with bursty, irregular inter-arrival times. Make the feed tick at
+RANDOM times drawn from a distribution that approaches reality, while
+keeping the price process (GMM geometric/arithmetic) decoupled from
+the arrival process — two independent configurable models.
+
+Raised while tuning
+=synthetic_fx_spot_configs_realistic_populate.sql='s tick cadence (see
+[[id:73E7622C-CBD2-48C8-96B9-DEA8AA7C45C6][Task: Seed Basic and Realistic dataset bundles]]) — settled on a fixed
+2-second cadence there as good enough for a first pass, but a
+genuinely "realistic" feed should vary its arrival timing, not just
+its price distribution.
+
+Candidate models for the arrival (timing) process, to be confirmed by
+a literature review:
+
+- Homogeneous Poisson process — exponential inter-arrival times; the
+  simplest step up from a fixed clock (constant intensity λ).
+- Inhomogeneous Poisson — time-varying intensity λ(t) for intraday
+  seasonality (open/close bursts, lunch lull).
+- Self-exciting Hawkes processes — capture the clustering / burstiness
+  of real order flow (an arrival raises the short-term intensity of
+  further arrivals).
+- Two-state quiet/burst regime, formally a *Markov-Modulated Poisson
+  Process (MMPP)*: a Poisson process whose intensity λ switches
+  between discrete states (quiet/burst, or more) via a hidden Markov
+  chain. This is the standard, well-established model for exactly the
+  clustering/regime behaviour this story wants, at much lower
+  calibration cost than a full Hawkes process. Note: this is *not* a
+  Gaussian Mixture Model (GMM) — =ores.synthetic='s existing price
+  process uses a weighted mixture of continuous Gaussian components
+  (=gmm_process=/=gmm_component=), which doesn't transfer directly to
+  a discrete counting/arrival-time process; MMPP is the analogous-in-
+  spirit but technically distinct construct for this domain (a
+  regime-mixture, not a magnitude-mixture). Worth confirming during
+  the literature review below whether MMPP or a simpler two-state
+  regime-switch (without the full Markov-chain machinery) is the
+  better starting point.
+
+Scope: a configurable arrival process on the feed (alongside the
+existing price engine), exposed in the config (e.g. an "arrival
+model" with its parameters, analogous to the price-process engine
+choice). Find and summarise the relevant papers first (market
+microstructure / point processes / Hawkes in finance), then design the
+model and config surface.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-11                               |
+
+* Acceptance
+
+- Arrival-process parameters are NOT configured per market-data feed.
+  Instead, a small set of named, top-level arrival-profile configs
+  (e.g. =liquid_spot_rates=, =illiquid_spot_rates=) each bundle a
+  distribution choice (Poisson / inhomogeneous Poisson / Hawkes /
+  two-state quiet-burst) with its parameters; individual feed configs
+  reference one profile by name/FK rather than duplicating parameters.
+  This keeps calibration in one place and lets many feeds share a
+  tuned profile (all liquid G10 pairs use =liquid_spot_rates=, say)
+  without re-tuning per pair.
+- The arrival process is decoupled from the price process: swapping
+  arrival profile never changes the GMM price-process configuration
+  and vice versa.
+- At least one non-trivial arrival model (homogeneous Poisson at
+  minimum) is implemented and wired into =fx_spot_feed= (or its
+  successor abstraction) as a real alternative to the fixed clock,
+  selectable via the arrival-profile config.
+- The Basic/Realistic collection distinction (see
+  [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]]) can express itself
+  through arrival profile as well as price-process parameters — e.g.
+  =Basic= keeps the fixed clock (simple, easy to eyeball), =Realistic=
+  uses a genuine arrival profile.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+Planned tasks (not yet scaffolded as task docs):
+
+1. Literature review: summarise Poisson/Hawkes point-process
+   literature (see References) into a short recommendation of which
+   model(s) to implement first.
+2. Design and implement the named arrival-profile config (e.g.
+   =arrival_profile_config=, codegen-driven like
+   =fx_spot_generation_config=): distribution choice + parameters,
+   referenced by FK from feed configs rather than duplicated per feed.
+3. Implement at least a homogeneous Poisson arrival process, wired
+   into =fx_spot_feed= (or its successor) as an alternative to the
+   fixed clock, decoupled from the GMM price process.
+4. Wire =Basic=/=Realistic= collections to reference an arrival
+   profile (=Basic= keeps the fixed clock; =Realistic= uses a real
+   profile), per
+   [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]].
+
+* Decisions
+
+- Arrival-profile configs are top-level, named, and shared across
+  feeds (=liquid_spot_rates=, =illiquid_spot_rates=, ...) rather than
+  parameters on each individual market-data feed/pair config. This
+  avoids re-tuning the same distribution N times and lets feeds that
+  should behave similarly (e.g. all liquid G10 pairs) share one
+  calibrated profile.
+- The arrival (timing) process stays decoupled from the price (GMM)
+  process — two independent, independently-configurable models, per
+  the original capture's framing.
+
+* Out of scope
+
+- Curve/vol-surface generation timing (separate stories: [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates
+  synthetic data generation]]).
+- Redesigning the GMM price process itself — this story only touches
+  arrival/tick timing.
+
+* References
+
+Code:
+
+- =projects/ores.synthetic/service/src/fx_spot_feed.cpp:64-106=
+- =projects/ores.sql/populate/synthetic/synthetic_fx_spot_configs_realistic_populate.sql=
+- =projects/ores.synthetic/service/src/processes/gmm_process.hpp= — the
+  existing weighted-mixture pattern for the price process, referenced
+  above for the MMPP-vs-GMM distinction.
+
+Literature (point processes / Hawkes for trade & order arrivals):
+
+- Bacry & Muzy, "Hawkes model for price and trades high-frequency dynamics"
+  (2014, Quantitative Finance 14(7)); preprint arXiv:1301.1135 —
+  https://arxiv.org/abs/1301.1135 . Foundational: multivariate Hawkes for trade
+  arrivals + price dynamics (self-/mutually-exciting kernels).
+- Bacry, Mastromatteo & Muzy, "Hawkes Processes in Finance" — survey of Hawkes
+  applications to high-frequency data:
+  https://www.stt.msu.edu/~viens/publications/11_hawkes.pdf
+- "Hawkes processes for credit indices time series analysis: How random are
+  trades arrival times?" arXiv:1902.03714 — directly on the irregularity of
+  inter-arrival times.
+- Hewlett / others, "Modelling order arrivals ... using Hawkes processes"
+  (ScienceDirect, Finance Research Letters):
+  https://www.sciencedirect.com/science/article/abs/pii/S1544612316301490
+- "Limit Order Book Simulations: A Review" arXiv:2402.17359 —
+  https://arxiv.org/html/2402.17359v1 . Broader survey incl. arrival-process
+  modelling for LOB simulators (useful comparison of fixed-clock vs point
+  processes).
+
+Notes from the survey reading:
+- Simplest upgrade = a homogeneous Poisson process (exponential inter-arrival,
+  constant intensity λ) — drop-in replacement for the fixed clock.
+- Add intraday seasonality via an inhomogeneous Poisson intensity λ(t)
+  (volumes/arrivals follow a stable intraday U-shape: open/close bursts).
+- Hawkes (self-exciting) captures the empirical CLUSTERING/burstiness of real
+  arrivals; main cost is calibration (kernel choice, likelihood complexity).
+  An MMPP is a cheaper way to get similar clustering behaviour without full
+  Hawkes calibration — worth comparing during the literature review task.
+
+* See also
+
+- [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Story: Config-driven synthetic feed generation]]
+- [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Story: Synthetic generation configuration and config-driven feeds]]
+- [[id:73E7622C-CBD2-48C8-96B9-DEA8AA7C45C6][Task: Seed Basic and Realistic dataset bundles]] — the task this was
+  deferred out of.
+- [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] — sibling story this
+  connects to via the Basic/Realistic arrival-profile split.

@@ -54,6 +54,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] | STARTED | 2026-06-05 | | Carried from sprint 19 (4/7 tasks done); codegen org-model migration gate cleared — Phase C template rollout across ~61 dialogs is next. |
 | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] | BACKLOG | 2026-07-03 | | Carried from sprint 22 (mislabeled ABANDONED there, no such decision recorded): short-rate stochastic process, Curve Template raw instrument generation, tenor-collision validation, tick-batch publishing. |
 | [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] | STARTED | 2026-07-03 | | Carried from sprint 22 (6/8 tasks done, mislabeled ABANDONED there): feed namespacing by collection and Market Simulator tree grouping remain. |
+| [[id:C75D1DCC-ED4A-48D0-9035-0B9E4D9C2593][Stochastic tick arrival times for synthetic feeds]] | BACKLOG | 2026-07-11 | | Merged from two duplicate captures: named, shared arrival-profile configs (liquid/illiquid rates) driving Poisson/MMPP tick timing, decoupled from the GMM price process. |
 
 ** Hotfixes
 

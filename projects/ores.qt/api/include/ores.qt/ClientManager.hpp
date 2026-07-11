@@ -101,6 +101,11 @@ struct LoginResult {
     QString party_setup_warning;
     boost::uuids::uuid selected_party_id;
     std::vector<PartyInfo> available_parties;
+    /**
+     * @brief The account's stored default party, if set and among
+     * available_parties. Nil when unset.
+     */
+    boost::uuids::uuid default_party_id;
 };
 
 /**

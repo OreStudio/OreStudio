@@ -32,6 +32,7 @@
 #include <QStandardItemModel>
 #include <QVBoxLayout>
 #include <QtConcurrent>
+#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -381,10 +382,19 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
     rememberMeCheck_ = new QCheckBox("Remember me", parent);
     rememberMeCheck_->setStyleSheet(dialog_styles::checkbox);
 
+    quickLoginCheck_ = new QCheckBox("Log in to default party", parent);
+    quickLoginCheck_->setStyleSheet(dialog_styles::checkbox);
+    quickLoginCheck_->setChecked(true);
+
     optionsRow->addWidget(showPasswordCheck_);
     optionsRow->addStretch();
     optionsRow->addWidget(rememberMeCheck_);
     layout->addLayout(optionsRow);
+
+    auto* quickLoginRow = new QHBoxLayout();
+    quickLoginRow->addWidget(quickLoginCheck_);
+    quickLoginRow->addStretch();
+    layout->addLayout(quickLoginRow);
 
     layout->addSpacing(12);
 }
@@ -691,6 +701,33 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
             BOOST_LOG_SEV(lg(), info)
                 << "Party selection required: " << result.available_parties.size()
                 << " parties available";
+
+            if (quickLoginCheck_->isChecked() && !result.default_party_id.is_nil()) {
+                const auto it = std::find_if(
+                    result.available_parties.begin(),
+                    result.available_parties.end(),
+                    [&](const auto& p) { return p.id == result.default_party_id; });
+                if (it != result.available_parties.end()) {
+                    BOOST_LOG_SEV(lg(), info)
+                        << "Quick-login: selecting default party " << it->name.toStdString();
+                    statusLabel_->setText("Logging in to default party...");
+                    if (clientManager_->selectParty(it->id, it->name)) {
+                        statusLabel_->setText("Login successful!");
+                        emit loginSucceeded(QString::fromStdString(clientManager_->currentUsername()));
+                        if (clientManager_->lastPartySetupRequired()) {
+                            emit partySetupDetected();
+                        } else if (!clientManager_->lastPartySetupWarning().isEmpty()) {
+                            MessageBoxHelper::warning(
+                                this, "Party Setup", clientManager_->lastPartySetupWarning());
+                        }
+                        emit closeRequested();
+                        return;
+                    }
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Quick-login: selectParty failed, falling back to party picker";
+                }
+            }
+
             statusLabel_->setText("Select party...");
 
             std::vector<boost::uuids::uuid> recentIds;

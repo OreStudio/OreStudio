@@ -29,24 +29,53 @@ party id, bypassing =PartyPickerDialog= entirely.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]] |
-| Now          | Continuing on the same branch as task 1 (feature/add-default-party-id-field), since this task depends on its default_party_id field, not yet merged. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Locate the login dialog and PartyPickerDialog invocation sites. |
+| Next         | Nothing. |
 | Last touched | 2026-07-11                               |
 
 * Acceptance
 
--
+- Login dialog shows a "Log in to default party" checkbox, checked by
+  default.
+- When the login response requires party selection (multiple parties)
+  and the account has a default party among them, ticking the
+  checkbox calls =select_party_request= (via =ClientManager::selectParty=)
+  directly, skipping =PartyPickerDialog=.
+- When unticked, no default set, or =selectParty= fails, the party
+  picker is shown exactly as before (fallback, not a hard failure).
+- Single-party accounts are unaffected (server already auto-selects
+  the sole party; this task only touches the multi-party branch).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add =default_party_id= to =login_response= (protocol) — only
+   populated in the multi-party branch of the login NATS handler
+   (=auth_handler.hpp=), and only when the account's stored default is
+   among that account's actual party assignments.
+2. Thread it through the client: =ClientManager::LoginResult= gets a
+   =default_party_id= field, parsed the same way =selected_party_id=
+   already is in =ClientManager::login=.
+3. Add the "Log in to default party" checkbox to =LoginDialog=,
+   defaulting to checked, next to the existing "Remember me" /
+   "Show password" checkboxes.
+4. In =LoginDialog::onLoginResult=, in the multi-party branch, before
+   constructing =PartyPickerDialog=: if the checkbox is ticked and a
+   default party is present among =available_parties=, call
+   =clientManager_->selectParty()= directly; fall back to the normal
+   picker path if that call fails.
 
 * Notes
+
+- Reused the existing =ClientManager::selectParty()= method (already
+  used by =PartyPickerDialog='s accept path) rather than adding a new
+  one — it already does everything the checkbox path needs (token
+  update, party-setup checks, refresh timer).
+- The single-party login branch in =auth_handler.hpp= is untouched:
+  the server already auto-selects when there's exactly one party, so
+  there's no picker to bypass there.
 
 * Test Scenarios
 
@@ -72,3 +101,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added end-to-end quick-login support for accounts with a default party:
+
+- [[proj:projects/ores.iam/api/include/ores.iam.api/messaging/login_protocol.hpp][login_protocol.hpp]] — =login_response.default_party_id=.
+- [[proj:projects/ores.iam/core/include/ores.iam.core/messaging/auth_handler.hpp][auth_handler.hpp]] — populates it in the multi-party login branch, only
+  when the account's stored default is actually one of its assigned
+  parties.
+- [[proj:projects/ores.qt/api/include/ores.qt/ClientManager.hpp][ClientManager.hpp]] / [[proj:projects/ores.qt/api/src/ClientManager.cpp][ClientManager.cpp]] — =LoginResult.default_party_id=,
+  parsed in =login()= the same way =selected_party_id= is.
+- [[proj:projects/ores.qt/application/include/ores.qt/LoginDialog.hpp][LoginDialog.hpp]] / [[proj:projects/ores.qt/application/src/LoginDialog.cpp][LoginDialog.cpp]] — "Log in to default party" checkbox
+  (checked by default); in =onLoginResult='s multi-party branch, calls
+  =clientManager_->selectParty()= directly when ticked and a default is
+  present, falling back to =PartyPickerDialog= otherwise.
+
+Verification: rebuilt =ores.iam.api.lib=, =ores.iam.core.lib=,
+=ores.qt.api.lib=, =ores.qt.lib= (application) clean under
+=linux-clang-debug-make=; ran =ctest --preset linux-clang-debug-make -R
+iam= — =ores.iam.api.tests=, =ores.iam.core.tests=,
+=ores.iam.service.tests= all green (100% pass, 0 failed). No automated
+UI test exercises the login dialog, so the checkbox interaction itself
+wasn't exercised by ctest — flagged as a manual QA gap for the QA
+Validation Runner rather than silently claimed as covered.

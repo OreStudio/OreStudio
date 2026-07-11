@@ -258,6 +258,17 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
         BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << response.username
                                   << "' authenticated";
 
+        // Parse default party UUID (comes as string from JSON)
+        boost::uuids::uuid default_party_id{};
+        if (!response.default_party_id.empty()) {
+            try {
+                boost::uuids::string_generator gen;
+                default_party_id = gen(response.default_party_id);
+            } catch (const std::exception&) {
+                // ignore bad UUID
+            }
+        }
+
         // Build available parties list
         std::vector<PartyInfo> available_parties;
         available_parties.reserve(response.available_parties.size());
@@ -308,7 +319,8 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
                 .party_setup_required = response.party_setup_required,
                 .party_setup_warning = QString::fromStdString(response.party_setup_warning),
                 .selected_party_id = selected_party_id,
-                .available_parties = std::move(available_parties)};
+                .available_parties = std::move(available_parties),
+                .default_party_id = default_party_id};
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Login failed: " << e.what();

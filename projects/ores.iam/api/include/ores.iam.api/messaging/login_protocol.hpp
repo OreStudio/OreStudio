@@ -61,6 +61,12 @@ struct login_response {
     std::string selected_party_id;
     std::vector<party_summary> available_parties;
     /**
+     * @brief The account's stored default party, if set and among
+     * @c available_parties. Empty when unset. Only meaningful when
+     * @c selected_party_id is empty (multi-party login, picker step).
+     */
+    std::string default_party_id;
+    /**
      * @brief Token lifetime in seconds as configured on the server.
      *
      * Clients use this to arm the proactive refresh timer so that the

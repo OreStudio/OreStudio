@@ -5,7 +5,7 @@
 #+description: Pure, engine-side validator (ores.synthetic.api) rejecting instrument grids where tenors overlap or collide with an active delivery window, using the new tenor type.
 #+type: task
 #+level: s1
-#+filetags: :ir-rates-synthetic-generation:sprint_22:v0:
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

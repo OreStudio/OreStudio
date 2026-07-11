@@ -5,7 +5,7 @@
 #+description: New IStochasticProcess implementation for mean-reverting short-rate dynamics, wired into process_factory, mirroring ou_process's shape.
 #+type: task
 #+level: s1
-#+filetags: :ir-rates-synthetic-generation:sprint_22:v0:
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

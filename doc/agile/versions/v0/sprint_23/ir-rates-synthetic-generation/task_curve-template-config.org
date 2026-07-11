@@ -5,7 +5,7 @@
 #+description: New sub-config owned by market_data_generation_config, one per currency+index, configuring the raw instrument grid (deposits, FRAs/futures, swaps).
 #+type: task
 #+level: s1
-#+filetags: :ir-rates-synthetic-generation:sprint_22:v0:
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

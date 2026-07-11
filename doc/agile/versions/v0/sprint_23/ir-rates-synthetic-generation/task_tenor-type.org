@@ -5,7 +5,7 @@
 #+description: Parse tenor labels (3M, 2Y, 1W) and support simple std::chrono-based date-window overlap checks, with no business-day calendar machinery and no QuantLib dependency.
 #+type: task
 #+level: s1
-#+filetags: :ir-rates-synthetic-generation:sprint_22:v0:
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr: 1411

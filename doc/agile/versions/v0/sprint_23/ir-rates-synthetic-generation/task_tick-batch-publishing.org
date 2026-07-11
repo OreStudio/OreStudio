@@ -5,7 +5,7 @@
 #+description: Each generation step publishes N individual ticks (one per tenor), each its own market_observation row sharing one observation_datetime, point_id set to the tenor label.
 #+type: task
 #+level: s1
-#+filetags: :ir-rates-synthetic-generation:sprint_22:v0:
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -8,7 +8,7 @@
 #+export_exclude_tags: noexport
 #+filetags: :llm:skill:pr:github:claude:review:
 #+created: 2026-06-07
-#+updated: 2026-06-07
+#+updated: 2026-07-11
 
 #+begin_export markdown
 ---
@@ -24,33 +24,55 @@ When the user is ready to open a pull request from a feature branch.
 Raises the PR with =compass pr create= and immediately posts an
 =@claude= comment to trigger an interactive code review.
 
+By the time this skill runs, the work is *done* from the developer's
+side — review is a post-done validation activity, not a continuation
+of implementation. That means task/story bookkeeping (see
+[[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]]) happens *before* this skill, not after review
+approves. A PR should never need a bookkeeping-only commit once CI
+has gone green post-review — that wastes a full CI cycle for a change
+with no code content. See [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] for why the
+lifecycle is ordered this way.
+
 * How to use this skill
 
-1. *Build and run tests locally first*. CI no longer runs a full
-   C++ build/test job on PRs (the old "canary" job was removed — it
-   took too long and slowed down development), so this step is the
-   only thing that catches a broken build before review:
+1. *MANDATORY — build and run tests locally first, and do not skip
+   this even under time pressure*. CI no longer runs a full C++
+   build/test job on PRs (the old "canary" job was removed — it took
+   too long and slowed down development), so this step is the *only*
+   thing that catches a broken build before review, and the PR
+   description is the only record that it happened:
 
    #+begin_src sh :results verbatim
    cmake --build --preset <preset>
    ctest --preset <preset>
    #+end_src
 
-   Do not raise the PR until both are clean.
+   Do not raise the PR until both are clean. Note the preset, the
+   build result, and the test tally (e.g. "142/142 passed") — they go
+   into the PR description in step 2.
 
-2. *Raise the PR*:
+2. *Close task/story bookkeeping now, if not already done*. The task
+   should already be =DONE= with its =* Result= written and the parent
+   story/sprint rows synced (per [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]]) — do this *before*
+   raising the PR, not after review. If it's not done yet, do it now,
+   as part of the same commit set the PR will contain from the start.
+
+3. *Raise the PR*, including the local verification from step 1 as an
+   explicit =--change= bullet so it's visible in the PR description
+   (reviewers and future readers can see it happened without asking):
 
    #+begin_src sh :results verbatim
    ./compass.sh pr create --title "[component] Description" \
      --summary "What changes, why." \
-     --change "First change" --change "Second change"
+     --change "First change" --change "Second change" \
+     --change "Verification: local build clean (<preset>); ctest <N>/<N> passed"
    #+end_src
 
    Compass validates the title, builds the body, pushes the branch,
    opens the PR, records it on the task, and stamps the journal. Note
    the PR number it prints.
 
-3. *Trigger Claude review* by posting a PR comment:
+4. *Trigger Claude review* by posting a PR comment:
 
    #+begin_src sh :results verbatim
    gh pr comment <N> --body "@claude please review this pull request"
@@ -66,6 +88,8 @@ Raises the PR with =compass pr create= and immediately posts an
 * Reference
 
 - [[id:FCF81F0B-AFBF-4169-BD24-04DBD08180A9][GitHub recipes]] — full GitHub recipe index.
+- [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][Agile close task]] — close bookkeeping before raising the PR, not after review.
+- [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — the full lifecycle this fits into.
 
 * Artefacts                                                        :noexport:
 

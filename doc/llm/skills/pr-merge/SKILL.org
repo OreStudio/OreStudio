@@ -8,7 +8,7 @@
 #+export_exclude_tags: noexport
 #+filetags: :llm:skill:skills:claude_code:compass:
 #+created: 2026-06-06
-#+updated: 2026-06-06
+#+updated: 2026-07-11
 
 #+begin_export markdown
 ---
@@ -20,29 +20,26 @@ license: Complete terms in LICENSE.txt
 
 * When to use this skill
 
-Merging an approved PR. Guard rails refuse while review threads are unresolved or CI is red.
+Merging an approved PR, the moment CI goes green. Guard rails refuse
+while review threads are unresolved or CI is red. This should be the
+*only* action taken once CI is green post-review — no bookkeeping
+commit, no rebuild, nothing that would push a new commit and force
+another CI cycle. If the task isn't closed and the story/sprint
+aren't synced by this point, that's a process gap (see
+[[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]] — it should have happened before =pr-raise=), not a
+step to perform now.
 
 * How to use this skill
 
-1. /Build and run tests locally first/, on the latest commit about to
-   be merged. CI does not run a full C++ build/test job on PRs (the
-   old "canary" job was removed — it took too long and slowed down
-   development), so this is the only build/test verification a merge
-   gets:
+1. /Verify the task is already closed/ — =DONE=, =* Result= written,
+   story/sprint rows synced. This should already be true (closed
+   before the PR was even raised, per [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]]'s ordering). A
+   STARTED task is a hard stop: if it's not closed, close it now —
+   but treat that as recovering from a skipped step, not the normal
+   path, and know that the resulting commit will trigger one more CI
+   cycle before you can merge.
 
-   #+begin_src sh :results verbatim
-   cmake --build --preset <preset>
-   ctest --preset <preset>
-   #+end_src
-
-   Do not merge until both are clean.
-
-2. /Close the task first/ — run =agile-close-task= on the feature branch
-   *before* merging. Bookkeeping must ride the PR, not follow it. A
-   STARTED task is a hard stop: do not proceed to merge until the task
-   is closed.
-
-3. /Merge/ (merge commit, never squash):
+2. /Merge/ (merge commit, never squash), as soon as CI is green:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh pr merge
@@ -50,7 +47,12 @@ Merging an approved PR. Guard rails refuse while review threads are unresolved o
 
    =--force= overrides the guards — only on explicit user instruction.
 
-4. /Verify/ the remote branch was deleted and the journal stamped.
+3. /Verify/ the remote branch was deleted and the journal stamped.
+
+Local build/test verification already happened before the PR was
+raised (per [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][pr-raise]], recorded in the PR description) and again after
+each review-round fix (per [[id:38ACE767-95D6-4A6E-88A8-EC93BB350292][pr-address-review]]) — there is nothing left
+to (re)verify locally at merge time beyond CI being green.
 
 * Recipes
 

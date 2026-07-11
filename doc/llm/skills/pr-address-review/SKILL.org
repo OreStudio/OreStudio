@@ -8,7 +8,7 @@
 #+export_exclude_tags: noexport
 #+filetags: :llm:skill:skills:claude_code:compass:
 #+created: 2026-06-06
-#+updated: 2026-06-06
+#+updated: 2026-07-11
 
 #+begin_export markdown
 ---
@@ -53,7 +53,14 @@ Review comments arrived on a PR: handle one complete round — sync, read, decid
 
 4. /Decide per comment/ — explicit accept or decline; never silently ignore.
 
-5. /Fix/ — one commit per logical fix; never amend on a branch under review. Push.
+5. /Fix/ — one commit per logical fix; never amend on a branch under
+   review. Build and run tests locally before pushing (same preset as
+   =pr-raise=) — this is the only local verification a round gets, so
+   don't skip it. Update the task's =* Review= table (step 7) for this
+   round and include that in the *same* push as the fixes — never push
+   a bookkeeping-only commit after this round's CI has already gone
+   green; that wastes a full CI cycle recording something with no code
+   content. Push.
 
 6. /Reply to every comment/ — accepted: "Fixed in <sha> — ..."; declined: "Not changed. <reason>":
 
@@ -62,11 +69,19 @@ Review comments arrived on a PR: handle one complete round — sync, read, decid
    #+end_src
 
 
-7. /Resolve threads and record the round/ in the task's =* Review= table:
+7. /Resolve threads/ — already recorded in the =* Review= table and
+   pushed together with step 5's fixes, not as a separate follow-up
+   commit:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh review resolve <N>
    #+end_src
+
+   Replying and resolving are GitHub API calls, not commits — they
+   don't trigger CI. Once this round's CI is green and the reviewer
+   approves, task/story bookkeeping should already be in place from
+   before the PR was raised (see [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]]) — merge immediately
+   with [[id:D36BCA19-8926-4E06-8C0B-7F607BD3D4EC][pr-merge]], no additional commits.
 
 
 * Recipes

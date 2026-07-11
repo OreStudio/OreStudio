@@ -49,7 +49,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-|       |       |       |     |             |
+| [[id:C4755E35-7E5D-4276-8AAE-53FA8557FAEF][Hotfix: Windows Clang CI compiler-launcher wrapper]] | BACKLOG | | | windows-clang-debug-ninja and windows-clang-release-ninja fail to configure because the clang preset's environment launcher (a .sh wrapper) leaks into CMake's project()-time compiler detection on Windows. |
 
 * Achievements
 

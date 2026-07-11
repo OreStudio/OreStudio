@@ -80,8 +80,13 @@ via its "Verifies task" field.
 
 * Result
 
-Sprint 23 went from 1 story ("Open sprint 23", scaffolding only) to
-16. In order of action:
+[[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] went from 1 story ("Open sprint 23", scaffolding only) to
+16, sourced from three places: backlog captures promoted outright,
+past-sprint stories that turned out to be misfiled or mislabeled and
+were pulled in (or, where fully resolved, corrected back to their
+real sprint instead), and the product backlog's =next= bucket. Every
+story below is linked by its =:ID:= for traceability. In order of
+action:
 
 ** Captures promoted into new sprint 23 stories
 
@@ -150,10 +155,11 @@ Sprint 23 went from 1 story ("Open sprint 23", scaffolding only) to
   superseded by a later, more considered decision that book-to-book
   hierarchy is deliberately not a feature.
 - Stripped shell/CLI implementation scope from 5 near-identical
-  =commission_*= template stories still in inbox (business_unit,
-  portfolio, business_centre, party_id_scheme, contact_type) — that
-  work is now owned by the top-level Shell/CLI commissioning stories,
-  not per-entity ones.
+  =commission_*= template stories still in inbox — that work is now
+  owned by the top-level Shell/CLI commissioning stories, not
+  per-entity ones: [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]],
+  [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]], [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]],
+  [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Commission: party_id_scheme]], [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]].
 
 ** Skill work
 

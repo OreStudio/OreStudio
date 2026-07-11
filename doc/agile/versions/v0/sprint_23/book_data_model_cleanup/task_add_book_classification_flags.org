@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
-#+updated: 2026-07-08
+#+updated: 2026-07-11
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -39,9 +39,60 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Analysis (see [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]], "How the classification axes
+relate to each other") showed the original 5-boolean scope doesn't
+hold up: =is_manual_ledger_book= is not independent of
+=is_ledger_book= (invalid state possible: manual=true, ledger=false),
+and the task's stated precedent (=is_trading_book= as a checkbox) is
+stale — that field was already turned into the =regulatory_book_type=
+lookup entity earlier in the sprint, precisely because a fixed boolean
+turned out to be an extensible category. The same treatment applies
+here: Reserve and Funding are two instances of a wider "risk role"
+category (with Wash/Write-off/Test/Sales/Central-Remittance already
+named in the domain notes as future members), and "fed from a source
+book" vs "fed manually" vs "not fed" is a 3-state axis, not two
+booleans.
+
+Further teased apart against real process detail (see the new
+[[id:B0902FF2-138F-4234-A473-1371549CE219][Funding process]], [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]], [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger
+sweep]], and [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] knowledge docs): =book_purpose_type=
+values are *mutually exclusive* (a book plays exactly one risk role),
+including two more values discovered from the process write-up — Sweep
+target and Remittance target — which look combinable at first glance
+(both are singleton "central" books) but are not: different owners
+(Treasury vs Finance), different cadence, and different P&L treatment
+(Sweep realises trading P&L; Remittance is balance-sheet-only only).
+Mixing them on one book would blur the audit/reconciliation separation
+these processes exist to provide.
+
+Revised design — 2 new lookup FKs + 1 boolean, no cross-axis
+constraints (per the Basel/FRTB analysis: no regulatory rule ties risk
+role to trading/banking classification, so regulatory type, ledger
+feed, and purpose combine freely with each other; only *within*
+=book_purpose_type= are the values mutually exclusive):
+
+| Field                 | Type                         | Values                                          |
+|-----------------------+-------------------------------+--------------------------------------------------|
+| =book_purpose_type=   | FK -> new lookup entity      | Trading (default/ordinary), Reserve, Funding, Wash, Write-off, Test, Sales, Sweep target, Remittance target |
+| =ledger_feed_type=    | FK -> new lookup entity (or 3-value enum) | None, Automatic, Manual                        |
+| =is_sweepable=        | bool                         | independent of the above; governs spot-sweep eligibility only, not ledger sweep; UI may default false for Reserve purpose but no DB constraint |
+
+=regulatory_book_type= (Trading/Banking) is unchanged — already
+correctly modeled, and confirmed independent of purpose/ledger-feed by
+the FRTB analysis.
+
+Follow the =regulatory_book_type= implementation as the pattern for
+the 2 new lookup entities (domain/SQL/repository/protocol/Qt CRUD +
+badge-coloured combo), not the originally-scoped checkbox pattern.
+Render =is_sweepable= as a yes/no badge in the Book list, consistent
+with the =regulatory_book_type= badge-coloured combo, rather than a
+plain checkbox column.
+
+Wash books additionally require a *paired risk book* — a book-to-book
+relationship (nullable FK to book), not a flag, since every wash
+back-to-back trade needs a routing target. Whether this FK is in scope
+for this task or deferred as a follow-on is still open — flag at PR
+time if descoped.
 
 * Notes
 

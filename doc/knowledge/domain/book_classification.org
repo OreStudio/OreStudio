@@ -7,18 +7,19 @@
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08
-#+updated: 2026-07-08
+#+updated: 2026-07-11
 
 * Summary
 
-A [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] is classified along several *independent* dimensions rather
-than a single type: whether it is a trading or banking book (an
-accounting/regulatory distinction), whether it is a ledger book fed by
-one or more source books, and whether it bears risk directly or plays
-a supporting role — wash, reserve, write-off, or funding. A single
-book commonly carries several of these classifications at once. The
-underlying data model reflects this: a book carries explicit boolean
-flags rather than one type enum.
+A [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] is classified along three *independent* dimensions: whether it
+is a trading or banking book (an accounting/regulatory distinction),
+how its ledger balance is fed (not at all / automatically from a
+source book / manually), and its risk role — reserve, funding, wash,
+write-off, and so on. The first two combine freely with the third, but
+the risk-role values are themselves *mutually exclusive*: a book plays
+exactly one risk role at a time, not several simultaneously (see "Data
+model" below for why this settled as an enum rather than independent
+booleans).
 
 * Detail
 
@@ -58,8 +59,8 @@ desk structure, capital treatment, and switching restrictions.
   not continuously delta-hedged. A write-off book sits apart on the
   book tree but still participates in P&L and end-of-day (EOD)
   reporting like any other book.
-- *Funding books* hold net cash balances, e.g. during the Tom/Next
-  funding process.
+- *Funding books* hold net cash balances during the
+  [[id:B0902FF2-138F-4234-A473-1371549CE219][funding process]].
 
 ** Other special-purpose books
 
@@ -68,23 +69,105 @@ desk structure, capital treatment, and switching restrictions.
   entities restricted to IT users.
 - *Sales books* / desk-specific risk books — e.g. a forward desk's
   risk book, used when routing risk between spot and forward desks.
+- *Central Sweep Book* — the book [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][spot sweep]] centralises Sweepable
+  books' cash balances into.
 - *Central Remittance Book* — the book against which monthly/quarterly
   profit sell-down and remittance trades are booked (see
-  [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and the ledger]]).
+  [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance (profit remittance)]]). Not combinable with the
+  Central Sweep Book role — see that note's "Sweep target and
+  remittance target are not combinable" for why.
 - Naming conventions exist for certain classes of book, e.g.
   /Mortuary/ or /Legacy/ books for retired/closed-down positions.
 
 ** Data model
 
-A book carries explicit boolean flags rather than a single "type"
-enum — =Is Reserve Book=, =Is Ledger Book=, =Is Funding Book=,
-alongside structural fields =Entity=, =Parent=, =Children=. This lets
-a book carry multiple classifications simultaneously.
+A book carries three independent fields for these dimensions, not one
+"type" enum:
+
+| Field                | Type                             | Values |
+|----------------------+-----------------------------------+--------|
+| =regulatory_book_type= | FK -> lookup entity              | Trading, Banking |
+| =ledger_feed_type=     | FK -> lookup entity (or 3-value enum) | None, Automatic, Manual |
+| =book_purpose_type=    | FK -> lookup entity              | Trading (default/ordinary), Reserve, Funding, Wash, Write-off, Test, Sales, Sweep target, Remittance target |
+| =is_sweepable=         | bool                              | independent of the above; governs [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][spot sweep]] eligibility only, not ledger sweep |
+
+=book_purpose_type= is a *lookup entity* rather than a set of
+independent booleans, following the same precedent as
+=regulatory_book_type= (originally a raw boolean, converted to a
+lookup entity when it turned out to be an extensible regulatory
+category rather than a bare flag): its values are mutually exclusive
+— a book plays exactly one risk role — and the set is expected to grow
+(the domain notes already anticipate Wash, Write-off, Test, Sales,
+Sweep target, and Remittance target beyond the original Reserve/
+Funding pairing), so a lookup entity avoids a new boolean column, SQL
+migration, and generator wiring each time a new purpose is discovered.
+=ledger_feed_type= likewise replaces what would otherwise be two
+correlated booleans (=Is Ledger Book= + =Is Manual Ledger Book=) with
+one 3-state field, removing the invalid state where "manually fed"
+is true but "is a ledger book" is false.
+
+=is_sweepable= remains a plain independent boolean: it is a genuine
+binary operational property, orthogonal to all three other axes.
+Nothing prevents any =book_purpose_type= value from being marked
+sweepable in the schema, though in practice a Reserve book (holding
+static provisions, not live tradeable cash) is not expected to be.
 
 Top-level book examples: Options, Spots, Forwards, Prime Brokerage,
 Emerging Markets, Credit Exposure, Local Markets, Hybrids. It is also
 useful to segregate non-trading-system functions (Profit Remittance,
 Funding) into their own books, distinct from trading books proper.
+
+** How the classification axes relate to each other
+
+The three dimensions above — regulatory type (trading/banking),
+ledger feed (not fed / automatically fed from a source book /
+manually fed), and risk role (reserve, funding, wash, write-off, and
+so on) — are modelled as *independent* axes, and that independence
+holds up under scrutiny, but not for the reason it might first appear.
+
+Basel has no concept of a "reserve book" or a "funding book" at all.
+These are internal, bank-specific chart-of-books constructs; the
+[[id:36B8F463-121F-42D6-8048-3C62C21AF557][FRTB trading/banking boundary]] looks through the book label entirely
+and classifies based on the trading intent of what is actually booked
+in it, assessed at the trading-desk level against the presumptive
+lists. There is therefore no regulatory rule of the form "a reserve
+book must be banking book" — nothing in BCBS d457 references risk role
+at all.
+
+In practice, reserve books (isolating provisions against reserve
+counterparties) and pure funding/treasury cash books usually *do* end
+up classified as banking book — but this is a consequence of what they
+hold failing the trading-intent test on its own economic substance,
+not a rule about the risk-role label itself. A book carrying trading
+intent could in principle be both, say, a Funding-purpose book and a
+Trading-type book simultaneously, however unusual that combination
+would be in practice. Because the correlation is a business/compliance
+judgement made per book rather than a structural constraint, it should
+not be hard-coded as a validation rule (e.g. a check constraint
+forcing Reserve to imply Banking) — regulatory type and risk role are
+kept free to combine, and the correlation is expected to live in
+process, training, and UI defaults rather than in the schema.
+
+The same independence argument applies to the ledger-feed axis: how a
+book's balance is populated is an operational/accounting concern,
+unrelated to both its regulatory capital treatment and its risk role.
+
+This cross-axis independence is distinct from the mutual exclusivity
+*within* the risk-role axis itself. Regulatory type, ledger feed, and
+risk role are three separate fields that combine freely with each
+other (any Trading/Banking value with any risk role, any ledger-feed
+state with any risk role); but within the risk-role axis, a book has
+exactly one value — Reserve, Funding, Wash, and so on are alternatives,
+not flags that stack. The Sweep-target/Remittance-target pairing makes
+this concrete: despite both being singleton "central" books that other
+books' balances flow into, they are owned by different departments
+(Treasury vs Finance), run on different cadences, and carry different
+P&L treatment (Sweep realises trading P&L; Remittance is deliberately
+balance-sheet-only) — see [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger sweep]] for the full
+reasoning. Mixing the two roles on one book would blur exactly the
+audit/reconciliation separation these processes exist to provide, so
+they are modelled as two further mutually-exclusive =book_purpose_type=
+values rather than independent flags a book could carry at once.
 
 ** Related but distinct concepts
 
@@ -110,3 +193,12 @@ is framed as a book-scoped netting set.
   book/portfolio hierarchy.
 - [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] — regional aggregation of
   risk-bearing books.
+- [[id:B0902FF2-138F-4234-A473-1371549CE219][Funding process]] — the process a Funding-purpose book participates
+  in.
+- [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] — the process a Wash-purpose book
+  participates in.
+- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger sweep]] — the =is_sweepable= flag and the
+  Sweep-target purpose value, and why it doesn't combine with
+  Remittance target.
+- [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance (profit remittance)]] — the Remittance-target
+  purpose value.

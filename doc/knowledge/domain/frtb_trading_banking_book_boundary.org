@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :domain:trading:book:finance:regulatory:basel:
 #+created: 2026-07-08
-#+updated: 2026-07-08
+#+updated: 2026-07-11
 
 * Summary
 
@@ -110,6 +110,9 @@ removing the incentive to reclassify purely to reduce capital.
 
 - [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] — the wider set of classification dimensions a
   book carries; this note is the detailed treatment of just the
-  trading/banking book split it summarises.
+  trading/banking book split it summarises. See its "How the
+  classification axes relate to each other" section for why this
+  boundary is independent of a book's risk role (reserve, funding,
+  etc.) — Basel has no concept of those labels at all.
 - [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — hub note.
 - [[https://www.bis.org/bcbs/publ/d457.htm][BCBS d457: Minimum capital requirements for market risk (January 2019)]] — the finalised FRTB standard, including the boundary and presumptive lists.

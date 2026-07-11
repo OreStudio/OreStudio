@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: DD614A9F-7949-4564-A78F-B4A4C4892732
+:END:
+#+title: Task: ores.diff: intra-value diff spans
+#+description: Add diff_span (offset/length) to diff_entry; implement span computation in engine::compute (prefix/suffix for single-line, line-LCS + per-line token diff for multiline); exhaustive test coverage per the redesign task's Notes (single-char, whole-word, prefix/suffix-only, no-overlap, multiline LCS, per-line token diff, added/removed field, identical values, empty-vs-non-empty, unicode).
+#+type: task
+#+level: s1
+#+filetags: :consolidate_history_dialogs:sprint_23:v0:
+#+owner: marco
+#+branch: feature/template-rollout
+#+pr: 1507
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extend =ores.diff::domain::diff_entry= with intra-value diff spans
+(character/token ranges within =old_value=/=new_value= that actually
+changed) and compute them in =ores.diff::engine::compute=, per
+[[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]]. This is the one layer every downstream
+task depends on: no entity knowledge required, pure string algorithm
+work, computed once and rendered identically by every frontend.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing — task closed.                 |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+- =diff_span= (offset/length) added; =diff_entry= carries
+  =old_spans=/=new_spans=.
+- =engine::compute= populates spans for every changed entry: common-
+  prefix/suffix for single-line values, line-by-line LCS plus per-line
+  token diff for multiline values.
+- Test coverage (per the redesign task's Notes and the architecture
+  doc): single-character change, whole-word change, common-prefix-
+  only, common-suffix-only, no-overlap, multiline LCS, per-line token
+  diff within a changed multiline block, added field (empty
+  old_value), removed field (empty new_value), identical values (no
+  spans), empty-vs-non-empty string, unicode/multi-byte content (spans
+  never split a code point).
+- Existing field-level =compute= tests stay green. Several previously
+  asserted full =diff_entry= struct equality, which now also compares
+  the newly-populated span vectors — narrowed those to the specific
+  fields they intended to test (field_name/old_value/new_value)
+  rather than asserting exact spans incidentally.
+
+* Plan
+
+1. Add =diff_span= to =projects/ores.diff/include/ores.diff/domain/=;
+   extend =diff_entry= with =old_spans=/=new_spans=.
+2. Implement span computation as a private helper inside
+   =ores.diff::engine::compute=: detect single-line vs multiline by
+   the presence of =\n=; single-line gets common-prefix/suffix spans;
+   multiline gets a line-level LCS diff, then per-line token spans
+   within changed lines.
+3. Write the test list above in
+   =projects/ores.diff/tests/engine_compare_tests.cpp= (or a new
+   =diff_span_tests.cpp= if the file grows unwieldy).
+4. Verify existing tests still pass unmodified.
+
+* Notes
+
+Implementation was written without a local build initially (per
+instruction not to build that session): correctness of the byte-offset
+arithmetic, including the UTF-8 boundary trimming and the LCS
+line-alignment, was verified by hand-translating the C++ algorithm
+into an equivalent Python script and running every test case's
+expected values through it before writing the C++ tests. Built and
+tested against =linux-clang-debug-make= once building was authorised;
+all 29 test cases (113 assertions) passed on the first run, confirming
+the Python-verified arithmetic. A CMake reconfigure was required for
+the new =engine_diff_span_tests.cpp= file to be picked up by
+=GLOB_RECURSE= — the initial build only ran the pre-existing 14 tests.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1507][#1507]] | [refdata,agile] Redesign history-diff architecture, add ores.diff intra-value spans |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Doc comment on old_spans/new_spans claims empty for "whole value changed", but a no-overlap change gets a whole-string span, not empty | diff_entry.hpp:53-66 | Fixed | Tightened wording: spans empty only for added/removed fields. |
+| 2 | Redundant `a.size() - suffix_len < a.size()` clause in UTF-8 suffix-trim loop, always true | compare.cpp:71-73 | Fixed | Removed the dead clause. |
+| 3 | O(n·m) LCS DP table could be costly for very large multiline values | compare.cpp:112-153 | Declined | Non-blocking per the reviewers themselves; fine for commentary-sized fields this targets today, flagged as future-scope awareness only. |
+| 4 | JSON round-trip test doesn't exercise populated old_spans/new_spans | domain_serialisation_tests.cpp | Fixed | Added a dedicated round-trip test with populated spans. |
+
+* Result
+
+Added =diff_span= (=projects/ores.diff/include/ores.diff/domain/diff_span.hpp=)
+and extended =diff_entry= with =old_spans=/=new_spans=. Implemented
+span computation in =ores.diff::engine::compute=
+(=projects/ores.diff/src/engine/compare.cpp=): UTF-8-boundary-safe
+common-prefix/suffix diffing for single-line values, and a line-level
+LCS diff (positionally pairing same-sized runs of removed/inserted
+lines, with leftover unpaired lines marked fully changed) plus
+per-line token diffing for multiline values.
+
+Added =projects/ores.diff/tests/engine_diff_span_tests.cpp= with 15
+tests covering the full acceptance list. Narrowed 6 pre-existing tests
+in =engine_compare_tests.cpp= from full =diff_entry= struct equality
+to the specific fields they intended to test, since spans are now
+always populated on changed entries. All 29 tests (113 assertions)
+pass against =linux-clang-debug-make=.

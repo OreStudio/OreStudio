@@ -27,7 +27,6 @@ const std::string tags("[engine]");
 }
 
 using ores::diff::domain::field_value;
-using ores::diff::domain::diff_entry;
 using ores::diff::engine::compute;
 
 TEST_CASE("compare_identical_inputs_yields_empty_result", tags) {
@@ -52,9 +51,9 @@ TEST_CASE("compare_changed_value_yields_entry_with_both_sides", tags) {
     const auto result = compute(previous, current);
 
     REQUIRE(result.entries.size() == 1);
-    CHECK(result.entries[0] == diff_entry{.field_name = "Name",
-                                          .old_value = "US Dollar",
-                                          .new_value = "United States Dollar"});
+    CHECK(result.entries[0].field_name == "Name");
+    CHECK(result.entries[0].old_value == "US Dollar");
+    CHECK(result.entries[0].new_value == "United States Dollar");
 }
 
 TEST_CASE("compare_unchanged_fields_are_omitted", tags) {
@@ -79,8 +78,9 @@ TEST_CASE("compare_added_field_has_empty_old_value", tags) {
     const auto result = compute(previous, current);
 
     REQUIRE(result.entries.size() == 1);
-    CHECK(result.entries[0] ==
-          diff_entry{.field_name = "Market Tier", .old_value = "", .new_value = "Major"});
+    CHECK(result.entries[0].field_name == "Market Tier");
+    CHECK(result.entries[0].old_value == "");
+    CHECK(result.entries[0].new_value == "Major");
 }
 
 TEST_CASE("compare_removed_field_has_empty_new_value", tags) {
@@ -91,8 +91,9 @@ TEST_CASE("compare_removed_field_has_empty_new_value", tags) {
     const auto result = compute(previous, current);
 
     REQUIRE(result.entries.size() == 1);
-    CHECK(result.entries[0] ==
-          diff_entry{.field_name = "Legacy Flag", .old_value = "true", .new_value = ""});
+    CHECK(result.entries[0].field_name == "Legacy Flag");
+    CHECK(result.entries[0].old_value == "true");
+    CHECK(result.entries[0].new_value == "");
 }
 
 TEST_CASE("compare_previous_empty_reports_all_fields_added", tags) {
@@ -102,10 +103,12 @@ TEST_CASE("compare_previous_empty_reports_all_fields_added", tags) {
     const auto result = compute({}, current);
 
     REQUIRE(result.entries.size() == 2);
-    CHECK(result.entries[0] ==
-          diff_entry{.field_name = "ISO Code", .old_value = "", .new_value = "USD"});
-    CHECK(result.entries[1] ==
-          diff_entry{.field_name = "Name", .old_value = "", .new_value = "US Dollar"});
+    CHECK(result.entries[0].field_name == "ISO Code");
+    CHECK(result.entries[0].old_value == "");
+    CHECK(result.entries[0].new_value == "USD");
+    CHECK(result.entries[1].field_name == "Name");
+    CHECK(result.entries[1].old_value == "");
+    CHECK(result.entries[1].new_value == "US Dollar");
 }
 
 TEST_CASE("compare_current_empty_reports_all_fields_removed", tags) {
@@ -115,10 +118,12 @@ TEST_CASE("compare_current_empty_reports_all_fields_removed", tags) {
     const auto result = compute(previous, {});
 
     REQUIRE(result.entries.size() == 2);
-    CHECK(result.entries[0] ==
-          diff_entry{.field_name = "ISO Code", .old_value = "USD", .new_value = ""});
-    CHECK(result.entries[1] ==
-          diff_entry{.field_name = "Name", .old_value = "US Dollar", .new_value = ""});
+    CHECK(result.entries[0].field_name == "ISO Code");
+    CHECK(result.entries[0].old_value == "USD");
+    CHECK(result.entries[0].new_value == "");
+    CHECK(result.entries[1].field_name == "Name");
+    CHECK(result.entries[1].old_value == "US Dollar");
+    CHECK(result.entries[1].new_value == "");
 }
 
 TEST_CASE("compare_preserves_current_order_for_changes", tags) {
@@ -174,6 +179,7 @@ TEST_CASE("compare_duplicate_names_first_occurrence_wins", tags) {
     const auto result = compute(previous, current);
 
     REQUIRE(result.entries.size() == 1);
-    CHECK(result.entries[0] ==
-          diff_entry{.field_name = "Name", .old_value = "first", .new_value = "changed"});
+    CHECK(result.entries[0].field_name == "Name");
+    CHECK(result.entries[0].old_value == "first");
+    CHECK(result.entries[0].new_value == "changed");
 }

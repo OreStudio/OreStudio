@@ -1,0 +1,315 @@
+:PROPERTIES:
+:ID: 85892C17-BB81-4724-9B84-20E21D41C499
+:END:
+#+title: History Diff Architecture
+#+description: Architecture of entity history diffing: one generic NATS history request dispatched server-side to codegen'd per-entity handlers, a generic ores.diff engine computing field- and intra-value character/token diff spans once, and a single non-templated HistoryDialog widget (and shell renderer) shared by every entity, with no per-entity Qt classes.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:history:diff:ores.diff:qt:shell:codegen:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+
+* Summary
+
+Every entity history view shows what changed between two versions,
+highlighted down to the character/token level, with zero comparison
+logic, zero per-entity Qt classes, and zero per-entity NATS subjects.
+One generic request — entity type plus entity id — is dispatched
+server side, via the same composed-registrar meta-pattern the codebase
+already uses for NATS wiring
+([[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]]), to a small codegen'd per-entity
+handler that renders that entity's fields as strings and returns
+version/diff information only — no typed domain payload crosses the
+wire for history at all. [[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] computes both field-level changes
+and the intra-value character/token spans within them, entity-agnostic
+by construction since it only ever sees rendered strings. The result:
+a single, non-templated =HistoryDialog= widget and a single shell
+renderer, reused unmodified by every entity, with revert/open wired
+through a small codegen'd per-entity action registry — the same
+composition idea, applied client side. Composite and referenced
+entities fall out of this for free: delegating to another entity's
+history is just opening the same generic dialog with a different
+entity id, and field-level references render as strings like any
+other field.
+
+* Detail
+
+** One generic history request, dispatched server side
+
+A single NATS subject (e.g. =history.v1.get=) replaces the per-entity
+=get_<entity>_history= subjects. Its request carries an entity
+identifier — an org-model-derived string such as
+=ores.refdata.currency= — plus the entity's own primary key (also a
+string, since keys vary in shape across entities); its response is
+generic and carries no domain type:
+
+#+begin_src cpp
+struct get_entity_history_request {
+    using response_type = struct get_entity_history_response;
+    static constexpr std::string_view nats_subject = "history.v1.get";
+    std::string entity_type;   // e.g. "ores.refdata.currency"
+    std::string entity_id;
+    bool success = false;
+    std::string message;
+};
+
+struct entity_history_version {
+    int version{};
+    std::string modified_by;
+    std::chrono::system_clock::time_point recorded_at;
+    std::vector<ores::diff::domain::field_value> fields;   // full render
+    ores::diff::domain::diff_result changes;                // vs previous
+};
+
+struct get_entity_history_response {
+    std::vector<entity_history_version> versions;
+    bool success = false;
+    std::string message;
+};
+#+end_src
+
+The handler for this one subject holds no entity knowledge itself. It
+looks =entity_type= up in a *server-side dispatch table* and delegates
+to whatever is registered there — the same shape as
+[[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]]' top-level registrar delegating to
+per-entity sub-registrars, just composed as a runtime lookup inside
+one handler instead of as N separate subject subscriptions:
+
+#+begin_src cpp
+using history_provider =
+    std::function<std::vector<entity_history_version>(const std::string& entity_id)>;
+
+// registered once per entity, generated alongside that entity's other
+// registrar wiring:
+registry.register_history_provider(entity_type_of(currency{}),
+    [&currency_service](const std::string& id) {
+        return currency_history_mapper::render(currency_service.get_currency_history(id));
+    });
+#+end_src
+
+Each registered provider is generated, mechanical glue: call the
+entity's own repository/service for its history, then run it through
+that entity's *field mapper* (below) to produce rendered field lists.
+Failure isolation matches the existing registrar pattern — one
+entity's broken provider fails to register only that entry, not the
+shared subject.
+
+** Entity identifier: generated, single source of truth
+
+=entity_type= strings (="ores.refdata.currency"=) must not be hand-typed
+at every call site — the dispatch-table registration, the generic
+request, and any Qt code opening a =HistoryDialog= all need the exact
+same value, and a typo silently fails to dispatch rather than failing
+to compile. Codegen emits it once per entity, not as a member on the
+domain struct itself (which stays a plain rfl-serializable data type —
+adding a static member would not affect serialisation, but keeps the
+struct's purpose narrowly "the data," not "the data plus its own
+metadata"), but as a free trait function generated alongside the
+entity's other artefacts:
+
+#+begin_src cpp
+// generated, e.g. ores.refdata.api/domain/currency_entity_type.hpp
+namespace ores::refdata::domain {
+[[nodiscard]] constexpr std::string_view entity_type_of(const currency&) {
+    return "ores.refdata.currency";
+}
+}
+#+end_src
+
+An argument-dependent-lookup free function keyed by type (rather than a
+template specialised per type, and rather than a runtime map) means
+every call site — the dispatch registration, a generic
+=open_history(entity)= helper, test code — spells the same
+=entity_type_of(value)= regardless of which entity it holds, with the
+constant itself defined in exactly one generated place per entity.
+
+** Per-entity field mapper: codegen'd, plain, not reflective
+
+Every domain type is =rfl=-reflectable, which makes a single generic
+mapper (built on =rfl::to_view= or similar, enumerating fields at
+compile time for any struct) technically possible. That approach is
+rejected: a metaprogramming-heavy generic mapper is hard to read, hard
+to step through, and hides the one place per entity that legitimately
+needs a human decision — how a field is rendered for display (an enum
+needs its label, not its numeric value; a currency amount needs
+formatting; a foreign key needs the referenced entity's display string,
+not its raw id).
+
+Instead, the mapper is codegen'd: a template emits the obvious, linear
+sequence of field renders from the entity's org model, one call per
+field, in mapper order. This keeps every generated mapper as plain,
+steppable, unit-testable code — the same posture as every other
+codegen'd artefact (repository, JSON I/O, table I/O) — with no runtime
+reflection and no template metaprogramming in the mapper's own logic.
+The codegen facet renders from each entity's field list plus a small
+per-field rendering-hint vocabulary (default: =to_string=/=std::string=
+passthrough; opt-in hints for enums, optional wrapping, foreign-key
+display strings, and UUID-like ids). It sits beside the existing
+[[id:98EE58D4-5FE5-4020-B78B-2E27680B68E7][ores.cpp.qt.history_dialog_impl]] archetype.
+
+** ores.diff: generic, because it never sees a domain type
+
+[[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] is a dependency-light leaf component (=field_value=,
+=diff_entry=, =diff_result=, =engine::compute(previous, current)=)
+that every domain service computes with and every frontend renders
+from, std + rfl only. It is the layer that is fully generic by
+construction, because its input is already two lists of rendered
+strings — it has no domain-type awareness to reflect over, and no
+entity identifier ever reaches it.
+
+=diff_entry= carries the changed spans within each value, not just the
+whole old/new strings, so colour highlighting is computed once and
+rendered identically everywhere:
+
+#+begin_src cpp
+struct diff_span final {
+    std::size_t offset{};
+    std::size_t length{};
+};
+
+struct diff_entry final {
+    std::string field_name;
+    std::string old_value;
+    std::string new_value;
+    std::vector<diff_span> old_spans;  // ranges into old_value that differ
+    std::vector<diff_span> new_spans;  // ranges into new_value that differ
+};
+#+end_src
+
+=engine::compute= computes the span for each changed field as an
+internal step, not a second engine: a common-prefix/suffix diff for
+short single-line values, and a line-by-line LCS plus per-line token
+diff for multiline values (e.g. free-text commentary), so long fields
+get a proper line diff rather than a whole-value highlight. This is
+pure string algorithm work with no entity knowledge, so it lives
+entirely inside =ores.diff::engine=, tested there exhaustively; every
+frontend renders spans without ever computing them.
+
+Span computation needs test coverage for at least: single-character
+change, whole-word change, common-prefix-only, common-suffix-only,
+no-overlap (entirely different values), multiline commentary requiring
+line-by-line LCS, per-line token diff within a changed multiline
+block, added field (empty old_value), removed field (empty
+new_value), identical values (no spans), empty-vs-non-empty string,
+and unicode/multi-byte content (span offsets must not split a
+multi-byte code point).
+
+** One HistoryDialog, no per-entity Qt classes
+
+Because the response is already generic — rendered field strings and
+diff spans, no typed domain object — the Qt side needs no per-entity
+subclass and no class template. A single, concrete =HistoryDialog=
+widget, parameterised at construction by =(entity_type, entity_id)=,
+replaces =HistoryDialogBase= plus 61+ generated derived classes:
+
+- It issues the one generic =get_entity_history_request= and renders
+  =fields=/=changes= exactly as =HistoryDialogBase::displayChangesTab=
+  does today, upgraded to render =diff_span=-highlighted rich text
+  (=QLabel= HTML or =QTextEdit=; GitHub dark-theme palette — line bg
+  red =rgba(248,81,73,.15)= / green =rgba(63,185,80,.15)=, intra-line
+  highlight red =rgba(248,81,73,.40)= / green =rgba(46,160,67,.40)=).
+- =Open= and =Revert= emit generic signals carrying only
+  =(entity_type, entity_id, version)= — no typed domain payload. There
+  is nothing entity-specific left for the dialog itself to know.
+- =ores.shell= gets the same treatment: one unified-diff renderer,
+  taking =(entity_type, entity_id)= like every other generic shell
+  primitive, not a per-entity command. It has no revert workflow (see
+  below), so it needs no client-side action registry at all — it is
+  purely a consumer of the generic history request.
+- Wt/HTTP consumers get the same guarantee for free when they land:
+  one render path, fed by the same shape.
+
+** Open/Revert: a small codegen'd action registry, client side
+
+=HistoryDialog= itself has no way to open a typed, editable detail
+dialog or populate it — that requires entity-specific code, but it is
+small, mechanical, and generated, following the same composed-registry
+idea used server side above, just on the Qt side:
+
+#+begin_src cpp
+using history_action =
+    std::function<void(const std::string& entity_id, int version)>;
+
+// registered once per entity, generated alongside that entity's
+// controller wiring:
+registry.register_open_action(entity_type_of(currency{}),
+    [controller](const std::string& id, int version) {
+        controller->openCurrencyDetailForHistory(id, version, /*editable=*/false);
+    });
+registry.register_revert_action(entity_type_of(currency{}),
+    [controller](const std::string& id, int version) {
+        controller->openCurrencyDetailForHistory(id, version, /*editable=*/true);
+    });
+#+end_src
+
+Each generated action opens that entity's own typed detail dialog in
+edit (revert) or read-only (open) mode, then fetches the requested
+version via the entity's own existing typed request (=currency= as of
+version N — already a normal, typed, per-entity NATS call, unrelated
+to the generic history subject) and populates the dialog fields. This
+trades the previous design's in-memory typed payload (avoiding a
+fetch) for one extra round trip on open/revert, in exchange for
+=HistoryDialog= itself carrying zero per-entity code. Revert stays
+edit-then-save, not a blind server-side restore: the dialog opens
+pre-populated with the old version's data and dirty, so the user
+reviews and saves explicitly, exactly as today.
+
+** Composite and referenced entities fall out of this for free
+
+Two situations both smell like "composite entities" and must not be
+conflated:
+
+1. */A field referencing another entity./* A foreign key renders as
+   the referenced entity's display string via the mapper's foreign-key
+   rendering hint (above) — an ordinary field like any other. If the
+   referenced entity's own value changed, that is visible as an
+   ordinary field-level diff on the referencing entity's own version,
+   nothing special.
+2. */Embedded nesting within one entity's own diff./* An instrument's
+   legs, rendered as part of the instrument's own field list with
+   structural path names ("Legs[1] / Notional"). This is
+   [[id:7F55F750-4AB5-4F51-A944-B743C83CB54D][ores.diff: structured topology for nested entities]] — an optional
+   =path= extension to =field_value=/=diff_entry=, additive to the
+   flat model and to =diff_span= above, designed in full once the
+   first nested consumer lands.
+3. */Parent-child aggregate versioning./* A party's version bumping
+   because a child =party_identifier= row changed, per
+   [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] and its
+   owning story [[id:366DCF08-C483-47B7-A136-229B4D2FC394][Temporal composite entity versioning]]. When a
+   parent version's =change_reason_code= identifies it as child-driven
+   (that document's =child_updated:<child_entity>= stamp), the
+   parent's own field-level diff for that version is legitimately
+   empty. The changes tab says so and offers a "Details" affordance
+   that *opens another instance of the same generic =HistoryDialog=*,
+   constructed with the child's =(entity_type, entity_id)= — not a
+   special delegation code path, just the dialog's own constructor
+   called again with different parameters. No =ores.diff= or
+   NATS-shape change is needed for this: the "child-driven" signal
+   lives on the audit columns, and the dialog that would show the
+   child's own history already exists and takes no entity-specific
+   code to open.
+
+* See also
+
+- [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Story: Consolidate history dialogs onto HistoryDialogBase]] — the
+  owning story.
+- [[id:3C17FB4F-F9F2-4A0F-AEF7-AAC8EE8C53A7][Task: Redesign server-side history-diff architecture]] — the task
+  this document is the output of.
+- [[id:F455B2BE-5562-4561-B8D2-9D85E218B669][Task: Show history as a unified diff in ores.shell]] — the shell
+  command generalised by the shell render path above.
+- [[id:7454EE7E-1763-495B-94F4-0AFC9BADB2C5][Task: GitHub-style diff view in history changes tab]] — the colour/
+  span rendering the ores.diff and HistoryDialog sections satisfy.
+- [[id:D759765E-85A3-47B6-91C5-23FF938B0B34][Task: Codegen field mappers from entity models]] — the per-entity
+  field mapper described above.
+- [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the existing meta-pattern this
+  document's server-side dispatch table and client-side action registry
+  both reapply.
+- [[id:7F55F750-4AB5-4F51-A944-B743C83CB54D][Capture: ores.diff: structured topology for nested entities]] — the
+  distinct embedded-nesting extension.
+- [[id:366DCF08-C483-47B7-A136-229B4D2FC394][Story: Temporal composite entity versioning]] and
+  [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the separate,
+  owning design for parent-child aggregate versioning.
+- [[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] — the component this document's diff-span extension
+  belongs to.
+- [[id:98EE58D4-5FE5-4020-B78B-2E27680B68E7][ores.cpp.qt.history_dialog_impl]] — the existing history-dialog
+  codegen archetype the new mapper facet sits beside.

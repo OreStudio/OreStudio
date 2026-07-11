@@ -54,3 +54,21 @@ TEST_CASE("field_value_round_trips_through_rfl_json", tags) {
     REQUIRE(restored);
     CHECK(*restored == original);
 }
+
+TEST_CASE("diff_result_with_populated_spans_round_trips_through_rfl_json", tags) {
+    const diff_result original{
+        .entries = {{.field_name = "Year",
+                    .old_value = "2025",
+                    .new_value = "2026",
+                    .old_spans = {{.offset = 3, .length = 1}},
+                    .new_spans = {{.offset = 3, .length = 1}}}}};
+
+    const auto json = rfl::json::write(original);
+    const auto restored = rfl::json::read<diff_result>(json);
+
+    REQUIRE(restored);
+    CHECK(*restored == original);
+    REQUIRE(restored->entries[0].old_spans.size() == 1);
+    CHECK(restored->entries[0].old_spans[0].offset == 3);
+    CHECK(restored->entries[0].old_spans[0].length == 1);
+}

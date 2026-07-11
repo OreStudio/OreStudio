@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 03363327-CAD3-49DB-881F-A8017036BBAC
+:END:
+#+title: Task: Generic server-side history dispatch: one subject, per-entity handlers
+#+description: Add the generic history.v1.get NATS subject and its dispatch-table handler (reapplying the entity-composed-registrars meta-pattern); add the codegen'd per-entity field mapper facet; register each entity's mapper as a history provider keyed by entity_type_of(); remove the per-entity get_<entity>_history subjects/handlers as each entity migrates.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_history_dialogs:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: DD614A9F-7949-4564-A78F-B4A4C4892732, 352B308F-8696-4BF3-881B-6990C9E3FA6D
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

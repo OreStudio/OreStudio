@@ -8,11 +8,28 @@
 #+filetags: :sprint_23:v0:
 #+created: 2026-06-05
 #+updated: 2026-07-11
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 Carried from [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] (4/7 tasks done); the codegen org-model migration gate ([[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]]) cleared 2026-06-11, so Phase C can now proceed.
+
+*2026-07-11 re-scope*: the currency pilot's server-side shape
+(=currency_field_mapper= + extended =get_currency_history_response=,
+PR 1097) was reverted 2026-07-09 in commit 43b5c1a16 — not because
+the architecture was wrong, but because it was hand-written,
+non-codegen, and blocking a broader currency codegen-sync effort. The
+shell's unified-diff command (task F455B2BE, PR 1105), which consumed
+that shape, is now disabled dead code. Before Phase C (template
+rollout) resumes, a new design task
+([[id:3C17FB4F-F9F2-4A0F-AEF7-AAC8EE8C53A7][Redesign server-side history-diff architecture]])
+revisits two open questions: whether the field-to-string mapper can be
+fully generic via =rfl= reflection instead of hand-written/codegen'd
+per entity, and whether =ores.diff= should carry intra-value diff
+spans so colour highlighting is computed once server-side (folding in
+the promoted capture
+[[id:7454EE7E-1763-495B-94F4-0AFC9BADB2C5][GitHub-style diff view in history changes tab]]).
 
 * Goal
 
@@ -71,28 +88,38 @@ Design direction — two layers:
 
 * Architecture
 
-Three layers, from the wire up; full implementation detail lives in
-each task's Plan.
+Full architecture lives in
+[[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] (written by the redesign task, superseding
+this section's original three-layer sketch and the reverted currency
+pilot it described). Summary:
 
-1. /ores.diff/ — a dependency-light leaf component owning the
-   vocabulary of "what changed": =field_value=, =diff_entry=,
-   =diff_result=, and a =compute= engine. Every domain service
-   computes with it; every frontend renders from it; std + rfl only.
-2. /Per-entity field mappers, server side/ — domain type → ordered,
-   human-labelled, rendered field list, living beside the entity's
-   other mappers. Hand-written for the pilot; a codegen candidate
-   later.
-3. /Extended history responses/ — the existing typed per-entity
-   subjects remain; each version gains =fields= (full render — the
-   detail panel needs complete values) and =changes= (diff vs the
-   previous version). Frontends — Qt today; shell, Wt, HTTP tomorrow —
-   are dumb renderers. Full domain payloads stay during migration.
+- One generic NATS history request (=history.v1.get=, entity type +
+  entity id), dispatched server side to a codegen'd per-entity handler
+  via a runtime lookup table — reapplying the existing
+  [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] meta-pattern rather than a typed
+  per-entity subject. No typed domain payload crosses the wire for
+  history.
+- A codegen'd, plain (not hand-written, not generic-reflection) per-
+  entity field-to-string mapper, plus a generated =entity_type_of()=
+  trait as the single source of truth for the dispatch key.
+- =ores.diff= (unchanged as a dedicated leaf component) extended with
+  intra-value diff spans, computed once, entity-agnostic by
+  construction.
+- One concrete, non-templated =HistoryDialog= Qt widget and one shell
+  renderer, shared by every entity — no per-entity Qt classes, no
+  =HistoryDialogBase= subclassing. =Open=/=Revert= carry only
+  =(entity_type, entity_id, version)=, dispatched client side through
+  a small codegen'd per-entity action registry (same meta-pattern,
+  client side) that opens the entity's own typed detail dialog.
+- Composite/referenced-entity delegation needs no special-casing:
+  opening another entity's history is just constructing the same
+  dialog with a different entity id.
 
-Migration runs A→D: grow the base and migrate the six hand-rolled
-dialogs (codegen-free); pilot currency end to end (codegen-free);
-template rollout (gated on the codegen org-model migration — a
-template-only edit, but the regeneration sweep must not race the
-in-flight model migration); codegen the mappers (deferred).
+Migration still runs codegen-free phases before the template rollout,
+per the original gating principle: the org-model migration gate is
+clear, but the redesigned mapper/dispatch/HistoryDialog above must
+land before the ~61-dialog rollout proceeds, since it changes what
+that rollout produces.
 
 * Status
 
@@ -125,23 +152,45 @@ in-flight model migration); codegen the mappers (deferred).
 | [[id:E9348344-C7A1-4B4A-969D-BDB56C96DE9A][Grow HistoryDialogBase and migrate the six hand-rolled dialogs]] | DONE | 2026-06-05 | 2026-06-05 | Scope grew to all 64 version-history dialogs; event-log dialogs renamed to Audit. PR 1080. |
 | [[id:83B7239F-5C29-4C52-900E-C9623C608DFD][Create the ores.diff component]] | DONE | 2026-06-05 | 2026-06-05 | Flat diff model + engine, std+rfl only; 14 tests. PR 1091. |
 | [[id:D575DCF0-2341-4630-9C47-F428F82C2FCE][Pilot server-side history diffs end to end on currency]] | DONE | 2026-06-05 | 2026-06-05 | Currency mapper + extended response + handler compose; dialog renders server rows; dogfooded. PR 1097. |
-| [[id:7B2998F0-3B7B-4A11-8A44-7464BF3F4CBB][Adopt the base in the history-dialog template and roll out]] | BACKLOG | | | Phase C: template target form + per-domain rollout. Gated on codegen org-model migration. |
+| [[id:7B2998F0-3B7B-4A11-8A44-7464BF3F4CBB][Retire per-entity history dialog templates for the generic HistoryDialog]] | ABANDONED | 2026-07-11 | 2026-07-11 | Split into six finer-grained sibling tasks below before implementation started; no code changes. |
 | [[id:D759765E-85A3-47B6-91C5-23FF938B0B34][Codegen field mappers from entity models]] | BACKLOG | | | Phase D, deferred: generate mappers once the hand-written shape is proven. |
 | [[id:F455B2BE-5562-4561-B8D2-9D85E218B669][Show history as a unified diff in ores.shell]] | DONE | 2026-06-05 | 2026-06-06 | Unified-diff rendering of the changes rows in the shell; no comparison logic client-side. |
+| [[id:7454EE7E-1763-495B-94F4-0AFC9BADB2C5][GitHub-style diff view in history changes tab]] | BACKLOG | | | Render the history changes tab like a GitHub diff: red old / green new with intra-line highlight, handling multiline fields. |
+| [[id:3C17FB4F-F9F2-4A0F-AEF7-AAC8EE8C53A7][Redesign server-side history-diff architecture]] | DONE | 2026-07-11 | 2026-07-11 | Superseded the reverted currency pilot: one generic history subject dispatched server-side to codegen'd per-entity handlers, ores.diff extended with intra-value diff spans, single non-templated HistoryDialog for every entity. See History Diff Architecture. |
+| [[id:DD614A9F-7949-4564-A78F-B4A4C4892732][ores.diff: intra-value diff spans]] | DONE | 2026-07-11 | 2026-07-11 | Add diff_span (offset/length) to diff_entry; implement span computation in engine::compute (prefix/suffix for single-line, line-LCS + per-line token diff for multiline); exhaustive test coverage per the redesign task's Notes (single-char, whole-word, prefix/suffix-only, no-overlap, multiline LCS, per-line token diff, added/removed field, identical values, empty-vs-non-empty, unicode). |
+| [[id:352B308F-8696-4BF3-881B-6990C9E3FA6D][Codegen the entity_type_of() identifier trait]] | BACKLOG | | | Generate a free-function entity_type_of(const T&) trait per entity (single source of truth for the dispatch key used by the server-side history dispatch table and the client-side action registry), kept off the domain struct itself per the architecture doc. |
+| [[id:03363327-CAD3-49DB-881F-A8017036BBAC][Generic server-side history dispatch: one subject, per-entity handlers]] | BACKLOG | | | Add the generic history.v1.get NATS subject and its dispatch-table handler (reapplying the entity-composed-registrars meta-pattern); add the codegen'd per-entity field mapper facet; register each entity's mapper as a history provider keyed by entity_type_of(); remove the per-entity get_<entity>_history subjects/handlers as each entity migrates. |
+| [[id:7D8659AB-220E-4077-BD17-3C4DCA1937D8][Single generic HistoryDialog widget in ores.qt]] | BACKLOG | | | Build the single, non-templated HistoryDialog widget (version list, async load, toolbar, diff_span colour-highlighted changes tab per the GitHub-style capture) taking (entity_type, entity_id); add the codegen'd per-entity Open/Revert action registry; wire callers to construct HistoryDialog instead of a typed dialog subclass; wire the composite-entity 'Details' affordance for child-driven versions to open another HistoryDialog instance. |
+| [[id:CB042B99-9B2F-46E9-9CF5-73B47185BCD1][Retire HistoryDialogBase, per-entity dialogs, and their templates]] | BACKLOG | | | Once every entity has migrated onto the generic HistoryDialog, delete HistoryDialogBase, every remaining per-entity *HistoryDialog class, and cpp_qt_history_dialog.{hpp,cpp}.mustache/qt_history_dialog_ui.mustache; confirm via zero-diff regeneration guardrails that no facet still emits a per-entity dialog class. |
+| [[id:E4DDC1B9-8609-4C11-9172-F2EE79242E66][Generic unified-diff history renderer in ores.shell]] | BACKLOG | | | Replace the disabled currencies history-diff command with one generic, entity-parameterised unified-diff renderer consuming the generic history.v1.get response (context lines from fields, +/- pairs with span-based highlighting from changes); re-enable it for every entity; update the shell recipes. |
 
 * Decisions
 
 - A dedicated =ores.diff= component (not a corner of ores.utility):
   the types cross every domain service and every frontend; a leaf
   component keeps the dependency arrows clean and matches the
-  many-small-components style.
-- Keep the typed per-entity history subjects; extend responses rather
-  than introducing a generic untyped subject.
+  many-small-components style. Stands.
 - Responses carry both =fields= and =changes= — mildly redundant, but
-  it makes every frontend a dumb renderer, which is the point.
-- Phases A and B are codegen-free by construction; the template
-  rollout is gated on the codegen org-model migration to avoid a
-  circular dependency; codegen'd mappers are deferred outright.
+  it makes every frontend a dumb renderer, which is the point. Stands;
+  =changes= now also carries intra-value diff spans.
+- *Superseded 2026-07-11*: "keep the typed per-entity history
+  subjects" is replaced by one generic history subject
+  (=history.v1.get=), dispatched server side to a codegen'd per-entity
+  handler via a runtime lookup table — see
+  [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]]. The per-entity mapper is codegen'd from
+  the outset (plain, generated code — not hand-written, and not a
+  generic =rfl=-reflection framework), so "codegen'd mappers deferred
+  outright" is also superseded: it is folded into the redesign rather
+  than deferred to a separate Phase D.
+- =HistoryDialogBase= (base class + per-entity derived dialogs) is
+  replaced by a single, non-templated =HistoryDialog= widget shared by
+  every entity; =Open=/=Revert= carry only =(entity_type, entity_id,
+  version)=, dispatched through a small codegen'd per-entity action
+  registry rather than a typed signal payload. No per-entity Qt class
+  survives the rollout.
+- Composite/referenced-entity history needs no special-casing:
+  delegating to another entity's history is constructing the same
+  =HistoryDialog= with a different entity id.
 
 * Out of scope
 

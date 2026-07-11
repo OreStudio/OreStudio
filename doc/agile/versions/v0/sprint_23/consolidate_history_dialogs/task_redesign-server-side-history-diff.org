@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: 3C17FB4F-F9F2-4A0F-AEF7-AAC8EE8C53A7
+:END:
+#+title: Task: Redesign server-side history-diff architecture
+#+description: Re-design the server-side diff pipeline after the currency pilot's hand-written mapper/extended-response shape was reverted (commit 43b5c1a16): investigate a reflection-based (rfl) generic field-to-string mapper usable unmodified by every entity instead of per-entity hand-written mappers; extend ores.diff's diff_entry with intra-value change spans so colour/token highlighting is computed once server-side and rendered identically by every frontend; fold in the GitHub-style diff view capture and re-enable the shell's disabled history-diff command against the new shape.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_history_dialogs:sprint_23:v0:
+#+owner: marco
+#+branch: feature/template-rollout
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a revised design for server-side history diffing that
+supersedes the currency pilot (PR 1097), reverted 2026-07-09 in
+commit 43b5c1a16 for being hand-written and non-codegen — not for
+being architecturally wrong. Answer, in order:
+
+1. /Server-side field-to-string mapper: codegen'd, simple, plain
+   code./ Not hand-written (the pilot's mistake) and not a generic
+   reflection/metaprogramming layer either — the mapper per entity
+   should be ordinary, generated, easy-to-read code (codegen emits the
+   obvious sequence of field renders from the entity's org model),
+   easy to test like any other generated artefact. Bespoke rendering
+   (enum labels, currency amounts, image ids) is just a line of
+   generated code calling a formatting helper, not a special case in a
+   framework.
+2. /Intra-value diff spans, computed once./ Extend
+   =ores::diff::domain::diff_entry= (or a new type) to carry the
+   changed character/token ranges within old and new values, computed
+   centrally by =ores::diff::engine::compute= (or a sibling) — this
+   part IS fully generic and entity-agnostic, since it operates on
+   already-rendered strings, not domain types. Every frontend (Qt,
+   shell, future Wt/HTTP) renders identical highlighting without its
+   own diff/compare logic. Absorbs the "GitHub-style diff view"
+   capture's requirement for multiline (line-by-line LCS + per-line
+   token diff), not just prefix/suffix highlighting.
+3. /One NATS message shape, one consumer code path./ The critical
+   constraint: regardless of how the per-entity mapper is generated,
+   every entity's history response must share one identical shape
+   (fields + changes-with-spans), and =ores.shell= and =ores.qt= must
+   each have exactly ONE piece of code that renders it — no
+   per-entity branching, no per-entity dialog/command logic beyond
+   what's already generated boilerplate (wiring, not rendering
+   decisions). =HistoryDialogBase= is that one Qt render path; the
+   shell's disabled =currencies history-diff= command (task F455B2BE,
+   PR 1105) generalises into the shell's one render path for every
+   entity, not a currency-specific command.
+
+4. /Composite/referenced entities: delegate, don't inline./ When
+   entity A references entity B (e.g. by id/foreign key) and B's own
+   version changed, decide whether that surfaces in A's history at
+   all (only if A embeds a snapshot of B, not merely a reference), and
+   if so, whether A's changes row for that field navigates to/opens
+   B's own =HistoryDialogBase= rather than attempting to render B's
+   diff inline. This is distinct from the existing backlog capture
+   [[id:7F55F750-4AB5-4F51-A944-B743C83CB54D][ores.diff: structured topology for nested entities]],
+   which is about flattening *embedded* nested structure (e.g.
+   instrument legs) within one entity's own diff render, not
+   cross-entity delegation to another entity's history.
+
+Output: this story's Architecture and Decisions sections rewritten to
+match, and the template-rollout task's (7B2998F0) Plan revised to
+implement the new design rather than the reverted pilot's shape.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+- Per-entity mapper generation approach decided: codegen'd plain code,
+  not hand-written and not generic reflection/metaprogramming.
+- Diff-span extension to ores.diff designed (types + compute
+  contract), covering single-line and multiline/token diffs; this
+  layer confirmed fully generic (operates on rendered strings only).
+- One shared history-response shape defined for every entity; one
+  render path designed for ores.qt (HistoryDialogBase) and one for
+  ores.shell (generalising the disabled per-currency command) — no
+  per-entity branching on the consuming side.
+- Story's Architecture and Decisions sections updated to match.
+- template-rollout task's Plan revised to implement this design.
+- Composite/referenced-entity handling decided: when it surfaces in
+  the referencing entity's history at all, and whether it delegates
+  to the referenced entity's own HistoryDialogBase instead of
+  inlining a diff; distinguished explicitly from the structured-
+  topology capture (embedded nesting, not cross-entity reference).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Testing requirement for the implementation that follows this design:
+=ores.diff::engine::compute='s =diff_span= computation must be
+exhaustively tested in =projects/ores.diff/tests/= (currently 14 tests
+across =engine_compare_tests.cpp= and =domain_serialisation_tests.cpp=,
+covering field-level compute only). New cases needed once spans land:
+single-character change, whole-word change, common-prefix-only,
+common-suffix-only, no-overlap (entirely different values), multiline
+commentary requiring line-by-line LCS, per-line token diff within a
+changed multiline block, added field (empty old_value), removed field
+(empty new_value), identical values (no spans), empty string vs
+non-empty, and unicode/multi-byte content (span offsets must not split
+a multi-byte code point). Whichever task implements the =ores.diff=
+extension should treat this list as a acceptance floor, not a ceiling.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Produced [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]], superseding the reverted currency
+pilot. Key decisions, distilled into the story's Architecture/Decisions:
+
+- One generic NATS history subject (=history.v1.get=, entity type +
+  entity id), dispatched server side via a runtime lookup table —
+  reapplying the existing entity-composed-registrars meta-pattern —
+  instead of a typed per-entity subject. No typed domain payload
+  crosses the wire for history.
+- Per-entity field mapper is codegen'd, plain, generated code from the
+  outset — rejected both hand-writing (the pilot's mistake) and a
+  generic =rfl=-reflection framework (hard to read/step through).
+- A generated =entity_type_of()= free-function trait is the single
+  source of truth for the dispatch key, kept off the domain struct
+  itself.
+- =ores.diff::diff_entry= gains =old_spans=/=new_spans=
+  (character/token ranges), computed once inside
+  =ores.diff::engine::compute= — this layer stays fully generic since
+  it never sees a domain type.
+- =HistoryDialogBase= and its 61+ per-entity derived classes are
+  replaced by one non-templated =HistoryDialog= widget and one shell
+  renderer; =Open=/=Revert= carry =(entity_type, entity_id, version)=
+  only, dispatched through a small codegen'd per-entity action
+  registry (same meta-pattern, client side) that opens the entity's
+  own typed detail dialog — accepting one extra fetch-by-id round trip
+  in exchange for zero per-entity Qt code.
+- Composite/referenced-entity delegation needs no special code path:
+  opening another entity's history is constructing the same dialog
+  with a different entity id. Distinguished explicitly from the
+  separate, still-open embedded-nesting capture and the still-separate
+  temporal composite entity versioning story.
+
+Filed a follow-up backlog capture generalising the =entity_type_of()=
++ dispatch-table pattern beyond history, scoped out of this document
+deliberately.
+
+The template-rollout task's (7B2998F0) Plan is revised separately to
+implement this design.

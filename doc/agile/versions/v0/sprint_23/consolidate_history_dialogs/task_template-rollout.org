@@ -1,63 +1,115 @@
 :PROPERTIES:
 :ID: 7B2998F0-3B7B-4A11-8A44-7464BF3F4CBB
 :END:
-#+title: Task: Adopt the base in the history-dialog template and roll out
-#+description: Phase C: update cpp_qt_history_dialog templates to the target form (render fields/changes from the response); regenerate per component as org-model migration settles; handler/mapper rollout per domain. Gated on the codegen org-model migration.
+#+title: Task: Retire per-entity history dialog templates for the generic HistoryDialog
+#+description: Implement the History Diff Architecture: one generic history NATS subject dispatched server-side to codegen'd per-entity handlers, ores.diff extended with diff spans, and a single non-templated HistoryDialog Qt widget + shell renderer replacing HistoryDialogBase and all 67 per-entity dialog classes/templates.
 #+type: task
 #+level: s1
 #+filetags: :codegen:qt:rollout:consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/template-rollout
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
-#+updated: 2026-06-05
+#+updated: 2026-07-11
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Bring the 61 generated history dialogs onto the target form: the
-base renders =fields= and =changes= straight from the response, and
-the per-entity dialogs shrink to generated declarations.
+Implement [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] end to end, replacing every one
+of the 67 =*HistoryDialog= classes (the 6 hand-rolled ones migrated
+onto =HistoryDialogBase= earlier in this story, plus the 61
+codegen-generated ones this task was originally scoped to) with a
+single, non-templated =HistoryDialog= widget. This supersedes the
+original "adopt =HistoryDialogBase= in the template" scope: rather
+than migrating per-entity generated dialogs onto a shared base class,
+the per-entity dialog classes and their generating templates are
+retired outright.
 
-*Was gated on the codegen org-model migration*: this task could not
-force codegen changes while entity models migrated. That migration
+*Was gated on the codegen org-model migration*: that migration
 ([[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]]) completed
-2026-06-11 — the gate is clear.
+2026-06-11 — the gate is clear. This task additionally depended on
+[[id:3C17FB4F-F9F2-4A0F-AEF7-AAC8EE8C53A7][Redesign server-side history-diff architecture]] (DONE 2026-07-11)
+for the design it implements.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Gate cleared; ready to start.          |
+| Now          | Split into six finer-grained sibling tasks below; this umbrella task closed with no code changes. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Pick up [[id:DD614A9F-7949-4564-A78F-B4A4C4892732][ores.diff: intra-value diff spans]] first (nothing else depends on it, and everything downstream needs it). |
 | Last touched | 2026-07-11                               |
 
 * Acceptance
 
-- All generated history dialogs derive from the base; no duplicated
-  pipeline remains.
-- Interim template method and helpers removed.
-- History responses no longer ship full domain payloads.
-- Zero-diff regeneration checks green.
+- One generic NATS history subject (=history.v1.get=) exists, with a
+  server-side dispatch table keyed by =entity_type_of()=; every
+  entity's typed =get_<entity>_history= subject is removed.
+- Every entity has a codegen'd, plain (not hand-written, not generic-
+  reflection) field-to-string mapper, registered as a history
+  provider.
+- =ores.diff::diff_entry= carries =old_spans=/=new_spans=; the test
+  coverage list in the redesign task's Notes is satisfied.
+- =HistoryDialogBase= and all per-entity =*HistoryDialog= classes are
+  deleted, along with =cpp_qt_history_dialog.{hpp,cpp}.mustache= and
+  =qt_history_dialog_ui.mustache=; a single =HistoryDialog= widget
+  replaces them, taking =(entity_type, entity_id)=.
+- =Open=/=Revert= dispatch through a codegen'd per-entity action
+  registry (client side); no typed domain payload flows through
+  =HistoryDialog= signals.
+- =ores.shell='s disabled =currencies history-diff= command is
+  replaced by one generic entity-parameterised shell renderer,
+  re-enabled for every entity.
+- History responses carry no full domain payload; open/revert fetch
+  the typed entity by id/version through each entity's existing typed
+  request when needed.
+- Zero-diff regeneration checks green for whatever codegen facets
+  remain (field mapper, history-provider/action registrations); no
+  facet still emits a per-entity dialog class.
 
 * Plan
 
-1. Update =cpp_qt_history_dialog.{hpp,cpp}.mustache= and
-   =qt_history_dialog_ui.mustache=: derive from =HistoryDialogBase=
-   target form; remove the duplicated pipeline.
-2. Per domain: add the entity field mappers and extend the history
-   handlers (mechanical application of the pilot pattern).
-3. Regenerate per component; zero-diff guardrails catch drift.
-4. Remove the interim =calculateDiff= machinery from the base once no
-   dialog uses it; drop full domain payloads from history responses
-   once no client reads them.
+1. /ores.diff/: add =diff_span= to =diff_entry=; implement span
+   computation in =engine::compute= (prefix/suffix for single-line,
+   line-LCS + per-line token diff for multiline); cover the test list
+   from the redesign task's Notes.
+2. /Entity identifier/: add the =entity_type_of()= codegen facet,
+   generating the free-function trait per entity.
+3. /Server side/: add the per-entity field-mapper codegen facet;
+   introduce the generic =history.v1.get= subject and its
+   dispatch-table handler (reapplying
+   [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]]); register each entity's mapper as a
+   history provider; remove the per-entity =get_<entity>_history=
+   subjects and handlers as each entity migrates.
+4. /Qt/: build the single =HistoryDialog= widget (version list, async
+   load, toolbar, changes-tab rendering with =diff_span= colour
+   highlighting per the GitHub-style capture); add the codegen'd
+   per-entity =Open=/=Revert= action registry; wire callers (list
+   windows/controllers) to construct =HistoryDialog(entity_type,
+   entity_id)= instead of a typed dialog subclass.
+5. /Retire the old shape/: delete =HistoryDialogBase=, every
+   per-entity =*HistoryDialog= class, and
+   =cpp_qt_history_dialog.{hpp,cpp}.mustache=/=qt_history_dialog_ui.mustache=
+   once every entity has migrated; zero-diff guardrails confirm no
+   facet still emits them.
+6. /Shell/: replace the disabled =currencies history-diff= command
+   with the generic entity-parameterised renderer, re-enabled for
+   every entity.
+7. /Composite entities/: wire the "Details" affordance for
+   child-driven versions (per the architecture doc's composite
+   section) — opens another =HistoryDialog= instance with the child's
+   =(entity_type, entity_id)=.
+
+Given the size, this likely wants splitting into sub-tasks by phase
+(ores.diff spans; server dispatch; Qt widget; shell; retirement sweep)
+once implementation starts — revisit before diving in.
 
 * Notes
 
@@ -74,3 +126,20 @@ force codegen changes while entity models migrated. That migration
 |   |                 |      |          |       |
 
 * Result
+
+Split into six finer-grained sibling tasks, one per Plan phase, before
+any implementation started — this task's own scope was too large to
+track as a single unit of work:
+
+1. [[id:DD614A9F-7949-4564-A78F-B4A4C4892732][ores.diff: intra-value diff spans]]
+2. [[id:352B308F-8696-4BF3-881B-6990C9E3FA6D][Codegen the entity_type_of() identifier trait]]
+3. [[id:03363327-CAD3-49DB-881F-A8017036BBAC][Generic server-side history dispatch: one subject, per-entity handlers]]
+4. [[id:7D8659AB-220E-4077-BD17-3C4DCA1937D8][Single generic HistoryDialog widget in ores.qt]]
+5. [[id:CB042B99-9B2F-46E9-9CF5-73B47185BCD1][Retire HistoryDialogBase, per-entity dialogs, and their templates]]
+6. [[id:E4DDC1B9-8609-4C11-9172-F2EE79242E66][Generic unified-diff history renderer in ores.shell]]
+
+Dependency order: (1) and (2) are independent and can run in either
+order; (3) needs both; (4) and (6) each need (3); (5) needs (4) and
+(6) — it retires the old shape only once nothing still depends on it.
+This task closes with no code changes; its Plan and Acceptance were
+distributed into the six tasks above.

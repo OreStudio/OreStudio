@@ -84,6 +84,30 @@ via its "Verifies task" field.
 
 * Result
 
+** Rebase conflicts resolved at PR time (2026-07-11)
+
+Rebasing onto =main= before merge hit 3 conflicts, all resolved
+without re-running the scoring pass:
+
+- =github_style_history_diff_view.org= — a concurrent session had
+  already promoted this capture into a task under
+  [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] and deleted the
+  original (commit =570f6fca1=) before this branch rebased. My
+  commit had only edited its bucket text; accepted upstream's
+  deletion rather than resurrecting a file that no longer has a
+  reason to exist.
+- =generic-dispatch-table-registrar-pattern.org= — a genuinely new
+  capture filed in =inbox= on =main= after this branch's scoring run
+  started (unrelated to this task, picked up by git's rename
+  heuristic as a false match against one of this commit's real
+  moves). Scored it the same way as the rest — explicit
+  "when the first second consumer appears" framing with no near-term
+  plan — and moved it to =deferred=, keeping =inbox= empty as this
+  task requires rather than leaving it stranded by the conflict.
+- =inbox.org= (auto-generated index) — regenerated via
+  =regenerate_backlog_indexes.py= rather than hand-resolving conflict
+  markers in a generated file.
+
 ** Run on 2026-07-11
 
 Follow-on to [[id:BF5F062F-49DB-490C-B1B0-89B55A550173][Deep backlog refinement]], which explicitly deferred this

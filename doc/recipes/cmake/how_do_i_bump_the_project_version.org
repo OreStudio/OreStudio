@@ -2,7 +2,7 @@
 :ID: E9F98DA1-CF33-4B53-BC4D-A034C652F3B0
 :END:
 #+title: How do I bump the project version?
-#+description: Bump ORE Studio's version number — CMakeLists.txt, vcpkg.json, the three GitHub workflow package filenames, and the readme badges.
+#+description: Bump ORE Studio's version number — CMakeLists.txt, vcpkg.json, the three GitHub workflow package filenames, the readme badges, and the site index screenshot.
 #+type: recipe
 #+level: cross
 #+filetags: :cmake:build:release:version:recipe:
@@ -18,7 +18,8 @@ mentions it?
 
 * Answer
 
-Five files carry the version string. Edit them as a single commit.
+Six files carry the version string or the last-released screenshot.
+Edit them as a single commit.
 
 1. /Pick the new version/. The project follows =0.0.<N>= where =N=
    tracks the sprint number; bump =N= by one.
@@ -88,17 +89,26 @@ Five files carry the version string. Edit them as a single commit.
       +[[./assets/images/ore_studio-v0.0.<OLD>.png]]
       #+end_src
 
-6. /Verify/. Sanity-check that nothing else mentions the old
+6. /=index.org=/ (the site homepage) has its own copy of the same
+   screenshot, near the top — update it identically and don't forget
+   it, it's easy to miss since it's a separate file from =readme.org=:
+
+   #+begin_src diff
+   -[[./assets/images/ore_studio-v0.0.<OLD-1>.png]]
+   +[[./assets/images/ore_studio-v0.0.<OLD>.png]]
+   #+end_src
+
+7. /Verify/. Sanity-check that nothing else mentions the old
    version:
 
    #+begin_src sh :results verbatim
    grep -rn "0\.0\.<OLD>" \
-       CMakeLists.txt vcpkg.json .github/workflows readme.org
+       CMakeLists.txt vcpkg.json .github/workflows readme.org index.org
    #+end_src
 
    Expect zero matches.
 
-7. /Commit/ as =[build] Bump version to 0.0.<NEW>= on the sprint-open branch. No separate PR needed.
+8. /Commit/ as =[build] Bump version to 0.0.<NEW>= on the sprint-open branch. No separate PR needed.
 
 * Script
 

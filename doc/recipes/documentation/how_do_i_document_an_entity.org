@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :documentation:docs:manual:entity:recipe:
 #+created: 2026-06-29
-#+updated: 2026-07-10
+#+updated: 2026-07-11
 
 Once an entity has been commissioned through codegen (see [[id:4A92A706-F1B7-49B3-AA38-888B7A707D92][How do I add a
 new codegen entity model?]]), the last step is its [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][user-manual]] chapter.
@@ -189,7 +189,7 @@ Each image is introduced with a =#+caption[Short caption]: Long caption…=
 on the line above the link; the short caption feeds the PDF list of
 figures, the long one describes what the reader is looking at.
 
-** 5. Wire the chapter into the manual
+** 5. Wire the chapter into the manual and the site index
 
 Add the chapter to =doc/manual/user_guide/user_manual.org= in reading
 order, inside the correct =\part=, as a top-level heading with a
@@ -210,17 +210,33 @@ chapters 5 and 6):
 ,#+include: "chapter_6_countries.org" :minlevel 2
 #+end_example
 
+Also add a row to the *separate* site index,
+=doc/manual/user_guide/user_manual_site.org='s =* Chapters= table —
+this is easy to skip since it's a different file from
+=user_manual.org= and the PDF build won't catch a missing row. Link
+the chapter's own =:ID:=, not a =#+include=, and put it under the
+matching =Part:= divider row:
+
+#+begin_example
+| [[id:849845B0-29BE-4BBB-96D1-05579F06EEED][6. Countries]] | Country management: ISO 3166-1, the Qt UI, history and revert, shell and CLI commands. |
+#+end_example
+
 ** 6. Build to validate
 
 #+begin_src sh :results verbatim
 ./compass.sh build --direct manual
+./compass.sh build --direct site
 #+end_src
 
-A clean build ("Manual PDF build succeeded.") confirms the lettrine,
-includes, images and links all resolve, and that every placeholder's
-=[[proj:assets/images/TODO_*.png]]= link at least points somewhere
-resolvable as a file reference (the build does not require the =TODO_=
-files to exist as real images).
+A clean manual build ("Manual PDF build succeeded.") confirms the
+lettrine, includes, images and links all resolve, and that every
+placeholder's =[[proj:assets/images/TODO_*.png]]= link at least
+points somewhere resolvable as a file reference (the build does not
+require the =TODO_= files to exist as real images). The site build
+publishes the chapter's HTML regardless of whether it's linked from
+the site index — it will not fail if you forgot the step above, so
+manually check the new chapter appears at
+=doc/manual/user_guide/user_manual_site.html= after building.
 
 At the end of this recipe the chapter is content-complete — domain
 grounding sourced and written in the required prose tone, every section

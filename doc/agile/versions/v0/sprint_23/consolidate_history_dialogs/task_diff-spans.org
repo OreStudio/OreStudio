@@ -31,11 +31,11 @@ work, computed once and rendered identically by every frontend.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Implementation complete; not yet built/tested locally. |
-| Waiting on   | User to run the build/test suite (linux-clang-debug-make) before this task is marked DONE. |
-| Next         | Run build + ores.diff.tests, then close this task. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing — task closed.                 |
 | Last touched | 2026-07-11                               |
 
 * Acceptance
@@ -74,14 +74,17 @@ work, computed once and rendered identically by every frontend.
 
 * Notes
 
-Implementation done without a local build (per instruction not to
-build this session): correctness of the byte-offset arithmetic,
-including the UTF-8 boundary trimming and the LCS line-alignment, was
-verified by hand-translating the C++ algorithm into an equivalent
-Python script and running every test case's expected values through
-it before writing the C++ tests. The build/test suite
-(=linux-clang-debug-make= preset) still needs to run before this task
-is closed as DONE.
+Implementation was written without a local build initially (per
+instruction not to build that session): correctness of the byte-offset
+arithmetic, including the UTF-8 boundary trimming and the LCS
+line-alignment, was verified by hand-translating the C++ algorithm
+into an equivalent Python script and running every test case's
+expected values through it before writing the C++ tests. Built and
+tested against =linux-clang-debug-make= once building was authorised;
+all 29 test cases (113 assertions) passed on the first run, confirming
+the Python-verified arithmetic. A CMake reconfigure was required for
+the new =engine_diff_span_tests.cpp= file to be picked up by
+=GLOB_RECURSE= — the initial build only ran the pre-existing 14 tests.
 
 * Test Scenarios
 
@@ -107,3 +110,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added =diff_span= (=projects/ores.diff/include/ores.diff/domain/diff_span.hpp=)
+and extended =diff_entry= with =old_spans=/=new_spans=. Implemented
+span computation in =ores.diff::engine::compute=
+(=projects/ores.diff/src/engine/compare.cpp=): UTF-8-boundary-safe
+common-prefix/suffix diffing for single-line values, and a line-level
+LCS diff (positionally pairing same-sized runs of removed/inserted
+lines, with leftover unpaired lines marked fully changed) plus
+per-line token diffing for multiline values.
+
+Added =projects/ores.diff/tests/engine_diff_span_tests.cpp= with 15
+tests covering the full acceptance list. Narrowed 6 pre-existing tests
+in =engine_compare_tests.cpp= from full =diff_entry= struct equality
+to the specific fields they intended to test, since spans are now
+always populated on changed entries. All 29 tests (113 assertions)
+pass against =linux-clang-debug-make=.

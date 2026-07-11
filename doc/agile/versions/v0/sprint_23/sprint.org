@@ -43,6 +43,10 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------|
 | [[id:32C37202-5194-4B10-8705-DA77A5073D53][Open sprint 23]] | DONE | 2026-07-11 | 2026-07-11 | Scaffold sprint 23, wire version manifest, move postponed stories. |
+| [[id:263C0B6B-D983-44F7-8D57-BB095972445A][DQ/Refdata service boundary cleanup]] | BACKLOG | 2026-07-11 | | Route DQ bundle publication through refdata.v1.* NATS endpoints instead of direct table writes. |
+| [[id:3C8912A0-78C8-4CD5-BA75-EF63D606FEF4][IAM/Refdata service boundary cleanup]] | BACKLOG | 2026-07-11 | | Replace ores.iam.core's direct refdata table access with NATS calls. |
+| [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] | BACKLOG | 2026-07-11 | | Close out four standalone leftover tasks parked at sprint 22 close. |
+| [[id:DCC5853D-1B41-4EB0-8A85-07E2A8FABC07][Refdata entity NATS event registrar audit]] | BACKLOG | 2026-07-11 | | Wire NATS event registrars for the 26 refdata entities still missing one. |
 
 ** Hotfixes
 

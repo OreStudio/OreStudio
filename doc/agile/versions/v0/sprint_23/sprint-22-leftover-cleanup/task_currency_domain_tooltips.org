@@ -5,7 +5,7 @@
 #+description: Fields like spot_relative and end_of_month aren't self-explanatory; add tooltips to every field in the Currency and Currency Pair Convention detail dialogs explaining the domain concept, not just restating the label.
 #+type: task
 #+level: s1
-#+filetags: :currency-pair-refdata:sprint_22:v0:
+#+filetags: :sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 snags]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]]. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -33,7 +33,7 @@ opening a record.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 snags]] |
+| Parent story | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

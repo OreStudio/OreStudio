@@ -1,15 +1,15 @@
 :PROPERTIES:
-:ID: E4DDC1B9-8609-4C11-9172-F2EE79242E66
+:ID: 5C873944-1152-4A79-9C92-C24AEB65834A
 :END:
-#+title: Task: Generic unified-diff history renderer in ores.shell
-#+description: Replace the disabled currencies history-diff command with one generic, entity-parameterised unified-diff renderer consuming the generic history.v1.get response (context lines from fields, +/- pairs with span-based highlighting from changes); re-enable it for every entity; update the shell recipes.
+#+title: Task: Codegen per-entity history field mapper
+#+description: Codegen'd, plain (not hand-written, not generic reflection) per-entity mapper rendering a domain type to an ordered ores::diff::domain::field_value list, per History Diff Architecture layer 1. Handles the field types actually present in ores.refdata entities: std::string, numeric, bool, std::optional<T>, timestamps, uuids.
 #+type: task
 #+level: s1
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on: 15CFB0BE-C411-4B12-B733-974F6F5A44A5
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
 #+updated: 2026-07-11

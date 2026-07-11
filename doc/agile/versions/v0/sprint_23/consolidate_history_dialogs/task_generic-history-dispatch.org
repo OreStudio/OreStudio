@@ -7,30 +7,32 @@
 #+level: s1
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generic-history-dispatch
 #+pr:
 #+blocked_on: DD614A9F-7949-4564-A78F-B4A4C4892732, 352B308F-8696-4BF3-881B-6990C9E3FA6D
 #+blocked_since:
 #+created: 2026-07-11
 #+updated: 2026-07-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add the generic history dispatch mechanism: a per-entity field mapper
+plus the generic NATS subject and server-side registry that consumes
+it, per [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]].
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
+| Now          | Split into two finer-grained sibling tasks below before implementation started; no code changes. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Pick up [[id:5C873944-1152-4A79-9C92-C24AEB65834A][Codegen per-entity history field mapper]] first. |
 | Last touched | 2026-07-11                               |
 
 * Acceptance
@@ -69,3 +71,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Split into two finer-grained sibling tasks, mirroring the earlier
+6-way split of =template-rollout=: this task bundled two genuinely
+separable pieces (per-field-type mapping logic vs. subject/registry
+wiring), too large to track as one unit of work.
+
+1. [[id:5C873944-1152-4A79-9C92-C24AEB65834A][Codegen per-entity history field mapper]]
+2. [[id:15CFB0BE-C411-4B12-B733-974F6F5A44A5][Generic history.v1.get NATS subject and server-side dispatch registry]] — blocked on 1.
+
+This task closes with no code changes; its Plan and Acceptance were
+distributed into the two tasks above.

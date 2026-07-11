@@ -42,9 +42,9 @@ one.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Not yet started.                       |
+| Now           | Task 2 (login dialog checkbox) in progress. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Scaffold task 3 (provisioning scripts) once task 2 is done. |
 | Last touched  | 2026-07-11                               |
 
 * Acceptance
@@ -70,14 +70,10 @@ one.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:C0A62345-3515-4EDF-940D-FF9B1B99F1B1][Add default_party_id field to the account entity]] | DONE | 2026-07-11 | 2026-07-11 | Add a default_party_id FK field to the account entity across domain, SQL, repository, and protocol layers, so an account can designate one of its parties as the quick-login default. |
+| [[id:780182D5-AD41-410A-B877-8E705B1A0B79][Add quick-login checkbox to the login dialog]] | BACKLOG | | | Add a "Log in to default party" checkbox to the login dialog; when ticked, call select_party_request directly with the account's default_party_id, bypassing PartyPickerDialog. |
 
 Planned tasks (not yet scaffolded as task docs):
 
-1. Add =default_party_id= field to the account entity (domain, SQL,
-   repository, protocol layers).
-2. Add "Log in to default party" checkbox to the login dialog; wire
-   it to call =select_party_request= directly when ticked, bypassing
-   =PartyPickerDialog=.
 3. Update =barclays_system_provision.ores= and the Acme/synthetic
    provisioning script to set the provisioning account's default
    party.

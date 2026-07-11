@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 780182D5-AD41-410A-B877-8E705B1A0B79
+:END:
+#+title: Task: Add quick-login checkbox to the login dialog
+#+description: Add a "Log in to default party" checkbox to the login dialog; when ticked, call select_party_request directly with the account's default_party_id, bypassing PartyPickerDialog.
+#+type: task
+#+level: s1
+#+filetags: :account-default-party-login:sprint_23:v0:
+#+owner: marco
+#+branch: feature/add-default-party-id-field
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a "Log in to default party" checkbox to the login dialog. When
+ticked at login time, and the authenticating account has a
+=default_party_id= set, call =select_party_request= directly with that
+party id, bypassing =PartyPickerDialog= entirely.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]] |
+| Now          | Continuing on the same branch as task 1 (feature/add-default-party-id-field), since this task depends on its default_party_id field, not yet merged. |
+| Waiting on   | Nothing.                               |
+| Next         | Locate the login dialog and PartyPickerDialog invocation sites. |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

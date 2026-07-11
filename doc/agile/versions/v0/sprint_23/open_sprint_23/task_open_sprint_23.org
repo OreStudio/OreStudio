@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: F367C855-75B1-411C-AAC6-2A8345844CE2
+:END:
+#+title: Task: Open sprint 23
+#+description: Scaffold sprint 23, wire version manifest, move postponed stories.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_23:sprint_23:v0:
+#+owner: marco
+#+branch: feature/open-sprint-23
+#+pr: 1500
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32C37202-5194-4B10-8705-DA77A5073D53][Open sprint 23]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:32C37202-5194-4B10-8705-DA77A5073D53][Open sprint 23]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1500][#1500]] | [agile] Open sprint 23 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Recurring non-blocking nit across 7 bot review passes: hand-rolled std::format JSON instead of reusing build_params_json/publish_bundle_params pattern | dataset_handler.hpp | Accepted | Fixed in b9f80b6c — added a narrower dataset_publish_params rfl struct + rfl::json::write |
+| 2 | No regression test for the party_id fix | dataset_handler.hpp | Declined | Matches existing pattern — ores.dq messaging handlers have no unit tests today (exercised via NATS dispatch only) |
+
+* Result
+
+Sprint 23 scaffolded (sprint.org, story/task, version manifest and
+agile index wired). Version bumped to 0.0.23 (CMakeLists, vcpkg.json,
+three CI workflows, readme badges/screenshot); vcpkg submodule
+updated to 2026.06.24. No stories carried over — Sprint 22 closed
+with all stories DONE.
+
+Along the way, fixed several issues found during demo prep and
+housekeeping:
+- A real bug in ores.dq.core's async publish-from-DQ workflow:
+  dataset_handler.hpp hardcoded params_json to "{}", dropping
+  party_id and breaking marketdata/refdata/synthetic publishes via
+  the Qt client. Fixed with a typed rfl-serializable struct
+  (addressed the PR review's follow-up nit to avoid hand-rolled
+  std::format JSON).
+- A stale readme.org screenshot reference, and the same staleness in
+  index.org (several versions further behind); fixed both and
+  corrected the version-bump/release-notes recipe split so the
+  "last released version" screenshot convention is unambiguous.
+- Three manual chapters (Currency Pairs, Countries, Books) missing
+  from the site's chapter index despite existing in the PDF; fixed
+  and added a missing wiring step to the entity-documentation recipe.
+- doc/downloads.org stuck at v0.0.19; added the three missing
+  releases (v0.0.20-22).
+- Filed two backlog captures (cache reload after tenant provisioning;
+  skip debug-build CI artifact uploads) rather than fixing inline.
+- Local git housekeeping: deleted 58 stale merged branches and 2
+  fully-superseded stashes (verified against origin's merged-PR list
+  before deleting).

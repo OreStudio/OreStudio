@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 1B201FC8-09CF-4C5E-94D3-1316254F6937
+:END:
+#+title: Add a Videos page and link it from the Resources menu
+#+description: Create a new site page listing all ORE Studio videos (overview + sprint demos) and add it to the site's Resources menu.
+#+type: capture
+#+level: cross
+#+filetags: :site:docs:resources:videos:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Create a new org-mode page (e.g. =doc/videos.org=, scaffolded via
+=compass add=) listing every ORE Studio video, sourced from
+https://mcraveiro.github.io/ore_studio/index.html. As of this
+capture, four videos exist there:
+
+- [[https://www.youtube.com/watch?v=sgf7ybOpWxE][ORE Studio Overview - part 1]] — quick overview of the ORE project and a run-through of the UI.
+- [[https://www.youtube.com/watch?v=OpZtZPi49rA][ORE Studio Overview - part 2]] — addresses community feedback, demonstrates bug fixes using the Claude Code setup, shows the counterparties wizard.
+- [[https://www.youtube.com/watch?v=kYpU9NDRR4E][ORE Studio Overview - part 3]] — the Karpathian approach taken in ORE Studio, including a brief explanation of AAD, referencing Micrograd.
+- [[https://www.youtube.com/watch?v=NDxW12FNhrU][ORE Studio: Sprint 17 Demo]] — demonstrates work completed during Sprint 17.
+- [[https://www.youtube.com/watch?v=5oxheZhqsJ8][ORE Studio: Sprint 22 Demo]] — demonstrates work completed during Sprint 22.
+
+Then wire the new page into the site's *Resources* nav-group in
+=projects/ores.lisp/src/ores-build-site.el= (around line 148-153,
+alongside =Manuals=, =Knowledge=, =Knowledge Graph=), and rebuild
+the site to verify.
+
+* Why
+
+Video content promoting/demoing ORE Studio currently lives only on
+an external, easy-to-miss personal GitHub Pages site
+(mcraveiro.github.io) with no link from the project's own
+documentation site — visitors browsing docs.orestudio's Resources
+menu have no way to discover these videos.
+
+* References
+
+- https://mcraveiro.github.io/ore_studio/index.html — source list of videos
+- =projects/ores.lisp/src/ores-build-site.el:147-154= — the Resources nav-group to extend
+
+* See also
+
+-

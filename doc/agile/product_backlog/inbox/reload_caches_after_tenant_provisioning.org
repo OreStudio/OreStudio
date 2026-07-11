@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: DECC7038-D5A1-4D47-A083-BC5FDD611CD5
+:END:
+#+title: Reload Qt client caches after tenant provisioning completes
+#+description: When a tenant is provisioned mid-session (bootstrap mode exits without a fresh login), the Qt client's currency/country/image caches stay empty until the user manually logs out and back in.
+#+type: capture
+#+level: cross
+#+filetags: :ores.qt:caching:provisioning:bug:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=MainWindow.cpp= only triggers =imageCache_->loadAll()= /
+=loadImageList()= / =changeReasonCache_->loadAll()= /
+=badgeCache_->loadAll()= from the =ClientManager::loggedIn= signal
+(around =MainWindow.cpp:433-446=). If a tenant is provisioned while a
+session is already logged in — bootstrap mode exits without a fresh
+=loggedIn= event firing — these caches never reload. Symptom observed:
+after =compass db recreate= + re-provisioning Barclays Plc while the
+Qt client stayed open, currency/country lookups (and therefore flag
+icons, driven by =ImageCache::getNoFlagImageId()= in
+=ores.qt/api/src/ImageCache.cpp=) returned "0 currencies from server"
+/ "0 countries from server" until the user manually logged out and
+back in. Fix: listen for the tenant-provisioned / bootstrap-mode-exit
+event and re-trigger the same cache-loading sequence the =loggedIn=
+handler runs.
+
+* Why
+
+Demo/manual-testing sessions routinely recreate the DB and
+re-provision a tenant without restarting the Qt client. Stale, silently-empty caches (no error surfaced beyond a
+DEBUG-level log warning) make reference-data-driven UI (flag icons,
+currency/country pickers) appear broken when the actual cause is a
+missed cache refresh.
+
+* References
+
+- =projects/ores.qt/application/src/MainWindow.cpp:433-446= (loggedIn handler)
+- =projects/ores.qt/api/src/ImageCache.cpp:867-908= (onAllAvailableImagesLoaded / getNoFlagImageId)
+
+* See also
+
+-

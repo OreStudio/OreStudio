@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :agile:release:notes:github:recipe:
 #+created: 2026-05-21
-#+updated: 2026-06-06
+#+updated: 2026-07-11
 
 This recipe is what the [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]] phase calls into. The
 companion sprint-opening flow is [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]].
@@ -79,20 +79,29 @@ on =main=).
    ./compass.sh release-notes export --sprint <N>
    #+end_src
 
-6. /Commit/: stage, commit, and push =release_notes.org=/=.md= and
-   the four chart PNGs. There is no separate "upload images" step —
-   the markdown embeds them via
-   =raw.githubusercontent.com/.../main/...= URLs, so they only
-   render correctly once merged to =main=:
+6. /Capture the readme screenshot/. Take a fresh screenshot of the
+   running Qt client (e.g. via the QA Validation Runner panel's
+   screenshot button, or a desktop screenshot tool) and save it as
+   =assets/images/ore_studio-v0.0.<N>.png=. Do *not* wire it into
+   =readme.org= here — the readme should show the *last released*
+   version, so it only gets pointed at this screenshot once sprint
+   =N= itself closes and =N+1= opens; see
+   [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] step 5d.
+
+7. /Commit/: stage, commit, and push =release_notes.org=/=.md=, the
+   four chart PNGs, the new screenshot, and the readme update. There
+   is no separate "upload images" step for the charts — the markdown
+   embeds them via =raw.githubusercontent.com/.../main/...= URLs, so
+   they only render correctly once merged to =main=:
 
    #+begin_src sh :results verbatim
    ./compass.sh release-notes commit --sprint <N>
    #+end_src
 
-7. /Open the PR/ via =PR Manager=. Merge once green — this is what
+8. /Open the PR/ via =PR Manager=. Merge once green — this is what
    makes the chart images resolve on =main=.
 
-8. /Draft/: tag =main= and open a draft GitHub release. A codename
+9. /Draft/: tag =main= and open a draft GitHub release. A codename
    is invented per release (house convention:
    =v0.0.20, "Capopolo"=) — =--codename= is required:
 

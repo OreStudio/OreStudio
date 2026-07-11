@@ -20,7 +20,9 @@
 #ifndef ORES_DIFF_DOMAIN_DIFF_ENTRY_HPP
 #define ORES_DIFF_DOMAIN_DIFF_ENTRY_HPP
 
+#include "ores.diff/domain/diff_span.hpp"
 #include <string>
+#include <vector>
 
 namespace ores::diff::domain {
 
@@ -47,6 +49,22 @@ struct diff_entry final {
      * field was removed.
      */
     std::string new_value;
+
+    /**
+     * @brief Byte ranges into old_value that changed relative to
+     * new_value; empty when the field was added (old_value is
+     * already empty) or when the whole value changed with no
+     * meaningful sub-range to highlight.
+     */
+    std::vector<diff_span> old_spans;
+
+    /**
+     * @brief Byte ranges into new_value that changed relative to
+     * old_value; empty when the field was removed (new_value is
+     * already empty) or when the whole value changed with no
+     * meaningful sub-range to highlight.
+     */
+    std::vector<diff_span> new_spans;
 
     friend bool operator==(const diff_entry&, const diff_entry&) = default;
 };

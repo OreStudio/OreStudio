@@ -8,7 +8,7 @@
 #+filetags: :sprint_23:v0:
 #+created: 2026-07-11
 #+updated: 2026-07-11
-#+environment:
+#+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -40,7 +40,7 @@ one.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -69,7 +69,7 @@ one.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:C0A62345-3515-4EDF-940D-FF9B1B99F1B1][Add default_party_id field to the account entity]] | DONE | 2026-07-11 | 2026-07-11 | Add a default_party_id FK field to the account entity across domain, SQL, repository, and protocol layers, so an account can designate one of its parties as the quick-login default. |
 
 Planned tasks (not yet scaffolded as task docs):
 

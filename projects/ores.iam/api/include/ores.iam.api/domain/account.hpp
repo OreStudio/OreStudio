@@ -103,6 +103,14 @@ struct account final {
     std::string email;
 
     /**
+     * @brief Party to log into automatically when quick-login is enabled.
+     *
+     * Soft reference to a party owned by ores.refdata; unset means the
+     * account must always go through the party picker.
+     */
+    std::optional<boost::uuids::uuid> default_party_id;
+
+    /**
      * @brief Timestamp when this version of the record was recorded in the system.
      */
     std::chrono::system_clock::time_point recorded_at;

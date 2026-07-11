@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: C0A62345-3515-4EDF-940D-FF9B1B99F1B1
+:END:
+#+title: Task: Add default_party_id field to the account entity
+#+description: Add a default_party_id FK field to the account entity across domain, SQL, repository, and protocol layers, so an account can designate one of its parties as the quick-login default.
+#+type: task
+#+level: s1
+#+filetags: :account-default-party-login:sprint_23:v0:
+#+owner: marco
+#+branch: feature/add-default-party-id-field
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a =default_party_id= field to the account domain entity, backing
+SQL table, repository entity/mapper, so an account can designate one
+of its parties as the quick-login default. Protocol layer already
+exposes it for free, since =get_accounts_response= embeds
+=ores::iam::domain::account= directly and JSON encoding is
+reflection-based (=rfl=).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+- =domain::account= (=account.hpp=) has an optional =default_party_id=
+  (=boost::uuids::uuid=) — a soft reference to a party owned by
+  ores.refdata, unset by default.
+- =account_entity= (repository layer) has a matching optional string
+  column mapping.
+- =account_mapper= maps the field both ways (db entity <-> domain).
+- =ores_iam_accounts_tbl= (SQL) has a nullable =default_party_id uuid=
+  column.
+- Protocol layer already carries the field, since request/response
+  structs embed =domain::account= directly — no separate wiring
+  needed for read paths.
+- Build and existing =ores.iam.core=/=ores.iam.api=/=ores.iam.service=
+  test suites are green against the new schema.
+
+* Plan
+
+1. Add the field to =domain::account=, =account_entity=, and
+   =account_mapper= (both mapping directions).
+2. Add the nullable column to =iam_accounts_create.sql=.
+3. Reconfigure/build with the environment's real preset
+   (=linux-clang-debug-make=, per =.env=, not the gcc/ninja preset used
+   by mistake at first) and recreate the dev DB so the schema change
+   takes effect.
+4. Run the =ores.iam.*= test suites to confirm nothing regressed.
+
+* Notes
+
+- =account.hpp= is hand-written, not codegen'd from a model spec (only
+  the account/party *junction* table is codegen'd via mustache
+  templates) — so this was a direct multi-file edit, not a template
+  change.
+- No hard FK to refdata's party table: matches the existing IAM/Refdata
+  service-boundary separation (soft reference, validated at the
+  service layer, not the database).
+- Initially configured/built against =linux-gcc-debug-ninja=, which
+  isn't what this checkout's =.env= specifies (=ORES_PRESET=linux-clang-debug-make=).
+  Corrected: reconfigured and rebuilt against =linux-clang-debug-make=
+  and recreated the dev DB before running tests, so results are
+  representative of what CI will use.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Added =default_party_id= (optional uuid, soft FK to a refdata party) to:
+
+- [[proj:projects/ores.iam/api/include/ores.iam.api/domain/account.hpp][domain::account]] (domain layer)
+- [[proj:projects/ores.iam/core/include/ores.iam.core/repository/account_entity.hpp][account_entity]] (repository layer, optional string column)
+- [[proj:projects/ores.iam/core/src/repository/account_mapper.cpp][account_mapper]] (both mapping directions)
+- [[proj:projects/ores.sql/create/iam/iam_accounts_create.sql][ores_iam_accounts_tbl]] (nullable =uuid= column)
+
+Protocol layer required no direct edits: =get_accounts_response= and
+friends embed =domain::account= directly, and JSON encoding is
+reflection-based, so the field is already carried end-to-end.
+
+Verification: reconfigured/built against =linux-clang-debug-make= (the
+preset in this checkout's =.env=), recreated the dev DB to pick up the
+new column, then ran =ctest --preset linux-clang-debug-make -R iam= —
+=ores.iam.api.tests=, =ores.iam.core.tests=, =ores.iam.service.tests=
+all green (100% pass, 0 failed).

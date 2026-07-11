@@ -37,6 +37,7 @@ The full template source. Edit here and re-tangle with
 #include "ores.utility/uuid/tenant_id.hpp"
 {{/has_tenant_id}}
 {{/has_identity_group}}
+#include <string_view>
 
 namespace ores::{{component}}::domain {
 
@@ -145,6 +146,16 @@ struct {{entity_singular}} final {
 {{/has_audit_group}}
 };
 
+/**
+ * @brief Dispatch-key identifier for {{entity_singular}}, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const {{entity_singular}}&) {
+    return "ores.{{component}}.{{entity_singular}}";
+}
+
 }
 
 #endif
@@ -156,6 +167,7 @@ struct {{entity_singular}} final {
 {{#cpp.includes.domain}}
 #include {{{.}}}
 {{/cpp.includes.domain}}
+#include <string_view>
 
 namespace ores::{{component}}::domain {
 
@@ -235,6 +247,16 @@ struct {{name_singular}} final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for {{name_singular}}, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const {{name_singular}}&) {
+    return "ores.{{component}}.{{name_singular}}";
+}
 
 }
 

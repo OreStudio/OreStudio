@@ -25,6 +25,7 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::refdata::domain {
 
@@ -130,6 +131,16 @@ struct counterparty final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for counterparty, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const counterparty&) {
+    return "ores.refdata.counterparty";
+}
 
 }
 

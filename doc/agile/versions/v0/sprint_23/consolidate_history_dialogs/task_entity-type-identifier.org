@@ -7,43 +7,136 @@
 #+level: s1
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/entity-type-identifier
+#+pr: 1509
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
 #+updated: 2026-07-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add =entity_type_of(const T&)=, a =constexpr= free function returning
+the entity's dispatch-key string (e.g. ~"ores.refdata.currency"~),
+for every =ores.refdata= domain entity — the single source of truth
+the generic history-diff dispatch table (server side) and action
+registry (client side) will key off, per
+[[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]].
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing — task closed.                 |
 | Last touched | 2026-07-11                               |
 
 * Acceptance
 
--
+- =entity_type_of(const T&)= generated for every clean =ores.refdata=
+  domain entity, returning ~"ores.{component}.{entity_singular}"~.
+- Kept off the domain struct itself (a free function, not a member),
+  per the earlier design discussion — the struct stays "the data,"
+  not "the data plus its own metadata."
+- =constexpr=, so it costs nothing at the call site.
+- Representative test coverage (not exhaustive per-entity, since the
+  codegen facet is mechanical): correctness, distinctness, stability
+  across instances, and a domain_entity + a would-be junction case
+  (junction not currently reachable — see Notes).
+- Local build clean; full ctest suite green.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. First attempt: a new companion header per entity
+   (=<entity>_entity_type.hpp=), its own codegen archetype/facet
+   registration. Built, tangled, and validated end-to-end (compiled
+   standalone), then reverted at the user's request — no need for
+   more generated files when the function can live in the entity's
+   existing domain header.
+2. Final approach: added =entity_type_of()= directly to the existing
+   [[id:543F3A6F-C359-4075-8A53-9E48F766DCE6][cpp_domain_type_class.hpp.mustache]] archetype (via its literate
+   source, =ores.cpp.domain.class_header.org=), for both the
+   =domain_entity= and =junction= template branches. No new archetype,
+   no new facet_catalogue.org entry, no new per-entity file.
+3. Regenerated =ores.refdata= via =codegen regenerate --component
+   refdata-cpp --profile domain= (as instructed: touch entities via
+   the entities codegen, not by other means).
+4. /Pre-existing drift isolation/ (see Notes): this run resurfaced
+   unrelated pre-existing model/generated-code drift affecting several
+   entities. Kept only the entities whose regenerated domain header
+   diff was confined to exactly the two hunks this change intends
+   (the =#include <string_view>= and the =entity_type_of()= addition);
+   reverted every file with additional, unrelated hunks and every
+   non-class-header file (json_io/table/table_io — untouched by this
+   template edit, but regenerated as a side effect of the domain
+   facet's other archetypes since =--address= only resolves at facet
+   granularity, not per-archetype).
+5. Added representative tests in a new
+   =projects/ores.refdata/api/tests/domain_entity_type_tests.cpp=.
+6. Verified: full local build clean, full ctest suite green (69/69
+   suites).
 
 * Notes
+
+*Scope, per direction mid-task*: generation was deliberately scoped to
+=ores.refdata= only, not the whole repository — this story only
+touches that component; other components pick up the trait when their
+own history-dialog work reaches them.
+
+*Pre-existing drift, deferred, not fixed here*: regenerating the
+=domain= facet for =ores.refdata= surfaced real, unrelated drift
+between several entities' org models and their generated code —
+=business_unit= (lost =std::optional=-wrapped fields), =contact_type=
+(missing default value), =currency_market_tier=, =monetary_nature=,
+=party=, =party_id_scheme=, =rounding_type=. These entities did *not*
+get =entity_type_of()= in this task — fixing their drift is out of
+scope here and belongs to whoever owns those models. Notably *party*
+is affected; the generic-history-dispatch task inherits this as a
+known gap to close before party's own history dialog can migrate.
+
+*A second, distinct class of drift was fixed, not just documented*:
+9 of the 27 generated files
+(=cds_convention=, =deposit_convention=, =fra_convention=,
+=ibor_index_convention=, =ois_convention=, =overnight_index_convention=,
+=portfolio=, =swap_convention=, =zero_convention=) also carried a
+stale include guard (=ORES_REFDATA_DOMAIN_*_HPP=, predating the
+=ores.refdata.api= include-path split) that regeneration silently
+corrected to match the =ORES_REFDATA_API_DOMAIN_*_HPP= convention
+every other domain header already uses. This landed in the same hunk
+as the intended =#include <string_view>= line, so the "confined to
+exactly two hunks" filter above didn't separate it out — caught in
+review (PR 1509). Verified safe: no other file references the old
+guard names, and the fix brings these 9 files in line with the
+existing convention. Kept rather than reverted, since reverting would
+reintroduce the stale, inconsistent guard rather than a neutral state.
+The "isolated to entities with zero unrelated drift" framing in the
+PR description was therefore not fully accurate — it should read
+"isolated to entities with zero unrelated *model* drift"; this guard
+rename is a separate, benign class of drift that regeneration is
+expected to fix.
+
+*Junction models are out of scope for entity_type_of() today*: the
+=domain= facet's =:model_types:= is =schema domain_entity= only —
+junction models (e.g. =party_counterparty=) are not generated by it at
+all, so the =entity_type_of()= junction template branch this task
+added is currently unreachable in practice. Pre-existing gap, not
+introduced here; noted for whoever eventually brings junctions under
+the =domain= facet.
+
+*Codegen tooling gap*: =--address=/=--profile= only resolve at facet
+granularity (confirmed against =src/codegen/physical_space.py=), not
+per-archetype — there is no way to regenerate just one archetype
+(e.g. only the class header) without also re-running every other
+archetype in the same facet. This is why isolating this change
+required diffing and selectively reverting files rather than a single
+scoped regenerate command.
 
 * Test Scenarios
 
@@ -60,12 +153,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1509][#1509]] | [refdata,codegen] Add entity_type_of() identifier trait |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | 9 "clean" files carry an undocumented third hunk: a stale include-guard rename (ORES_REFDATA_DOMAIN_* -> ORES_REFDATA_API_DOMAIN_*), contradicting the "zero unrelated drift" claim (raised independently by 5 review passes) | task_entity-type-identifier.org, cds_convention.hpp and 8 siblings | Documented, kept | Verified the guard rename is real, safe (no other references to old names) and correct (matches every other domain header's convention); reverting would reintroduce a worse, inconsistent state. Added a Notes entry distinguishing this benign guard-drift class from the deferred model-drift class. |
+| 2 | Missing trailing newline at EOF | task_entity-type-identifier.org | Fixed | Added. |
 
 * Result
+
+=entity_type_of(const T&)= added to the =cpp_domain_type_class.hpp.mustache=
+archetype (via =ores.cpp.domain.class_header.org=), landing directly
+in each entity's existing domain header — no new files, no new facet.
+Generated for 27 of =ores.refdata='s domain entities (7 skipped due to
+pre-existing drift unrelated to this change — see Notes). New test
+file =domain_entity_type_tests.cpp= covers correctness, distinctness,
+and instance-stability. Full local build clean; full ctest suite
+green (69/69 test suites).
+
+Distilled into the story's Decisions: =entity_type_of()= lives in the
+existing domain class header, not a separate companion file.

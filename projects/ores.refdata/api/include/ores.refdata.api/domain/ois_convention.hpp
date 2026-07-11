@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_DOMAIN_OIS_CONVENTION_HPP
-#define ORES_REFDATA_DOMAIN_OIS_CONVENTION_HPP
+#ifndef ORES_REFDATA_API_DOMAIN_OIS_CONVENTION_HPP
+#define ORES_REFDATA_API_DOMAIN_OIS_CONVENTION_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::refdata::domain {
 
@@ -146,6 +147,16 @@ struct ois_convention final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for ois_convention, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const ois_convention&) {
+    return "ores.refdata.ois_convention";
+}
 
 }
 

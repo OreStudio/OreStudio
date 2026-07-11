@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-11
 #+updated: 2026-07-11
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:32C37202-5194-4B10-8705-DA77A5073D53][Open sprint 23]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:32C37202-5194-4B10-8705-DA77A5073D53][Open sprint 23]] |
-| Now          | Scaffolding sprint 23 and wiring the version manifest. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Move postponed stories from sprint 22, raise PR. |
+| Next         | Nothing. |
 | Last touched | 2026-07-11                               |
 
 * Acceptance
@@ -70,3 +70,32 @@ via its "Verifies task" field.
 | 2 | No regression test for the party_id fix | dataset_handler.hpp | Declined | Matches existing pattern — ores.dq messaging handlers have no unit tests today (exercised via NATS dispatch only) |
 
 * Result
+
+Sprint 23 scaffolded (sprint.org, story/task, version manifest and
+agile index wired). Version bumped to 0.0.23 (CMakeLists, vcpkg.json,
+three CI workflows, readme badges/screenshot); vcpkg submodule
+updated to 2026.06.24. No stories carried over — Sprint 22 closed
+with all stories DONE.
+
+Along the way, fixed several issues found during demo prep and
+housekeeping:
+- A real bug in ores.dq.core's async publish-from-DQ workflow:
+  dataset_handler.hpp hardcoded params_json to "{}", dropping
+  party_id and breaking marketdata/refdata/synthetic publishes via
+  the Qt client. Fixed with a typed rfl-serializable struct
+  (addressed the PR review's follow-up nit to avoid hand-rolled
+  std::format JSON).
+- A stale readme.org screenshot reference, and the same staleness in
+  index.org (several versions further behind); fixed both and
+  corrected the version-bump/release-notes recipe split so the
+  "last released version" screenshot convention is unambiguous.
+- Three manual chapters (Currency Pairs, Countries, Books) missing
+  from the site's chapter index despite existing in the PDF; fixed
+  and added a missing wiring step to the entity-documentation recipe.
+- doc/downloads.org stuck at v0.0.19; added the three missing
+  releases (v0.0.20-22).
+- Filed two backlog captures (cache reload after tenant provisioning;
+  skip debug-build CI artifact uploads) rather than fixing inline.
+- Local git housekeeping: deleted 58 stale merged branches and 2
+  fully-superseded stashes (verified against origin's merged-PR list
+  before deleting).

@@ -15,30 +15,46 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Sprint 23 is open and usable: scaffolded, wired into the version
+manifest and agile index, project version bumped, and vcpkg updated
+— the standing checklist a sprint-open task must clear before other
+work can be picked up against it.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Scaffolding sprint 23 and wiring the version manifest. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Move postponed stories from sprint 22, raise PR. |
+| Next          | Nothing. |
 | Last touched  | 2026-07-11                               |
 
 * Acceptance
 
--
+- Sprint 23 scaffolded and wired into =version.org=/=agile.org=.
+- Project version bumped to 0.0.23 across all five canonical files.
+- vcpkg submodule updated to latest.
+- No stories postponed from Sprint 22 (all closed DONE).
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:F367C855-75B1-411C-AAC6-2A8345844CE2][Task: Open sprint 23]] | STARTED | 2026-07-11 | | Scaffold sprint 23, wire version manifest, move postponed stories. |
+| [[id:F367C855-75B1-411C-AAC6-2A8345844CE2][Task: Open sprint 23]] | DONE | 2026-07-11 | 2026-07-11 | Scaffold sprint 23, wire version manifest, move postponed stories. |
 
 * Decisions
+
+- The version-bump recipe's screenshot step (readme.org and its
+  index.org twin) points at the *just-closed* sprint's screenshot,
+  not the newly-opened one — the screenshot for a sprint is only
+  captured at that sprint's own close (release-notes recipe), so at
+  open time it never exists yet for the new sprint.
+- The party_id fix in dataset_handler.hpp uses a purpose-built,
+  narrower rfl struct rather than reusing publish_bundle_params,
+  since that struct carries bundle-only fields that don't apply to
+  the per-dataset publish path.
 
 * Out of scope
 

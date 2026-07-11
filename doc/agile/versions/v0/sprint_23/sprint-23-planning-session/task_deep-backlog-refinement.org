@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | wire_service_token_provider.org discarded on incomplete evidence (5 of ~19 services checked, not all) | doc/agile/product_backlog/discarded/wire_service_token_provider.org | Accepted | Restored to next/ with corrected 13-service scope; see PR review correction in Result |
 
 * Result
 
@@ -94,12 +94,12 @@ covered 10 items one batch under-returned on the first pass.
 
 *** Before / after
 
-| Bucket   | Before | After | Notes |
-|----------+--------+-------+-------|
-| inbox    |    240 |   208 | -32: discarded or moved to their real sprint |
-| next     |    258 |   223 | -35: discarded, merged, or moved |
-| deferred |     61 |    56 | -5: discarded |
-| *Total*  |  *559* | *487* | *-72* |
+| Bucket   | Before | After (post-review) | Notes |
+|----------+--------+----------------------+-------|
+| inbox    |    240 |                  208 | -32: discarded or moved to their real sprint |
+| next     |    258 |                  224 | -34 net: discarded/merged/moved, +1 restored by PR review (wire_service_token_provider) |
+| deferred |     61 |                   56 | -5: discarded |
+| *Total*  |  *559* |                *488* | *-71* |
 
 *** Coverage
 
@@ -213,7 +213,6 @@ carries the complete evidence in its own discard note):
 | [[id:1060F374-C693-409C-B113-CC56031ECA86][System provisioner needs an icon]] | projects/ores.qt/application/src/SystemProvisionerWizard.cpp:51 already calls setWindowIcon(IconUtils::createRecoloredIcon(Icon::Settings, I... |
 | [[id:57060FAB-8DA3-4B00-A156-CCC56125BFD7][Update currency details to use tabs]] | CurrencyDetailDialog.ui already implements a QTabWidget with tabs: General (incl. Icon), Formatting, Rounding, Provenance -- the Provenance ... |
 | [[id:556F7392-1B01-406A-BC4B-80394633C12F][Use exponential backoff for database problems]] | projects/ores.database/src/service/postgres_listener_service.cpp already implements exponential backoff (min_backoff=1s, max_backoff=5s, bac... |
-| [[id:8AFB72CD-44B5-4DCD-A3A8-B12FEF693011][Wire service token provider for all services]] | grep for make_service_token_provider now shows it wired in application.cpp for ores.workflow, ores.synthetic, ores.reporting, ores.marketdat... |
 | [[id:A9B0EE8B-CD11-4524-9A94-7DD65E153E21][Work units should use a combo box]] | ores.compute already has a full WorkunitDetailDialog (projects/ores.qt/compute/src/WorkunitDetailDialog.cpp, ui/WorkunitDetailDialog.ui) wit... |
 | [[id:0EA51F00-4A5D-4358-A0F9-13E90CB23A5A][Add claude continuous learning skill]] | The repo already has an extensive, actively maintained skill system under doc/llm/skills (skill-add, skill-review, skill-delete, skill-show-... |
 | [[id:6A0950D7-BE0B-4775-B244-9F57779CD067][Add skill to review product backlog]] | doc/llm/skills/agile-refine-backlog exists: 'Run a backlog housekeeping session: scan the next/deferred captures, clarify descriptions, cull... |
@@ -285,16 +284,34 @@ items instead of 559.
   existed before the skill was written. A future run should follow
   the skill's actual convention.
 
+*** PR review correction (2026-07-11, PR #1506)
+
+The automated PR review independently re-verified 9 of the 69 discard
+claims and found a third instance of the same failure mode the
+trustworthiness check above already caught twice: [[id:8AFB72CD-44B5-4DCD-A3A8-B12FEF693011][Wire service token
+provider for all services]] was discarded citing =make_service_token_provider=
+wired into 5 services — accurate, but the capture's actual scope is
+*all* outbound-NATS services. A full sweep of every =application.cpp=
+found 13 more services already making outbound NATS calls without the
+wiring (=ores.analytics=, =ores.trading=, =ores.http.server=,
+=ores.iam.service=, =ores.workspace=, =ores.dq=, =ores.variability=,
+=ores.scheduler=, =ores.controller=, =ores.compute.service=,
+=ores.compute.wrapper=, =ores.refdata=, =ores.assets=, =ores.telemetry=)
+— most of the actual scope remains open, not a partial-narrow case
+like the business-unit item. Restored to =next/= with the corrected
+scope. Net discard count revised: *68* genuine discards (not 69).
+
 *** Summary
 
-559 backlog items read and checked against the live codebase; 71
+559 backlog items read and checked against the live codebase; 70
 were genuinely stale (discarded or restored to their real sprint
 home) and 1 pair of duplicates merged, for a net reduction from 559
-to 487 live items (13% smaller). Two "resolved" verdicts were caught
-as misclassified by a deliberate trustworthiness check before acting
-on any of them — both the same failure mode (a multi-part capture
-where only one part had shipped) — and corrected rather than
-silently discarded. The biggest open question is bucket fit: next/
-deferred re-scoring against the current sprint's mission is flagged
-as a follow-on run rather than attempted wholesale here, since doing
-it properly for 486 remaining items is its own full-scale pass.
+to 488 live items (13% smaller). Three "resolved" verdicts were
+caught as misclassified — 2 by this run's own trustworthiness check,
+1 by the PR review that followed — all the same failure mode (a
+multi-part capture where only some parts had shipped) — and corrected
+rather than silently discarded or left wrong. The biggest open
+question is bucket fit: next/deferred re-scoring against the current
+sprint's mission is flagged as a follow-on run rather than attempted
+wholesale here, since doing it properly for the remaining items is
+its own full-scale pass.

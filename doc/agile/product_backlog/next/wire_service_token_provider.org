@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 8AFB72CD-44B5-4DCD-A3A8-B12FEF693011
+:END:
+#+title: Wire service token provider for all services
+#+description: 6 of 19 outbound-NATS services have make_service_token_provider wired up; 13 more make outbound NATS calls (publish/subscribe) but still lack it.
+#+type: capture
+#+level: cross
+#+filetags: :code:security:infrastructure:
+#+created: 2026-05-22
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+*Corrected (PR #1506 review, 2026-07-11)*: this capture was initially
+discarded as resolved, citing =make_service_token_provider= wired
+into 5 services (workflow, synthetic, reporting, marketdata, ore).
+That's accurate but incomplete — the capture's actual scope is *all*
+outbound-NATS services, and a full sweep of every =application.cpp=
+shows 13 more services already make outbound NATS calls
+(=nats.publish=/=subscribe=) without the token-provider wiring:
+=ores.analytics=, =ores.trading=, =ores.http.server=, =ores.iam.service=,
+=ores.workspace=, =ores.dq=, =ores.variability=, =ores.scheduler=,
+=ores.controller=, =ores.compute.service=, =ores.compute.wrapper=,
+=ores.refdata=, =ores.assets=, =ores.telemetry=. This is the same
+"part of a multi-part ask shipped, not all of it" pattern the
+original deep-refinement pass's own trustworthiness check caught
+twice elsewhere — restoring to =next/= rather than re-discarding,
+since most of the actual scope remains open.
+
+* What
+
+Every service that makes outbound NATS calls (=publish=/=subscribe=)
+needs =make_service_token_provider= wired so it can authenticate as a
+service principal. Currently wired: =ores.workflow=, =ores.synthetic=,
+=ores.reporting=, =ores.marketdata=, =ores.ore=. Confirmed still
+missing despite making outbound NATS calls: =ores.analytics=,
+=ores.trading=, =ores.http.server=, =ores.iam.service=,
+=ores.workspace=, =ores.dq=, =ores.variability=, =ores.scheduler=,
+=ores.controller=, =ores.compute.service=, =ores.compute.wrapper=,
+=ores.refdata=, =ores.assets=, =ores.telemetry=.
+
+* Why
+
+Unauthenticated outbound NATS calls from a service can't be
+attributed to a service principal, weakening authorization/audit for
+any call these services make. Wiring is mechanical once proven
+(reporting/workflow/synthetic/marketdata/ore already show the
+pattern) but must be applied per-service, not assumed to propagate.
+
+* References
+
+- =projects/ores.iam.client= — the =make_service_token_provider=
+  implementation.
+- =projects/ores.workflow/service/src/app/application.cpp=,
+  =ores.reporting=, =ores.synthetic=, =ores.marketdata=, =ores.ore= —
+  reference wiring already in place.
+
+* See also
+
+-

@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: C4755E35-7E5D-4276-8AAE-53FA8557FAEF
+:END:
+#+title: Story: Hotfix: Windows Clang CI compiler-launcher wrapper
+#+description: windows-clang-debug-ninja and windows-clang-release-ninja fail to configure because the clang preset's environment launcher (a .sh wrapper) leaks into CMake's project()-time compiler detection on Windows.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:build:sprint_23:v0:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the Windows Clang CI builds (=windows-clang-debug-ninja= and
+=windows-clang-release-ninja=), which currently fail to configure with
+=ninja: fatal: CreateProcess: %1 is not a valid Win32 application.=
+
+Root cause: =CMakePresets.json='s hidden =clang= preset sets
+=CMAKE_C_COMPILER_LAUNCHER=/=CMAKE_CXX_COMPILER_LAUNCHER= to
+=build/scripts/compiler_cache_wrapper.sh= via its =environment= block.
+CMake seeds the =CMAKE_<LANG>_COMPILER_LAUNCHER= cache variable from the
+same-named environment variable at =project()=-time, before
+=CMakeLists.txt='s own =WIN32=-aware launcher logic (which would
+otherwise pick the sccache/ccache binary directly) gets a chance to run.
+=windows-clang= inherits the =clang= preset and so inherits this leak;
+=windows-msvc*= presets do not inherit =clang=/=gcc= and are unaffected.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-11                               |
+
+* Acceptance
+
+- =windows-clang-debug-ninja= and =windows-clang-release-ninja= configure and build successfully in CI (verified via a scheduled/triggered run or local Windows-equivalent reasoning, since we cannot run Windows CI locally).
+- =windows-msvc*= and Linux/macOS presets are unaffected.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:74ED93D0-A565-401B-BD24-BCA4EEBAC379][Scaffold story: Hotfix: Windows Clang CI compiler-launcher wrapper]] | DONE | 2026-07-11 | 2026-07-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:82F67C49-73B9-4BE8-B586-32246D68A068][Implement Hotfix: Windows Clang CI compiler-launcher wrapper]] | DONE | 2026-07-11 | 2026-07-11 | Initial task for: Hotfix: Windows Clang CI compiler-launcher wrapper |
+
+* Decisions
+
+- Split the launcher =environment= override out of the shared =clang=/=gcc= hidden presets into a new =unix-compiler-cache-wrapper= preset, inherited only by the Linux clang/gcc presets, rather than making CMakeLists.txt's WIN32 branch run before =project()= (not possible) or adding a Windows-specific override in =windows-clang= (would leave the same footgun for future Unix-inheriting presets).
+
+* Out of scope
+
+-

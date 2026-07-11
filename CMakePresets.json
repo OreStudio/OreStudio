@@ -68,10 +68,6 @@
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "clang++"
       },
-      "environment": {
-        "CMAKE_C_COMPILER_LAUNCHER": "${sourceDir}/build/scripts/compiler_cache_wrapper.sh",
-        "CMAKE_CXX_COMPILER_LAUNCHER": "${sourceDir}/build/scripts/compiler_cache_wrapper.sh"
-      },
       "description": "Setup the Clang C++ compiler."
     },
     {
@@ -80,11 +76,16 @@
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "g++"
       },
+      "description": "Setup the GCC C++ compiler."
+    },
+    {
+      "name": "unix-compiler-cache-wrapper",
+      "hidden": true,
       "environment": {
         "CMAKE_C_COMPILER_LAUNCHER": "${sourceDir}/build/scripts/compiler_cache_wrapper.sh",
         "CMAKE_CXX_COMPILER_LAUNCHER": "${sourceDir}/build/scripts/compiler_cache_wrapper.sh"
       },
-      "description": "Setup the GCC C++ compiler."
+      "description": "Seed the compiler-cache-wrapper launcher via environment so CMake picks it up at project()-time. Unix-only: the wrapper is a shell script and is not a valid Win32 executable, so Windows presets must not inherit this and rely on CMakeLists.txt's WIN32-aware launcher logic instead."
     },
     {
       "name": "msvc-cl",
@@ -124,6 +125,7 @@
       "inherits": [
         "base-configuration",
         "clang",
+        "unix-compiler-cache-wrapper",
         "debug-build",
         "ninja"
       ],
@@ -135,6 +137,7 @@
       "inherits": [
         "base-configuration",
         "clang",
+        "unix-compiler-cache-wrapper",
         "debug-build",
         "make"
       ],
@@ -146,6 +149,7 @@
       "inherits": [
         "base-configuration",
         "clang",
+        "unix-compiler-cache-wrapper",
         "release-build",
         "ninja"
       ],
@@ -157,6 +161,7 @@
       "inherits": [
         "base-configuration",
         "clang",
+        "unix-compiler-cache-wrapper",
         "release-build",
         "make"
       ],
@@ -168,6 +173,7 @@
       "inherits": [
         "base-configuration",
         "gcc",
+        "unix-compiler-cache-wrapper",
         "debug-build",
         "ninja"
       ],
@@ -179,6 +185,7 @@
       "inherits": [
         "base-configuration",
         "gcc",
+        "unix-compiler-cache-wrapper",
         "debug-build",
         "make"
       ],
@@ -190,6 +197,7 @@
       "inherits": [
         "base-configuration",
         "gcc",
+        "unix-compiler-cache-wrapper",
         "release-build",
         "ninja"
       ],
@@ -201,6 +209,7 @@
       "inherits": [
         "base-configuration",
         "gcc",
+        "unix-compiler-cache-wrapper",
         "release-build",
         "make"
       ],

@@ -78,7 +78,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | wire_service_token_provider.org discarded on incomplete evidence (5 of ~19 services checked, not all) | doc/agile/product_backlog/discarded/wire_service_token_provider.org | Accepted | Restored to next/ with corrected 13-service scope; see PR review correction in Result |
+| 1 | wire_service_token_provider.org discarded on incomplete evidence (5 of 19 services checked, not all) | doc/agile/product_backlog/discarded/wire_service_token_provider.org | Accepted | Restored to next/ with corrected 14-service scope; see PR review correction in Result |
+| 2 | Follow-up review: "6 of 19"/"13 more" in the restored capture didn't match its own 14-item list | doc/agile/product_backlog/next/wire_service_token_provider.org | Accepted | Fixed to "5 of 19"/"14 more" in the capture, next.org, and this task's Result |
 
 * Result
 
@@ -292,7 +293,7 @@ trustworthiness check above already caught twice: [[id:8AFB72CD-44B5-4DCD-A3A8-B
 provider for all services]] was discarded citing =make_service_token_provider=
 wired into 5 services — accurate, but the capture's actual scope is
 *all* outbound-NATS services. A full sweep of every =application.cpp=
-found 13 more services already making outbound NATS calls without the
+found 14 more services already making outbound NATS calls without the
 wiring (=ores.analytics=, =ores.trading=, =ores.http.server=,
 =ores.iam.service=, =ores.workspace=, =ores.dq=, =ores.variability=,
 =ores.scheduler=, =ores.controller=, =ores.compute.service=,

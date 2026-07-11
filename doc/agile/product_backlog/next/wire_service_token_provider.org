@@ -2,7 +2,7 @@
 :ID: 8AFB72CD-44B5-4DCD-A3A8-B12FEF693011
 :END:
 #+title: Wire service token provider for all services
-#+description: 6 of 19 outbound-NATS services have make_service_token_provider wired up; 13 more make outbound NATS calls (publish/subscribe) but still lack it.
+#+description: 5 of 19 outbound-NATS services have make_service_token_provider wired up; 14 more make outbound NATS calls (publish/subscribe) but still lack it.
 #+type: capture
 #+level: cross
 #+filetags: :code:security:infrastructure:
@@ -16,7 +16,7 @@ discarded as resolved, citing =make_service_token_provider= wired
 into 5 services (workflow, synthetic, reporting, marketdata, ore).
 That's accurate but incomplete — the capture's actual scope is *all*
 outbound-NATS services, and a full sweep of every =application.cpp=
-shows 13 more services already make outbound NATS calls
+shows 14 more services already make outbound NATS calls
 (=nats.publish=/=subscribe=) without the token-provider wiring:
 =ores.analytics=, =ores.trading=, =ores.http.server=, =ores.iam.service=,
 =ores.workspace=, =ores.dq=, =ores.variability=, =ores.scheduler=,

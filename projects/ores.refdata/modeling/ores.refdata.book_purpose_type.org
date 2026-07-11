@@ -1,0 +1,211 @@
+:PROPERTIES:
+:ID: F2DD5F1F-759C-44E3-8BBD-EB451494E9A0
+:END:
+#+title: ores.refdata.book_purpose_type
+#+description: Codegen entity model for the refdata =book_purpose_type= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The risk role a book plays: what kind of trading/operational activity happens in it.
+#+entity_singular: book_purpose_type
+#+entity_plural: book_purpose_types
+#+entity_title: Book Purpose Type
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-07-11
+#+updated: 2026-07-11
+
+Reference data table defining the risk role a book plays — what kind
+of trading/operational activity happens in it, as distinct from its
+regulatory type (see =regulatory_book_type=) or how its ledger balance
+is fed. Examples: 'Trading', 'Reserve', 'Funding', 'Wash', 'Write-off',
+'Test', 'Sales', 'Sweep target', 'Remittance target'.
+
+Book purpose types are mutually exclusive — a book carries exactly one
+at a time — and managed by the system tenant. See
+[[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] for the full analysis of why this is a lookup
+entity rather than independent boolean flags, and why the values are
+mutually exclusive with each other but independent of regulatory type
+and ledger feed.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique book purpose type code.
+
+Examples: 'Trading', 'Reserve', 'Funding', 'Wash', 'Write-off', 'Test',
+'Sales', 'SweepTarget', 'RemittanceTarget'.
+
+#+begin_src cpp :name generator
+std::string("BookPurposeType")
+#+end_src
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the book purpose type.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Purpose Type"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the book purpose type and the process it
+relates to.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_book_purpose_types_tbl
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: book purpose type
+:entity_plural_words:   book purpose types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bpt
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/book_purpose_type.hpp
+:domain_class:           refdata::domain::book_purpose_type
+:protocol_include:       ores.refdata.api/messaging/book_purpose_type_protocol.hpp
+:collection_name:        types
+:item_var:               type
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      refdata::messaging::get_book_purpose_types_request
+:get_response_class:     refdata::messaging::get_book_purpose_types_response
+:get_message_type:       get_book_purpose_types_request
+:save_request_class:     refdata::messaging::save_book_purpose_type_request
+:save_response_class:    refdata::messaging::save_book_purpose_type_response
+:save_message_type:      save_book_purpose_type_request
+:delete_request_class:   refdata::messaging::delete_book_purpose_type_request
+:delete_response_class:  refdata::messaging::delete_book_purpose_type_response
+:delete_message_type:    delete_book_purpose_type_request
+:history_request_class:  refdata::messaging::get_book_purpose_type_history_request
+:history_response_class: refdata::messaging::get_book_purpose_type_history_response
+:history_message_type:   get_book_purpose_type_history_request
+:settings_group:         BookPurposeTypeListWindow
+:window_title:           Book Purpose Types
+:icon:                   Tag
+:has_export_macro:       true
+:END:
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | auto  |
+| Name         | name          | Name          | string    | auto  |
+| Description  | description   | Description   | string    | auto  |
+| DisplayOrder | display_order | Display Order | int       | 70    |
+| Version      | version       | Version       | int       | 70    |
+| ModifiedBy   | modified_by   | Modified By   | string    | auto  |
+| RecordedAt   | recorded_at   | Recorded At   | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] — the domain analysis this entity codifies.
+- [[id:03728847-1C53-4B1D-AFB1-E83B2C3F3E14][ores.refdata.regulatory_book_type]] — the sibling entity this model
+  mirrors.

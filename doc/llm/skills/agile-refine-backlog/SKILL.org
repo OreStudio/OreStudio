@@ -182,6 +182,14 @@ should hold real candidates for the *next* planning session, not only
 things thematically matching whatever sprint happens to be open right
 now.
 
+*=inbox= is not a valid resting bucket for this step.* Every capture
+that survives Steps 3–4 and started in =inbox= must end this step
+filed into =next= or =deferred= — =inbox= should be empty of
+pre-existing items once Step 5 completes for a run that covers it
+(new captures filed during the run itself are the only legitimate
+exception). Don't leave an item "for later triage" in =inbox= as a
+third option; that's exactly the drift this step exists to clear.
+
 ** Step 6 — Regenerate indexes and run the sprint audit
 
 #+begin_src sh :results verbatim

@@ -65,7 +65,7 @@ synthetic service's heavier dependencies.
 | [[id:A026CB84-C39E-4F89-9450-E1F2C97C2126][Move IStochasticProcess interface into ores.analytics.quant]] | DONE | 2026-07-12 | 2026-07-12 | Relocate the header-only IStochasticProcess interface from ores.marketdata.api to ores.analytics.quant, update all includes/namespaces, keep the build green. |
 | [[id:1065338A-0F61-41C3-854C-E0274F417C8F][Move GMM, arithmetic GMM, and OU processes into ores.analytics.quant]] | DONE | 2026-07-12 | 2026-07-12 | Relocate gmm_process, arithmetic_gmm_process, and ou_process from ores.synthetic.service into ores.analytics.quant, with thorough new Catch2 tests since none exist today. |
 | [[id:CA32B363-C814-4E41-9081-AFE6DB542E24][Move process_factory and process_parameter_validation into ores.analytics.quant]] | DONE | 2026-07-12 | 2026-07-12 | Relocate process_factory (service) and process_parameter_validation (api) into ores.analytics.quant, updating ores.synthetic and the Qt client's include paths, with thorough new tests. |
-| [[id:15414794-8A04-46FC-8926-609C72A0DD0A][Document the moved process classes in ores.analytics.quant component docs]] | BACKLOG | | | Update ores.analytics.quant/modeling/component_overview.org and the PlantUML class diagram to document IStochasticProcess, the three process implementations, process_factory, and process_parameter_validation. |
+| [[id:15414794-8A04-46FC-8926-609C72A0DD0A][Document the moved process classes in ores.analytics.quant component docs]] | STARTED | 2026-07-12 | | Update ores.analytics.quant/modeling/component_overview.org and the PlantUML class diagram to document IStochasticProcess, the three process implementations, process_factory, and process_parameter_validation. |
 
 * Decisions
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :extract-quant-processes-from-synthetic:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-istochasticprocess-interface
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,9 +26,9 @@ Component documentation reflects the new domain/service additions so future read
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] |
-| Now          | Not yet started.                       |
+| Now          | In progress, same branch/PR as move-istochasticprocess-interface (keeping PR count low). |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-07-12                               |

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: D1A196C0-DD73-4B0E-B7C3-9768FCA2CCE7
+:END:
+#+title: Onshore/Offshore Curve Namespacing
+#+description: How onshore-restricted currencies get parallel discount curves selected by booking jurisdiction, via pseudo-currency codes or namespacing.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:ore:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+
+* Summary
+
+A distinct form of curve multiplicity applies to onshore-restricted
+currencies, where *jurisdiction* — not tenor — drives the split: the same
+nominal currency (e.g. USD) requires several parallel discount curves
+selected by *booking location*. This is piecewise in a different sense from
+[[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][multi-curve construction]],
+which splits by role (funding vs. projection) within one jurisdiction; here
+the same role (discounting) is split by *where the trade is booked*. The
+underlying [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][pseudo currency
+code]] mechanism is FX/reference-data infrastructure shared with vol
+surfaces and spot; this note covers only its consequence for curves.
+
+* Detail
+
+** Offshore
+
+A pseudo-currency code (e.g. =KRI= for onshore-restricted KRW) carries its
+own curve, typically backed out from a publicly available forward term
+structure (e.g. KFTC 18 for KRW). Vols use the fake currency pairing (e.g.
+=USDKRI=, see [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and
+non-deliverable instruments]]), but the regular offshore USD discount curve
+still funds the USD leg.
+
+** Onshore
+
+Because onshore USD transactions are tightly controlled, a separate
+pseudo-USD discount curve reflects onshore USD interest rates — differing
+by country (Brazil vs. Korea, etc.). Distinct pseudo currencies are coded as
+needed (e.g. =USI=, =USK=), so an onshore deal in Korea uses a =USI=/=USK=
+funding curve and =USIKRW=-style vols/FX spot.
+
+** Alternative: namespacing instead of pseudo currencies
+
+Rather than minting a pseudo-currency per onshore market, curves can
+instead be *namespaced* by Onshore/Offshore — a single "USD curve,
+Onshore-Korea namespace" associated with trades booked in Korea, vs. a "USD
+curve, Offshore namespace" for trades booked elsewhere. A term-structure vol
+source (e.g. KFTC 18) is still required either way.
+
+** Governing constraint
+
+An onshore entity must still trade its local currency as *deliverable*,
+while entities outside that country trading the same currency must not —
+the curve/namespace split keeps pricing and deliverability rules consistent
+with this jurisdictional boundary.
+
+#+BEGIN_EXAMPLE
+   USD (Offshore)          ──────────────► general USD discount curve
+   USD (Onshore, Korea)    ─────────────► USI/USK pseudo-currency curve
+                                            (or "Onshore-Korea" namespace)
+   USD (Onshore, Brazil)   ─────────────► distinct pseudo-currency curve
+                                            (or "Onshore-Brazil" namespace)
+#+END_EXAMPLE
+
+* See also
+
+- [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Families]] — the hub.
+- [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] — the pseudo currency code mechanism this note applies to curves.
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the companion FX hub.

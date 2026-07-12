@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 6857871D-CFDE-4D9F-A83A-4A84CD3F4448
+:END:
+#+title: Horizon Date
+#+description: The reference date from which tenored dates in a term structure are computed, and how it differs from the reval date it usually, but not always, coincides with.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+The *horizon date* (also /curve date/) is the reference date from which
+every [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] in a
+[[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term structure]] is computed —
+all tenor arithmetic (=O/N=, =1W=, =5Y=, ...) starts here. It is not
+necessarily today: a term structure can be constructed or reviewed as of
+any business date. This is a distinct concept from the *reval date* —
+covered in [[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date
+and overnight]] — which the horizon date usually, but not always, coincides
+with; see [[*Horizon date vs. reval date][below]] for the distinction.
+
+* Detail
+
+** Definition
+
+The horizon date anchors every tenor calculation for a given term
+structure: =O/N= is horizon date to next business day, =Spot= is horizon
+date plus [[id:267DD5E8-F095-47C1-B42B-733565306776][spot days]], =1Y= is
+twelve calendar months off spot (for rate curves) or off the horizon date
+itself (for vol surfaces) — see
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] for the full rates-vs-vols
+distinction this produces. Every term structure has exactly one horizon
+date; every tenor point within that term structure is expressed relative
+to it, never to another tenor point directly.
+
+** Horizon date vs. reval date
+
+- *Horizon date*: the reference date a *term structure's* tenor
+  calculations are anchored to.
+- *Reval date*: the date at which a *valuation* is performed — "normally
+  today," but explicitly not necessarily so (see
+  [[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date and
+  overnight]]).
+
+In the common case, a term structure is built with its horizon date set to
+the current reval date, so the two coincide and the distinction is easy to
+overlook. They diverge whenever a term structure is reviewed or
+reconstructed as of a date other than the valuation run currently in
+progress — for example, inspecting a historical curve snapshot during a
+valuation dated today: the horizon date moves to the historical date while
+the reval date stays today. Keeping the two concepts named separately
+avoids conflating "when the curve is anchored" with "when the valuation is
+being performed."
+
+* See also
+
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the labels this date anchors.
+- [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the structure a horizon date belongs to.
+- [[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date and overnight]] — reval date, spot date, and valuation spot date.
+- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — spot days, the input to the =Spot= tenor.

@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33
+:END:
+#+title: Term Structure
+#+description: An ordered series of tenor points representing the time profile of a market quantity, its metadata, and the term-structure-parameter vs scalar-parameter distinction.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+A *term structure* (also /time structure/ or /curve/) is an ordered series
+of [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] points representing
+the time profile of a quantity — a rate, a price, a volatility — across a
+series of future dates, together with the metadata needed to interpret
+those points (holiday calendars, non-deliverable currency flags,
+interpolation method). It is the structural concept a
+[[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][curve family]]'s individual
+curves each instantiate. A term structure is defined in explicit contrast
+to a *scalar* — a market value with no tenor dimension at all — and this
+document covers both, since scalar is understood almost entirely in
+relation to term structure rather than as an independent concept.
+
+* Detail
+
+** Definition
+
+A term structure orders a set of [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+points, each anchored to a common [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][horizon
+date]], and carries metadata beyond the raw (tenor, value) pairs:
+
+- A holiday calendar (or calendars) governing which dates are valid
+  business days for the instrument the term structure represents.
+- Non-deliverable-currency flags, where relevant (see
+  [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and
+  non-deliverable instruments]]).
+- An interpolation method, used to derive values at dates falling between
+  the term structure's own tenor points (see
+  [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] for the
+  concrete interpolation methods used for interest rate curves
+  specifically).
+
+One [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][bootstrapped]] interest
+rate curve is one term structure; a
+[[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][curve family]] is several term
+structures related by a discounting dependency, not a single, larger term
+structure — curve identity within a family is a discrete label, not a
+tenor-like continuous axis, so a family does not itself satisfy this
+document's definition of a term structure.
+
+** Contrast: scalar parameters
+
+A *scalar* is a single, dimensionless market data value that carries no
+tenor dimension — it may still evolve over time, but at any given
+[[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][horizon date]] it has exactly
+one value, not a series of values indexed by tenor. Examples include spot
+FX rates, scalar model parameters (e.g. Hull-White mean reversion, bid/offer
+strike shift), or general valuation settings (e.g. number of Monte Carlo
+simulations).
+
+Scalars separate further into:
+
+- *Global scalars*: bid/offer strike shift, Hull-White mean reversion
+  (mid), number of replication dates. Unlikely to vary report-by-report,
+  but can evolve over time.
+- *Report-specific scalars*: number of Monte Carlo simulations, number of
+  spatial/time steps, use of Sobol sequences. Set per analytics run.
+
+** Term structure parameters
+
+Model parameters that carry a value at each tenor are structurally
+identical to a market data curve, but used as model inputs rather than
+market observables — a *term structure parameter*. Examples from SABR:
+correlation sensitivity (up/down), vol adjustments, risk reversal infinite
+flag, vol swap adjustments, standard deviation weighting. Like global
+scalars, these do not typically require per-report overrides; the
+distinction from a scalar parameter is purely whether the quantity carries
+one value or a tenor-indexed series of values.
+
+* See also
+
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the individual points a term structure orders.
+- [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][Horizon Date]] — the anchor every term structure's tenor points are relative to.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — the concrete bootstrapping and interpolation mechanics for one interest rate term structure.
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] — several term structures related by a discounting dependency, not one larger term structure.

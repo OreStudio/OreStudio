@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76
+:END:
+#+title: Date Rolling and Business-Day Calendars
+#+description: How a tenor date that falls on a non-business day is rolled to a valid one, the business day vs settlement day distinction, and standard rolling conventions.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+When a [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] date falls on a
+non-business day it must be *rolled* — moved to the nearest valid business
+day by a defined rule. This document covers that rolling process and the
+standard conventions that govern it (Modified Following, Following,
+Preceding, End of Month). The underlying *business day* / *settlement day*
+distinction those conventions depend on is defined once, canonically, in
+[[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]];
+this document adds only the framing nuance specific to date rolling rather
+than restating that definition.
+
+* Detail
+
+** Business day and settlement day, briefly
+
+A *business day* is a day that is not a holiday for the relevant
+currencies; a *settlement day* is a business day that additionally
+excludes USD holidays, since USD holidays are conventionally treated as
+valid business days for ordinary business-day purposes but still block
+settlement — see
+[[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]]
+for the full definition, the pair-level business-day-calendar-as-union
+rule, and how fixing-date and settlement-date calendars can differ for
+NDFs.
+
+** The rolling process
+
+*Date rolling* is the process of moving a calculated tenor date forward or
+backward by a specified period while enforcing business day validity. The
+rolled date depends on the holiday calendars of all relevant currencies —
+see [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] for where a
+holiday calendar sits as part of a term structure's metadata.
+
+** Standard rolling conventions
+
+- *Following*: roll forward to the next business day.
+- *Modified Following*: roll forward to the next business day, unless that
+  day falls in the following calendar month, in which case roll backward
+  to the last business day of the original month instead. The industry
+  default for most tenor dates.
+- *Preceding*: roll backward to the last business day.
+- *End of Month*: if the unadjusted date is the last day of its month, the
+  rolled date is the last business day of that month, regardless of which
+  of the above conventions would otherwise apply — preserves the
+  "end of month" property through rolling.
+
+** Market timing concepts
+
+- *New York Close*: the conventional end-of-day for the global FX market,
+  used as the anchor for date boundaries across time zones.
+- *Market Cut*: the cut-off time for a specific market (a date plus a
+  time), determining which business date a trade belongs to.
+- *DST (Daylight Saving Time)*: seasonal time shifts affecting cut-off
+  times and timestamp arithmetic; must be handled explicitly rather than
+  assumed constant across a term structure's tenor range.
+
+* See also
+
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — the canonical business day / settlement day definition.
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the dates this rolling process is applied to.
+- [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — irregular dates that interact with rolling and interpolation together.

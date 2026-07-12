@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 5170B17B-188B-45CA-A1B6-1F27A97E1CF8
+:END:
+#+title: Interest Rate Benchmark Types: IBOR vs. RFR
+#+description: The two categories of floating-rate benchmark a Projection Curve can reference: term, panel-submitted IBOR rates vs overnight, transaction-based RFRs, and why the LIBOR-OIS basis forced the split.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+Every [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Projection Curve]] in a
+curve family references one underlying floating-rate benchmark, and every
+such benchmark falls into one of two categories: *IBOR* (term rates,
+historically set by panel-bank submission, embedding bank credit and
+liquidity risk — EURIBOR, historically LIBOR) or *RFR* (overnight,
+transaction-based, near risk-free — SOFR, ESTR, SONIA). This is a
+classification of *benchmark type*, not a grouping construct: "IBOR
+curves" is shorthand for "the Projection Curves in a family whose index
+happens to be IBOR-type", the same discrete label described in
+[[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]].
+The distinction matters because it is the credit/liquidity risk embedded in
+IBOR — absent from RFRs — that produced the LIBOR-OIS basis behind
+[[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][multi-curve construction]] in
+the first place.
+
+* Detail
+
+** IBOR: term, panel-submitted rates
+
+An IBOR (Interbank Offered Rate) is a *term* rate — quoted for a fixed
+forward-looking period (1M, 3M, 6M, 12M) — historically set by a panel of
+banks submitting the rate at which they believe they could borrow unsecured
+from one another. Because it is unsecured interbank lending, an IBOR
+embeds:
+
+- *Credit risk*: the possibility a panel bank could default within the
+  quoted term.
+- *Liquidity risk*: the term nature means cash is committed, not available
+  overnight.
+
+EURIBOR remains an active IBOR-type benchmark. LIBOR was the archetypal
+example before its post-2008 credibility problems and eventual cessation
+drove the transition to RFRs described below.
+
+** RFR: overnight, transaction-based rates
+
+A Risk-Free Rate (RFR — the industry term, despite not being literally
+risk-free) is set from *actual overnight transactions* rather than panel
+submissions, and carries negligible credit/liquidity risk because it is
+typically secured (repo-based, e.g. SOFR) or reflects genuinely overnight
+unsecured interbank lending with minimal term risk (e.g. SONIA, ESTR).
+RFRs have no native term structure of their own — a "3M SOFR" quote either
+compounds realised daily SOFR fixings over the period *in arrears*, or
+comes from a separately-constructed forward-looking term rate derived from
+SOFR futures, rather than being submitted directly the way 3M LIBOR was.
+
+** Why the distinction forced multi-curve construction
+
+Discounting collateralised trades at an IBOR curve became a mispricing once
+the LIBOR-OIS basis widened materially — an IBOR curve reflects bank credit
+and liquidity risk that a collateralised (near risk-free) trade does not
+carry. That is precisely the split
+[[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]
+documents: the Funding Curve is always RFR/OIS-based (near risk-free,
+appropriate for discounting collateralised cash flows), while Projection
+Curves may be either IBOR-type (where the index is still actively quoted,
+e.g. EURIBOR) or RFR-type (post-LIBOR-transition currencies, where the
+"projection" curve and the discounting curve share the same underlying
+risk-free rate family but are still built and quoted separately per
+tenor/compounding convention).
+
+** Both categories are still discrete curve identities
+
+Within one currency's [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][curve
+family]], IBOR-type and RFR-type Projection Curves sit side by side as
+ordinary members of the same discrete, enumerable set of curve identities —
+EURIBOR-3M and EURIBOR-6M are IBOR-type; a compounded-SOFR curve is
+RFR-type. The IBOR/RFR label is an attribute of a curve identity, not a
+separate axis or a grouping construct of its own.
+
+* See also
+
+- [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Families]] — the hub.
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] — where curve identity (including IBOR vs. RFR) is a discrete label.
+- [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]] — the LIBOR-OIS basis and the discounting/projection split this classification explains.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:pricing:ore:
 #+created: 2026-05-25
-#+updated: 2026-05-25
+#+updated: 2026-07-12
 
 A *Pricing Configuration* is a named, versioned bundle of valuation settings
 that fully determines how the pricing engine values a set of trades. It bridges
@@ -175,27 +175,19 @@ to all valuations within the pricing configuration.
 
 Model parameters are the numeric inputs to each pricing model.
 
-*** Scalar Parameters
+*** Scalar Parameters and Term Structure Parameters
 
-Single-valued inputs with no tenor dimension:
+See [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] for the
+scalar-vs-term-structure-parameter distinction and its examples (Hull-White
+mean reversion, SABR correlation sensitivity, and so on). The one thing
+that document does not cover, because it is specific to pricing
+configuration rather than to the concepts themselves, is *which* scalars
+are report-overridable:
 
-| Category                | Override per report? | Examples                                                                                    |
-|-------------------------+----------------------+---------------------------------------------------------------------------------------------|
-| Default scalars         | No                   | Bid/offer strike shift, Hull-White mean reversion (mid), number of replication dates        |
-| Report-specific scalars | Yes                  | Number of Monte Carlo simulations, number of spatial points, time steps, use of Sobol       |
-
-*** Term Structure Parameters
-
-Parameters that have a value at each tenor, structurally identical to a market
-data curve but used as model inputs. Examples for SABR:
-
-- Correlation sensitivity (up/down)
-- Vol adjustments
-- RR infinite flag
-- Vol swap adjustments
-- Standard deviation weighting
-
-See [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] for the scalar vs. term-structure distinction.
+| Category                | Override per report? |
+|-------------------------+-----------------------|
+| Default scalars         | No                    |
+| Report-specific scalars | Yes                   |
 
 * Configuration Layering and Overrides
 

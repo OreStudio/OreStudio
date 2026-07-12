@@ -9,7 +9,7 @@
 #+filetags: :market_data:synthetic:rates:sprint_23:v0:
 #+created: 2026-07-03
 #+updated: 2026-07-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -38,11 +38,11 @@ vol surfaces).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Not yet started.                       |
+| Now           | First task (tenor type) started; domain-knowledge groundwork done, C++ implementation not yet begun. See task Notes and the * Analysis section below. |
 | Waiting on    | Nothing — [[https://github.com/OreStudio/OreStudio/pull/1409][PR #1409]] ([[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]], which added =ou_process= and =ores.synthetic.api::domain::validate_process_parameters()=) merged via =4be33f2b4= prior to this branch's rebase. |
-| Next          | Break the story into tasks.            |
+| Next          | Implement the tenor type in =ores.marketdata= against the new [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] knowledge cluster. |
 | Last touched  | 2026-07-03                               |
 
 * Acceptance
@@ -131,7 +131,7 @@ which now require the process to expose =P(t,T)=, not just a path of
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:3D39EF0A-585F-4C66-B84F-433CAFA4DEB2][Lightweight QuantLib-free tenor type]] | BACKLOG | | | Parse tenor labels (3M, 2Y, 1W) and support simple std::chrono-based date-window overlap checks, with no business-day calendar machinery and no QuantLib dependency. |
+| [[id:3D39EF0A-585F-4C66-B84F-433CAFA4DEB2][Lightweight QuantLib-free tenor type]] | STARTED | 2026-07-11 | | Parse tenor labels (3M, 2Y, 1W) and support simple std::chrono-based date-window overlap checks, with no business-day calendar machinery and no QuantLib dependency. |
 | [[id:01143977-5DA2-48AE-B4BE-109585BC4962][Short-rate stochastic process (Hull-White/CIR/Vasicek)]] | BACKLOG | | | New IStochasticProcess implementation for mean-reverting short-rate dynamics, wired into process_factory, mirroring ou_process's shape. |
 | [[id:20D82F58-758D-498A-8B08-AA664408CB8F][Curve Template sub-config (ir_curve_generation_config)]] | BACKLOG | | | New sub-config owned by market_data_generation_config, one per currency+index, configuring the raw instrument grid (deposits, FRAs/futures, swaps). |
 | [[id:E6B7DEF3-F35F-454A-8ECF-CCD9E8E07A83][Tenor-collision/gap validation on the Curve Template]] | BACKLOG | | | Pure, engine-side validator (ores.synthetic.api) rejecting instrument grids where tenors overlap or collide with an active delivery window, using the new tenor type. |

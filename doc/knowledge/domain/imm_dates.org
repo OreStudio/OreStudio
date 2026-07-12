@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 013BC5B0-9461-4AD4-A55E-374BCF34D8A4
+:END:
+#+title: IMM Dates
+#+description: The quarterly International Monetary Market expiry/delivery dates used by exchange-traded interest rate futures and CDS roll conventions.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+IMM (International Monetary Market) dates are the quarterly expiry/delivery
+dates used by exchange-traded interest rate futures and CDS roll
+conventions: the first business day following 20 March, 20 June, 20
+September, and 20 December each year. They are a fixed, exchange-defined
+alternative to the ordinary [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+grid, used wherever an instrument's own contract cycle — rather than a
+horizon-date-relative calculation — determines maturity.
+
+* Detail
+
+** Definition and notation
+
+An IMM date is the first business day following 20 March, 20 June, 20
+September, or 20 December. Notation =nIMM= refers to rolling forward by n
+IMM quarters (e.g. =IMM3= is three IMM dates forward). Unlike a standard
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]], an IMM date is not
+computed relative to a [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][horizon
+date]] by calendar arithmetic — it is one of a fixed set of four dates per
+year, and "the next IMM date" or "IMM3 from here" is a lookup into that
+fixed set, not an arithmetic offset.
+
+** Uses
+
+- As an alternative bucketing scheme for position reporting.
+- As the underlying schedule for Eurodollar / Short Sterling futures used
+  in USD curve bootstrapping — see
+  [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]'s
+  Short-Term Interest Rate (STIR) Futures section, where the nearest IMM
+  quarterly contract is discounted back to fill the =6M=--=2Y= gap.
+- In CDS curves, where all standard tenors resolve relative to the nearest
+  following CDS roll date rather than to the horizon date directly — see
+  [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s Credit/CDS Curves
+  convention, which this fixed roll-date set underpins.
+
+* See also
+
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the Credit/CDS Curves convention built on IMM roll dates.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — STIR futures bootstrapping off the nearest IMM contract.

@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 7CB0024B-84FB-4AE0-ADF2-763079E888D5
+:END:
+#+title: Multi-Curve Construction
+#+description: How curve construction went from one curve serving both discounting and projection to today's multi-curve build order: Funding Curve first, then each Projection Curve discounted off it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:ore:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+
+* Summary
+
+Before 2008, a single curve (typically LIBOR) served both roles: it
+projected expected floating fixings *and* discounted every cash flow,
+because the LIBOR/OIS basis was small enough to ignore. The 2008 financial
+crisis widened that basis to a level that could no longer be ignored,
+forcing the market to split discounting from projection: a collateralised
+*Funding Curve* (OIS-based) now discounts every cash flow, while one or more
+*Projection Curves* (one per floating index tenor) project expected
+fixings. This split imposes a strict build order — the Funding Curve must
+exist before any Projection Curve's own pillar instruments can be repriced
+— which is what turns "build one curve" into "build a
+[[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][family]]".
+
+* Detail
+
+** From one curve to a family
+
+*** Single-curve era (pre-2008)
+
+One curve, usually LIBOR, did both jobs: an instrument's floating leg was
+projected off it, and the same curve's discount factors discounted every
+cash flow. This worked because LIBOR (bank credit/liquidity risk) and the
+risk-free rate were close enough that the basis between them was
+economically negligible to ignore for pricing purposes.
+
+*** The break: LIBOR-OIS basis widens
+
+During the 2008 crisis, the LIBOR-OIS basis widened sharply and stayed
+persistently non-negligible: LIBOR embeds bank credit and liquidity risk
+that a collateralised (near risk-free) rate does not — see
+[[id:5170B17B-188B-45CA-A1B6-1F27A97E1CF8][Interest Rate Benchmark Types:
+IBOR vs. RFR]] for what that risk difference actually is. Discounting
+collateralised trades at LIBOR after that point systematically mispriced
+them. The market response was to stop using one curve for both jobs.
+
+*** Dual-curve, then multi-curve (post-2008)
+
+The fix separates the two roles into different curves:
+
+- A *Funding Curve*, built from OIS (or equivalent collateralised-rate)
+  instruments, used for discounting *every* cash flow regardless of which
+  index projected it.
+- One *Projection Curve* per floating index tenor (3M, 6M, 12M, ...), each
+  bootstrapped from instruments quoted on that specific index, used only to
+  project expected fixings.
+
+Two curves (Funding + one Projection) is the *dual-curve* case; a full
+[[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][family]] with several Projection
+Curves (one per traded index tenor) generalises this to *multi-curve*. The
+mechanism is identical either way — only the count of Projection Curves
+differs.
+
+** The build-order dependency this creates
+
+Splitting the roles does not make the curves independent of each other: it
+introduces one specific, one-directional dependency.
+
+1. *Build the Funding Curve first.* Its own pillar instruments (OIS) are
+   self-discounting — an OIS curve is bootstrapped against its own
+   compounded-overnight-rate instruments, with no external curve needed.
+2. *Build each Projection Curve next, discounting off the completed Funding
+   Curve.* A Projection Curve's pillar instruments (e.g. 3M-indexed swaps)
+   have both a projected floating leg (which the curve being built
+   determines) and a present value that must be discounted using the
+   *Funding* Curve, already fixed in step 1. A Projection Curve cannot be
+   bootstrapped in isolation.
+3. *Projection Curves do not depend on each other.* Once the Funding Curve
+   exists, EURIBOR-3M and EURIBOR-6M can be bootstrapped independently, and
+   in parallel — each needs only the Funding Curve for discounting, never
+   another Projection Curve.
+
+So a family has exactly one construction-time dependency edge — every
+Projection Curve points at the Funding Curve — and is otherwise a set of
+mutually independent bootstraps. The pillar *instrument selection and
+interpolation choices* for each curve remain independent per curve; only
+the discounting step couples them.
+
+#+BEGIN_EXAMPLE
+ Pre-2008: one curve, two jobs
+ ──────────────────────────────
+   LIBOR curve ──► projects fixings AND discounts cash flows
+
+ Post-2008: roles split, one dependency edge
+ ─────────────────────────────────────────────
+   Step 1:  FUNDING CURVE (OIS)         ← self-discounting, built first
+                    │
+                    │ discounts every cash flow below
+                    ▼
+   Step 2:  Projection 3M   Projection 6M   Projection 12M   ...
+            (built next, in any order/parallel — mutually independent,
+             each depends only on the Funding Curve from step 1)
+#+END_EXAMPLE
+
+* See also
+
+- [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Families]] — the hub.
+- [[id:5170B17B-188B-45CA-A1B6-1F27A97E1CF8][Interest Rate Benchmark Types: IBOR vs. RFR]] — the risk difference between the two curve roles.
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] — the family structure this build order applies to.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — single-curve bootstrapping mechanics (day-count, pillars, interpolation) that each curve in the family uses individually.

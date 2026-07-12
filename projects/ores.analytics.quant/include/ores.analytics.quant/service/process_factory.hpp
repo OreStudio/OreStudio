@@ -17,16 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_SERVICE_PROCESS_FACTORY_HPP
-#define ORES_SYNTHETIC_SERVICE_PROCESS_FACTORY_HPP
+#ifndef ORES_ANALYTICS_QUANT_SERVICE_PROCESS_FACTORY_HPP
+#define ORES_ANALYTICS_QUANT_SERVICE_PROCESS_FACTORY_HPP
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/export.hpp"
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace ores::synthetic::service {
+namespace ores::analytics::quant::service {
 
 /**
  * @brief Factory for IStochasticProcess implementations.
@@ -34,7 +35,7 @@ namespace ores::synthetic::service {
  * Kept minimal at the scaffold stage; will grow as more process types
  * are added in later implementation steps.
  */
-class process_factory {
+class ORES_ANALYTICS_QUANT_EXPORT process_factory {
 public:
     /**
      * @brief Build the price process for the given engine.

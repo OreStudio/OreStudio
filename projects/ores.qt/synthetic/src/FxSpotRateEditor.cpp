@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/FxSpotRateEditor.hpp"
+#include "ores.analytics.quant/domain/process_parameter_validation.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
@@ -29,7 +30,6 @@
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/ReturnDistributionChart.hpp"
 #include "ores.qt/SamplePricePathsChart.hpp"
-#include "ores.synthetic.api/domain/process_parameter_validation.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include <QAbstractItemView>
@@ -1793,7 +1793,7 @@ void FxSpotRateEditor::onSaveClicked() {
         rebuildModelFromSimple();
 
     // Ask the engine itself whether these parameters are valid — the same rules
-    // process_factory enforces server-side (ores.synthetic.api::domain, shared,
+    // process_factory enforces server-side (ores.analytics.quant::domain, shared,
     // not duplicated UI-side logic).
     {
         std::vector<double> means, stdevs, weights;
@@ -1802,7 +1802,7 @@ void FxSpotRateEditor::onSaveClicked() {
             stdevs.push_back(mc.stdev);
             weights.push_back(mc.weight);
         }
-        const auto validation = synthetic::domain::validate_process_parameters(
+        const auto validation = analytics::quant::domain::validate_process_parameters(
             currentEngine(), means, stdevs, weights, priceSpin_->value());
         if (!validation.valid) {
             QMessageBox::warning(

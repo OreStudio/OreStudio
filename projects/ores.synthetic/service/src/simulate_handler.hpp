@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_SIMULATE_HANDLER_HPP
 #define ORES_SYNTHETIC_SERVICE_SIMULATE_HANDLER_HPP
 
+#include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -28,7 +29,6 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
-#include "process_factory.hpp"
 #include <algorithm>
 #include <optional>
 #include <string>
@@ -131,12 +131,13 @@ public:
 
             for (int p = 0; p < num_paths; ++p) {
                 auto process =
-                    process_factory::make_process(req->process_type,
-                                                  req->gmm_means,
-                                                  req->gmm_stdevs,
-                                                  req->gmm_weights,
-                                                  req->initial_price,
-                                                  req->seed + static_cast<std::uint32_t>(p));
+                    ores::analytics::quant::service::process_factory::make_process(
+                        req->process_type,
+                        req->gmm_means,
+                        req->gmm_stdevs,
+                        req->gmm_weights,
+                        req->initial_price,
+                        req->seed + static_cast<std::uint32_t>(p));
                 std::vector<double> path;
                 path.reserve(static_cast<std::size_t>(num_ticks));
                 for (int t = 0; t < num_ticks; ++t)

@@ -17,22 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "process_factory.hpp"
+#include "ores.analytics.quant/service/process_factory.hpp"
+#include "ores.analytics.quant/domain/process_parameter_validation.hpp"
 #include "ores.analytics.quant/service/processes/arithmetic_gmm_process.hpp"
 #include "ores.analytics.quant/service/processes/gmm_process.hpp"
 #include "ores.analytics.quant/service/processes/ou_process.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.synthetic.api/domain/process_parameter_validation.hpp"
 #include <stdexcept>
 
-namespace ores::synthetic::service {
-
-namespace {
-auto& lg() {
-    static auto instance = ores::logging::make_logger("ores.synthetic.service.process_factory");
-    return instance;
-}
-}
+namespace ores::analytics::quant::service {
 
 std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>
 process_factory::make_process(const std::string& process_type,
@@ -42,29 +34,26 @@ process_factory::make_process(const std::string& process_type,
                               double initial_price,
                               std::uint32_t seed) {
     // Single source of truth for "are these parameters good?" — shared with the
-    // Qt client (ores.synthetic.api::domain::validate_process_parameters), so
+    // Qt client (ores.analytics.quant::domain::validate_process_parameters), so
     // both surfaces enforce identical rules without duplicating them.
-    const auto validation = ores::synthetic::domain::validate_process_parameters(
+    const auto validation = ores::analytics::quant::domain::validate_process_parameters(
         process_type, means, stdevs, weights, initial_price);
     if (!validation.valid)
         throw std::invalid_argument(validation.message);
 
     if (process_type == "arithmetic")
-        return std::make_unique<ores::analytics::quant::service::arithmetic_gmm_process>(
+        return std::make_unique<arithmetic_gmm_process>(
             std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
     if (process_type == "ou") {
         const double kappa = weights.front();
         const double sigma = stdevs.front();
-        return std::make_unique<ores::analytics::quant::service::ou_process>(
-            kappa, initial_price, sigma, initial_price, seed);
-    }
-    if (process_type != "geometric") {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(lg(), warn) << "Unknown process_type '" << process_type
-                                  << "'; defaulting to geometric engine.";
+        return std::make_unique<ou_process>(kappa, initial_price, sigma, initial_price, seed);
     }
     // Default to the geometric engine for "geometric" and any unknown value.
-    return std::make_unique<ores::analytics::quant::service::gmm_process>(
+    // ores.analytics.quant deliberately carries no logging dependency (it stays
+    // consumable standalone); callers that care about diagnosing an unknown
+    // process_type should log around this call.
+    return std::make_unique<gmm_process>(
         std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
 }
 

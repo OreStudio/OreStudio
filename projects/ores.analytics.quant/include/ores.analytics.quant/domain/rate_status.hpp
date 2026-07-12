@@ -17,8 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <catch2/catch_session.hpp>
+#ifndef ORES_ANALYTICS_QUANT_DOMAIN_RATE_STATUS_HPP
+#define ORES_ANALYTICS_QUANT_DOMAIN_RATE_STATUS_HPP
 
-int main(int argc, char* argv[]) {
-    return Catch::Session().run(argc, argv);
-}
+namespace ores::analytics::quant::domain {
+
+enum class rate_status {
+    /// Every driver on the path is within the staleness policy's max age.
+    fresh,
+    /// At least one contributing driver is older than the policy allows.
+    stale,
+    /// At least one driver on the path has never received a tick.
+    unavailable,
+};
+
+} // namespace ores::analytics::quant::domain
+
+#endif

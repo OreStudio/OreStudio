@@ -17,29 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_QUANT_DOMAIN_CCY_PAIR_HPP
-#define ORES_ANALYTICS_QUANT_DOMAIN_CCY_PAIR_HPP
+#ifndef ORES_ANALYTICS_QUANT_DOMAIN_DERIVED_RATE_HPP
+#define ORES_ANALYTICS_QUANT_DOMAIN_DERIVED_RATE_HPP
 
-#include "ores.analytics.quant/domain/currency_id.hpp"
+#include "ores.analytics.quant/domain/rate_status.hpp"
+#include <chrono>
+#include <string>
 
 namespace ores::analytics::quant::domain {
 
-/// A quoted currency pair within an already-built topology: base/quote as
-/// resolved @c currency_id handles, not raw ISO codes. @c is_driver carries
-/// forward the driver/derived assignment the edge was built from -- see
-/// @c ccy_pair_input -- so a @c crm_topology consumer (the rate engine) can
-/// tell which direction to accumulate rates without a second lookup.
-struct ccy_pair {
-    currency_id base;
-    currency_id quote;
-    bool is_driver;
-
-    friend constexpr bool operator==(const ccy_pair& lhs, const ccy_pair& rhs) noexcept {
-        return lhs.base == rhs.base && lhs.quote == rhs.quote && lhs.is_driver == rhs.is_driver;
-    }
-    friend constexpr bool operator!=(const ccy_pair& lhs, const ccy_pair& rhs) noexcept {
-        return !(lhs == rhs);
-    }
+/// A single rate served by @c rate_engine::rate / @c rate_engine::rates --
+/// direct or triangulated, the caller cannot tell the difference from this
+/// type alone (deliberately: the whole point of the CRM is that callers
+/// don't need to know).
+struct derived_rate {
+    std::string base_code;
+    std::string quote_code;
+    /// Only meaningful when @c status != rate_status::unavailable.
+    double rate;
+    rate_status status;
+    /// The oldest contributing driver tick's timestamp on the path between
+    /// base and quote -- a chain is only as fresh as its stalest link.
+    std::chrono::system_clock::time_point as_of;
 };
 
 } // namespace ores::analytics::quant::domain

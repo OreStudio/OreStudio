@@ -46,10 +46,10 @@ namespace ores::analytics::quant::service {
  */
 class ORES_ANALYTICS_QUANT_EXPORT topology_builder {
 public:
-    [[nodiscard]] static domain::crm_topology build(
-        const std::vector<domain::ccy_pair_input>& pairs,
-        const std::string& pivot_code,
-        const std::vector<std::string>& required_majors);
+    [[nodiscard]] static domain::crm_topology
+    build(const std::vector<domain::ccy_pair_input>& pairs,
+          const std::string& pivot_code,
+          const std::vector<std::string>& required_majors);
 };
 
 } // namespace ores::analytics::quant::service

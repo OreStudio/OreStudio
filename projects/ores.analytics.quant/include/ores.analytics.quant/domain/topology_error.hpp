@@ -46,15 +46,15 @@ struct topology_error {
 
     [[nodiscard]] std::string describe() const {
         switch (kind) {
-        case topology_error_kind::missing_major:
-            return base_code + ": required major is unreachable from the pivot";
-        case topology_error_kind::cycle_conflict:
-            return base_code + "/" + quote_code +
-                ": conflicts with an existing path -- would create a cycle";
-        case topology_error_kind::disconnected_currency:
-            return base_code + ": not connected to the pivot";
-        case topology_error_kind::duplicate_edge:
-            return base_code + "/" + quote_code + ": duplicate pair in input";
+            case topology_error_kind::missing_major:
+                return base_code + ": required major is unreachable from the pivot";
+            case topology_error_kind::cycle_conflict:
+                return base_code + "/" + quote_code +
+                       ": conflicts with an existing path -- would create a cycle";
+            case topology_error_kind::disconnected_currency:
+                return base_code + ": not connected to the pivot";
+            case topology_error_kind::duplicate_edge:
+                return base_code + "/" + quote_code + ": duplicate pair in input";
         }
         return base_code + "/" + quote_code + ": unknown topology error";
     }

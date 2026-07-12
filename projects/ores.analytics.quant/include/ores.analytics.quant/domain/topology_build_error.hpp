@@ -40,7 +40,8 @@ namespace ores::analytics::quant::domain {
 class topology_build_error : public std::runtime_error {
 public:
     explicit topology_build_error(std::vector<topology_error> errors)
-        : std::runtime_error(build_message(errors)), errors_(std::move(errors)) {}
+        : std::runtime_error(build_message(errors))
+        , errors_(std::move(errors)) {}
 
     [[nodiscard]] const std::vector<topology_error>& errors() const noexcept {
         return errors_;
@@ -48,8 +49,8 @@ public:
 
 private:
     static std::string build_message(const std::vector<topology_error>& errors) {
-        std::string message = "CRM topology build failed with " +
-            std::to_string(errors.size()) + " error(s):";
+        std::string message =
+            "CRM topology build failed with " + std::to_string(errors.size()) + " error(s):";
         for (const auto& error : errors) {
             message += "\n  - " + error.describe();
         }

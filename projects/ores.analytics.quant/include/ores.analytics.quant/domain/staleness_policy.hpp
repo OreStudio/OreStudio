@@ -17,8 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <catch2/catch_session.hpp>
+#ifndef ORES_ANALYTICS_QUANT_DOMAIN_STALENESS_POLICY_HPP
+#define ORES_ANALYTICS_QUANT_DOMAIN_STALENESS_POLICY_HPP
 
-int main(int argc, char* argv[]) {
-    return Catch::Session().run(argc, argv);
-}
+#include "ores.analytics.quant/domain/rate_status.hpp"
+#include <chrono>
+
+namespace ores::analytics::quant::domain {
+
+/// Caller-supplied tolerance for how old a contributing driver may be
+/// before a derived rate is considered stale. The engine never fetches
+/// this from anywhere -- it is a plain parameter, per this library's
+/// no-refdata-coupling rule.
+struct staleness_policy {
+    std::chrono::system_clock::duration max_age;
+
+    [[nodiscard]] rate_status evaluate(std::chrono::system_clock::duration age) const {
+        return age <= max_age ? rate_status::fresh : rate_status::stale;
+    }
+};
+
+} // namespace ores::analytics::quant::domain
+
+#endif

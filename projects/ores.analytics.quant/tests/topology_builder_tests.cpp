@@ -86,7 +86,7 @@ TEST_CASE("multi-hop path resolves through the pivot", "[topology_builder]") {
 }
 
 TEST_CASE("a second path between two currencies throws at build time, never resolved silently",
-    "[topology_builder]") {
+          "[topology_builder]") {
     auto pairs = majors_spanning_tree();
     // EUR is already connected to USD via the first edge; this adds a
     // second, independent path EUR -> GBP -> ... -> EUR, i.e. a cycle.
@@ -94,7 +94,8 @@ TEST_CASE("a second path between two currencies throws at build time, never reso
 
     bool threw = false;
     try {
-        [[maybe_unused]] const auto topology = topology_builder::build(pairs, "USD", {"EUR", "GBP"});
+        [[maybe_unused]] const auto topology =
+            topology_builder::build(pairs, "USD", {"EUR", "GBP"});
     } catch (const topology_build_error& error) {
         threw = true;
         REQUIRE(error.errors().size() == 1);
@@ -108,7 +109,8 @@ TEST_CASE("a missing major produces a readable error", "[topology_builder]") {
 
     bool threw = false;
     try {
-        [[maybe_unused]] const auto topology = topology_builder::build(pairs, "USD", {"EUR", "JPY"});
+        [[maybe_unused]] const auto topology =
+            topology_builder::build(pairs, "USD", {"EUR", "JPY"});
     } catch (const topology_build_error& error) {
         threw = true;
         const auto& errors = error.errors();
@@ -139,7 +141,7 @@ TEST_CASE("a duplicate pair in the input is rejected", "[topology_builder]") {
 }
 
 TEST_CASE("a disconnected currency not on the majors list is still reported",
-    "[topology_builder]") {
+          "[topology_builder]") {
     std::vector<ccy_pair_input> pairs = majors_spanning_tree();
     pairs.push_back({"AUD", "NZD", true}); // an island, disconnected from USD
 

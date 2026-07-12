@@ -19,9 +19,9 @@
  */
 #include "ores.analytics.quant/service/topology_builder.hpp"
 #include "ores.analytics.quant/domain/topology_build_error.hpp"
+#include <queue>
 #include <boost/pending/disjoint_sets.hpp>
 #include <algorithm>
-#include <queue>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -42,17 +42,22 @@ using domain::topology_error_kind;
 class currency_index_builder {
 public:
     currency_id resolve(const std::string& code) {
-        auto [it, inserted] = index_.try_emplace(
-            code, currency_id(static_cast<std::uint16_t>(codes_.size())));
-        if (inserted) codes_.push_back(code);
+        auto [it, inserted] =
+            index_.try_emplace(code, currency_id(static_cast<std::uint16_t>(codes_.size())));
+        if (inserted)
+            codes_.push_back(code);
         return it->second;
     }
 
     [[nodiscard]] std::unordered_map<std::string, currency_id> index() && {
         return std::move(index_);
     }
-    [[nodiscard]] std::vector<std::string> codes() && { return std::move(codes_); }
-    [[nodiscard]] std::size_t size() const noexcept { return codes_.size(); }
+    [[nodiscard]] std::vector<std::string> codes() && {
+        return std::move(codes_);
+    }
+    [[nodiscard]] std::size_t size() const noexcept {
+        return codes_.size();
+    }
 
 private:
     std::unordered_map<std::string, currency_id> index_;
@@ -61,9 +66,9 @@ private:
 
 } // namespace
 
-domain::crm_topology topology_builder::build(
-    const std::vector<ccy_pair_input>& pairs, const std::string& pivot_code,
-    const std::vector<std::string>& required_majors) {
+domain::crm_topology topology_builder::build(const std::vector<ccy_pair_input>& pairs,
+                                             const std::string& pivot_code,
+                                             const std::vector<std::string>& required_majors) {
     currency_index_builder resolver;
     // The pivot itself must be a known vertex even if it never appears as a
     // lone token in a pair, so it is resolved unconditionally alongside
@@ -74,12 +79,13 @@ domain::crm_topology topology_builder::build(
     std::vector<ccy_pair> resolved_pairs;
     resolved_pairs.reserve(pairs.size());
     for (const auto& input : pairs) {
-        resolved_pairs.push_back(ccy_pair{
-            resolver.resolve(input.base_code), resolver.resolve(input.quote_code),
-            input.is_driver});
+        resolved_pairs.push_back(ccy_pair{resolver.resolve(input.base_code),
+                                          resolver.resolve(input.quote_code),
+                                          input.is_driver});
     }
     resolver.resolve(pivot_code);
-    for (const auto& major : required_majors) resolver.resolve(major);
+    for (const auto& major : required_majors)
+        resolver.resolve(major);
 
     const std::size_t vertex_count = resolver.size();
     auto currency_index = std::move(resolver).index();
@@ -95,9 +101,9 @@ domain::crm_topology topology_builder::build(
     // silently.
     std::vector<std::size_t> rank(vertex_count);
     std::vector<std::size_t> parent_rep(vertex_count);
-    boost::disjoint_sets<std::size_t*, std::size_t*> disjoint_set(
-        rank.data(), parent_rep.data());
-    for (std::size_t v = 0; v < vertex_count; ++v) disjoint_set.make_set(v);
+    boost::disjoint_sets<std::size_t*, std::size_t*> disjoint_set(rank.data(), parent_rep.data());
+    for (std::size_t v = 0; v < vertex_count; ++v)
+        disjoint_set.make_set(v);
 
     std::unordered_set<std::uint64_t> seen_edges;
     auto edge_key = [](currency_id a, currency_id b) -> std::uint64_t {
@@ -148,7 +154,8 @@ domain::crm_topology topology_builder::build(
         const auto current = frontier.front();
         frontier.pop();
         for (const auto& [neighbour, edge] : adjacency[current.index()]) {
-            if (visited[neighbour.index()]) continue;
+            if (visited[neighbour.index()])
+                continue;
             visited[neighbour.index()] = true;
             parent[neighbour.index()] = current;
             edge_to_parent[neighbour.index()] = edge;
@@ -164,21 +171,24 @@ domain::crm_topology topology_builder::build(
         const auto id = currency_index.at(major);
         major_ids.insert(id.index());
         if (!visited[id.index()]) {
-            errors.push_back(topology_error{
-                topology_error_kind::missing_major, major, ""});
+            errors.push_back(topology_error{topology_error_kind::missing_major, major, ""});
         }
     }
     for (std::size_t v = 0; v < vertex_count; ++v) {
         if (!visited[v] && !major_ids.contains(static_cast<std::uint16_t>(v))) {
-            errors.push_back(topology_error{
-                topology_error_kind::disconnected_currency, currency_codes[v], ""});
+            errors.push_back(
+                topology_error{topology_error_kind::disconnected_currency, currency_codes[v], ""});
         }
     }
 
-    if (!errors.empty()) throw domain::topology_build_error(std::move(errors));
+    if (!errors.empty())
+        throw domain::topology_build_error(std::move(errors));
 
-    return crm_topology(pivot, std::move(parent), std::move(edge_to_parent),
-        std::move(currency_index), std::move(currency_codes));
+    return crm_topology(pivot,
+                        std::move(parent),
+                        std::move(edge_to_parent),
+                        std::move(currency_index),
+                        std::move(currency_codes));
 }
 
 } // namespace ores::analytics::quant::service

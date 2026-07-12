@@ -26,11 +26,11 @@ process_factory and process_parameter_validation live in ores.analytics.quant wi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] |
-| Now          | In progress, same branch/PR as move-istochasticprocess-interface (keeping PR count low). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -39,9 +39,18 @@ process_factory and process_parameter_validation live in ores.analytics.quant wi
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Moved =process_parameter_validation= (was ores.synthetic.api) and
+=process_factory= (was ores.synthetic.service) verbatim into
+ores.analytics.quant/domain and /service respectively, renamespaced
+under =ores::analytics::quant=. Dropped the =BOOST_LOG_SEV= warning
+in =process_factory= for an unrecognised process_type — logging is a
+new dependency the component deliberately doesn't carry (see story
+Decisions). Updated all three call sites: ores.synthetic.service's
+=feed_controller.hpp= and =simulate_handler.hpp=, and the Qt client's
+=FxSpotRateEditor.cpp= (added =ores.analytics.quant.lib= directly to
+=ores.qt.synthetic= rather than relying on a transitive link through
+ores.synthetic.api, since the validation function no longer lives
+there). Wrote 20 new Catch2 test cases across two new test files.
 
 * Notes
 
@@ -69,3 +78,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Both units relocated with one intentional behavioural change: the
+diagnostic warning log on an unrecognised process_type is gone (see
+Plan). Zero prior test coverage backfilled with 20 new Catch2 cases.
+Full build of ores.analytics.quant.lib/.tests, ores.synthetic
+api/core/service.lib/service.exe/tests, and ores.qt.synthetic.lib
+succeeds; ores.analytics.quant.tests (38540 assertions, 62 cases
+total) and ores.synthetic.api.tests (71 assertions) pass locally.

@@ -160,7 +160,18 @@ boost::uuids::uuid AccountPartiesWidget::selectedDefaultPartyId() const {
 }
 
 bool AccountPartiesWidget::hasPendingDefaultPartyChange() const {
+    // Before the combo has been seeded from the account's actual stored
+    // default (populateDefaultPartyCombo(), called once load() resolves),
+    // selectedDefaultPartyId() is nil regardless of what the real default
+    // is — comparing against it here would spuriously report a pending
+    // change (and, if saved while still nil, would wipe a real default).
+    if (!defaultPartyComboInitialized_)
+        return false;
     return selectedDefaultPartyId() != defaultPartyId_;
+}
+
+bool AccountPartiesWidget::isDefaultPartyReady() const {
+    return defaultPartyComboInitialized_;
 }
 
 void AccountPartiesWidget::load() {

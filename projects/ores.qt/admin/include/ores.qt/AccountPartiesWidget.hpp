@@ -80,6 +80,16 @@ public:
 
     [[nodiscard]] bool hasPendingChanges() const;
     [[nodiscard]] bool hasAvailableParties() const;
+    /**
+     * @brief True once the default-party combo has been seeded from the
+     * account's actual stored default (i.e. load() has resolved at least
+     * once for this account). False in the window between setAccountId()/
+     * setDefaultPartyId() and load() completing. The parent dialog must
+     * not allow Save while this is false in edit mode — saving before
+     * this resolves would resend a not-yet-populated (nil) selection and
+     * wipe the account's real default party.
+     */
+    [[nodiscard]] bool isDefaultPartyReady() const;
     [[nodiscard]] const std::vector<boost::uuids::uuid>& pendingAdds() const;
     [[nodiscard]] const std::vector<boost::uuids::uuid>& pendingRemoves() const;
     /**

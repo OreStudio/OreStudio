@@ -188,6 +188,9 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     connect(partiesWidget_, &AccountPartiesWidget::defaultPartyChanged, this, [this]() {
         updateSaveResetButtonState();
     });
+    connect(partiesWidget_, &AccountPartiesWidget::dataLoaded, this, [this]() {
+        updateSaveResetButtonState();
+    });
 
     // Initially disable save/reset buttons
     updateSaveResetButtonState();
@@ -418,6 +421,16 @@ void AccountDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Save clicked but client not connected.";
         emit errorMessage("Not connected to server. Please login.");
+        return;
+    }
+
+    // Defensive: the Save button is disabled while this is false, but guard
+    // here too against any other trigger path — saving now would resend a
+    // not-yet-populated default-party selection and wipe the account's
+    // real stored default.
+    if (partiesWidget_ && !partiesWidget_->isDefaultPartyReady()) {
+        BOOST_LOG_SEV(lg(), warn) << "Save clicked before parties/default-party data loaded.";
+        emit errorMessage("Still loading account data — please try again in a moment.");
         return;
     }
 
@@ -972,7 +985,14 @@ void AccountDetailDialog::updateSaveResetButtonState() {
     const bool hasChanges = isDirty_ || (partiesWidget_ && partiesWidget_->hasPendingChanges()) ||
                             (partiesWidget_ && partiesWidget_->hasPendingDefaultPartyChange()) ||
                             (rolesWidget_ && rolesWidget_->hasPendingChanges());
-    ui_->saveButton->setEnabled(hasChanges);
+    // Saving always resends partiesWidget_->selectedDefaultPartyId() as part
+    // of the account update (see onSaveClicked), so Save must stay disabled
+    // until that combo has actually been seeded from the account's real
+    // stored default — otherwise an edit to an unrelated field (e.g. email),
+    // saved while the parties load is still in flight, would resend a nil
+    // selection and silently wipe the account's default party.
+    const bool defaultPartyReady = !partiesWidget_ || partiesWidget_->isDefaultPartyReady();
+    ui_->saveButton->setEnabled(hasChanges && defaultPartyReady);
     ui_->deleteButton->setEnabled(!isAddMode_);
 }
 

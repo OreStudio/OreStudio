@@ -8,7 +8,7 @@
 #+filetags: :account-default-party-login:sprint_23:v0:
 #+owner: marco
 #+branch: feature/fix-default-party-dangle-after-same-save-removal
-#+pr:
+#+pr: 1518
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1518][#1518]] | [ores.qt] Fix default-party dangle after same-save removal |
 
 * Review
 

@@ -628,25 +628,8 @@ void AccountDetailDialog::onSaveClicked() {
     } else {
         // Edit mode - update account fields and/or party/role assignments
 
-        const bool needsAccountSave =
-            isDirty_ || (partiesWidget_ && partiesWidget_->hasPendingDefaultPartyChange());
         const bool needsPartySave = partiesWidget_ && partiesWidget_->hasPendingChanges();
         const bool needsRoleSave = rolesWidget_ && rolesWidget_->hasPendingChanges();
-
-        std::string changeReasonCode;
-        std::string changeCommentary;
-        if (needsPartySave || needsRoleSave) {
-            const auto crSel =
-                promptChangeReason(ChangeReasonDialog::OperationType::Amend, true, "common");
-            if (!crSel)
-                return;
-            changeReasonCode = crSel->reason_code;
-            changeCommentary = crSel->commentary;
-        }
-
-        QPointer<AccountDetailDialog> self = this;
-        const boost::uuids::uuid account_id = currentAccount_.id;
-        const std::string email = ui_->emailEdit->text().toStdString();
 
         // Capture pending changes before going async
         const auto pendingPartyAdds =
@@ -670,6 +653,31 @@ void AccountDetailDialog::onSaveClicked() {
             defaultBeingRemoved ? boost::uuids::nil_uuid() : selectedDefault;
         const std::string defaultPartyId =
             finalDefaultPartyId.is_nil() ? std::string{} : boost::uuids::to_string(finalDefaultPartyId);
+
+        // Removing the currently-default party without touching the combo
+        // leaves hasPendingDefaultPartyChange() false (the combo's own
+        // selection hasn't changed) — but the corrective (cleared)
+        // default_party_id computed above still needs to reach the server,
+        // or the removal would commit while the server-side default is
+        // left dangling. defaultBeingRemoved must therefore also trigger
+        // the account-fields save.
+        const bool needsAccountSave = isDirty_ || defaultBeingRemoved ||
+            (partiesWidget_ && partiesWidget_->hasPendingDefaultPartyChange());
+
+        std::string changeReasonCode;
+        std::string changeCommentary;
+        if (needsPartySave || needsRoleSave) {
+            const auto crSel =
+                promptChangeReason(ChangeReasonDialog::OperationType::Amend, true, "common");
+            if (!crSel)
+                return;
+            changeReasonCode = crSel->reason_code;
+            changeCommentary = crSel->commentary;
+        }
+
+        QPointer<AccountDetailDialog> self = this;
+        const boost::uuids::uuid account_id = currentAccount_.id;
+        const std::string email = ui_->emailEdit->text().toStdString();
         const auto pendingRoleAdds =
             needsRoleSave ? rolesWidget_->pendingAdds() : std::vector<boost::uuids::uuid>{};
         const auto pendingRoleRemoves =

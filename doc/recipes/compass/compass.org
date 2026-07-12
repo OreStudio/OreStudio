@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :recipe:compass:docs:search:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-07-12
 
 How to use =compass=, the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][developer toolkit]] for ORE Studio.
 One CLI ([[proj:projects/ores.compass/compass.sh][=projects/ores.compass/compass.sh=]]) covers the doc/agile pillars
@@ -72,7 +72,7 @@ pillars that fold in the standalone scripts, starting with Provision.
 * Provision
 
 - [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — generate,
-  diff, list, and version the =.env= (=env init= / =diff= / =list= /
+  diff, list, and version the =.env= (=env configure= / =diff= / =list= /
   =version [new]=).
 - [[id:694BFB41-222A-4BC7-BC74-D8B7C6C61644][How do I manage the .env format version with compass?]] — show and
   record the env-format version, and how a stale checkout is caught

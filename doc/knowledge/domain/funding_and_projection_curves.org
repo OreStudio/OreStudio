@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 6EA42D11-94F4-4D3A-9A51-024EC56EFC44
+:END:
+#+title: Funding and Projection Curves
+#+description: The curve family concept: one Funding Curve for discounting plus a Projection Curve per floating index tenor, and why curve identity is a discrete label, not a continuous axis.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:ore:
+#+created: 2026-07-11
+#+updated: 2026-07-12
+
+* Summary
+
+Many interest rate curves share a fundamental relationship: they form a
+*family* containing one main curve for discounting — the *Funding Curve* —
+and a set of *Projection Curves* hanging off it, one per floating index
+tenor (3M, 6M, 12M, ...). Every Projection Curve depends on the Funding
+Curve for discounting; none discounts using its own rates. Curve identity
+(Funding, EURIBOR-3M, EURIBOR-6M, ...) is a small, discrete, categorical
+label — not a second continuous axis alongside tenor — so a family is best
+understood as an anchor curve plus an enumerable set of dependent curves,
+not a two-dimensional field.
+
+* Detail
+
+** Structure
+
+#+BEGIN_EXAMPLE
+                         ┌───────────────────────┐
+                         │    FUNDING CURVE      │   ← the discounting anchor
+                         │  (e.g. OIS / collat.) │
+                         └──────────┬────────────┘
+                                    │ all cash flows discounted here,
+                                    │ regardless of which curve
+                                    │ projects them
+        ┌───────────────┬───────────┼────────────────┬────────────────┐
+        ▼               ▼           ▼                ▼                ▼
+  ┌────────────┐  ┌────────────┐ ┌────────────┐ ┌────────────┐  ┌───────────┐
+  │ Projection │  │ Projection │ │ Projection │ │ Projection │  │   ...     │
+  │  1M        │  │  3M        │ │  6M        │ │  12M       │  │           │
+  └────────────┘  └────────────┘ └────────────┘ └────────────┘  └───────────┘
+   (index tenor)   (index tenor) (index tenor)  (index tenor)
+#+END_EXAMPLE
+
+Each curve in the family is itself
+[[id:E808F432-2FDA-47E8-B003-1E8B908870FE][bootstrapped]] from its own set of
+pillar instruments, curve template, and parameters — see
+[[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] for the
+single-curve bootstrapping mechanics (day-count conventions, pillar
+instruments, interpolation). What makes the set a *family* rather than a
+pile of unrelated curves is the discounting dependency: every Projection
+Curve's cash flows are always discounted via the Funding Curve, which also
+constrains *when* each curve can be built — see
+[[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]].
+
+** Curve identity is discrete, not continuous
+
+An anchor curve plus a discrete, enumerable set of dependent curves is best
+called a *curve family*: the only continuous axis is
+tenor (time along one curve). Curve identity is a small categorical label —
+there is no meaningful "curve between EURIBOR-3M and EURIBOR-6M", only a
+discrete choice of which independently-bootstrapped curve applies to a given
+cash flow. That label also carries a benchmark type — see
+[[id:5170B17B-188B-45CA-A1B6-1F27A97E1CF8][Interest Rate Benchmark Types:
+IBOR vs. RFR]].
+
+** Not the CRM's driver/derived pattern
+
+The FX [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][cross-rates matrix]]
+uses a superficially similar-sounding split —
+[[id:A1BA9EE6-313E-4802-8F63-FEE6BFB63A69][driver and derived rates]] — and
+it is tempting to map Funding→driver, Projection→derived. Resist that: the
+two relationships work by a different mechanism.
+
+- *CRM derived rate*: has no market quotes of its own. Its value is
+  *computed* from driver rates by triangulation (e.g. =EUR/GBP= derived =
+  =EUR/USD= driver ÷ =GBP/USD= driver). Which rates are drivers vs. derived
+  is also a *choice* — a spanning-tree selection over an otherwise
+  symmetric graph, not an inherent asymmetry between the rates themselves.
+- *Projection Curve*: has its own market quotes — it is
+  [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][bootstrapped]] from its own
+  pillar instruments (e.g. 3M-EURIBOR swaps), exactly as the Funding Curve
+  is bootstrapped from OIS instruments. Its rates are *not* a computed
+  function of the Funding Curve's rates. The dependency is a *construction-
+  order* one only: the Funding Curve must exist first because a Projection
+  Curve's own pillar instruments need it to discount their cash flows
+  during bootstrap (see
+  [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]).
+  Once built, a Projection Curve's rates come from its own market. And
+  unlike CRM drivers/derived, which curve is the Funding Curve is not a
+  free choice — it is always the collateralised/OIS curve, never a
+  Projection Curve wearing that hat.
+
+So the terms deliberately differ: *anchor* and *dependent* here, not
+*driver* and *derived* — the mechanism is "must build first, discount
+with", not "compute this one from that one".
+
+** Cost/simplification trade-off
+
+Maintaining a full Projection Curve for every floating index tenor
+(3M-in-3M, 3M-in-6M, 3M-in-9M, ... out to the swap's maturity) is expensive.
+The common simplification is to maintain a *single* Projection Curve per
+currency and *approximate* projections for other tenors via *forward-forward
+interest rates* computed off that one curve — the same forward-forward
+technique used for volatility interpolation across
+[[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] pillars.
+In practice, a family is therefore usually smaller than the theoretical full
+set of per-tenor projection curves, reinforcing that "curve type" is a
+small, deliberately-curated set rather than a continuum.
+
+* See also
+
+- [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Families]] — the hub.
+- [[id:A1BA9EE6-313E-4802-8F63-FEE6BFB63A69][Driver and derived rates]] — the CRM's similar-sounding but mechanically different split.
+- [[id:5170B17B-188B-45CA-A1B6-1F27A97E1CF8][Interest Rate Benchmark Types: IBOR vs. RFR]] — the benchmark-type attribute of curve identity.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — single-curve bootstrapping mechanics.
+- [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]] — the build-order dependency this family implies.
+- [[id:71E4EB7A-20EA-46E1-8832-05D103C330EF][Curve Sets (Storage Grouping)]] — how a family is typically persisted.

@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29
+:END:
+#+title: Tenor
+#+description: What a tenor is: a symbolic label identifying a point in time relative to a horizon date, its standard short-end and period labels, and how the same label is interpreted differently by curve type.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+A *tenor* is a label identifying a point in time relative to a reference
+date — the [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][horizon date]] — rather
+than an absolute date in its own right. =O/N=, =1M=, =5Y= are tenors: their
+meaning is not fixed until combined with a horizon date, a curve type, and
+a market convention, since the same label can resolve to different actual
+dates depending on all three. This document defines the standard tenor
+labels and how their meaning shifts by curve type; it deliberately excludes
+what an ordered *series* of tenor points is used for once assembled — that
+is [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]], a related
+but separate concept.
+
+* Detail
+
+** Standard tenor labels
+
+The short end of the curve uses named tenors; the long end uses period
+notation.
+
+| Tenor | Common Name  | Description                                                             |
+|-------+--------------+--------------------------------------------------------------------------|
+| =O/N= | Overnight    | From today to the next business day. The earliest possible tenor.       |
+| =T/N= | Tom/Next     | From tomorrow to the day after (i.e. from next business day to spot).  |
+| =S/N= | Spot/Next    | From spot to the next business day after spot.                          |
+| =S/W= | Spot/Week    | From spot to one week after spot (by convention, for rate curves).      |
+| =1W=  | One Week     | One week. For rate curves this is spot + 1W; for vol surfaces today + 1W. |
+| =1M=  | One Month    | One calendar month off spot (rates) or today (vols).                   |
+| =3M=  | Three Months | Three calendar months off spot.                                         |
+| =6M=  | Six Months   | Six calendar months off spot.                                           |
+| =1Y=  | One Year     | Twelve calendar months off spot.                                        |
+
+Longer tenors follow the pattern =nM= (months) or =nY= (years). Odd tenors
+between liquid points are [[id:4DF1F49A-9AB4-4B56-B170-808490071799][broken
+dates]].
+
+** Rates vs. vols convention
+
+A critical cross-asset convention: for *rate curves*, tenors beyond =S/N=
+are measured from *spot*. For *volatility surfaces*, tenors are measured
+from *today*. This distinction means that =1W= on a rate curve and =1W= on
+a vol surface refer to different calendar dates — see
+[[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] for the
+vol-surface pillar convention this contrasts with. Failure to align these
+conventions leads to significant pricing errors.
+
+** Unambiguous date labels
+
+To avoid ambiguity at the short end, the following canonical names are
+useful:
+
+| Label            | Meaning                                     |
+|------------------+----------------------------------------------|
+| =TODAY=          | Current date in a given timezone            |
+| =TOMORROW=       | Next business day after today               |
+| =SPOT=           | Today + spot days (currency-pair specific)  |
+| =nBD=            | Today + n business days                     |
+| =nCD=            | Today + n calendar days                     |
+| =nW= / =nM= / =nY= | Forward by n weeks / months / years        |
+| =BSOM= / =BEOM=  | Business Start/End of Month                 |
+| =BSOQ= / =BEOQ=  | Business Start/End of Quarter               |
+
+** Tenor conventions by curve type
+
+The *meaning* of a tenor label depends on the curve type. Three major
+conventions exist, and the same nominal label (e.g. =O/N=) can resolve to a
+different date under each.
+
+*** Spot/forward curves (FX, interest rate)
+
+The standard convention used by most FX and interest rate curves:
+
+- =O/N=: horizon date to next business day (tomorrow).
+- =T/N=: next business day to spot.
+- =Spot=: horizon date + spot days.
+- =S/N=: spot to spot + 1 business day.
+- All subsequent tenors (=1W=, =1M=, =1Y=, ...): measured from spot.
+
+*** Swap curves
+
+Used for short-dated FX swap quotation. Tenors are quoted in terms of the
+*near leg*:
+
+- =O/N=: today (not tomorrow).
+- =T/N=: tomorrow.
+
+This convention differs from the forward curve convention above and models
+the near leg of a one-day FX swap. The tenor set typically runs up to
+=S/N=.
+
+*** Credit/CDS curves
+
+CDS instruments use a restricted tenor set tied to the four
+[[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM]] roll dates per year: 20
+March, 20 June, 20 September, 20 December. Tenors resolve to the first
+business day following the appropriate roll date, which can make nominal
+tenors such as =1Y= resolve to materially different dates than on a rates
+curve. A common disambiguation convention appends the roll quarter: e.g.
+=1Y 1RQ= (one year, one roll quarter).
+
+* See also
+
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the ordered series a tenor is one point of.
+- [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][Horizon Date]] — the reference date every tenor is relative to.
+- [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] — how a tenor date is adjusted onto a valid business day.
+- [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — odd tenors and fixed-calendar-time discontinuities.
+- [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]] — the quarterly roll dates behind the CDS tenor convention.

@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9
+:END:
+#+title: Interest Rate Curve Families
+#+description: Hub note for how a currency's interest rate curves compose beyond a single curve: funding/projection families, multi-curve build order, storage grouping, the review UI, and onshore/offshore namespacing.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:ore:
+#+created: 2026-07-11
+#+updated: 2026-07-12
+
+This is the hub note for interest rate curve families. Each linked note is a
+single focused concept; start here and follow the links.
+
+* Summary
+
+A single currency's post-2008 interest-rate picture is rarely one curve: it
+is a *family* — one *Funding Curve* (the discounting anchor) plus a
+discrete set of *Projection Curves*, one per floating index tenor. Building
+that family is not order-free: the Funding Curve must exist before any
+Projection Curve can be repriced, which is the direct legacy of the
+pre-/post-2008 split between discounting and projection. Separately, a
+family is typically *stored* as one grouped set of time series, *displayed* as a
+tenor-by-curve-type grid, and — for onshore-restricted currencies —
+*namespaced* by booking jurisdiction rather than by tenor at all. This
+cluster covers what a currency's full curve picture *is*, as distinct from
+[[id:E808F432-2FDA-47E8-B003-1E8B908870FE][how a single curve gets
+built]].
+
+* Detail
+
+** Concept map
+
+- *The family itself* → [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and
+  Projection Curves]] (Funding Curve + per-tenor Projection Curves; why
+  curve identity is discrete, not a continuous axis).
+- *Benchmark types* → [[id:5170B17B-188B-45CA-A1B6-1F27A97E1CF8][Interest
+  Rate Benchmark Types: IBOR vs. RFR]] (the two kinds of index a Projection
+  Curve can reference, and why the distinction forced multi-curve
+  construction).
+- *How you get there* → [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve
+  Construction]] (single-curve pre-2008 → dual-/multi-curve post-2008; the
+  Funding-Curve-first build order).
+- *Storage* → [[id:71E4EB7A-20EA-46E1-8832-05D103C330EF][Curve Sets (Storage
+  Grouping)]] (grouping small related time series into one series group).
+- *A multicurve UI* → [[id:A26CFA71-21C0-4E98-ABC4-25F0EAD517E3][Multicurve
+  Management]] (a description of a multicurve UI: the requirement that a
+  family be presentable as one whole, and a tenor × curve-identity lookup
+  grid attested elsewhere as one solution to it — not functionality ORE
+  Studio currently implements).
+- *Jurisdictional split* →
+  [[id:D1A196C0-DD73-4B0E-B7C3-9768FCA2CCE7][Onshore/Offshore Curve
+  Namespacing]] (pseudo-currency curves, e.g. onshore vs. offshore USD).
+- *Single-curve mechanics* (companion doc) →
+  [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+  (day-count conventions, pillar instruments, interpolation — what each
+  curve in a family individually is).
+- *Tenor labels* → [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time
+  Structures and Tenors]].
+
+** "Multi-curve" vs. "curve family": methodology vs. object
+
+These two terms are related but not interchangeable, and the cluster uses
+both deliberately:
+
+- *Multi-curve* is the real, external industry term for a *methodology* —
+  the post-2008 practice of building more than one curve (splitting
+  discounting from projection) rather than one curve doing both jobs. It is
+  an adjective describing an *approach*: "multi-curve construction",
+  "multi-curve framework", "multi-curve bootstrapping". This is the term
+  used in the academic and practitioner literature (see
+  [[*Further reading][Further reading]] below), and this cluster keeps it
+  wherever it names that methodology, so a reader can connect these notes
+  to the papers that define it.
+- *Curve family* is this cluster's own noun for the *object* the
+  methodology produces — the specific Funding Curve + Projection Curves
+  bundle for one currency, described in
+  [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection
+  Curves]].
+
+So: you follow the multi-curve *methodology* (documented in
+[[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]) to
+*construct* a curve *family*, which
+[[id:A26CFA71-21C0-4E98-ABC4-25F0EAD517E3][Multicurve Management]] then
+covers presenting to a user. One is a practice, the second is what that
+practice builds, the third is how it is reviewed. Within that third page,
+"Multi Curve Grid" names one specific attested solution, quoting the
+literal heading on the source screen it was observed on ("Multi Curve") —
+a proper noun for that one pattern, not a fourth meaning to reconcile with
+the other two.
+
+** Further reading
+
+The papers that define and extend the multi-curve methodology, roughly in
+the order a reader should approach them:
+
+- Henrard, M. (2007), [[https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1011369][/The Irony in the Derivatives Discounting/]] — the
+  first step: splitting risk-free discounting from IBOR fixing in a
+  simplified setup, the seed of the whole framework.
+- Mercurio, F. (2009), [[https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1332205][/Interest Rates and the Credit Crunch: New Formulas
+  and Market Models/]] — a Libor Market Model approach to discounting and
+  forward curves together.
+- Bianchetti, M. (2010), [[https://arxiv.org/abs/1103.2567][/Two Curves, One Price/]] (also circulated as
+  /Interest-Rate Modeling with Multiple Yield Curves/,
+  [[https://arxiv.org/abs/1006.4767][arXiv:1006.4767]]) — arbitrage-free pricing with two curves, made
+  rigorous.
+- Ametrano, F. M. and Bianchetti, M. (2013), [[https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2219548][/Everything You Always Wanted to
+  Know About Multiple Interest Rate Curve Bootstrapping but Were Afraid to
+  Ask/]] — the definitive, practitioner-oriented reference for
+  multi-curve *bootstrapping* specifically (the companion concern to
+  construction covered here); already the source for this repo's
+  [[id:ADA913CE-E719-4B5D-9D8C-5C0186B788A0][ab-notebook: reproducible
+  interest rate curve bootstrapping]].
+- Piterbarg, V. (2010), [[https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1781524][/Funding Beyond Discounting: Collateral Agreements
+  and Derivatives Pricing/]] — extends the framework to collateral/CSA
+  discounting, the mechanism behind why the Funding Curve is OIS-based.
+- OpenGamma Quantitative Research, [[https://quant.opengamma.io/Multi-Curves-Variations2.pdf][/Multi-curves: Variations on a Theme/]] —
+  a practitioner survey connecting the academic papers above to production
+  curve-building choices.
+
+* See also
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — the companion hub for single-curve bootstrapping mechanics.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — a genuine bivariate surface, and the source of the forward-forward approximation technique reused here.
+- [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] — the pseudo currency code mechanism behind onshore/offshore namespacing.

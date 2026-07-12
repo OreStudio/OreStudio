@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 71E4EB7A-20EA-46E1-8832-05D103C330EF
+:END:
+#+title: Curve Sets (Storage Grouping)
+#+description: The storage-only concept of grouping several small, related curve time series into one composite series group.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:ore:
+#+created: 2026-07-11
+#+updated: 2026-07-12
+
+* Summary
+
+A *curve set* is a storage-layer grouping: several small, closely-related
+curve *time series* (one per curve in a family) persisted as one composite
+group rather than as separate series, because they are individually small
+and almost always consumed together. It is unrelated to the
+[[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][build-order dependency]] between
+a family's curves — grouping is a physical/storage decision, made after
+every constituent curve has already been built.
+
+* Detail
+
+** Why group
+
+Persisting every curve as its own independent time series is wasteful when
+each series is individually small. Grouping closely-related series together
+reduces series count and matches how the data is actually read — callers
+almost always want the whole set (e.g. every curve in a currency's
+[[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding + Projection family]])
+rather than one curve in isolation. This generalises beyond interest rates:
+FX spot rates receive the same "small, related series grouped together"
+treatment.
+
+** Identity and keying
+
+Every market data item, including a curve set, carries an associated
+*reference date* (evaluation/pricing date), normally chosen so the discount
+factor for that date is 1 (and, for other curve types, so the survival
+probability is 1 / integrated variance is 0). Keys describing a curve set
+follow the general market-data key structure: Type, Subtype, Underlyings,
+Fixing Date.
+
+** Relationship to the family
+
+A [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding Curve + Projection
+Curves family]] is the natural candidate for being physically stored as a
+single curve set — a group of related time series: the *family* is the
+logical/financial relationship (including the
+[[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][build order]] between its
+curves); the *curve set* is the physical/storage grouping of that same set
+of series, decided independently of how — or in what order — those curves
+were constructed.
+
+* See also
+
+- [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Families]] — the hub.
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] — the family typically stored as one curve set.
+- [[id:A26CFA71-21C0-4E98-ABC4-25F0EAD517E3][Multicurve Management]] — how a curve set would be presented once retrieved.

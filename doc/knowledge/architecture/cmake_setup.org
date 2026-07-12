@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :cmake:build:architecture:knowledge:
 #+created: 2026-05-18
-#+updated: 2026-06-05
+#+updated: 2026-07-12
 
 ORE Studio uses CMake with CMakePresets to drive its build across
 Linux, macOS, and Windows. Presets fix the compiler, build type, and
@@ -116,7 +116,7 @@ and =.env= is registered as a =CMAKE_CONFIGURE_DEPENDS= so changes
 trigger an automatic re-configure on the next build.
 
 Toggle with =compass test logging on [level]= / =off= / =status=
-(aliases: =compass env init --enable-logging= / =--disable-logging=).
+(aliases: =compass env configure --enable-logging= / =--disable-logging=).
 The variables can also be set directly in the process environment for
 a one-off run; the runtime listener in =ores.testing= reads them at
 test startup.

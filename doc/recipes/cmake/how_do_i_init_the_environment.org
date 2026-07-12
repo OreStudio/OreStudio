@@ -2,12 +2,12 @@
 :ID: 1794B513-877B-4B93-A818-53F080C55E47
 :END:
 #+title: How do I initialise the checkout environment?
-#+description: Generate the .env file, NATS certificates, and IAM keys for a local checkout using compass env init.
+#+description: Generate the .env file, NATS certificates, and IAM keys for a local checkout using compass env configure.
 #+type: recipe
 #+level: cross
 #+filetags: :cmake:build:environment:init:nats:recipe:
 #+created: 2026-05-31
-#+updated: 2026-06-02
+#+updated: 2026-07-12
 
 Run once per fresh checkout to generate the =.env= file, NATS TLS
 certificates, and IAM RSA signing key. See [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] for preset names.
@@ -22,7 +22,7 @@ Environment setup is owned by the compass *Provision* pillar:
 
 #+begin_src sh :results verbatim
 PGPASSWORD=<pg-superuser-password> \
-  ./projects/ores.compass/compass.sh env init --preset linux-clang-debug-make -y
+  ./projects/ores.compass/compass.sh env configure --preset linux-clang-debug-make -y
 #+end_src
 
 This generates =.env= at the repo root (reusing existing secrets, adding
@@ -31,14 +31,14 @@ only missing variables), the NATS TLS certificates under
 the JetStream store directory — then prints the next steps (create the
 database, start NATS, set up SQL connections, start services).
 
-For the full command set — =env init= flags (=--with-diff=, logging
+For the full command set — =env configure= flags (=--with-diff=, logging
 toggles), =env diff=, =env list= (masked variable listing), and
 =env version [new]= (record an env-format version) — see the detailed recipe
 [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]].
 
 * Script
 
-=projects/ores.compass/compass.sh env init= → =src/env_init.py= (replaced
+=projects/ores.compass/compass.sh env configure= → =src/env_init.py= (replaced
 the former =build/scripts/init-environment.sh=).
 
 * Tested by

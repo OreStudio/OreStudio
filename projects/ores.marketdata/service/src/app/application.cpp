@@ -23,9 +23,14 @@
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
+#include "ores.marketdata.api/eventing/crm_driver_pair_changed_event.hpp"
+#include "ores.marketdata.api/eventing/crm_topology_config_changed_event.hpp"
 #include "ores.marketdata.api/eventing/feed_binding_changed_event.hpp"
+#include "ores.marketdata.api/messaging/crm_protocol.hpp"
 #include "ores.marketdata.core/messaging/registrar.hpp"
+#include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
+#include "ores.marketdata.service/messaging/crm_handler.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
@@ -95,7 +100,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         ores::iam::client::make_service_token_provider(
             nats, cfg.database.user, cfg.database.password()));
 
-    auto ingest = std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database));
+    auto crm_bridge = std::make_shared<crm_ingest_bridge>(make_context(cfg.database));
+    auto ingest = std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database), crm_bridge);
 
     namespace ev = ores::eventing;
     namespace mdev = ores::marketdata::eventing;
@@ -108,16 +114,52 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             BOOST_LOG_SEV(lg(), info) << "Feed binding changed — refreshing ingest loop.";
             ingest->refresh();
         });
+
+    ev::service::registrar::register_mapping<mdev::crm_topology_config_changed_event>(
+        event_source,
+        "ores.marketdata.crm_topology_config",
+        "ores_marketdata_crm_topology_configs");
+    ev::service::registrar::register_mapping<mdev::crm_driver_pair_changed_event>(
+        event_source, "ores.marketdata.crm_driver_pair", "ores_marketdata_crm_driver_pairs");
+    auto crm_topology_sub = event_bus.subscribe<mdev::crm_topology_config_changed_event>(
+        [crm_bridge](const mdev::crm_topology_config_changed_event&) {
+            BOOST_LOG_SEV(lg(), info) << "CRM topology config changed — refreshing CRM engines.";
+            crm_bridge->refresh();
+        });
+    auto crm_driver_pair_sub = event_bus.subscribe<mdev::crm_driver_pair_changed_event>(
+        [crm_bridge](const mdev::crm_driver_pair_changed_event&) {
+            BOOST_LOG_SEV(lg(), info) << "CRM driver pair changed — refreshing CRM engines.";
+            crm_bridge->refresh();
+        });
     event_source.start();
+    crm_bridge->refresh();
 
     co_await ores::service::service::run(
         io_ctx,
         nats,
         make_context(cfg.database),
         "ores.marketdata.service",
-        [&cfg, ingest, &svc_nats](auto& n, auto c, auto v) {
-            return ores::marketdata::messaging::registrar::register_handlers(
-                n, std::move(c), svc_nats, std::move(v), cfg.http_base_url);
+        [&cfg, ingest, &svc_nats, crm_bridge](auto& n, auto c, auto v) {
+            auto subs = ores::marketdata::messaging::registrar::register_handlers(
+                n, c, svc_nats, v, cfg.http_base_url);
+
+            namespace mm = ores::marketdata::messaging;
+            constexpr auto queue = "ores.marketdata.service";
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::get_crm_rate_request::nats_subject),
+                                  queue,
+                                  [&n, c, v, crm_bridge](ores::nats::message msg) mutable {
+                                      mm::crm_handler h(n, c, v, crm_bridge);
+                                      h.rate(std::move(msg));
+                                  }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::get_crm_rates_request::nats_subject),
+                                  queue,
+                                  [&n, c, v, crm_bridge](ores::nats::message msg) mutable {
+                                      mm::crm_handler h(n, c, v, crm_bridge);
+                                      h.rates(std::move(msg));
+                                  }));
+            return subs;
         },
         [&nats, ingest](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

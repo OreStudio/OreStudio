@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:
 #+owner: marco
-#+branch:
+#+branch: feature/wire-crm-service-layer
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -34,11 +34,11 @@ locally).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -135,3 +135,63 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Wired =ores.analytics.quant= into =ores.marketdata.service=:
+
+- =crm_ingest_bridge= (=service/app=): one =rate_engine= per (tenant,
+  party), keyed off an atomically-swapped =shared_ptr<const map<...>>=
+  so =refresh()= (rare) and =update()=/=rate()=/=rates()= (hot path, any
+  number of threads) never race -- refresh replaces the whole engine set
+  wholesale rather than mutating existing engines, matching
+  =topology_builder='s own "rare, one-shot" design. Built from
+  =crm_topology_config= + enabled =crm_driver_pair= rows via
+  =topology_builder::build=; enabled =crm_enabled_derived_pair= rows are
+  folded into each engine's "configured pairs" list for the batch
+  endpoint, without affecting the topology (they're never edges).
+- =feed_ingest_loop= gained an optional =crm_bridge_= hook: after its
+  existing persist+remap, an FX/RATE tick is also offered to the bridge
+  as a candidate driver update -- silently ignored if the (tenant, party)
+  has no CRM configured or the pair isn't one of its driver edges, so a
+  CRM lookup failure can never break the tick's normal path.
+- Two new NATS request/reply endpoints, =marketdata.v1.crm.rate=
+  (single pair) and =marketdata.v1.crm.rates= (every currently-configured
+  pair for a party in one =rate_engine::rates()= batch call -- added per
+  request during this task, since the original design only had the
+  single-pair endpoint), served by =crm_handler=. Both pull-only; no
+  push/subscribe path, per the story's architecture decision.
+- =application.cpp=: constructs the bridge, calls an initial =refresh()=,
+  subscribes =crm_topology_config_changed_event=/
+  =crm_driver_pair_changed_event= to trigger re-=refresh()=, and
+  registers the two new endpoints alongside the existing codegen ones.
+- Added =read_latest_all_tenants= to all three CRM entities (same
+  pattern as =feed_binding='s) so the bridge can enumerate every
+  (tenant, party) at startup/refresh -- codegen-generated, not hand-SQL.
+- Filed a second codegen-gap capture
+  (=codegen_generic_fk_crosscheck_and_partial_unique.org=) for the two
+  SQL fixes carried forward from the prior task's review (cross-party FK
+  validation, single-enabled-config uniqueness) -- neither is fixable
+  without either duplicating the book/portfolio one-off hack or
+  hand-writing SQL codegen doesn't produce anywhere else, so both stay
+  gaps rather than patches. =crm_ingest_bridge::refresh()= carries an
+  application-level safeguard instead: if more than one =crm_topology_config=
+  is enabled for a (tenant, party), the first wins and a warning is
+  logged, rather than crashing or silently merging.
+- New =crm_protocol.hpp= (request/response message types) in
+  =ores.marketdata.api=.
+
+5 new integration test cases in =ores.marketdata.service.tests=
+(=app_crm_ingest_bridge_tests.cpp=, using the DB-backed test fixture,
+real repository writes): refresh builds a working engine end-to-end
+(unavailable before ticking, fresh + correctly triangulated after);
+=rate()= returns =nullopt= (not =unavailable=) when no CRM is configured
+at all; =update()= on a non-edge pair doesn't throw; =rates()= returns
+every configured pair (drivers + enabled derived) in one call; the
+ambiguous-multiple-enabled-configs case doesn't crash.
+
+Verified: full local build (all targets) clean; full test suite 71/71
+suites, 0 failures; db recreate clean; =validate_schemas.sh --strict=
+zero warnings.
+
+Added a follow-up task, [[id:C685A8BE-0DF9-4D23-8AAB-E9DF9069E482][CRM cross-rates matrix UI panel]], for a Qt panel
+consuming =marketdata.v1.crm.rates= (manual reload only, no
+auto-refresh/push), per a reference mockup.

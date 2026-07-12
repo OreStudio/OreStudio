@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: C685A8BE-0DF9-4D23-8AAB-E9DF9069E482
+:END:
+#+title: Task: CRM cross-rates matrix UI panel
+#+description: A Qt panel showing the full cross-rates matrix for a party via marketdata.v1.crm.rates, with a manual reload button (no auto-refresh/push) -- covers every currently-configured pair.
+#+type: task
+#+level: s1
+#+filetags: :market_data:crm:fx:sprint_23:v0:ui:crm_implementation:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A read-only Qt panel that shows every currently-configured CRM rate for
+a party as an NxN cross-rates matrix (currency x currency, direct pairs
+and triangulated crosses shown the same way -- the whole point of the
+CRM is the caller never needs to know which is which), sourced from the
+[[id:88FD9001-F2BA-4061-994C-5EBE8BBD590A][service-wiring task]]'s =marketdata.v1.crm.rates= endpoint. Loosely modelled
+on [[file:../../../../../analysis/gemini_cross_rates_matrix.png][a reference mockup]] (grid layout, per-cell rate, base-currency-row /
+quote-currency-column headers, connection/status footer) -- not a
+pixel-accurate spec, just the shape: a matrix, not a list.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | The service-wiring task's =marketdata.v1.crm.rates= endpoint. |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- A Qt panel/dialog (new =ores.qt.marketdata= widget, alongside the
+  existing feed-binding/market-series ones) displaying an NxN grid: rows
+  and columns are every currency that appears in any configured pair for
+  the current party (derived from the response, not hardcoded), each
+  cell showing the rate for that (row, column) pair when one exists in
+  the response, blank/dash on the diagonal and for pairs the CRM doesn't
+  currently cover -- see the mockup's own dashes on the diagonal and its
+  "8 Currencies" footer count as the shape to match, not literal values.
+- *Manual reload only* -- a visible reload button that calls
+  =marketdata.v1.crm.rates= on click; *no* auto-refresh timer, no NATS
+  subscription/push. This is a deliberate, direct consequence of the
+  story's own architecture decision (never broadcast the derived set) --
+  a UI that polled or subscribed would be exactly the pattern the whole
+  design avoids.
+- Each cell also reflects =rate_status= (fresh/stale/unavailable) from
+  the response -- at minimum a visual distinction (e.g. dimmed/greyed)
+  for stale or unavailable cells, so the operator can tell a rate is
+  live from one that's aged out per the party's =staleness_policy=,
+  without needing the raw =as_of= timestamp.
+- Party selection: whatever mechanism the existing marketdata Qt panels
+  use for picking a party (consistent with =crm_topology_config=/
+  =crm_driver_pair=/=crm_enabled_derived_pair='s own tenant+party
+  scoping) -- no new party-selection UI pattern invented for this one
+  panel.
+- Covers *every* pair the response returns, not a fixed/curated subset --
+  the grid dimension is however many currencies are actually configured
+  for that party (the mockup's G10 filter is a nice-to-have, not
+  required for this task).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+** Not yet designed
+
+This task was captured with a goal/acceptance shape but no
+implementation plan -- the actual Qt widget architecture (which MDI
+window/dialog pattern to reuse, how the NxN grid is modelled for
+=QAbstractTableModel=, party-selection wiring) should be worked out when
+the task starts, following whatever conventions
+[[id:037B474D-84ED-4888-9054-D58AB1FB10D2][the history-dialog consolidation story]] and the existing
+=ores.qt.marketdata= panels (=FeedBindingListWindow= et al.) have
+already settled on, rather than inventing a new pattern here.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

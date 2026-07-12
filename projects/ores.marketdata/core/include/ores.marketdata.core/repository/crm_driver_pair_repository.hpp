@@ -115,6 +115,8 @@ public:
      * @brief Deletes CRM driver pairs by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& ids);
+
+    std::vector<domain::crm_driver_pair> read_latest_all_tenants(context ctx);
 };
 
 }

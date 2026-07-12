@@ -150,6 +150,37 @@ faker::datatype::boolean()
 :entity_plural_words:   CRM driver pairs
 :END:
 
+*** read_latest_all_tenants
+:PROPERTIES:
+:ID: 6D4A8E23-1F9C-4B7D-A052-3E6C8F1A9D4E
+:END:
+
+Reads the latest CRM driver pairs across all tenants. Used by
+=crm_ingest_bridge= at startup/refresh, which must build a
+=rate_engine= for every (tenant, party) regardless of tenant -- there is
+no single tenant context to scope the read to.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::crm_driver_pair> read_latest_all_tenants(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::crm_driver_pair>
+crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<crm_driver_pair_entity>> |
+                       where("valid_to"_c == max.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<crm_driver_pair_entity, domain::crm_driver_pair>(
+        ctx,
+        query,
+        [](const auto& entities) { return crm_driver_pair_mapper::map(entities); },
+        lg(),
+        "Reading latest CRM driver pairs across all tenants");
+}
+#+end_src
+
 ** Domain includes
 
 #+begin_src cpp :name includes

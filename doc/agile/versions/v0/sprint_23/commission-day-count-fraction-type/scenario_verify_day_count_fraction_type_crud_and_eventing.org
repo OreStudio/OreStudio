@@ -21,7 +21,7 @@ This page documents a test scenario verifying [[id:307A9F1A-2F12-48E9-8D01-0E109
 |---------------+------------------------------------------|
 | Verifies task | [[id:307A9F1A-2F12-48E9-8D01-0E109D5DEC67][Model day_count_fraction_type as an ores.refdata entity]] |
 | Parent story  | [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]]   |
-| Target dialog | =DayCountFractionTypeDetailDialog= / =DayCountFractionTypeHistoryDialog= |
+| Target dialog | =DayCountFractionTypeDetailDialog= / =DayCountFractionTypeHistoryDialog= — Menu: *Reference Data > Trading Conventions > Day Count Fraction Types* |
 | Clients       | blue, red                               |
 | State         | PENDING                                 |
 

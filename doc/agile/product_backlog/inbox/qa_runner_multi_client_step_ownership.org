@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 9D9F0137-9D81-4811-9012-9FB95D064D4A
 :END:
-#+title: Surface step colour and prevent result clobbering in QA Runner
-#+description: The QA Validation Runner panel should visually indicate which client instance colour a multi-client scenario step belongs to, and only one instance should own writing back * Results to avoid concurrent saves clobbering each other.
+#+title: Surface step colour, prevent result clobbering, and add reload in QA Runner
+#+description: The QA Validation Runner panel should indicate which client colour a multi-client step belongs to, prevent concurrent instances from clobbering * Results, and add a Reload button (turning stale-yellow on external file changes) to pick up scenario edits without closing the panel.
 #+type: capture
 #+level: cross
 #+filetags: :qt:testing:qa_validation_runner:ux:
@@ -32,6 +32,21 @@ designated primary) owns the =* Results= write-back; other instances
 opening the same scenario should either open read-only or defer their
 step outcomes to the owner instead of writing independently.
 
+A third, related gap: there is no way to pick up edits to the
+scenario file made outside the panel — e.g. a tester updating steps
+from a different instance, or an LLM session editing the =.org= file
+mid-run — without closing and reopening the panel (losing scroll
+position and any in-progress tick state). Add a *Reload* button that
+re-reads the scenario from disk in place. Pair it with a file-system
+watch on the open scenario doc: when the on-disk file changes while
+the panel has it open, the Reload button should turn yellow/gold —
+reusing the existing =color_constants::stale_indicator= convention
+already used for server-side change notifications on list windows
+(=EntityListMdiWindow::markAsStale()=, see
+[[proj:projects/ores.qt/api/include/ores.qt/ColorConstants.hpp][ColorConstants.hpp]]) — so the tester has the same visual language for
+"this view is stale, refresh it" whether the staleness comes from a
+NATS event or an external file edit.
+
 * Why
 
 Discovered while running the manual CRUD + eventing scenario for
@@ -51,3 +66,4 @@ results, one tester's ticks silently overwrite the other's.
 
 - [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]]
 - [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]] — =--open-scenario= mechanics.
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — colour semantics; the stale-yellow reload convention the Reload button should reuse.

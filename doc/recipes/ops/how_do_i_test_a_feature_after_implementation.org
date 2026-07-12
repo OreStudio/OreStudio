@@ -83,11 +83,23 @@ How do I test a feature after finishing implementation?
      --parent-id <task-uuid> --parent-title "<task title>"
    #+end_src
 
+   Fill in the =* Scenario Info= table before writing steps:
+   - *Target dialog* — the Qt dialog class(es) under test, *and* the
+     exact menu path to reach them (e.g. "=DayCountFractionTypeDetailDialog=
+     — Menu: Reference Data > Trading Conventions > Day Count Fraction
+     Types"). A bare class name forces the tester to hunt through menus
+     to find a screen that may not exist yet in their muscle memory;
+     the menu path is the whole reason this field exists.
+   - *Clients* — leave empty for one client; list every colour/label a
+     multi-client scenario needs (e.g. "blue, red").
+
    Fill in =* Steps= per [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]]. The
-   *first* step must always be the connect/login step: the exact
-   account and password to log in as (from step 5's provisioning
+   *first* step under every client (not just the first client, if the
+   scenario has more than one) must be its own connect/login step: the
+   exact account and password to log in as (from step 5's provisioning
    script) and which party/tenant to select — never leave the tester
-   to guess starting state.
+   to guess starting state, and never assume a second client instance
+   inherits the first one's session.
 
    For an entity/CRUD feature, include a *CRUD test plan* as part of
    the steps — one step per operation, in order:

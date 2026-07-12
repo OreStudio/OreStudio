@@ -38,13 +38,17 @@ Run [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after imp
    against a clean load.
 4. Provision the Barclays Plc tenant (default; ask if a different
    tenant fits better).
-5. Create a =test_scenario= doc for the feature. Always lead with a
-   connect/login step sourced from the provisioning script's
-   credentials — never hardcode or guess them. For an entity/CRUD
-   feature, include the Create/Read/Update/Delete/History/Eventing
-   test plan the recipe lays out; the eventing step needs a second
-   client instance to actually exercise the NATS relay, not just the
-   repository layer ctest already covers.
+5. Create a =test_scenario= doc for the feature. Set *Target dialog* to
+   the dialog class(es) *and* the menu path to reach them — a bare
+   class name leaves the tester hunting through menus. Give every
+   client its own leading connect/login step sourced from the
+   provisioning script's credentials — never hardcode or guess them,
+   and never assume a second client instance inherits the first one's
+   session. For an entity/CRUD feature, include the
+   Create/Read/Update/Delete/History/Eventing test plan the recipe
+   lays out; the eventing step needs a second client instance to
+   actually exercise the NATS relay, not just the repository layer
+   ctest already covers.
 6. Start the Qt client with =--open-scenario= pointing at the new
    scenario (absolute path) and ask the user to execute it — do not
    run the UI steps yourself.

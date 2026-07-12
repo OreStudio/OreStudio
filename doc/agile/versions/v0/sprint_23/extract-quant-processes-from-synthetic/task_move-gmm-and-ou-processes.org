@@ -26,11 +26,11 @@ The three process classes live in ores.analytics.quant with full unit test cover
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] |
-| Now          | In progress, same branch/PR as move-istochasticprocess-interface (keeping PR count low). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -39,9 +39,19 @@ The three process classes live in ores.analytics.quant with full unit test cover
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Moved =gmm_process=, =arithmetic_gmm_process=, and =ou_process=
+verbatim into a new =service/processes/= subtree under
+ores.analytics.quant, renamespacing to
+=ores::analytics::quant::service= and adding
+=ORES_ANALYTICS_QUANT_EXPORT= to each class per the component's
+visibility-hidden convention. Updated =process_factory.cpp= (the sole
+consumer) to reference the new namespace. Wrote 34 new Catch2 test
+cases across three new test files covering: construction validation
+(mismatched vector sizes, empty components, non-positive initial
+price), determinism under a fixed seed, divergence across different
+seeds, the zero-variance/zero-sigma degenerate branches, geometric
+positivity, arithmetic zero-crossing, and OU's kappa<=0 driftless-walk
+degeneracy plus a statistical mean-reversion check over a long run.
 
 * Notes
 
@@ -69,3 +79,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All three process classes relocated with no behavioural change; zero
+prior test coverage backfilled with 34 new Catch2 cases. Full build
+of ores.analytics.quant.lib/.tests and ores.synthetic
+api/core/service.lib/service.exe succeeds; ores.analytics.quant.tests
+(42763 assertions, 43 cases including pre-existing) and
+ores.synthetic.api.tests (71 assertions) pass locally.

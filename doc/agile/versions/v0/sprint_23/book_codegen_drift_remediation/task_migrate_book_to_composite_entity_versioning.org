@@ -31,9 +31,9 @@ correctly compose the books it contained at that point in time.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
-| Now          | Backend confirmed correct via manual QA + direct SQL cross-check. Recursive (multi-level) bump gap found -- fixing next. |
+| Now          | Recursive multi-level bump implemented, template bug fixed, DB-verified 2 levels deep. |
 | Waiting on   | Nothing.                               |
-| Next         | Add self-referencing :bump_parent_version: on portfolio.org's own parent_portfolio_id FK to propagate bumps up a nested portfolio tree. |
+| Next         | Re-run the manual scenario against the fixed build, then close out. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -69,6 +69,46 @@ generated code:
   window.
 
 =ores.refdata.api/core/service.tests= 3/3 passed after the change.
+
+** Recursive (multi-level) bump
+
+Manual QA correctly identified a real gap: Portfolio has its own
+self-referencing =parent_portfolio_id= (a portfolio tree), and the
+initial implementation only bumped the *immediate* parent -- a
+grandparent portfolio would never see a grandchild book's change,
+exactly the multi-level composition case the target-state doc flagged
+as a deferred follow-up ("out of scope for the first cut... a natural
+extension").
+
+Fixed by declaring Portfolio as composite parent *and* child of
+itself: added a =* Foreign keys= section to portfolio.org for its own
+=parent_portfolio_id= (previously undeclared -- a pre-existing gap,
+this column had *no* existence validation at all) with
+=:bump_parent_version: true=. Since every portfolio write already
+re-fires Portfolio's own insert trigger (including the touch
+function's re-insert when a *child* bumps it), that trigger now also
+recursively bumps *its own* parent. A root portfolio
+(=parent_portfolio_id IS NULL=) safely terminates the recursion: the
+touch function's row lookup on a NULL id matches nothing and no-ops.
+
+This surfaced a genuine template bug, not just a missing model flag:
+=CREATE RULE= (the soft-delete rule) is parsed eagerly by PostgreSQL,
+unlike a PL/pgSQL function body -- so a self-referencing entity's
+delete rule, which calls its own touch function, failed with
+"function ... does not exist" because the touch function was
+generated *after* the trigger/rule in the same file (fine for
+cross-entity parent/child, since the child's file always runs after
+the *entire* parent file, but broken for self-reference). Fixed the
+shared template (both the tangled =.mustache= and its literate =.org=
+source, re-tangled via =compass build --direct
+tangle_codegen_templates=) to generate the touch function *before* the
+insert trigger/delete rule, not after. Confirmed safe for the existing
+party/counterparty pilot too (diffed both -- content unchanged, only
+relocated).
+
+Verified via SQL with a 3-level tree (grandparent -> parent -> book):
+adding a book to =parent= correctly bumped =parent= (v1->v2) *and*
+=grandparent= (v2->v3) in the same transaction.
 
 * Notes
 

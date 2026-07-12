@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 6FFD22D7-5E83-405A-8069-52B96B9AF606
+:END:
+#+title: Term Structure Extent
+#+description: How far a term structure extends by curve type (30Y for IR, 5Y-default/30Y-available for vol, open-ended for CDS), and the flatten-beyond-the-end convention.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+A [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term structure]] is defined by
+its constituent [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] points,
+but nothing in that definition says how *far* the series extends before
+stopping — that extent is itself a convention, and it differs materially by
+curve type: interest rate curves stop at a fixed 30-year ceiling,
+volatility surfaces default to a much shorter 5 years while remaining
+*able* to quote out to 30, and CDS curves have no fixed ceiling at all,
+running instead to whatever the longest live trade in the portfolio
+happens to be. A term structure's behaviour for a request *beyond* its own
+last point is a second, related convention — flatten, not extrapolate — a
+deliberate, explicit choice rather than a failure mode.
+
+* Detail
+
+** Interest rate curves: a fixed 30-year ceiling
+
+For interest rate (discount/projection) curves, the long end is
+consistently *30Y* — =15Y=, =20Y=, =25Y=, =30Y= are named together as the
+standard long-end IRS pillars (see
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s standard label table),
+and the consensus-provider expiry list likewise terminates at 30 years.
+Where a curve genuinely has no tenor beyond its last pillar, the system
+does not silently fail a request past that point; it applies the
+beyond-the-end convention below. If asked whether an interest rate curve
+should extend to 30Y or 50Y, the answer is unambiguously 30Y — 50Y does
+not appear as a curve length anywhere in the source material this cluster
+draws on.
+
+** Volatility surfaces: a practical default, not a hard ceiling
+
+For [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX volatility surfaces]],
+data normally extends only to *5Y*, and that same 5Y point is
+conventionally reused as the surface's short-end/long-end *curve split
+tenor* for interpolation purposes. This is a *practical default*, not a
+structural limit: it must remain possible to view or quote a vol surface
+out to 30Y on request. Beyond the liquid ATM region, a common quoting
+convention applies a Zero Delta Straddle (delta-neutral straddle) out to
+10Y, then an ATM Forward from 12Y through 30Y — a different quoting basis
+for the illiquid long end, not an extension of the same liquid-region
+convention.
+
+** CDS curves: open-ended, portfolio-driven
+
+CDS/credit exposure has no fixed maximum tenor at all. Rather than a
+pillar-based ceiling, it runs "up to the longest maturity of the
+portfolio" — open-ended, and determined by whichever live trade happens to
+be longest, not by a fixed curve length the way IR and vol curves are.
+
+** Beyond the end: flatten, not extrapolate
+
+Three distinct regions exist relative to a term structure's known points:
+
+- *Between* two known points: interpolate. Log-linear is the preferred
+  method; polynomial methods are best avoided for this purpose (see
+  [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] for the
+  full local/non-local interpolation method comparison).
+- *Before* the start of the curve: extrapolate.
+- *Beyond* the end of the curve: the convention is to *flatten* — hold the
+  last known value constant — and extrapolate only in rare, explicitly
+  justified cases. This is the deliberate resolution of "what happens past
+  30Y (IR) / past 5Y (vol, if not quoting out further) / past the
+  portfolio's longest CDS trade": the system does not silently fail, and
+  it does not default to extrapolation, which would manufacture a value
+  with no basis. It holds the curve flat instead.
+
+* See also
+
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the series this document states the extent of.
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the standard long-end labels (15Y-30Y) that define the IR ceiling.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — how interpolated/extrapolated/flattened points are tracked and distinguished from directly-quoted ones.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — the interpolation methods used between known points.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — the 5Y default extent and curve-split tenor in its native context.

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generic-history-subject
+#+pr: 1521
 #+blocked_on: 5C873944-1152-4A79-9C92-C24AEB65834A
 #+blocked_since:
 #+created: 2026-07-11
 #+updated: 2026-07-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -60,12 +60,15 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1521][#1521]] | [history] Add ores.history component with dispatch registry |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | dispatch() doesn't guard against a provider throwing | dispatch_registry.cpp | Accepted | Wrapped provider call in try/catch, mapped std::exception to failure response; added throwing-provider test |
+| 2 | dispatch_registry not thread-safe (cf. event_channel_registry mutex) | dispatch_registry.hpp | Declined | Scaffolding increment; registration happens at startup before dispatch, no concurrent access yet. Revisit when real providers are wired |
+| 3 | dispatch_registry copyable/movable by default | dispatch_registry.hpp | Declined | Minor; not an issue at current scope, no single-owned-instance requirement yet |
+| 4 | get_entity_history_response field order differs from workflow_query_protocol.hpp sibling | history_protocol.hpp | Declined | Cosmetic, not house-style-mandated |
 
 * Result

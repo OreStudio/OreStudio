@@ -55,6 +55,9 @@ library is consumable standalone and fully unit-testable in isolation.
 - =service::rate_engine::update(driver_quote)=
 - =service::rate_engine::rate(base_code, quote_code)= /
   =rates(pairs)=
+- =service::recenter(source_engine, aggregation_code, policy, now)= --
+  point-in-time star-shaping around an aggregation currency for risk,
+  preserving every current rate's value.
 
 * Dependencies
 
@@ -72,5 +75,7 @@ library is consumable standalone and fully unit-testable in isolation.
 - [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/story.org][Story: Cross-rates matrix (CRM)]]
 - [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_model_driver_derived_topology.org][Task: Model the driver/derived spanning-tree topology]]
 - [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_implement_triangulation_derivation.org][Task: Implement triangulation/derivation]]
+- [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_implement_risk_recentering.org][Task: Implement risk recentering]]
 - [[file:../../../doc/knowledge/domain/crm_graph_topology.org][CRM graph topology and spanning tree]]
 - [[file:../../../doc/knowledge/domain/crm_driver_and_derived_rates.org][Driver and derived rates]]
+- [[file:../../../doc/knowledge/domain/crm_risk_and_recentering.org][CRM risk: recentering and artefacts]]

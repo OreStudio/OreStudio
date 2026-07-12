@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :extract-quant-processes-from-synthetic:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-istochasticprocess-interface
 #+pr:
 #+blocked_on:
 #+blocked_since:

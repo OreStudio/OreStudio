@@ -415,6 +415,19 @@ account_service::find_account_by_username(const std::string& username) {
     return accounts.front();
 }
 
+std::optional<domain::account>
+account_service::find_account_by_id(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding account by id: " << boost::uuids::to_string(account_id);
+
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), debug) << "No account found for id: "
+                                   << boost::uuids::to_string(account_id);
+        return std::nullopt;
+    }
+    return accounts.front();
+}
+
 std::vector<domain::account> account_service::get_account_history(const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Getting account history for username: " << username;
 

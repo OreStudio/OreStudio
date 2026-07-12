@@ -873,9 +873,17 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
 
     try {
         auto uuid = boost::uuids::string_generator()(account_id);
+
+        // This endpoint doesn't expose default_party_id for editing —
+        // preserve whatever is currently stored rather than clearing it.
+        const auto existing = account_service_.find_account_by_id(uuid);
+        const auto default_party_id =
+            existing ? existing->default_party_id : std::optional<boost::uuids::uuid>{};
+
         bool success =
             account_service_.update_account(uuid,
                                             update_req->email,
+                                            default_party_id,
                                             req.authenticated_user->username.value_or("system"),
                                             "update",
                                             "");

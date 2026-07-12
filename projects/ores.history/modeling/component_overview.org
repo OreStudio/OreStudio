@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 9562F9CA-DCEB-44C6-8DB1-F3FC56D7703A
+:END:
+#+title: ores.history
+#+description: Generic entity-history dispatch: request/response types and a server-side registry keyed by entity_type string, per History Diff Architecture.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: 
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+name: history
+#+full_name: ores.history
+#+brief: Generic history dispatch types and server-side registry
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.history component diagram
+#+caption: ores.history
+[[file:ores.history.png][file:ores.history.png]]
+
+* Summary
+
+=ores.history= is a dependency-light leaf component owning the
+generic entity-history dispatch vocabulary, per
+[[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]]. It defines the one shared NATS request/
+response pair every entity's history uses (=get_entity_history_request=/
+=get_entity_history_response=, keyed by an =entity_type= string rather
+than a typed per-entity subject) and a server-side =dispatch_registry=
+that looks up a caller-registered *history provider* function by
+=entity_type= — the same composed-registrar meta-pattern
+([[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]]) applied as a runtime lookup table
+instead of N separate subject subscriptions. No typed domain payload
+crosses the wire for history; every frontend renders the same shape.
+
+* Inputs
+
+- Per-entity *history providers* — =std::function<std::vector<entity_history_version>(const std::string& entity_id)>=
+  — registered by each domain service/component at startup, keyed by
+  that entity's =entity_type_of()= string.
+- A =get_entity_history_request= (=entity_type=, =entity_id=) arriving
+  on the shared =history.v1.get= NATS subject.
+
+* Outputs
+
+- =get_entity_history_response=: an ordered list of
+  =entity_history_version= (version, =modified_by=, =recorded_at=,
+  rendered =fields=, and =changes= vs the previous version), or a
+  failure message when no provider is registered for the requested
+  =entity_type=.
+
+* Entry points
+
+- =include/ores.history/messaging/history_protocol.hpp= — the shared
+  request/response types and the =history.v1.get= subject constant.
+- =include/ores.history/service/dispatch_registry.hpp= — the
+  server-side registry: =register_history_provider(entity_type, fn)=
+  and =dispatch(entity_type, entity_id)=.
+
+* Dependencies
+
+- [[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] — =field_value=/=diff_result= embedded in
+  =entity_history_version=.
+- std and =rfl= only beyond that — deliberately a leaf so every domain
+  service depends on it without cycles, matching =ores.diff='s
+  dependency discipline.
+
+* See also
+
+- [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] — the design this component implements.
+- [[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] — the sibling leaf component this one embeds.
+- [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the meta-pattern this component's
+  dispatch registry reapplies as a runtime lookup table.

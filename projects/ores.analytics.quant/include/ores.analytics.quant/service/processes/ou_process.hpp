@@ -17,44 +17,45 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_SERVICE_PROCESSES_GMM_PROCESS_HPP
-#define ORES_SYNTHETIC_SERVICE_PROCESSES_GMM_PROCESS_HPP
+#ifndef ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_OU_PROCESS_HPP
+#define ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_OU_PROCESS_HPP
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/export.hpp"
 #include <cstdint>
 #include <random>
-#include <vector>
 
-namespace ores::synthetic::service {
+namespace ores::analytics::quant::service {
 
 /**
- * @brief Gaussian Mixture Model stochastic price process.
+ * @brief Ornstein-Uhlenbeck (mean-reverting) price process.
  *
- * Maintains a running spot price. On each call to next(), draws a
- * log-return from a K-component Gaussian mixture and applies it:
- *   price *= exp(log_return)
+ * dX = kappa * (theta - X) * dt + sigma * dW
  *
- * Parameters (means, stdevs, weights) are statically seeded for the PoC.
- * Live calibration to historical data is out of scope.
+ * Advances using the exact per-tick discretisation (dt = 1 tick, matching the
+ * per-update convention the GMM engines use for their increments):
+ *   X_{t+1} = theta + (X_t - theta) * e^{-kappa} +
+ *             sigma * sqrt((1 - e^{-2*kappa}) / (2*kappa)) * Z,  Z ~ N(0, 1)
+ *
+ * kappa <= 0 degenerates to a driftless random walk (sigma * Z per tick),
+ * the kappa -> 0 limit of the variance term above.
  */
-class gmm_process final : public ores::analytics::quant::domain::IStochasticProcess {
+class ORES_ANALYTICS_QUANT_EXPORT ou_process final
+    : public ores::analytics::quant::domain::IStochasticProcess {
 public:
-    gmm_process(std::vector<double> means,
-                std::vector<double> stdevs,
-                std::vector<double> weights,
-                double initial_price,
-                std::uint32_t seed = 42);
+    ou_process(
+        double kappa, double theta, double sigma, double initial_price, std::uint32_t seed = 42);
 
     double next() override;
     double current() const override;
 
 private:
-    std::vector<double> means_;
-    std::vector<double> stdevs_;
-    std::vector<double> weights_;
+    double kappa_;
+    double theta_;
+    double sigma_;
     double price_;
     std::mt19937 rng_;
-    std::discrete_distribution<int> component_dist_;
+    std::normal_distribution<double> normal_;
 };
 
 }

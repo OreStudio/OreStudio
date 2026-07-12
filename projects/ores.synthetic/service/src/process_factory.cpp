@@ -18,11 +18,11 @@
  *
  */
 #include "process_factory.hpp"
+#include "ores.analytics.quant/service/processes/arithmetic_gmm_process.hpp"
+#include "ores.analytics.quant/service/processes/gmm_process.hpp"
+#include "ores.analytics.quant/service/processes/ou_process.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/process_parameter_validation.hpp"
-#include "processes/arithmetic_gmm_process.hpp"
-#include "processes/gmm_process.hpp"
-#include "processes/ou_process.hpp"
 #include <stdexcept>
 
 namespace ores::synthetic::service {
@@ -50,12 +50,13 @@ process_factory::make_process(const std::string& process_type,
         throw std::invalid_argument(validation.message);
 
     if (process_type == "arithmetic")
-        return std::make_unique<arithmetic_gmm_process>(
+        return std::make_unique<ores::analytics::quant::service::arithmetic_gmm_process>(
             std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
     if (process_type == "ou") {
         const double kappa = weights.front();
         const double sigma = stdevs.front();
-        return std::make_unique<ou_process>(kappa, initial_price, sigma, initial_price, seed);
+        return std::make_unique<ores::analytics::quant::service::ou_process>(
+            kappa, initial_price, sigma, initial_price, seed);
     }
     if (process_type != "geometric") {
         using namespace ores::logging;
@@ -63,7 +64,7 @@ process_factory::make_process(const std::string& process_type,
                                   << "'; defaulting to geometric engine.";
     }
     // Default to the geometric engine for "geometric" and any unknown value.
-    return std::make_unique<gmm_process>(
+    return std::make_unique<ores::analytics::quant::service::gmm_process>(
         std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
 }
 

@@ -71,5 +71,11 @@ via its "Verifies task" field.
 | 2 | dispatch_registry not thread-safe (cf. event_channel_registry mutex) | dispatch_registry.hpp | Declined | Scaffolding increment; registration happens at startup before dispatch, no concurrent access yet. Revisit when real providers are wired |
 | 3 | dispatch_registry copyable/movable by default | dispatch_registry.hpp | Declined | Minor; not an issue at current scope, no single-owned-instance requirement yet |
 | 4 | get_entity_history_response field order differs from workflow_query_protocol.hpp sibling | history_protocol.hpp | Declined | Cosmetic, not house-style-mandated |
+| 5 | decode failure leaves the caller hanging (no error_reply) | history_handler.hpp | Accepted | Added error_reply(bad_request) on the decode-failure path, matching every other handler in the codebase |
+| 6 | dispatch_registry parameter/member could be const& (only const dispatch() is called) | history_handler.hpp, registrar.hpp/.cpp | Accepted | Tightened to const service::dispatch_registry& throughout |
+| 7 | no auth/tenant-scoping on the generic handler; history_provider has no context parameter | history_handler.hpp, dispatch_registry.hpp | Declined for this increment | No service registers a real provider yet, so this is inert. Tracked as design work for the "wire real per-entity providers" increment — history_provider's signature will need a context/tenant parameter before any provider touches per-tenant data |
+| 8 | no unit tests for history_handler/registrar | history_handler.hpp, registrar.cpp | Declined | Matches existing convention — no other component's NATS handler/registrar pairs are unit-tested directly (need a live client); covered by dispatch_registry's own tests plus future integration tests |
+| 9 | registrar is a free function returning one subscription, unlike the class + vector<subscription> shape used elsewhere | registrar.hpp/.cpp | Declined | Deliberate: there is exactly one shared subject, not N per-entity ones |
+| 10 | messaging namespace reopened twice in the PlantUML diagram | ores.history.puml | Accepted | Merged into a single namespace block |
 
 * Result

@@ -37,7 +37,7 @@ namespace ores::history::messaging {
  */
 ORES_HISTORY_EXPORT ores::nats::service::subscription
 register_history_handlers(ores::nats::service::client& nats,
-                          service::dispatch_registry& registry,
+                          const service::dispatch_registry& registry,
                           std::string_view queue_group);
 
 }

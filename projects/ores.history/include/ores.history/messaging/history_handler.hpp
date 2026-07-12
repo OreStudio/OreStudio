@@ -51,11 +51,12 @@ inline auto& history_handler_lg() {
  */
 class ORES_HISTORY_EXPORT history_handler final {
 public:
-    history_handler(ores::nats::service::client& nats, service::dispatch_registry& registry)
+    history_handler(ores::nats::service::client& nats, const service::dispatch_registry& registry)
         : nats_(nats), registry_(registry) {}
 
     void history(ores::nats::message msg) const {
         using ores::service::messaging::decode;
+        using ores::service::messaging::error_reply;
         using ores::service::messaging::log_handler_entry;
         using ores::service::messaging::reply;
         using namespace ores::logging;
@@ -64,6 +65,7 @@ public:
         auto req = decode<get_entity_history_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(history_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         const auto resp = registry_.dispatch(*req);
@@ -73,7 +75,7 @@ public:
 
 private:
     ores::nats::service::client& nats_;
-    service::dispatch_registry& registry_;
+    const service::dispatch_registry& registry_;
 };
 
 }

@@ -26,7 +26,7 @@ namespace ores::history::messaging {
 
 ores::nats::service::subscription
 register_history_handlers(ores::nats::service::client& nats,
-                          service::dispatch_registry& registry,
+                          const service::dispatch_registry& registry,
                           std::string_view queue_group) {
     auto handler = std::make_shared<history_handler>(nats, registry);
     return nats.queue_subscribe(

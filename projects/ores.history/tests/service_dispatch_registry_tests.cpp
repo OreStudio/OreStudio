@@ -41,7 +41,7 @@ TEST_CASE("register_history_provider_makes_has_provider_true", tags) {
     dispatch_registry registry;
 
     registry.register_history_provider("ores.refdata.currency",
-        [](const std::string&) { return std::vector<entity_history_version>{}; });
+        [](const std::string&, const std::string&) { return std::vector<entity_history_version>{}; });
 
     CHECK(registry.has_provider("ores.refdata.currency"));
     CHECK(registry.provider_count() == 1);
@@ -52,18 +52,19 @@ TEST_CASE("register_history_provider_twice_for_same_entity_type_replaces_not_dup
     int first_call_count = 0;
     int second_call_count = 0;
 
-    registry.register_history_provider("ores.refdata.currency", [&](const std::string&) {
+    registry.register_history_provider("ores.refdata.currency", [&](const std::string&, const std::string&) {
         ++first_call_count;
         return std::vector<entity_history_version>{};
     });
-    registry.register_history_provider("ores.refdata.currency", [&](const std::string&) {
+    registry.register_history_provider("ores.refdata.currency", [&](const std::string&, const std::string&) {
         ++second_call_count;
         return std::vector<entity_history_version>{};
     });
 
     CHECK(registry.provider_count() == 1);
 
-    const auto response = registry.dispatch({.entity_type = "ores.refdata.currency", .entity_id = "USD"});
+    const auto response = registry.dispatch(
+        {.entity_type = "ores.refdata.currency", .entity_id = "USD"}, "tenant-1");
 
     CHECK(response.success);
     CHECK(first_call_count == 0);
@@ -73,7 +74,8 @@ TEST_CASE("register_history_provider_twice_for_same_entity_type_replaces_not_dup
 TEST_CASE("dispatch_with_no_registered_provider_returns_a_failure_response", tags) {
     dispatch_registry registry;
 
-    const auto response = registry.dispatch({.entity_type = "ores.refdata.party", .entity_id = "1"});
+    const auto response =
+        registry.dispatch({.entity_type = "ores.refdata.party", .entity_id = "1"}, "tenant-1");
 
     CHECK_FALSE(response.success);
     CHECK(response.versions.empty());
@@ -84,15 +86,17 @@ TEST_CASE("dispatch_calls_the_registered_provider_with_the_requested_entity_id",
     dispatch_registry registry;
     std::string received_id;
 
-    registry.register_history_provider("ores.refdata.currency", [&](const std::string& id) {
-        received_id = id;
-        entity_history_version v;
-        v.version = 1;
-        v.modified_by = "alice";
-        return std::vector<entity_history_version>{v};
-    });
+    registry.register_history_provider(
+        "ores.refdata.currency", [&](const std::string&, const std::string& id) {
+            received_id = id;
+            entity_history_version v;
+            v.version = 1;
+            v.modified_by = "alice";
+            return std::vector<entity_history_version>{v};
+        });
 
-    const auto response = registry.dispatch({.entity_type = "ores.refdata.currency", .entity_id = "USD"});
+    const auto response = registry.dispatch(
+        {.entity_type = "ores.refdata.currency", .entity_id = "USD"}, "tenant-1");
 
     CHECK(response.success);
     CHECK(received_id == "USD");
@@ -101,21 +105,39 @@ TEST_CASE("dispatch_calls_the_registered_provider_with_the_requested_entity_id",
     CHECK(response.versions[0].modified_by == "alice");
 }
 
+TEST_CASE("dispatch_passes_caller_context_through_to_the_provider_unexamined", tags) {
+    dispatch_registry registry;
+    std::string received_context;
+
+    registry.register_history_provider(
+        "ores.refdata.currency", [&](const std::string& caller_context, const std::string&) {
+            received_context = caller_context;
+            return std::vector<entity_history_version>{};
+        });
+
+    const auto response = registry.dispatch(
+        {.entity_type = "ores.refdata.currency", .entity_id = "USD"}, "tenant-1|party-2");
+
+    CHECK(response.success);
+    CHECK(received_context == "tenant-1|party-2");
+}
+
 TEST_CASE("dispatch_only_calls_the_provider_matching_the_requested_entity_type", tags) {
     dispatch_registry registry;
     bool currency_provider_called = false;
     bool party_provider_called = false;
 
-    registry.register_history_provider("ores.refdata.currency", [&](const std::string&) {
+    registry.register_history_provider("ores.refdata.currency", [&](const std::string&, const std::string&) {
         currency_provider_called = true;
         return std::vector<entity_history_version>{};
     });
-    registry.register_history_provider("ores.refdata.party", [&](const std::string&) {
+    registry.register_history_provider("ores.refdata.party", [&](const std::string&, const std::string&) {
         party_provider_called = true;
         return std::vector<entity_history_version>{};
     });
 
-    const auto response = registry.dispatch({.entity_type = "ores.refdata.party", .entity_id = "1"});
+    const auto response =
+        registry.dispatch({.entity_type = "ores.refdata.party", .entity_id = "1"}, "tenant-1");
 
     CHECK(response.success);
     CHECK_FALSE(currency_provider_called);
@@ -125,11 +147,14 @@ TEST_CASE("dispatch_only_calls_the_provider_matching_the_requested_entity_type",
 TEST_CASE("dispatch_returns_a_failure_response_when_the_provider_throws", tags) {
     dispatch_registry registry;
 
-    registry.register_history_provider("ores.refdata.currency", [](const std::string&) -> std::vector<entity_history_version> {
-        throw std::runtime_error("database unavailable");
-    });
+    registry.register_history_provider(
+        "ores.refdata.currency",
+        [](const std::string&, const std::string&) -> std::vector<entity_history_version> {
+            throw std::runtime_error("database unavailable");
+        });
 
-    const auto response = registry.dispatch({.entity_type = "ores.refdata.currency", .entity_id = "USD"});
+    const auto response = registry.dispatch(
+        {.entity_type = "ores.refdata.currency", .entity_id = "USD"}, "tenant-1");
 
     CHECK_FALSE(response.success);
     CHECK(response.versions.empty());

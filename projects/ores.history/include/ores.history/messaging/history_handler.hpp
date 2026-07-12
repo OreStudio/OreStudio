@@ -26,7 +26,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <expected>
+#include <functional>
+#include <string>
 
 namespace ores::history::messaging {
 
@@ -40,19 +44,38 @@ inline auto& history_handler_lg() {
 } // namespace
 
 /**
+ * @brief Resolves an inbound history request's opaque caller_context
+ * (see dispatch_registry::history_provider) from the raw NATS
+ * message — typically validating a JWT and packing tenant_id
+ * (and, where relevant, party_id/actor) into a provider-agreed
+ * string. Returns the resolved error_code (e.g. unauthorized or
+ * token_expired, mirroring ores::service::service::make_request_context's
+ * distinction) to reject the request.
+ *
+ * Supplied by the composing service, which — unlike this
+ * dependency-free leaf — has ores.security/ores.database available
+ * to do the actual validation.
+ */
+using caller_context_resolver = std::function<std::expected<std::string, ores::service::error_code>(
+    const ores::nats::message&)>;
+
+/**
  * @brief NATS handler for the one generic history subject.
  *
- * Decodes a get_entity_history_request, delegates to the injected
+ * Decodes a get_entity_history_request, resolves the caller's opaque
+ * context via the injected resolver, delegates to the injected
  * dispatch_registry (which never throws — see its dispatch() doc), and
  * replies with the resulting response. The registry itself owns all
- * per-entity dispatch logic; this class is purely the NATS decode/reply
- * glue shared by every entity, replacing what would otherwise be N
- * near-identical per-entity history() methods.
+ * per-entity dispatch logic; this class is purely the NATS decode/
+ * resolve/reply glue shared by every entity, replacing what would
+ * otherwise be N near-identical per-entity history() methods.
  */
 class ORES_HISTORY_EXPORT history_handler final {
 public:
-    history_handler(ores::nats::service::client& nats, const service::dispatch_registry& registry)
-        : nats_(nats), registry_(registry) {}
+    history_handler(ores::nats::service::client& nats,
+                    const service::dispatch_registry& registry,
+                    caller_context_resolver resolve_context)
+        : nats_(nats), registry_(registry), resolve_context_(std::move(resolve_context)) {}
 
     void history(ores::nats::message msg) const {
         using ores::service::messaging::decode;
@@ -62,13 +85,19 @@ public:
         using namespace ores::logging;
 
         [[maybe_unused]] const auto correlation_id = log_handler_entry(history_handler_lg(), msg);
+        auto caller_context = resolve_context_(msg);
+        if (!caller_context) {
+            BOOST_LOG_SEV(history_handler_lg(), warn) << "Unauthorized: " << msg.subject;
+            error_reply(nats_, msg, caller_context.error());
+            return;
+        }
         auto req = decode<get_entity_history_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(history_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto resp = registry_.dispatch(*req);
+        const auto resp = registry_.dispatch(*req, *caller_context);
         BOOST_LOG_SEV(history_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
@@ -76,6 +105,7 @@ public:
 private:
     ores::nats::service::client& nats_;
     const service::dispatch_registry& registry_;
+    caller_context_resolver resolve_context_;
 };
 
 }

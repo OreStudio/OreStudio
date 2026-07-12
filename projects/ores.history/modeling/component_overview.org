@@ -34,9 +34,26 @@ crosses the wire for history; every frontend renders the same shape.
 
 * Inputs
 
-- Per-entity *history providers* — =std::function<std::vector<entity_history_version>(const std::string& entity_id)>=
+- Per-entity *history providers* — =std::function<std::vector<entity_history_version>(const std::string& caller_context, const std::string& entity_id)>=
   — registered by each domain service/component at startup, keyed by
-  that entity's =entity_type_of()= string.
+  that entity's =entity_type_of()= string. =caller_context= is an
+  opaque string this leaf neither produces nor interprets: a
+  caller-supplied =caller_context_resolver= (see below) packs
+  whatever it needs — typically tenant_id, and where relevant
+  party_id/actor for row-level visibility — into it, and each
+  provider unpacks it in whatever shape it and the resolver privately
+  agree on.
+- A *caller_context_resolver* —
+  =std::function<std::expected<std::string, ores::service::error_code>(const nats::message&)>=
+  — supplied by the composing service to validate/authorize each
+  inbound request (typically a JWT check) and produce its
+  =caller_context=; a returned error (e.g. =unauthorized= or
+  =token_expired=, mirroring =make_request_context='s distinction)
+  rejects the request with that same code, preserving the re-auth/
+  session-expired UX every other handler's =error_reply= relies on.
+  Lives outside this leaf because it needs
+  =ores.security=/=ores.database=, which =ores.history= deliberately
+  does not depend on.
 - A =get_entity_history_request= (=entity_type=, =entity_id=) arriving
   on the shared =history.v1.get= NATS subject.
 
@@ -54,14 +71,22 @@ crosses the wire for history; every frontend renders the same shape.
   request/response types and the =history.v1.get= subject constant.
 - =include/ores.history/service/dispatch_registry.hpp= — the
   server-side registry: =register_history_provider(entity_type, fn)=
-  and =dispatch(entity_type, entity_id)=.
+  and =dispatch(request, caller_context)=.
 - =include/ores.history/messaging/history_handler.hpp= — the NATS
-  decode/dispatch/reply glue shared by every entity.
+  decode/resolve/dispatch/reply glue shared by every entity, and the
+  =caller_context_resolver= type.
 - =include/ores.history/messaging/registrar.hpp= —
-  =register_history_handlers(nats, registry, queue_group)=, subscribing
-  the single =history.v1.get= subject to a =history_handler= backed by
-  a caller-owned =dispatch_registry=. Call once per service process,
-  after registering that service's own entities' providers.
+  =register_history_handlers(nats, registry, queue_group, resolve_context)=,
+  subscribing the single =history.v1.get= subject to a =history_handler=
+  backed by a caller-owned =dispatch_registry=. Call once per service
+  process, after registering that service's own entities' providers.
+- =include/ores.history/service/version_builder.hpp= —
+  =build_entity_history_versions(versions, render)=, the shared glue
+  every history_provider needs: renders each newest-first version's
+  fields, diffs each against the next-older one via
+  =ores.diff::engine::compute= (empty diff for the oldest), and
+  numbers versions descending from the count — matching every
+  =*_repository::read_all(id)='s =version DESC= ordering.
 
 * Dependencies
 

@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: D68CF36A-62E5-4118-AB29-0FAE9E3A5855
+:END:
+#+title: Task: Fix default party dangling after a same-save party removal
+#+description: AccountDetailDialog::onSaveClicked sends default_party_id from the combo's current selection before committing staged party removals, so removing the party currently selected as default (without also changing the combo) leaves default_party_id pointing at a party the account is no longer assigned to (soft FK, no DB error). Flagged as a non-blocking follow-up in PR #1514 review round 5.
+#+type: task
+#+level: s1
+#+filetags: :account-default-party-login:sprint_23:v0:
+#+owner: marco
+#+branch: feature/fix-default-party-dangle-after-same-save-removal
+#+pr: 1518
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+In the account edit dialog, staging a removal of the party currently
+selected as "Default Party" (without also changing the combo) must
+not leave the saved account with a =default_party_id= pointing at a
+party it's no longer assigned to.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- Saving an edit that both stages a party removal and leaves that
+  same party selected in the "Default Party" combo clears the
+  account's default (sends an empty =default_party_id=), rather than
+  sending the about-to-be-removed party's id.
+- The post-save in-memory rebase (=currentAccount_.default_party_id=,
+  =AccountPartiesWidget::rebaseDefaultParty()=) reflects what was
+  actually persisted (cleared), not the combo's raw, stale selection
+  — so the UI doesn't show a default that the server no longer has.
+- Saves that don't involve a party removal are unaffected — this is a
+  targeted fix at the point the request is built, not a change to the
+  ordering of party-add/remove/default-party requests within a save.
+
+* Plan
+
+1. Compute whether the combo's currently-selected default party is
+   also in the save's staged =pendingPartyRemoves_= list, at the same
+   point =onSaveClicked()= already builds the other pending-change
+   snapshots (before going async) — this is the one place that
+   already has both pieces of state (the combo selection and the
+   staged removals) at hand.
+2. If so, treat the outgoing =default_party_id= as cleared (empty
+   string) instead of the stale selection — closes the gap without
+   needing to reorder the removal commit ahead of the account-fields
+   update (which would introduce its own race: the removal landing
+   before the default-party validation runs would then make a
+   *legitimate* same-save "assign a new default from an existing
+   party" request fail if that party happens to be mid-removal in the
+   same batch — not a real scenario here, but reordering has its own
+   sharp edges, so a targeted computation at the request-building
+   site is the smaller, more contained change).
+3. Thread the same computed value (=finalDefaultPartyId=) into the
+   post-save completion handler, so the in-memory rebase
+   (=currentAccount_.default_party_id=,
+   =partiesWidget_->rebaseDefaultParty()=) matches what was actually
+   sent/persisted rather than re-reading the combo's now-stale raw
+   selection a second time.
+
+* Notes
+
+- This is a narrow, deliberately conservative fix: it does not change
+  the relative ordering of the account-fields update vs. party
+  add/remove commits within a save (see =onSaveClicked()=), only what
+  value is computed for =default_party_id= when those two pieces of
+  state conflict.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1518][#1518]] | [ores.qt] Fix default-party dangle after same-save removal |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =needsAccountSave= was computed before =defaultBeingRemoved=/=finalDefaultPartyId= and never folded them in, so the primary scenario (remove the default party without touching the combo, no other field edited) never sent the corrective =update_account_request= — the server kept the dangling default while the client optimistically rebased to nil, a new client/server desync | =AccountDetailDialog.cpp= | Accepted | Reordered so =pendingPartyRemoves=/=defaultBeingRemoved= are computed before =needsAccountSave=, and folded =defaultBeingRemoved= into it: =needsAccountSave= is now =isDirty_= OR =defaultBeingRemoved= OR =hasPendingDefaultPartyChange()=. |
+
+* Result
+
+Fixed in [[proj:projects/ores.qt/admin/src/AccountDetailDialog.cpp][AccountDetailDialog.cpp]]'s =onSaveClicked()=: computes
+=finalDefaultPartyId= — the combo's selected default party, or nil if
+that same party is also staged for removal in =pendingPartyRemoves_=
+— and uses it both for the outgoing =update_account_request='s
+=default_party_id= and for the post-save in-memory rebase
+(=currentAccount_.default_party_id=,
+=partiesWidget_->rebaseDefaultParty()=), instead of reading the raw
+combo selection at each point.
+
+Verification: rebuilt =ores.qt.admin.lib= clean under
+=linux-clang-debug-make=; ran =ctest --preset linux-clang-debug-make -R
+iam= — =ores.iam.api.tests=, =ores.iam.core.tests=,
+=ores.iam.service.tests= all green (100% pass, 0 failed). Did not add
+an automated UI test for this specific combo-plus-removal interaction
+(no existing harness exercises =AccountPartiesWidget=/=AccountDetailDialog=
+interactively) — same manual-QA-gap caveat as the rest of this story.

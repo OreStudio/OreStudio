@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 9E364BEF-12EE-42F8-902C-B1E68A3095B8
+:END:
+#+title: Wash books and risk routing
+#+description: How a Wash Book stays risk-neutral by immediately back-to-backing every client trade into a paired risk book, and how this fits the broader risk-routing/IDT mechanism.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:trading:book:finance:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+
+* Summary
+
+A *wash book* carries no risk: every client trade booked into it is
+immediately offset by a system-generated back-to-back trade that
+routes the resulting market risk into a designated *risk book*,
+leaving the wash book holding only two of the three legs of that
+back-to-back structure. This is the same risk-routing mechanism used
+for Inter-Desk Transfers (IDTs) generally, and the system enforces
+risk-neutrality as a property of the book's purpose rather than
+trusting booking discipline alone.
+
+* Detail
+
+** Mechanics
+
+#+BEGIN_EXAMPLE
+   Client ──trade──► WASH BOOK ──back-to-back (system generated)──► RISK BOOK
+                      (0 net risk)                                  (holds market risk)
+#+END_EXAMPLE
+
+The client-facing trade lands in the wash book. A system-generated,
+internally-countered back-to-back trade immediately routes the
+resulting market risk out of the wash book and into the risk book
+actually responsible for managing it.
+
+** Terminology warning
+
+This is borrowed terminology from equities, used in FX as well. It
+must not be confused with the unrelated regulatory/surveillance
+concept of "wash trading" — a pre-arranged trade with no genuine
+transfer of market risk, used to manipulate reported volume or price.
+That is a market-abuse pattern tracked for compliance purposes, not an
+operational process.
+
+** Risk Moves vs position management
+
+Wash books, IDTs, and risk routing are jointly classified as *Risk
+Moves*: putting the risk in the right book for the risk manager
+responsible for it — as distinct from *position management*, which
+moves cash/balances rather than risk (see the [[id:B0902FF2-138F-4234-A473-1371549CE219][funding process]] and
+[[id:CA299D08-AC97-4A37-B3F2-A5927F379326][sweep]] for position-management examples).
+
+** Book eligibility and enforcement
+
+Book purpose governs eligibility, following the same permissioning
+pattern as Funding Books (see [[id:B0902FF2-138F-4234-A473-1371549CE219][Funding process]]): a book flagged as a
+Wash book is constrained so it *must always remain risk neutral* — the
+system enforces this as a property of the book's purpose, not booking
+discipline. A wash book must also carry a designated *paired risk
+book* — a book-to-book relationship, not merely a flag — since every
+back-to-back trade needs a target to route the risk into.
+
+** Audit requirements
+
+Because risk is deliberately split across two books via a
+system-generated back-to-back, it must always be possible to trace a
+deal back through the split/route/move to find the original client
+trade — the same traceability principle required for the [[id:B0902FF2-138F-4234-A473-1371549CE219][funding
+process]] and sweep runs.
+
+* See also
+
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — hub note.
+- [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] — the wider set of purpose classifications a
+  book carries, of which Wash is one.
+- [[id:B0902FF2-138F-4234-A473-1371549CE219][Funding process]] — the analogous purpose-constrains-deal-types
+  mechanism applied to Funding books.
+- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger sweep]] — downstream cash-centralisation once
+  risk has settled into its owning book.

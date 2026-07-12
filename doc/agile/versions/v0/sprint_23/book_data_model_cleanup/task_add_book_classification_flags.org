@@ -1,19 +1,19 @@
 :PROPERTIES:
 :ID: 5C89033D-224E-4105-A8CF-B0336C2A9014
 :END:
-#+title: Task: Add book classification flags: is_reserve_book, is_ledger_book, is_funding_book, is_sweepable, is_manual_ledger_book
-#+description: The domain notes describe a book carrying independent boolean classification flags rather than a single type enum, and mention 5 not yet modeled: Is Reserve Book, Is Ledger Book, Is Funding Book, Sweepable (only Sweepable books participate in cash sweeping), and manual ledger book (not fed from a source book, updated by hand). Add all 5 as boolean fields, following the exact same pattern as the existing is_trading_book field (detail field checkbox, list column, generator).
+#+title: Task: Add book_purpose_type lookup entity to book
+#+description: Rescoped from the original 5-boolean-flags ask after analysis (see Plan): add book_purpose_type as a lookup entity, mirroring the regulatory_book_type pattern, with mutually-exclusive values Trading (default/ordinary), Reserve, Funding, Wash, Write-off, Test, Sales, Sweep target, and Remittance target. Companion fields (ledger_feed_type, is_sweepable, Wash's paired-risk-book link) are split into their own tasks under this story.
 #+type: task
 #+level: s1
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-book-classification-flags
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: F0DAFC8D-3C94-4F97-B546-D7AF7469A29E
+#+blocked_since: 2026-07-11
 #+created: 2026-07-08
-#+updated: 2026-07-08
-#+environment:
+#+updated: 2026-07-11
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Now          | book_purpose_type entity model scaffolded ([[id:F2DD5F1F-759C-44E3-8BBD-EB451494E9A0][ores.refdata.book_purpose_type.org]]), generation paused. |
+| Waiting on   | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] -- book must be on a clean, composite-entity-versioned codegen baseline before adding this FK. |
+| Next         | Resume once the drift remediation story is DONE.        |
+| Last touched | 2026-07-11                               |
 
 * Acceptance
 
@@ -39,9 +39,54 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Analysis (see [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]], "How the classification axes
+relate to each other") showed the original 5-boolean scope doesn't
+hold up: =is_manual_ledger_book= is not independent of
+=is_ledger_book= (invalid state possible: manual=true, ledger=false),
+and the task's stated precedent (=is_trading_book= as a checkbox) is
+stale — that field was already turned into the =regulatory_book_type=
+lookup entity earlier in the sprint, precisely because a fixed boolean
+turned out to be an extensible category. The same treatment applies
+here: Reserve and Funding are two instances of a wider "risk role"
+category (with Wash/Write-off/Test/Sales/Central-Remittance already
+named in the domain notes as future members), and "fed from a source
+book" vs "fed manually" vs "not fed" is a 3-state axis, not two
+booleans.
+
+Further teased apart against real process detail (see the new
+[[id:B0902FF2-138F-4234-A473-1371549CE219][Funding process]], [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]], [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger
+sweep]], and [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] knowledge docs): =book_purpose_type=
+values are *mutually exclusive* (a book plays exactly one risk role),
+including two more values discovered from the process write-up — Sweep
+target and Remittance target — which look combinable at first glance
+(both are singleton "central" books) but are not: different owners
+(Treasury vs Finance), different cadence, and different P&L treatment
+(Sweep realises trading P&L; Remittance is balance-sheet-only only).
+Mixing them on one book would blur the audit/reconciliation separation
+these processes exist to provide.
+
+Full revised design — 2 new lookup FKs + 1 boolean, no cross-axis
+constraints (per the Basel/FRTB analysis: no regulatory rule ties risk
+role to trading/banking classification, so regulatory type, ledger
+feed, and purpose combine freely with each other; only *within*
+=book_purpose_type= are the values mutually exclusive):
+
+| Field                 | Type                         | Values                                          | Task |
+|-----------------------+-------------------------------+--------------------------------------------------+------|
+| =book_purpose_type=   | FK -> new lookup entity      | Trading (default/ordinary), Reserve, Funding, Wash, Write-off, Test, Sales, Sweep target, Remittance target | this task |
+| =ledger_feed_type=    | FK -> new lookup entity (or 3-value enum) | None, Automatic, Manual                        | [[id:DC13CC83-2807-4AA9-B56E-BA7D6BA896D2][Add ledger_feed_type lookup entity to book]] |
+| =is_sweepable=        | bool                         | independent of the above; governs spot-sweep eligibility only, not ledger sweep; UI may default false for Reserve purpose but no DB constraint | [[id:FA28F852-012F-47A7-94E7-FEDAEF2F2DF9][Add is_sweepable flag to book]] |
+| Wash paired risk book | nullable self-FK to book     | set only when purpose = Wash                    | [[id:077F2C20-50AE-4E23-A4E1-0FC053854313][Add paired risk-book link for Wash-purpose books]] (BACKLOG, discovered scope) |
+
+=regulatory_book_type= (Trading/Banking) is unchanged — already
+correctly modeled, and confirmed independent of purpose/ledger-feed by
+the FRTB analysis.
+
+*This task's scope is now =book_purpose_type= only.* Follow the
+=regulatory_book_type= implementation as the pattern (domain/SQL/
+repository/protocol/Qt CRUD + badge-coloured combo), not the
+originally-scoped checkbox pattern. The companion fields above split
+into their own sibling tasks under this story.
 
 * Notes
 

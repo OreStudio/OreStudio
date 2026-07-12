@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/book_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -74,6 +75,15 @@ public:
      */
     std::uint32_t count_books();
 
+    /**
+     * @brief Retrieves a single book as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param id The id of the book.
+     * @param version The version to fetch.
+     * @return The book at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::book> get_book_at_version(const std::string& id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single book by its id.

@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 0C185CE4-63E5-44CC-94AF-F3FF1E194986
+:END:
+#+title: Task: Regenerate book and restore insert-trigger validations
+#+description: Regenerate book (currently almost entirely stale). Diff the resulting SQL against ores_refdata_books_create.sql on disk specifically for the 5 insert-trigger validations from PR #1449 (soft FKs on parent_portfolio_id/party_id/owner_unit_id; value checks on ledger_ccy/book_status) plus any others -- confirm book.org's Foreign keys/Insert trigger sections still produce them. Fix via paste blocks or variability knobs in the .org model if anything is missing, not hand-patched SQL.
+#+type: task
+#+level: s1
+#+filetags: :book_data_model_cleanup:sprint_23:v0:book_codegen_drift_remediation:
+#+owner: marco
+#+branch: feature/regenerate-book-restore-validations
+#+pr: 1516
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+Confirmed book.org's =* Foreign keys=/=* Insert trigger= sections
+(added in PR #1449 after that regen dropped them) were still present
+before touching anything: 3 soft FKs (parent_portfolio_id, party_id,
+owner_unit_id) + 3 value checks (ledger_ccy, book_status,
+regulatory_book_type — the third added since PR #1449). Diff-reviewed
+=compass codegen entity generate book --diff= next: the insert-trigger
+validation block didn't appear in the diff at all (confirming it would
+be untouched), only the same safe shape of changes seen in
+book_status/regulatory_book_type (real bug fix in ClientBookModel.cpp
+missing =result->success=, =clock_timestamp()= trigger fix, composite
+=read_at_version=, plus book-specific badge/icon polish in
+BookMdiWindow.cpp and an =idEdit->setReadOnly()= fix in
+BookDetailDialog.cpp).
+
+Ran the real generation (all 40 files ✅ in =compass codegen entity
+show book=). Re-grepped the generated SQL for all 6 validations --
+present, byte-identical to before. =BookController='s constructor
+signature was already correct in RefdataPlugin.cpp (fixed during the
+"Move book to refdata" story), so no call-site fix needed this time.
+Built clean across api/core/service/qt.refdata/qt.trading/qt.exe.
+
+=db recreate= applied the modified SQL with no errors. Verified the
+soft-FK validation actually fires at the DB level: a direct insert
+with a non-existent =parent_portfolio_id= was correctly rejected with
+=Invalid parent_portfolio_id: ... No active portfolio found=.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:7DD2C147-1CED-4D8A-AE6E-F1CA1636FA7F][Verify book list/detail/history and insert-trigger validations after codegen regeneration]] | PASSED | All 6 steps PASS; zero ERROR-level log lines. The invalid-portfolio negative test isn't reachable via UI (constrained picker) or ores.shell (no book commands) -- already confirmed at the DB level via direct SQL insert. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1516][#1516]] | [refdata,qt,sql,agile] Book codegen drift remediation: relocate Qt plugin ownership, regenerate book/book_status/regulatory_book_type |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+book is fully regenerated against current codegen templates (all 40
+files ✅ in =compass codegen entity show book=), builds cleanly, and
+passes its manual end-to-end QA scenario (all 6 steps PASS, zero
+ERROR-level log lines). All 6 insert-trigger validations from PR #1449
+(3 soft FKs, 3 value checks) survived regeneration byte-identical and
+were confirmed firing correctly both at the DB level (direct SQL
+insert rejected) and structurally in the UI (the Parent Portfolio
+field is a constrained picker, so an invalid reference can't even be
+submitted).
+
+Unlike book_status and regulatory_book_type, no controller call-site
+fix was needed -- BookController's constructor was already correct in
+RefdataPlugin.cpp from the earlier "Move book to refdata" story.

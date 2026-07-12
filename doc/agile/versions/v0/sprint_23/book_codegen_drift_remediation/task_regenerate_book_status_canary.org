@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 7D81393A-2025-4E77-9CCF-2DB9A9DB7E77
+:END:
+#+title: Task: Regenerate book_status as a drift canary
+#+description: book_status is the smallest of the 3 stale entities (mostly ~ with only the event registrar files fully missing). Regenerate it first, diff-review every change, build, and manually verify the Book Status list/detail/history windows still work -- establishes confidence in the current templates before tackling book itself.
+#+type: task
+#+level: s1
+#+filetags: :book_data_model_cleanup:sprint_23:v0:book_codegen_drift_remediation:
+#+owner: marco
+#+branch: feature/regenerate-book-status-canary
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+Diff-reviewed =compass codegen entity generate book_status --diff=
+before running for real: all changes were safe template evolution
+(new NATS event registrar, a real bug fix in ClientBookStatusModel.cpp
+missing a =result->success= check, a real bug fix in the insert
+trigger — =current_timestamp= -> =clock_timestamp()= for
+same-transaction multi-write safety, a new unique index on
+(tenant_id, name), and cosmetic formatting). Ran the real generation,
+wired the new event registrar into event_registrar.cpp (previously
+missing there for book_status), and built cleanly.
+
+=db recreate= applied the modified SQL with no errors; a manual SQL
+insert confirmed the version-bump/bitemporal-close trigger path.
+
+Manual QA via the scenario below surfaced a real regression:
+=book_status.org='s Qt section was missing =:has_change_reason_cache:
+true= (present on both =currency.org= and =book.org=) — the exact bug
+class PR #1449 found for =book= itself. Save silently no-op'd with no
+error (client-side: the change-reason prompt/cache was never wired, so
+the save request likely never fired). Fixed the model, regenerated the
+Qt layer, and found a second issue: =BookStatusController='s
+constructor gained a =ChangeReasonCache*= parameter but its only call
+site — in =ores.qt/trading/src/TradingPlugin.cpp=, a leftover from the
+book Qt-layer relocation in PR #1449 — wasn't updated. Fixed the call
+site to pass =ctx_.change_reason_cache= (mirroring how =BookController=
+already does). Rebuilt cleanly; re-ran the scenario — all steps
+passed, zero ERROR-level log lines.
+
+That TradingPlugin.cpp call site is itself a symptom of a wider
+architectural issue — =BookController=/=BookStatusController=/
+=RegulatoryBookTypeController= live in =ores.qt/refdata= but are still
+constructed and menu-wired from =ores.qt/trading=. Rather than patch
+it inline again for the next two entities, filed a dedicated story to
+fix it once for all three and unblock this one:
+[[id:0E63013B-3B02-4968-A9EA-ED85C00EC7AF][Move book to refdata]].
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:0ECFC829-658D-4EC0-8851-F700AD4F076D][Verify book_status list/detail/history after codegen regeneration]] | PASSED | Failed first pass (missing has_change_reason_cache); fixed and passed on re-run. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+book_status is fully regenerated against current codegen templates
+(=compass codegen entity show book_status= is all-✅), builds cleanly
+across api/core/service/qt.refdata/qt.trading, and passes its manual
+end-to-end QA scenario with zero ERROR-level log lines. Two real bugs
+found and fixed along the way: a missing =has_change_reason_cache=
+model flag (silent save no-op, no visible error) and a stale
+=TradingPlugin.cpp= call site left over from PR #1449's Qt-layer
+move. A third finding — the controllers being wired from the wrong
+plugin entirely — is scoped as its own blocking story,
+[[id:0E63013B-3B02-4968-A9EA-ED85C00EC7AF][Move book to refdata]], rather than fixed inline here.

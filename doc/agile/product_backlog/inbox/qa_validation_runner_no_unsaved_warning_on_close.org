@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D8B2BC60-6CCA-42B5-88CA-09BBA8CD576C
+:END:
+#+title: QA Validation Runner: no unsaved-changes warning when closing the app
+#+description: Closing the Qt client while the QA Validation Runner panel has unsaved test-scenario results (step PASS/FAIL marks not yet written back to the test_scenario doc) gives no warning and silently discards the results. Should prompt to save, like other unsaved-state dialogs in the app.
+#+type: capture
+#+level: cross
+#+filetags: :qt:qa:scenario-runner:dx:bug:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

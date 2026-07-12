@@ -136,7 +136,7 @@ void BookMdiWindow::setupTable() {
     auto* delegate = new EntityItemDelegate(
         {
             cs::text_left,
-            cs::text_left,
+            cs::icon_text_left,
             cs::badge_centered,
             cs::text_left,
             cs::badge_centered,
@@ -147,27 +147,36 @@ void BookMdiWindow::setupTable() {
         tableView_);
     delegate->set_badge_color_resolver(
         2, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
             if (!cache)
-                return default_gray;
+                return fallback;
             auto* def = cache->resolve("book_status", value.toStdString());
             if (!def)
-                return default_gray;
+                return fallback;
             return {QColor(QString::fromStdString(def->background_colour)),
                     QColor(QString::fromStdString(def->text_colour))};
         });
     delegate->set_badge_color_resolver(
         4, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
             if (!cache)
-                return default_gray;
+                return fallback;
             auto* def = cache->resolve("regulatory_book_type", value.toStdString());
             if (!def)
-                return default_gray;
+                return fallback;
             return {QColor(QString::fromStdString(def->background_colour)),
                     QColor(QString::fromStdString(def->text_colour))};
         });
     tableView_->setItemDelegate(delegate);
+    if (badgeCache_) {
+        if (badgeCache_->isLoaded())
+            tableView_->viewport()->update();
+        connect(badgeCache_, &BadgeCache::loaded, tableView_->viewport(), [this]() {
+            tableView_->viewport()->update();
+        });
+    }
 
     initializeTableSettings(tableView_, model_, "BookListWindow", {}, {900, 400}, 1);
 }

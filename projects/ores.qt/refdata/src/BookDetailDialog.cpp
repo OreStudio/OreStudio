@@ -118,7 +118,9 @@ void BookDetailDialog::setupConnections() {
 void BookDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     populateBookStatusCombo();
+    setup_badge_combo(this, ui_->bookStatusCombo, badgeCache(), "book_status");
     populateRegulatoryBookTypeCombo();
+    setup_badge_combo(this, ui_->regulatoryBookTypeCombo, badgeCache(), "regulatory_book_type");
     populateLedgerCcyCombo();
 }
 
@@ -139,6 +141,7 @@ void BookDetailDialog::setBook(const refdata::domain::book& book) {
 
 void BookDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
+    ui_->idEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {
@@ -272,6 +275,7 @@ void BookDetailDialog::onSaveClicked() {
         return;
     }
 
+
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
@@ -402,5 +406,6 @@ void BookDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

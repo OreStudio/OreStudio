@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: CCED67A5-5003-4B5F-A747-0C4F79C72228
+:END:
+#+title: Task: Regenerate regulatory_book_type
+#+description: Regenerate regulatory_book_type against current templates (also missing its NATS event registrar), diff-review, build, and manually verify the Regulatory Book Type list/detail/history windows.
+#+type: task
+#+level: s1
+#+filetags: :book_data_model_cleanup:sprint_23:v0:book_codegen_drift_remediation:
+#+owner: marco
+#+branch: feature/regenerate-regulatory-book-type
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+Diff-reviewed =compass codegen entity generate regulatory_book_type
+--diff= first: same safe shape as book_status (new event registrar,
+real bug fix in ClientRegulatoryBookTypeModel.cpp missing a
+=result->success= check, =current_timestamp= -> =clock_timestamp()=
+trigger fix, composite =read_at_version= scaffolding, cosmetic
+formatting). Proactively added the =has_change_reason_cache: true= and
+=has_pagination: true= flags this model was missing (the same gap
+found and fixed for book_status), rather than waiting to discover it
+via a failed manual save again.
+
+Ran the real generation (all-✅ in =compass codegen entity show=),
+then fixed =RegulatoryBookTypeController='s constructor call site in
+=RefdataPlugin.cpp= (gained a =ChangeReasonCache*= parameter). Built
+clean across api/core/service/qt.refdata/qt.trading/qt.exe. =db
+recreate= applied the modified SQL with no errors; a manual SQL
+insert confirmed the version-bump/bitemporal-close trigger path.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:7264225E-9838-4D71-8371-38CD80E7F77B][Verify regulatory_book_type list/detail/history after codegen regeneration]] | PASSED | All 6 steps PASS; zero ERROR-level log lines confirmed. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+regulatory_book_type is fully regenerated against current codegen
+templates (all-✅ in =compass codegen entity show=), builds cleanly,
+and passes its manual end-to-end QA scenario with zero ERROR-level log
+lines. Applying the has_change_reason_cache/has_pagination lesson from
+book_status proactively (rather than discovering it via a failed save
+again) meant this entity needed no bug-driven rework mid-task -- just
+the expected constructor call-site update in RefdataPlugin.cpp.
+
+Also discovered along the way: the new NATS event registrar needs a
+cmake reconfigure (GLOB_RECURSE doesn't pick up new files on an
+incremental build alone) -- same class of gotcha as book_status's
+registrar, now resolved for both.

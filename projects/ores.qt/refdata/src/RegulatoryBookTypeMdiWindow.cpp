@@ -128,7 +128,9 @@ void RegulatoryBookTypeMdiWindow::setupTable() {
     initializeTableSettings(tableView_,
                             model_,
                             "RegulatoryBookTypeListWindow",
-                            {ClientRegulatoryBookTypeModel::Description},
+                            {
+                                ClientRegulatoryBookTypeModel::Description,
+                            },
                             {900, 400},
                             1);
 }

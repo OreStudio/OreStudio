@@ -22,6 +22,7 @@
 #include "ores.qt/BookStatusDetailDialog.hpp"
 #include "ores.qt/BookStatusHistoryDialog.hpp"
 #include "ores.qt/BookStatusMdiWindow.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
@@ -42,9 +43,11 @@ constexpr std::string_view status_event_name =
 BookStatusController::BookStatusController(QMainWindow* mainWindow,
                                            QMdiArea* mdiArea,
                                            ClientManager* clientManager,
+                                           ChangeReasonCache* changeReasonCache,
                                            const QString& username,
                                            QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, status_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -160,6 +163,8 @@ void BookStatusController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new book status";
 
     auto* detailDialog = new BookStatusDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -208,6 +213,8 @@ void BookStatusController::showDetailWindow(const refdata::domain::book_status& 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << status.code;
 
     auto* detailDialog = new BookStatusDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -345,6 +352,8 @@ void BookStatusController::onOpenVersion(const refdata::domain::book_status& sta
     }
 
     auto* detailDialog = new BookStatusDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setStatus(status);
@@ -394,6 +403,8 @@ void BookStatusController::onRevertVersion(const refdata::domain::book_status& s
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BookStatusDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_status = status;

@@ -31,8 +31,6 @@ class DetachableMdiSubWindow;
 class OreImportController;
 class PortfolioController;
 class BookController;
-class BookStatusController;
-class RegulatoryBookTypeController;
 class TradeController;
 
 /**
@@ -82,7 +80,6 @@ private:
     QMenu* trading_codes_menu_{nullptr};
 
     QAction* act_portfolios_{nullptr};
-    QAction* act_books_{nullptr};
     QAction* act_portfolio_explorer_{nullptr};
     QAction* act_org_explorer_{nullptr};
     QAction* act_trades_{nullptr};
@@ -90,9 +87,14 @@ private:
     // Entity controllers
     std::unique_ptr<OreImportController> oreImportController_;
     std::unique_ptr<PortfolioController> portfolioController_;
-    std::unique_ptr<BookController> bookController_;
-    std::unique_ptr<BookStatusController> bookStatusController_;
-    std::unique_ptr<RegulatoryBookTypeController> regulatoryBookTypeController_;
+
+    // Non-owning: BookController is constructed and owned by RefdataPlugin
+    // (Book's backend and Qt CRUD both live in ores.refdata/ores.qt.refdata).
+    // TradingPlugin only consumes it for the "&Books" menu action and its
+    // composite trading-workflow views (Portfolio/Org Explorer). Resolved
+    // in on_login(), after RefdataPlugin (load_order 100 < 200) has run.
+    BookController* bookController_{nullptr};
+
     std::unique_ptr<TradeController> tradeController_;
 };
 

@@ -102,6 +102,28 @@ regulatory_book_type_repository::read_all(context ctx, const std::string& code) 
         "Reading all regulatory book type versions by code.");
 }
 
+std::optional<domain::regulatory_book_type> regulatory_book_type_repository::read_at_version(
+    context ctx, const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading regulatory book type at version. code: " << code
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<regulatory_book_type_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities =
+        execute_read_query<regulatory_book_type_entity, domain::regulatory_book_type>(
+            ctx,
+            query,
+            [](const auto& entities) { return regulatory_book_type_mapper::map(entities); },
+            lg(),
+            "Reading regulatory book type at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
 
 void regulatory_book_type_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing regulatory book type: " << code;

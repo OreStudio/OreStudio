@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 0E63013B-3B02-4968-A9EA-ED85C00EC7AF
+:END:
+#+title: Story: Move book to refdata
+#+description: Architectural decision: Book, BookStatus, and RegulatoryBookType (backend already in ores.refdata) must have zero cross-component leakage on the Qt side -- CRUD Qt code and plugin wiring belong entirely in ores.qt/refdata under RefdataPlugin, not ores.qt/trading under TradingPlugin. TradingPlugin.cpp still constructs and menu-wires all three, a leftover from PR #1449's partial migration. Portfolio's equivalent relocation is intentionally out of scope here -- tracked separately so it can proceed in parallel in a different environment. Blocks Book codegen drift remediation: relocate first, then resume the codegen-template drift work against the correctly-owned code, avoiding a second retest round.
+#+type: story
+#+level: s2
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+No cross-component leakage: Book, BookStatus, and RegulatoryBookType
+have their C++ backend correctly in =ores.refdata= already; get their
+Qt CRUD code and plugin wiring fully out of =ores.qt/trading=/
+=TradingPlugin= and into =ores.qt/refdata=/=RefdataPlugin= too, before
+any further codegen-template drift work touches them again — avoids
+regenerating and manually re-testing an entity twice (once in the
+wrong plugin, once after relocation).
+
+Portfolio has the same problem but is deliberately excluded from this
+story's scope, so its relocation can be picked up independently (in
+parallel, in a different environment) without contention here.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing -- Book codegen drift remediation unblocked.                  |
+| Last touched  | 2026-07-11                               |
+
+* Acceptance
+
+- =grep -rn "BookController\|BookStatusController\|RegulatoryBookTypeController" projects/ores.qt/trading/src/TradingPlugin.cpp= returns no construction/menu-wiring hits — only, if needed, consumption via a pointer passed in from RefdataPlugin for the composite Explorer views.
+- RefdataPlugin.cpp constructs all three controllers and contributes their menu entries (Reference Data menu and/or the shared Trading Codes submenu, matching the existing Purpose Types pattern).
+- Full build (api/core/service/qt.refdata/qt.trading/qt.exe) is clean.
+- Manual QA: Book, Book Statuses, and Regulatory Book Types list/detail/history windows all open from their new menu location and behave identically to before the move (login, list, add, edit, save, history) — one consolidated pass, not per-entity.
+- [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] is unblocked.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:EE3C93E9-7907-4E18-BB82-3737E0E778C7][Move Book, BookStatus, and RegulatoryBookType Qt CRUD to RefdataPlugin]] | DONE | 2026-07-11 | 2026-07-11 | Moved; also fixed a missing ORES_QT_REFDATA_EXPORT (cross-.so RTTI) and relocated Book Statuses/Regulatory Book Types to a new Reference Data > Book Codes submenu (not Trading Codes) per manual QA feedback. All 7 scenario steps PASS. |
+
+* Decisions
+
+* Out of scope
+
+-

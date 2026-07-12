@@ -18,6 +18,8 @@
  */
 #include "ores.qt/RefdataPlugin.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/BookController.hpp"
+#include "ores.qt/BookStatusController.hpp"
 #include "ores.qt/BusinessDayConventionTypeController.hpp"
 #include "ores.qt/CatalogController.hpp"
 #include "ores.qt/CdsConventionController.hpp"
@@ -52,6 +54,7 @@
 #include "ores.qt/PartyTypeController.hpp"
 #include "ores.qt/PaymentFrequencyTypeController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
+#include "ores.qt/RegulatoryBookTypeController.hpp"
 #include "ores.qt/RoundingTypeController.hpp"
 #include "ores.qt/SubjectAreaController.hpp"
 #include "ores.qt/SwapConventionController.hpp"
@@ -234,6 +237,38 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                      this);
     connectControllerSignals(purposeTypeController_.get());
 
+    // Book, BookStatus, RegulatoryBookType: backend already lives in
+    // ores.refdata; owned here (not TradingPlugin) for the same reason --
+    // no cross-component leakage. TradingPlugin consumes book_controller()
+    // via a non-owning pointer for its composite trading-workflow views
+    // (Portfolio/Org Explorer) and its "&Books" menu action.
+    bookController_ = std::make_unique<BookController>(ctx_.main_window,
+                                                        ctx_.mdi_area,
+                                                        ctx_.client_manager,
+                                                        ctx_.image_cache,
+                                                        ctx_.change_reason_cache,
+                                                        ctx_.username,
+                                                        ctx_.badge_cache,
+                                                        this);
+    connectControllerSignals(bookController_.get());
+
+    bookStatusController_ = std::make_unique<BookStatusController>(ctx_.main_window,
+                                                                    ctx_.mdi_area,
+                                                                    ctx_.client_manager,
+                                                                    ctx_.change_reason_cache,
+                                                                    ctx_.username,
+                                                                    this);
+    connectControllerSignals(bookStatusController_.get());
+
+    regulatoryBookTypeController_ = std::make_unique<RegulatoryBookTypeController>(
+        ctx_.main_window,
+        ctx_.mdi_area,
+        ctx_.client_manager,
+        ctx_.change_reason_cache,
+        ctx_.username,
+        this);
+    connectControllerSignals(regulatoryBookTypeController_.get());
+
     partyTypeController_ = std::make_unique<PartyTypeController>(ctx_.main_window,
                                                                  ctx_.mdi_area,
                                                                  ctx_.client_manager,
@@ -400,6 +435,11 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (currencyPairController_)
                 currencyPairController_->showListWindow();
         });
+        act_books_ = ref->addAction(ico(Icon::BookOpen), tr("&Books"));
+        connect(act_books_, &QAction::triggered, this, [this]() {
+            if (bookController_)
+                bookController_->showListWindow();
+        });
 
         ref->addSeparator();
 
@@ -537,6 +577,25 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
                 currencyMarketTierController_->showListWindow();
         });
 
+        // Book Codes submenu: auxiliary/classification data for books and
+        // portfolios (Book Statuses, Regulatory Book Types today; room for
+        // Book Purpose Types, Ledger Feed Types, and portfolio-side codes
+        // as they land). Reference-data lookups belong here, not in the
+        // Trading menu's Trading Codes submenu.
+        auto* menuBookCodes = ref->addMenu(tr("Book &Codes"));
+        auto* actBookStatuses =
+            menuBookCodes->addAction(ico(Icon::Flag), tr("Book &Statuses"));
+        connect(actBookStatuses, &QAction::triggered, this, [this]() {
+            if (bookStatusController_)
+                bookStatusController_->showListWindow();
+        });
+        auto* actRegulatoryBookTypes =
+            menuBookCodes->addAction(ico(Icon::Flag), tr("Regulatory Book &Types"));
+        connect(actRegulatoryBookTypes, &QAction::triggered, this, [this]() {
+            if (regulatoryBookTypeController_)
+                regulatoryBookTypeController_->showListWindow();
+        });
+
         // Organisation Codes submenu: shared with ores.qt.party (host-owned,
         // see shared_menus_context::organisation_codes_menu), since
         // party-domain aux types migrate from ores.qt.party to
@@ -669,6 +728,9 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
     }
 
     // ---- Trading Codes menu — contribute Purpose Types ------------------
+    // Book Statuses and Regulatory Book Types are reference-data
+    // classification lookups, not trading codes -- they live in the
+    // Reference Data menu's "Book Codes" submenu instead (see create_menus()).
     auto* tc = smc.trading_codes_menu;
     if (tc) {
         auto* actPurposeTypes =
@@ -690,9 +752,9 @@ QList<QMenu*> RefdataPlugin::create_menus() {
 }
 
 QList<QAction*> RefdataPlugin::toolbar_actions() {
-    if (!act_currencies_ || !act_countries_ || !act_currency_pairs_)
+    if (!act_currencies_ || !act_countries_ || !act_currency_pairs_ || !act_books_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
-    return {act_currencies_, act_countries_, act_currency_pairs_};
+    return {act_currencies_, act_countries_, act_currency_pairs_, act_books_};
 }
 
 // ---------------------------------------------------------------------------
@@ -717,6 +779,9 @@ void RefdataPlugin::on_logout() {
     zeroConventionController_.reset();
     partyTypeController_.reset();
     purposeTypeController_.reset();
+    regulatoryBookTypeController_.reset();
+    bookStatusController_.reset();
+    bookController_.reset();
     currencyMarketTierController_.reset();
     monetaryNatureController_.reset();
     roundingTypeController_.reset();

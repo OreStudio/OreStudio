@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: B0902FF2-138F-4234-A473-1371549CE219
+:END:
+#+title: Funding process
+#+description: The Middle Office process that flattens a firm's net overnight cash position per currency by borrowing shorts and depositing longs, run through a designated Funding Book.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:trading:book:finance:funding:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+
+* Summary
+
+The *funding process*, run by Middle Office, pays or receives interest
+on all cash accumulated in a book so that the firm's net position in
+every traded currency is *flat overnight* — a residual short position
+would leave the firm unable to meet settlement obligations. Eligible
+books (flagged =Is Funding Book=) net their balances, convert
+everything to a single currency, and fund the aggregate at the
+internal money-market desk, before returning the funded cash back to
+the originating books. The informal name for the settlement-date
+convention this runs against — *Tom/Next* — is often used loosely as
+shorthand for the whole process, but is strictly just a time
+reference; this note uses *funding process*/*funding run* throughout.
+
+* Detail
+
+** Why it's needed
+
+- *Short positions* are funded via overnight borrowing (a repo/deposit
+  taken at the current overnight rate).
+- *Long positions* are deposited to accrue overnight interest.
+- Long positions in a currency whose implied USD overnight swap rate
+  is negative are deliberately excluded — holding the currency
+  outright beats lending it at a negative rate.
+- Non-USD balances across books are first converted into USD so the
+  desk can place *one* aggregate deposit/borrowing rather than many
+  small ones per currency per book.
+
+** Settlement-date terminology
+
+- *O/N* (Overnight) — today to tomorrow.
+- *Tom/Next* (T/N) — tomorrow to the day after, normally the FX spot
+  date; sits between O/N and S/N on the short end of the curve.
+- *S/N* (Spot/Next) — spot to the next working day.
+
+A spot position held at end of day is, by default, rolled forward to a
+new value date on a T/N basis, subject to a swap credit/charge based
+on the LIBOR-equivalent of the two currencies — which is why "Tom/Next"
+gets used loosely for the whole roll/funding process, even though it
+is technically just the date reference. Not to be confused with
+collateral/repo funding, an unrelated concept despite the similar
+vocabulary.
+
+** Mechanics: worked example
+
+A "cable" book (GBP/USD), long GBP and short USD:
+
+#+BEGIN_EXAMPLE
+ Step 1: NET OUT PER-BOOK BALANCES
+   Book A (long GBP)  ──┐
+   Book B (short USD) ──┤──► equal-and-opposite deals booked in each
+                         │    originating book, netting them to zero
+                         └──► mirror deals created in the FUNDING BOOK
+
+ Step 2: CONVERT EVERYTHING TO ONE CURRENCY
+   Funding Book: GBP balance ──► FX deal vs INTERNAL FX DESK ──► USD balance
+
+ Step 3: FUND THE NET USD BALANCE
+   Funding Book (net USD) ──► Repo vs MM (MONEY MARKET) DESK
+                               at the current overnight rate
+
+ Step 4: RETURN CASH TO ORIGINATING BOOKS
+   Reverse steps 1-2 to assign the funded/deposited cash back to each
+   originating book.
+#+END_EXAMPLE
+
+Both the FX conversion and the repo are dealt against *internal*
+counterparties (the Internal FX Desk and the Money Market Desk) — no
+external counterparty risk is taken on to run this process.
+
+** Inputs to a funding run
+
+- All deals with value date = tomorrow.
+- Forward and spot deals already realised in the past.
+- "Inferred" loans (repos taken) and deposits (repos given).
+- Premiums/rebates paid or received.
+- Residual cash from previous cash-flow activity.
+- Cash held for specific purposes such as brokerage, net of realised
+  brokerage.
+- *Funding adjustments* — manual positive/negative entries made by Ops
+  to strip out unwanted balances (e.g. cash actually held outside the
+  bank) before the run computes what needs funding.
+
+** Book eligibility
+
+A book participates in a funding run only if flagged =Is Funding
+Book= (see [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]]). Funding Books are also
+permission-scoped by book purpose: a Funding Book should only ever
+contain funding trades — the same "purpose constrains allowed deal
+types" mechanism used for [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books]]. An operator chooses which
+currency pairs and books participate in a given run; funding is not
+necessarily run identically across the whole firm in one pass.
+
+** Workflow
+
+The funding screen supports selecting the rate to use, viewing
+near/far dates, choosing participating currency pairs/books,
+*previewing* all generated transactions before booking, and
+*automating* the run end to end subject to an authorisation step.
+Traders manually supply and approve FX/depo rates when there is no
+observable market liquidity to price against, backed by a tolerance
+check against outliers. As with other system runs, users expect a
+*dry-run* mode: generate the trades without booking them, review the
+risk/P&L impact, then commit — and the commit must fail with a
+stale-data error if underlying deals or rates moved since the dry run.
+
+** Audit, governance, and P&L treatment
+
+- All deals from one funding run must be linked together, and the run
+  must be re-runnable/cancellable as a unit.
+- Funding runs require sign-off, alongside brokerage payments and
+  [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][sweep]] runs.
+- A funding trade is a canonical *system-generated trade* — booked
+  against an internal counterparty, governed by rule-driven
+  auto-authorisation rather than manual per-deal sign-off, and — like
+  wash/back-to-back trades — used to move risk between books.
+- The P&L generated is a *Funding Roll*: the P&L from new funding
+  tickets in the book from one day to the next, ranked directly behind
+  Book Moves in trade-activity priority; a related "Funding
+  Allocation" bucket sits under Time/Theta attribution.
+- A Funding Run is a *System Event* (alongside Profit Remittance and
+  Brokerage Payout) — undoable/redoable as a whole; the "do" has real
+  P&L impact, the "undo" must be P&L-neutral.
+- The resulting ledger entry is *balance-sheet-only*: the debit/credit
+  pair nets to zero P&L impact, consistent with funding being a
+  cash-repositioning exercise rather than a P&L-generating trade.
+- Cash-balance reports must include funding and system books.
+
+* See also
+
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — hub note.
+- [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] — the =Is Funding Book= flag and the wider
+  classification axes.
+- [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] — the same purpose-constrains-deal-types
+  mechanism applied to Wash books.
+- [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot sweep and ledger sweep]] — a related but distinct
+  cash-centralisation process.
+- [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance (profit remittance)]] — the process that moves
+  crystallised profit further downstream, past funding.

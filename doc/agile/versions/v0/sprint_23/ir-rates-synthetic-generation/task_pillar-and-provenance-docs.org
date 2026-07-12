@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/pillar-and-provenance-docs
-#+pr:
+#+pr: 1528
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -61,7 +61,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1528][#1528]] | [doc] Term structure/tenor cluster: Pillar, provenance/ladder cleanup |
 
 * Review
 

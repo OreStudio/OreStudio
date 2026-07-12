@@ -8,7 +8,7 @@
 #+filetags: :compass_improvements:sprint_23:v0:
 #+owner: marco
 #+branch: feature/vcpkg-drift-and-update-environment
-#+pr:
+#+pr: 1520
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1520][#1520]] | [compass] Add vcpkg drift check to bearings; add devops-update-environment skill |
 
 * Review
 

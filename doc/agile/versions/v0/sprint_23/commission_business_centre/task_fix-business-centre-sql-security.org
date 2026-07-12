@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_business_centre:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/appraise-business-centre
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ business_centre's insert and validate SQL functions carry security definer + set
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -39,9 +39,26 @@ business_centre's insert and validate SQL functions carry security definer + set
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Mirrored the exact fix Commission: country applied
+(commit 1cb85c9a2): appended =security definer set search_path =
+public, pg_temp= to both
+=ores_refdata_business_centres_insert_fn()= and
+=ores_refdata_validate_business_centre_fn()=, and rewrote the
+validate function's bootstrap pass-through from a bare
+~not exists (select 1 from ... limit 1)~ to filter on
+~valid_to = ores_utility_infinity_timestamp_fn()~ (dropping the
+no-op =limit 1= inside the =exists= subquery, matching country's
+fix). Investigated why the fixed =sql_schema_create.mustache=
+template didn't already cover this: business_centre's generated
+file was tangled from a different, older template
+(=sql_schema_table_create.mustache=) that was never updated when
+=sql_schema_create.mustache= was patched in sprint 21 -- consistent
+with the discarded capture's prediction that pre-fix entities would
+be swept "naturally through the commissioning pipeline" rather than
+via a proactive sweep. Did not touch either template: business_centre
+has no live codegen model to regenerate from (appraisal finding 3),
+and touching a shared template mid-story risks regressing every other
+entity still generated from it.
 
 * Notes
 
@@ -69,3 +86,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Both functions now carry =prosecdef = t= and
+=proconfig = {"search_path=public, pg_temp"}= (verified via
+=pg_proc= after a full =compass db recreate=). Bootstrap guard
+filters to active rows only. DDL applies cleanly on a recreated DB;
+=ores.refdata.core.tests= (113 test cases, 205 assertions) all pass
+-- no dedicated business_centre unit test exists yet (matches the
+appraisal's Qt/manual-verification-only coverage for this entity).

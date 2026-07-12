@@ -8,7 +8,7 @@
 #+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:
 #+owner: marco
 #+branch: feature/wire-crm-into-marketdata-ingest
-#+pr:
+#+pr: 1527
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -161,7 +161,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1527][#1527]] | [marketdata] Add codegened CRM config entities |
 
 * Review
 

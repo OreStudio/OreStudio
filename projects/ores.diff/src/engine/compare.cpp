@@ -58,8 +58,7 @@ void diff_line_into(std::string_view a,
 
     const std::size_t max_suffix = max_common - prefix_len;
     std::size_t suffix_len = 0;
-    while (suffix_len < max_suffix
-          && a[a.size() - 1 - suffix_len] == b[b.size() - 1 - suffix_len])
+    while (suffix_len < max_suffix && a[a.size() - 1 - suffix_len] == b[b.size() - 1 - suffix_len])
         ++suffix_len;
 
     // Trim the prefix/suffix boundaries so neither splits a UTF-8
@@ -176,23 +175,21 @@ void diff_multiline_into(std::string_view a,
             const auto& old_line = old_lines[removed_run[k]];
             const auto& new_line = new_lines[inserted_run[k]];
             diff_line_into(old_line.content,
-                          new_line.content,
-                          old_line.offset,
-                          new_line.offset,
-                          a_spans,
-                          b_spans);
+                           new_line.content,
+                           old_line.offset,
+                           new_line.offset,
+                           a_spans,
+                           b_spans);
         }
         for (std::size_t k = paired; k < removed_run.size(); ++k) {
             const auto& old_line = old_lines[removed_run[k]];
             if (!old_line.content.empty())
-                a_spans.push_back(
-                    {.offset = old_line.offset, .length = old_line.content.size()});
+                a_spans.push_back({.offset = old_line.offset, .length = old_line.content.size()});
         }
         for (std::size_t k = paired; k < inserted_run.size(); ++k) {
             const auto& new_line = new_lines[inserted_run[k]];
             if (!new_line.content.empty())
-                b_spans.push_back(
-                    {.offset = new_line.offset, .length = new_line.content.size()});
+                b_spans.push_back({.offset = new_line.offset, .length = new_line.content.size()});
         }
         removed_run.clear();
         inserted_run.clear();
@@ -200,29 +197,27 @@ void diff_multiline_into(std::string_view a,
 
     for (const auto& op : ops) {
         switch (op.op) {
-        case line_op::equal:
-            flush_run();
-            break;
-        case line_op::remove:
-            removed_run.push_back(op.old_index);
-            break;
-        case line_op::insert:
-            inserted_run.push_back(op.new_index);
-            break;
+            case line_op::equal:
+                flush_run();
+                break;
+            case line_op::remove:
+                removed_run.push_back(op.old_index);
+                break;
+            case line_op::insert:
+                inserted_run.push_back(op.new_index);
+                break;
         }
     }
     flush_run();
 }
 
 void compute_spans(domain::diff_entry& entry) {
-    const bool multiline =
-        entry.old_value.find('\n') != std::string::npos
-        || entry.new_value.find('\n') != std::string::npos;
+    const bool multiline = entry.old_value.find('\n') != std::string::npos ||
+                           entry.new_value.find('\n') != std::string::npos;
     if (multiline)
         diff_multiline_into(entry.old_value, entry.new_value, entry.old_spans, entry.new_spans);
     else
-        diff_line_into(
-            entry.old_value, entry.new_value, 0, 0, entry.old_spans, entry.new_spans);
+        diff_line_into(entry.old_value, entry.new_value, 0, 0, entry.old_spans, entry.new_spans);
 }
 
 }

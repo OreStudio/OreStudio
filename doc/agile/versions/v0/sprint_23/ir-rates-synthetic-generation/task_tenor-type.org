@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/tenor-type
-#+pr: 1517
+#+pr: 1522
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -144,6 +144,7 @@ passes with no regressions.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1522][#1522]] | [marketdata] Add QuantLib-free tenor type |
 | [[https://github.com/OreStudio/OreStudio/pull/1517][#1517]] | [doc] Establish IR curve-family and time-structure/tenor knowledge clusters |
 | [[https://github.com/OreStudio/OreStudio/pull/1411][#1411]] | [agile] Raise IR Rates synthetic data generation story |
 

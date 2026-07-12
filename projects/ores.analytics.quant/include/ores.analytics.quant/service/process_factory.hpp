@@ -21,6 +21,7 @@
 #define ORES_ANALYTICS_QUANT_SERVICE_PROCESS_FACTORY_HPP
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/export.hpp"
 #include <cstdint>
 #include <memory>
@@ -58,6 +59,28 @@ public:
                  std::vector<double> weights,
                  double initial_price,
                  std::uint32_t seed = 42);
+
+    /**
+     * @brief Build a short-rate process that also exposes the model's
+     * implied zero-coupon bond price (the "latent curve").
+     *
+     * @param process_type "vasicek", "cir", or "hull_white". Any other
+     *        value throws std::invalid_argument -- unlike make_process()
+     *        above, there is no silent fallback, since a caller asking
+     *        for a yield-curve process by an unrecognised name almost
+     *        certainly has a bug, not a reasonable default to fall back
+     *        to.
+     * @param theta_path The mean-reversion level (constant for "vasicek"/
+     *        "cir" -- only theta_path.front() is used; piecewise-constant
+     *        per tick for "hull_white", see hull_white_process).
+     */
+    static std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess>
+    make_yield_curve_process(const std::string& process_type,
+                             double kappa,
+                             std::vector<double> theta_path,
+                             double sigma,
+                             double initial_rate,
+                             std::uint32_t seed = 42);
 };
 
 }

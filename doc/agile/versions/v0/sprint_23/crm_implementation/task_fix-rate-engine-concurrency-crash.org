@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :crm_implementation:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-rate-engine-concurrency-crash
+#+pr: 1524
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,22 +26,59 @@ rate_engine::update() and rate_engine::rates()/rate() run correctly under the do
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
 
-- Root cause identified (likely in the immer::atom<rate_snapshot>/immer::vector<vertex_state> usage in rate_engine::update, or a data race elsewhere in crm_topology/rate_snapshot); fix applied; the concurrency test passes reliably across repeated runs (both standalone and under ctest -R with parallel scheduling) and ideally under ThreadSanitizer; existing single-threaded rate_engine/topology_builder tests still pass.
+- Root cause identified; fix applied; the concurrency test passes reliably across repeated runs (both standalone with the xml reporter and under ctest -R with parallel scheduling); existing single-threaded rate_engine/topology_builder/risk_recentering tests still pass.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Reproduce: confirmed 5/5 with the full test binary + xml reporter
+   (~ores.analytics.quant.tests -r xml::out=...~), matching the original
+   report exactly.
+2. Build a standalone ThreadSanitizer binary (TSAN is not wired into any
+   CMake preset -- compiled =rate_engine.cpp=/=topology_builder.cpp=/
+   =risk_recentering.cpp= + the test =.cpp= files directly with
+   =clang++ -fsanitize=thread=, linked against the vcpkg static
+   =libCatch2.a=): first just the concurrency test in isolation (no
+   race reported, 15/15 clean -- consistent with the original
+   investigation's own failure to reproduce in isolation), then the
+   full three-test-file suite with the xml reporter (still no race
+   reported, 3/3 clean) -- TSAN saw no data race in =rate_engine=/
+   =crm_topology=/=immer= itself under the exact conditions that
+   reliably crash the real binary.
+3. That result redirected the investigation: if TSAN instruments
+   everything in the race and still finds nothing, the race is most
+   likely in code TSAN's instrumentation doesn't cover -- e.g. the
+   vcpkg-prebuilt =libCatch2.a=, which was not compiled with
+   =-fsanitize=thread=. That pointed at Catch2's own assertion
+   machinery, which is documented upstream as not thread-safe: calling
+   =REQUIRE=/=CHECK= from any thread other than the one running the
+   =TEST_CASE= mutates shared, non-atomic per-test result-capture state.
+4. Found exactly that: the concurrency test's 4 reader threads called
+   =REQUIRE(...)= directly inside their thread lambdas
+   (=rate_engine_tests.cpp=, the =rates()= result loop). This alone
+   explains every reported symptom -- reproduces only with the xml
+   reporter (more shared reporter state touched per assertion, more
+   surface for the race), does not reproduce running the test in
+   isolation with the default reporter (less contention around Catch2's
+   internals), and the SIGABRT was literally Catch2's own re-entrancy
+   assertion (=OutputRedirect::activate=) firing when two threads hit
+   its capture machinery at once.
+5. Fix: reader threads now only count failures into a plain
+   =std::atomic<int>=; the main thread asserts once, after every thread
+   has joined -- the standard safe pattern for multi-threaded Catch2
+   tests. No production code (=rate_engine.cpp=,
+   =crm_topology.hpp=, =rate_snapshot.*=) changed at all.
+6. Verified: 20/20 clean runs of the full binary with the xml reporter
+   (the exact condition that reproduced 5/5 before the fix), 10/10 clean
+   =ctest -R= runs.
 
 * Notes
 
@@ -196,7 +233,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1524][#1524]] | [analytics.quant] Fix intermittent SIGSEGV/SIGABRT in rate_engine concurrency test |
 
 * Review
 
@@ -205,3 +242,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Root cause was a test bug, not a production bug: the concurrency test's
+4 reader threads called Catch2's =REQUIRE()= macro directly from worker
+threads. Catch2's assertion machinery is not thread-safe (mutates
+shared, non-atomic per-test-case result-capture state), so concurrent
+=REQUIRE=/=CHECK= calls from multiple threads is itself a data race --
+independent of anything =rate_engine=/=crm_topology=/=immer::atom= does.
+That explains every symptom in the original report: reproduces only
+with the full binary + xml reporter (more shared Catch2 reporter state
+touched per assertion), not in isolation (less threading contention
+around Catch2's internals), and the SIGABRT was Catch2's own
+=OutputRedirect::activate()= re-entrancy assertion firing.
+
+Confirmed via a standalone ThreadSanitizer build (compiled directly with
+=clang++ -fsanitize=thread=, since TSAN isn't wired into any CMake
+preset) that found zero data races in the library code itself, under
+the exact conditions (full suite, xml reporter) that reliably crash the
+real binary -- which is what redirected the investigation away from
+=rate_engine=/=immer= and towards the vcpkg-prebuilt =libCatch2.a=
+(not TSAN-instrumented) and its documented threading limitation.
+
+Fix: =rate_engine_tests.cpp='s reader threads now collect failures into
+a plain =std::atomic<int>=; only the main thread asserts, after every
+thread has joined. =rate_engine.cpp=, =crm_topology.hpp=,
+=rate_snapshot.*=, and every other production file are unchanged.
+
+Verified: 20/20 clean runs of the full test binary with the xml
+reporter (the exact condition that crashed 5/5 before the fix), 10/10
+clean =ctest -R= runs, single-threaded =topology_builder=/=rate_engine=/
+=risk_recentering= tests all still green (23 test cases total).

@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.synthetic.api/domain/process_parameter_validation.hpp"
+#include "ores.analytics.quant/domain/process_parameter_validation.hpp"
 
-namespace ores::synthetic::domain {
+namespace ores::analytics::quant::domain {
 
 namespace {
 

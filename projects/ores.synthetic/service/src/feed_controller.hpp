@@ -21,13 +21,13 @@
 #define ORES_SYNTHETIC_SERVICE_FEED_CONTROLLER_HPP
 
 #include "fx_spot_feed.hpp"
+#include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/series_subclass.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include "process_factory.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -153,7 +153,7 @@ public:
         const std::uint32_t seed = rd();
         BOOST_LOG_SEV(lg(), ores::logging::info)
             << "SYNTHETIC SEED: source='" << key << "' seed=" << seed;
-        auto process = process_factory::make_process(process_type,
+        auto process = ores::analytics::quant::service::process_factory::make_process(process_type,
                                                      std::move(means),
                                                      std::move(stdevs),
                                                      std::move(weights),

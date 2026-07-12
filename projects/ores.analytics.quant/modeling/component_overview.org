@@ -2,15 +2,15 @@
 :ID: D9424733-9602-45DB-8E87-88F2851C3C29
 :END:
 #+title: ores.analytics.quant
-#+description: Dependency-light quantitative math library: CRM spanning-tree topology and thread-safe derived-rate engine.
+#+description: Dependency-light quantitative math library: CRM spanning-tree topology, thread-safe derived-rate engine, and stochastic price processes.
 #+type: ores.codegen.component
 #+level: cross
-#+filetags: :analytics:quant:crm:component:
+#+filetags: :analytics:quant:crm:synthetic:component:
 #+created: 2026-07-11
-#+updated: 2026-07-11
+#+updated: 2026-07-12
 #+name: analytics.quant
 #+full_name: ores.analytics.quant
-#+brief: Quant math library: CRM topology + rate engine
+#+brief: Quant math library: CRM topology, rate engine, stochastic processes
 
 * Diagram
 
@@ -20,8 +20,8 @@
 
 * Summary
 
-Dependency-light quantitative math library. Its first consumer is the
-Cross Rates Matrix (CRM): a two-phase engine that builds and validates a
+Dependency-light quantitative math library. One consumer is the Cross
+Rates Matrix (CRM): a two-phase engine that builds and validates a
 driver/derived spanning-tree topology over currency pairs (throwing a
 readable error at build time if the input admits more than one path
 between two currencies), then serves continuously-updating derived rates
@@ -29,6 +29,18 @@ with staleness propagation. Deliberately has no database, messaging, or
 refdata coupling -- everything domain-specific (currency codes, spot days,
 short-term rates) is supplied by the caller as plain parameters, so the
 library is consumable standalone and fully unit-testable in isolation.
+
+A second, unrelated area covers stochastic price processes: pluggable
+=IStochasticProcess= implementations (geometric and arithmetic Gaussian
+mixture engines, an Ornstein-Uhlenbeck mean-reverting engine), a
+=process_factory= that builds one from a process-type string plus raw
+parameters, and =process_parameter_validation= as the single source of
+truth for "are these parameters good?" shared between server-side
+construction and any UI that wants a friendly error before submitting.
+This code originated in ores.synthetic, which mixed the maths with
+synthetic-data-generation orchestration; it moved here so the maths is
+reusable (e.g. by a future calibration service) and independently
+unit-testable without pulling in a service binary.
 
 * Inputs
 
@@ -39,6 +51,10 @@ library is consumable standalone and fully unit-testable in isolation.
   =service::rate_engine::update=.
 - =domain::staleness_policy= -- caller-supplied max age for a derived rate
   to be considered fresh.
+- Raw process parameters (means, stdevs, weights, initial_price) plus a
+  =process_type= string ("geometric" / "arithmetic" / "ou"), fed to
+  =service::process_factory::make_process= and
+  =domain::validate_process_parameters=.
 
 * Outputs
 
@@ -48,6 +64,11 @@ library is consumable standalone and fully unit-testable in isolation.
 - =domain::derived_rate= -- a rate (direct or triangulated) with its
   =rate_status= (fresh/stale/unavailable) and the oldest contributing
   driver's timestamp.
+- =domain::IStochasticProcess= -- the pure interface every price process
+  implements (=next()= advances one step, =current()= reads without
+  advancing).
+- =domain::process_parameter_validation_result= -- ok/error-message pair
+  from validating raw process parameters before construction.
 
 * Entry points
 
@@ -58,6 +79,13 @@ library is consumable standalone and fully unit-testable in isolation.
 - =service::recenter(source_engine, aggregation_code, policy, now)= --
   point-in-time star-shaping around an aggregation currency for risk,
   preserving every current rate's value.
+- =service::process_factory::make_process(process_type, means, stdevs,
+  weights, initial_price, seed)= -- builds a =gmm_process=
+  (geometric/multiplicative), =arithmetic_gmm_process=
+  (additive/Bachelier), or =ou_process= (mean-reverting) depending on
+  =process_type=; unrecognised values fall back to geometric.
+- =domain::validate_process_parameters(process_type, means, stdevs,
+  weights, initial_price)=
 
 * Dependencies
 
@@ -68,7 +96,9 @@ library is consumable standalone and fully unit-testable in isolation.
   lock-free, structural-sharing immutable snapshots for the runtime rate
   engine.
 - Deliberately *not* linked: =ores.database=, =ores.service=, NATS,
-  =ores.refdata=.
+  =ores.refdata=, =ores.logging= (the stochastic-process code carries no
+  logging dependency either -- callers that need diagnostics log around
+  the call).
 
 * See also
 
@@ -79,3 +109,4 @@ library is consumable standalone and fully unit-testable in isolation.
 - [[file:../../../doc/knowledge/domain/crm_graph_topology.org][CRM graph topology and spanning tree]]
 - [[file:../../../doc/knowledge/domain/crm_driver_and_derived_rates.org][Driver and derived rates]]
 - [[file:../../../doc/knowledge/domain/crm_risk_and_recentering.org][CRM risk: recentering and artefacts]]
+- [[file:../../../doc/agile/versions/v0/sprint_23/extract-quant-processes-from-synthetic/story.org][Story: Extract stochastic process math from ores.synthetic into ores.analytics.quant]]

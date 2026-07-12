@@ -1,0 +1,207 @@
+:PROPERTIES:
+:ID: 5EAA2830-832A-4CD0-A60D-67F1033996A4
+:END:
+#+title: Task: Fix rate_engine concurrent update/rates crash (SIGSEGV/SIGABRT)
+#+description: rate_engine's documented single-producer/multi-reader concurrency contract crashes reproducibly under load: SIGSEGV in immer node refcounting during update(), and SIGSEGV/SIGABRT in crm_topology::currency_id_for's unordered_map lookup during rates(), consistent with heap corruption.
+#+type: task
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+rate_engine::update() and rate_engine::rates()/rate() run correctly under the documented single-producer/multi-reader concurrency contract with no crash, verified by a stress run of the existing 'concurrent updates and batched reads never crash or hang' test (many iterations, under ctest and standalone) plus ideally a TSAN build.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- Root cause identified (likely in the immer::atom<rate_snapshot>/immer::vector<vertex_state> usage in rate_engine::update, or a data race elsewhere in crm_topology/rate_snapshot); fix applied; the concurrency test passes reliably across repeated runs (both standalone and under ctest -R with parallel scheduling) and ideally under ThreadSanitizer; existing single-threaded rate_engine/topology_builder tests still pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+** How it was found
+
+Discovered while raising a PR for an unrelated story ([[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic
+process math from ores.synthetic into ores.analytics.quant]]), running the
+mandatory pre-PR full build + =ctest= on branch
+=feature/move-istochasticprocess-interface= (environment: jolly_knuth,
+preset =linux-clang-debug-make=). The new commits on that branch touch
+only ores.analytics.quant's process/domain-validation code (new files
+under =service/processes/=, =service/process_factory.*=,
+=domain/process_parameter_validation.*=) and never touch =rate_engine.*=,
+=crm_topology.hpp=, =rate_snapshot.*=, or =rate_engine_tests.cpp= — this
+is pre-existing behaviour in code from the earlier CRM story (PRs #1510,
+#1511, #1512), not something introduced by that branch.
+
+** Reproduction
+
+- Full suite via =ctest --preset linux-clang-debug-make=: intermittently
+  fails =ores.analytics.quant.tests= with either SEGFAULT or SIGABRT (the
+  SIGABRT case is a secondary failure -- Catch2's
+  =Catch::OutputRedirect::activate()= hits
+  ~!m_redirectActive && "redirect is already active"~ because the crash
+  happens mid-capture; the real fault is still the concurrency test).
+- Reliably reproduces standalone when the whole binary runs with the
+  =xml::out= reporter that CI/ctest uses, e.g.:
+  ~ores.analytics.quant.tests -r xml::out=...~. Running the failing test
+  case alone in isolation (~ores.analytics.quant.tests "concurrent updates
+  and batched reads never crash or hang"~) and running the full binary
+  with the default compact reporter did *not* reproduce across several
+  attempts -- the crash is timing/scheduling-sensitive, consistent with a
+  genuine data race rather than a deterministic logic bug.
+- Test in question: [[file:../../../../../projects/ores.analytics.quant/tests/rate_engine_tests.cpp][rate_engine_tests.cpp]], =TEST_CASE("concurrent
+  updates and batched reads never crash or hang", "[rate_engine][thread]")=
+  (line ~219). One writer thread calls =engine.update(...)= in a loop;
+  four reader threads call =engine.rates(...)= 2000 times each -- this
+  matches =rate_engine='s own documented contract in
+  [[file:../../../../../projects/ores.analytics.quant/include/ores.analytics.quant/service/rate_engine.hpp][rate_engine.hpp]] (single producer, many concurrent readers), so the test
+  is not misusing the API as far as could be determined.
+
+** Coredumps
+
+Two coredumps captured via =coredumpctl= on this machine (environment
+jolly_knuth), both for =ores.analytics.quant.tests=:
+
+| PID    | Signal  | Timestamp (BST)     | Coredump path (zstd, use =coredumpctl dump <PID> -o <file>= to extract) |
+|--------+---------+----------------------+--------------------------------------------------------------------------|
+| 535290 | SIGSEGV | 2026-07-12 12:27:43 | =/var/lib/systemd/coredump/core.ores\x2eanalytics\x2e.1000.40e75b2c08a142ea85e12da39c72ab8f.535290.1783855662000000.zst= |
+| 543053 | SIGABRT | 2026-07-12 12:33:29 | =/var/lib/systemd/coredump/core.ores\x2eanalytics\x2e.1000.40e75b2c08a142ea85e12da39c72ab8f.543053.1783856009000000.zst= |
+
+Retrieve with e.g. ~coredumpctl info 535290~ or
+~coredumpctl gdb 535290~ (systemd-coredump retention is time/space-bounded
+on this machine, so these may age out -- reproduce fresh if they are
+gone; see Reproduction above).
+
+*** PID 535290 (SIGSEGV) -- three relevant threads
+
+- *Writer thread* (the single producer calling =update()=) crashed inside
+  immer's refcounted node destructor, reached via
+  =rate_snapshot::transient()= called from
+  =rate_engine::update=:
+  #+begin_example
+  immer::detail::rbts::node<...vertex_state...>::dec()
+  immer::detail::rbts::dec_visitor::visit_regular<...>
+  immer::detail::rbts::empty_regular_pos<...>::visit<dec_visitor>
+  immer::detail::rbts::rbtree<...>::traverse<dec_visitor>
+  immer::detail::rbts::rbtree<...>::dec()
+  immer::detail::rbts::rbtree<...>::~rbtree()
+  immer::vector<vertex_state,...>::transient() [inside rate_snapshot::transient()]
+  ores::analytics::quant::domain::rate_snapshot::transient()
+  ores::analytics::quant::service::rate_engine::update(driver_quote const&)
+  #+end_example
+- *A reader thread* crashed inside =std::string::operator=== called from
+  =std::unordered_map::find=, reached via
+  =crm_topology::currency_id_for=:
+  #+begin_example
+  std::basic_string::max_size / size  [operating on a corrupt/garbage string]
+  std::operator==<char,...>
+  std::equal_to<basic_string<char>>::operator()
+  std::_Hashtable<...>::_M_key_equals
+  std::_Hashtable<...>::_M_locate
+  std::_Hashtable<...>::find
+  std::unordered_map<string, currency_id>::find
+  ores::analytics::quant::domain::crm_topology::currency_id_for
+  ores::analytics::quant::service::rate_engine::rate_from_snapshot
+  ores::analytics::quant::service::rate_engine::rates
+  #+end_example
+  The garbage/corrupt =std::string= being compared inside the hashtable
+  lookup (crashing in =max_size()=/=size()= before even reaching the byte
+  comparison) is the strongest signal here: =crm_topology= is
+  constructed once and never mutated (see its class comment in
+  [[file:../../../../../projects/ores.analytics.quant/include/ores.analytics.quant/domain/crm_topology.hpp][crm_topology.hpp]]), so a concurrent *read-only* lookup into its
+  =currency_index_= should never see a torn/corrupt key -- unless
+  something elsewhere has corrupted the heap (e.g. a use-after-free or
+  buffer overrun in the immer-backed =rate_snapshot=/=immer::atom= path)
+  and this is simply where the corruption was first observed.
+- A third thread was mid-=__clone3= (thread spin-up), not directly
+  relevant.
+
+*** PID 543053 (SIGABRT) -- secondary failure, same root cause
+
+Same test, same call sites implicated (=crm_topology::currency_id_for=
+via =rate_engine::update= from the writer thread, and via
+=rate_from_snapshot= from a reader). The abort itself is Catch2's
+=OutputRedirect::activate()= re-entrancy assertion, which fires because
+the underlying SIGSEGV/heap corruption happens while Catch2's XML
+reporter has an output capture active -- i.e. this is very likely the
+*same* underlying bug, just observed via the abort path instead of a
+raw segfault.
+
+** Working hypothesis (unconfirmed -- needs an implementer's investigation)
+
+- =rate_engine::update()= is documented as the single producer, and
+  =rate()=/=rates()= as safe for concurrent readers, via
+  =immer::atom<rate_snapshot> snapshot_= (see the class doc in
+  [[file:../../../../../projects/ores.analytics.quant/include/ores.analytics.quant/service/rate_engine.hpp][rate_engine.hpp]]). The crash inside the writer's own call to
+  =rate_snapshot::transient()= -- i.e. destructing/reference-counting the
+  =immer::vector<vertex_state>= it just loaded via
+  ~snapshot_.load().get()~ in [[file:../../../../../projects/ores.analytics.quant/src/service/rate_engine.cpp][rate_engine.cpp]] line ~108 -- suggests the
+  refcount on the immer tree nodes is being corrupted by concurrent
+  =load()= calls from the four reader threads racing with the single
+  writer's =load()=/=store()=, despite immer's
+  =refcount_policy=/=spinlock_policy= memory policy nominally being
+  built for exactly this. Whether that is a genuine bug in how
+  =immer::atom= is used here (e.g. a missing memory fence, an unsafe
+  =.get()= on the loaded box, or an assumption violated by
+  =rate_snapshot='s own copy/move semantics) or an upstream immer issue
+  needs a focused investigation -- ideally build and run
+  =ores.analytics.quant.tests= under ThreadSanitizer (TSAN is not
+  currently wired into any CMake preset for this component) to get a
+  precise data-race report instead of reasoning from crash-site
+  backtraces alone.
+- Check =domain/rate_snapshot.hpp=/.cpp and =domain/vertex_state.hpp= for
+  how they wrap/copy the underlying =immer::vector=; check whether
+  =immer::atom::load()= as used here (~.load().get()~) returns a
+  properly refcounted owning copy or something that can be invalidated
+  by a concurrent =store()=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

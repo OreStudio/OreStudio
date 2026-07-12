@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_API_DOMAIN_PROCESS_PARAMETER_VALIDATION_HPP
-#define ORES_SYNTHETIC_API_DOMAIN_PROCESS_PARAMETER_VALIDATION_HPP
+#ifndef ORES_ANALYTICS_QUANT_DOMAIN_PROCESS_PARAMETER_VALIDATION_HPP
+#define ORES_ANALYTICS_QUANT_DOMAIN_PROCESS_PARAMETER_VALIDATION_HPP
 
-#include "ores.synthetic.api/export.hpp"
+#include "ores.analytics.quant/export.hpp"
 #include <string>
 #include <vector>
 
-namespace ores::synthetic::domain {
+namespace ores::analytics::quant::domain {
 
 /**
  * @brief Result of validating a price-process engine's raw parameters.
@@ -40,12 +40,12 @@ struct process_parameter_validation_result final {
  * both the UI and the process-construction machinery.
  *
  * This is the single source of truth for "are these parameters good?" — the
- * process classes in ores.synthetic.service (gmm_process, ou_process, ...)
- * still validate defensively in their constructors, but callers that want a
- * friendly ok/error-message pair *before* attempting to build or persist a
- * process should call this instead of duplicating the rules. Lives in
- * ores.synthetic.api (not .service/.core) so it's usable from the Qt client,
- * which cannot link the heavier service-layer libraries.
+ * process classes (gmm_process, ou_process, ...) still validate defensively
+ * in their constructors, but callers that want a friendly ok/error-message
+ * pair *before* attempting to build or persist a process should call this
+ * instead of duplicating the rules. Lives in ores.analytics.quant (not
+ * ores.synthetic) so it's usable from any consumer without pulling in a
+ * heavier service-layer library — including the Qt client.
  *
  * For a mixing engine (geometric/arithmetic): means, stdevs and weights must
  * have equal, non-empty size, every stdev must be non-negative, and the
@@ -59,7 +59,7 @@ struct process_parameter_validation_result final {
  *
  * initial_price must be strictly positive for every engine.
  */
-ORES_SYNTHETIC_API_EXPORT process_parameter_validation_result
+ORES_ANALYTICS_QUANT_EXPORT process_parameter_validation_result
 validate_process_parameters(const std::string& process_type,
                             const std::vector<double>& means,
                             const std::vector<double>& stdevs,

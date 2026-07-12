@@ -47,6 +47,7 @@ engine the architecture relies on.
 | [[id:E7E31384-3616-4DFB-AB20-6CB099114FB3][Model the driver/derived spanning-tree topology]] | DONE | 2026-07-11 | 2026-07-12 | Graph structure over currency pairs for the CRM: driver/derived edges with cycle detection so a pair is never set on both sides simultaneously. |
 | [[id:96522E06-2067-4058-86FC-27B6086DCC26][Implement triangulation/derivation]] | DONE | 2026-07-12 | 2026-07-12 | Runtime rate_engine: consumes a stream of driver_quote ticks (possibly cross-thread) and serves batched derived-rate reads via an atomically-swapped immutable snapshot, computing derived rates by triangulation through the pivot and propagating staleness. |
 | [[id:6EA4B5FC-4581-484C-B5EB-ECF868B3A61D][Implement risk recentering]] | DONE | 2026-07-12 | 2026-07-12 | Re-root the CRM into a star-shaped matrix around a chosen aggregation currency without changing any derived rate's value: rebuild topology as a star, seed it by pulling current derived rates from the source engine for each currency. |
+| [[id:5EAA2830-832A-4CD0-A60D-67F1033996A4][Fix rate_engine concurrent update/rates crash (SIGSEGV/SIGABRT)]] | BACKLOG | | | rate_engine's documented single-producer/multi-reader concurrency contract crashes reproducibly under load: SIGSEGV in immer node refcounting during update(), and SIGSEGV/SIGABRT in crm_topology::currency_id_for's unordered_map lookup during rates(), consistent with heap corruption. |
 
 Planned tasks (not yet scaffolded as task docs), following the domain
 model's concept map:

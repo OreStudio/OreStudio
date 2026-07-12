@@ -24,6 +24,73 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace analytics #F2F2F2 {
         namespace quant #F2F2F2 {
+            namespace domain #F2F2F2 {
+
+                interface IStochasticProcess <<interface>> {
+                    +next() : double
+                    +current() : double
+                }
+
+                class process_parameter_validation_result <<value type>> {
+                    +valid : bool
+                    +message : string
+                }
+
+                class "process_parameter_validation (free functions)" as process_parameter_validation {
+                    +validate_process_parameters(process_type, means,\nstdevs, weights, initial_price) : process_parameter_validation_result
+                }
+
+                process_parameter_validation ..> process_parameter_validation_result : returns
+            }
+
+            namespace service #F2F2F2 {
+
+                class gmm_process {
+                    -means_ : vector<double>
+                    -stdevs_ : vector<double>
+                    -weights_ : vector<double>
+                    -price_ : double
+                    -rng_ : mt19937
+                    +next() : double
+                    +current() : double
+                    .. geometric (multiplicative) engine ..
+                }
+
+                class arithmetic_gmm_process {
+                    -means_ : vector<double>
+                    -stdevs_ : vector<double>
+                    -weights_ : vector<double>
+                    -price_ : double
+                    -rng_ : mt19937
+                    +next() : double
+                    +current() : double
+                    .. additive engine; price may cross zero ..
+                }
+
+                class ou_process {
+                    -kappa_ : double
+                    -theta_ : double
+                    -sigma_ : double
+                    -price_ : double
+                    -rng_ : mt19937
+                    +next() : double
+                    +current() : double
+                    .. mean-reverting; kappa<=0 degenerates to\na driftless random walk ..
+                }
+
+                class process_factory {
+                    +{static} make_process(process_type, means, stdevs,\nweights, initial_price, seed) : unique_ptr<IStochasticProcess>
+                }
+
+                gmm_process ..|> ores::analytics::quant::domain::IStochasticProcess
+                arithmetic_gmm_process ..|> ores::analytics::quant::domain::IStochasticProcess
+                ou_process ..|> ores::analytics::quant::domain::IStochasticProcess
+                process_factory ..> gmm_process : creates
+                process_factory ..> arithmetic_gmm_process : creates
+                process_factory ..> ou_process : creates
+                process_factory ..> ores::analytics::quant::domain::process_parameter_validation : validates via
+            }
+
             namespace crm #F2F2F2 {
 
                 class currency_id <<value type>> {

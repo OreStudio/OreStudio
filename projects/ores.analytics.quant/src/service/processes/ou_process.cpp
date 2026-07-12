@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ou_process.hpp"
+#include "ores.analytics.quant/service/processes/ou_process.hpp"
 #include <cmath>
 #include <stdexcept>
 
-namespace ores::synthetic::service {
+namespace ores::analytics::quant::service {
 
 ou_process::ou_process(
     double kappa, double theta, double sigma, double initial_price, std::uint32_t seed)

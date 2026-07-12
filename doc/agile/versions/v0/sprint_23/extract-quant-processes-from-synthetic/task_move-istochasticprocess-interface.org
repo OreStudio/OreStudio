@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: A026CB84-C39E-4F89-9450-E1F2C97C2126
+:END:
+#+title: Task: Move IStochasticProcess interface into ores.analytics.quant
+#+description: Relocate the header-only IStochasticProcess interface from ores.marketdata.api to ores.analytics.quant, update all includes/namespaces, keep the build green.
+#+type: task
+#+level: s1
+#+filetags: :extract-quant-processes-from-synthetic:sprint_23:v0:
+#+owner: marco
+#+branch: feature/move-istochasticprocess-interface
+#+pr: 1519
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+IStochasticProcess lives in ores.analytics.quant/include/ores.analytics.quant/domain, with ores.marketdata.api and ores.synthetic updated to include it from its new home.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- Interface moved with no behavioural change; ores.marketdata.api no longer declares it; all call sites updated; full build succeeds.
+
+* Plan
+
+Moved =i_stochastic_process.hpp= verbatim (pure virtual, zero
+dependencies) from =ores.marketdata.api/domain= to
+=ores.analytics.quant/domain=, renamespacing
+=ores::marketdata::domain::IStochasticProcess= to
+=ores::analytics::quant::domain::IStochasticProcess=. Updated the four
+ores.synthetic.service call sites (=gmm_process=,
+=arithmetic_gmm_process=, =ou_process=, =process_factory=,
+=fx_spot_feed=) to include the new header and use the new namespace,
+and added =ores.analytics.quant.lib= to
+=ores.synthetic.service/src/CMakeLists.txt= (kept
+=ores.marketdata.api.lib= too — still used for other marketdata
+types in that component).
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1519][#1519]] | [analytics.quant] Extract stochastic process math from ores.synthetic |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Include order regression (ores.analytics.quant should sort before ores.marketdata.api) | fx_spot_feed.hpp | Accepted | Fixed |
+
+* Result
+
+Interface relocated with no behavioural change. Confirmed no other
+component (ores.marketdata, Qt client) referenced the old location.
+Full build of ores.analytics.quant.lib, ores.analytics.quant.tests,
+ores.synthetic.api/core/service.lib and ores.synthetic.service.exe
+succeeds; ores.analytics.quant.tests (46499 assertions) and
+ores.synthetic.api.tests (71 assertions) pass locally.

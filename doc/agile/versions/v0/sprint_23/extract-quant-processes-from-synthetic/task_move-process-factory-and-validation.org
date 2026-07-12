@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: CA32B363-C814-4E41-9081-AFE6DB542E24
+:END:
+#+title: Task: Move process_factory and process_parameter_validation into ores.analytics.quant
+#+description: Relocate process_factory (service) and process_parameter_validation (api) into ores.analytics.quant, updating ores.synthetic and the Qt client's include paths, with thorough new tests.
+#+type: task
+#+level: s1
+#+filetags: :extract-quant-processes-from-synthetic:sprint_23:v0:
+#+owner: marco
+#+branch: feature/move-istochasticprocess-interface
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+process_factory and process_parameter_validation live in ores.analytics.quant with full unit test coverage of valid/invalid parameter combinations for each engine type.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- Both units moved; every caller (ores.synthetic.service, Qt client) updated; new Catch2 tests cover valid/invalid params for geometric, arithmetic, and ou; full build/test suite passes.
+
+* Plan
+
+Moved =process_parameter_validation= (was ores.synthetic.api) and
+=process_factory= (was ores.synthetic.service) verbatim into
+ores.analytics.quant/domain and /service respectively, renamespaced
+under =ores::analytics::quant=. Dropped the =BOOST_LOG_SEV= warning
+in =process_factory= for an unrecognised process_type — logging is a
+new dependency the component deliberately doesn't carry (see story
+Decisions). Updated all three call sites: ores.synthetic.service's
+=feed_controller.hpp= and =simulate_handler.hpp=, and the Qt client's
+=FxSpotRateEditor.cpp= (added =ores.analytics.quant.lib= directly to
+=ores.qt.synthetic= rather than relying on a transitive link through
+ores.synthetic.api, since the validation function no longer lives
+there). Wrote 20 new Catch2 test cases across two new test files.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both units relocated with one intentional behavioural change: the
+diagnostic warning log on an unrecognised process_type is gone (see
+Plan). Zero prior test coverage backfilled with 20 new Catch2 cases.
+Full build of ores.analytics.quant.lib/.tests, ores.synthetic
+api/core/service.lib/service.exe/tests, and ores.qt.synthetic.lib
+succeeds; ores.analytics.quant.tests (38540 assertions, 62 cases
+total) and ores.synthetic.api.tests (71 assertions) pass locally.

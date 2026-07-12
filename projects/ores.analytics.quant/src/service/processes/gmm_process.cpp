@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "gmm_process.hpp"
+#include "ores.analytics.quant/service/processes/gmm_process.hpp"
 #include <cmath>
 #include <stdexcept>
 
-namespace ores::synthetic::service {
+namespace ores::analytics::quant::service {
 
 gmm_process::gmm_process(std::vector<double> means,
                          std::vector<double> stdevs,

@@ -17,14 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_SERVICE_PROCESSES_OU_PROCESS_HPP
-#define ORES_SYNTHETIC_SERVICE_PROCESSES_OU_PROCESS_HPP
+#ifndef ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_OU_PROCESS_HPP
+#define ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_OU_PROCESS_HPP
 
-#include "ores.marketdata.api/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/export.hpp"
 #include <cstdint>
 #include <random>
 
-namespace ores::synthetic::service {
+namespace ores::analytics::quant::service {
 
 /**
  * @brief Ornstein-Uhlenbeck (mean-reverting) price process.
@@ -39,7 +40,8 @@ namespace ores::synthetic::service {
  * kappa <= 0 degenerates to a driftless random walk (sigma * Z per tick),
  * the kappa -> 0 limit of the variance term above.
  */
-class ou_process final : public ores::marketdata::domain::IStochasticProcess {
+class ORES_ANALYTICS_QUANT_EXPORT ou_process final
+    : public ores::analytics::quant::domain::IStochasticProcess {
 public:
     ou_process(
         double kappa, double theta, double sigma, double initial_price, std::uint32_t seed = 42);

@@ -17,35 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_SERVICE_PROCESSES_ARITHMETIC_GMM_PROCESS_HPP
-#define ORES_SYNTHETIC_SERVICE_PROCESSES_ARITHMETIC_GMM_PROCESS_HPP
+#ifndef ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_GMM_PROCESS_HPP
+#define ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_GMM_PROCESS_HPP
 
-#include "ores.marketdata.api/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/export.hpp"
 #include <cstdint>
 #include <random>
 #include <vector>
 
-namespace ores::synthetic::service {
+namespace ores::analytics::quant::service {
 
 /**
- * @brief Arithmetic (additive) Gaussian Mixture Model price process.
+ * @brief Gaussian Mixture Model stochastic price process.
  *
- * The counterpart to gmm_process: on each call to next() it draws an increment
- * from a K-component Gaussian mixture and applies it ADDITIVELY:
- *   price += increment
+ * Maintains a running spot price. On each call to next(), draws a
+ * log-return from a K-component Gaussian mixture and applies it:
+ *   price *= exp(log_return)
  *
- * This is arithmetic Brownian motion (Bachelier) when single-component. Unlike
- * the geometric engine the price may cross zero. Exists alongside gmm_process to
- * exercise the IStochasticProcess abstraction (we are not hardcoded to the
- * geometric case) and to let the UI contrast engines.
+ * Parameters (means, stdevs, weights) are statically seeded for the PoC.
+ * Live calibration to historical data is out of scope.
  */
-class arithmetic_gmm_process final : public ores::marketdata::domain::IStochasticProcess {
+class ORES_ANALYTICS_QUANT_EXPORT gmm_process final
+    : public ores::analytics::quant::domain::IStochasticProcess {
 public:
-    arithmetic_gmm_process(std::vector<double> means,
-                           std::vector<double> stdevs,
-                           std::vector<double> weights,
-                           double initial_price,
-                           std::uint32_t seed = 42);
+    gmm_process(std::vector<double> means,
+                std::vector<double> stdevs,
+                std::vector<double> weights,
+                double initial_price,
+                std::uint32_t seed = 42);
 
     double next() override;
     double current() const override;

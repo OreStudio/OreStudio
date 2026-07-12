@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: AE831215-7929-4BDA-9AD2-DBA751D1406E
+:END:
+#+title: Enforce component-level #include paths everywhere
+#+description: Some source files use relative includes (e.g. "process_factory.hpp") instead of the component-level form ("ores.component/path/file.hpp"); audit and fix, and consider a lint/CI check to prevent regressions.
+#+type: capture
+#+level: cross
+#+filetags: :codestyle:cmake:cleanup:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Some ORE Studio source files include sibling headers with a bare relative
+path (e.g. =#include "process_factory.hpp"= or
+=#include "processes/gmm_process.hpp"=) instead of the project convention
+of always starting from the component root (e.g.
+=#include "ores.analytics.quant/service/process_factory.hpp"=). Observed
+while moving code out of ores.synthetic/service/src (task in story
+[[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]]):
+=feed_controller.hpp=, =simulate_handler.hpp=, and the pre-move
+=process_factory.cpp= all used bare relative includes. Audit the wider
+codebase for the same pattern and fix it, and consider whether a
+clang-tidy check or a simple grep-based CI lint could catch regressions
+(a relative include silently breaks when the including file moves,
+whereas a component-level include fails loudly at the call site that
+needs fixing).
+
+* Why
+
+Relative includes make a header's dependencies invisible from the
+`#include` line alone (you can't tell what component a bare
+=processes/gmm_process.hpp= belongs to without opening the file), and
+they silently keep compiling after a file is moved to a different
+directory within the same component -- exactly the kind of drift that
+should fail loudly instead. Component-level includes are the
+project-wide convention judging by the bulk of the codebase; the
+relative-include files are the exception, not a deliberate alternative
+style.
+
+* References
+
+- Fixed as part of the move: =ores.synthetic/service/src/feed_controller.hpp=,
+  =ores.synthetic/service/src/simulate_handler.hpp=.
+
+* See also
+
+- [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Story: Extract stochastic process math from ores.synthetic into ores.analytics.quant]]

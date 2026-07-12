@@ -58,6 +58,7 @@ target_include_directories(${lib_target_name} PRIVATE
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
+        ores.analytics.quant.lib
         ores.synthetic.api.lib
         ores.marketdata.api.lib
         ores.dq.api.lib

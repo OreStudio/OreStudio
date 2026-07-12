@@ -65,14 +65,18 @@ domain::crm_topology topology_builder::build(
     const std::vector<ccy_pair_input>& pairs, const std::string& pivot_code,
     const std::vector<std::string>& required_majors) {
     currency_index_builder resolver;
-    // The pivot must exist even if it never appears as a lone token; it is
-    // always vertex 0's *candidate*, but we resolve everything first and
-    // check the pivot is actually known afterwards.
+    // The pivot itself must be a known vertex even if it never appears as a
+    // lone token in a pair, so it is resolved unconditionally alongside
+    // everything else -- an empty/garbage pivot_code becomes an isolated
+    // vertex with no edges, which the BFS below still visits (it is its own
+    // starting point), so pivot validity isn't the thing to check here; see
+    // required_majors/disconnected_currency below for the real diagnostics.
     std::vector<ccy_pair> resolved_pairs;
     resolved_pairs.reserve(pairs.size());
     for (const auto& input : pairs) {
-        resolved_pairs.push_back(
-            ccy_pair{resolver.resolve(input.base_code), resolver.resolve(input.quote_code)});
+        resolved_pairs.push_back(ccy_pair{
+            resolver.resolve(input.base_code), resolver.resolve(input.quote_code),
+            input.is_driver});
     }
     resolver.resolve(pivot_code);
     for (const auto& major : required_majors) resolver.resolve(major);
@@ -128,13 +132,9 @@ domain::crm_topology topology_builder::build(
         adjacency[pair.quote.index()].emplace_back(pair.base, pair);
     }
 
-    const auto pivot_lookup = currency_index.find(pivot_code);
-    if (pivot_lookup == currency_index.end()) {
-        errors.push_back(topology_error{
-            topology_error_kind::disconnected_currency, pivot_code, ""});
-        throw domain::topology_build_error(std::move(errors));
-    }
-    const currency_id pivot = pivot_lookup->second;
+    // pivot_code was resolved unconditionally above, so it is always
+    // present here -- this can never throw std::out_of_range.
+    const currency_id pivot = currency_index.at(pivot_code);
 
     // BFS from the pivot: assigns parent[]/edge_to_parent[] and, as a side
     // effect, tells us exactly which currencies are unreachable.
@@ -156,15 +156,20 @@ domain::crm_topology topology_builder::build(
         }
     }
 
+    // Required majors get the more specific missing_major diagnosis; the
+    // general disconnected_currency sweep below skips them so each
+    // unreachable currency is reported exactly once.
+    std::unordered_set<std::uint16_t> major_ids;
     for (const auto& major : required_majors) {
         const auto id = currency_index.at(major);
+        major_ids.insert(id.index());
         if (!visited[id.index()]) {
             errors.push_back(topology_error{
                 topology_error_kind::missing_major, major, ""});
         }
     }
     for (std::size_t v = 0; v < vertex_count; ++v) {
-        if (!visited[v]) {
+        if (!visited[v] && !major_ids.contains(static_cast<std::uint16_t>(v))) {
             errors.push_back(topology_error{
                 topology_error_kind::disconnected_currency, currency_codes[v], ""});
         }

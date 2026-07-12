@@ -184,7 +184,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =is_driver= captured but never consulted; =crm_topology= doc claimed direction was carried, but it wasn't | domain/ccy_pair.hpp, src/service/topology_builder.cpp | Accepted | Added =is_driver= to =ccy_pair=, threaded through resolve/adjacency/edge_to_parent_; added a test asserting the flag survives =path_to_pivot=. |
+| 2 | Missing required major reported twice (=missing_major= + =disconnected_currency=) | src/service/topology_builder.cpp | Accepted | Excluded required-major currency ids from the general disconnected sweep; strengthened the missing-major test to assert exactly one error. |
+| 3 | Dead "pivot not found" branch, unreachable since pivot is resolved unconditionally | src/service/topology_builder.cpp | Accepted | Removed the dead branch; use =currency_index.at(pivot_code)= directly with a comment explaining why it can't throw. |
+| 4 | Self-loop input reported as =cycle_conflict= rather than a dedicated kind | src/service/topology_builder.cpp | Declined | Minor UX nit for a degenerate input (base == quote); =cycle_conflict= is still an accurate, if generic, diagnosis. Not worth a new error kind for this task's scope. |
 
 * Result
 
@@ -202,9 +205,11 @@ rate-engine task) -- no database, service, messaging, or refdata linkage.
   =topology_build_error= with one readable =topology_error= per offending
   pair -- collected across the whole input, not stopped at the first) and
   a BFS from the pivot for parent/path assignment.
-- 6 Catch2 test cases / 20 assertions, all green: valid build, multi-hop
-  triangulation through the pivot, cycle rejection, missing major,
-  duplicate edge, disconnected currency.
+- 7 Catch2 test cases / 26 assertions, all green: valid build, driver
+  direction survives into the built topology, multi-hop triangulation
+  through the pivot, cycle rejection, missing major (exactly one error,
+  not duplicated), duplicate edge, disconnected currency. (Updated post
+  review round 1 -- see =* Review=.)
 - Component overview + class/build-sequence/runtime-sequence PlantUML
   diagrams under =modeling/= and the task's =design/= folder.
 - Registered in =projects/CMakeLists.txt=; builds clean under

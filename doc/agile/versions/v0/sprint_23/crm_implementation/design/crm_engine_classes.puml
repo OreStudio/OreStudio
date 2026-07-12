@@ -33,6 +33,7 @@ namespace ores #F2F2F2 {
                 class ccy_pair <<value type>> {
                     +base : currency_id
                     +quote : currency_id
+                    +is_driver : bool
                 }
 
                 class driver_quote <<value type>> {

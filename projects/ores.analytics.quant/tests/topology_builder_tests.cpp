@@ -55,6 +55,24 @@ TEST_CASE("builds a valid spanning tree from majors", "[topology_builder]") {
     CHECK(topology.code_of(path.front().quote) == "USD");
 }
 
+TEST_CASE("the driver/derived direction survives into the built topology", "[topology_builder]") {
+    const std::vector<ccy_pair_input> pairs = {
+        {"EUR", "USD", true},
+        {"USD", "JPY", false}, // a derived-only edge, not a driver
+    };
+    const auto topology = topology_builder::build(pairs, "USD", {"EUR", "JPY"});
+
+    const auto eur = *topology.currency_id_for("EUR");
+    const auto eur_path = topology.path_to_pivot(eur);
+    REQUIRE(eur_path.size() == 1);
+    CHECK(eur_path.front().is_driver == true);
+
+    const auto jpy = *topology.currency_id_for("JPY");
+    const auto jpy_path = topology.path_to_pivot(jpy);
+    REQUIRE(jpy_path.size() == 1);
+    CHECK(jpy_path.front().is_driver == false);
+}
+
 TEST_CASE("multi-hop path resolves through the pivot", "[topology_builder]") {
     const auto topology =
         topology_builder::build(majors_spanning_tree(), "USD", {"EUR", "GBP", "JPY", "CHF"});
@@ -94,11 +112,12 @@ TEST_CASE("a missing major produces a readable error", "[topology_builder]") {
     } catch (const topology_build_error& error) {
         threw = true;
         const auto& errors = error.errors();
-        const auto jpy_error = std::find_if(errors.begin(), errors.end(), [](const auto& e) {
-            return e.kind == topology_error_kind::missing_major && e.base_code == "JPY";
-        });
-        REQUIRE(jpy_error != errors.end());
-        CHECK(jpy_error->describe().find("JPY") != std::string::npos);
+        // Exactly one error for JPY -- missing_major, not also
+        // disconnected_currency for the same currency.
+        REQUIRE(errors.size() == 1);
+        CHECK(errors.front().kind == topology_error_kind::missing_major);
+        CHECK(errors.front().base_code == "JPY");
+        CHECK(errors.front().describe().find("JPY") != std::string::npos);
     }
     CHECK(threw);
 }

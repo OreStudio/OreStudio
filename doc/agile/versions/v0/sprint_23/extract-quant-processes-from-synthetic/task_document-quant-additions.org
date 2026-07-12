@@ -26,11 +26,11 @@ Component documentation reflects the new domain/service additions so future read
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] |
-| Now          | In progress, same branch/PR as move-istochasticprocess-interface (keeping PR count low). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -39,9 +39,14 @@ Component documentation reflects the new domain/service additions so future read
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Extended component_overview.org's Summary with a paragraph on the
+stochastic-process area (origin in ores.synthetic, why it moved), and
+added the new types to Inputs/Outputs/Entry points/Dependencies. Added
+sibling =domain= and =service= PlantUML namespace blocks (the existing
+diagram groups the CRM types under a =crm= namespace that doesn't
+actually match the C++ namespaces — left that pre-existing drift alone
+and used the real =domain=/=service= namespaces for the new content).
+Regenerated the PNG via the CMake diagram target.
 
 * Notes
 
@@ -69,3 +74,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+component_overview.org and the PlantUML diagram both updated;
+generate_ores.analytics.quant_diagram built cleanly and the PNG was
+regenerated. This was the story's last open task.

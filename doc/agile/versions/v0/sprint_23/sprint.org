@@ -62,7 +62,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] | BACKLOG | 2026-07-11 | | Pulled in from product backlog next: first-class calendar entity with FK-referenceable relationships, replacing free-text holiday_calendar/advance_calendar fields; Qt screens; ORE XML export mapping. |
 | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] | BACKLOG | 2026-07-11 | | Pulled in from product backlog next: driver/derived spanning-tree topology, no-arbitrage triangulation, risk recentering, management UI in ores.marketdata. |
 | [[id:1014DD4F-B011-4102-8C60-983364E9BFBE][Sprint 23 planning session]] | DONE | 2026-07-11 | 2026-07-11 | 16 stories seeded into sprint 23; deep backlog refinement audited all 559 items (71 discarded/relocated, 1 merged); bucket rescoring moved 310 items and emptied inbox. |
-| [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] | BACKLOG | 2026-07-12 | | Move GMM/OU stochastic processes, process factory, and parameter validation out of ores.synthetic into ores.analytics.quant, adding thorough tests and component documentation. |
+| [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] | DONE | 2026-07-12 | 2026-07-12 | Moved GMM/OU stochastic processes, process factory, and parameter validation out of ores.synthetic into ores.analytics.quant, with 54 new Catch2 tests and updated component documentation. |
 
 ** Hotfixes
 

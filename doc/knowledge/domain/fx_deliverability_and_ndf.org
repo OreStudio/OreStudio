@@ -2,12 +2,12 @@
 :ID: CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC
 :END:
 #+title: Deliverability and non-deliverable instruments
-#+description: Deliverable vs non-deliverable currencies, NDFs and NDOs, onshore/offshore bifurcation (KRW, CNY/CNH), and pseudo currency codes.
+#+description: Deliverable vs non-deliverable currencies, NDFs and NDOs, onshore/offshore bifurcation (KRW, CNY/CNH), pseudo currency codes, deal-level deliverability, counterparty/booking restrictions, the ISO boundary at the ledger, and the Offshore Forward Report.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-07-04
-#+updated: 2026-07-04
+#+updated: 2026-07-12
 
 * Summary
 
@@ -93,6 +93,64 @@ Consequences that must stay visible downstream:
 4. *Visibility*: trades valued with pseudo-code market data should be
    highlighted in relevant reports.
 
+** Deliverability at the deal level
+
+Deliverability is not only a currency-level property; it also determines
+how a given deal is settled once booked. Where a currency pair nets two
+amounts and one side is non-deliverable, the deal is deliverable by
+convention: the two legs net down to a single amount in the deliverable
+currency, leaving nothing to settle in the non-deliverable one. Where a
+currency is genuinely both deliverable, onshore, and non-deliverable,
+offshore, the convention that marks a particular deal as the deliverable
+kind is a blank *fixing date* — the same fixing date that, when present,
+identifies an NDF or NDO (see above). Deliverability is therefore encoded
+directly in the deal's own fields, not inferred from the currency alone.
+
+** Counterparty and booking restrictions
+
+Because the split between an onshore and an offshore market is a
+jurisdictional one, it constrains not only which curve or spot rate
+applies but also who may transact and where a trade may be booked. An
+onshore entity — a genuine local trading presence rather than a nominal
+one — trades only with counterparties within the same country, including
+internally: the [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][back-to-back
+risk-routing]] mechanism otherwise available to a foreign office without a
+proper local trading presence is precisely what a genuine onshore entity
+cannot use to move its risk elsewhere, since doing so would defeat the
+jurisdictional restriction the split exists to enforce. At the book
+level, the same restriction rules out an onshore book holding both the
+deliverable and non-deliverable sides of one currency (a =KRW= trade
+alongside a =KR1= trade, say) at once, since the two require different
+regulatory treatment. See [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book
+and the ledger]] for the entity/business-unit hierarchy this eligibility
+is ultimately derived from.
+
+** The ISO boundary at the ledger
+
+A pseudo currency code is legitimate everywhere upstream of settlement —
+booking, market data, Greeks — precisely because those layers need to
+distinguish an onshore market from its offshore counterpart. The general
+ledger and settlement systems are the point past which that distinction
+must disappear: every profit-and-loss and present-value figure crossing
+into the ledger is expressed in the underlying ISO currency, never in the
+pseudo code that produced it. Maintaining this boundary depends on two
+things happening correctly upstream: the deal itself must already carry
+its onshore/offshore classification through booking eligibility, and the
+market data used to value it must be correctly tagged onshore or
+offshore, so that Greeks and any bump-and-reset revaluation are computed
+against the right market before the pseudo code's job is done and the
+figure crosses into the ledger.
+
+** Offshore Forward Report
+
+A deal whose counterparty is domiciled offshore carries a reporting
+obligation distinct from ordinary onshore activity, captured in a
+dedicated Offshore Forward Report. This report is a consequence of the
+same jurisdictional split underlying everything else in this document: a
+regulator's interest in offshore activity in a given currency is a
+separate concern from its interest in that currency's domestic market,
+and the report exists to keep the two visible independently.
+
 * See also
 
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
@@ -101,3 +159,5 @@ Consequences that must stay visible downstream:
   constraint.
 - [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]] — where =deliverable= and
   =settlement_currency= live on the entity.
+- [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] — the back-to-back mechanism a genuine onshore entity is restricted from using.
+- [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and the ledger]] — the entity/business-unit hierarchy behind booking eligibility, and the ISO boundary at the ledger.

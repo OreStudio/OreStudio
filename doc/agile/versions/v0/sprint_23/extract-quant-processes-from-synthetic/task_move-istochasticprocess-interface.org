@@ -26,11 +26,11 @@ IStochasticProcess lives in ores.analytics.quant/include/ores.analytics.quant/do
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -39,9 +39,18 @@ IStochasticProcess lives in ores.analytics.quant/include/ores.analytics.quant/do
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Moved =i_stochastic_process.hpp= verbatim (pure virtual, zero
+dependencies) from =ores.marketdata.api/domain= to
+=ores.analytics.quant/domain=, renamespacing
+=ores::marketdata::domain::IStochasticProcess= to
+=ores::analytics::quant::domain::IStochasticProcess=. Updated the four
+ores.synthetic.service call sites (=gmm_process=,
+=arithmetic_gmm_process=, =ou_process=, =process_factory=,
+=fx_spot_feed=) to include the new header and use the new namespace,
+and added =ores.analytics.quant.lib= to
+=ores.synthetic.service/src/CMakeLists.txt= (kept
+=ores.marketdata.api.lib= too — still used for other marketdata
+types in that component).
 
 * Notes
 
@@ -69,3 +78,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Interface relocated with no behavioural change. Confirmed no other
+component (ores.marketdata, Qt client) referenced the old location.
+Full build of ores.analytics.quant.lib, ores.analytics.quant.tests,
+ores.synthetic.api/core/service.lib and ores.synthetic.service.exe
+succeeds; ores.analytics.quant.tests (46499 assertions) and
+ores.synthetic.api.tests (71 assertions) pass locally.

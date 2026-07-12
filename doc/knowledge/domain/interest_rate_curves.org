@@ -18,7 +18,7 @@ and [[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][Extrapolation]]. For how several
 curves compose into a funding/projection family for one currency, see
 [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Families]]. For
 tenor labels and settlement conventions see
-[[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]]. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+[[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Overview
 
@@ -103,7 +103,7 @@ be compared and combined consistently.
 
 * Input Instruments
 
-The instruments used to build a curve are called /pillar instruments/. Each
+The instruments used to build a curve are called /[[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][pillar]] instruments/. Each
 instrument fixes one point on the curve. The bootstrapped curve must reprice
 every pillar instrument at its observed market rate.
 

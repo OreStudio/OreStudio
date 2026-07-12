@@ -12,7 +12,7 @@
 * Summary
 
 A [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term structure]] is only
-directly observed at its own pillar [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+directly observed at its own [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][pillar]] [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
 points — a bootstrapped curve has no market-quoted value for a date that
 falls *between* two pillars, yet a consumer (a cash flow landing on an
 off-pillar date, a [[id:4DF1F49A-9AB4-4B56-B170-808490071799][broken
@@ -33,7 +33,8 @@ discount factor (or rate) at each of its pillar tenors and nowhere else.
 Anything that needs a value elsewhere *within* the pillar range — pricing
 a cash flow on an arbitrary date, resolving a
 [[id:4DF1F49A-9AB4-4B56-B170-808490071799][broken date]] a user has added
-to the ladder — must derive it from the pillars bracketing it. This is
+to the [[id:CE15D83D-6400-4596-8878-3A78D8298A85][forward ladder]] — must
+derive it from the pillars bracketing it. This is
 distinct from asking for a value *outside* the pillar range altogether,
 which is [[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][extrapolation]], a
 related but separate concept with its own conventions.
@@ -85,8 +86,9 @@ results rather than an error.
 
 * See also
 
-- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
 - [[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][Extrapolation]] — the sister concept for values outside the pillar range entirely.
+- [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]] — what a pillar is, and how it differs from a tenor in general.
 - [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the series interpolation fills in the gaps of.
 - [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — how far a curve's pillar range extends by curve type.
 - [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — the entries on a ladder that interpolation, or a direct feed, resolves.

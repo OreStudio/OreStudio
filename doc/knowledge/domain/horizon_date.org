@@ -56,7 +56,7 @@ being performed."
 
 * See also
 
-- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
 - [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the labels this date anchors.
 - [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the structure a horizon date belongs to.
 - [[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date and overnight]] — reval date, spot date, and valuation spot date.

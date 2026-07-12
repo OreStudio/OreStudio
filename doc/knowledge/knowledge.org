@@ -64,7 +64,7 @@ Finance concepts the codebase relies on, grouped by topic.
   curves compose beyond a single curve: funding/projection families,
   multi-curve build order, storage grouping, the review UI, and
   onshore/offshore namespacing.
-- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — hub note for scalar/tenor/term-structure
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — hub note for scalar/tenor/term-structure
   concepts: tenor labels, horizon date, date rolling, IMM dates, and
   broken dates/turn points.
 

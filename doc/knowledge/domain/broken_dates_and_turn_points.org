@@ -14,7 +14,7 @@
 Two distinct irregularities complicate an otherwise clean
 [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] grid: a *broken date* is
 a bespoke maturity that does not correspond to a standard tenor label and
-must be interpolated between the surrounding pillars, while a *turn point*
+must be interpolated between the surrounding [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][pillars]], while a *turn point*
 is a fixed-calendar-time discontinuity (most commonly year-end) that must
 be prevented from bleeding into the interpolation of adjacent tenors. Both
 matter to how a [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term
@@ -59,10 +59,12 @@ its own right — see the three-way classification below.
 
 ** Three-way tenor classification
 
-Every entry on a curve's tenor ladder is classified as exactly one of
-three kinds, and the system tracks which throughout the entry's lifetime
-(see [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
-for how that classification is recorded and why it never changes):
+Every entry on a [[id:CE15D83D-6400-4596-8878-3A78D8298A85][forward
+ladder]] is one of exactly three kinds, and the system must track which
+throughout the entry's lifetime (see
+[[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] for
+the proposed fields this classification would be recorded in, and why it
+should never change once recorded):
 
 - *Standard*: a normal named [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
   (=O/N=, =1M=, =1Y=, and so on).
@@ -75,63 +77,71 @@ for how that classification is recorded and why it never changes):
 
 ** Entry and display
 
-How a broken date is added to and shown on a curve's tenor ladder follows
-several conventions, all specific to broken dates rather than to standard
-tenors:
+Managing broken dates places several requirements on the
+[[id:CE15D83D-6400-4596-8878-3A78D8298A85][forward ladder]] they are
+entered through, all specific to broken dates rather than to standard
+tenors.
 
-- A broken date can be added or removed directly on the ladder — a user is
-  not limited to the pre-defined standard tenor set.
-- It can be entered either as an absolute *date* or as a *tenor label*
-  where applicable — the same date-vs-tenor duality used for other
-  single-instrument date fields (e.g. an option's expiry).
-- As part of supporting broken-date and forward-forward analysis, the
-  system must provide an isolated calculation surface, separate from the
-  live term structure, on which a user can price an arbitrary
-  forward-forward relationship (e.g. "the rate 3M in 6M") or an arbitrary
-  bespoke maturity before deciding whether it is worth adding as a real
-  broken date. This is necessary because such exploration is inherently
-  speculative — a user comparing several hypothetical structures needs to
-  try many of them without any one attempt mutating the curve every other
-  part of the system reads from. To satisfy this, the surface must: (a)
-  use the same [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
-  resolution and interpolation machinery the live term structure uses, so
-  a result is a faithful preview of what adding the point for real would
-  produce, not an approximation; (b) read the live curve's current state
-  to ground its calculations in real market levels, without ever writing
-  a result back into that curve's point set; and (c) leave no
-  [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][provenance]] trace on the
-  live curve — an explored-but-discarded hypothesis must be exactly as if
-  it had never been tried, consistent with provenance's "no promotion"
-  rule applying only to points that were actually added, not to
-  speculative ones that never were.
-- A broken date is not necessarily purely interpolated: each tenor entry,
-  including a broken date, can carry its own market data feed, so a broken
-  date can in principle be directly quoted rather than derived.
-- The [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]]
-  (Out of Today / Out of Tomorrow / Out of Spot) affects broken dates the
-  same way it affects standard tenors: when a non-standard basis is
-  selected, affected tenors — broken dates included — must be visually
-  distinguished so the user knows they are not on the conventional spot
-  basis.
-- On volatility surfaces specifically, a separate toggle controls whether
-  *interpolated* tenors are displayed at all — a distinct control from the
-  FX forward ladder's broken-date handling described above.
+The system must let a user add or remove a broken date directly on the
+ladder, rather than limiting entry to the pre-defined standard tenor set,
+and must accept a broken date entered either as an absolute date or as a
+tenor label where applicable — the same date-vs-tenor duality needed for
+other single-instrument date fields, such as an option's expiry.
+
+In order to support broken-date and forward-forward analysis, the system
+must provide an isolated calculation surface, separate from the live
+[[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term structure]], on which a
+user can price an arbitrary forward-forward relationship (e.g. "the rate
+3M in 6M") or an arbitrary bespoke maturity before deciding whether it is
+worth adding as a real broken date. This is necessary because such
+exploration is inherently speculative — a user comparing several
+hypothetical structures needs to try many of them without any one attempt
+mutating the term structure every other part of the system reads from. To
+satisfy this, the calculation surface must use the same
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] resolution and
+interpolation machinery the live term structure uses, so a result is a
+faithful preview of what adding the point for real would produce rather
+than an approximation; it must read the live term structure's current
+state to ground its calculations in real market levels, without ever
+writing a result back into its point set; and it must leave no
+[[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][provenance]] trace on the live
+term structure, so an explored-but-discarded hypothesis is exactly as if
+it had never been tried — consistent with provenance's "no promotion"
+rule applying only to points that were actually added, not to speculative
+ones that never were.
+
+The system must also let a broken date carry its own market data feed, the
+same as any standard tenor entry on the ladder, since a broken date is not
+necessarily purely interpolated — it must be possible for one to be
+directly quoted rather than derived.
+
+Because the [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]]
+(Out of Today / Out of Tomorrow / Out of Spot) affects broken dates the
+same way it affects standard tenors, the system must visually distinguish
+any ladder entry — broken date or standard tenor alike — that is not on
+the conventional spot basis whenever a non-standard basis is selected.
+
+On volatility surfaces specifically, the system must offer a separate
+toggle controlling whether interpolated tenors are displayed on the ladder
+at all, distinct from the broken-date handling described above.
 
 * See also
 
-- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
 - [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the standard labels a broken date falls between.
+- [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]] — the quoted points a broken date falls between, as distinct from tenor labels in general.
 - [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — where an interpolation method is specified.
 - [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]] — the concrete methods (log-linear, zero-linear, cubic spline, monotone spline) this document assumes.
 - [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — how the three-way classification is recorded and tracked over a point's lifetime.
 - [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — the curve-type-specific ranges a broken date's position falls within.
 - [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]] — the quoting-basis convention that also governs visual flagging for broken dates.
+- [[id:CE15D83D-6400-4596-8878-3A78D8298A85][Forward Ladder]] — the entry/display surface broken dates are managed through, distinct from the term structure it presents.
 
 ** Further reading: terminology verification
 
 "Broken date"/"odd date" and "the turn"/"turn effect" were checked against
-independent market sources (not this notebook) to confirm they are real,
-standard industry terminology rather than local naming:
+independent market sources to confirm they are real, standard industry
+terminology rather than local naming:
 
 - [[https://www.poems.com.sg/glossary/investment/broken-date/][Broken Date: Meaning, Impact & Fundamentals in Financial Markets]]
 - [[https://www.bestx.co.uk/publications/bestx-fx-forward-methodology-on-broken-dates][BestX FX Forward Methodology on Broken Dates]]

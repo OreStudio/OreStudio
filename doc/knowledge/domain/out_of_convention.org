@@ -11,8 +11,9 @@
 
 * Summary
 
-A forward rate ladder does not have one fixed reference point it is
-measured from — it can be expressed *out of* spot, tomorrow, or today, and
+A [[id:CE15D83D-6400-4596-8878-3A78D8298A85][forward ladder]] does not have
+one fixed reference point it is measured from — it can be expressed *out
+of* spot, tomorrow, or today, and
 which basis is in effect changes what a given
 [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] label actually resolves
 to. *Out of Spot* is the market default and the convention already assumed
@@ -63,7 +64,8 @@ Points]]'s entry and display conventions.
 
 * See also
 
-- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
 - [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the spot/forward curve convention this document's default basis matches.
 - [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][Horizon Date]] — the anchor every basis (spot, tomorrow, today) is itself a reference point relative to.
 - [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — where non-standard-basis visual flagging also applies, to broken dates specifically.
+- [[id:CE15D83D-6400-4596-8878-3A78D8298A85][Forward Ladder]] — the presentation surface a quoting basis applies to.

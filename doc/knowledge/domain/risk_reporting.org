@@ -255,7 +255,7 @@ specific tenors.
 
 *Measures*: Forward outright rates at each tenor; optionally swap/forward
 points. Aggregation can be "Out of Today", "Out of Tomorrow", or "Out of Spot"
-(see [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]]).
+(see [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]).
 
 ** Spot Greeks Report
 

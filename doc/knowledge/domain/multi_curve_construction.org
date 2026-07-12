@@ -11,7 +11,7 @@
 
 * Summary
 
-Before 2008, a single curve (typically LIBOR) served both roles: it
+Before 2008, a single curve (typically [[id:5170B17B-188B-45CA-A1B6-1F27A97E1CF8][LIBOR]]) served both roles: it
 projected expected floating fixings *and* discounted every cash flow,
 because the LIBOR/OIS basis was small enough to ignore. The 2008 financial
 crisis widened that basis to a level that could no longer be ignored,

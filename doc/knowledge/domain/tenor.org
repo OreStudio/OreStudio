@@ -29,7 +29,8 @@ but separate concept.
 The short end of the curve uses named tenors; the long end uses period
 notation. The table below is the *union* of every tenor label attested
 across the source material this cluster draws on, in ascending order. No
-single curve necessarily carries every one of these as a live pillar —
+single curve necessarily carries every one of these as a live
+[[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][pillar]] —
 which subset is actually quoted (as opposed to filled in by interpolation)
 depends on the curve type and the liquidity of the underlying instrument
 at that point (see [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest
@@ -67,11 +68,12 @@ dates]].
 
 Beyond the individually named labels above, positions and cash balances
 are sometimes bucketed using a coarser, purely calendar-based scheme
-instead of the curve-pillar ladder: =Nostro=, =Today=, =Tomorrow=,
-=Spot=, =1W=, then monthly buckets out to 24 months, or alternatively
-[[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM]]-date buckets. This is a
-*reporting/aggregation* convention, distinct in purpose from the
-curve-construction pillar ladder above, even where individual labels
+instead of the curve-construction
+[[id:CE15D83D-6400-4596-8878-3A78D8298A85][forward ladder]]: =Nostro=,
+=Today=, =Tomorrow=, =Spot=, =1W=, then monthly buckets out to 24 months,
+or alternatively [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM]]-date
+buckets. This is a *reporting/aggregation* convention, distinct in purpose
+from the curve-construction ladder above, even where individual labels
 coincide — a position-bucketing =1W= is not being used to construct a
 term structure. Elaborating this bucketing scheme's own conventions is
 out of scope for this cluster, which is concerned with curve construction.
@@ -142,7 +144,8 @@ curve. A common disambiguation convention appends the roll quarter: e.g.
 
 * See also
 
-- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
+- [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]] — the subset of tenors actually quoted as live inputs to a given curve.
 - [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the ordered series a tenor is one point of.
 - [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][Horizon Date]] — the reference date every tenor is relative to.
 - [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] — how a tenor date is adjusted onto a valid business day.
@@ -154,7 +157,7 @@ curve. A common disambiguation convention appends the roll quarter: e.g.
 
 The short-end labels and the =<n><D|W|M|Y>= period pattern are not local
 convention — they are checked here against independent, citable technical
-sources rather than this cluster's own notebooks:
+sources:
 
 - [[https://strata.opengamma.io/apidocs/com/opengamma/strata/basics/date/MarketTenor.html][OpenGamma Strata: MarketTenor]] — an open-source, industry-used quant
   library's API documentation, defining =ON=/=TN=/=SN=/=SW= in terms

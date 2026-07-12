@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-07-04
-#+updated: 2026-07-04
+#+updated: 2026-07-12
 
 * Summary
 
@@ -37,6 +37,17 @@ tomorrow, which is what drives theta on settled cash positions.
   desks prefer overnight rates for intraday positions; Finance prefers
   spot rates for official end-of-day valuation.
 
+** The pre-spot region
+
+For currencies with a T+2 spot lag, there is a two-day region before spot:
+today → tomorrow (=O/N=) and tomorrow → spot (=T/N=). For currencies with a
+T+1 spot lag (e.g. USD/CAD, USD/TRY) this region collapses to a single day,
+since there is no separate tomorrow-to-spot leg to price. This is why the
+outright formulas below take a different shape for T+1 vs. T+2 currencies:
+a T+1 currency only ever needs to strip out one leg (O/N) to move from
+spot back to today, while a T+2 currency needs to strip out both legs
+(T/N, then O/N).
+
 ** Outright formulas
 
 For a currency with T+1 settlement (e.g. USD):
@@ -51,6 +62,9 @@ $$\text{Outright tomorrow} = \text{Spot} - \text{T/N points} \times \text{pip fa
 These formulas tie the short end of the forward curve to spot and are the
 basis for theta calculations on settled cash positions; the pip factor is
 covered in [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]].
+The =T/N= point used here is a date-window input to this formula only —
+for Tom/Next's own dual role as both a settlement convention and a
+funding mechanism, see [[id:5CC47697-2655-4ECD-B04D-C6C08FF620D5][Tom/Next]].
 
 * See also
 
@@ -58,3 +72,4 @@ covered in [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip fa
 - [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — the plain spot date this normalises.
 - [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]] — the pip factor used in the outright
   formulas.
+- [[id:5CC47697-2655-4ECD-B04D-C6C08FF620D5][Tom/Next]] — Tom/Next's dual role beyond its use as an outright-formula input.

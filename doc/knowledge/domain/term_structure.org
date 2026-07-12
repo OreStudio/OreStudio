@@ -11,7 +11,7 @@
 
 * Summary
 
-A *term structure* (also /time structure/ or /curve/) is an ordered series
+A *term structure* (also /curve/) is an ordered series
 of [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] points representing
 the time profile of a quantity — a rate, a price, a volatility — across a
 series of future dates, together with the metadata needed to interpret
@@ -80,7 +80,7 @@ one value or a tenor-indexed series of values.
 
 * See also
 
-- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
 - [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the individual points a term structure orders.
 - [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][Horizon Date]] — the anchor every term structure's tenor points are relative to.
 - [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — the concrete bootstrapping mechanics for one interest rate term structure.

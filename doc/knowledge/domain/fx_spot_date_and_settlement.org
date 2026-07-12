@@ -64,7 +64,7 @@ holiday.
 * See also
 
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the structure that depends on this convention.
-- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — settlement conventions, tenors, date rolling.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — settlement conventions, tenors, date rolling.
 - [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and timestamps]] — the system-wide date/time conventions.
 - [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the pair-as-entity companion hub.
 - [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] — NDF fixing-date

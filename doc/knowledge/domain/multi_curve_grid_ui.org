@@ -2,7 +2,7 @@
 :ID: A26CFA71-21C0-4E98-ABC4-25F0EAD517E3
 :END:
 #+title: Multicurve Management
-#+description: The domain requirement for reviewing an entire curve family at once, and the tenor x curve-identity lookup grid attested elsewhere as one solution to it — documented as a design reference, not as functionality ORE Studio currently implements.
+#+description: What reviewing an entire curve family at once entails, and a tenor x curve-identity lookup grid as one way of organising that review.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:ore:ui:
@@ -17,68 +17,58 @@ Funding Curve and its dependent Projection Curves exist, a user still needs
 a way to *inspect* them as a coherent whole, rather than navigating to each
 constituent curve individually and losing sight of how they relate. This
 document states that inspection need as a domain requirement, independent
-of any particular implementation, and records one attested solution to
+of any particular implementation, and records one candidate solution to
 it — a tenor-by-curve-identity lookup grid, referred to here as the *Multi
-Curve Grid* — observed as prior art in another system. ORE Studio does not
-currently implement this pattern; it is documented here as a design
-reference for whichever interface eventually takes on curve-family review,
-so that the requirement and one known solution to it are not lost between
-the domain analysis captured in this cluster and the UI work that will
-eventually consume it.
+Curve Grid*.
 
 * Detail
 
-** The requirement, stated independently of any screen
+** Reviewing a curve family as a whole
 
 A currency's full interest-rate picture is a
 [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][curve family]]: one Funding
 Curve and a discrete set of Projection Curves, each independently
-[[id:E808F432-2FDA-47E8-B003-1E8B908870FE][bootstrapped]]. Whatever
-interface is responsible for presenting this family to a user must satisfy
-four requirements, stated here prior to any question of layout or widget
-choice.
+[[id:E808F432-2FDA-47E8-B003-1E8B908870FE][bootstrapped]]. Reviewing such
+a family is a distinct activity from constructing one, and it has its own
+character, independent of how any particular interface might realise it.
 
-*Requirement 1 — joint visibility.* Every curve belonging to one family
-must be visible together, in a single view. A user reviewing a currency's
-rates must not be required to reconstruct the family mentally by visiting
-each constituent curve in turn; the interface, not the user, is
-responsible for assembling the family.
+Central to that activity is joint visibility: every curve belonging to one
+family is examined together, in a single view, rather than reconstructed
+mentally by visiting each constituent curve in turn. Reviewing is also
+kept apart from constructing. Bootstrapping — selecting pillar
+instruments, resolving day-count conventions, choosing an interpolation
+method (see [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate
+Curves]] and [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]])
+— is a separate activity with its own inputs and its own failure modes; a
+review of curves that already exist is a read-only concern, and conflating
+it with the stateful, error-prone business of construction would blur two
+activities that are better kept distinct.
 
-*Requirement 2 — separation of review from construction.* Reviewing a
-curve family is a distinct concern from constructing one. Bootstrapping —
-selecting pillar instruments, resolving day-count conventions, choosing an
-interpolation method (see [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest
-Rate Curves]] and [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]])
-— is a separate workflow with its own inputs and its own failure modes. A review
-surface presents curves that already exist; it must not conflate the two
-responsibilities into one screen, since doing so would couple a read-only
-concern to a stateful, error-prone one.
+Because a party typically holds curve families for many currencies at
+once, review also extends one level above the family itself: families are
+grouped for display — by desk, region, or similar operational criteria —
+without altering the internal structure of any individual family. This
+grouping concerns *families*, not the curves within a family, and is
+therefore orthogonal to how any one family is itself presented.
 
-*Requirement 3 — groupability across currencies.* Because a party
-typically holds curve families for many currencies at once, the interface
-must also support grouping families for display — by desk, region, or
-similar operational criteria — without altering the internal structure of
-any individual family. This requirement operates one level above the
-family itself: it groups *families*, not the curves within a family.
-
-*Requirement 4 — inspectable provenance.* Each curve's provenance must
-remain inspectable. This has two parts: first, the specific set of
-instruments and parameters used to bootstrap the curve — its *curve
-template*, the same pillar-instrument selection introduced in
+Finally, each curve's provenance remains inspectable throughout review.
+This has two parts. The first is the specific set of instruments and
+parameters used to bootstrap the curve — its *curve template*, the same
+pillar-instrument selection introduced in
 [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]'s
 discussion of pillar instruments and bootstrapping segments, here
 considered a named, inspectable artefact rather than a one-off input to a
-bootstrapping run; second, the curve's full revision history, including
-time-travel to a prior state and diff-against-previous-version comparison.
-Without both parts, a user can see a curve's current values but not
-account for why they take those values or how they have changed.
+bootstrapping run. The second is the curve's full revision history,
+including time-travel to a prior state and diff-against-previous-version
+comparison. Absent either part, a reviewer can see a curve's current
+values but cannot account for why they take those values or how they have
+changed.
 
-** An attested solution: the tenor x curve-identity grid
+** A tenor x curve-identity grid
 
-One solution to the requirement above, observed as prior art rather than
-as something ORE Studio builds today, arranges a curve family as a
-two-dimensional lookup grid — [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][tenor]]
-on one axis, curve identity on the other:
+A grid such as the following provides the necessary structure: a
+two-dimensional lookup with [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][tenor]]
+on one axis and curve identity on the other:
 
 #+BEGIN_EXAMPLE
 ┌───────┬──────────────────────┬─────────────────────────┬─────────────┬─────┐
@@ -100,37 +90,24 @@ columns, so the grid is properly a *lookup* structure, not a continuous
 field. This distinction matters for the same reason a
 [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][curve family]] itself is not a
 mathematical surface: curve identity is a discrete, enumerable label, not a
-second continuous axis alongside tenor. In the prior art this pattern is
-drawn from, it sits alongside a simpler single-curve wireframe — a plain
-tenor-indexed table — used when only one curve, rather than a whole family,
-needs review.
+second continuous axis alongside tenor. For reviewing a single curve
+rather than a whole family, the same idea reduces to a plain tenor-indexed
+table with one (Date, Rate) column, the degenerate case of the grid below.
 
-** Where this pattern satisfies the requirement
-
-Mapped back onto the four requirements stated above, the grid pattern
-satisfies each as follows.
-
-It satisfies *joint visibility* by construction: the family's curves are
-the grid's columns, so reviewing the family is reviewing one screen rather
-than a sequence of screens.
-
-It satisfies *separation of review from construction* by scope exclusion.
-The pattern, as attested, exposes no editing or bootstrapping affordance of
-its own; construction, where it is reachable at all from a review surface
-built on this pattern, sits behind a separate, dedicated workflow rather
-than behind an editable cell in the grid.
-
-It satisfies *groupability across currencies* one level up from the grid
-itself: families for multiple currencies are grouped for display — by
-desk, region, or similar criteria — independently of how any single
-family's grid is laid out, so the grouping mechanism and the grid layout
-do not need to know about each other.
-
-It satisfies *inspectable provenance* by attaching a curve template and a
-full revision history to each curve the grid displays, rather than to the
-grid as a whole — provenance is a property of a curve, and the grid's role
-is only to make that per-curve property reachable from a family-level
-view.
+The family's curves populate the grid's columns, so reviewing the family
+is reviewing one screen rather than a sequence of screens — joint
+visibility follows from the layout itself. The grid, as such, exposes no
+editing or bootstrapping affordance of its own; construction, where it is
+reachable at all from a surface built on this pattern, sits behind a
+separate, dedicated workflow rather than behind an editable cell in the
+grid, keeping review and construction apart. Grouping families for display
+by desk, region, or similar criteria operates one level above any single
+family's grid, independently of how that grid is laid out, so the two
+concerns do not need to know about each other. And a curve template and a
+full revision history attach to each curve the grid displays, rather than
+to the grid as a whole, since provenance is a property of a curve — the
+grid's role is only to make that per-curve property reachable from a
+family-level view.
 
 * See also
 

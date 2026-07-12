@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Include order regression (ores.analytics.quant should sort before ores.marketdata.api) | fx_spot_feed.hpp | Accepted | Fixed |
 
 * Result
 

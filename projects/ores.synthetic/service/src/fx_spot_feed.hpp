@@ -20,8 +20,8 @@
 #ifndef ORES_SYNTHETIC_SERVICE_FX_SPOT_FEED_HPP
 #define ORES_SYNTHETIC_SERVICE_FX_SPOT_FEED_HPP
 
-#include "ores.marketdata.api/domain/i_fx_spot_feed.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
+#include "ores.marketdata.api/domain/i_fx_spot_feed.hpp"
 #include "ores.nats/service/client.hpp"
 #include <atomic>
 #include <memory>

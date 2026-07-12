@@ -200,24 +200,29 @@ public:
         }
         const auto& req_ctx = *req_ctx_expected;
         service::counterparty_identifier_service svc(req_ctx);
-        get_counterparty_identifiers_by_counterparty_id_response resp;
-        try {
-            if (auto req = decode<get_counterparty_identifiers_by_counterparty_id_request>(msg)) {
+        if (auto req = decode<get_counterparty_identifiers_by_counterparty_id_request>(msg)) {
+            get_counterparty_identifiers_by_counterparty_id_response resp;
+            try {
                 resp.counterparty_identifiers =
                     svc.list_counterparty_identifiers_by_counterparty_id(
                         req->counterparty_id, req->offset, req->limit);
                 resp.total_available_count = static_cast<int>(
                     svc.count_counterparty_identifiers_by_counterparty_id(req->counterparty_id));
                 resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(counterparty_identifier_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
             }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(counterparty_identifier_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
+            BOOST_LOG_SEV(counterparty_identifier_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(counterparty_identifier_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
-        BOOST_LOG_SEV(counterparty_identifier_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
     }
 
 private:

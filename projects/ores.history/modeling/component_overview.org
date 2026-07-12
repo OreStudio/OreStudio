@@ -55,11 +55,21 @@ crosses the wire for history; every frontend renders the same shape.
 - =include/ores.history/service/dispatch_registry.hpp= — the
   server-side registry: =register_history_provider(entity_type, fn)=
   and =dispatch(entity_type, entity_id)=.
+- =include/ores.history/messaging/history_handler.hpp= — the NATS
+  decode/dispatch/reply glue shared by every entity.
+- =include/ores.history/messaging/registrar.hpp= —
+  =register_history_handlers(nats, registry, queue_group)=, subscribing
+  the single =history.v1.get= subject to a =history_handler= backed by
+  a caller-owned =dispatch_registry=. Call once per service process,
+  after registering that service's own entities' providers.
 
 * Dependencies
 
 - [[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] — =field_value=/=diff_result= embedded in
   =entity_history_version=.
+- =ores.nats= / =ores.service= / =ores.logging= — the NATS
+  subscribe/decode/reply plumbing used by =history_handler= and
+  =registrar=.
 - std and =rfl= only beyond that — deliberately a leaf so every domain
   service depends on it without cycles, matching =ores.diff='s
   dependency discipline.

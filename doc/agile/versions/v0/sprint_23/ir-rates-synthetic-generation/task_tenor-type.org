@@ -34,11 +34,11 @@ tenor-collision validator task.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | Domain-knowledge groundwork done; C++ implementation not yet started. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Implement the tenor type in =ores.marketdata= (not =ores.utility= — see Notes) per the =Tenor= knowledge doc. |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -101,6 +101,45 @@ implementation should now be written against:
   restated in =pricing_configuration.org=) was replaced with links to
   the new atomic docs.
 
+Implementation, restarted after a branch resync uncovered that the
+locally cached =feature/tenor-type= branch was stale (its remote had
+been deleted on merge, and =compass task start= reused the stale
+local ref instead of resyncing) — =compass pr sync= brought it back
+onto =origin/main= before any new code was written, confirming
+=ores.synthetic='s old =process*= files and a duplicate
+=ores.marketdata.api/domain/i_stochastic_process.hpp= seen earlier in
+the session were artefacts of that stale branch, not real dead code
+on =main=.
+
+=code-add-domain-type='s instructions were themselves stale (hand-written
+JSON models under a =projects/ores.codegen/models/{component}/= that no
+longer exists — the real format is org-mode =entity_org=/etc. docs, per
+=projects/ores.codegen/docs/codegen_input_org_schema.org=, generated via
+=compass codegen generate --model <path> --profile ...=, not
+=run_generator.sh= directly). Fixed the skill doc. Codegen was then
+found not to fit =tenor= regardless: none of its entity-model types
+generate a behaviour-heavy value type (parsing, comparison operators,
+computed methods) with no persistence or UI — they generate flat
+data-carrying structs plus persistence/UI layers. Hand-authored
+instead, following the same precedent already set by
+=ores.analytics.quant='s own domain types (=currency_id=, =ccy_pair=,
+...), which are hand-authored for the identical reason.
+
+Implemented =ores::marketdata::domain::tenor= in
+=ores.marketdata.api= (header =include/ores.marketdata.api/domain/tenor.hpp=,
+source =src/domain/tenor.cpp=): parses O/N, T/N, S/N, S/W, and the
+=<n><D|W|M|Y>= pattern; =end_date()= resolves a tenor to a calendar
+date off a horizon date via =std::chrono= (clamping to the last valid
+day of the month for month/year arithmetic that overflows, e.g. 31 Jan
++ 1M -> 28 Feb); =resolve_window()=/=windows_overlap()= support the
+tenor-collision validator's half-open date-window overlap checks.
+=domain_tenor_tests.cpp=: 10 test cases / 33 assertions, covering
+parsing (valid and malformed labels), ordering, date arithmetic
+(including the month-clamping edge case), and window overlap
+(including the half-open boundary case). Full
+=ores.marketdata.api.tests= suite (110 assertions / 24 test cases)
+passes with no regressions.
+
 * PRs
 
 | PR | Title |
@@ -124,3 +163,19 @@ PR #1517 review round (3 automated passes, issue-level comments, no line comment
 | 5 | "Waiting on PR #1409" note stale — PR #1409 merged into main (4be33f2b4) before this branch's rebase, but story.org still said "still open" | story.org | Fixed | Updated to "Nothing" with a note that #1409 merged prior to this branch's rebase |
 
 * Result
+
+Delivered a QuantLib-free =ores::marketdata::domain::tenor= type in
+=ores.marketdata.api=: parsing of standard tenor labels (short-end
+O/N/T/N/S/N/S/W plus the =<n><D|W|M|Y>= period pattern), calendar-date
+resolution off a horizon date via =std::chrono=, and half-open
+date-window overlap checks — the prerequisite the tenor-collision
+validator task needs. 10 new test cases / 33 assertions; full
+=ores.marketdata.api.tests= suite (110 assertions / 24 cases) green.
+Delivered across two PRs: #1517 (domain-knowledge groundwork —
+Interest Rate Curve Families and Time Structures/Tenor clusters) and
+this task's implementation PR (not yet raised — see PRs table once
+opened). Also fixed stale =code-add-domain-type= skill instructions
+(JSON model path no longer exists; real format is org-mode entity
+docs generated via =compass codegen generate=) discovered while
+confirming codegen wasn't actually the right tool for this value
+type.

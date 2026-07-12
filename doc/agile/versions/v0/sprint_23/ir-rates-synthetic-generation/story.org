@@ -131,7 +131,7 @@ which now require the process to expose =P(t,T)=, not just a path of
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:3D39EF0A-585F-4C66-B84F-433CAFA4DEB2][Lightweight QuantLib-free tenor type]] | STARTED | 2026-07-11 | | Parse tenor labels (3M, 2Y, 1W) and support simple std::chrono-based date-window overlap checks, with no business-day calendar machinery and no QuantLib dependency. |
+| [[id:3D39EF0A-585F-4C66-B84F-433CAFA4DEB2][Lightweight QuantLib-free tenor type]] | DONE | 2026-07-11 | 2026-07-12 | Parse tenor labels (3M, 2Y, 1W) and support simple std::chrono-based date-window overlap checks, with no business-day calendar machinery and no QuantLib dependency. |
 | [[id:01143977-5DA2-48AE-B4BE-109585BC4962][Short-rate stochastic process (Hull-White/CIR/Vasicek)]] | BACKLOG | | | New IStochasticProcess implementation for mean-reverting short-rate dynamics, wired into process_factory, mirroring ou_process's shape. |
 | [[id:20D82F58-758D-498A-8B08-AA664408CB8F][Curve Template sub-config (ir_curve_generation_config)]] | BACKLOG | | | New sub-config owned by market_data_generation_config, one per currency+index, configuring the raw instrument grid (deposits, FRAs/futures, swaps). |
 | [[id:E6B7DEF3-F35F-454A-8ECF-CCD9E8E07A83][Tenor-collision/gap validation on the Curve Template]] | BACKLOG | | | Pure, engine-side validator (ores.synthetic.api) rejecting instrument grids where tenors overlap or collide with an active delivery window, using the new tenor type. |

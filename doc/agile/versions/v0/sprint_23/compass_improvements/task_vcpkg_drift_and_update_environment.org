@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 745B765F-BEB2-4CBA-8BA8-852FBDDBA399
+:END:
+#+title: Task: Add vcpkg drift check to bearings and a devops-update-environment skill
+#+description: Add a vcpkg-vs-main drift warning to compass bearings, and create a new devops-update-environment skill that brings a worktree fully up to date with main (fetch, detached checkout, submodules, settings, skills).
+#+type: task
+#+level: s1
+#+filetags: :compass_improvements:sprint_23:v0:
+#+owner: marco
+#+branch: feature/vcpkg-drift-and-update-environment
+#+pr: 1520
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C816DF00-1E36-4ED7-99E0-854589EF4EF3][Compass improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=compass bearings= should flag when a worktree's checked-out vcpkg
+submodule commit drifts from what =origin/main= expects, the way it
+already flags stale =.env= versions. And there should be a single
+skill a developer reaches for to bring a worktree fully up to date
+with main: fetch, detached checkout of the latest commit, sync
+submodules (vcpkg), and rebuild settings/skills.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C816DF00-1E36-4ED7-99E0-854589EF4EF3][Compass improvements]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- =compass bearings= prints a warning line when the vcpkg submodule
+  commit differs from =origin/main:vcpkg=, with the fix-it command.
+- No warning when vcpkg is in sync (verified against the fleet).
+- New skill =devops-update-environment= exists, scaffolded via the
+  standard skill machinery, indexing a new recipe for the fetch →
+  detached-checkout → submodules → settings → skills sequence.
+
+* Plan
+
+Add a =vcpkg_drift()= helper alongside the existing
+=branch_staleness()= git-log-only pattern in compass.py (no network
+call: reads cached =origin/main:vcpkg= and the submodule's checked-out
+HEAD), wire it into the bearings "Is the environment up?" section next
+to the =.env= version check. Scaffold the =devops-update-environment=
+skill and its recipe via the standard =compass add skill=/=add
+recipe= machinery, cross-reference from the s1_agent function doc and
+regenerate the skills catalogue.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1520][#1520]] | [compass] Add vcpkg drift check to bearings; add devops-update-environment skill |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | vcpkg_drift() misclassifies an uninitialized/deinitialized submodule as initialized (empty dir passes is_dir(), rev-parse HEAD walks up to superproject) | compass.py | Accepted | Detect via (vcpkg_dir / ".git").exists() instead; also guard current is None |
+| 2 | Skill #+title uses kebab-case name instead of readable Title Case | devops-update-environment/SKILL.org | Accepted | Retitled to "Update a worktree to latest main" |
+
+* Result
+
+Added =vcpkg_drift()= to compass.py and wired a warning into
+=compass bearings= "Is the environment up?" section, triggering when
+the local vcpkg submodule commit differs from what =origin/main:vcpkg=
+records. Verified silent when in sync (confirmed against the fleet's
+vcpkg commits via =git submodule status=) and confirmed the underlying
+drift this task started from (this worktree was on an older vcpkg
+commit than main) was real and is now fixed by =git submodule update
+--init vcpkg=.
+
+Scaffolded the =devops-update-environment= skill
+([[id:4FA1791F-6E6C-4376-A3B9-3BF913F55ACF][SKILL.org]]) and its recipe
+([[id:B223B31B-5789-439D-BBA2-5959D82F3D65][How do I update a worktree
+to latest main?]]), documenting: fetch + detached checkout of
+=origin/main=, =git submodule update --init vcpkg=, then rebuild
+settings and skills. Cross-referenced from =s1_agent.org= and
+regenerated the skills catalogue.

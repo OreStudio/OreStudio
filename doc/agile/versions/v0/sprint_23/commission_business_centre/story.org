@@ -8,6 +8,7 @@
 #+filetags: :product:refdata:commissioning:business_centre:sprint_23:v0:
 #+created: 2026-05-29
 #+updated: 2026-07-12
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -24,7 +25,7 @@ File backlog captures for Wt and HTTP support.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -49,7 +50,7 @@ File backlog captures for Wt and HTTP support.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:183B2813-A7A8-4EC1-A43A-E37CCFF83C21][Appraise business_centre against the entity evaluation checklist]] | BACKLOG | | | Score business_centre across all layers (SQL, domain, repository, service, generator, protocol, NATS eventing/handler, Qt) using the entity evaluation checklist; findings drive the rest of the story's tasks. |
+| [[id:183B2813-A7A8-4EC1-A43A-E37CCFF83C21][Appraise business_centre against the entity evaluation checklist]] | STARTED | 2026-07-12 | | Score business_centre across all layers (SQL, domain, repository, service, generator, protocol, NATS eventing/handler, Qt) using the entity evaluation checklist; findings drive the rest of the story's tasks. |
 | [[id:49403E16-E495-436D-8EE9-9739F638D534][Sync codegen for business_centre across all profiles]] | BACKLOG | | | Regenerate business_centre via every applicable codegen profile (sql, domain, repository, service, generator, protocol, nats-eventing, nats-handler, qt) and reconcile any drift against the hand-written files. |
 | [[id:15F0D21E-EDE0-4834-9963-D32953CCF9A1][Verify business_centre Qt UI end-to-end post-NATS]] | BACKLOG | | | Exercise the business_centre Qt UI end-to-end: MDI list window, detail window (edit/save round-trip), history window, delete command, and cross-session eventing. Fix any regressions found. |
 | [[id:996277E2-DBF4-4FF6-9AB3-E8534F675238][Write the business_centre manual chapter]] | BACKLOG | | | Add the business_centre entity chapter to the user manual, documenting the Qt windows (list, detail, history, delete). |

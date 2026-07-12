@@ -8,7 +8,7 @@
 #+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:
 #+owner: marco
 #+branch: feature/model-driver-derived-topology
-#+pr:
+#+pr: 1510
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
@@ -178,7 +178,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1510][#1510]] | [analytics.quant] Add CRM driver/derived spanning-tree topology builder |
 
 * Review
 

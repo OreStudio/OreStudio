@@ -96,6 +96,26 @@ std::vector<domain::book> book_repository::read_all(context ctx, const std::stri
         "Reading all book versions by id.");
 }
 
+std::optional<domain::book>
+book_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading book at version. id: " << id << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<book_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<book_entity, domain::book>(
+        ctx,
+        query,
+        [](const auto& entities) { return book_mapper::map(entities); },
+        lg(),
+        "Reading book at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
 
 void book_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book: " << id;

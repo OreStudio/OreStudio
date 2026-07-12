@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
-| Now          | Not yet started.                       |
+| Now          | Regenerated, built, DB-verified (validations confirmed via direct SQL insert); awaiting manual QA. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-11                               |
+| Next         | Run the manual scenario, then close out. |
+| Last touched | 2026-07-12                               |
 
 * Acceptance
 
@@ -39,9 +39,31 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Confirmed book.org's =* Foreign keys=/=* Insert trigger= sections
+(added in PR #1449 after that regen dropped them) were still present
+before touching anything: 3 soft FKs (parent_portfolio_id, party_id,
+owner_unit_id) + 3 value checks (ledger_ccy, book_status,
+regulatory_book_type — the third added since PR #1449). Diff-reviewed
+=compass codegen entity generate book --diff= next: the insert-trigger
+validation block didn't appear in the diff at all (confirming it would
+be untouched), only the same safe shape of changes seen in
+book_status/regulatory_book_type (real bug fix in ClientBookModel.cpp
+missing =result->success=, =clock_timestamp()= trigger fix, composite
+=read_at_version=, plus book-specific badge/icon polish in
+BookMdiWindow.cpp and an =idEdit->setReadOnly()= fix in
+BookDetailDialog.cpp).
+
+Ran the real generation (all 40 files ✅ in =compass codegen entity
+show book=). Re-grepped the generated SQL for all 6 validations --
+present, byte-identical to before. =BookController='s constructor
+signature was already correct in RefdataPlugin.cpp (fixed during the
+"Move book to refdata" story), so no call-site fix needed this time.
+Built clean across api/core/service/qt.refdata/qt.trading/qt.exe.
+
+=db recreate= applied the modified SQL with no errors. Verified the
+soft-FK validation actually fires at the DB level: a direct insert
+with a non-existent =parent_portfolio_id= was correctly rejected with
+=Invalid parent_portfolio_id: ... No active portfolio found=.
 
 * Notes
 
@@ -54,7 +76,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:7DD2C147-1CED-4D8A-AE6E-F1CA1636FA7F][Verify book list/detail/history and insert-trigger validations after codegen regeneration]] | PENDING | |
 
 * PRs
 

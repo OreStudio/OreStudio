@@ -41,6 +41,11 @@ std::uint32_t book_service::count_books() {
     return repo_.get_total_book_count(ctx_);
 }
 
+std::optional<domain::book> book_service::get_book_at_version(const std::string& id,
+                                                              std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting book at version: " << id << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
+}
 
 std::optional<domain::book> book_service::get_book(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting book: " << id;

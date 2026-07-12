@@ -44,7 +44,7 @@ review bot passes, not by the regen itself.
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | book_status and regulatory_book_type both DONE. |
 | Waiting on    | Nothing.                               |
-| Next          | Regenerate book and restore its 5 insert-trigger validations. |
+| Next          | Awaiting manual QA on the book regen, then close out. |
 | Last touched  | 2026-07-11                               |
 
 * Acceptance
@@ -69,7 +69,7 @@ review bot passes, not by the regen itself.
 |------+-------+-------+-----+-------------|
 | [[id:7D81393A-2025-4E77-9CCF-2DB9A9DB7E77][Regenerate book_status as a drift canary]] | DONE | 2026-07-11 | 2026-07-11 | Regenerated and manually verified; found and fixed 2 real bugs (missing has_change_reason_cache, stale TradingPlugin.cpp call site) beyond the mechanical regen. |
 | [[id:CCED67A5-5003-4B5F-A747-0C4F79C72228][Regenerate regulatory_book_type]] | DONE | 2026-07-12 | 2026-07-12 | Regenerated (had the same missing has_change_reason_cache gap as book_status, fixed proactively this time). Manual QA: all 6 steps PASS, zero ERROR-level log lines. |
-| [[id:0C185CE4-63E5-44CC-94AF-F3FF1E194986][Regenerate book and restore insert-trigger validations]] | BACKLOG | | | Regenerate book (currently almost entirely stale). Diff the resulting SQL against ores_refdata_books_create.sql on disk specifically for the 5 insert-trigger validations from PR #1449 (soft FKs on parent_portfolio_id/party_id/owner_unit_id; value checks on ledger_ccy/book_status) plus any others -- confirm book.org's Foreign keys/Insert trigger sections still produce them. Fix via paste blocks or variability knobs in the .org model if anything is missing, not hand-patched SQL. |
+| [[id:0C185CE4-63E5-44CC-94AF-F3FF1E194986][Regenerate book and restore insert-trigger validations]] | STARTED | 2026-07-12 | | Regenerated (all 40 files ✅); all 6 insert-trigger validations confirmed present and firing (direct SQL insert rejected on bad parent_portfolio_id). Awaiting manual QA. |
 | [[id:EBEBDC25-7789-4C70-A4D2-E9314E873D85][End-to-end test book after regeneration]] | BACKLOG | | | Build refdata/qt cleanly, then manually exercise the Book list/detail/history windows end to end (login, list, add, edit, save, rename, delete, history) to catch regressions like the ones PR #1449 surfaced (change-reason cache, is_key/uuid handling, history dialog close behaviour). |
 | [[id:01304B6F-C431-4BD3-885A-CE713114B5A4][Migrate book to composite-entity versioning]] | BACKLOG | | | Codegen's book_repository templates now generate read_at_version and other composite-entity scaffolding, but book.org does not yet declare its lookup children (book_status, regulatory_book_type, and the new book_purpose_type/ledger_feed_type). Register book as a composite parent per the Temporal Composite Entity Versioning target-state doc, aligned with the party/counterparty pilot implementation. |
 | [[id:504E021C-A112-42CA-8DC2-B583A2904C4D][Regenerate and re-test book after composite migration]] | BACKLOG | | | After book is registered as a composite parent, regenerate all its layers again, diff-review, build, and re-run the end-to-end manual test scenario -- confirm read_at_version and composite history/version composition behave as the target-state doc describes before unblocking new-work tasks. |

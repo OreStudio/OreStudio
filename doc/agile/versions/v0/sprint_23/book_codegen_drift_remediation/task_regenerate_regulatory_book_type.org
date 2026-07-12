@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :book_data_model_cleanup:sprint_23:v0:book_codegen_drift_remediation:
 #+owner: marco
-#+branch:
+#+branch: feature/regenerate-regulatory-book-type
 #+pr:
 #+blocked_on:
 #+blocked_since:

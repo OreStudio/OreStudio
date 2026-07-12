@@ -61,26 +61,24 @@ be longest, not by a fixed curve length the way IR and vol curves are.
 
 ** Beyond the end: flatten, not extrapolate
 
-Three distinct regions exist relative to a term structure's known points:
-
-- *Between* two known points: interpolate. Log-linear is the preferred
-  method; polynomial methods are best avoided for this purpose (see
-  [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] for the
-  full local/non-local interpolation method comparison).
-- *Before* the start of the curve: extrapolate.
-- *Beyond* the end of the curve: the convention is to *flatten* — hold the
-  last known value constant — and extrapolate only in rare, explicitly
-  justified cases. This is the deliberate resolution of "what happens past
-  30Y (IR) / past 5Y (vol, if not quoting out further) / past the
-  portfolio's longest CDS trade": the system does not silently fail, and
-  it does not default to extrapolation, which would manufacture a value
-  with no basis. It holds the curve flat instead.
+What happens past 30Y (IR) / past 5Y (vol, if not quoting out further) /
+past the portfolio's longest CDS trade is governed by
+[[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][Extrapolation]]'s general
+beyond-the-end policy: the system does not silently fail, and it does not
+default to extrapolation, which would manufacture a value with no basis —
+it holds the curve flat instead. See
+[[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][Extrapolation]] for the full
+policy, including the asymmetry with the before-the-start case, and
+[[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]] for how the
+region *between* known points is handled instead.
 
 * See also
 
 - [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
 - [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the series this document states the extent of.
 - [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the standard long-end labels (15Y-30Y) that define the IR ceiling.
+- [[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][Extrapolation]] — the general before-the-start/beyond-the-end policy this document's curve-type-specific ceilings feed into.
+- [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]] — the sister concept for values between known pillars.
 - [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — how interpolated/extrapolated/flattened points are tracked and distinguished from directly-quoted ones.
-- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — the interpolation methods used between known points.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — where these methods are applied to a concrete bootstrapped curve.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — the 5Y default extent and curve-split tenor in its native context.

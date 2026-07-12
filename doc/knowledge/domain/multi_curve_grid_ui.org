@@ -47,9 +47,9 @@ responsible for assembling the family.
 *Requirement 2 — separation of review from construction.* Reviewing a
 curve family is a distinct concern from constructing one. Bootstrapping —
 selecting pillar instruments, resolving day-count conventions, choosing an
-interpolation method (see
-[[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]) — is a
-separate workflow with its own inputs and its own failure modes. A review
+interpolation method (see [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest
+Rate Curves]] and [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]])
+— is a separate workflow with its own inputs and its own failure modes. A review
 surface presents curves that already exist; it must not conflate the two
 responsibilities into one screen, since doing so would couple a read-only
 concern to a stateful, error-prone one.

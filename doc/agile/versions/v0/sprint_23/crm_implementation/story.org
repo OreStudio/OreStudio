@@ -8,7 +8,7 @@
 #+filetags: :market_data:crm:fx:sprint_23:v0:
 #+created: 2026-06-28
 #+updated: 2026-07-11
-#+environment:
+#+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -26,11 +26,11 @@ engine the architecture relies on.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Pulled in from product backlog next; broken into tasks. |
+| Now           | Modelling the driver/derived spanning-tree topology. |
 | Waiting on    | Nothing.                               |
-| Next          | Model the graph/topology entity first (everything else depends on it). |
+| Next          | Implement triangulation/derivation once the topology is in place. |
 | Last touched  | 2026-07-11                               |
 
 * Acceptance
@@ -44,7 +44,7 @@ engine the architecture relies on.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:E7E31384-3616-4DFB-AB20-6CB099114FB3][Model the driver/derived spanning-tree topology]] | DONE | 2026-07-11 | 2026-07-12 | Graph structure over currency pairs for the CRM: driver/derived edges with cycle detection so a pair is never set on both sides simultaneously. |
 
 Planned tasks (not yet scaffolded as task docs), following the domain
 model's concept map:
@@ -70,6 +70,30 @@ model's concept map:
    current spanning-tree structure.
 
 * Decisions
+
+- The CRM lives in a *new*, dependency-light component --
+  =ores.analytics.quant= -- not in =ores.analytics.core= (which is
+  persistence/CRUD for pricing-engine entities, unrelated). It links only
+  =Boost::graph=/=Boost::boost= and =immer=; no database, service,
+  messaging, or refdata coupling. Everything domain-specific (currency
+  codes, spot days, short-term rates) is a caller-supplied parameter, not
+  fetched by the library.
+- Two-phase interface: a rare, one-shot =topology_builder::build()= that
+  validates and returns an immutable =crm_topology=, and a continuous
+  =rate_engine= (later task) that consumes driver-rate ticks and serves
+  derived-rate reads.
+- Ambiguous input (more than one path between two currencies) is *always*
+  rejected at build time via incremental union-find cycle detection
+  (=boost::disjoint_sets=) -- never silently resolved. This is a
+  deliberate departure from =QuantLib::ExchangeRateManager=, whose own
+  docs admit undefined behaviour when multiple chains exist.
+- The runtime engine will be thread-safe without being multi-threaded
+  itself: no internal threads, concurrency safety via an
+  atomically-swapped immutable snapshot (=immer::atom=), so updates and
+  batched reads never lock against each other.
+- QuantLib is deliberately not introduced as a dependency for this story
+  (not currently vendored anywhere in the repo); spot/calendar handling
+  stays a caller-supplied parameter.
 
 * Out of scope
 

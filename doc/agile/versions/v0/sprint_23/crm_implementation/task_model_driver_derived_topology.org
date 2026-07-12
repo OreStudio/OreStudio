@@ -1,0 +1,226 @@
+:PROPERTIES:
+:ID: E7E31384-3616-4DFB-AB20-6CB099114FB3
+:END:
+#+title: Task: Model the driver/derived spanning-tree topology
+#+description: Graph structure over currency pairs for the CRM: driver/derived edges with cycle detection so a pair is never set on both sides simultaneously.
+#+type: task
+#+level: s1
+#+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:
+#+owner: marco
+#+branch: feature/model-driver-derived-topology
+#+pr: 1510
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Stand up a new, dependency-light library -- =ores.analytics.quant= -- that
+models the CRM as a fixed spanning-tree topology (built once, validated,
+readable errors on failure) plus a thread-safe runtime engine that
+continuously ingests driver-rate ticks and serves batched derived-rate
+reads without locking, propagating staleness end to end.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+- New component =ores.analytics.quant=: only depends on =Boost::graph=/=Boost::boost=
+  and (optionally) =immer= -- no =ores.database=, =ores.service=, NATS, or
+  =ores.refdata= linkage. Fully unit-testable in isolation.
+- =topology_builder= takes currency pairs + driver/derived assignment +
+  majors/pivot config, builds the graph with Boost Graph (incremental
+  union-find cycle detection during construction, not post-hoc DFS), and
+  returns either an immutable =crm_topology= or a list of structured,
+  human-readable errors (missing major, cycle conflict, disconnected
+  currency, duplicate edge).
+- =rate_engine= consumes a stream of =driver_quote= ticks (single producer)
+  and serves =rate()=/=rates()= reads (any number of concurrent consumers)
+  via an atomically-swapped immutable snapshot (=immer::atom<rate_snapshot>=)
+  -- no locks on the hot path, no internal threads spawned by the library
+  itself.
+- Updating one driver quote only recomputes the affected subtree (the
+  vertices reachable from that edge, not the whole matrix); a batch read
+  of N pairs takes exactly one atomic snapshot load, then O(N) work.
+- Each vertex's cumulative state carries the timestamp of its oldest
+  contributing input; =rate()=/=rates()= propagate this into a
+  =rate_status= (fresh/stale/unavailable) evaluated against a caller-supplied
+  =staleness_policy=, so staleness in a major rate propagates to every
+  derived rate that depends on it.
+- Domain types (=currency_id=, =ccy_pair=, =driver_quote=,
+  =staleness_policy=, ...) are simple values owned by the library --
+  refdata/OpenSourceRisk-specific types are adapted at the caller's
+  boundary, never bound directly.
+
+* Plan
+
+** Component
+
+New sibling to =ores.analytics.core=/=api=/=service=, *not* an addition to
+=core= (which pulls in the database, service and messaging layers via
+=ores.database=, =ores.service=, =sqlgen=, NATS -- all persistence/CRUD for
+pricing-engine/model-config entities, unrelated to this). The CRM engine
+is pure computation and must stay a small, freestanding library that can
+be linked from anywhere (analytics, a future pricing service, tests) with
+no service/database baggage.
+
+Proposed layout: =projects/ores.analytics.quant/{include,src,tests}=,
+target =ores.analytics.quant.lib=, depending only on =Boost::graph=,
+=Boost::boost=, and =immer= (new vcpkg dependency -- =boost-graph= is
+already present in =vcpkg.json=, =immer= is not and needs adding).
+=QuantLib= is deliberately *not* introduced for this task -- it is not
+currently vendored anywhere in the repo, and spot-day/calendar handling is
+supplied by the caller as plain parameters, not computed in-library.
+
+** Prior art: QuantLib's =ExchangeRateManager=
+
+QuantLib has a comparable =ExchangeRate=/=ExchangeRateManager=
+(Direct vs Derived rates, a =chain()= triangulation, graph-based lookup).
+Lesson taken: its own documented caveat is that when multiple chains
+exist "it is unspecified which one is returned" -- there is no
+deterministic spanning-tree construction, no cycle validation, no
+readable errors, and no staleness concept. That gap is exactly what this
+task exists to close; the driver/derived vocabulary is reused, the
+lookup-only design is not.
+
+** Design (see [[file:design/crm_engine_classes.puml][class diagram]], [[file:design/crm_engine_build_sequence.puml][build sequence]], [[file:design/crm_engine_runtime_sequence.puml][runtime sequence]])
+
+Two-phase interface, matching the two very different lifecycles involved:
+
+1. /Build (rare, phase 1)/ -- =topology_builder::build(pairs,
+   driver_assignment, majors)= constructs the graph with Boost Graph
+   (=adjacency_list= + =disjoint_sets= for incremental cycle detection as
+   edges are added -- cheaper and more precise than a post-hoc DFS), then a
+   BFS from the pivot assigns each vertex its parent/path. Validation
+   failures are collected across the whole input (not stopped at the
+   first one), then raised together as a single =topology_build_error=
+   exception carrying the full list of =topology_error= (one per
+   offending pair), so a bad config produces one readable diagnosis
+   ("EUR/JPY unreachable: no path via USD pivot"; "USD/JPY conflicts with
+   JPY/USD: cycle") instead of an opaque failure or, worse, a silently
+   picked path. Success returns an immutable =crm_topology= that never
+   changes again for the lifetime of the engine. Because a second edge
+   that would connect two currencies already unioned is rejected the
+   moment it is seen (=cycle_conflict=), the resulting tree has by
+   construction exactly one path between any two currencies -- multiple
+   paths can never arise at runtime; ambiguous configs are caught and
+   thrown at build time, not silently resolved the way
+   =QuantLib::ExchangeRateManager= resolves them today.
+
+2. /Runtime (continuous, phase 2)/ -- =rate_engine= holds the fixed
+   =crm_topology= plus a per-vertex cumulative "log-rate from pivot" array
+   wrapped in =immer::atom<rate_snapshot>=. Representing rates as
+   log-space cumulative sums from the pivot means any derived rate is one
+   subtraction of two array entries (=O(1)=), and a batch of N pairs is
+   one atomic snapshot load + =O(N)= work -- no repeated locking per rate,
+   satisfying the "hundreds/thousands of rates, quickly" requirement.
+
+   - /Updates/ (=update(driver_quote)=): since the topology is a tree,
+     one driver edge changing only invalidates the subtree hanging below
+     it -- not the whole matrix. The engine recomputes just that subtree
+     into a new immutable snapshot (structural sharing via =immer=, so
+     only the touched entries are copied) and atomically swaps it in.
+     This is deliberately *not* multi-threaded internally -- the library
+     spawns no threads -- but it *is* thread-safe: any thread may call
+     =update()=, any number of threads may concurrently call
+     =rate()=/=rates()=, and neither blocks the other. A reader that
+     loads a snapshot mid-batch never sees a torn mix of old/new values,
+     because it holds one immutable snapshot for its whole read.
+
+   - /Staleness/: each vertex's state carries the timestamp of its oldest
+     contributing input, naturally propagated from its parent plus its
+     own edge's timestamp (a chain is only as fresh as its stalest link).
+     =rate()=/=rates()= compare that against a caller-supplied
+     =staleness_policy= and return a =rate_status= (fresh/stale/
+     unavailable) alongside the value -- so a stale major automatically
+     marks every derived rate depending on it as stale, without a
+     separate propagation pass.
+
+** Deferred to later tasks in this story
+
+- Triangulation/derivation details beyond the log-rate scheme sketched
+  above (task 2 in the story).
+- Interest-rate-aware forward-point rolling when combining legs with
+  mismatched spot/value dates ("traveling between edges") -- the
+  =vertex_state=/edge model leaves room for this (an extra term per edge)
+  but short-term-rate inputs and the rolling formula are out of scope for
+  the topology task itself.
+- Risk recentering (task 3) and the management UI (task 5).
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1510][#1510]] | [analytics.quant] Add CRM driver/derived spanning-tree topology builder |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =is_driver= captured but never consulted; =crm_topology= doc claimed direction was carried, but it wasn't | domain/ccy_pair.hpp, src/service/topology_builder.cpp | Accepted | Added =is_driver= to =ccy_pair=, threaded through resolve/adjacency/edge_to_parent_; added a test asserting the flag survives =path_to_pivot=. |
+| 2 | Missing required major reported twice (=missing_major= + =disconnected_currency=) | src/service/topology_builder.cpp | Accepted | Excluded required-major currency ids from the general disconnected sweep; strengthened the missing-major test to assert exactly one error. |
+| 3 | Dead "pivot not found" branch, unreachable since pivot is resolved unconditionally | src/service/topology_builder.cpp | Accepted | Removed the dead branch; use =currency_index.at(pivot_code)= directly with a comment explaining why it can't throw. |
+| 4 | Self-loop input reported as =cycle_conflict= rather than a dedicated kind | src/service/topology_builder.cpp | Declined | Minor UX nit for a degenerate input (base == quote); =cycle_conflict= is still an accurate, if generic, diagnosis. Not worth a new error kind for this task's scope. |
+
+* Result
+
+Shipped a new component, =ores.analytics.quant= (flat library,
+=projects/ores.analytics.quant/=), depending only on =Boost::graph=/
+=Boost::boost= (+ =immer=, added to =vcpkg.json= for the deferred
+rate-engine task) -- no database, service, messaging, or refdata linkage.
+
+- =domain::currency_id=, =ccy_pair=, =ccy_pair_input=, =topology_error=,
+  =topology_build_error=, =crm_topology= -- the value types and the
+  immutable topology result.
+- =service::topology_builder::build()= -- constructs the spanning tree with
+  =boost::disjoint_sets= for incremental cycle detection (rejects a second
+  path between two currencies the instant it is seen, throwing
+  =topology_build_error= with one readable =topology_error= per offending
+  pair -- collected across the whole input, not stopped at the first) and
+  a BFS from the pivot for parent/path assignment.
+- 7 Catch2 test cases / 26 assertions, all green: valid build, driver
+  direction survives into the built topology, multi-hop triangulation
+  through the pivot, cycle rejection, missing major (exactly one error,
+  not duplicated), duplicate edge, disconnected currency. (Updated post
+  review round 1 -- see =* Review=.)
+- Component overview + class/build-sequence/runtime-sequence PlantUML
+  diagrams under =modeling/= and the task's =design/= folder.
+- Registered in =projects/CMakeLists.txt=; builds clean under
+  =linux-clang-debug-make=.
+
+Acceptance met, except: =rate_engine= (phase 2 -- continuous updates,
+staleness propagation, =immer::atom= snapshot) is deferred to the next
+task in this story per the =* Plan= "Deferred to later tasks" section;
+this task's scope was the topology only.
+
+Note: =compass build --direct component --profile component= scaffolding
+is currently broken (unrelated in-flight codegen-unification migration,
+task B8, owned by another environment) -- the skeleton was hand-written to
+match the shape codegen would have produced, flagged in =* Plan=.

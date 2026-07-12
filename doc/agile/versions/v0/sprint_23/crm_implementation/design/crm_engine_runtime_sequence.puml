@@ -1,0 +1,62 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title CRM runtime (Phase 2) -- concurrent spot updates vs batch rate reads
+
+participant "Feed thread" as Feed
+participant "rate_engine" as Engine
+participant "immer::atom<rate_snapshot>" as Atom
+participant "Consumer thread(s)" as Consumer
+
+== Spot update (single producer) ==
+
+Feed -> Engine : update(driver_quote)
+activate Engine
+Engine -> Engine : locate driver edge in fixed topology\n(O(1), topology never changes)
+Engine -> Engine : walk the subtree hanging off that edge\nrecompute log_rate + as_of per descendant vertex
+Engine -> Atom : update(fn: old_snapshot -> new_snapshot)\n(persistent vector -- only touched\nentries are copied, rest shared)
+note right of Atom
+  Wait-free publish. Old snapshot stays
+  valid for any reader still holding it --
+  no reader ever blocks a writer or vice versa.
+end note
+deactivate Engine
+
+== Batch read (many concurrent consumers) ==
+
+Consumer -> Engine : rates(pairs[1..N])
+activate Engine
+Engine -> Atom : load() -- ONE atomic read for the whole batch
+Atom --> Engine : snapshot (immutable, private view)
+loop for each requested pair
+    Engine -> Engine : rate = exp(log_rate[quote] - log_rate[base])
+    Engine -> Engine : staleness = now - min(as_of[base], as_of[quote])
+    Engine -> Engine : status = staleness_policy.evaluate(staleness)
+end
+Engine --> Consumer : vector<derived_rate>
+deactivate Engine
+
+note over Feed, Consumer
+  No locks anywhere on this path. Producer and any number of
+  consumers proceed independently; a consumer mid-batch never
+  sees a torn mix of old/new rates because it holds one snapshot
+  for the entire batch.
+end note
+
+@enduml

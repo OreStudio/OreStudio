@@ -80,7 +80,6 @@ private:
     QMenu* trading_codes_menu_{nullptr};
 
     QAction* act_portfolios_{nullptr};
-    QAction* act_books_{nullptr};
     QAction* act_portfolio_explorer_{nullptr};
     QAction* act_org_explorer_{nullptr};
     QAction* act_trades_{nullptr};

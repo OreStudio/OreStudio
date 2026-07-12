@@ -433,6 +433,11 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (currencyPairController_)
                 currencyPairController_->showListWindow();
         });
+        act_books_ = ref->addAction(ico(Icon::BookOpen), tr("&Books"));
+        connect(act_books_, &QAction::triggered, this, [this]() {
+            if (bookController_)
+                bookController_->showListWindow();
+        });
 
         ref->addSeparator();
 
@@ -745,9 +750,9 @@ QList<QMenu*> RefdataPlugin::create_menus() {
 }
 
 QList<QAction*> RefdataPlugin::toolbar_actions() {
-    if (!act_currencies_ || !act_countries_ || !act_currency_pairs_)
+    if (!act_currencies_ || !act_countries_ || !act_currency_pairs_ || !act_books_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
-    return {act_currencies_, act_countries_, act_currency_pairs_};
+    return {act_currencies_, act_countries_, act_currency_pairs_, act_books_};
 }
 
 // ---------------------------------------------------------------------------

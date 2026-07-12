@@ -21,7 +21,7 @@ This page documents a test scenario verifying [[id:EE3C93E9-7907-4E18-BB82-3737E
 |---------------+------------------------------------------|
 | Verifies task | [[id:EE3C93E9-7907-4E18-BB82-3737E0E778C7][Move Book, BookStatus, and RegulatoryBookType Qt CRUD to RefdataPlugin]] |
 | Parent story  | [[id:0E63013B-3B02-4968-A9EA-ED85C00EC7AF][Move book to refdata]]   |
-| Target dialog | RefdataPlugin (Reference Data > Book Codes menu), TradingPlugin (Trading menu, Portfolio/Org Explorer) |
+| Target dialog | RefdataPlugin (Reference Data menu: Books, Book Codes), TradingPlugin (Trading menu: Portfolios, Portfolio/Org Explorer) |
 | Clients       |                                          |
 | State         | PENDING                               |
 
@@ -55,12 +55,14 @@ Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
 |--------+-------|
 | Status | PASS |
 
-** Books opens from the Trading menu and behaves normally
+** Books opens from the Reference Data menu and behaves normally
 
-Open Trading > Books. Confirm the list window opens, shows seeded
-rows, and that add/edit/save/history all work exactly as before —
-this is the non-owning-pointer path (RefdataPlugin owns
-BookController; TradingPlugin's menu action just calls into it).
+Open Reference Data > Books (top level, alongside Currencies,
+Countries, Currency Pairs). Confirm the list window opens, shows
+seeded rows, and that add/edit/save/history all work exactly as
+before. Confirm Trading > Books no longer exists — only Portfolios,
+Portfolio Explorer, Org Explorer, and Trades remain in the Trading
+menu.
 
 *** Result
 
@@ -139,9 +141,9 @@ resolution failed.
 | Field         | Value |
 |---------------+-------|
 | Status        | PASSED |
-| Completed at  | 2026-07-11T17:21:41Z |
+| Completed at  | 2026-07-12T00:53:20Z |
 | Branch        | feature/move-book-qt-to-refdata-plugin |
-| Commit        | 9d72eb03f |
+| Commit        | d6949ed73 |
 | Worktree      | bright_faraday |
 
 * Notes

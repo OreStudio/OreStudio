@@ -160,11 +160,6 @@ QList<QMenu*> TradingPlugin::create_menus() {
         if (portfolioController_)
             portfolioController_->showListWindow();
     });
-    act_books_ = menuTrading->addAction(ico(Icon::BookOpen), tr("&Books"));
-    connect(act_books_, &QAction::triggered, this, [this]() {
-        if (bookController_)
-            bookController_->showListWindow();
-    });
 
     menuTrading->addSeparator();
 
@@ -272,10 +267,9 @@ QList<QMenu*> TradingPlugin::create_menus() {
 }
 
 QList<QAction*> TradingPlugin::toolbar_actions() {
-    if (!act_portfolios_ || !act_books_ || !act_portfolio_explorer_ || !act_org_explorer_ ||
-        !act_trades_)
+    if (!act_portfolios_ || !act_portfolio_explorer_ || !act_org_explorer_ || !act_trades_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
-    return {act_portfolios_, act_books_, act_portfolio_explorer_, act_org_explorer_, act_trades_};
+    return {act_portfolios_, act_portfolio_explorer_, act_org_explorer_, act_trades_};
 }
 
 // ---------------------------------------------------------------------------

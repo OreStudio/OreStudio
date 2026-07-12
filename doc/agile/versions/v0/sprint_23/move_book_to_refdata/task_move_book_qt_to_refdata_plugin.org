@@ -55,18 +55,23 @@ submenu pattern) -- room for Book Purpose Types, Ledger Feed Types,
 and portfolio-side codes as they land. Trading Codes now shows only
 Purpose Types.
 
-** Book (non-owning pointer, stays wired in TradingPlugin's Trading menu)
+** Book (menu action also moved; controller stays non-owning in TradingPlugin)
 
 Book's Qt classes already live in =ores.qt/refdata= (PR #1449), and
-its *ownership/construction* moved here too -- but its "&Books" menu
-action stays in TradingPlugin's own Trading menu (unlike
-BookStatus/RegulatoryBookType, this passed manual QA unchanged), since
-PortfolioExplorerMdiWindow/OrgExplorerMdiWindow (composite
-trading-workflow views, staying in TradingPlugin per the earlier scope
-decision) also need a BookController pointer.
+its *ownership/construction* moved here too. Initially the "&Books"
+menu action was left in TradingPlugin's Trading menu since it passed
+QA unchanged -- but on review this was still wrong: Book is reference
+data, full stop. Moved the "&Books" action itself into RefdataPlugin's
+Reference Data menu (top level, alongside Currencies/Countries/
+Currency Pairs). Trading menu now only has Portfolios, Portfolio
+Explorer, Org Explorer, and Trades -- the two Explorer views are the
+only things that legitimately stay in TradingPlugin, since they
+combine books/portfolios with live trades.
 
-Added =RefdataPlugin::book_controller()= (non-owning accessor).
-TradingPlugin resolves it in =on_login()= via
+TradingPlugin still needs a =BookController*= for those two Explorer
+views (they show books as part of a trading-context tree), so it keeps
+a non-owning pointer resolved via =RefdataPlugin::book_controller()=
+(added as a non-owning accessor) through
 =PluginRegistry::instance().plugins()= + =dynamic_cast<RefdataPlugin*>=
 (RefdataPlugin's =load_order()= of 100 runs before TradingPlugin's 200,
 so the real object always exists by then); =bookController_= changed
@@ -112,22 +117,28 @@ via its "Verifies task" field.
 
 * Result
 
-Book, BookStatus, and RegulatoryBookType Qt CRUD and plugin wiring
-moved from TradingPlugin/ores.qt.trading to RefdataPlugin/ores.qt.refdata
--- no cross-component leakage. Book's controller is owned by
-RefdataPlugin but resolved as a non-owning pointer by TradingPlugin for
-its "&Books" menu action and Portfolio/Org Explorer views (safe by
-construction: RefdataPlugin's load_order runs first on login, and
-TradingPlugin nulls its pointer first on logout, per PluginRegistry's
-ascending/reverse ordering). BookStatus and RegulatoryBookType are
-fully owned and menu-wired by RefdataPlugin, in a new Reference Data >
-Book Codes submenu (not Trading Codes, per manual QA feedback).
+Book, BookStatus, and RegulatoryBookType Qt CRUD, menu entries, and
+plugin wiring all moved from TradingPlugin/ores.qt.trading to
+RefdataPlugin/ores.qt.refdata -- no cross-component leakage. Book's
+"&Books" action now lives at the top level of the Reference Data menu
+(alongside Currencies/Countries/Currency Pairs); BookStatus and
+RegulatoryBookType are in a new Reference Data > Book Codes submenu
+(not Trading Codes, per manual QA feedback). The Trading menu now only
+has Portfolios, Portfolio Explorer, Org Explorer, and Trades --
+TradingPlugin keeps a non-owning =BookController*= (via
+=RefdataPlugin::book_controller()=) solely because the two Explorer
+views need it, not because Book itself belongs there. Safe by
+construction: RefdataPlugin's load_order runs first on login and last
+on logout (PluginRegistry's ascending/reverse ordering), so the real
+object always exists while TradingPlugin might read the pointer.
 
 Two real bugs found and fixed beyond the mechanical move: a missing
 ORES_QT_REFDATA_EXPORT on RefdataPlugin broke the cross-.so
 dynamic_cast TradingPlugin needs to find it (same bug class as
 PR #1449's BookController export fix), and the initial menu placement
-(Trading Codes) was architecturally wrong for reference-data lookups.
+(Book Statuses/Regulatory Book Types in Trading Codes, Books left in
+the Trading menu) was architecturally wrong -- caught across two
+rounds of manual QA feedback, not by the regen/build itself.
 
 Also filed a UX capture:
 [[id:D8B2BC60-6CCA-42B5-88CA-09BBA8CD576C][QA Validation Runner: no unsaved-changes warning when closing the

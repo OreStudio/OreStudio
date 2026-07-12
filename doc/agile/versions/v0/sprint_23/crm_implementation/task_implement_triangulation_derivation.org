@@ -8,7 +8,7 @@
 #+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:
 #+owner: marco
 #+branch: feature/implement-triangulation-derivation
-#+pr:
+#+pr: 1512
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -112,7 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1512][#1512]] | [analytics.quant] Add CRM runtime rate engine (triangulation/derivation) |
 
 * Review
 

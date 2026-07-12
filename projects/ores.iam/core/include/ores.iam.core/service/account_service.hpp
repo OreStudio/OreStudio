@@ -30,6 +30,7 @@
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <optional>
 #include <string>
 
 namespace ores::iam::service {
@@ -215,6 +216,9 @@ public:
      *
      * @param account_id The ID of the account to update
      * @param email The new email address
+     * @param default_party_id The party to set as the account's default
+     * quick-login party; nullopt clears it. The caller is responsible for
+     * verifying the party is one the account is actually associated with.
      * @param modified_by The username making the change
      * @param change_reason_code The change reason code for audit trail
      * @param change_commentary Free-text commentary explaining the change
@@ -223,6 +227,7 @@ public:
      */
     bool update_account(const boost::uuids::uuid& account_id,
                         const std::string& email,
+                        const std::optional<boost::uuids::uuid>& default_party_id,
                         const std::string& modified_by,
                         const std::string& change_reason_code,
                         const std::string& change_commentary);

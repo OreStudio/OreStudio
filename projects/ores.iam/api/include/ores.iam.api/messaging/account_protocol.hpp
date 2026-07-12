@@ -52,6 +52,12 @@ struct update_account_request {
     static constexpr std::string_view nats_subject = "iam.v1.accounts.update";
     std::string account_id;
     std::string email;
+    /**
+     * @brief Party to set as the account's default quick-login party.
+     * Empty clears the default. Must be one of the account's assigned
+     * parties (validated server-side).
+     */
+    std::string default_party_id;
     std::string change_reason_code;
     std::string change_commentary;
 };

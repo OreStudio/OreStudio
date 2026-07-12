@@ -537,10 +537,42 @@ public:
                 error_reply(nats_, msg, ores::service::error_code::forbidden);
                 return;
             }
-            service::account_service svc(ctx);
             boost::uuids::string_generator sg;
-            svc.update_account(sg(req->account_id),
+            const auto account_id = sg(req->account_id);
+
+            std::optional<boost::uuids::uuid> default_party_id;
+            if (!req->default_party_id.empty()) {
+                boost::uuids::uuid party_id;
+                try {
+                    party_id = sg(req->default_party_id);
+                } catch (const std::exception&) {
+                    reply(nats_,
+                          msg,
+                          update_account_response{.success = false,
+                                                  .message = "Invalid default_party_id format"});
+                    return;
+                }
+                repository::account_party_repository ap_repo(ctx);
+                auto parties = ap_repo.read_latest_by_account(account_id);
+                const bool is_member = std::any_of(
+                    parties.begin(), parties.end(), [&](const auto& ap) {
+                        return ap.party_id == party_id;
+                    });
+                if (!is_member) {
+                    reply(nats_,
+                          msg,
+                          update_account_response{
+                              .success = false,
+                              .message = "Account is not a member of the requested default party"});
+                    return;
+                }
+                default_party_id = party_id;
+            }
+
+            service::account_service svc(ctx);
+            svc.update_account(account_id,
                                req->email,
+                               default_party_id,
                                ctx.actor(),
                                req->change_reason_code,
                                req->change_commentary);

@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:57D79024-3C39-4890-8DA1-0EF333DE68A7][Verify default-party quick-login end to end]] | PENDING | End-to-end across all 3 tasks. |
+| [[id:57D79024-3C39-4890-8DA1-0EF333DE68A7][Verify default-party quick-login end to end]] | PASSED | End-to-end across all 3 tasks; surfaced a real tenant-isolation bug and a design correction (see Result). |
 
 * PRs
 
@@ -123,3 +123,35 @@ iam= — =ores.iam.api.tests=, =ores.iam.core.tests=,
 UI test exercises the login dialog, so the checkbox interaction itself
 wasn't exercised by ctest — flagged as a manual QA gap for the QA
 Validation Runner rather than silently claimed as covered.
+
+** Follow-up from manual QA: default-party visibility/editing in the admin UI
+
+Running the scenario above surfaced two gaps not covered by the three
+original tasks, both fixed in the same branch:
+
+- *Pre-existing bug, unrelated to this story*: [[proj:projects/ores.iam/core/include/ores.iam.core/messaging/account_party_handler.hpp][account_party_handler.hpp]]'s
+  =list=/=by_account= handlers used the handler's system-scoped
+  construction-time context instead of deriving the caller's tenant
+  context from the JWT (the pattern every other handler in that file
+  already followed for writes). Under RLS, this silently returned zero
+  rows for any non-system-tenant account — surfaced as "0 associated
+  parties" in the admin Parties tab. Fixed by deriving
+  =ores::service::service::make_request_context()= per request, same
+  as =save=/=remove=.
+- *Design correction*: the first attempt at admin-side editing added a
+  parallel immediate-write path (a new admin-scoped
+  =set_account_default_party_request= NATS endpoint plus a right-click
+  "Set as Default" menu in =AccountPartiesWidget=) that bypassed the
+  dialog's Save button, change-reason prompt, and version history —
+  inconsistent with every other account field. Reworked into a regular
+  "Default Party" =QComboBox= in =AccountPartiesWidget= (Parties tab,
+  below the assignment list, sorted alphabetically alongside the
+  assigned-parties list and add-party combo), wired through
+  =update_account_request= (extended with a =default_party_id= field)
+  and the existing Save/=account_service::update_account()=/version-history
+  path, with server-side party-membership validation. The admin-scoped
+  NATS endpoint and its UI were removed entirely; the self-service
+  =set_my_default_party_request= (used by =accounts set-default-party=
+  and the provisioning scripts) was untouched throughout — it's a
+  different, legitimate category of action (immediate self-service,
+  like =select_party=), not an edit-and-save.

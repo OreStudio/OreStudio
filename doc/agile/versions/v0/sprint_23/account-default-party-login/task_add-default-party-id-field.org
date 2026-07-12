@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:57D79024-3C39-4890-8DA1-0EF333DE68A7][Verify default-party quick-login end to end]] | PENDING | End-to-end across all 3 tasks. |
+| [[id:57D79024-3C39-4890-8DA1-0EF333DE68A7][Verify default-party quick-login end to end]] | PASSED | End-to-end across all 3 tasks. |
 
 * PRs
 

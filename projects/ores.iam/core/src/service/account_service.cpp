@@ -369,6 +369,7 @@ void account_service::logout(const boost::uuids::uuid& account_id) {
 
 bool account_service::update_account(const boost::uuids::uuid& account_id,
                                      const std::string& email,
+                                     const std::optional<boost::uuids::uuid>& default_party_id,
                                      const std::string& modified_by,
                                      const std::string& change_reason_code,
                                      const std::string& change_commentary) {
@@ -385,6 +386,7 @@ bool account_service::update_account(const boost::uuids::uuid& account_id,
     // Get existing account and create new version with updated fields
     auto account = accounts[0];
     account.email = email;
+    account.default_party_id = default_party_id;
     account.modified_by = modified_by;
     account.change_reason_code = change_reason_code;
     account.change_commentary = change_commentary;

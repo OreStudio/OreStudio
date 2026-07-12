@@ -87,6 +87,18 @@ one.
   =select_party='s membership-check pattern (server) rather than adding
   parallel logic — the quick-login path and the manual picker path
   converge on the same call.
+- Admin-side editing of the default party is a regular account field
+  edit (combo box in the Parties tab → Save → change-reason →
+  =update_account_request= → version history), the same as every other
+  account field — not a separate immediate-write action. An earlier
+  attempt at a parallel admin-scoped NATS endpoint plus a right-click
+  "set default" menu was reworked after manual QA flagged it as
+  inconsistent with the rest of the dialog (see the Result section of
+  the login-dialog-checkbox task for the detail). The self-service
+  =set_my_default_party_request= path (shell/provisioning) stayed as
+  originally designed — it's a different kind of action (immediate
+  self-service, like =select_party=), correctly not routed through
+  Save.
 
 * Out of scope
 

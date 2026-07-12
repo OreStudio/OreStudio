@@ -41,11 +41,24 @@ database. Confirm the script completes with no errors, including the
 new "✓ Default party set to 'BARCLAYS PLC'." line after the
 =provision party= step.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Account info confirms the default party is set
 
 From the shell (or =accounts info tenant_admin@barclays_plc=),
 confirm the account's =default_party_id= is populated and matches the
 BARCLAYS PLC party's UUID (cross-check against =parties list=).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Initially FAILED: an admin-scoped "Set as Default" right-click action wrote directly via NATS, bypassing Save/change-reason/version history. Reworked into a regular "Default Party" combo (Parties tab, sorted alphabetically, below the assignment list) that goes through the normal Save flow like every other account field. Re-tested PASS. |
 
 ** Login with quick-login ticked and a single default party skips the picker
 
@@ -54,6 +67,12 @@ to default party" checkbox ticked (default state). Since this account
 has exactly one party, the server auto-selects it — confirm login
 completes straight to the main window with no picker dialog (this
 path is unaffected by the checkbox; included as a baseline).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Multi-party account: quick-login ticked bypasses the picker
 
@@ -64,6 +83,12 @@ straight to the main window logged into the default party — no
 =PartyPickerDialog= appears — and the party shown in the app matches
 the configured default.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Multi-party account: quick-login unticked shows the picker
 
 With the same multi-party account, untick "Log in to default party"
@@ -71,11 +96,23 @@ before logging in. Confirm =PartyPickerDialog= appears as before, and
 selecting a party (including a non-default one) completes login
 normally.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Multi-party account with no default set falls back to the picker
 
 Using a multi-party account with no =default_party_id= set, log in
 with the checkbox ticked. Confirm =PartyPickerDialog= appears (no
 default to quick-login to), and selection completes login normally.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Quick-login failure falls back to the picker, not an error
 
@@ -84,14 +121,20 @@ membership of its stored default party server-side.) Log in with the
 checkbox ticked. Confirm the app falls back to showing
 =PartyPickerDialog= rather than failing the login outright.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-12T09:56:00Z |
+| Branch        | feature/add-default-party-id-field |
+| Commit        | 401b2e30c |
+| Worktree      | prime_origin |
 
 * Notes

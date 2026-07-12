@@ -58,7 +58,7 @@ same-component, matching every other refdata soft-FK.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:307A9F1A-2F12-48E9-8D01-0E109D5DEC67][Model day_count_fraction_type as an ores.refdata entity]] | BACKLOG | | | Add day_count_fraction_type as an ores.codegen.entity in ores.refdata (aux-type pattern: code/name/description/display_order), following the Domain entity evaluation checklist, so SQL/domain/repository/service/messaging/Qt UI can all be generated via codegen. |
+| [[id:307A9F1A-2F12-48E9-8D01-0E109D5DEC67][Model day_count_fraction_type as an ores.refdata entity]] | STARTED | 2026-07-12 | | Add day_count_fraction_type as an ores.codegen.entity in ores.refdata (aux-type pattern: code/name/description/display_order), following the Domain entity evaluation checklist, so SQL/domain/repository/service/messaging/Qt UI can all be generated via codegen. |
 
 * Decisions
 

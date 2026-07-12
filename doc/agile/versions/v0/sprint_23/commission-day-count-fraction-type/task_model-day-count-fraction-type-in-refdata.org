@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

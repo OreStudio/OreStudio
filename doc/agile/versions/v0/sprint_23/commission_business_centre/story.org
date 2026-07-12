@@ -49,4 +49,8 @@ File backlog captures for Wt and HTTP support.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:183B2813-A7A8-4EC1-A43A-E37CCFF83C21][Appraise business_centre against the entity evaluation checklist]] | BACKLOG | | | Score business_centre across all layers (SQL, domain, repository, service, generator, protocol, NATS eventing/handler, Qt) using the entity evaluation checklist; findings drive the rest of the story's tasks. |
+| [[id:49403E16-E495-436D-8EE9-9739F638D534][Sync codegen for business_centre across all profiles]] | BACKLOG | | | Regenerate business_centre via every applicable codegen profile (sql, domain, repository, service, generator, protocol, nats-eventing, nats-handler, qt) and reconcile any drift against the hand-written files. |
+| [[id:15F0D21E-EDE0-4834-9963-D32953CCF9A1][Verify business_centre Qt UI end-to-end post-NATS]] | BACKLOG | | | Exercise the business_centre Qt UI end-to-end: MDI list window, detail window (edit/save round-trip), history window, delete command, and cross-session eventing. Fix any regressions found. |
+| [[id:996277E2-DBF4-4FF6-9AB3-E8534F675238][Write the business_centre manual chapter]] | BACKLOG | | | Add the business_centre entity chapter to the user manual, documenting the Qt windows (list, detail, history, delete). |
+| [[id:404A83BE-21BE-4AE5-9A98-A70346D26EFC][File Wt and HTTP backlog captures for business_centre]] | BACKLOG | | | File backlog captures for business_centre's Wt web UI and HTTP REST API support, since both are out of scope for this story (handled by the top-level Wt/HTTP commissioning stories). |

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 15F0D21E-EDE0-4834-9963-D32953CCF9A1
+:END:
+#+title: Task: Verify business_centre Qt UI end-to-end post-NATS
+#+description: Exercise the business_centre Qt UI end-to-end: MDI list window, detail window (edit/save round-trip), history window, delete command, and cross-session eventing. Fix any regressions found.
+#+type: task
+#+level: s1
+#+filetags: :commission_business_centre:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+business_centre's Qt UI works correctly post-NATS migration across list, detail, history, delete, and eventing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- List window loads and displays records; detail window edit/save round-trips without error; history window shows change history; delete removes the record and preserves history; a change in one connected session appears in a second session without manual refresh; all regressions found are fixed inline or filed as captures.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

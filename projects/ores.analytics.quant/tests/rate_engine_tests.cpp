@@ -25,6 +25,7 @@
 #include <atomic>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <limits>
 #include <thread>
 #include <vector>
 
@@ -158,12 +159,60 @@ TEST_CASE("rates() batches a snapshot load across many pairs", "[rate_engine]") 
     CHECK(results[3].rate == Catch::Approx(1.0)); // USD/USD is always identity via the pivot
 }
 
-TEST_CASE("update rejects a pair that is not an edge of the topology", "[rate_engine]") {
+TEST_CASE("update rejects an unknown currency", "[rate_engine]") {
     const std::vector<ccy_pair_input> pairs = {{"EUR", "USD", true}};
     auto topology = topology_builder::build(pairs, "USD", {"EUR"});
     rate_engine engine(std::move(topology), staleness_policy{std::chrono::minutes(5)}, epoch(0));
 
     CHECK_THROWS_AS(engine.update(driver_quote{"GBP", "USD", 1.25, epoch(0)}),
+                    std::invalid_argument);
+}
+
+TEST_CASE("update rejects two known but unconnected currencies -- not an edge of this topology",
+          "[rate_engine]") {
+    const std::vector<ccy_pair_input> pairs = {
+        {"EUR", "USD", true},
+        {"USD", "JPY", true},
+    };
+    auto topology = topology_builder::build(pairs, "USD", {"EUR", "JPY"});
+    rate_engine engine(std::move(topology), staleness_policy{std::chrono::minutes(5)}, epoch(0));
+
+    // EUR and JPY are both known currencies, but neither is the other's
+    // parent in the tree (both hang off USD) -- not a real edge.
+    CHECK_THROWS_AS(engine.update(driver_quote{"EUR", "JPY", 130.0, epoch(0)}),
+                    std::invalid_argument);
+}
+
+TEST_CASE("update rejects a self-referencing pair on the pivot currency", "[rate_engine]") {
+    const std::vector<ccy_pair_input> pairs = {{"EUR", "USD", true}};
+    auto topology = topology_builder::build(pairs, "USD", {"EUR"});
+    rate_engine engine(std::move(topology), staleness_policy{std::chrono::minutes(5)}, epoch(0));
+
+    // Without the base_id == quote_id guard, this would trivially satisfy
+    // parent(pivot) == pivot and corrupt the pivot's log_rate.
+    CHECK_THROWS_AS(engine.update(driver_quote{"USD", "USD", 1.0, epoch(0)}),
+                    std::invalid_argument);
+
+    // The pivot's own rate must still be exactly 1.0 afterwards -- the
+    // rejected update must not have mutated any state.
+    const auto result = engine.rate("USD", "USD", epoch(0));
+    CHECK(result.rate == Catch::Approx(1.0));
+}
+
+TEST_CASE("update rejects a non-finite or non-positive rate", "[rate_engine]") {
+    const std::vector<ccy_pair_input> pairs = {{"EUR", "USD", true}};
+    auto topology = topology_builder::build(pairs, "USD", {"EUR"});
+    rate_engine engine(std::move(topology), staleness_policy{std::chrono::minutes(5)}, epoch(0));
+
+    CHECK_THROWS_AS(engine.update(driver_quote{"EUR", "USD", 0.0, epoch(0)}),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(engine.update(driver_quote{"EUR", "USD", -1.1, epoch(0)}),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(engine.update(driver_quote{
+                        "EUR", "USD", std::numeric_limits<double>::quiet_NaN(), epoch(0)}),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(engine.update(driver_quote{
+                        "EUR", "USD", std::numeric_limits<double>::infinity(), epoch(0)}),
                     std::invalid_argument);
 }
 

@@ -74,11 +74,24 @@ void rate_engine::update(const driver_quote& quote) {
         throw std::invalid_argument("rate_engine::update: unknown currency in " + quote.base_code +
                                     "/" + quote.quote_code);
     }
+    if (!std::isfinite(quote.rate) || quote.rate <= 0.0) {
+        throw std::invalid_argument("rate_engine::update: rate must be finite and positive for " +
+                                    quote.base_code + "/" + quote.quote_code);
+    }
 
     // Determine which side is the child in the tree, and the sign of the
     // log-rate delta for that direction: quote = base * rate, so
     // log_rate[quote] = log_rate[base] + log(rate); if base is the child
-    // (parent is quote), the sign inverts.
+    // (parent is quote), the sign inverts. Reject base_id == quote_id up
+    // front: crm_topology::parent(pivot) == pivot by construction, so
+    // without this check a self-referencing pair on the pivot currency
+    // would trivially match the first branch below and corrupt the
+    // pivot's (supposedly invariant) log_rate, silently poisoning every
+    // derived rate in the tree instead of being rejected as a non-edge.
+    if (*base_id == *quote_id) {
+        throw std::invalid_argument("rate_engine::update: " + quote.base_code + "/" +
+                                    quote.quote_code + " is not an edge of this topology");
+    }
     currency_id child;
     double sign;
     if (topology_.parent(*base_id) == *quote_id) {

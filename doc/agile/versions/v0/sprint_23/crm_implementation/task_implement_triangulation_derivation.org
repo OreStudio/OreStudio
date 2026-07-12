@@ -118,7 +118,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Self-referencing pair on the pivot currency (base==quote==pivot) trivially matched =parent(pivot)==pivot= and silently corrupted every derived rate instead of throwing | src/service/rate_engine.cpp | Accepted | Added an explicit =base_id == quote_id= rejection before the parent-equality branches; new test asserts the throw and that the pivot's own rate stays exactly 1.0 afterwards (state not mutated by a rejected update). |
+| 2 | No validation that =driver_quote::rate= is finite/positive; a bad tick silently propagates NaN/-inf through the whole subtree with =status == fresh= | src/service/rate_engine.cpp | Accepted | Added a =std::isfinite() && > 0.0= check that throws =std::invalid_argument=, consistent with the existing unknown-currency/non-edge checks; new test covers zero, negative, NaN, and infinity. |
+| 3 | Existing "not an edge" test used an unknown currency, so it only exercised the unknown-currency throw, not the known-but-unconnected-currencies branch | tests/rate_engine_tests.cpp | Accepted | Split into two tests: unknown currency, and a genuine known-but-unconnected pair (EUR/JPY, both hang off USD but aren't each other's parent). |
+| 4 | =crm_topology::edge_to_parent()= added but never called anywhere -- speculative API surface | domain/crm_topology.hpp | Accepted | Removed; easy to add back with a real caller. |
+| 5 | =ccy_pair='s doc comment claimed =is_driver= is used by =rate_engine= to pick accumulation direction, but the engine actually derives direction from tree structure, not the flag | domain/ccy_pair.hpp | Accepted | Corrected the doc comment to say direction comes from the tree, not =is_driver=, and that either side of an edge may be ticked. |
 
 * Result
 
@@ -143,18 +147,21 @@ Shipped the runtime rate engine in =ores.analytics.quant=, on top of the
   (=as_of=), recomputed alongside =log_rate= in the same subtree walk --
   so a stale major automatically taints every derived rate depending on
   it, with no separate propagation pass.
-- =crm_topology= gained =parent()=/=edge_to_parent()= accessors (design
-  refinement: needed by the engine to build its children adjacency and to
-  determine, on each tick, which side of the edge is the "child" whose
-  subtree to recompute).
-- 8 new Catch2 test cases (15 total in the component, 43,000+ assertions
+- =crm_topology= gained a =parent()= accessor (design refinement: needed
+  by the engine to build its children adjacency and to determine, on each
+  tick, which side of the edge is the "child" whose subtree to
+  recompute). An =edge_to_parent()= accessor was added alongside it but
+  never used, and was removed in the review round below.
+- 11 new Catch2 test cases (18 total in the component, 45,000+ assertions
   across repeated runs): direct rate passthrough, pivot triangulation,
   unavailable-until-seeded, staleness propagation from the oldest
   contributing driver, subtree-only recompute (an unrelated branch is
   provably unaffected by an update elsewhere), batched =rates()=, reject
-  a non-edge pair, and a concurrent-update-vs-concurrent-read stress test
-  (single writer thread + 4 reader threads, thousands of batched reads)
-  run repeatedly with no crashes/hangs/inconsistent reads.
+  an unknown currency, reject two known-but-unconnected currencies,
+  reject a self-referencing pivot pair, reject a non-finite/non-positive
+  rate, and a concurrent-update-vs-concurrent-read stress test (single
+  writer thread + 4 reader threads, thousands of batched reads) run
+  repeatedly with no crashes/hangs/inconsistent reads.
 - Design docs updated to match: component overview, class diagram
   (=vertex_state= edge fields, =rate_engine= member/signature accuracy),
   no longer describing =rate_engine= as deferred.

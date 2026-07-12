@@ -71,11 +71,6 @@ public:
         return parent_.at(id.index());
     }
 
-    /// The edge from @p id to its parent, or @c std::nullopt for the pivot.
-    [[nodiscard]] const std::optional<ccy_pair>& edge_to_parent(currency_id id) const {
-        return edge_to_parent_.at(id.index());
-    }
-
     [[nodiscard]] std::optional<currency_id> currency_id_for(const std::string& code) const {
         const auto it = currency_index_.find(code);
         if (it == currency_index_.end())

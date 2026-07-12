@@ -109,7 +109,6 @@ public:
                                             std::chrono::system_clock::time_point valid_from_bound,
                                             std::chrono::system_clock::time_point valid_to_bound);
 
-
     /**
      * @brief Retrieves a single book as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.

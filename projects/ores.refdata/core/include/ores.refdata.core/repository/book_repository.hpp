@@ -125,7 +125,6 @@ public:
                                       std::chrono::system_clock::time_point valid_from_bound,
                                       std::chrono::system_clock::time_point valid_to_bound);
 
-
     /**
      * @brief Reads latest books with pagination support.
      * @param ctx Repository context with database connection

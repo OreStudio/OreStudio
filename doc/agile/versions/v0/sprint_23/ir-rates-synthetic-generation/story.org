@@ -136,6 +136,7 @@ which now require the process to expose =P(t,T)=, not just a path of
 | [[id:20D82F58-758D-498A-8B08-AA664408CB8F][Curve Template sub-config (ir_curve_generation_config)]] | BACKLOG | | | New sub-config owned by market_data_generation_config, one per currency+index, configuring the raw instrument grid (deposits, FRAs/futures, swaps). |
 | [[id:E6B7DEF3-F35F-454A-8ECF-CCD9E8E07A83][Tenor-collision/gap validation on the Curve Template]] | BACKLOG | | | Pure, engine-side validator (ores.synthetic.api) rejecting instrument grids where tenors overlap or collide with an active delivery window, using the new tenor type. |
 | [[id:615FD100-BCD9-4CF5-B9DF-197447769AA9][Tick-batch publishing and persistence for curve instruments]] | BACKLOG | | | Each generation step publishes N individual ticks (one per tenor), each its own market_observation row sharing one observation_datetime, point_id set to the tenor label. |
+| [[id:38449685-430E-4AF3-802E-5E02606BF2DA][Term structure/tenor knowledge docs: Pillar, provenance/ladder cleanup]] | DONE | 2026-07-12 | 2026-07-12 | Add a Pillar knowledge doc and rework Curve Point Provenance/Multicurve Management to link rather than duplicate definitions, following Zettelkasten conventions. |
 
 * Decisions
 

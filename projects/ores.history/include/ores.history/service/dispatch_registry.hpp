@@ -31,11 +31,21 @@ namespace ores::history::service {
 
 /**
  * @brief A history provider: fetches and renders one entity's version
- * history, given its id. Generated, mechanical glue per entity — call
- * the entity's own repository/service, then its field mapper.
+ * history, given its id and the caller's scope. Generated, mechanical
+ * glue per entity — call the entity's own repository/service, then
+ * its field mapper.
+ *
+ * caller_context is an opaque string this leaf component neither
+ * produces nor interprets: whatever a caller-supplied resolver (see
+ * messaging::register_history_handlers) packs into it — typically
+ * tenant_id, and where relevant party_id/actor for row-level
+ * visibility — a provider unpacks in whatever shape it and the
+ * resolver privately agree on (e.g. "tenant_id|party_id"). Keeping it
+ * opaque here is what lets ores.history stay a dependency-free leaf
+ * with no ores.database/ores.security dependency.
  */
-using history_provider =
-    std::function<std::vector<messaging::entity_history_version>(const std::string& entity_id)>;
+using history_provider = std::function<std::vector<messaging::entity_history_version>(
+    const std::string& caller_context, const std::string& entity_id)>;
 
 /**
  * @brief Server-side dispatch table for the one generic history
@@ -67,13 +77,15 @@ public:
 
     /**
      * @brief Dispatches a request to the provider registered for its
-     * entity_type. Returns a failure response (success = false) when
-     * no provider is registered, or when the registered provider
-     * throws, rather than propagating an exception — the caller is a
-     * NATS handler that must always reply.
+     * entity_type, passing through caller_context unexamined. Returns
+     * a failure response (success = false) when no provider is
+     * registered, or when the registered provider throws, rather than
+     * propagating an exception — the caller is a NATS handler that
+     * must always reply.
      */
     [[nodiscard]] messaging::get_entity_history_response
-    dispatch(const messaging::get_entity_history_request& request) const;
+    dispatch(const messaging::get_entity_history_request& request,
+            const std::string& caller_context) const;
 
 private:
     std::unordered_map<std::string, history_provider> providers_;

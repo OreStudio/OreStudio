@@ -28,9 +28,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | history_handler + register_history_handlers wired (single history.v1.get subject); no service registers real providers yet. |
+| Now          | history_provider/dispatch() now carry an opaque caller_context string (resolved per-request by a caller-supplied caller_context_resolver), resolving the auth/tenant-scoping gap flagged in PR #1523 review. Still no service registers a real provider. |
 | Waiting on   | Nothing.                               |
-| Next         | Wire real per-entity providers (repository + codegen'd render_{entity}_fields()) into a dispatch_registry per service, and remove the old per-entity get_<entity>_history subjects as each entity migrates. |
+| Next         | Wire real per-entity providers (repository + codegen'd render_{entity}_fields(), packing caller_context via a resolver that validates the JWT) into a dispatch_registry per service, and remove the old per-entity get_<entity>_history subjects as each entity migrates. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -44,6 +44,25 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+Design decision (caller_context): PR #1523 review flagged that
+=ores.history= had no way to carry tenant/auth scope into a
+history_provider, and that wiring a real provider would make
+=history.v1.get= an unauthenticated, tenant-unscoped subject — a
+regression from the per-entity handlers it replaces. Considered
+threading a full =ores::database::context= through (rejected: breaks
+=ores.history='s deliberate dependency-free-leaf design, pulling in
+=ores.database= for every consumer), and spiking one entity
+end-to-end with a hardcoded/system-tenant context (rejected: would
+have to be re-done once real scoping lands). Chose instead: an opaque
+=caller_context= string threaded through =history_provider= and
+=dispatch()=, produced per-request by a caller-supplied
+=caller_context_resolver= (validates the JWT, packs tenant_id and,
+where relevant, party_id/actor — same visibility need as
+=account_handler='s =ctx.party_id()=). =ores.history= never
+interprets the string; the resolver and each provider agree on its
+shape privately. Keeps the leaf dependency-free while giving every
+composing service full control over its own auth.
 
 * Test Scenarios
 

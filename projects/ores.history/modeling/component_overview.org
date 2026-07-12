@@ -77,6 +77,13 @@ crosses the wire for history; every frontend renders the same shape.
   subscribing the single =history.v1.get= subject to a =history_handler=
   backed by a caller-owned =dispatch_registry=. Call once per service
   process, after registering that service's own entities' providers.
+- =include/ores.history/service/version_builder.hpp= —
+  =build_entity_history_versions(versions, render)=, the shared glue
+  every history_provider needs: renders each newest-first version's
+  fields, diffs each against the next-older one via
+  =ores.diff::engine::compute= (empty diff for the oldest), and
+  numbers versions descending from the count — matching every
+  =*_repository::read_all(id)='s =version DESC= ordering.
 
 * Dependencies
 

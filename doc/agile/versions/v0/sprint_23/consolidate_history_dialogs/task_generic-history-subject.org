@@ -28,9 +28,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | history_provider/dispatch() now carry an opaque caller_context string (resolved per-request by a caller-supplied caller_context_resolver), resolving the auth/tenant-scoping gap flagged in PR #1523 review. Still no service registers a real provider. |
+| Now          | Added build_entity_history_versions(): shared glue that renders a newest-first version list's fields and diffs each against the next-older one via ores.diff::engine::compute — the last piece every per-entity history_provider needs before wiring. Still no service registers a real provider. |
 | Waiting on   | Nothing.                               |
-| Next         | Wire real per-entity providers (repository + codegen'd render_{entity}_fields(), packing caller_context via a resolver that validates the JWT) into a dispatch_registry per service, and remove the old per-entity get_<entity>_history subjects as each entity migrates. |
+| Next         | Wire the first real per-entity provider (currency, as pilot): a currency_service::get_currency_history() + render_currency_fields() + build_entity_history_versions() provider, registered against a dispatch_registry owned by ores.refdata.service, with a caller_context_resolver validating the JWT. Leave the old get_currency_history subject/handler in place until every consuming frontend (Qt/HTTP/shell) switches to history.v1.get; remove it, and repeat for the remaining 26 entities, in later increments. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance

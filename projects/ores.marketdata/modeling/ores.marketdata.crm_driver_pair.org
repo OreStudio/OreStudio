@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ID: 7A2E4B91-3C5D-4F6A-9B1E-2D8F0A6C4E7B
+:ores.cpp.qt.enabled: false
+:END:
+#+title: ores.marketdata.crm_driver_pair
+#+description: Codegen entity model for the marketdata crm_driver_pair table; a directly-quoted currency pair (topology edge) owned by a crm_topology_config.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:crm:
+#+entity_singular: crm_driver_pair
+#+entity_plural: crm_driver_pairs
+#+entity_title: CRM Driver Pair
+#+brief: A directly-quoted currency pair (a spanning-tree edge) owned by a crm_topology_config.
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+A single [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree]] edge for its parent =crm_topology_config=: the
+directly-quoted pair a producer publishes ticks for. The enabled rows for
+a (tenant, party) are read by =ores.marketdata.service= and fed straight
+into =ores.analytics.quant::topology_builder::build= as its
+=ccy_pair_input= list -- see [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]].
+
+Scoped to a tenant and a party, matching its parent config.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this driver pair.
+
+* Natural keys
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Owning party (legal entity) this driver pair belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Parent =crm_topology_config= this driver pair belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** base_currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Base currency ISO code of the driver pair (soft FK to currencies).
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+** quote_currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Quote currency ISO code of the driver pair (soft FK to currencies).
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+* Columns
+
+** enabled
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether this edge currently participates in the topology. Disabling
+(rather than deleting) preserves history, matching =feed_binding=.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_marketdata_crm_driver_pairs_tbl
+:END:
+
+** Checks
+
+| expression                                            |
+|--------------------------------------------------------|
+| "base_currency_code" <> ''                            |
+| "quote_currency_code" <> ''                           |
+| "base_currency_code" <> "quote_currency_code"         |
+
+* Foreign keys
+
+** config_id
+:PROPERTIES:
+:table:         ores_marketdata_crm_topology_configs_tbl
+:error_message: Invalid config_id: %. No active crm_topology_config found with this id.
+:nullable:      false
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: crm_driver_pair
+:entity_plural_short:   crm_driver_pairs
+:entity_singular_words: CRM driver pair
+:entity_plural_words:   CRM driver pairs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:

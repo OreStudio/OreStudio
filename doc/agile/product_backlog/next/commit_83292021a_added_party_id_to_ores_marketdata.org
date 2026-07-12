@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: F70CF285-C22F-4A09-A36C-5FE7A834F056
 :END:
-#+title: Add RESTRICTIVE party-isolation RLS policies for the four marketdata tables
-#+description: Commit 83292021a added party_id to ores_marketdata_feed_bindings_tbl, _market_fixings_tbl, _market_observations_tbl and _market_series_tbl without the matching AS RESTRICTIVE party-isolation policies, so validate_schemas.sh --strict fails (RLS_002). PR #1397 added a stopgap: the four tables are listed under RLS_002 in projects/ores.sql/utility/validation_ignore.txt. Proper fix: add the RESTRICTIVE policies to marketdata_rls_policies_create.sql and remove the four ignore entries. Until then, party scoping on marketdata is columns-only with no row-level enforcement.
+#+title: Add RESTRICTIVE party-isolation RLS policies for the marketdata tables
+#+description: Commit 83292021a added party_id to ores_marketdata_feed_bindings_tbl, _market_fixings_tbl, _market_observations_tbl and _market_series_tbl without the matching AS RESTRICTIVE party-isolation policies, so validate_schemas.sh --strict fails (RLS_002). PR #1397 added a stopgap: the four tables are listed under RLS_002 in projects/ores.sql/utility/validation_ignore.txt. The CRM implementation story (PR wiring the CRM into ores.marketdata's ingest path) added three more party_id-scoped tables the same way -- ores_marketdata_crm_topology_configs_tbl, _crm_driver_pairs_tbl, _crm_enabled_derived_pairs_tbl -- and extended the same ignore-list stopgap rather than fix it ad hoc. Proper fix: add the RESTRICTIVE policies to marketdata_rls_policies_create.sql for all seven tables and remove all seven ignore entries. Until then, party scoping on marketdata is columns-only with no row-level enforcement.
 #+type: capture
 #+level: cross
 #+filetags: :sql:security:rls:marketdata:
 #+created: 2026-07-03
-#+updated: 2026-07-11
+#+updated: 2026-07-12
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 

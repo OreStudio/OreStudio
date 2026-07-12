@@ -67,6 +67,17 @@ Consumed directly by =generator.py= via =_load_profiles_from_org()=. This file i
 | [[id:6499F37D-73C3-4E3C-A5D8-6DE23D160D33][cpp_domain_type_repository.hpp.mustache]] | projects/{component_core_dir}/include/ores.{component_core}/repository/{entity}_repository.hpp |
 | [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][cpp_domain_type_repository.cpp.mustache]] | projects/{component_core_dir}/src/repository/{entity}_repository.cpp |
 
+** presentation :facet:
+:PROPERTIES:
+:description: Server-side rendering of a domain type for display (history field mapper)
+:model_types: schema domain_entity
+:END:
+
+| Template | Output |
+|----------+--------|
+| [[id:19D528D6-50D3-451C-AA83-8A7B449C3A26][cpp_history_field_mapper.hpp.mustache]] | projects/{component_core_dir}/include/ores.{component_core}/presentation/{entity}_history_field_mapper.hpp |
+| [[id:CDB5DA90-3CDC-4496-821E-B1CC0331720B][cpp_history_field_mapper.cpp.mustache]] | projects/{component_core_dir}/src/presentation/{entity}_history_field_mapper.cpp |
+
 ** service :facet:
 :PROPERTIES:
 :description: Service layer

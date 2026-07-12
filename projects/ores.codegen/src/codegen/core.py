@@ -1818,6 +1818,48 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     col['is_simple'] and col.get('cpp_type') == 'std::string'
                     and not col.get('generator_expr')
                 )
+                # Render-type flags for templates (e.g. the history field
+                # mapper) that must render an existing value to string.
+                # Deliberately derived from the RAW cpp_type string, not
+                # from is_uuid/is_nullable_string/is_already_optional/
+                # is_plain_string above — those flags exist for the
+                # repository/SQL layer's own nullable-to-optional promotion
+                # logic, which the domain class template
+                # (cpp_domain_type_class.hpp.mustache) does NOT apply: it
+                # emits {{{cpp_type}}} verbatim, so a model with
+                # ":nullable: true" but an explicit ":cpp_type: std::string"
+                # override gets a plain std::string field, not
+                # std::optional<std::string> — the render_* flags must match
+                # that same ground truth, not the derived nullable flags.
+                _render_cpp_type = (col.get('cpp_type') or '').strip()
+                col['render_is_string'] = _render_cpp_type == 'std::string'
+                col['render_is_optional_string'] = _render_cpp_type == 'std::optional<std::string>'
+                col['render_is_bool'] = _render_cpp_type == 'bool'
+                col['render_is_optional_bool'] = _render_cpp_type == 'std::optional<bool>'
+                col['render_is_int'] = _render_cpp_type == 'int'
+                col['render_is_optional_int'] = _render_cpp_type == 'std::optional<int>'
+                col['render_is_double'] = _render_cpp_type == 'double'
+                col['render_is_optional_double'] = _render_cpp_type == 'std::optional<double>'
+                col['render_is_uuid'] = _render_cpp_type == 'boost::uuids::uuid'
+                col['render_is_optional_uuid'] = (
+                    _render_cpp_type == 'std::optional<boost::uuids::uuid>'
+                )
+                col['render_is_timestamp'] = (
+                    'time_point' in _render_cpp_type and not _render_cpp_type.startswith('std::optional<')
+                )
+                col['render_is_optional_timestamp'] = (
+                    _render_cpp_type.startswith('std::optional<') and 'time_point' in _render_cpp_type
+                )
+                # Mechanical title-case label for templates that render a
+                # human-readable field name (e.g. the history field mapper)
+                # without depending on the Qt profile's curated "Detail
+                # Fields" table, which is about widget wiring, not just
+                # labels, and isn't guaranteed present for every entity.
+                col['render_label'] = ' '.join(
+                    word.upper() if word.lower() in ('id', 'iso', 'fx')
+                    else word.capitalize()
+                    for word in col.get('name', '').split('_')
+                )
                 # Supply a safe default for non-nullable scalar types that
                 # would otherwise leave the domain struct with an
                 # indeterminate value. Nullable fields wrap in optional so
@@ -1889,6 +1931,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                                        key.get('type', '') in ('timestamp', 'timestamptz', 'timestamp with time zone'))
                 key['is_date'] = (key.get('cpp_type', '') == 'std::chrono::year_month_day' or
                                   key.get('type', '') == 'date')
+                key['render_label'] = ' '.join(
+                    word.upper() if word.lower() in ('id', 'iso', 'fx')
+                    else word.capitalize()
+                    for word in key.get('column', '').split('_')
+                )
             nks = domain_entity['natural_keys']
             domain_entity['has_multiple_natural_keys'] = len(nks) > 1
             # Flag: UUID-PK entities with text natural keys need an idx counter in the generator
@@ -2097,6 +2144,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     pk['cpp_type'] = 'boost::uuids::uuid'
                 else:
                     pk['cpp_type'] = 'std::string'
+            # Mechanical title-case label — see the identical column-level
+            # 'render_label' computation below for why this doesn't reuse
+            # 'description' (long prose, not a UI-sized label).
+            pk['render_label'] = ' '.join(
+                word.upper() if word.lower() in ('id', 'iso', 'fx')
+                else word.capitalize()
+                for word in pk.get('column', '').split('_')
+            )
         # Process Qt-specific fields
         if 'qt' in domain_entity:
             qt = domain_entity['qt']

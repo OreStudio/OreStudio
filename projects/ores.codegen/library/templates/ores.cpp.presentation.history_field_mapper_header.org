@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 19D528D6-50D3-451C-AA83-8A7B449C3A26
+:END:
+#+title: ores.cpp.presentation.history_field_mapper_header
+#+description: Declares render_{entity}_fields(): domain type -> ordered ores::diff::domain::field_value list. =presentation= profile.
+#+type: archetype
+#+output: projects/{component_core_dir}/include/ores.{component_core}/presentation/{entity}_history_field_mapper.hpp
+#+facet: ores.cpp.presentation
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+
+Declares =render_{entity}_fields()=: a codegen'd, plain per-entity
+function rendering a domain value to an ordered
+=ores::diff::domain::field_value= list, per
+[[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] layer 1 — one call per field, in mapper
+order, no runtime reflection. =presentation= profile.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_history_field_mapper.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_history_field_mapper.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_presentation.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_core_upper}}_PRESENTATION_{{entity_singular_upper}}_HISTORY_FIELD_MAPPER_HPP
+#define ORES_{{component_core_upper}}_PRESENTATION_{{entity_singular_upper}}_HISTORY_FIELD_MAPPER_HPP
+
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.{{component_core}}/export.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+#include <vector>
+
+namespace ores::{{component}}::presentation {
+
+/**
+ * @brief Renders a {{entity_singular}} to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_{{component_core_upper}}_EXPORT std::vector<ores::diff::domain::field_value>
+render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v);
+
+}
+
+#endif
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:03F9721D-E714-435A-BCD0-79C82F5B27D9][C++ presentation templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]
+- [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] — the consumer this mapper exists for.

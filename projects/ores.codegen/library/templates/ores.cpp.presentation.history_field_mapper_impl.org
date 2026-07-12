@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: CDB5DA90-3CDC-4496-821E-B1CC0331720B
+:END:
+#+title: ores.cpp.presentation.history_field_mapper_impl
+#+description: Implements render_{entity}_fields(): one field_value push per field, dispatched on the column's type flags. =presentation= profile.
+#+type: archetype
+#+output: projects/{component_core_dir}/src/presentation/{entity}_history_field_mapper.cpp
+#+facet: ores.cpp.presentation
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+
+Implements =render_{entity}_fields()=: one =field_value= push per
+field, dispatched on a set of =render_is_*= flags computed directly
+from each column's raw =cpp_type= string — deliberately *not* the
+=is_uuid=/=is_nullable_string=/=is_already_optional=/=is_plain_string=
+flags the repository/SQL facets use, since those encode a nullable-to-
+optional *promotion* for the storage layer that the domain class
+template (=cpp_domain_type_class.hpp.mustache=) does not apply: it
+emits =\{\{\{cpp_type\}\}\}= verbatim, so a column with
+=:nullable: true= but an explicit =:cpp_type: std::string= override
+gets a plain =std::string= field, not =std::optional<std::string>=.
+The mapper must match that same ground truth, or it doesn't compile
+against the actual generated struct. =presentation= profile.
+
+/Scope of this first cut/ (see the story's history-field-mapper task
+Notes for the full list): flat entities only (no
+=has_identity_group=/=has_audit_group= — none of the currently-covered
+=ores.refdata= entities use them); enum columns not yet rendered
+(=is_enum=, none present in the covered entities today); primary key
+and natural keys support =string= and =uuid= only (every currently-
+covered entity's primary/natural keys are one of those two).
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_history_field_mapper.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_history_field_mapper.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_presentation.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component_core}}/presentation/{{entity_singular}}_history_field_mapper.hpp"
+
+{{#has_uuid_columns}}
+#include <boost/uuid/uuid_io.hpp>
+{{/has_uuid_columns}}
+#include "ores.platform/time/datetime.hpp"
+
+namespace ores::{{component}}::presentation {
+
+std::vector<ores::diff::domain::field_value>
+render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
+    using ores::diff::domain::field_value;
+    std::vector<field_value> fields;
+
+{{#primary_key.is_uuid}}
+    fields.push_back(
+        {.name = "{{primary_key.render_label}}", .value = boost::uuids::to_string(v.{{primary_key.column}})});
+{{/primary_key.is_uuid}}
+{{^primary_key.is_uuid}}
+    fields.push_back({.name = "{{primary_key.render_label}}", .value = v.{{primary_key.column}}});
+{{/primary_key.is_uuid}}
+{{#natural_keys}}
+{{#is_uuid}}
+    fields.push_back({.name = "{{render_label}}", .value = boost::uuids::to_string(v.{{column}})});
+{{/is_uuid}}
+{{^is_uuid}}
+    fields.push_back({.name = "{{render_label}}", .value = v.{{column}}});
+{{/is_uuid}}
+{{/natural_keys}}
+{{#columns}}
+{{^is_identity_group_column}}
+{{#render_is_uuid}}
+    fields.push_back({.name = "{{render_label}}", .value = boost::uuids::to_string(v.{{name}})});
+{{/render_is_uuid}}
+{{#render_is_optional_uuid}}
+    fields.push_back({.name = "{{render_label}}",
+                      .value = v.{{name}} ? boost::uuids::to_string(*v.{{name}}) : std::string{}});
+{{/render_is_optional_uuid}}
+{{#render_is_timestamp}}
+    fields.push_back(
+        {.name = "{{render_label}}", .value = ores::platform::time::datetime::to_iso8601_utc(v.{{name}})});
+{{/render_is_timestamp}}
+{{#render_is_optional_timestamp}}
+    fields.push_back({.name = "{{render_label}}",
+                      .value = v.{{name}} ? ores::platform::time::datetime::to_iso8601_utc(*v.{{name}}) : std::string{}});
+{{/render_is_optional_timestamp}}
+{{#render_is_optional_string}}
+    fields.push_back({.name = "{{render_label}}", .value = v.{{name}}.value_or(std::string{})});
+{{/render_is_optional_string}}
+{{#render_is_optional_bool}}
+    fields.push_back({.name = "{{render_label}}", .value = v.{{name}} ? (*v.{{name}} ? "true" : "false") : std::string{}});
+{{/render_is_optional_bool}}
+{{#render_is_optional_int}}
+    fields.push_back({.name = "{{render_label}}",
+                      .value = v.{{name}} ? std::to_string(*v.{{name}}) : std::string{}});
+{{/render_is_optional_int}}
+{{#render_is_optional_double}}
+    fields.push_back({.name = "{{render_label}}",
+                      .value = v.{{name}} ? std::to_string(*v.{{name}}) : std::string{}});
+{{/render_is_optional_double}}
+{{#render_is_string}}
+    fields.push_back({.name = "{{render_label}}", .value = v.{{name}}});
+{{/render_is_string}}
+{{#render_is_bool}}
+    fields.push_back({.name = "{{render_label}}", .value = v.{{name}} ? "true" : "false"});
+{{/render_is_bool}}
+{{#render_is_int}}
+    fields.push_back({.name = "{{render_label}}", .value = std::to_string(v.{{name}})});
+{{/render_is_int}}
+{{#render_is_double}}
+    fields.push_back({.name = "{{render_label}}", .value = std::to_string(v.{{name}})});
+{{/render_is_double}}
+{{/is_identity_group_column}}
+{{/columns}}
+{{#has_audit_columns}}
+    fields.push_back({.name = "Modified By", .value = v.modified_by});
+    fields.push_back({.name = "Performed By", .value = v.performed_by});
+    fields.push_back({.name = "Change Reason Code", .value = v.change_reason_code});
+    fields.push_back({.name = "Change Commentary", .value = v.change_commentary});
+{{/has_audit_columns}}
+    fields.push_back(
+        {.name = "Recorded At", .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
+
+    return fields;
+}
+
+}
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:03F9721D-E714-435A-BCD0-79C82F5B27D9][C++ presentation templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]
+- [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]]

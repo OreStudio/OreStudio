@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 38449685-430E-4AF3-802E-5E02606BF2DA
+:END:
+#+title: Task: Term structure/tenor knowledge docs: Pillar, provenance/ladder cleanup
+#+description: Add a Pillar knowledge doc and rework Curve Point Provenance/Multicurve Management to link rather than duplicate definitions, following Zettelkasten conventions.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
+#+owner: marco
+#+branch: feature/pillar-and-provenance-docs
+#+pr: 1528
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extend and tidy the term-structure/tenor knowledge cluster: a dedicated Pillar doc, and provenance/ladder docs that org-roam link to existing definitions instead of restating them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
+| Now          | Complete.                               |
+| Waiting on   | Nothing.                               |
+| Next         | n/a                                     |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- Pillar doc exists and is linked wherever 'pillar' is used in the cluster
+- Curve Point Provenance and Multicurve Management link to Data Quality/Interpolation/Extrapolation rather than redefine them
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1528][#1528]] | [doc] Term structure/tenor cluster: Pillar, provenance/ladder cleanup |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Added a dedicated Pillar knowledge doc and org-roam linked it wherever
+"pillar" is used across the tenor/term-structure cluster. Reworked Curve
+Point Provenance and Multicurve Management to link to already-defined
+concepts (Data Quality, Interpolation, Extrapolation) rather than restate
+them, and to describe requirements as prose rather than a
+requirements-document format. Also removed an unsourced "observed as
+prior art in another system" claim from Multicurve Management.

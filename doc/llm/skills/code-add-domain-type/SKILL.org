@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :llm:skill:skills:claude_code:domain:codegen:
 #+created: 2024-09-01
-#+updated: 2026-06-06
+#+updated: 2026-07-12
 
 #+begin_export markdown
 ---
@@ -27,18 +27,41 @@ support. This is the mandatory first step before any exposure layer
 
 * How to use this skill
 
-Codegen is the primary path. Manual creation is a last resort and must
-be justified in the file header.
+Codegen is the primary path for a *persisted, data-carrying* entity
+(one with SQL storage, and usually a UI). Manual creation is
+appropriate — not a last resort — for a behaviour-heavy value type
+(parsing, comparison operators, computed methods) with no persistence
+or generated UI: none of codegen's entity-model types generate that
+shape, they generate flat data-carrying structs plus persistence/UI
+layers. See e.g. =ores.analytics.quant='s own domain types
+(=currency_id=, =ccy_pair=, ...), which are hand-authored for exactly
+this reason — no codegen banner, not listed in
+=compass codegen entity list=. Justify the choice in the file header
+either way.
 
-1. /Create a JSON model/ in =projects/ores.codegen/models/{component}/=
-   following the =*_domain_entity.json= or =*_junction.json= naming
-   convention. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for the model schema and
-   available fields. Type mappings are in [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Type
-   mappings".
+1. /Create an org-mode entity model/ under the target component's
+   =modeling/= directory (co-located org models — see the
+   =component_catalogue.org='s =modeling_dir= column), following the
+   =ores.codegen.entity= (full entity: C++ + SQL + Qt),
+   =ores.codegen.lookup_entity= (SQL-only reference table),
+   =ores.codegen.field_group= (flat C++ struct fragment composed into
+   a parent entity), =ores.codegen.table=, or =ores.codegen.junction=
+   schema — see [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] for the
+   authoritative frontmatter keywords and section hierarchy per type.
+   (The legacy =*_domain_entity.json=/=models/{component}/= format
+   this step used to reference no longer exists in the repo — org-mode
+   entity models superseded it.) Scaffold via =compass add --type
+   entity_org ...= (or =field_group=/=table=/=junction=/
+   =lookup_entity= as appropriate) per [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with
+   compass?]], then fill in the sections by hand.
 
-2. /Generate all C++ artefacts/ (files written directly to the project
-   tree — no copy step):
-   =cd projects/ores.codegen && ./run_generator.sh models/{component}/{entity}_domain_entity.json --profile all-cpp=
+2. /Generate the C++ artefacts/ via compass, not the generator script
+   directly:
+   =compass codegen generate --model <path/to/model.org> --profile all-cpp=
+   (=compass codegen entity generate <entity>= regenerates an
+   already-modelled entity's applicable profiles;
+   =compass codegen entity list= / =show= / =diff= inspect what
+   exists and whether it's stale).
 
 3. /Build and verify/: use [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]] to confirm the component
    library compiles cleanly.

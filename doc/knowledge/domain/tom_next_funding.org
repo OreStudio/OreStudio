@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 5CC47697-2655-4ECD-B04D-C6C08FF620D5
+:END:
+#+title: Tom/Next
+#+description: What Tom/Next (T/N) is, and its dual role as both a settlement convention for rolling an open spot position and a funding mechanism accruing interest on cash held overnight.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:fx:crm:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+*Tom/Next* (=T/N=) is the short-end [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+spanning the next business day to spot. Unlike most other short-end
+tenors, it carries two distinct roles rather than one: as a *time
+reference* it is the standard settlement convention for rolling an open
+spot position forward to the next business day; as a *funding mechanism*
+it is the period over which interest accrues on cash held overnight. Both
+roles matter together — a Tom/Next roll is not a simple date relabelling,
+it has a real funding cost or benefit attached to it.
+
+* Detail
+
+** What Tom/Next is
+
+Tom/Next is one of the standard short-end tenor labels (alongside =O/N=
+and =S/N=), covering the window from the next business day to spot. See
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] for how it fits among
+the other standard labels, and
+[[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date and
+overnight]] for the O/N/T/N outright formulas that use it as a date-window
+input to price spot today or tomorrow.
+
+** Dual role
+
+- *A time reference*: the standard settlement convention for rolling an
+  open spot position to the next business day, once a spot trade has not
+  yet delivered by end of day.
+- *A funding mechanism*: interest accrues on accumulated cash up to the
+  Tom/Next date. This is distinct from Tom/Next's use as a date-window
+  input to the O/N/T/N outright formulas: those formulas use T/N to price
+  a rate; the funding role is about what happens economically over the
+  T/N window itself, independent of any one outright calculation.
+
+** Why both roles matter together
+
+A position rolled on a Tom/Next basis is not simply relabelled to a new
+date — the funding role means the roll has a real economic cost or
+benefit, since interest genuinely accrues on the cash over that window.
+Treating Tom/Next purely as a settlement-convention date label, without
+its funding role, would miss why an open spot position held overnight
+carries a funding charge or credit at all.
+
+* See also
+
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the FX/CRM hub.
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — T/N among the other standard short-end tenor labels.
+- [[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date and overnight]] — the O/N/T/N outright formulas Tom/Next is also an input to.
+- [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]] — the quoting basis a Tom/Next-rolled ladder is still subject to.
+- [[id:CE15D83D-6400-4596-8878-3A78D8298A85][Forward Ladder]] — the entry/display surface a Tom/Next roll is reflected on.

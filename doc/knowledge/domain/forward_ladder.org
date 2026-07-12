@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: CE15D83D-6400-4596-8878-3A78D8298A85
+:END:
+#+title: Forward Ladder
+#+description: The structured, tabular presentation of quotes across the standard tenors, distinct from the term structure it presents -- a display/entry surface, not the underlying data structure.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+A *forward ladder* (also /tenor ladder/) is the structured, row-per-tenor
+presentation of quotes — one row per
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]], typically ordered from
+shortest to longest — that a trader reads and edits directly. It is
+distinct from a [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term
+structure]]: a term structure is the abstract, ordered series of tenor
+points a curve *is*; a forward ladder is the concrete, tabular surface a
+user *reads and edits it through*. The distinction matters because
+requirements framed against "the ladder" are about entry and display
+behaviour — what a user can add, remove, or see — while requirements
+framed against "the term structure" are about the underlying data and its
+mathematical properties (interpolation, extrapolation, provenance).
+
+* Detail
+
+** Definition
+
+A forward ladder presents quotes across the standard tenor set as a table:
+one row per tenor, ordered shortest to longest, each row holding whatever
+value that tenor carries (an outright rate, a forward point, a discount
+factor — the specific quantity depends on context). This is the surface a
+professional trader reads to reference or compare quotes across time
+horizons at a glance, and — where the system supports editing — the
+surface through which individual entries are added, removed, or amended.
+
+** Ladder vs. term structure
+
+- A [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term structure]] is the
+  data: an ordered series of tenor points plus its metadata (holiday
+  calendars, interpolation method). It exists whether or not any user is
+  looking at it.
+- A forward ladder is the presentation: a row-per-tenor view onto that
+  same data, plus (where supported) the interaction surface for changing
+  it.
+
+A single term structure can in principle be presented through more than
+one ladder-like surface — see
+[[id:A26CFA71-21C0-4E98-ABC4-25F0EAD517E3][Multicurve Management]] for the
+related tenor × curve-identity grid, which presents an entire
+[[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][curve family]] rather than one
+curve's ladder alone.
+
+* See also
+
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
+- [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the underlying data a ladder presents.
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the individual labels a ladder has one row per.
+- [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — the entry/display requirements a ladder must satisfy for non-standard entries.
+- [[id:A26CFA71-21C0-4E98-ABC4-25F0EAD517E3][Multicurve Management]] — the related tenor x curve-identity grid for an entire curve family.

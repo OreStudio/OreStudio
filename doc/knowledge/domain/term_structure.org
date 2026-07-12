@@ -11,7 +11,7 @@
 
 * Summary
 
-A *term structure* (also /time structure/ or /curve/) is an ordered series
+A *term structure* (also /curve/) is an ordered series
 of [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] points representing
 the time profile of a quantity — a rate, a price, a volatility — across a
 series of future dates, together with the metadata needed to interpret
@@ -38,9 +38,8 @@ date]], and carries metadata beyond the raw (tenor, value) pairs:
   non-deliverable instruments]]).
 - An interpolation method, used to derive values at dates falling between
   the term structure's own tenor points (see
-  [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] for the
-  concrete interpolation methods used for interest rate curves
-  specifically).
+  [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]] for why this
+  is needed and the concrete local/non-local method families).
 
 One [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][bootstrapped]] interest
 rate curve is one term structure; a
@@ -81,8 +80,11 @@ one value or a tenor-indexed series of values.
 
 * See also
 
-- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
 - [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the individual points a term structure orders.
 - [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][Horizon Date]] — the anchor every term structure's tenor points are relative to.
-- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — the concrete bootstrapping and interpolation mechanics for one interest rate term structure.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — the concrete bootstrapping mechanics for one interest rate term structure.
+- [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]] — the concrete methods this document's interpolation-method metadata refers to.
+- [[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][Extrapolation]] — the policy for values outside the term structure's own range entirely.
+- [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — how far a term structure's own range extends, by curve type.
 - [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] — several term structures related by a discounting dependency, not one larger term structure.

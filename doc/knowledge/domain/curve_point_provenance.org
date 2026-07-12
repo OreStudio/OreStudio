@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 573F9165-C20B-463C-B0B3-F324AFE4E81F
+:END:
+#+title: Curve Point Provenance
+#+description: What provenance and lineage mean for a market-data curve point specifically, why market data needs more than the standard reference-data provenance fields, and the fields that satisfy that need.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+[[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data Quality]] is the
+authoritative definition of *provenance*, *lineage*, and the *Record
+Provenance Fields* every reference data entity in ORE Studio already
+carries — this document does not redefine any of that. It exists because
+those standard fields, designed for reference data (currencies, day-count
+conventions, and the like), answer a *change-management* question (who
+last touched this record, when, and why) that is not the question a
+market-data consumer actually needs answered. A
+[[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term structure]] point needs a
+*trustworthiness* answer instead — was this specific value actually
+quoted by the market right now, or is it synthesised, stale, or someone's
+manual correction? Answering that needs a different, additional set of
+fields, proposed below and not yet implemented.
+
+* Detail
+
+** Why market data needs more than the standard fields
+
+A term structure point changes constantly (every tick, potentially), and
+unlike a reference-data record, its *trustworthiness at the moment it is
+read* is exactly as important as who last touched it — arguably more so,
+since it feeds directly into pricing and risk. Knowing that a value was
+last modified by a particular user at a particular time (the standard
+fields) does not tell a consumer what they actually need to know before
+relying on it:
+
+- Was this value *actually quoted* by the market, or is it a manufactured
+  value — [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][interpolated]],
+  [[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][extrapolated]], or flattened
+  (see [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure
+  Extent]] for the regions each of those applies within)? A pricer relying
+  on an interpolated value where it assumed a live quote is relying on
+  something structurally different from what it thinks it has.
+- Was it *rejected* by a consensus data provider's own quality checks
+  before it ever reached the system? A rejected value that nonetheless
+  made it onto a curve is a data-quality incident, not a normal quote.
+- Is it *stale* — a back-filled value standing in for one that failed to
+  arrive — and if so, how stale? A value that is merely a few seconds old
+  is a different risk than one that is hours old, and a consumer cannot
+  tell the difference without an explicit age.
+- Has it been *manually overridden*, replacing whatever the feed or
+  interpolation would otherwise have produced? Knowing *that* an override
+  happened is what a market-data consumer needs first; [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data
+  Quality]]'s existing fields already cover explaining who and why once
+  that fact is known.
+
+** Proposed fields
+
+The following fields would satisfy the trustworthiness need above,
+alongside — not replacing — [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data
+Quality]]'s existing Record Provenance Fields. None of this is
+implemented yet — this is a proposal, not a description of existing
+behaviour:
+
+- *Rejected*: whether the value was flagged by a consensus data
+  provider's own quality checks before reaching the system.
+- *Derivation kind*: which of directly-quoted, interpolated,
+  extrapolated, flattened, or overridden produced this value — the single
+  field a consumer would check first to know what kind of value they are
+  looking at. This also carries the classification
+  [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn
+  Points]]' three-way tenor classification depends on: a point's standard
+  / broken date / turn classification is a stored fact recorded once
+  alongside this field, not a derived judgement re-computed on every
+  read — which is why a broken date is never "promoted" into a standard
+  tenor over time; there is no mechanism that re-evaluates a point's
+  classification after the fact.
+- *Back-filled, and age*: whether the value stands in for one that failed
+  to arrive, and how long ago the value it now shows was actually
+  current.
+
+** Related: illiquid cut times
+
+A related but distinct provenance-adjacent problem appears for option
+expiries rather than term-structure tenors: a barrier option expiring at a
+non-standard, illiquid cut time is risk-managed by placing a *Date Shift
+Reserve* against the nearest *liquid* cut time, rather than by sourcing
+market data for the illiquid cut directly. This is the closest analogue to
+"mapping an illiquid point to the nearest liquid one" outside the tenor
+domain proper — it operates on option cut times, not on a term structure's
+own [[id:CE15D83D-6400-4596-8878-3A78D8298A85][forward ladder]], and is
+recorded here only as a cross-reference, not elaborated further in this
+cluster.
+
+* See also
+
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
+- [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data Quality]] — the general provenance/lineage definitions and the standard reference-data provenance fields this document extends.
+- [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — the three-way classification the proposed derivation-kind field records.
+- [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — the interpolate/extrapolate/flatten regions the proposed derivation-kind field distinguishes between.
+- [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the series each point needing provenance belongs to.
+- [[id:CE15D83D-6400-4596-8878-3A78D8298A85][Forward Ladder]] — the entry/display surface provenance would ultimately be shown through.

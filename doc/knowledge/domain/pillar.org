@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: D5FAFA10-333D-44BC-B993-4B5C4C4D803F
+:END:
+#+title: Pillar
+#+description: The subset of a term structure's tenor points that are actually quoted/bootstrapped inputs, as distinct from a tenor label in general.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+A *pillar* is a [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] point
+that is actually used to build a
+[[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term structure]] — a maturity
+at which a real instrument is quoted and bootstrapped into the curve,
+rather than merely a label from the standard tenor set. Every pillar is a
+tenor, but not every tenor is a pillar for a given curve: which subset of
+the standard tenor labels is actually quoted (and therefore a pillar) as
+opposed to filled in by [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][interpolation]]
+depends on the curve type and the liquidity of the underlying instrument
+at that point.
+
+* Detail
+
+** Pillar vs. tenor
+
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] is the more general
+term: a symbolic label (=O/N=, =1M=, =5Y=) identifying a point in time
+relative to a horizon date, independent of whether any curve actually
+carries a quoted value there. Pillar is narrower and curve-specific: it
+names the tenors that are *live inputs* to a particular
+[[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term structure]]'s
+construction — the points a bootstrapping routine consumes directly,
+rather than the points it produces by
+[[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][interpolating]] between them.
+=6Y=, =8Y=, and =9Y= are standard tenor labels, for example, but on many
+curves they are not pillars at all — no instrument is quoted at those
+maturities, and their value is obtained purely by interpolating between
+the =5Y=, =7Y=, and =10Y= pillars that are (see
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s standard tenor
+labels table for further examples of this gap).
+
+** Why the distinction matters
+
+Conflating "tenor" and "pillar" obscures a real structural fact about a
+curve: which points are *observed* and which are *derived*. A pricer or
+risk system that treats every tenor point as equally quoted is blind to
+the difference between a value that came directly from the market and one
+that is a mathematical consequence of the interpolation method chosen —
+the same distinction
+[[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]'s
+proposed *derivation kind* field would make explicit and persistent per
+point. Pillar is the term for identifying that subset in general
+discussion; provenance is the mechanism for recording it per point once
+implemented.
+
+** Pillar range and count
+
+A [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term structure]]'s pillars
+are bounded by the curve's [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term
+Structure Extent]] — the finite range within which pillars can exist at
+all, beyond which the curve is filled by
+[[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][extrapolation]] or flattening
+rather than by any further quoted point. The specific pillars within that
+range differ by curve family — see
+[[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] for the
+concrete instrument-to-pillar mapping used for interest rate curves.
+
+* See also
+
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the general label; pillar is the subset of tenors actually quoted for a given curve.
+- [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the series a curve's pillars are bootstrapped into.
+- [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]] — how non-pillar tenor points between pillars are filled in.
+- [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — the range within which a curve's pillars fall.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — the proposed per-point field that would record whether a point is a pillar or a derived value.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — the concrete instrument-to-pillar mapping for interest rate curves.

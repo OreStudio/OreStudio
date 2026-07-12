@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2
+:END:
+#+title: Extrapolation
+#+description: Why a term structure needs a defined policy before its first pillar and beyond its last, and why flattening, not extrapolating, is the default beyond the end.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+Where [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][interpolation]] fills a
+gap *between* two known [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term
+structure]] points, *extrapolation* answers a request for a date *outside*
+the range those points cover altogether — before the first [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][pillar]], or
+beyond the last. A defined policy for both directions is necessary because
+a term structure's pillar range is finite by construction (see
+[[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] for how
+far it goes by curve type), while requests for a value can, in principle,
+fall anywhere. The two directions are treated asymmetrically: before the
+start, genuine extrapolation is used; beyond the end, the system flattens
+— holds the last known value constant — rather than extrapolating, and
+only extrapolates beyond the end in rare, explicitly justified cases.
+
+* Detail
+
+** Why a policy is needed at all
+
+A [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term structure]] is
+constructed from a finite set of pillar points and has no market-observed
+value outside that range. Left undefined, a request for such a value would
+either fail outright or silently return an arbitrary result depending on
+whichever code path happened to handle it. Neither is acceptable: the
+system must have an explicit, documented answer for "what happens if
+someone asks for a point before the curve starts, or after it ends" —
+the same way [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][interpolation]]
+gives an explicit answer for a point falling between two known ones.
+
+** Before the start: extrapolate
+
+For a date earlier than the term structure's first pillar, the convention
+is to extrapolate — derive a value by continuing the curve's near-end
+behaviour backward. This is the more permissive of the two directions,
+reflecting that requests for very-near-term values (e.g. today, or a date
+just before the first liquid pillar) are routine rather than exceptional.
+
+** Beyond the end: flatten, not extrapolate
+
+For a date beyond the term structure's last pillar, the default is to
+*flatten* — hold the last known value constant — rather than to
+extrapolate. Genuine extrapolation beyond the end is reserved for rare,
+explicitly justified cases, not applied by default. This asymmetry is
+deliberate: extrapolating forward from a curve's long end would
+manufacture a value with no basis in any observed point, which is a
+materially different risk from extending near-term behaviour backward by
+a short distance. Flattening does not fail the request and does not
+fabricate a trend — it is the conservative middle ground between refusing
+to answer and inventing an answer. See
+[[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] for the
+concrete curve-type-specific ceilings (30Y for interest rate curves, a 5Y
+default for volatility surfaces, open-ended for CDS) this policy applies
+beyond.
+
+** Tracking which regime applies
+
+Whether a given point was interpolated, extrapolated, or flattened should
+be part of that point's [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][provenance]] —
+the same proposed record that would also track whether a point was
+rejected, back-filled, or overridden. A consumer reading a curve value
+should be able to tell which of the three regimes produced it, rather than
+treating every returned value as equally observed.
+
+* See also
+
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
+- [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]] — the sister concept for values between known pillars.
+- [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]] — what a pillar is, and how it differs from a tenor in general.
+- [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — the curve-type-specific ceilings this policy applies beyond.
+- [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the series whose finite range makes this policy necessary.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — how a point is flagged as interpolated, extrapolated, or flattened.

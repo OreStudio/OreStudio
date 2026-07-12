@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 8582E7E9-D975-46D5-B61B-93B9EA3DECC0
+:END:
+#+title: Out Of Convention
+#+description: The reference point a forward rate ladder is quoted off (spot, tomorrow, or today), and why non-standard bases must be visually distinguished.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+A [[id:CE15D83D-6400-4596-8878-3A78D8298A85][forward ladder]] does not have
+one fixed reference point it is measured from — it can be expressed *out
+of* spot, tomorrow, or today, and
+which basis is in effect changes what a given
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] label actually resolves
+to. *Out of Spot* is the market default and the convention already assumed
+throughout [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s
+spot/forward curve conventions; *Out of Tomorrow* and *Out of Today* are
+non-standard alternatives that must be visually distinguished wherever
+they appear, since a tenor label under a non-standard basis silently means
+a different date than the same label would under the default.
+
+* Detail
+
+** The three bases
+
+A forward rate ladder can be expressed starting from different reference
+points:
+
+- *Out of Spot* (standard): rates beyond =S/N= are computed off spot —
+  this is the market default, and the convention
+  [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s "spot/forward
+  curves" section describes without further qualification.
+- *Out of Tomorrow*: rates beyond =T/N= are computed off tomorrow instead
+  of spot.
+- *Out of Today*: all rates are computed off today. Tenors in this mode
+  are non-standard and must be visually distinguished (e.g. highlighted)
+  to alert a user they are not reading the conventional spot-basis ladder.
+
+** Why the distinction matters
+
+Because a tenor label is only meaningful relative to a
+[[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][horizon date]], changing the
+basis a ladder is quoted *out of* changes what every tenor beyond the
+short end actually resolves to, even though the labels themselves (=1W=,
+=1M=, ...) do not change. A user reading =1M= on an Out of Today ladder
+and assuming the market-default Out of Spot basis would misread the
+maturity by however many days separate today from spot. Flagging a
+non-default basis visually is therefore not a cosmetic nicety — it is what
+prevents a silent misreading of every tenor on the ladder.
+
+** Where this applies beyond the FX forward ladder
+
+The basis distinction is not confined to the FX forward ladder it was
+first documented against: it applies identically wherever a
+[[id:4DF1F49A-9AB4-4B56-B170-808490071799][broken date]] is entered — a
+broken date added under a non-standard basis must be visually
+distinguished the same way a standard tenor under that basis would be, per
+[[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn
+Points]]'s entry and display conventions.
+
+* See also
+
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the spot/forward curve convention this document's default basis matches.
+- [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][Horizon Date]] — the anchor every basis (spot, tomorrow, today) is itself a reference point relative to.
+- [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — where non-standard-basis visual flagging also applies, to broken dates specifically.
+- [[id:CE15D83D-6400-4596-8878-3A78D8298A85][Forward Ladder]] — the presentation surface a quoting basis applies to.

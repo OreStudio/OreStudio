@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1427C01C-17C0-4D7E-AE55-BF16C414FD58
 :END:
-#+title: Time Structures and Tenors
+#+title: Term Structures and Tenors
 #+description: Hub note for the time-dependence of market data: scalar vs tenor vs term structure, and the atomic docs covering tenor labels, horizon date, date rolling, broken dates/turn points, and IMM dates.
 #+type: knowledge
 #+level: cross
@@ -39,78 +39,57 @@ for vol surface tenors see
   and [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] (the
   latter also covers the *scalar* contrast — a market value with no tenor
   dimension at all).
+- *A quoted tenor, specifically* → [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]]
+  (the subset of tenors that are live inputs to a curve, as distinct from
+  tenor labels in general).
 - *The anchor date* → [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][Horizon
   Date]] (what every tenor calculation starts from, and how it differs
   from the reval date it usually, but not always, coincides with).
 - *Settlement timing* (companion cluster) →
   [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and
-  settlement]] (spot days, the =T+2= max-of-two rule) and
+  settlement]] (spot days, the =T+2= max-of-two rule),
   [[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date and
-  overnight]] (reval date, valuation spot date, O/N/T/N outrights).
+  overnight]] (reval date, valuation spot date, the pre-spot region, and
+  O/N/T/N outrights), and [[id:5CC47697-2655-4ECD-B04D-C6C08FF620D5][Tom/Next]]
+  (its dual role as settlement convention and funding mechanism).
 - *Landing on a valid date* → [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date
   Rolling and Business-Day Calendars]] (Modified Following and the other
   standard rolling conventions).
 - *Irregular dates* → [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken
   Dates and Turn Points]] (bespoke maturities vs. fixed-calendar-time
-  discontinuities) and [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM
-  Dates]] (the fixed quarterly roll schedule CDS and STIR futures use
-  instead of horizon-relative tenor arithmetic).
+  discontinuities, the three-way tenor classification, and how broken
+  dates are entered/displayed) and
+  [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]] (the fixed
+  quarterly roll schedule CDS and STIR futures use instead of
+  horizon-relative tenor arithmetic).
+- *How far a curve goes* → [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term
+  Structure Extent]] (30Y for interest rate curves, 5Y-default/30Y-available
+  for vol surfaces, open-ended for CDS, and the flatten-beyond-the-end
+  convention).
+- *Tracking a point's history* → [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve
+  Point Provenance]] (rejected/interpolated/back-filled/overridden
+  metadata, and why a broken date is never promoted into a standard
+  tenor).
+- *Filling the gaps* → [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]]
+  (local vs. non-local methods, the curve split tenor) and
+  [[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][Extrapolation]] (before the
+  start vs. flattening beyond the end).
+- *Which reference point a ladder is quoted off* →
+  [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]] (Out of
+  Spot, Tomorrow, or Today, and why non-default bases must be visually
+  flagged).
 
 ** Where these concepts are consumed
 
 For how a tenor and a term structure appear in a concrete,
 [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][bootstrapped]] interest rate
-curve — day-count conventions, pillar instruments, interpolation — see
+curve — day-count conventions, [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][pillar]] instruments, interpolation — see
 [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]. For how
 several such curves compose into a
 [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][curve family]] for one currency,
 see [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve
 Families]]. For the equivalent tenor concept on the volatility side, see
 [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]].
-
-** Deferred: FX short-end forward conventions
-
-The following FX-specific conventions were part of this document's
-previous, monolithic form and are preserved here verbatim rather than
-atomized, since they are out of scope for the current interest-rate work
-and it would be premature to design their final home before returning to
-them.
-
-*** Spot days and the pre-spot region
-
-For currencies with a T+2 spot lag, there is a two-day region before spot:
-today → tomorrow (=O/N=) and tomorrow → spot (=T/N=). For currencies with a
-T+1 spot lag (e.g. USD/CAD, USD/TRY) this region collapses to a single day.
-
-To value an FX position as of /today/ rather than /spot/, the spot rate
-must be adjusted by the short-end rates:
-
-- *T+1 spot currencies*:
-  - Outright today = Spot rate − O/N points × scaling factor
-  - Outright tomorrow = Spot rate
-
-- *T+2 spot currencies*:
-  - Outright today = Spot rate − T/N points × scaling factor − O/N points × scaling factor
-  - Outright tomorrow = Spot rate − T/N points × scaling factor
-
-*** The "Out Of" convention on forward ladders
-
-A forward rate ladder can be expressed starting from different reference
-points:
-
-- *Out of Spot* (standard): rates beyond =S/N= are computed off spot.
-- *Out of Tomorrow*: rates beyond =T/N= are computed off tomorrow.
-- *Out of Today*: all rates are computed off today. Tenors in this mode are
-  non-standard and should be visually distinguished to alert users.
-
-*** Tom/Next and funding
-
-Tom/Next serves a dual role:
-
-1. *A time reference*: the standard settlement convention for rolling an
-   open spot position to the next business day.
-2. *A funding mechanism*: interest accrues on accumulated cash up to the
-   Tom/Next date.
 
 * See also
 

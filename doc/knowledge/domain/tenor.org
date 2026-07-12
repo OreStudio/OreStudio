@@ -27,23 +27,56 @@ but separate concept.
 ** Standard tenor labels
 
 The short end of the curve uses named tenors; the long end uses period
-notation.
+notation. The table below is the *union* of every tenor label attested
+across the source material this cluster draws on, in ascending order. No
+single curve necessarily carries every one of these as a live
+[[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][pillar]] —
+which subset is actually quoted (as opposed to filled in by interpolation)
+depends on the curve type and the liquidity of the underlying instrument
+at that point (see [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest
+Rate Curves]] for the instrument-to-pillar mapping).
 
-| Tenor | Common Name  | Description                                                             |
-|-------+--------------+--------------------------------------------------------------------------|
-| =O/N= | Overnight    | From today to the next business day. The earliest possible tenor.       |
-| =T/N= | Tom/Next     | From tomorrow to the day after (i.e. from next business day to spot).  |
-| =S/N= | Spot/Next    | From spot to the next business day after spot.                          |
-| =S/W= | Spot/Week    | From spot to one week after spot (by convention, for rate curves).      |
-| =1W=  | One Week     | One week. For rate curves this is spot + 1W; for vol surfaces today + 1W. |
-| =1M=  | One Month    | One calendar month off spot (rates) or today (vols).                   |
-| =3M=  | Three Months | Three calendar months off spot.                                         |
-| =6M=  | Six Months   | Six calendar months off spot.                                           |
-| =1Y=  | One Year     | Twelve calendar months off spot.                                        |
+| Tenor | Common Name | Notes |
+|-------+-------------+-------|
+| =O/N= | Overnight | Today to next business day. Earliest possible tenor. |
+| =T/N= | Tom/Next | Next business day to spot. |
+| =S/N= | Spot/Next | Spot to spot + 1 business day. |
+| =S/W= | Spot/Week | Spot to spot + 1 week; also written =WK1= or =1W=. |
+| =1D=, =2D=, =3D= | Daily tenors | Used mainly on granular option-map/bucketing screens, not on bootstrapped curves. |
+| =1W=, =2W=, =3W=, =4W= | Weekly tenors | =1W= is a standard pillar everywhere; =2W=/=3W=/=4W= appear on consensus/IPV expiry ladders. |
+| =1M= | One Month | Standard short-end pillar (deposits/LIBOR). |
+| =2M= | Two Months | Appears on consensus/vol expiry ladders. |
+| =3M= | Three Months | Standard pillar; FRA/futures region begins here. |
+| =4M=, =5M= | Four/Five Months | Occasional intermediate points; not universal pillars. |
+| =6M= | Six Months | Standard pillar; short-end deposits may extend this far. |
+| =7M=, =8M= | Seven/Eight Months | Rare, mostly interpolated. |
+| =9M= | Nine Months | Standard pillar on consensus/vol expiry ladders. |
+| =12M= | Twelve Months | Equivalent to =1Y=; both labels appear depending on context (money-market vs. swap convention). |
+| =18M= | Eighteen Months | Explicit odd pillar between =1Y= and =2Y=, bootstrapped off a 3M fixed IRS. |
+| =2Y=-=10Y= | Annual pillars | =2Y=, =3Y=, =4Y=, =5Y=, =6Y=, =7Y=, =8Y=, =9Y=, =10Y=; bootstrapped from 3M-reset IRS. Not every consensus/vol provider supplies every one of these by design (e.g. =6Y=, =8Y=, =9Y= are commonly unsupported gaps, filled by interpolation). |
+| =12Y= | Twelve Years | Appears on consensus/vol expiry ladders between =10Y= and =15Y=. |
+| =15Y= | Fifteen Years | Standard long-end IRS pillar. |
+| =20Y= | Twenty Years | Standard long-end IRS pillar. |
+| =25Y= | Twenty-Five Years | Standard long-end IRS pillar. |
+| =30Y= | Thirty Years | Standard long-end IRS pillar — see [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] for why this is the ceiling for interest rate curves specifically. |
 
 Longer tenors follow the pattern =nM= (months) or =nY= (years). Odd tenors
 between liquid points are [[id:4DF1F49A-9AB4-4B56-B170-808490071799][broken
 dates]].
+
+*** A distinct convention: cash/position bucketing
+
+Beyond the individually named labels above, positions and cash balances
+are sometimes bucketed using a coarser, purely calendar-based scheme
+instead of the curve-construction
+[[id:CE15D83D-6400-4596-8878-3A78D8298A85][forward ladder]]: =Nostro=,
+=Today=, =Tomorrow=, =Spot=, =1W=, then monthly buckets out to 24 months,
+or alternatively [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM]]-date
+buckets. This is a *reporting/aggregation* convention, distinct in purpose
+from the curve-construction ladder above, even where individual labels
+coincide — a position-bucketing =1W= is not being used to construct a
+term structure. Elaborating this bucketing scheme's own conventions is
+out of scope for this cluster, which is concerned with curve construction.
 
 ** Rates vs. vols convention
 
@@ -111,9 +144,30 @@ curve. A common disambiguation convention appends the roll quarter: e.g.
 
 * See also
 
-- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
+- [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]] — the subset of tenors actually quoted as live inputs to a given curve.
 - [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the ordered series a tenor is one point of.
 - [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][Horizon Date]] — the reference date every tenor is relative to.
 - [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] — how a tenor date is adjusted onto a valid business day.
 - [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — odd tenors and fixed-calendar-time discontinuities.
 - [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]] — the quarterly roll dates behind the CDS tenor convention.
+- [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — how far a curve built from these labels actually extends, by curve type.
+
+** Further reading: external references
+
+The short-end labels and the =<n><D|W|M|Y>= period pattern are not local
+convention — they are checked here against independent, citable technical
+sources:
+
+- [[https://strata.opengamma.io/apidocs/com/opengamma/strata/basics/date/MarketTenor.html][OpenGamma Strata: MarketTenor]] — an open-source, industry-used quant
+  library's API documentation, defining =ON=/=TN=/=SN=/=SW= in terms
+  matching this document's almost exactly (=ON=: today to tomorrow, spot
+  lag 0; =TN=: tomorrow to the next day, spot lag 1; =SN=: spot to spot+1,
+  conventional spot lag; =SW=: one week from spot), and confirming
+  standard regular tenors (=2W=, =1M=, =1Y=, ...) are measured from spot
+  under the conventional spot lag.
+- [[https://www.fpml.org/spec/fpml-5-6-5-rec-1/html/confirmation/fpml-5-6-intro-6.html][FpML 5.6: Interest Rate Derivative Product Architecture]] — confirms the
+  =<n><D|W|M|Y>= pattern this document uses (=periodMultiplier= combined
+  with a =period= code, e.g. =6M=, =5Y=) is the actual ISDA/FpML standard
+  representation for a tenor, not an ad hoc parsing convention invented
+  for this codebase.

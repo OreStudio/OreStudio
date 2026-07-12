@@ -49,11 +49,23 @@ child heading directly under it.
 Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
 =BARCLAYS PLC=. Confirm all menus enable with no errors.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Regulatory Book Types list opens from Reference Data > Book Codes
 
 Open Reference Data > Book Codes > Regulatory Book Types. Confirm
 exactly two rows appear — Trading, Banking — each with Description and
 Display Order populated, no error banner.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Detail dialog opens and displays fields correctly
 
@@ -61,17 +73,35 @@ Double-click the "Trading" row. Confirm Code (read-only), Name,
 Description, Display Order, Version, and Modified By all populate
 correctly.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Edit and save a regulatory book type
 
 Change the "Trading" row's Description and Save. Confirm the change-
 reason prompt appears (new: has_change_reason_cache was just added),
 the save succeeds, the grid refreshes, and Version increments by 1.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** History dialog opens and shows the new version
 
 Open History on "Trading". Confirm both versions appear with distinct
 valid_from/valid_to timestamps, and that closing the history dialog
 only closes the sub-window, not the whole app.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** No error toast or log error during the whole flow
 
@@ -80,14 +110,21 @@ Check the client's log tail
 ERROR-level line — in particular no "Server reported failure" message
 (the new success-check added to ClientRegulatoryBookTypeModel.cpp).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | check logs |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-12T10:04:42Z |
+| Branch        | feature/regenerate-regulatory-book-type |
+| Commit        | a451a3577 |
+| Worktree      | bright_faraday |
 
 * Notes

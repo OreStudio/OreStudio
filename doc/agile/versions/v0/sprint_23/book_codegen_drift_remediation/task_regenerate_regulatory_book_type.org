@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
-| Now          | Regenerated, built, DB-verified; awaiting manual QA. |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Run the manual scenario, then close out. |
+| Next         | Nothing.                  |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -67,7 +67,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:7264225E-9838-4D71-8371-38CD80E7F77B][Verify regulatory_book_type list/detail/history after codegen regeneration]] | PENDING | |
+| [[id:7264225E-9838-4D71-8371-38CD80E7F77B][Verify regulatory_book_type list/detail/history after codegen regeneration]] | PASSED | All 6 steps PASS; zero ERROR-level log lines confirmed. |
 
 * PRs
 
@@ -82,3 +82,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+regulatory_book_type is fully regenerated against current codegen
+templates (all-✅ in =compass codegen entity show=), builds cleanly,
+and passes its manual end-to-end QA scenario with zero ERROR-level log
+lines. Applying the has_change_reason_cache/has_pagination lesson from
+book_status proactively (rather than discovering it via a failed save
+again) meant this entity needed no bug-driven rework mid-task -- just
+the expected constructor call-site update in RefdataPlugin.cpp.
+
+Also discovered along the way: the new NATS event registrar needs a
+cmake reconfigure (GLOB_RECURSE doesn't pick up new files on an
+incremental build alone) -- same class of gotcha as book_status's
+registrar, now resolved for both.

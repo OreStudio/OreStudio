@@ -647,16 +647,29 @@ void AccountDetailDialog::onSaveClicked() {
         QPointer<AccountDetailDialog> self = this;
         const boost::uuids::uuid account_id = currentAccount_.id;
         const std::string email = ui_->emailEdit->text().toStdString();
-        const std::string defaultPartyId =
-            partiesWidget_ && !partiesWidget_->selectedDefaultPartyId().is_nil() ?
-                boost::uuids::to_string(partiesWidget_->selectedDefaultPartyId()) :
-                std::string{};
 
         // Capture pending changes before going async
         const auto pendingPartyAdds =
             needsPartySave ? partiesWidget_->pendingAdds() : std::vector<boost::uuids::uuid>{};
         const auto pendingPartyRemoves =
             needsPartySave ? partiesWidget_->pendingRemoves() : std::vector<boost::uuids::uuid>{};
+
+        // If the party currently selected as default is also staged for
+        // removal in this same save, the account won't be a member of it
+        // by the time this save completes — clear the default instead of
+        // sending a selection that's about to dangle (removals commit
+        // after this request; the server would otherwise accept it since
+        // membership hasn't been revoked yet).
+        const auto selectedDefault =
+            partiesWidget_ ? partiesWidget_->selectedDefaultPartyId() : boost::uuids::nil_uuid();
+        const bool defaultBeingRemoved =
+            !selectedDefault.is_nil() &&
+            std::find(pendingPartyRemoves.begin(), pendingPartyRemoves.end(), selectedDefault) !=
+                pendingPartyRemoves.end();
+        const boost::uuids::uuid finalDefaultPartyId =
+            defaultBeingRemoved ? boost::uuids::nil_uuid() : selectedDefault;
+        const std::string defaultPartyId =
+            finalDefaultPartyId.is_nil() ? std::string{} : boost::uuids::to_string(finalDefaultPartyId);
         const auto pendingRoleAdds =
             needsRoleSave ? rolesWidget_->pendingAdds() : std::vector<boost::uuids::uuid>{};
         const auto pendingRoleRemoves =
@@ -767,7 +780,7 @@ void AccountDetailDialog::onSaveClicked() {
         connect(watcher,
                 &QFutureWatcher<FutureResult>::finished,
                 self,
-                [self, watcher, account_id, needsPartySave, needsRoleSave]() {
+                [self, watcher, account_id, needsPartySave, needsRoleSave, finalDefaultPartyId]() {
                     if (!self)
                         return;
 
@@ -781,10 +794,14 @@ void AccountDetailDialog::onSaveClicked() {
                         emit self->isDirtyChanged(false);
 
                         if (self->partiesWidget_) {
-                            const auto newDefault = self->partiesWidget_->selectedDefaultPartyId();
+                            // Rebase to finalDefaultPartyId (what was actually sent,
+                            // already cleared above if the selection was also staged
+                            // for removal in this save) — not the combo's current
+                            // selection, which may still show the about-to-be-removed
+                            // party since removing it doesn't touch the combo.
                             self->currentAccount_.default_party_id =
-                                newDefault.is_nil() ? std::nullopt :
-                                                      std::optional(newDefault);
+                                finalDefaultPartyId.is_nil() ? std::nullopt :
+                                                               std::optional(finalDefaultPartyId);
                             // Rebases the "pending change" baseline to what was just
                             // saved, so the combo doesn't keep reporting a dirty
                             // selection after a successful save. Deliberately not
@@ -794,7 +811,7 @@ void AccountDetailDialog::onSaveClicked() {
                             // itself changed), which would permanently disable Save
                             // for the rest of the dialog session after a
                             // default-party-only save.
-                            self->partiesWidget_->rebaseDefaultParty(newDefault);
+                            self->partiesWidget_->rebaseDefaultParty(finalDefaultPartyId);
                         }
 
                         if (needsPartySave && self->partiesWidget_)

@@ -42,7 +42,7 @@ one.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Nothing — all three tasks done.        |
+| Now           | Nothing — all four tasks done.         |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing — ready to raise the PR.       |
 | Last touched  | 2026-07-11                               |
@@ -72,6 +72,7 @@ one.
 | [[id:C0A62345-3515-4EDF-940D-FF9B1B99F1B1][Add default_party_id field to the account entity]] | DONE | 2026-07-11 | 2026-07-11 | Add a default_party_id FK field to the account entity across domain, SQL, repository, and protocol layers, so an account can designate one of its parties as the quick-login default. |
 | [[id:780182D5-AD41-410A-B877-8E705B1A0B79][Add quick-login checkbox to the login dialog]] | DONE | | 2026-07-11 | Add a "Log in to default party" checkbox to the login dialog; when ticked, call select_party_request directly with the account's default_party_id, bypassing PartyPickerDialog. |
 | [[id:18F72AD6-A5A1-4D7A-902F-1213075E0E4C][Update provisioning scripts to set the account's default party]] | DONE | 2026-07-11 | 2026-07-11 | Update barclays_system_provision.ores and the Acme/synthetic provisioning script so the provisioning account's default_party_id is set to the newly-provisioned party, so fresh environments come up ready for one-click login. |
+| [[id:D68CF36A-62E5-4118-AB29-0FAE9E3A5855][Fix default party dangling after a same-save party removal]] | DONE | 2026-07-12 | 2026-07-12 | AccountDetailDialog::onSaveClicked sends default_party_id from the combo's current selection before committing staged party removals, so removing the party currently selected as default (without also changing the combo) leaves default_party_id pointing at a party the account is no longer assigned to (soft FK, no DB error). Flagged as a non-blocking follow-up in PR #1514 review round 5. |
 
 * Decisions
 

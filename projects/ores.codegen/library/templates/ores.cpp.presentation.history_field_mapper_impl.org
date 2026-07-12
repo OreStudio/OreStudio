@@ -47,9 +47,9 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity}}
 #include "ores.{{component_core}}/presentation/{{entity_singular}}_history_field_mapper.hpp"
 
-{{#has_uuid_columns}}
+{{#has_render_uuid_columns}}
 #include <boost/uuid/uuid_io.hpp>
-{{/has_uuid_columns}}
+{{/has_render_uuid_columns}}
 #include "ores.platform/time/datetime.hpp"
 
 namespace ores::{{component}}::presentation {

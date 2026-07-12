@@ -178,7 +178,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | CI drift check failed: cpp_group.org facet inventory not regenerated after adding the presentation facet | cpp_group.org | Fixed | Ran regenerate_facet_inventories.py; 1-line addition. |
+| 2 | has_uuid_columns include-guard derived from nullable-promotion flags could drift from render_is_uuid's raw-cpp_type dispatch — same bug class this PR fixed for strings, just latent (no covered entity hits it yet) | core.py, cpp_history_field_mapper.cpp.mustache | Fixed | Added a dedicated has_render_uuid_columns flag from the same render_is_uuid/render_is_optional_uuid ground truth; switched the mapper's include guard to it. 8 entities' generated .cpp lost the now-unneeded include. |
 
 * Result
 

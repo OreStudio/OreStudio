@@ -39,6 +39,7 @@ adding or changing facet docs; do not edit it by hand.
 | [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][C++ domain templates]] | 0 | The entity's value type and its immediate companions: domain class, reflect-cpp JSON IO, and the faker test-data generator. |
 | [[id:69676E91-4F64-459D-83DB-A58D3FF02010][C++ messaging templates]] | 0 | The entity's NATS surface end-to-end: protocol message types, changed-event, subject handler, and the per-entity service that backs them. |
 | [[id:E683DAE7-28FD-414C-BD55-DE03AA10E6CB][C++ model type templates]] | 0 | Standalone model formats: the enum class and the field-group struct. |
+| [[id:03F9721D-E714-435A-BCD0-79C82F5B27D9][C++ presentation templates]] | 0 | Server-side rendering of a domain type for display: the history field mapper (domain type -> ordered field_value list). |
 | [[id:8C52C48E-9661-452F-A951-136EFC7B6B22][C++ repository templates]] | 0 | The entity's persistence triplet: sqlgen entity, mapper and repository. |
 | [[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][C++ service application templates]] | 0 | The component-service scaffold: application and host classes, config options and parser with exceptions, main entry point and stub test. |
 | [[id:CCD4B94F-ED9F-4A50-BF8F-2E56351FD5DD][C++ table templates]] | 0 | libfort tabular presentation of entity collections: table adapter and its stream IO. |

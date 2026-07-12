@@ -2593,6 +2593,23 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             or domain_entity.get('primary_key', {}).get('is_uuid', False)
             or domain_entity.get('has_workspace_id', False)
         )
+        # Dedicated ground-truth counterpart to has_uuid_columns for the
+        # history field mapper's own include guard: has_uuid_columns is
+        # derived from is_uuid/is_optional_uuid, which factor in `nullable`
+        # (a repository/SQL-layer promotion decision) rather than the raw
+        # cpp_type the render_is_uuid/render_is_optional_uuid flags key off
+        # — reusing has_uuid_columns here would silently drift out of sync
+        # with the mapper's actual dispatch the same way the mapper's
+        # rendering itself once drifted from is_nullable_string (see the
+        # history-field-mapper task's Notes).
+        has_render_uuid_cols = any(
+            col.get('render_is_uuid') or col.get('render_is_optional_uuid')
+            for col in domain_entity.get('columns', [])
+        )
+        domain_entity['has_render_uuid_columns'] = (
+            has_render_uuid_cols or has_uuid_nat_keys
+            or domain_entity.get('primary_key', {}).get('is_uuid', False)
+        )
         data['domain_entity'] = domain_entity
 
     # Special processing for junction models

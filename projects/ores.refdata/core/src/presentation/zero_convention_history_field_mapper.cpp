@@ -19,7 +19,6 @@
  */
 #include "ores.refdata.core/presentation/zero_convention_history_field_mapper.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::presentation {
 

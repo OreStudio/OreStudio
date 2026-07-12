@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: B223B31B-5789-439D-BBA2-5959D82F3D65
+:END:
+#+title: How do I update a worktree to latest main?
+#+description: Bring a worktree fully in sync with origin/main: fetch, detached checkout of the latest commit, sync the vcpkg submodule, and rebuild settings and skills.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:environment:vcpkg:skills:settings:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+Bringing a worktree up to date is more than =git pull=: the vcpkg
+submodule, generated =.claude/settings.json=, and the deployed skills
+bundle all need to move in lockstep with main. =compass bearings=
+surfaces drift in each of these (see "Is the environment up?").
+
+* Question
+
+How do I update a worktree to the latest main, including its vcpkg
+submodule, settings, and skills?
+
+* Answer
+
+#+begin_src sh
+# 1. Fetch latest main and check it out as a detached HEAD — this
+#    checkout tracks a feature branch or task, not main itself, so we
+#    never fast-forward a real branch by surprise.
+git fetch origin main
+git checkout --detach origin/main
+
+# 2. Sync the vcpkg submodule to the commit main's tree records.
+git submodule update --init vcpkg
+
+# 3. Rebuild settings.json from its org source.
+./projects/ores.compass/compass.sh build --direct settings
+
+# 4. Rebuild the deployed skills bundle.
+./projects/ores.compass/compass.sh build --direct skills
+#+end_src
+
+Then, in the Claude Code session, run =/reload-skills= to pick up the
+rebuilt bundle.
+
+Check the result with =compass bearings= — the "Is the environment
+up?" section warns if =.env=, vcpkg, or settings/skills are still
+stale.
+
+* Script
+
+Wrapped end-to-end by the [[id:4FA1791F-6E6C-4376-A3B9-3BF913F55ACF][devops-update-environment]] skill.
+
+* Tested by
+
+Manual smoke test: run the sequence on a worktree with a stale vcpkg
+pointer, confirm =git submodule status vcpkg= matches
+=git rev-parse origin/main:vcpkg= afterwards, and that =compass
+bearings= no longer warns.
+
+* See also
+
+- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]]
+- [[id:E9297D15-F053-4B76-92DF-ED87E7205020][How do I provision a new environment with compass?]]

@@ -1218,6 +1218,31 @@ def _staleness_severity(info):
         return "warn"
     return "ok"
 
+def vcpkg_drift(root):
+    """Compare the checked-out vcpkg submodule commit against what origin/main expects.
+
+    No network call — reads the cached origin/main tree and the submodule's
+    current HEAD only. Returns a dict:
+      current  - vcpkg submodule commit checked out here, or None
+      expected - vcpkg commit that origin/main's tree records, or None
+      error    - None | "no-remote" | "no-submodule"
+    """
+    info = {"current": None, "expected": None, "error": None}
+
+    expected = _git_out("rev-parse", "origin/main:vcpkg", cwd=root)
+    if expected is None:
+        info["error"] = "no-remote"
+        return info
+    info["expected"] = expected
+
+    vcpkg_dir = Path(root) / "vcpkg"
+    if not vcpkg_dir.is_dir():
+        info["error"] = "no-submodule"
+        return info
+    current = _git_out("rev-parse", "HEAD", cwd=vcpkg_dir)
+    info["current"] = current
+    return info
+
 def _age_human(seconds):
     """Convert seconds to a compact label: 30m, 4h, 2d."""
     if seconds is None:
@@ -4943,6 +4968,17 @@ def cmd_bearings(argv):
             elif _current_envver > _required_envver:
                 print(f"  {_C_YELLOW}⚠  .env version v{_current_envver} is newer "
                       f"than required v{_required_envver} — proceeding.{_C_RESET}")
+        except Exception:
+            pass
+        try:
+            _vd = vcpkg_drift(PROJECT_ROOT)
+            if _vd["error"] == "no-submodule":
+                print(f"  {_C_YELLOW}⚠  vcpkg submodule not checked out — "
+                      f"{_ycmd('git submodule update --init vcpkg')}{_C_RESET}")
+            elif _vd["error"] is None and _vd["current"] != _vd["expected"]:
+                print(f"  {_C_YELLOW}⚠  vcpkg is on {_vd['current'][:9]}, "
+                      f"main expects {_vd['expected'][:9]} — "
+                      f"{_ycmd('git submodule update --init vcpkg')}{_C_RESET}")
         except Exception:
             pass
         _info = _cdb.database_info(_env)

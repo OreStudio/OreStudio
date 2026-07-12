@@ -77,6 +77,9 @@ The Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] you invoke p
   environment (Qt UI verification, manual testing): stop services,
   recreate the database, start services, provision the tenant, start
   the client.
+- [[id:4FA1791F-6E6C-4376-A3B9-3BF913F55ACF][devops-update-environment]] — when a worktree has drifted from main
+  (stale vcpkg submodule, settings, or skills bundle): fetch, detached
+  checkout of latest main, sync submodules, rebuild settings/skills.
 - Entity / component / type creators ([[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-cli-entity]],
   [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][codegen-add-component]], [[id:B1450696-8C51-4CC5-8910-84912A411AB6][code-add-domain-type]], [[id:BDCC47D4-B050-409E-8C50-3D179843A274][codegen-add-http-entity]],
   [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][codegen-add-qt-entity]], [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][codegen-add-shell-entity]]) — when the task is

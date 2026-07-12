@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: C816DF00-1E36-4ED7-99E0-854589EF4EF3
+:END:
+#+title: Story: Compass improvements
+#+description: Catch-all story for small compass enhancements: bearings/vcpkg drift check, environment-update tooling, and similar cross-cutting improvements that don't warrant their own dedicated story.
+#+type: story
+#+level: s2
+#+filetags: :compass:sprint_23:v0:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A home for small, cross-cutting compass enhancements that don't
+warrant their own dedicated story — surfaced drift warnings,
+convenience tooling — so this kind of work stays tracked without
+inflating the backlog with one-off stories.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | First task (vcpkg drift check + devops-update-environment skill) is DONE. |
+| Waiting on    | Nothing.                               |
+| Next          | Left open as the ongoing catch-all for further small compass enhancements this sprint; add tasks as they come up. |
+| Last touched  | 2026-07-12                               |
+
+* Acceptance
+
+- =compass bearings= warns when the vcpkg submodule checked out
+  locally doesn't match what =origin/main= expects.
+- A new skill exists to bring a worktree fully up to date with main
+  (fetch, checkout latest, submodules, settings, skills).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:745B765F-BEB2-4CBA-8BA8-852FBDDBA399][Add vcpkg drift check to bearings and a devops-update-environment skill]] | DONE | 2026-07-12 | 2026-07-12 | Add a vcpkg-vs-main drift warning to compass bearings, and create a new devops-update-environment skill that brings a worktree fully up to date with main (fetch, detached checkout, submodules, settings, skills). |
+
+* Decisions
+
+* Out of scope
+
+-

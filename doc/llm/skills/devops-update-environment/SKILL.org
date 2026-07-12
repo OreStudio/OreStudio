@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 4FA1791F-6E6C-4376-A3B9-3BF913F55ACF
+:END:
+#+title: devops-update-environment
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :devops:environment:vcpkg:skills:settings:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+#+begin_export markdown
+---
+name: devops-update-environment
+description: Bring a worktree fully up to date with main: fetch, detached checkout of the latest commit, sync submodules (vcpkg), and rebuild settings and skills.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When the user asks to update, sync, or refresh a worktree against
+main — e.g. "update this environment to latest main", "sync my
+checkout", "bring this worktree up to date" — beyond a plain branch
+sync (see pr-sync-branch for that).
+
+* How to use this skill
+
+1.  *Fetch and detach* onto the latest main commit:
+
+    #+begin_src sh
+    git fetch origin main && git checkout --detach origin/main
+    #+end_src
+
+    Check =git status --porcelain= first; stash or commit anything
+    unexpected before checking out.
+
+2.  *Sync the vcpkg submodule* to what main's tree expects:
+
+    #+begin_src sh
+    git submodule update --init vcpkg
+    #+end_src
+
+3.  *Rebuild settings and skills* so the Claude Code harness picks up
+    org-source changes:
+
+    #+begin_src sh
+    ./projects/ores.compass/compass.sh build --direct settings
+    ./projects/ores.compass/compass.sh build --direct skills
+    #+end_src
+
+    Remind the user to =/reload-skills= afterwards.
+
+4.  *Verify* with =compass bearings= — the "Is the environment up?"
+    section flags any remaining =.env=/vcpkg/settings drift.
+
+* Recipes
+
+- [[id:B223B31B-5789-439D-BBA2-5959D82F3D65][How do I update a worktree to latest main?]]
+
+* Reference
+
+- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]]
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

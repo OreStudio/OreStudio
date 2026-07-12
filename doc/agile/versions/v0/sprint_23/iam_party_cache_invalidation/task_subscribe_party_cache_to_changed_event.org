@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -34,7 +34,7 @@ real one.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

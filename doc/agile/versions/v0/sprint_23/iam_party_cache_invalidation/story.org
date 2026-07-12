@@ -8,7 +8,7 @@
 #+filetags: :iam:refdata:caching:bug:sprint_23:v0:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -50,7 +50,7 @@ subject name to match reality once fixed.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -77,7 +77,7 @@ subject name to match reality once fixed.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A4797CFE-FC29-4209-B7C2-7505247EC29C][Subscribe party_cache to ores.refdata.party_changed]] | BACKLOG | | | Add a NATS subscription in ores.iam.core (registrar.cpp, where party_cache is constructed) to ores.refdata.party_changed; reload the affected tenant's party_cache partition on receipt. Correct party_cache.hpp's docstring to name the real subject instead of the nonexistent refdata.v1.parties.changed. |
+| [[id:A4797CFE-FC29-4209-B7C2-7505247EC29C][Subscribe party_cache to ores.refdata.party_changed]] | STARTED | 2026-07-12 | | Add a NATS subscription in ores.iam.core (registrar.cpp, where party_cache is constructed) to ores.refdata.party_changed; reload the affected tenant's party_cache partition on receipt. Correct party_cache.hpp's docstring to name the real subject instead of the nonexistent refdata.v1.parties.changed. |
 | [[id:70C81DFD-E94E-4F3B-A35B-CE14A4F6A82B][Test party_cache reload-on-notification]] | BACKLOG | | | Add regression/unit test coverage in ores.iam.core for the new subscription: publishing ores.refdata.party_changed for a tenant causes party_cache to reload that tenant's partition, and lookup_party/compute_visible_party_ids reflect the change without a restart. |
 | [[id:5D32B9C6-7D16-4472-9DDB-619607F34529][Verify activation reproduction is fixed end-to-end]] | BACKLOG | | | Re-run the capture's original reproduction: activate a party via save_party_request (e.g. barclays_system_provision.ores) against a running environment and confirm a subsequent IAM login reflects Active status without restarting the IAM service. |
 

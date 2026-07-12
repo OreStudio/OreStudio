@@ -81,7 +81,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | vcpkg_drift() misclassifies an uninitialized/deinitialized submodule as initialized (empty dir passes is_dir(), rev-parse HEAD walks up to superproject) | compass.py | Accepted | Detect via (vcpkg_dir / ".git").exists() instead; also guard current is None |
+| 2 | Skill #+title uses kebab-case name instead of readable Title Case | devops-update-environment/SKILL.org | Accepted | Retitled to "Update a worktree to latest main" |
 
 * Result
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 4FA1791F-6E6C-4376-A3B9-3BF913F55ACF
 :END:
-#+title: devops-update-environment
+#+title: Update a worktree to latest main
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages

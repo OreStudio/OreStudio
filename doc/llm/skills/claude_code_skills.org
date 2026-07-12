@@ -142,7 +142,7 @@ Environment, database, services, shell, client, site.
 | [[id:DBAE601D-183D-4B61-85ED-2823E2AF0EEC][devops-show-services]] | Devops Show Services | Show service fleet status: running, stopped, missing. |
 | [[id:96EBB175-83BD-4DD3-B35C-769C86CB3075][devops-start-services]] | Devops Start Services | Start the service fleet and verify everything came up. |
 | [[id:74D7BEDE-5FEC-45AE-9977-CC9A6C5D47A0][devops-stop-services]] | Devops Stop Services | Stop the service fleet cleanly. |
-| [[id:4FA1791F-6E6C-4376-A3B9-3BF913F55ACF][devops-update-environment]] | devops-update-environment | Bring a worktree fully up to date with main: fetch, detached checkout of the latest commit, sync submodules... |
+| [[id:4FA1791F-6E6C-4376-A3B9-3BF913F55ACF][devops-update-environment]] | Update a worktree to latest main | Bring a worktree fully up to date with main: fetch, detached checkout of the latest commit, sync submodules... |
 
 * Skills (=skill-=)
 

@@ -1236,10 +1236,13 @@ def vcpkg_drift(root):
     info["expected"] = expected
 
     vcpkg_dir = Path(root) / "vcpkg"
-    if not vcpkg_dir.is_dir():
+    if not (vcpkg_dir / ".git").exists():
         info["error"] = "no-submodule"
         return info
     current = _git_out("rev-parse", "HEAD", cwd=vcpkg_dir)
+    if current is None:
+        info["error"] = "no-submodule"
+        return info
     info["current"] = current
     return info
 

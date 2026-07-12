@@ -37,9 +37,12 @@
 #include <QMetaObject>
 #include <QPainter>
 #include <QPixmap>
+#include <QSignalBlocker>
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QtConcurrent>
+#include <algorithm>
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -182,6 +185,12 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     connect(partiesWidget_, &AccountPartiesWidget::partyListChanged, this, [this]() {
         updateSaveResetButtonState();
     });
+    connect(partiesWidget_, &AccountPartiesWidget::defaultPartyChanged, this, [this]() {
+        updateSaveResetButtonState();
+    });
+    connect(partiesWidget_, &AccountPartiesWidget::dataLoaded, this, [this]() {
+        updateSaveResetButtonState();
+    });
 
     // Initially disable save/reset buttons
     updateSaveResetButtonState();
@@ -251,10 +260,14 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
     }
 
 
-    // Set up parties widget for existing accounts
+    // Set up parties widget for existing accounts — it owns the "Default
+    // Party" selector too, seeded from the account's stored default once
+    // its own load() completes.
     if (partiesWidget_ && !isAddMode_) {
         partiesWidget_->setAccountId(account.id);
         partiesWidget_->setAccountType(account.account_type);
+        partiesWidget_->setDefaultPartyId(
+            account.default_party_id.value_or(boost::uuids::nil_uuid()));
         partiesWidget_->load();
     }
 
@@ -408,6 +421,16 @@ void AccountDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Save clicked but client not connected.";
         emit errorMessage("Not connected to server. Please login.");
+        return;
+    }
+
+    // Defensive: the Save button is disabled while this is false, but guard
+    // here too against any other trigger path — saving now would resend a
+    // not-yet-populated default-party selection and wipe the account's
+    // real stored default.
+    if (partiesWidget_ && !partiesWidget_->isDefaultPartyReady()) {
+        BOOST_LOG_SEV(lg(), warn) << "Save clicked before parties/default-party data loaded.";
+        emit errorMessage("Still loading account data — please try again in a moment.");
         return;
     }
 
@@ -605,7 +628,8 @@ void AccountDetailDialog::onSaveClicked() {
     } else {
         // Edit mode - update account fields and/or party/role assignments
 
-        const bool needsAccountSave = isDirty_;
+        const bool needsAccountSave =
+            isDirty_ || (partiesWidget_ && partiesWidget_->hasPendingDefaultPartyChange());
         const bool needsPartySave = partiesWidget_ && partiesWidget_->hasPendingChanges();
         const bool needsRoleSave = rolesWidget_ && rolesWidget_->hasPendingChanges();
 
@@ -623,6 +647,10 @@ void AccountDetailDialog::onSaveClicked() {
         QPointer<AccountDetailDialog> self = this;
         const boost::uuids::uuid account_id = currentAccount_.id;
         const std::string email = ui_->emailEdit->text().toStdString();
+        const std::string defaultPartyId =
+            partiesWidget_ && !partiesWidget_->selectedDefaultPartyId().is_nil() ?
+                boost::uuids::to_string(partiesWidget_->selectedDefaultPartyId()) :
+                std::string{};
 
         // Capture pending changes before going async
         const auto pendingPartyAdds =
@@ -637,6 +665,7 @@ void AccountDetailDialog::onSaveClicked() {
         QFuture<FutureResult> future = QtConcurrent::run([self,
                                                           account_id,
                                                           email,
+                                                          defaultPartyId,
                                                           needsAccountSave,
                                                           pendingPartyAdds,
                                                           pendingPartyRemoves,
@@ -654,6 +683,7 @@ void AccountDetailDialog::onSaveClicked() {
                 iam::messaging::update_account_request request;
                 request.account_id = boost::uuids::to_string(account_id);
                 request.email = email;
+                request.default_party_id = defaultPartyId;
 
                 auto response_result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -749,6 +779,23 @@ void AccountDetailDialog::onSaveClicked() {
 
                         self->isDirty_ = false;
                         emit self->isDirtyChanged(false);
+
+                        if (self->partiesWidget_) {
+                            const auto newDefault = self->partiesWidget_->selectedDefaultPartyId();
+                            self->currentAccount_.default_party_id =
+                                newDefault.is_nil() ? std::nullopt :
+                                                      std::optional(newDefault);
+                            // Rebases the "pending change" baseline to what was just
+                            // saved, so the combo doesn't keep reporting a dirty
+                            // selection after a successful save. Deliberately not
+                            // setDefaultPartyId() — that also resets the "combo has
+                            // been seeded" flag, and nothing is guaranteed to flip it
+                            // back on (load() only re-runs below if party membership
+                            // itself changed), which would permanently disable Save
+                            // for the rest of the dialog session after a
+                            // default-party-only save.
+                            self->partiesWidget_->rebaseDefaultParty(newDefault);
+                        }
 
                         if (needsPartySave && self->partiesWidget_)
                             self->partiesWidget_->load();
@@ -925,6 +972,8 @@ void AccountDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
 void AccountDetailDialog::setFieldsReadOnly(bool readOnly) {
     ui_->usernameEdit->setReadOnly(readOnly);
     ui_->emailEdit->setReadOnly(readOnly);
+    if (partiesWidget_)
+        partiesWidget_->setReadOnly(readOnly);
     // Account type only editable on create; keep disabled in all read-only paths
     if (readOnly)
         ui_->accountTypeCombo->setEnabled(false);
@@ -940,8 +989,16 @@ void AccountDetailDialog::updateSaveResetButtonState() {
     }
 
     const bool hasChanges = isDirty_ || (partiesWidget_ && partiesWidget_->hasPendingChanges()) ||
+                            (partiesWidget_ && partiesWidget_->hasPendingDefaultPartyChange()) ||
                             (rolesWidget_ && rolesWidget_->hasPendingChanges());
-    ui_->saveButton->setEnabled(hasChanges);
+    // Saving always resends partiesWidget_->selectedDefaultPartyId() as part
+    // of the account update (see onSaveClicked), so Save must stay disabled
+    // until that combo has actually been seeded from the account's real
+    // stored default — otherwise an edit to an unrelated field (e.g. email),
+    // saved while the parties load is still in flight, would resend a nil
+    // selection and silently wipe the account's default party.
+    const bool defaultPartyReady = !partiesWidget_ || partiesWidget_->isDefaultPartyReady();
+    ui_->saveButton->setEnabled(hasChanges && defaultPartyReady);
     ui_->deleteButton->setEnabled(!isAddMode_);
 }
 

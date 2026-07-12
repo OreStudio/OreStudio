@@ -26,9 +26,11 @@
 #include <QFutureWatcher>
 #include <QHBoxLayout>
 #include <QListWidgetItem>
+#include <QSignalBlocker>
 #include <QVBoxLayout>
 #include <QtConcurrent>
 #include <boost/lexical_cast.hpp>
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <future>
@@ -43,7 +45,9 @@ AccountPartiesWidget::AccountPartiesWidget(QWidget* parent)
     , assignedList_(new QListWidget(this))
     , partyCombo_(new QComboBox(this))
     , addButton_(new QToolButton(this))
-    , removeButton_(new QToolButton(this)) {
+    , removeButton_(new QToolButton(this))
+    , defaultPartyLabel_(new QLabel("Default Party:", this))
+    , defaultPartyCombo_(new QComboBox(this)) {
 
     setupUi();
     updateButtonStates();
@@ -87,6 +91,23 @@ void AccountPartiesWidget::setupUi() {
     groupLayout->addLayout(buttonsLayout);
 
     mainLayout->addWidget(partiesGroup_);
+
+    // Default party — just below the assignment list/controls. Options are
+    // limited to already-persisted assignments (add a party, save, then set
+    // it as default in a later save — avoids racing the add against the
+    // membership check on the same save).
+    auto* defaultPartyLayout = new QHBoxLayout();
+    defaultPartyCombo_->setToolTip(
+        "Party to log into automatically when the login dialog's quick-login checkbox is "
+        "ticked. Only parties already assigned to this account (and already saved) can be "
+        "selected.");
+    connect(defaultPartyCombo_,
+            &QComboBox::currentIndexChanged,
+            this,
+            &AccountPartiesWidget::defaultPartyChanged);
+    defaultPartyLayout->addWidget(defaultPartyLabel_);
+    defaultPartyLayout->addWidget(defaultPartyCombo_, 1);
+    mainLayout->addLayout(defaultPartyLayout);
 }
 
 void AccountPartiesWidget::setClientManager(ClientManager* clientManager) {
@@ -95,6 +116,17 @@ void AccountPartiesWidget::setClientManager(ClientManager* clientManager) {
 
 void AccountPartiesWidget::setAccountId(const boost::uuids::uuid& accountId) {
     accountId_ = accountId;
+}
+
+void AccountPartiesWidget::setDefaultPartyId(const boost::uuids::uuid& defaultPartyId) {
+    defaultPartyId_ = defaultPartyId;
+    defaultPartyComboInitialized_ = false;
+    refreshView();
+}
+
+void AccountPartiesWidget::rebaseDefaultParty(const boost::uuids::uuid& defaultPartyId) {
+    defaultPartyId_ = defaultPartyId;
+    refreshView();
 }
 
 void AccountPartiesWidget::setAccountType(const std::string& accountType) {
@@ -115,6 +147,36 @@ const std::vector<boost::uuids::uuid>& AccountPartiesWidget::pendingAdds() const
 
 const std::vector<boost::uuids::uuid>& AccountPartiesWidget::pendingRemoves() const {
     return pendingRemoves_;
+}
+
+const std::vector<iam::domain::account_party>& AccountPartiesWidget::assignedParties() const {
+    return assignedParties_;
+}
+
+const std::vector<refdata::domain::party>& AccountPartiesWidget::allParties() const {
+    return allParties_;
+}
+
+boost::uuids::uuid AccountPartiesWidget::selectedDefaultPartyId() const {
+    const auto str = defaultPartyCombo_->currentData().toString().toStdString();
+    if (str.empty())
+        return boost::uuids::nil_uuid();
+    return boost::lexical_cast<boost::uuids::uuid>(str);
+}
+
+bool AccountPartiesWidget::hasPendingDefaultPartyChange() const {
+    // Before the combo has been seeded from the account's actual stored
+    // default (populateDefaultPartyCombo(), called once load() resolves),
+    // selectedDefaultPartyId() is nil regardless of what the real default
+    // is — comparing against it here would spuriously report a pending
+    // change (and, if saved while still nil, would wipe a real default).
+    if (!defaultPartyComboInitialized_)
+        return false;
+    return selectedDefaultPartyId() != defaultPartyId_;
+}
+
+bool AccountPartiesWidget::isDefaultPartyReady() const {
+    return defaultPartyComboInitialized_;
 }
 
 void AccountPartiesWidget::load() {
@@ -153,9 +215,11 @@ void AccountPartiesWidget::load() {
             self->pendingAdds_.clear();
             self->pendingRemoves_.clear();
             self->refreshView();
+            self->populateDefaultPartyCombo();
             BOOST_LOG_SEV(lg(), debug)
                 << "Loaded " << self->assignedParties_.size() << " assigned, "
                 << self->allParties_.size() << " total parties";
+            emit self->dataLoaded();
         } else {
             emit self->errorMessage("Load Failed", "Failed to load parties");
         }
@@ -218,6 +282,7 @@ void AccountPartiesWidget::load() {
 
 void AccountPartiesWidget::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
+    defaultPartyCombo_->setEnabled(!readOnly);
     updateButtonStates();
 }
 
@@ -284,6 +349,14 @@ void AccountPartiesWidget::onAssignedSelectionChanged() {
     updateButtonStates();
 }
 
+namespace {
+
+// Deep indigo — reads clearly on the app's dark theme as "highlighted/
+// special" without the alarm connotations of yellow (warning) or red (error).
+const QColor default_party_accent_color{124, 108, 232};
+
+}
+
 void AccountPartiesWidget::refreshView() {
     assignedList_->clear();
 
@@ -303,30 +376,67 @@ void AccountPartiesWidget::refreshView() {
         return QString::fromStdString(boost::uuids::to_string(id));
     };
 
+    auto makeItem = [&](const boost::uuids::uuid& id) {
+        auto* item = new QListWidgetItem(findPartyName(id));
+        item->setData(Qt::UserRole, QString::fromStdString(boost::uuids::to_string(id)));
+        if (!defaultPartyId_.is_nil() && id == defaultPartyId_) {
+            item->setText("★ " + item->text() + " — Default");
+            item->setForeground(default_party_accent_color);
+            QFont font = item->font();
+            font.setBold(true);
+            item->setFont(font);
+            item->setToolTip("This is the account's default quick-login party.");
+        }
+        return item;
+    };
+
+    auto partyName = [&](const boost::uuids::uuid& id) -> QString {
+        auto it = std::ranges::find_if(allParties_, [&id](const auto& p) { return p.id == id; });
+        return it != allParties_.end() ? QString::fromStdString(it->full_name) :
+                                         QString::fromStdString(boost::uuids::to_string(id));
+    };
+
     std::vector<boost::uuids::uuid> effectiveIds;
 
-    // Parties from DB that are not pending removal
+    // Sort so the default party (if assigned) always appears first — it
+    // shouldn't be buried alphabetically in a long counterparty list.
+    // Everything else sorts alphabetically by party name.
+    std::vector<iam::domain::account_party> orderedAssigned;
     for (const auto& ap : assignedParties_) {
-        if (!isRemoved(ap.party_id)) {
-            effectiveIds.push_back(ap.party_id);
-            auto* item = new QListWidgetItem(findPartyName(ap.party_id));
-            item->setData(Qt::UserRole,
-                          QString::fromStdString(boost::uuids::to_string(ap.party_id)));
-            assignedList_->addItem(item);
-        }
+        if (!isRemoved(ap.party_id))
+            orderedAssigned.push_back(ap);
+    }
+    std::ranges::sort(orderedAssigned, [&](const auto& a, const auto& b) {
+        const bool a_default = !defaultPartyId_.is_nil() && a.party_id == defaultPartyId_;
+        const bool b_default = !defaultPartyId_.is_nil() && b.party_id == defaultPartyId_;
+        if (a_default != b_default)
+            return a_default;
+        return partyName(a.party_id).compare(partyName(b.party_id), Qt::CaseInsensitive) < 0;
+    });
+
+    for (const auto& ap : orderedAssigned) {
+        effectiveIds.push_back(ap.party_id);
+        assignedList_->addItem(makeItem(ap.party_id));
     }
 
-    // Staged additions
-    for (const auto& partyId : pendingAdds_) {
+    // Staged additions, alphabetical
+    auto orderedAdds = pendingAdds_;
+    std::ranges::sort(orderedAdds, [&](const auto& a, const auto& b) {
+        return partyName(a).compare(partyName(b), Qt::CaseInsensitive) < 0;
+    });
+    for (const auto& partyId : orderedAdds) {
         effectiveIds.push_back(partyId);
-        auto* item = new QListWidgetItem(findPartyName(partyId));
-        item->setData(Qt::UserRole, QString::fromStdString(boost::uuids::to_string(partyId)));
-        assignedList_->addItem(item);
+        assignedList_->addItem(makeItem(partyId));
     }
 
-    // Populate combo with parties not in effective set
+    // Populate combo with parties not in effective set, alphabetical
+    auto orderedAvailable = allParties_;
+    std::ranges::sort(orderedAvailable, [](const auto& a, const auto& b) {
+        return QString::fromStdString(a.full_name)
+                   .compare(QString::fromStdString(b.full_name), Qt::CaseInsensitive) < 0;
+    });
     partyCombo_->clear();
-    for (const auto& party : allParties_) {
+    for (const auto& party : orderedAvailable) {
         bool inEffective =
             std::ranges::any_of(effectiveIds, [&party](const auto& id) { return id == party.id; });
         if (!inEffective) {
@@ -342,6 +452,44 @@ void AccountPartiesWidget::refreshView() {
         QString("Assigned Parties (%1)").arg(static_cast<int>(effectiveIds.size())));
 
     updateButtonStates();
+}
+
+void AccountPartiesWidget::populateDefaultPartyCombo() {
+    const QSignalBlocker blocker(defaultPartyCombo_);
+
+    auto partyName = [&](const boost::uuids::uuid& id) -> QString {
+        auto it = std::ranges::find_if(allParties_, [&](const auto& p) { return p.id == id; });
+        return it != allParties_.end() ? QString::fromStdString(it->full_name) :
+                                         QString::fromStdString(boost::uuids::to_string(id));
+    };
+
+    auto orderedAssigned = assignedParties_;
+    std::ranges::sort(orderedAssigned, [&](const auto& a, const auto& b) {
+        return partyName(a.party_id).compare(partyName(b.party_id), Qt::CaseInsensitive) < 0;
+    });
+
+    defaultPartyCombo_->clear();
+    defaultPartyCombo_->addItem(tr("(none)"), QString());
+    for (const auto& ap : orderedAssigned) {
+        defaultPartyCombo_->addItem(partyName(ap.party_id),
+                                    QString::fromStdString(boost::uuids::to_string(ap.party_id)));
+    }
+
+    // Always re-seed the selection from defaultPartyId_ (the authoritative
+    // baseline, whether freshly set via setDefaultPartyId() or rebased via
+    // rebaseDefaultParty() after a save) — not just on first populate.
+    // clear() above resets the combo's currentIndex to whatever Qt
+    // auto-selects for the first re-added item (index 0, "(none)"), even
+    // under a QSignalBlocker, so skipping this on a later reload (e.g. the
+    // load() triggered by a party add/remove alongside an unrelated
+    // default-party save) would desync the visible selection from the real
+    // default and, if saved again, silently clear it.
+    const int idx = defaultPartyId_.is_nil() ?
+        0 :
+        defaultPartyCombo_->findData(
+            QString::fromStdString(boost::uuids::to_string(defaultPartyId_)));
+    defaultPartyCombo_->setCurrentIndex(idx >= 0 ? idx : 0);
+    defaultPartyComboInitialized_ = true;
 }
 
 void AccountPartiesWidget::updateButtonStates() {

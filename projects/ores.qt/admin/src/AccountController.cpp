@@ -522,9 +522,12 @@ void AccountController::onRevertAccount(const iam::domain::account& account) {
     const boost::uuids::uuid account_id = account.id;
     const std::string username = account.username;
     const std::string email = account.email;
+    const std::string default_party_id =
+        account.default_party_id ? boost::uuids::to_string(*account.default_party_id) : std::string{};
 
     QFuture<std::pair<bool, std::string>> future =
-        QtConcurrent::run([self, account_id, email]() -> std::pair<bool, std::string> {
+        QtConcurrent::run(
+            [self, account_id, email, default_party_id]() -> std::pair<bool, std::string> {
             if (!self)
                 return {false, ""};
 
@@ -534,6 +537,7 @@ void AccountController::onRevertAccount(const iam::domain::account& account) {
             iam::messaging::update_account_request request;
             request.account_id = boost::uuids::to_string(account_id);
             request.email = email;
+            request.default_party_id = default_party_id;
 
             auto response_result =
                 self->clientManager_->process_authenticated_request(std::move(request));

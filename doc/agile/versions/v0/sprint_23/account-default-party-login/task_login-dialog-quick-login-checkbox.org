@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: 780182D5-AD41-410A-B877-8E705B1A0B79
+:END:
+#+title: Task: Add quick-login checkbox to the login dialog
+#+description: Add a "Log in to default party" checkbox to the login dialog; when ticked, call select_party_request directly with the account's default_party_id, bypassing PartyPickerDialog.
+#+type: task
+#+level: s1
+#+filetags: :account-default-party-login:sprint_23:v0:
+#+owner: marco
+#+branch: feature/add-default-party-id-field
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a "Log in to default party" checkbox to the login dialog. When
+ticked at login time, and the authenticating account has a
+=default_party_id= set, call =select_party_request= directly with that
+party id, bypassing =PartyPickerDialog= entirely.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7A92D9F1-2E2B-4EBE-BFC8-DD5AD9BA690B][Add a default party per account with a quick-login checkbox]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-11                               |
+
+* Acceptance
+
+- Login dialog shows a "Log in to default party" checkbox, checked by
+  default.
+- When the login response requires party selection (multiple parties)
+  and the account has a default party among them, ticking the
+  checkbox calls =select_party_request= (via =ClientManager::selectParty=)
+  directly, skipping =PartyPickerDialog=.
+- When unticked, no default set, or =selectParty= fails, the party
+  picker is shown exactly as before (fallback, not a hard failure).
+- Single-party accounts are unaffected (server already auto-selects
+  the sole party; this task only touches the multi-party branch).
+
+* Plan
+
+1. Add =default_party_id= to =login_response= (protocol) — only
+   populated in the multi-party branch of the login NATS handler
+   (=auth_handler.hpp=), and only when the account's stored default is
+   among that account's actual party assignments.
+2. Thread it through the client: =ClientManager::LoginResult= gets a
+   =default_party_id= field, parsed the same way =selected_party_id=
+   already is in =ClientManager::login=.
+3. Add the "Log in to default party" checkbox to =LoginDialog=,
+   defaulting to checked, next to the existing "Remember me" /
+   "Show password" checkboxes.
+4. In =LoginDialog::onLoginResult=, in the multi-party branch, before
+   constructing =PartyPickerDialog=: if the checkbox is ticked and a
+   default party is present among =available_parties=, call
+   =clientManager_->selectParty()= directly; fall back to the normal
+   picker path if that call fails.
+
+* Notes
+
+- Reused the existing =ClientManager::selectParty()= method (already
+  used by =PartyPickerDialog='s accept path) rather than adding a new
+  one — it already does everything the checkbox path needs (token
+  update, party-setup checks, refresh timer).
+- The single-party login branch in =auth_handler.hpp= is untouched:
+  the server already auto-selects when there's exactly one party, so
+  there's no picker to bypass there.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:57D79024-3C39-4890-8DA1-0EF333DE68A7][Verify default-party quick-login end to end]] | PASSED | End-to-end across all 3 tasks; surfaced a real tenant-isolation bug and a design correction (see Result). |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Added end-to-end quick-login support for accounts with a default party:
+
+- [[proj:projects/ores.iam/api/include/ores.iam.api/messaging/login_protocol.hpp][login_protocol.hpp]] — =login_response.default_party_id=.
+- [[proj:projects/ores.iam/core/include/ores.iam.core/messaging/auth_handler.hpp][auth_handler.hpp]] — populates it in the multi-party login branch, only
+  when the account's stored default is actually one of its assigned
+  parties.
+- [[proj:projects/ores.qt/api/include/ores.qt/ClientManager.hpp][ClientManager.hpp]] / [[proj:projects/ores.qt/api/src/ClientManager.cpp][ClientManager.cpp]] — =LoginResult.default_party_id=,
+  parsed in =login()= the same way =selected_party_id= is.
+- [[proj:projects/ores.qt/application/include/ores.qt/LoginDialog.hpp][LoginDialog.hpp]] / [[proj:projects/ores.qt/application/src/LoginDialog.cpp][LoginDialog.cpp]] — "Log in to default party" checkbox
+  (checked by default); in =onLoginResult='s multi-party branch, calls
+  =clientManager_->selectParty()= directly when ticked and a default is
+  present, falling back to =PartyPickerDialog= otherwise.
+
+Verification: rebuilt =ores.iam.api.lib=, =ores.iam.core.lib=,
+=ores.qt.api.lib=, =ores.qt.lib= (application) clean under
+=linux-clang-debug-make=; ran =ctest --preset linux-clang-debug-make -R
+iam= — =ores.iam.api.tests=, =ores.iam.core.tests=,
+=ores.iam.service.tests= all green (100% pass, 0 failed). No automated
+UI test exercises the login dialog, so the checkbox interaction itself
+wasn't exercised by ctest — flagged as a manual QA gap for the QA
+Validation Runner rather than silently claimed as covered.
+
+** Follow-up from manual QA: default-party visibility/editing in the admin UI
+
+Running the scenario above surfaced two gaps not covered by the three
+original tasks, both fixed in the same branch:
+
+- *Pre-existing bug, unrelated to this story*: [[proj:projects/ores.iam/core/include/ores.iam.core/messaging/account_party_handler.hpp][account_party_handler.hpp]]'s
+  =list=/=by_account= handlers used the handler's system-scoped
+  construction-time context instead of deriving the caller's tenant
+  context from the JWT (the pattern every other handler in that file
+  already followed for writes). Under RLS, this silently returned zero
+  rows for any non-system-tenant account — surfaced as "0 associated
+  parties" in the admin Parties tab. Fixed by deriving
+  =ores::service::service::make_request_context()= per request, same
+  as =save=/=remove=.
+- *Design correction*: the first attempt at admin-side editing added a
+  parallel immediate-write path (a new admin-scoped
+  =set_account_default_party_request= NATS endpoint plus a right-click
+  "Set as Default" menu in =AccountPartiesWidget=) that bypassed the
+  dialog's Save button, change-reason prompt, and version history —
+  inconsistent with every other account field. Reworked into a regular
+  "Default Party" =QComboBox= in =AccountPartiesWidget= (Parties tab,
+  below the assignment list, sorted alphabetically alongside the
+  assigned-parties list and add-party combo), wired through
+  =update_account_request= (extended with a =default_party_id= field)
+  and the existing Save/=account_service::update_account()=/version-history
+  path, with server-side party-membership validation. The admin-scoped
+  NATS endpoint and its UI were removed entirely; the self-service
+  =set_my_default_party_request= (used by =accounts set-default-party=
+  and the provisioning scripts) was untouched throughout — it's a
+  different, legitimate category of action (immediate self-service,
+  like =select_party=), not an edit-and-save.

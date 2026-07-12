@@ -26,9 +26,11 @@
 #include "ores.refdata.api/domain/party.hpp"
 #include <QComboBox>
 #include <QGroupBox>
+#include <QLabel>
 #include <QListWidget>
 #include <QToolButton>
 #include <QWidget>
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <vector>
 
@@ -65,6 +67,22 @@ public:
     void setAccountId(const boost::uuids::uuid& accountId);
     void setAccountType(const std::string& accountType);
     /**
+     * @brief Marks which assigned party (if any) is the account's default
+     * quick-login party, and resets the "combo has been seeded" state —
+     * for the initial per-account setup path only (setAccount()), before
+     * load() has run. Pass a nil UUID to indicate no default is set.
+     */
+    void setDefaultPartyId(const boost::uuids::uuid& defaultPartyId);
+    /**
+     * @brief Rebases the "pending change" baseline to a value just
+     * persisted by a successful save, without touching whether the combo
+     * has been seeded (isDefaultPartyReady() stays true if it already was
+     * — unlike setDefaultPartyId(), this isn't followed by a guaranteed
+     * load()/populateDefaultPartyCombo() call when the save didn't also
+     * change party membership).
+     */
+    void rebaseDefaultParty(const boost::uuids::uuid& defaultPartyId);
+    /**
      * @brief Load parties. If accountId is set, also fetches assigned parties.
      * If accountId is nil (create mode), only available parties are loaded.
      */
@@ -73,8 +91,35 @@ public:
 
     [[nodiscard]] bool hasPendingChanges() const;
     [[nodiscard]] bool hasAvailableParties() const;
+    /**
+     * @brief True once the default-party combo has been seeded from the
+     * account's actual stored default (i.e. load() has resolved at least
+     * once for this account). False in the window between setAccountId()/
+     * setDefaultPartyId() and load() completing. The parent dialog must
+     * not allow Save while this is false in edit mode — saving before
+     * this resolves would resend a not-yet-populated (nil) selection and
+     * wipe the account's real default party.
+     */
+    [[nodiscard]] bool isDefaultPartyReady() const;
     [[nodiscard]] const std::vector<boost::uuids::uuid>& pendingAdds() const;
     [[nodiscard]] const std::vector<boost::uuids::uuid>& pendingRemoves() const;
+    /**
+     * @brief The account's currently-persisted party assignments, as loaded
+     * by the last successful load(). Used by the parent dialog to populate
+     * a "Default Party" selector from the same data, once dataLoaded() fires.
+     */
+    [[nodiscard]] const std::vector<iam::domain::account_party>& assignedParties() const;
+    [[nodiscard]] const std::vector<refdata::domain::party>& allParties() const;
+    /**
+     * @brief The currently-selected value of the "Default Party" combo
+     * (nil UUID for "(none)"). Read by the parent dialog's Save action.
+     */
+    [[nodiscard]] boost::uuids::uuid selectedDefaultPartyId() const;
+    /**
+     * @brief True when the "Default Party" combo's selection differs from
+     * the value last set via setDefaultPartyId() — i.e. an unsaved change.
+     */
+    [[nodiscard]] bool hasPendingDefaultPartyChange() const;
 
 signals:
     void statusMessage(const QString& message);
@@ -87,6 +132,19 @@ signals:
      */
     void partyListChanged();
 
+    /**
+     * @brief Emitted once load() completes successfully.
+     */
+    void dataLoaded();
+
+    /**
+     * @brief Emitted when the user changes the "Default Party" combo.
+     *
+     * The parent dialog connects to this signal to enable its Save button,
+     * the same way it does for other account fields.
+     */
+    void defaultPartyChanged();
+
 private slots:
     void onAddPartyClicked();
     void onRemovePartyClicked();
@@ -95,6 +153,7 @@ private slots:
 private:
     void setupUi();
     void refreshView();
+    void populateDefaultPartyCombo();
     void updateButtonStates();
 
     QGroupBox* partiesGroup_;
@@ -102,9 +161,13 @@ private:
     QComboBox* partyCombo_;
     QToolButton* addButton_;
     QToolButton* removeButton_;
+    QLabel* defaultPartyLabel_;
+    QComboBox* defaultPartyCombo_;
 
     ClientManager* clientManager_ = nullptr;
     boost::uuids::uuid accountId_;
+    boost::uuids::uuid defaultPartyId_ = boost::uuids::nil_uuid();
+    bool defaultPartyComboInitialized_ = false;
     std::string accountType_;
     bool readOnly_ = false;
 

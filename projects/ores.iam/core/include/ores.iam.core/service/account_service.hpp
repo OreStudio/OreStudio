@@ -30,6 +30,7 @@
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <optional>
 #include <string>
 
 namespace ores::iam::service {
@@ -215,6 +216,9 @@ public:
      *
      * @param account_id The ID of the account to update
      * @param email The new email address
+     * @param default_party_id The party to set as the account's default
+     * quick-login party; nullopt clears it. The caller is responsible for
+     * verifying the party is one the account is actually associated with.
      * @param modified_by The username making the change
      * @param change_reason_code The change reason code for audit trail
      * @param change_commentary Free-text commentary explaining the change
@@ -223,6 +227,7 @@ public:
      */
     bool update_account(const boost::uuids::uuid& account_id,
                         const std::string& email,
+                        const std::optional<boost::uuids::uuid>& default_party_id,
                         const std::string& modified_by,
                         const std::string& change_reason_code,
                         const std::string& change_commentary);
@@ -237,6 +242,17 @@ public:
      * @return The account if found, std::nullopt otherwise
      */
     std::optional<domain::account> find_account_by_username(const std::string& username);
+
+    /**
+     * @brief Finds an account by id.
+     *
+     * Returns the latest version of the account, or std::nullopt if no
+     * account is found.
+     *
+     * @param account_id The account id to search for
+     * @return The account if found, std::nullopt otherwise
+     */
+    std::optional<domain::account> find_account_by_id(const boost::uuids::uuid& account_id);
 
     /**
      * @brief Retrieves all historical versions of an account by username.
@@ -292,6 +308,19 @@ public:
      * @return empty string on success, error message on failure
      */
     std::string update_my_email(const boost::uuids::uuid& account_id, const std::string& new_email);
+
+    /**
+     * @brief Sets the default party for a user's own account.
+     *
+     * Self-service; the caller is responsible for verifying the party is
+     * one the account is actually associated with before calling this.
+     *
+     * @param account_id The ID of the account to update
+     * @param party_id The party to set as the account's default
+     * @return empty string on success, error message on failure
+     */
+    std::string set_my_default_party(const boost::uuids::uuid& account_id,
+                                     const boost::uuids::uuid& party_id);
 
 private:
     repository::account_repository account_repo_;

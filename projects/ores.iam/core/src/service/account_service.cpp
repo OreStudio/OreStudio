@@ -369,6 +369,7 @@ void account_service::logout(const boost::uuids::uuid& account_id) {
 
 bool account_service::update_account(const boost::uuids::uuid& account_id,
                                      const std::string& email,
+                                     const std::optional<boost::uuids::uuid>& default_party_id,
                                      const std::string& modified_by,
                                      const std::string& change_reason_code,
                                      const std::string& change_commentary) {
@@ -385,6 +386,7 @@ bool account_service::update_account(const boost::uuids::uuid& account_id,
     // Get existing account and create new version with updated fields
     auto account = accounts[0];
     account.email = email;
+    account.default_party_id = default_party_id;
     account.modified_by = modified_by;
     account.change_reason_code = change_reason_code;
     account.change_commentary = change_commentary;
@@ -408,6 +410,19 @@ account_service::find_account_by_username(const std::string& username) {
     auto accounts = account_repo_.read_latest_by_username(username);
     if (accounts.empty()) {
         BOOST_LOG_SEV(lg(), debug) << "No account found for username: " << username;
+        return std::nullopt;
+    }
+    return accounts.front();
+}
+
+std::optional<domain::account>
+account_service::find_account_by_id(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding account by id: " << boost::uuids::to_string(account_id);
+
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), debug) << "No account found for id: "
+                                   << boost::uuids::to_string(account_id);
         return std::nullopt;
     }
     return accounts.front();
@@ -567,6 +582,42 @@ std::string account_service::update_my_email(const boost::uuids::uuid& account_i
     account_repo_.write(account);
 
     BOOST_LOG_SEV(lg(), info) << "Successfully updated email for account: "
+                              << boost::uuids::to_string(account_id);
+
+    return ""; // Empty string indicates success
+}
+
+std::string account_service::set_my_default_party(const boost::uuids::uuid& account_id,
+                                                   const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Setting default party for account: "
+                               << boost::uuids::to_string(account_id);
+
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Attempted to set default party for non-existent account: "
+                                  << boost::uuids::to_string(account_id);
+        return "Account does not exist";
+    }
+
+    if (accounts[0].default_party_id == party_id) {
+        // Idempotent no-op: re-running "set default to X" when X is already
+        // the default should succeed silently, not fail — callers like
+        // provisioning scripts and the shell command may legitimately repeat
+        // this call against an already-provisioned system.
+        BOOST_LOG_SEV(lg(), debug) << "Default party unchanged for account: "
+                                   << boost::uuids::to_string(account_id);
+        return "";
+    }
+
+    auto account = accounts[0];
+    account.default_party_id = party_id;
+    account.change_reason_code = std::string{reason::codes::non_material_update};
+    account.change_commentary = "Default party changed";
+    // Note: version is NOT incremented here - the database trigger handles it
+
+    account_repo_.write(account);
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully set default party for account: "
                               << boost::uuids::to_string(account_id);
 
     return ""; // Empty string indicates success

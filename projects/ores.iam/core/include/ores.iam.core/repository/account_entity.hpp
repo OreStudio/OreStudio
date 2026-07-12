@@ -46,6 +46,7 @@ struct account_entity {
     std::string totp_secret;
     std::string email;
     std::optional<std::string> service_password_hash;
+    std::optional<std::string> default_party_id;
     std::string modified_by;
     std::string change_reason_code;
     std::string change_commentary;

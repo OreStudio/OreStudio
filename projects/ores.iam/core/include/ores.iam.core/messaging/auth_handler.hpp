@@ -38,6 +38,7 @@
 #include "ores.iam.core/service/party_cache.hpp"
 #include "ores.iam.core/service/service_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <algorithm>
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -395,6 +396,15 @@ public:
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
                 resp.access_lifetime_s = token_settings_.party_selection_lifetime_s;
                 resp.session_id = session_id_str;
+                if (acct.default_party_id) {
+                    const auto default_id = *acct.default_party_id;
+                    const bool is_available =
+                        std::any_of(account_parties.begin(),
+                                    account_parties.end(),
+                                    [&](const auto& ap) { return ap.party_id == default_id; });
+                    if (is_available)
+                        resp.default_party_id = boost::uuids::to_string(default_id);
+                }
                 for (const auto& ap : account_parties) {
                     auto p =
                         auth_lookup_party(*party_cache_, acct.tenant_id.to_string(), ap.party_id);

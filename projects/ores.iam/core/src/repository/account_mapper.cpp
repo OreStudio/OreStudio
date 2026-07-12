@@ -45,6 +45,9 @@ domain::account account_mapper::map(const account_entity& v) {
     r.password_salt = v.password_salt;
     r.totp_secret = v.totp_secret;
     r.email = v.email;
+    if (v.default_party_id) {
+        r.default_party_id = boost::lexical_cast<boost::uuids::uuid>(*v.default_party_id);
+    }
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -64,6 +67,9 @@ account_entity account_mapper::map(const domain::account& v) {
     r.password_salt = v.password_salt;
     r.totp_secret = v.totp_secret;
     r.email = v.email;
+    if (v.default_party_id) {
+        r.default_party_id = boost::lexical_cast<std::string>(*v.default_party_id);
+    }
     r.modified_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;

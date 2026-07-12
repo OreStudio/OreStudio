@@ -15,4 +15,5 @@ logout
 
 login tenant_admin@acme Secure-Password-123
 provision party "Lloyds Wealth Management Ltd" --reports all
+accounts set-default-party "Lloyds Wealth Management Ltd"
 logout

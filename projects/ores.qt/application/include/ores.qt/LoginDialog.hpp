@@ -238,6 +238,7 @@ private:
     QLineEdit* passwordEdit_;
     QCheckBox* showPasswordCheck_;
     QCheckBox* rememberMeCheck_;
+    QCheckBox* quickLoginCheck_;
     QPushButton* loginButton_;
     QPushButton* signUpButton_;
     QLabel* signUpLabel_;

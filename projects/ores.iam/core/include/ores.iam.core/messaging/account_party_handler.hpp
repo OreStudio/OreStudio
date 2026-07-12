@@ -110,7 +110,13 @@ public:
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(account_party_handler_lg(), msg);
         try {
-            service::account_party_service svc(ctx_);
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            service::account_party_service svc(*ctx_expected);
             auto aps = svc.list_account_parties();
             get_account_parties_response resp;
             resp.total_available_count = static_cast<int>(aps.size());
@@ -133,7 +139,13 @@ public:
             return;
         }
         try {
-            service::account_party_service svc(ctx_);
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            service::account_party_service svc(*ctx_expected);
             boost::uuids::string_generator sg;
             auto aps = svc.list_account_parties_by_account(sg(req->account_id));
             get_account_parties_by_account_response resp;

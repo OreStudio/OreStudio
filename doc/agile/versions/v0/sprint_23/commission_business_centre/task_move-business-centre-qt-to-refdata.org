@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 0FCD3745-61CD-4644-BAE2-CBCD994448FE
+:END:
+#+title: Task: Move business_centre Qt CRUD to RefdataPlugin
+#+description: business_centre's Qt CRUD code and plugin wiring live in ores.qt/party under PartyPlugin even though the C++ backend is already in ores.refdata. Relocate to ores.qt/refdata/RefdataPlugin, mirroring the Move book to refdata story.
+#+type: task
+#+level: s1
+#+filetags: :commission_business_centre:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No cross-component leakage: business_centre's Qt controller, MDI window, detail dialog, history dialog, and client model move fully out of ores.qt/party/PartyPlugin into ores.qt/refdata/RefdataPlugin.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- grep for BusinessCentreController in PartyPlugin.cpp returns no construction/menu-wiring hits; RefdataPlugin.cpp constructs the controller and contributes its menu entry; full build (api/core/service/qt.refdata/qt.party/qt.exe) is clean; manual QA confirms the list/detail/history windows open from the new menu location and behave identically to before the move.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

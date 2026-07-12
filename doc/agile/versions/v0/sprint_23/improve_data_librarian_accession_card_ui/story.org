@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC
+:END:
+#+title: Story: Improve Data Librarian accession card UI/UX
+#+description: Redesign the Data Librarian's dataset detail dialogs (Overview, Provenance, Methodology, Dependencies) from a rigid single-column property-sheet into a persistent-header, asymmetric two-column layout with merged Provenance/Methodology tab, per a Gemini UI/UX review. Librarian-only; DetailDialogBase untouched.
+#+type: story
+#+level: s2
+#+filetags: :qt:librarian:ux:data_quality:sprint_23:v0:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Redesign the Data Librarian's dataset detail dialog
+(=DatasetDetailDialog=, the "accession card") away from its current
+single-column, alternating-row property-sheet table toward a
+persistent-header, asymmetric two-column layout, per
+[[id:211CB159-F633-4897-A899-56CD91625396][OreStudio Data Librarian UI/UX Review]]. Phased: cosmetic wins
+(header banner, UUID copy, status pills) before the structural
+column/tab rework. The interactive lineage graph proposed for
+*Dependencies* is out of scope — a separate, bigger undertaking.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-12                               |
+
+* Acceptance
+
+- A persistent header banner replaces the per-tab repeated
+  =Name=/=Version=/=ID=/=Code= fields, with a one-click UUID copy
+  action.
+- Status identifiers (=Primary=, =Actual=, =Raw=, etc.) render as
+  visual pills instead of plain text.
+- *Provenance* and *Methodology* tabs are merged into a single tab;
+  lineage primitives (=Lineage Depth=, =Upstream Derivation=) are
+  visually prominent rather than buried at the bottom of a property
+  grid.
+- The dialog uses an asymmetric two-column layout (primary content +
+  metadata sidebar) instead of a single-column table, for *Overview*
+  and the merged *Provenance & Governance* tab.
+- =DetailDialogBase= (shared by 78 other entity dialogs) is
+  untouched; the new layout lives in =DatasetDetailDialog= only.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- Interactive SVG/Canvas lineage graph for the *Dependencies* tab —
+  file as a separate future capture if this redesign lands well.
+- Any change to =DetailDialogBase= or the other 77 entity dialogs
+  built on it.

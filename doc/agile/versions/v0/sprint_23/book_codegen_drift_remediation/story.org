@@ -44,7 +44,7 @@ review bot passes, not by the regen itself.
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | book_status, regulatory_book_type, and book all DONE and manually QA'd. |
 | Waiting on    | Nothing.                               |
-| Next          | Migrate book to composite-entity versioning. |
+| Next          | Migrate Portfolio/Book to composite-entity versioning. |
 | Last touched  | 2026-07-11                               |
 
 * Acceptance
@@ -58,9 +58,11 @@ review bot passes, not by the regen itself.
 - book builds cleanly on the configured preset; end-to-end manual test
   (login, list, add, edit, save, rename, history) passes with no
   regressions.
-- book is migrated to composite-entity versioning per
-  [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]], regenerated
-  again, and re-tested end to end.
+- Portfolio/Book are migrated to composite-entity versioning per
+  [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] (Portfolio is
+  the composite parent, Book the child via parent_portfolio_id — not
+  book_status/regulatory_book_type, which are enum-like FK attributes,
+  not composite children), regenerated, and re-tested end to end.
 - [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]'s remaining new-work tasks are unblocked.
 
 * Tasks
@@ -71,7 +73,7 @@ review bot passes, not by the regen itself.
 | [[id:CCED67A5-5003-4B5F-A747-0C4F79C72228][Regenerate regulatory_book_type]] | DONE | 2026-07-12 | 2026-07-12 | Regenerated (had the same missing has_change_reason_cache gap as book_status, fixed proactively this time). Manual QA: all 6 steps PASS, zero ERROR-level log lines. |
 | [[id:0C185CE4-63E5-44CC-94AF-F3FF1E194986][Regenerate book and restore insert-trigger validations]] | DONE | 2026-07-12 | 2026-07-12 | Regenerated (all 40 files ✅); all 6 insert-trigger validations confirmed present and firing (direct SQL insert rejected on bad parent_portfolio_id). Manual QA: all 6 steps PASS. |
 | [[id:EBEBDC25-7789-4C70-A4D2-E9314E873D85][End-to-end test book after regeneration]] | ABANDONED | | | Superseded by the regen task's own manual QA scenario (login, list, add, edit, save, history, badges, change-reason) -- a separate identical pass would be pure duplication. |
-| [[id:01304B6F-C431-4BD3-885A-CE713114B5A4][Migrate book to composite-entity versioning]] | STARTED | 2026-07-12 | | Codegen's book_repository templates now generate read_at_version and other composite-entity scaffolding, but book.org does not yet declare its lookup children (book_status, regulatory_book_type, and the new book_purpose_type/ledger_feed_type). Register book as a composite parent per the Temporal Composite Entity Versioning target-state doc, aligned with the party/counterparty pilot implementation. |
+| [[id:01304B6F-C431-4BD3-885A-CE713114B5A4][Migrate Portfolio/Book to composite-entity versioning]] | STARTED | 2026-07-12 | | Rescoped: book_status/regulatory_book_type are enum-like FK attributes, not composite children -- the real 1-to-many relationship is Portfolio (parent) -> Book (child, via parent_portfolio_id), matching the proven party/party_identifier shape. |
 | [[id:504E021C-A112-42CA-8DC2-B583A2904C4D][Regenerate and re-test book after composite migration]] | BACKLOG | | | After book is registered as a composite parent, regenerate all its layers again, diff-review, build, and re-run the end-to-end manual test scenario -- confirm read_at_version and composite history/version composition behave as the target-state doc describes before unblocking new-work tasks. |
 
 * Decisions

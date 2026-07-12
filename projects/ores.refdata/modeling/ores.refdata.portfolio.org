@@ -24,6 +24,7 @@ via self-referencing parent_portfolio_id.
 :component:        refdata
 :has_tenant_id:    true
 :has_workspace_id: true
+:generate_touch_function: true
 :END:
 
 * Primary key

@@ -111,33 +111,103 @@ begin
         end if;
         NEW.version = current_version + 1;
 
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_refdata_portfolios_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_portfolios_insert_trg
 before insert on "ores_refdata_portfolios_tbl"
 for each row execute function ores_refdata_portfolios_insert_fn();
 
 create or replace rule ores_refdata_portfolios_delete_rule as
-on delete to "ores_refdata_portfolios_tbl" do instead
+on delete to "ores_refdata_portfolios_tbl" do instead (
     update "ores_refdata_portfolios_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
+
+-- =============================================================================
+-- Touch-version function for portfolio
+-- Bumps this entity's version without changing any of its own columns,
+-- called by a child entity's insert trigger / delete rule when that
+-- child is flagged :bump_parent_version: true against this entity. See
+-- the "Temporal composite entity versioning" architecture doc.
+--
+-- Deliberately does NOT duplicate the version/valid_from/valid_to
+-- management here: it fetches the current row, resets version to the
+-- 0 sentinel, and re-inserts — the table's own insert trigger (above)
+-- then performs the exact same close-current/bump-version dance a
+-- normal application save does. This also sidesteps a real footgun:
+-- current_timestamp is frozen for the whole transaction, so a
+-- same-transaction bulk import (parent + child created together, as
+-- GLEIF provisioning does) would otherwise make the just-inserted
+-- parent row's own valid_from collide with this function's close
+-- timestamp.
+--
+-- p_reason_code is passed through as-is (already a validated code from
+-- the child's own row); p_child_entity distinguishes which child
+-- triggered the bump in the free-text commentary.
+-- =============================================================================
+create or replace function ores_refdata_portfolios_touch_version_fn(
+    p_tenant_id uuid,
+    p_id uuid,
+    p_reason_code text,
+    p_commentary text,
+    p_modified_by text,
+    p_performed_by text,
+    p_child_entity text
+) returns void as $$
+declare
+    rec ores_refdata_portfolios_tbl%rowtype;
+begin
+    -- for update: takes the same row lock the parent's own insert
+    -- trigger takes, so the snapshot in rec can't be based on a
+    -- business-column value a concurrent direct edit is about to
+    -- change — without this, that concurrent edit could be silently
+    -- reverted once this function's later insert proceeds. See the
+    -- "Temporal composite entity versioning" architecture doc,
+    -- Concurrency section.
+    select * into rec
+    from "ores_refdata_portfolios_tbl"
+    where tenant_id = p_tenant_id
+      and id = p_id
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    if not found then
+        return;
+    end if;
+
+    rec.version := 0;
+    rec.modified_by := p_modified_by;
+    rec.performed_by := p_performed_by;
+    rec.change_reason_code := p_reason_code;
+    rec.change_commentary := format('Bumped by child %s: %s', p_child_entity, coalesce(p_commentary, ''));
+
+    insert into "ores_refdata_portfolios_tbl"
+    select (rec).*;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+

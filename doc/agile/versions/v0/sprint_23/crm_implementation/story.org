@@ -28,9 +28,9 @@ engine the architecture relies on.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Topology, rate engine and risk recentering all done; deciding next task. |
+| Now           | CRM config entities landed in ores.marketdata; service wiring next. |
 | Waiting on    | Nothing.                               |
-| Next          | Wire the CRM into ores.marketdata's ingest path, then the management UI. |
+| Next          | Wire ores.marketdata.service to the CRM engine, then the management UI. |
 | Last touched  | 2026-07-12                               |
 
 * Acceptance
@@ -48,7 +48,8 @@ engine the architecture relies on.
 | [[id:96522E06-2067-4058-86FC-27B6086DCC26][Implement triangulation/derivation]] | DONE | 2026-07-12 | 2026-07-12 | Runtime rate_engine: consumes a stream of driver_quote ticks (possibly cross-thread) and serves batched derived-rate reads via an atomically-swapped immutable snapshot, computing derived rates by triangulation through the pivot and propagating staleness. |
 | [[id:6EA4B5FC-4581-484C-B5EB-ECF868B3A61D][Implement risk recentering]] | DONE | 2026-07-12 | 2026-07-12 | Re-root the CRM into a star-shaped matrix around a chosen aggregation currency without changing any derived rate's value: rebuild topology as a star, seed it by pulling current derived rates from the source engine for each currency. |
 | [[id:5EAA2830-832A-4CD0-A60D-67F1033996A4][Fix rate_engine concurrent update/rates crash (SIGSEGV/SIGABRT)]] | DONE | 2026-07-12 | 2026-07-12 | rate_engine's documented single-producer/multi-reader concurrency contract crashes reproducibly under load: SIGSEGV in immer node refcounting during update(), and SIGSEGV/SIGABRT in crm_topology::currency_id_for's unordered_map lookup during rates(), consistent with heap corruption. |
-| [[id:72FEB0B2-7E8B-4FD9-B9A4-3A27D4416999][Wire the CRM into ores.marketdata's ingest path]] | STARTED | 2026-07-12 | | Add persisted CRM topology config (codegened entities), wire ores.marketdata.service to run one rate_engine per tenant/party fed by driver ticks, and expose derived rates via a request/reply NATS endpoint -- drivers stay the only high-frequency published ticks, avoiding an O(n^2) tick fan-out. |
+| [[id:72FEB0B2-7E8B-4FD9-B9A4-3A27D4416999][Wire the CRM into ores.marketdata's ingest path]] | DONE | 2026-07-12 | 2026-07-12 | Add persisted CRM topology config (codegened entities), wire ores.marketdata.service to run one rate_engine per tenant/party fed by driver ticks, and expose derived rates via a request/reply NATS endpoint -- drivers stay the only high-frequency published ticks, avoiding an O(n^2) tick fan-out. |
+| [[id:88FD9001-F2BA-4061-994C-5EBE8BBD590A][Wire the CRM into ores.marketdata's ingest path (service wiring)]] | BACKLOG | | | Wire ores.marketdata.service to run one rate_engine per tenant/party fed by driver ticks, and expose derived rates via a request/reply NATS endpoint -- drivers stay the only high-frequency published ticks, avoiding an O(n^2) tick fan-out. Follow-up to the CRM config entities task. |
 
 Planned tasks (not yet scaffolded as task docs), following the domain
 model's concept map:

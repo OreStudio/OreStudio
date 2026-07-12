@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 72FEB0B2-7E8B-4FD9-B9A4-3A27D4416999
 :END:
-#+title: Task: Wire the CRM into ores.marketdata's ingest path
-#+description: Add persisted CRM topology config (codegened entities), wire ores.marketdata.service to run one rate_engine per tenant/party fed by driver ticks, and expose derived rates via a request/reply NATS endpoint -- drivers stay the only high-frequency published ticks, avoiding an O(n^2) tick fan-out.
+#+title: Task: Add codegened CRM config entities to ores.marketdata
+#+description: Persisted, tenant+party-scoped CRM topology config (crm_topology_config, crm_driver_pair, crm_enabled_derived_pair), fully codegen-generated -- the config surface the service-wiring follow-up task reads to build one rate_engine per (tenant, party).
 #+type: task
 #+level: s1
 #+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:
@@ -20,23 +20,26 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Wire the =ores.analytics.quant= CRM engine into =ores.marketdata=,
-following the [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] doc's "drivers in, derived rates
-out" section -- without the naive design of republishing every derived
-pair as an official tick on every driver movement (an O(n^2) fan-out for
-no real benefit, since triangulation is cheap and deterministic and
-anyone with the driver ticks + topology can derive the same value
-locally).
+Add the persisted config surface the CRM needs in =ores.marketdata=
+(topology + driver pairs + curated on-demand derived pairs), fully
+codegen-generated, laying the groundwork to wire the
+=ores.analytics.quant= CRM engine into =ores.marketdata='s ingest path
+(the follow-up task) following the [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] doc's
+"drivers in, derived rates out" section -- without the naive design of
+republishing every derived pair as an official tick on every driver
+movement (an O(n^2) fan-out for no real benefit, since triangulation is
+cheap and deterministic and anyone with the driver ticks + topology can
+derive the same value locally).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | CRM config entities landed (SQL+C++, Qt deferred); service wiring next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Wire feed_ingest_loop to build/update per-tenant-party rate_engines. |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -58,27 +61,17 @@ locally).
   - Both driven entirely by codegen (domain/api/core/sql, following the
     =feed_binding= entity as the template) -- CRUD + history + eventing
     for free; the Qt/Wt management UI is the separate, later story task.
-- =ores.marketdata.service= holds one =service::rate_engine= per
-  (tenant_id, party_id) -- built from that party's =crm_topology_config= +
-  enabled =crm_driver_pair= rows, refreshed on config change the same way
-  =feed_ingest_loop::refresh()= already reconciles feed-binding
-  subscriptions.
-- Driver ticks keep flowing through =feed_ingest_loop= exactly as today
-  (persist + remap 1:1, unchanged hot path); *additionally*, if the tick's
-  pair matches a =crm_driver_pair= edge for that tenant/party, it also
-  feeds =rate_engine::update()= for that party's engine. No new ticks are
-  published as a side effect of this -- the engine is updated, nothing is
-  broadcast.
-- A NATS request/reply endpoint (=marketdata.v1.crm.rate=) lets any
-  consumer ask for a rate (direct or derived, indistinguishable from the
-  caller's point of view -- the caller never says which) by tenant, party,
-  base and quote code; the service looks up that party's =rate_engine= and
-  calls =rate()=. No push/subscribe path in this task -- pull only, per
-  the architecture decision to avoid the tick-fan-out problem entirely
-  rather than merely throttle it.
 - Tenant and party independence: two parties in the same tenant may have
-  completely different topology/driver config and never see each other's
-  engine or rates.
+  completely different topology/driver config -- enforced at the schema
+  level (RLS_001 tenant-isolation policy; the party-level RESTRICTIVE
+  policy is the same documented RLS_002 stopgap the four existing
+  marketdata tables already carry).
+
+Deferred to the service-wiring follow-up task (identified in review, see
+=* Review= below): cross-party FK validation on =config_id=, and a
+uniqueness constraint on at most one =enabled= =crm_topology_config= per
+(tenant, party) -- both matter once something actually reads "the"
+config for a party, not before.
 
 * Plan
 
@@ -124,25 +117,15 @@ requirement).
 -- disabling and re-enabling a driver pair should not lose its history,
 same rationale as =feed_binding=.
 
-** Service wiring
+** Service wiring (moved to the follow-up task)
 
-A new class (working name =crm_ingest_bridge=, alongside
-=feed_ingest_loop= in =ores.marketdata.service/app=) owns a
-=std::map<std::pair<tenant_id, party_id>, service::rate_engine>=. On
-=refresh()= (same trigger as =feed_ingest_loop=: NATS notify on config
-table changes) it rebuilds any (tenant, party) whose =crm_topology_config=
-or =crm_driver_pair= rows changed, via =topology_builder::build= +
-constructing a fresh =rate_engine= -- config changes are rare, so a full
-rebuild (not an incremental patch) is the right cost/complexity trade-off,
-consistent with =topology_builder= being a rare, one-shot operation by
-design.
-
-=feed_ingest_loop= gains a hook: after persisting + remapping a driver
-tick as it already does, it also checks whether the tick's =ore_key=
-resolves to a =crm_driver_pair= edge for that tick's tenant/party and, if
-so, calls =crm_ingest_bridge::update()= (which just delegates to that
-party's =rate_engine::update()=) -- no change to what gets published, only
-an additional local update.
+The service-side design (a =crm_ingest_bridge= class owning one
+=service::rate_engine= per (tenant_id, party_id), a =feed_ingest_loop=
+hook that also feeds driver ticks into it, and the
+=marketdata.v1.crm.rate= request/reply endpoint) is carried forward
+unchanged into the new follow-up task -- see its own =* Plan= for the
+full design, this section is intentionally left as history of where
+that design was first written.
 
 * Notes
 
@@ -167,6 +150,41 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =crm_driver_pair=/=crm_enabled_derived_pair='s =config_id= FK trigger validates =tenant_id=+=id= against =crm_topology_configs_tbl= but never checks =party_id= matches the parent config's =party_id= -- a driver pair for party B could point at party A's config within the same tenant | marketdata_crm_driver_pairs_create.sql, marketdata_crm_enabled_derived_pairs_create.sql | Deferred | Real gap, explicitly called non-blocking for this PR's SQL/codegen scope by the reviewer; fixing it before the consuming =topology_builder::build= wiring lands. Tracked as the first acceptance item on the follow-up task ([[id:88FD9001-F2BA-4061-994C-5EBE8BBD590A][Wire the CRM into ores.marketdata's ingest path (service wiring)]]). |
+| 2 | No constraint prevents more than one =enabled = true= =crm_topology_config= per (tenant, party), though the model doc documents "at most one active rate_engine per (tenant, party)" as the invariant | marketdata_crm_topology_configs_create.sql | Deferred | Same as #1 -- non-blocking for this PR, needed before the service reads "the" enabled config per party. Tracked on the same follow-up task. |
+| 3 | Unique index identifiers (=crm_driver_pairs_party_id_config_id_base_currency_code_quote_currency_code_uniq_idx= etc.) exceed Postgres's 63-byte =NAMEDATALEN= limit and get silently truncated | marketdata_crm_driver_pairs_create.sql, marketdata_crm_enabled_derived_pairs_create.sql | Accepted (as a capture, not a code fix here) | Inherited codegen-template gap (=synthetic_fx_spot_generation_configs_create.sql= already has a longer instance) -- not introduced by this PR. Folded into the existing =codegen_rls_policy_facet.org= gap capture as a second, related codegen-doesn't-validate-identifiers gap. |
+| 4 | =crm_driver_pair=/=crm_enabled_derived_pair= could in principle hold the same pair under one config (no cross-table exclusion) | (informational) | Declined | The two tables serve different purposes (topology edges vs. curated on-demand pairs); =topology_builder::build= only ever consumes =crm_driver_pair= rows, so an overlapping row in the other table is inert, not a correctness risk. |
 
 * Result
+
+Shipped three new codegened entities in =ores.marketdata=
+(=crm_topology_config=, =crm_driver_pair=, =crm_enabled_derived_pair=),
+tenant+party-scoped, modelled on =feed_binding=/=market_series=, Qt UI
+deferred. Fully codegen-generated -- verified via =git status= that
+every file under =ores.marketdata/{api,core,service}= and
+=ores.sql/{create,drop}= is untouched generated output.
+
+Wired the three tables into the two things codegen doesn't touch:
+=marketdata_rls_policies_create.sql=/=_drop.sql= (tenant-isolation RLS)
+and =marketdata_create.sql=/=_drop.sql= (the =\ir= aggregator that makes
+generated SQL reachable from =setup_schema.sql= at all -- missing this
+isn't caught by any validation, only by actually running
+=db recreate=). Filed both as a generalised codegen-gap capture
+(=inbox/codegen_rls_policy_facet.org=) and extended the existing RLS_002
+backlog item to cover all seven affected tables; folded in a third gap
+found in review (unique-index identifiers exceeding Postgres's 63-byte
+=NAMEDATALEN= limit, inherited from the existing codegen template, not
+introduced here).
+
+Review surfaced two real, non-blocking-for-this-PR gaps -- recorded in
+=* Review= and carried forward as acceptance items on the new
+follow-up task, [[id:88FD9001-F2BA-4061-994C-5EBE8BBD590A][Wire the CRM into ores.marketdata's ingest path (service
+wiring)]], since both matter once something actually reads "the"
+config for a party rather than before: cross-party FK validation on
+=config_id=, and a uniqueness constraint on at most one =enabled=
+=crm_topology_config= per (tenant, party).
+
+Verified: full local build (all targets) clean; full test suite 71/71
+suites, 0 failures (=ctest --preset linux-clang-debug-make=, includes
+=ores.marketdata.core.tests= and =ores.analytics.quant.tests=); db
+recreate clean; =validate_schemas.sh --strict= zero warnings.

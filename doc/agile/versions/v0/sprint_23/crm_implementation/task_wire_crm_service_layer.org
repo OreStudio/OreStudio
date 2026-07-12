@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 88FD9001-F2BA-4061-994C-5EBE8BBD590A
+:END:
+#+title: Task: Wire the CRM into ores.marketdata's ingest path (service wiring)
+#+description: Wire ores.marketdata.service to run one rate_engine per tenant/party fed by driver ticks, and expose derived rates via a request/reply NATS endpoint -- drivers stay the only high-frequency published ticks, avoiding an O(n^2) tick fan-out. Follow-up to the CRM config entities task.
+#+type: task
+#+level: s1
+#+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Wire the =ores.analytics.quant= CRM engine into =ores.marketdata=,
+consuming the config entities from [[id:72FEB0B2-7E8B-4FD9-B9A4-3A27D4416999][the prior task]]
+(=crm_topology_config=, =crm_driver_pair=, =crm_enabled_derived_pair=),
+following the [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] doc's "drivers in, derived rates
+out" section -- without the naive design of republishing every derived
+pair as an official tick on every driver movement (an O(n^2) fan-out for
+no real benefit, since triangulation is cheap and deterministic and
+anyone with the driver ticks + topology can derive the same value
+locally).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- =ores.marketdata.service= holds one =service::rate_engine= per
+  (tenant_id, party_id) -- built from that party's =crm_topology_config= +
+  enabled =crm_driver_pair= rows, refreshed on config change the same way
+  =feed_ingest_loop::refresh()= already reconciles feed-binding
+  subscriptions.
+- Driver ticks keep flowing through =feed_ingest_loop= exactly as today
+  (persist + remap 1:1, unchanged hot path); *additionally*, if the tick's
+  pair matches a =crm_driver_pair= edge for that tenant/party, it also
+  feeds =rate_engine::update()= for that party's engine. No new ticks are
+  published as a side effect of this -- the engine is updated, nothing is
+  broadcast.
+- Two NATS request/reply endpoints -- both pull-only, no push/subscribe
+  path in this task, per the architecture decision to avoid the
+  tick-fan-out problem entirely rather than merely throttle it:
+  - =marketdata.v1.crm.rate=: a single rate (direct or derived,
+    indistinguishable from the caller's point of view -- the caller
+    never says which) by tenant, party, base and quote code; the
+    service looks up that party's =rate_engine= and calls =rate()=.
+  - =marketdata.v1.crm.rates=: *all* currently-configured pairs for a
+    (tenant, party) in one call -- the union of that party's enabled
+    =crm_driver_pair= edges and =crm_enabled_derived_pair= rows,
+    resolved via a single =rate_engine::rates()= batch call (one atomic
+    snapshot load, not N single-pair round trips) so a consumer wanting
+    "give me the whole matrix" doesn't have to enumerate pairs itself
+    or pay for N separate requests.
+- *Carried forward from the prior task's review* (see its =* Review=,
+  items #1-#2) -- fix before/alongside this task's own SQL touches it,
+  since both matter once something actually reads "the" config for a
+  party:
+  - =crm_driver_pair=/=crm_enabled_derived_pair='s =config_id= FK trigger
+    validates =tenant_id=+=id= against =crm_topology_configs_tbl= but
+    never checks =party_id= matches the parent config's =party_id= -- a
+    driver pair for party B could silently point at party A's config
+    within the same tenant.
+  - No constraint prevents more than one =enabled = true=
+    =crm_topology_config= per (tenant, party), though the modeling doc
+    documents "at most one active rate_engine per (tenant, party)" as
+    the invariant -- =crm_ingest_bridge= (below) needs this to actually
+    hold to know which config to build from.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+** Service wiring (carried forward from the prior task's design)
+
+A new class (working name =crm_ingest_bridge=, alongside
+=feed_ingest_loop= in =ores.marketdata.service/app=) owns a
+=std::map<std::pair<tenant_id, party_id>, service::rate_engine>=. On
+=refresh()= (same trigger as =feed_ingest_loop=: NATS notify on config
+table changes) it rebuilds any (tenant, party) whose =crm_topology_config=
+or =crm_driver_pair= rows changed, via =topology_builder::build= +
+constructing a fresh =rate_engine= -- config changes are rare, so a full
+rebuild (not an incremental patch) is the right cost/complexity trade-off,
+consistent with =topology_builder= being a rare, one-shot operation by
+design.
+
+=feed_ingest_loop= gains a hook: after persisting + remapping a driver
+tick as it already does, it also checks whether the tick's =ore_key=
+resolves to a =crm_driver_pair= edge for that tick's tenant/party and, if
+so, calls =crm_ingest_bridge::update()= (which just delegates to that
+party's =rate_engine::update()=) -- no change to what gets published, only
+an additional local update.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

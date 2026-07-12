@@ -41,10 +41,10 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QtConcurrent>
-#include <algorithm>
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -651,8 +651,9 @@ void AccountDetailDialog::onSaveClicked() {
                 pendingPartyRemoves.end();
         const boost::uuids::uuid finalDefaultPartyId =
             defaultBeingRemoved ? boost::uuids::nil_uuid() : selectedDefault;
-        const std::string defaultPartyId =
-            finalDefaultPartyId.is_nil() ? std::string{} : boost::uuids::to_string(finalDefaultPartyId);
+        const std::string defaultPartyId = finalDefaultPartyId.is_nil() ?
+                                               std::string{} :
+                                               boost::uuids::to_string(finalDefaultPartyId);
 
         // Removing the currently-default party without touching the combo
         // leaves hasPendingDefaultPartyChange() false (the combo's own
@@ -661,7 +662,8 @@ void AccountDetailDialog::onSaveClicked() {
         // or the removal would commit while the server-side default is
         // left dangling. defaultBeingRemoved must therefore also trigger
         // the account-fields save.
-        const bool needsAccountSave = isDirty_ || defaultBeingRemoved ||
+        const bool needsAccountSave =
+            isDirty_ || defaultBeingRemoved ||
             (partiesWidget_ && partiesWidget_->hasPendingDefaultPartyChange());
 
         std::string changeReasonCode;

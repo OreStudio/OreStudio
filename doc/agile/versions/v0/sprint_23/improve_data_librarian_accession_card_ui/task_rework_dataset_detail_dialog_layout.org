@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 6FF3D889-123F-4C5D-BB28-0F38BA32C9E9
+:END:
+#+title: Task: Rework DatasetDetailDialog into a persistent-header, two-column layout
+#+description: Implement the phased redesign: persistent header banner + UUID copy, status pills, merged Provenance/Methodology tab, asymmetric two-column layout — librarian-only, DetailDialogBase untouched.
+#+type: task
+#+level: s1
+#+filetags: :improve_data_librarian_accession_card_ui:sprint_23:v0:
+#+owner: marco
+#+branch: feature/rework-dataset-detail-dialog-layout
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement the full phased redesign of =DatasetDetailDialog= from
+[[id:211CB159-F633-4897-A899-56CD91625396][OreStudio Data Librarian UI/UX Review]]: cheap-and-safe cosmetic
+wins first (persistent header banner, one-click UUID copy, status
+pills), then the structural rework (merge Provenance/Methodology,
+asymmetric two-column layout). Librarian-only — =DetailDialogBase=
+untouched, and the interactive lineage graph is out of scope.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- Persistent header banner shows =Name=/=Version=/=ID=/=Code= once,
+  with a one-click UUID copy action; removed from individual tabs.
+- Status identifiers render as visual pills.
+- *Provenance* and *Methodology* merge into one tab; lineage
+  primitives are visually prominent.
+- *Overview* and the merged tab use an asymmetric two-column layout
+  (primary content + metadata sidebar).
+- No changes to =DetailDialogBase= or other entity dialogs.
+- Manually verified in the running Qt client against a real dataset.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

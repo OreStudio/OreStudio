@@ -8,7 +8,7 @@
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch: feature/generic-history-dispatch
-#+pr:
+#+pr: 1513
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
@@ -172,7 +172,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1513][#1513]] | [refdata,codegen] Add history field mapper facet |
 
 * Review
 

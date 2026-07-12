@@ -92,7 +92,7 @@ field. This distinction matters for the same reason a
 mathematical surface: curve identity is a discrete, enumerable label, not a
 second continuous axis alongside tenor. For reviewing a single curve
 rather than a whole family, the same idea reduces to a plain tenor-indexed
-table with one (Date, Rate) column, the degenerate case of the grid below.
+table with one (Date, Rate) column, the degenerate case of the grid above.
 
 The family's curves populate the grid's columns, so reviewing the family
 is reviewing one screen rather than a sequence of screens — joint

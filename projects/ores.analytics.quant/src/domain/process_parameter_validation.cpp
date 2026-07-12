@@ -75,4 +75,32 @@ process_parameter_validation_result validate_process_parameters(const std::strin
     return validate_mixing(means, stdevs, weights);
 }
 
+process_parameter_validation_result
+validate_yield_curve_process_parameters(const std::string& process_type,
+                                        double kappa,
+                                        const std::vector<double>& theta_path,
+                                        double sigma,
+                                        double initial_rate) {
+
+    if (theta_path.empty())
+        return invalid("theta_path must contain at least one value.");
+    if (sigma < 0.0)
+        return invalid("Volatility (σ) cannot be negative.");
+
+    if (process_type == "cir") {
+        if (kappa <= 0.0)
+            return invalid("CIR requires κ (mean reversion speed) to be strictly positive.");
+        if (theta_path.front() <= 0.0)
+            return invalid("CIR requires θ (mean reversion level) to be strictly positive.");
+        if (initial_rate < 0.0)
+            return invalid("CIR requires a non-negative initial rate.");
+        return {};
+    }
+
+    // "vasicek" and "hull_white" (Gaussian): no sign constraint on kappa or
+    // initial_rate — a negative short rate is economically unusual but not
+    // structurally invalid for a Gaussian model.
+    return {};
+}
+
 }

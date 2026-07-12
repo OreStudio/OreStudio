@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 9D9F0137-9D81-4811-9012-9FB95D064D4A
+:END:
+#+title: Surface step colour and prevent result clobbering in QA Runner
+#+description: The QA Validation Runner panel should visually indicate which client instance colour a multi-client scenario step belongs to, and only one instance should own writing back * Results to avoid concurrent saves clobbering each other.
+#+type: capture
+#+level: cross
+#+filetags: :qt:testing:qa_validation_runner:ux:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Multi-client =test_scenario= docs already nest steps under a colour
+sub-heading (=** blue= / =** red=, per the
+[[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][doc_test_scenario.org.mustache archetype]]), but that structure is only
+visible in the raw org file — nothing in the QA Validation Runner
+panel itself surfaces which running client instance a step belongs to
+when a tester has several coloured windows open side by side. Add a
+clear per-step colour indicator (badge, coloured left-border, grouped
+sub-list — panel's call) so the tester never has to cross-reference
+back to the =.org= source to know which window a step applies to.
+Separately, when the same scenario doc is opened via =--open-scenario=
+in more than one client instance (as happened testing
+[[id:307A9F1A-2F12-48E9-8D01-0E109D5DEC67][day_count_fraction_type]]'s CRUD/eventing scenario across blue and red),
+nothing stops both instances from independently saving =* Results=
+back to the same file and clobbering each other's PASS/FAIL/notes.
+Need a single-owner write mechanism: one instance (first to open, or a
+designated primary) owns the =* Results= write-back; other instances
+opening the same scenario should either open read-only or defer their
+step outcomes to the owner instead of writing independently.
+
+* Why
+
+Discovered while running the manual CRUD + eventing scenario for
+day_count_fraction_type: the scenario needed two client instances
+(blue driving CRUD, red observing eventing), and both had
+=--open-scenario= pointed at the same doc so the tester could follow
+along in either window. That is exactly the situation where a
+colour-blind step list and a no-owner save both bite: it is easy to
+tick a step in the wrong window, and if both windows later save
+results, one tester's ticks silently overwrite the other's.
+
+* References
+
+- [[proj:doc/agile/versions/v0/sprint_23/commission-day-count-fraction-type/scenario_verify_day_count_fraction_type_crud_and_eventing.org][scenario_verify_day_count_fraction_type_crud_and_eventing.org]] — the scenario that surfaced this.
+
+* See also
+
+- [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]]
+- [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]] — =--open-scenario= mechanics.

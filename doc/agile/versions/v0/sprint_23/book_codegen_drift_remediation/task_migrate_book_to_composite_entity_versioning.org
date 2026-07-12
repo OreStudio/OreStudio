@@ -8,7 +8,7 @@
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch: feature/migrate-book-to-composite-entity-versioning
-#+pr:
+#+pr: 1526
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
@@ -127,7 +127,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1526][#1526]] | [refdata,sql,codegen] Migrate Portfolio/Book to composite-entity versioning |
 
 * Review
 

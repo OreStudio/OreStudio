@@ -132,12 +132,20 @@ the version that made N current.
 
 *** Multi-level composition
 
-Out of scope for the first cut: this document only covers one level
-(party → identifiers/contacts). A grandchild case would need the bump
-to propagate transitively (grandchild → child → parent), which is a
-natural extension of the same mechanism but adds a second hop of
-locking/ordering to reason about. Flagged as a follow-up once the
-single-level case is proven on party/counterparty.
+*Proven*: Portfolio/Book extends this to a self-referencing tree —
+Portfolio is declared composite parent *and* child of itself
+(=:bump_parent_version:= on its own =parent_portfolio_id= FK), so a
+book's write bumps its immediate portfolio, whose own re-insert
+re-fires the same insert trigger and bumps *its* parent, and so on up
+the tree in the same transaction. A root portfolio
+(=parent_portfolio_id IS NULL=) safely terminates the recursion. See
+the Book codegen drift remediation story's composite-migration task
+for the SQL-level verification (3 levels deep) and the codegen-template
+fix this surfaced (touch-function generation order vs. Postgres's
+eager =CREATE RULE= resolution for self-referencing entities). A
+self-referencing FK also needs cycle prevention (=:prevent_cycle:
+true=) since an undetected cycle would recurse without bound instead
+of failing cleanly.
 
 *** Version-count inflation and change attribution
 
@@ -235,7 +243,9 @@ as-of composition above. Candidate shape (not yet decided in detail):
 - *Reason-code stamping is mandatory*: the touch function always
   stamps a distinguishing reason (e.g. =child_updated:party_identifier=)
   itself — callers don't opt in or out.
-- Multi-level cascading remains explicitly out of scope for v1.
+- Multi-level cascading is proven (Portfolio/Book, a self-referencing
+  tree) — see "Multi-level composition" above. A self-referencing FK
+  also needs =:prevent_cycle: true= for cycle prevention.
 
 * See also
 

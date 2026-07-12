@@ -178,22 +178,25 @@ public:
         }
         const auto& req_ctx = *req_ctx_expected;
         service::book_service svc(req_ctx);
-        get_books_by_parent_portfolio_id_response resp;
-        try {
-            if (auto req = decode<get_books_by_parent_portfolio_id_request>(msg)) {
+        if (auto req = decode<get_books_by_parent_portfolio_id_request>(msg)) {
+            get_books_by_parent_portfolio_id_response resp;
+            try {
                 resp.books = svc.list_books_by_parent_portfolio_id(
                     req->parent_portfolio_id, req->offset, req->limit);
                 resp.total_available_count = static_cast<int>(
                     svc.count_books_by_parent_portfolio_id(req->parent_portfolio_id));
                 resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(book_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
             }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(book_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
+            BOOST_LOG_SEV(book_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(book_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
-        BOOST_LOG_SEV(book_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
     }
 
 private:

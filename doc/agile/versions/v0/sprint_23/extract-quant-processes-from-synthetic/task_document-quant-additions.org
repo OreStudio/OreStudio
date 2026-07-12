@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 15414794-8A04-46FC-8926-609C72A0DD0A
+:END:
+#+title: Task: Document the moved process classes in ores.analytics.quant component docs
+#+description: Update ores.analytics.quant/modeling/component_overview.org and the PlantUML class diagram to document IStochasticProcess, the three process implementations, process_factory, and process_parameter_validation.
+#+type: task
+#+level: s1
+#+filetags: :extract-quant-processes-from-synthetic:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Component documentation reflects the new domain/service additions so future readers understand the process abstraction without reading ores.synthetic history.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- component_overview.org and the .puml diagram both updated and regenerated; diagram builds cleanly.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

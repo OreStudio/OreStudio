@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: CA32B363-C814-4E41-9081-AFE6DB542E24
+:END:
+#+title: Task: Move process_factory and process_parameter_validation into ores.analytics.quant
+#+description: Relocate process_factory (service) and process_parameter_validation (api) into ores.analytics.quant, updating ores.synthetic and the Qt client's include paths, with thorough new tests.
+#+type: task
+#+level: s1
+#+filetags: :extract-quant-processes-from-synthetic:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+process_factory and process_parameter_validation live in ores.analytics.quant with full unit test coverage of valid/invalid parameter combinations for each engine type.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CEB88862-4602-4D02-871F-EB8099DCE1B3][Extract stochastic process math from ores.synthetic into ores.analytics.quant]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- Both units moved; every caller (ores.synthetic.service, Qt client) updated; new Catch2 tests cover valid/invalid params for geometric, arithmetic, and ou; full build/test suite passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

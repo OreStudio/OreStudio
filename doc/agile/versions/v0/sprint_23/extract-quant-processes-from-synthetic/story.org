@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: CEB88862-4602-4D02-871F-EB8099DCE1B3
+:END:
+#+title: Story: Extract stochastic process math from ores.synthetic into ores.analytics.quant
+#+description: Move pure stochastic-process/math code (GMM, arithmetic GMM, OU processes, process factory, parameter validation, and the IStochasticProcess interface) out of ores.synthetic into ores.analytics.quant, adding thorough tests and component documentation along the way.
+#+type: story
+#+level: s2
+#+filetags: :analytics:synthetic:quant:refactor:sprint_23:v0:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ores.synthetic was originally built by mixing two concerns: the "pure"
+quant/maths content around stochastic processes and engines, and the
+synthetic-data-generation machinery that drives them. ores.analytics.quant now
+exists as the home for dependency-light, thoroughly-tested maths code. This
+story moves the stochastic-process code out of ores.synthetic and into
+ores.analytics.quant, backfilling test coverage (currently zero) and
+documenting each addition in the component's modeling docs, so ores.synthetic
+retains only generation/orchestration concerns and the maths lives where it
+can be reused (e.g. by a future calibration service) without pulling in the
+synthetic service's heavier dependencies.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-12                               |
+
+* Acceptance
+
+- ~IStochasticProcess~ moves from ores.marketdata.api to
+  ores.analytics.quant (header-only, zero dependencies); ores.marketdata.api
+  and ores.synthetic update their includes accordingly.
+- ~gmm_process~, ~arithmetic_gmm_process~, ~ou_process~, and ~process_factory~
+  move from ores.synthetic.service into ores.analytics.quant, namespaced
+  under ores::analytics::quant (or its existing domain/service split).
+- ~process_parameter_validation~ moves from ores.synthetic.api into
+  ores.analytics.quant.
+- ores.synthetic (service + api) is updated to consume the moved types from
+  ores.analytics.quant instead of its own copies; no dead code left behind.
+- Each moved unit has thorough Catch2 tests ported/added in
+  ores.analytics.quant/tests (none of these five units have any test
+  coverage today) — construction, degenerate/edge parameters, and
+  statistical sanity of next()/current() behaviour.
+- ores.analytics.quant's component_overview.org and PlantUML diagram are
+  updated to document the additions.
+- Full build and test suite (ores.synthetic, ores.analytics.quant,
+  ores.marketdata) pass after the move.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A026CB84-C39E-4F89-9450-E1F2C97C2126][Move IStochasticProcess interface into ores.analytics.quant]] | BACKLOG | | | Relocate the header-only IStochasticProcess interface from ores.marketdata.api to ores.analytics.quant, update all includes/namespaces, keep the build green. |
+| [[id:1065338A-0F61-41C3-854C-E0274F417C8F][Move GMM, arithmetic GMM, and OU processes into ores.analytics.quant]] | BACKLOG | | | Relocate gmm_process, arithmetic_gmm_process, and ou_process from ores.synthetic.service into ores.analytics.quant, with thorough new Catch2 tests since none exist today. |
+| [[id:CA32B363-C814-4E41-9081-AFE6DB542E24][Move process_factory and process_parameter_validation into ores.analytics.quant]] | BACKLOG | | | Relocate process_factory (service) and process_parameter_validation (api) into ores.analytics.quant, updating ores.synthetic and the Qt client's include paths, with thorough new tests. |
+| [[id:15414794-8A04-46FC-8926-609C72A0DD0A][Document the moved process classes in ores.analytics.quant component docs]] | BACKLOG | | | Update ores.analytics.quant/modeling/component_overview.org and the PlantUML class diagram to document IStochasticProcess, the three process implementations, process_factory, and process_parameter_validation. |
+
+* Decisions
+
+- IStochasticProcess is moved into ores.analytics.quant rather than linking
+  analytics.quant against ores.marketdata.api or duplicating the interface.
+  It is a pure, zero-dependency virtual interface; linking the whole of
+  ores.marketdata.api would pull in ores.platform.lib transitively and break
+  analytics.quant's deliberately minimal dependency footprint. If
+  ores.marketdata.api needs the type later it can depend on
+  ores.analytics.quant instead.
+
+* Out of scope
+
+- No behavioural change to the process maths themselves (no recalibration,
+  no new engine types) — this is a pure relocation-plus-tests story.
+- No change to the synthetic data-generation pipeline's public behaviour
+  (dataset/account/catalog generators, messaging, repositories stay in
+  ores.synthetic).

@@ -8,7 +8,7 @@
 #+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:
 #+owner: marco
 #+branch: feature/implement-risk-recentering
-#+pr:
+#+pr: 1515
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -123,7 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1515][#1515]] | [analytics.quant] Add CRM risk recentering, fix pivot as_of staleness bug |
 
 * Review
 

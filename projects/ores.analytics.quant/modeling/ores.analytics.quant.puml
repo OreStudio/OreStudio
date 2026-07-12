@@ -82,6 +82,9 @@ namespace ores #F2F2F2 {
                 }
 
                 class vertex_state <<immutable>> {
+                    +edge_log_delta : double
+                    +edge_observed_at : timestamp
+                    +edge_valid : bool
                     +log_rate : double
                     +as_of : timestamp
                     +valid : bool
@@ -105,10 +108,12 @@ namespace ores #F2F2F2 {
                 class rate_engine {
                     -topology_ : crm_topology
                     -policy_ : staleness_policy
+                    -children_ : vector<vector<currency_id>>
                     -snapshot_ : immer::atom<rate_snapshot>
                     +update(driver_quote) : void
-                    +rate(ccy_pair) : derived_rate
-                    +rates(span<ccy_pair>) : vector<derived_rate>
+                    .. throws invalid_argument if the pair is not\nan edge of this topology ..
+                    +rate(base_code, quote_code) : derived_rate
+                    +rates(pairs) : vector<derived_rate>
                 }
 
                 topology_builder ..> crm_topology : builds

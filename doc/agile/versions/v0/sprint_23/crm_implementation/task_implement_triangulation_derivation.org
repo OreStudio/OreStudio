@@ -1,0 +1,171 @@
+:PROPERTIES:
+:ID: 96522E06-2067-4058-86FC-27B6086DCC26
+:END:
+#+title: Task: Implement triangulation/derivation
+#+description: Runtime rate_engine: consumes a stream of driver_quote ticks (possibly cross-thread) and serves batched derived-rate reads via an atomically-swapped immutable snapshot, computing derived rates by triangulation through the pivot and propagating staleness.
+#+type: task
+#+level: s1
+#+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:
+#+owner: marco
+#+branch: feature/implement-triangulation-derivation
+#+pr: 1512
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement the CRM's runtime rate engine on top of the =crm_topology= from
+the previous task: a thread-safe (not multi-threaded), lock-free-on-the-
+hot-path engine that ingests a continuous stream of =driver_quote= ticks
+-- possibly from a different thread than its readers -- and serves
+batched derived-rate reads by triangulation through the pivot, with
+staleness propagated end to end from each contributing driver.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- =domain::vertex_state=, =domain::rate_snapshot=, =domain::staleness_policy=,
+  =domain::derived_rate=, =domain::rate_status= -- the runtime value types
+  from the agreed design (see the parent task's =design/= diagrams,
+  reused here).
+- =service::rate_engine= holds a fixed =crm_topology= (never mutated) and
+  an =immer::atom<rate_snapshot>= (per-vertex cumulative log-rate from the
+  pivot, so any derived rate is one subtraction of two array entries).
+- =update(driver_quote)=: recomputes only the subtree hanging off the
+  updated edge (not the whole matrix) into a new immutable snapshot via
+  structural sharing, then atomically swaps it in. No internal threads;
+  safe to call from any thread.
+- =rate(pair)= / =rates(pairs)=: exactly one atomic snapshot load per
+  call (one for the whole batch in the plural form), then O(1)/O(N) pure
+  arithmetic -- no locking on the read path, so a batch of hundreds/
+  thousands of pairs is cheap.
+- Staleness: each =vertex_state= carries the timestamp of its oldest
+  contributing input, propagated from its parent plus its own edge's
+  timestamp on every update. =rate()=/=rates()= compare
+  =now - oldest_contributing_timestamp= against a caller-supplied
+  =staleness_policy= and return =rate_status= (fresh/stale/unavailable)
+  alongside the value.
+- A concurrent producer (=update=) and concurrent readers (=rate=/
+  =rates=) never block each other and a reader never observes a torn mix
+  of old/new values within one batch -- verified with a test that
+  interleaves updates and reads across threads.
+- Readable, correct triangulation: for a pair not directly on the tree,
+  the rate is computed via the pivot path (existing =crm_topology::
+  path_to_pivot=), preferring the shorter of the two vertices' own paths
+  (i.e. straightforward log-rate subtraction handles this without special
+  casing, per the design).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+** Design already agreed (previous task's diagrams apply directly)
+
+See [[file:design/crm_engine_classes.puml][class diagram]] and [[file:design/crm_engine_runtime_sequence.puml][runtime sequence diagram]] from the topology
+task -- the =rate_engine=/=rate_snapshot=/=vertex_state= classes there
+were designed together with =topology_builder= and =crm_topology= in the
+same session; this task implements the parts that were deferred:
+
+- Per-vertex cumulative "log-rate from pivot" representation: derived
+  rate for =(base, quote)= is
+  =exp(log_rate[quote] - log_rate[base])=, O(1) per pair.
+- =update()= walks only the subtree below the changed edge (the tree
+  structure bounds the blast radius of one tick).
+- =immer::atom<rate_snapshot>= for the lock-free publish/read; a reader
+  does one =load()= for an entire =rates(pairs)= batch.
+- Staleness is a per-vertex timestamp, not a separate pass: it is carried
+  and propagated alongside =log_rate= in the same =vertex_state=, updated
+  by the same subtree walk.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1512][#1512]] | [analytics.quant] Add CRM runtime rate engine (triangulation/derivation) |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Self-referencing pair on the pivot currency (base==quote==pivot) trivially matched =parent(pivot)==pivot= and silently corrupted every derived rate instead of throwing | src/service/rate_engine.cpp | Accepted | Added an explicit =base_id == quote_id= rejection before the parent-equality branches; new test asserts the throw and that the pivot's own rate stays exactly 1.0 afterwards (state not mutated by a rejected update). |
+| 2 | No validation that =driver_quote::rate= is finite/positive; a bad tick silently propagates NaN/-inf through the whole subtree with =status == fresh= | src/service/rate_engine.cpp | Accepted | Added a =std::isfinite() && > 0.0= check that throws =std::invalid_argument=, consistent with the existing unknown-currency/non-edge checks; new test covers zero, negative, NaN, and infinity. |
+| 3 | Existing "not an edge" test used an unknown currency, so it only exercised the unknown-currency throw, not the known-but-unconnected-currencies branch | tests/rate_engine_tests.cpp | Accepted | Split into two tests: unknown currency, and a genuine known-but-unconnected pair (EUR/JPY, both hang off USD but aren't each other's parent). |
+| 4 | =crm_topology::edge_to_parent()= added but never called anywhere -- speculative API surface | domain/crm_topology.hpp | Accepted | Removed; easy to add back with a real caller. |
+| 5 | =ccy_pair='s doc comment claimed =is_driver= is used by =rate_engine= to pick accumulation direction, but the engine actually derives direction from tree structure, not the flag | domain/ccy_pair.hpp | Accepted | Corrected the doc comment to say direction comes from the tree, not =is_driver=, and that either side of an edge may be ticked. |
+
+* Result
+
+Shipped the runtime rate engine in =ores.analytics.quant=, on top of the
+=crm_topology= from the previous task:
+
+- New domain types: =driver_quote=, =rate_status=, =staleness_policy=,
+  =derived_rate=, =vertex_state=, =rate_snapshot= -- matching the design
+  agreed and diagrammed in the topology task, updated where the design
+  needed sharpening (see below).
+- =service::rate_engine=: holds the fixed =crm_topology= plus an
+  =immer::atom<rate_snapshot>=; a per-vertex cumulative "log-rate from the
+  pivot" representation makes any derived rate one subtraction
+  (=exp(log_rate[quote] - log_rate[base])=). =update()= walks only the
+  subtree below the changed edge (via a =children_= adjacency built once
+  at construction from =crm_topology::parent()=) and swaps in a new
+  snapshot via structural sharing (=immer::vector::transient()=/
+  =persistent()=); =rate()=/=rates()= each do exactly one atomic
+  =snapshot_.load()= then pure arithmetic.
+- Staleness: each =vertex_state= carries its own edge's tick timestamp
+  (=edge_observed_at=) plus the cumulative oldest-contributing timestamp
+  (=as_of=), recomputed alongside =log_rate= in the same subtree walk --
+  so a stale major automatically taints every derived rate depending on
+  it, with no separate propagation pass.
+- =crm_topology= gained a =parent()= accessor (design refinement: needed
+  by the engine to build its children adjacency and to determine, on each
+  tick, which side of the edge is the "child" whose subtree to
+  recompute). An =edge_to_parent()= accessor was added alongside it but
+  never used, and was removed in the review round below.
+- 11 new Catch2 test cases (18 total in the component, 45,000+ assertions
+  across repeated runs): direct rate passthrough, pivot triangulation,
+  unavailable-until-seeded, staleness propagation from the oldest
+  contributing driver, subtree-only recompute (an unrelated branch is
+  provably unaffected by an update elsewhere), batched =rates()=, reject
+  an unknown currency, reject two known-but-unconnected currencies,
+  reject a self-referencing pivot pair, reject a non-finite/non-positive
+  rate, and a concurrent-update-vs-concurrent-read stress test (single
+  writer thread + 4 reader threads, thousands of batched reads) run
+  repeatedly with no crashes/hangs/inconsistent reads.
+- Design docs updated to match: component overview, class diagram
+  (=vertex_state= edge fields, =rate_engine= member/signature accuracy),
+  no longer describing =rate_engine= as deferred.
+
+Acceptance met in full. Story remains STARTED: risk recentering, wiring
+into =ores.marketdata='s ingest path, and the management UI are still
+open per the story's =* Tasks= plan.

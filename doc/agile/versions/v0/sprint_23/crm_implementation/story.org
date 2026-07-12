@@ -28,10 +28,10 @@ engine the architecture relies on.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Modelling the driver/derived spanning-tree topology. |
+| Now           | Implementing the runtime rate_engine (triangulation/derivation). |
 | Waiting on    | Nothing.                               |
-| Next          | Implement triangulation/derivation once the topology is in place. |
-| Last touched  | 2026-07-11                               |
+| Next          | Risk recentering, then wiring into ores.marketdata's ingest path. |
+| Last touched  | 2026-07-12                               |
 
 * Acceptance
 
@@ -45,6 +45,7 @@ engine the architecture relies on.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:E7E31384-3616-4DFB-AB20-6CB099114FB3][Model the driver/derived spanning-tree topology]] | DONE | 2026-07-11 | 2026-07-12 | Graph structure over currency pairs for the CRM: driver/derived edges with cycle detection so a pair is never set on both sides simultaneously. |
+| [[id:96522E06-2067-4058-86FC-27B6086DCC26][Implement triangulation/derivation]] | DONE | 2026-07-12 | 2026-07-12 | Runtime rate_engine: consumes a stream of driver_quote ticks (possibly cross-thread) and serves batched derived-rate reads via an atomically-swapped immutable snapshot, computing derived rates by triangulation through the pivot and propagating staleness. |
 
 Planned tasks (not yet scaffolded as task docs), following the domain
 model's concept map:
@@ -94,6 +95,16 @@ model's concept map:
 - QuantLib is deliberately not introduced as a dependency for this story
   (not currently vendored anywhere in the repo); spot/calendar handling
   stays a caller-supplied parameter.
+- Rates are represented as cumulative log-rate-from-the-pivot per vertex
+  (not per-pair), so any derived rate is one subtraction and one
+  =update()= only touches the subtree below the changed edge --
+  =crm_topology= exposes =parent()=/=edge_to_parent()= to support this.
+  Staleness is carried as a per-vertex timestamp alongside the log-rate,
+  recomputed in the same subtree walk rather than as a separate pass.
+- =rate_engine::update()= is single-producer by design (concurrent
+  writers are not supported/needed); =rate()=/=rates()= are safe from any
+  number of concurrent reader threads. This is documented on the class,
+  not enforced at compile time.
 
 * Out of scope
 

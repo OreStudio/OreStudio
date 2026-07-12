@@ -37,11 +37,17 @@ namespace ores::analytics::quant::domain {
  */
 class currency_id {
 public:
-    constexpr currency_id() noexcept : index_(invalid_index) {}
-    constexpr explicit currency_id(std::uint16_t index) noexcept : index_(index) {}
+    constexpr currency_id() noexcept
+        : index_(invalid_index) {}
+    constexpr explicit currency_id(std::uint16_t index) noexcept
+        : index_(index) {}
 
-    [[nodiscard]] constexpr std::uint16_t index() const noexcept { return index_; }
-    [[nodiscard]] constexpr bool valid() const noexcept { return index_ != invalid_index; }
+    [[nodiscard]] constexpr std::uint16_t index() const noexcept {
+        return index_;
+    }
+    [[nodiscard]] constexpr bool valid() const noexcept {
+        return index_ != invalid_index;
+    }
 
     friend constexpr bool operator==(currency_id lhs, currency_id rhs) noexcept {
         return lhs.index_ == rhs.index_;
@@ -54,8 +60,7 @@ public:
     }
 
 private:
-    static constexpr std::uint16_t invalid_index =
-        std::numeric_limits<std::uint16_t>::max();
+    static constexpr std::uint16_t invalid_index = std::numeric_limits<std::uint16_t>::max();
     std::uint16_t index_;
 };
 
@@ -63,8 +68,7 @@ private:
 
 template <>
 struct std::hash<ores::analytics::quant::domain::currency_id> {
-    std::size_t operator()(
-        ores::analytics::quant::domain::currency_id id) const noexcept {
+    std::size_t operator()(ores::analytics::quant::domain::currency_id id) const noexcept {
         return std::hash<std::uint16_t>{}(id.index());
     }
 };

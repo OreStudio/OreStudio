@@ -45,27 +45,36 @@ namespace ores::analytics::quant::domain {
  */
 class crm_topology {
 public:
-    crm_topology(
-        currency_id pivot,
-        std::vector<currency_id> parent,
-        std::vector<std::optional<ccy_pair>> edge_to_parent,
-        std::unordered_map<std::string, currency_id> currency_index,
-        std::vector<std::string> currency_code)
-        : pivot_(pivot), parent_(std::move(parent)),
-          edge_to_parent_(std::move(edge_to_parent)),
-          currency_index_(std::move(currency_index)),
-          currency_code_(std::move(currency_code)) {}
+    crm_topology(currency_id pivot,
+                 std::vector<currency_id> parent,
+                 std::vector<std::optional<ccy_pair>> edge_to_parent,
+                 std::unordered_map<std::string, currency_id> currency_index,
+                 std::vector<std::string> currency_code)
+        : pivot_(pivot)
+        , parent_(std::move(parent))
+        , edge_to_parent_(std::move(edge_to_parent))
+        , currency_index_(std::move(currency_index))
+        , currency_code_(std::move(currency_code)) {}
 
     [[nodiscard]] std::size_t vertex_count() const noexcept {
         return currency_code_.size();
     }
 
-    [[nodiscard]] currency_id pivot() const noexcept { return pivot_; }
+    [[nodiscard]] currency_id pivot() const noexcept {
+        return pivot_;
+    }
 
-    [[nodiscard]] std::optional<currency_id> currency_id_for(
-        const std::string& code) const {
+    /// The parent of @p id in the spanning tree; equals @p id itself iff
+    /// @p id is the pivot. Used by the rate engine to walk the tree without
+    /// re-deriving it.
+    [[nodiscard]] currency_id parent(currency_id id) const {
+        return parent_.at(id.index());
+    }
+
+    [[nodiscard]] std::optional<currency_id> currency_id_for(const std::string& code) const {
         const auto it = currency_index_.find(code);
-        if (it == currency_index_.end()) return std::nullopt;
+        if (it == currency_index_.end())
+            return std::nullopt;
         return it->second;
     }
 

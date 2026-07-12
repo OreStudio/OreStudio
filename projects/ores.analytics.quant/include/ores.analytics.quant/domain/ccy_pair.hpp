@@ -27,16 +27,18 @@ namespace ores::analytics::quant::domain {
 /// A quoted currency pair within an already-built topology: base/quote as
 /// resolved @c currency_id handles, not raw ISO codes. @c is_driver carries
 /// forward the driver/derived assignment the edge was built from -- see
-/// @c ccy_pair_input -- so a @c crm_topology consumer (the rate engine) can
-/// tell which direction to accumulate rates without a second lookup.
+/// @c ccy_pair_input. Note @c rate_engine::update does not currently read
+/// this field: it derives accumulation direction purely from which side
+/// of an incoming tick matches the tree's parent/child structure, so
+/// either side of an edge may be ticked regardless of which was marked
+/// the driver at build time.
 struct ccy_pair {
     currency_id base;
     currency_id quote;
     bool is_driver;
 
     friend constexpr bool operator==(const ccy_pair& lhs, const ccy_pair& rhs) noexcept {
-        return lhs.base == rhs.base && lhs.quote == rhs.quote &&
-            lhs.is_driver == rhs.is_driver;
+        return lhs.base == rhs.base && lhs.quote == rhs.quote && lhs.is_driver == rhs.is_driver;
     }
     friend constexpr bool operator!=(const ccy_pair& lhs, const ccy_pair& rhs) noexcept {
         return !(lhs == rhs);

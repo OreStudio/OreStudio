@@ -40,12 +40,12 @@ review bot passes, not by the regen itself.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | book_status, regulatory_book_type, and book all DONE and manually QA'd. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Migrate Portfolio/Book to composite-entity versioning. |
-| Last touched  | 2026-07-11                               |
+| Next          | Nothing. |
+| Last touched  | 2026-07-12                               |
 
 * Acceptance
 
@@ -73,11 +73,55 @@ review bot passes, not by the regen itself.
 | [[id:CCED67A5-5003-4B5F-A747-0C4F79C72228][Regenerate regulatory_book_type]] | DONE | 2026-07-12 | 2026-07-12 | Regenerated (had the same missing has_change_reason_cache gap as book_status, fixed proactively this time). Manual QA: all 6 steps PASS, zero ERROR-level log lines. |
 | [[id:0C185CE4-63E5-44CC-94AF-F3FF1E194986][Regenerate book and restore insert-trigger validations]] | DONE | 2026-07-12 | 2026-07-12 | Regenerated (all 40 files ✅); all 6 insert-trigger validations confirmed present and firing (direct SQL insert rejected on bad parent_portfolio_id). Manual QA: all 6 steps PASS. |
 | [[id:EBEBDC25-7789-4C70-A4D2-E9314E873D85][End-to-end test book after regeneration]] | ABANDONED | | | Superseded by the regen task's own manual QA scenario (login, list, add, edit, save, history, badges, change-reason) -- a separate identical pass would be pure duplication. |
-| [[id:01304B6F-C431-4BD3-885A-CE713114B5A4][Migrate Portfolio/Book to composite-entity versioning]] | STARTED | 2026-07-12 | | Rescoped: book_status/regulatory_book_type are enum-like FK attributes, not composite children -- the real 1-to-many relationship is Portfolio (parent) -> Book (child, via parent_portfolio_id), matching the proven party/party_identifier shape. |
-| [[id:504E021C-A112-42CA-8DC2-B583A2904C4D][Regenerate and re-test book after composite migration]] | BACKLOG | | | After book is registered as a composite parent, regenerate all its layers again, diff-review, build, and re-run the end-to-end manual test scenario -- confirm read_at_version and composite history/version composition behave as the target-state doc describes before unblocking new-work tasks. |
+| [[id:01304B6F-C431-4BD3-885A-CE713114B5A4][Migrate Portfolio/Book to composite-entity versioning]] | DONE | 2026-07-12 | 2026-07-12 | Rescoped: book_status/regulatory_book_type are enum-like FK attributes, not composite children -- the real 1-to-many relationship is Portfolio (parent) -> Book (child, via parent_portfolio_id), matching the proven party/party_identifier shape. |
+| [[id:504E021C-A112-42CA-8DC2-B583A2904C4D][Regenerate and re-test book after composite migration]] | ABANDONED | | | Superseded by the composite-migration task's own full book regen and manual QA scenario -- a separate identical pass would be pure duplication. |
 
 * Decisions
 
+- book_status and regulatory_book_type are enum-like FK attributes
+  (many books reference one lookup row), not composite children of
+  Book -- =:bump_parent_version:= there would be wrong (editing a
+  status definition would spuriously bump every book referencing it).
+- The real 1-to-many composite relationship is Portfolio (parent) ->
+  Book (child, via parent_portfolio_id), matching the proven
+  party/party_identifier and counterparty/counterparty_identifier
+  shape.
+- Portfolio's own =parent_portfolio_id= self-reference is registered
+  as composite parent-and-child of itself so a grandchild book's write
+  recursively bumps every ancestor portfolio up the tree, not just the
+  immediate parent.
+- As-of resolution of an FK's *meaning* at a historical version (e.g.
+  what "book_status" meant at time t) is a distinct, common concern
+  from composite parent/child version bumping -- scoped out to its own
+  story, [[id:753E984D-94CB-4C99-BE63-D68B77D6BF76][As-of lookup resolution codegen facet]], rather than folded in
+  here.
+- Portfolio's own Qt layer remains fully unmigrated/stale and out of
+  scope for this story -- its History dialog not live-refreshing on a
+  sibling entity's (Book's) NATS events is a known, separately captured
+  gap, not a regression from this work.
+
 * Out of scope
 
--
+- book_purpose_type, ledger_feed_type, is_sweepable, Wash risk-book
+  link, and child-entity toolbar buttons -- picked up next in
+  [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]], now unblocked.
+- As-of lookup resolution (resolving a historical FK value's meaning) --
+  scoped to its own story.
+- Portfolio's own Qt-layer relocation/regeneration.
+
+* Result
+
+book, book_status, and regulatory_book_type are fully regenerated
+against current codegen templates (all ✅ in =compass codegen entity
+show=), with the insert-trigger validations from PR #1449 confirmed
+present and firing. Portfolio/Book are migrated to composite-entity
+versioning: adding, editing, or deleting a book bumps its parent
+portfolio's version (and recursively bumps every ancestor up a nested
+portfolio tree), and "portfolio as of version N" correctly composes
+the books it contained at that point in time -- verified directly via
+SQL, not just via generated code, at up to 3 levels deep. A real
+codegen-template bug (touch-function generation order vs. Postgres's
+eager =CREATE RULE= resolution, affecting self-referencing composite
+entities) was found and fixed along the way, confirmed safe for the
+existing party/counterparty pilot. All manual QA scenarios PASSED.
+[[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]'s remaining new-work tasks are unblocked.

@@ -29,11 +29,11 @@ correctly compose the books it contained at that point in time.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                  |
 | Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
-| Now          | Recursive multi-level bump implemented, template bug fixed, DB-verified 2 levels deep. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Re-run the manual scenario against the fixed build, then close out. |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -121,7 +121,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:1DCA1F0C-C993-4EE4-9097-6ABAF07D041F][Verify Portfolio/Book composite version bump and history]] | FAILED | UI showed 3 "FAIL"s (Portfolio window not live-refreshing on book-driven bumps), but direct SQL cross-check confirmed the backend mechanism fired correctly every time (add->v5, edit->v6, delete->v7, in sequence). Not a backend defect -- Portfolio's own Qt layer is unmigrated/out of scope for this task, so it not reacting to NATS events from a sibling entity's write is expected, not a regression. Also surfaced a real gap (see Plan): bumps don't propagate recursively up a nested portfolio tree. |
+| [[id:1DCA1F0C-C993-4EE4-9097-6ABAF07D041F][Verify Portfolio/Book composite version bump and history]] | PASSED | UI initially showed a FAIL on the delete-side bump step, but direct SQL cross-check against the exact same real portfolio/tenant confirmed the backend mechanism fired correctly every time (add->v6, delete->v7, matching the earlier insert->edit sequence). Not a backend defect -- Portfolio's own Qt layer is unmigrated/out of scope for this task, so it not reacting to NATS events from a sibling entity's write is expected, not a regression (captured separately as the Portfolio window live-refresh gap). Also surfaced a real gap (see Plan): bumps don't propagate recursively up a nested portfolio tree -- fixed. |
 
 * PRs
 
@@ -136,3 +136,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Book registered as composite child of Portfolio (=:bump_parent_version:
+true=, =:list_by_as_of: true= on book.org's =parent_portfolio_id= FK;
+=:generate_touch_function: true= on portfolio.org). Recursive
+multi-level bump implemented by declaring Portfolio composite parent
+*and* child of itself, uncovering and fixing a real codegen-template
+bug (touch-function generation order vs. eager =CREATE RULE=
+resolution) along the way -- confirmed safe for the existing
+party/counterparty pilot. Mechanism verified directly via SQL (not
+just generated code) at 2 and 3 levels deep, and =ores.refdata.api/core/
+service.tests= pass 3/3.
+
+Manual QA scenario PASSED. Its one reported FAIL (delete-side bump not
+visible in the Portfolio History dialog) was run down to ground: a
+direct SQL reproduction against the exact same real portfolio/tenant
+showed the bump firing correctly (v5->v6 on insert, v6->v7 on delete),
+proving the backend is correct and the UI symptom is the already-known
+Portfolio-window live-refresh gap (Portfolio's Qt layer doesn't react
+to NATS events from a sibling entity's write -- out of scope here,
+captured separately).

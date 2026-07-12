@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 9297CB27-F58B-4AF7-9F56-5E077778773A
+:END:
+#+title: Fix repo-wide component_overview.org drift
+#+description: validate_docs.sh reports ~30 components missing #+type: component, required sections, or a modeling/*.puml diagram; two components are missing component_overview.org entirely.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:docs:tech_debt:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Run =./projects/ores.codegen/validate_docs.sh= and work through every
+reported component: add =#+type: component= to =modeling/component_overview.org=
+where missing, fill in the required sections (Inputs, Outputs, Entry points,
+Dependencies, See also), and add a =modeling/*.puml= class diagram where
+absent. =ores.marketdata= and =ores.synthetic= are missing
+=component_overview.org= entirely and need one authored from scratch (see
+[[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][doc-add-component-model]] skill). Affected components at time of writing:
+ores.analytics.quant, ores.cli, ores.codegen, ores.compass, ores.compute,
+ores.connections, ores.controller, ores.database, ores.diff, ores.dq,
+ores.eventing, ores.fpml, ores.geo, ores.history, ores.iam, ores.lisp,
+ores.logging, ores.nats, ores.orgmode, ores.platform, ores.refdata,
+ores.reporting, ores.scheduler, ores.security, ores.seeder, ores.service,
+ores.shell, ores.sql, ores.storage, ores.testing, ores.trading,
+ores.utility, ores.workflow, ores.workspace, ores.wt.service.
+
+* Why
+
+This drift accumulated silently — no CI gate runs =validate_docs.sh=, so
+components missing their frontmatter type, standard sections, or class
+diagram go unnoticed until someone runs the validator by hand (as
+happened while wiring day_count_fraction_type into ores.refdata). A
+dedicated pass would bring every component doc up to the same standard
+and let =validate_docs.sh= be added as a CI check with a clean baseline.
+
+* References
+
+- =./projects/ores.codegen/validate_docs.sh= — the validator to run and re-run.
+
+* See also
+
+- [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][doc-add-component-model]] — skill for scaffolding a component_overview.org.

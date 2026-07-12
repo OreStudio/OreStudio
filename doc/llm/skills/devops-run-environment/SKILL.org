@@ -24,7 +24,7 @@ Getting a checkout from "unknown/stale state" to a usable, logged-in-ready
 environment in one pass — the sequence most verification or manual-testing
 tasks need at the start: stop services, recreate the database, start
 services, provision the tenant, start the client. For a fully fresh
-checkout or new worktree (indexes, skills/settings deploy, env init too),
+checkout or new worktree (indexes, skills/settings deploy, env configure too),
 use =devops-setup-environment= instead.
 
 * How to use this skill

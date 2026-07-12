@@ -2,12 +2,12 @@
 :ID: 13209197-CDBD-4807-A8F9-9653AFA96CBF
 :END:
 #+title: How do I manage the checkout environment with compass?
-#+description: Use compass env init/diff/list/version to generate and inspect the .env: behaviour-preserving credential generation, the .env.old diff, masked variable listing, and recording a new env-format version.
+#+description: Use compass env configure/diff/list/version to generate and inspect the .env: behaviour-preserving credential generation, the .env.old diff, masked variable listing, and recording a new env-format version.
 #+type: recipe
 #+level: cross
 #+filetags: :compass:env:provision:credentials:recipe:
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-07-12
 
 =compass env= is the *Provision* pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][developer toolkit]]: it sets the
 checkout up so the system can run. It owns the =.env= at the checkout
@@ -23,10 +23,10 @@ what a regeneration changed, and record a new env-format version?
 
 * Answer
 
-** Generate or refresh the .env — =compass env init=
+** Generate or refresh the .env — =compass env configure=
 
 #+begin_src sh :results verbatim
-./projects/ores.compass/compass.sh env init --preset linux-clang-debug-make -y
+./projects/ores.compass/compass.sh env configure --preset linux-clang-debug-make -y
 #+end_src
 
 What it does, in one idempotent pass:
@@ -65,7 +65,7 @@ reused from the existing =.env=, else prompted for.
 #+end_src
 
 Prints a unified diff of =.env.old= versus =.env= (exit 0 identical,
-1 differ). =compass env init --with-diff= runs this automatically after
+1 differ). =compass env configure --with-diff= runs this automatically after
 writing. Output contains secrets in plain text — do not share it.
 
 ** Inspect the environment — =compass env list=
@@ -104,19 +104,19 @@ env-format version log is the org doc
 table); =compass env version new= appends to it.
 
 CI provisions with the same command, adding the =--no-deps= bootstrap
-flag — =compass.sh --no-deps env init -y= — so the venv is created
-without the =pip install= (=pystache= is only needed by =add=; =env init=
-is stdlib-only). =env init= also skips the =--preset= requirement when
+flag — =compass.sh --no-deps env configure -y= — so the venv is created
+without the =pip install= (=pystache= is only needed by =add=; =env configure=
+is stdlib-only). =env configure= also skips the =--preset= requirement when
 =$CI= is set.
 
 * Tested by
 
-Manual. =env init= against an existing =.env= changes no secret and no
+Manual. =env configure= against an existing =.env= changes no secret and no
 key set (verify with =compass env diff= or by diffing a backup); the
 generated =.env= round-trips through =compass db recreate=.
 
 * See also
 
-- [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] — edit the registry that =env init=
+- [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] — edit the registry that =env configure=
   reads, then =env version new= + re-init.
 - [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the component model (pillars, structure).

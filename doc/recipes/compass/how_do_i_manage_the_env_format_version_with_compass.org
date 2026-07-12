@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :compass:env:provision:version:recipe:
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-07-12
 
 The =.env= has a /shape/ — the set of variables every service, the CLI,
 and the test suite expect. =ORES_ENV_VERSION= records which shape a given
@@ -31,7 +31,7 @@ one when I make a change that alters the =.env=?
 ./projects/ores.compass/compass.sh env version
 #+end_src
 
-Prints the current (highest) version number. =compass env init= writes
+Prints the current (highest) version number. =compass env configure= writes
 this same value into your =.env= as =ORES_ENV_VERSION=, and the
 pre-=recreate_database= check reads it back — one canonical source, no
 constant duplicated across the generator and the validator.
@@ -42,7 +42,7 @@ Run this whenever you make a change that alters the =.env='s shape:
 
 - add (or remove) a service in the [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][service registry]] — each service
   contributes DB-credential variables;
-- add or rename a variable that =compass env init= writes.
+- add or rename a variable that =compass env configure= writes.
 
 #+begin_src sh :results verbatim
 ./projects/ores.compass/compass.sh env version new "added analytics service DB creds"
@@ -56,10 +56,10 @@ recording the version and regenerating the file are separate steps.
 
 1. Make the change (e.g. add a service, add a variable to =env_init=).
 2. =compass env version new "<what changed>"= — record the bump.
-3. =compass env init --preset <p> -y= — regenerate your own =.env=, which
+3. =compass env configure --preset <p> -y= — regenerate your own =.env=, which
    now carries the new =ORES_ENV_VERSION=.
 4. Commit. Any other checkout still on the old version then fails the
-   pre-=recreate_database= check with a clear "re-run =compass env init="
+   pre-=recreate_database= check with a clear "re-run =compass env configure="
    message, instead of a later missing-password or missing-variable error.
 
 * Script

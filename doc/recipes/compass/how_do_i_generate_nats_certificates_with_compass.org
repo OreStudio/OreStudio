@@ -7,12 +7,12 @@
 #+level: cross
 #+filetags: :compass:nats:certs:provision:recipe:
 #+created: 2026-06-04
-#+updated: 2026-06-04
+#+updated: 2026-07-12
 
 =compass nats certs= is part of the *Provision* pillar. It generates the
 internal CA, the NATS server certificate, and one mTLS client certificate per
 service, all written to [[proj:build/keys/nats][=build/keys/nats/=]]. It is called automatically by
-[[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][compass env init]] and can also be run standalone.
+[[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][compass env configure]] and can also be run standalone.
 
 * Question
 
@@ -54,18 +54,18 @@ Add the service name to the =_SERVICES= list in
 * Script
 
 [[proj:projects/ores.compass/src/nats_certs.py][=projects/ores.compass/src/nats_certs.py=]] — called directly by
-=compass env init= and exposed standalone as =compass nats certs=.
+=compass env configure= and exposed standalone as =compass nats certs=.
 Requires =openssl= in =PATH=.
 
 * Tested by
 
-=compass env init= calls =nats_certs.generate()= on every CI run;
+=compass env configure= calls =nats_certs.generate()= on every CI run;
 certificate presence is verified by the NATS mTLS handshake at service
 startup.
 
 * See also
 
 - [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — background on the messaging system and ORE Studio's mTLS setup.
-- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — =compass env init= calls this automatically.
+- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — =compass env configure= calls this automatically.
 - [[id:E7ABCD61-61F0-4709-A042-E4BDE2F9AC29][How do I initialise the NATS server config with compass?]] — the companion command for config + store dir.
 - [[id:DBB7FE01-0C33-4EF9-BB2A-039674E71AB1][Service registry]] — authoritative list of services; drives =_SERVICES= in =nats_certs.py=.

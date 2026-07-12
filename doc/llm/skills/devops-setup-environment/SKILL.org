@@ -51,7 +51,7 @@ Run the steps in order; each is idempotent.
 4. /Initialise the environment/ — .env, certificates, IAM key:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh env init
+   ./projects/ores.compass/compass.sh env configure
    #+end_src
 
 5. /Recreate the database/ (=devops-recreate-db=) — stop services

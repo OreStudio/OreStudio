@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :cmake:build:services:nats:controller:recipe:
 #+created: 2026-05-31
-#+updated: 2026-05-31
+#+updated: 2026-07-12
 
 Requires =.env= and built binaries (see [[id:49F7DA81-ADB7-44ED-BE7E-06DBFBB32A84][How do I set up a development environment?]]).
 Start order: NATS server → controller; the controller spawns all other
@@ -61,7 +61,7 @@ Logs land in =build/output/<preset>/publish/log/=. Each service writes its own
 
 ** Prerequisites checklist
 
-- =.env= exists (run =compass env init= if not — see [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]]).
+- =.env= exists (run =compass env configure= if not — see [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]]).
 - Database initialised (=compass db recreate -y=).
 - Project built (=cmake --build --preset <preset>=).
 - =nats-server= on =PATH= or in =/usr/sbin=.

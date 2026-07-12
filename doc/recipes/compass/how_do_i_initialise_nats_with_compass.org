@@ -7,12 +7,12 @@
 #+level: cross
 #+filetags: :compass:nats:provision:recipe:
 #+created: 2026-06-04
-#+updated: 2026-06-04
+#+updated: 2026-07-12
 
 =compass nats init= is part of the *Provision* pillar. It renders
 [[proj:build/config/nats.conf.template][=build/config/nats.conf.template=]] into a per-environment
 =build/config/nats-<label>.conf= and creates the JetStream store directory.
-It is called automatically by [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][compass env init]] and can also be run standalone.
+It is called automatically by [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][compass env configure]] and can also be run standalone.
 See [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] for background on the messaging system.
 
 * Question
@@ -43,10 +43,10 @@ init= and exposed standalone as =compass nats init=.
 
 * Tested by
 
-=compass env init= calls =nats_init.generate()= on every CI run.
+=compass env configure= calls =nats_init.generate()= on every CI run.
 
 * See also
 
 - [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — background on the messaging system and ORE Studio's usage.
-- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — =env init= calls this automatically.
+- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — =env configure= calls this automatically.
 - [[id:280432C1-EE5D-4409-9DC6-372CCD3E2789][How do I generate NATS certificates with compass?]] — the companion command for mTLS certs.

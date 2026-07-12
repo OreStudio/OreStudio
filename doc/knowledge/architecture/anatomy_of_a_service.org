@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:services:authentication:iam:nats:codegen:
 #+created: 2026-06-27
-#+updated: 2026-06-27
+#+updated: 2026-07-12
 
 * Summary
 
@@ -67,7 +67,7 @@ via the =service-registry= codegen profile, all of:
 - SQL service users / accounts / roles / DB grants (from =DML prefixes= and
   =Select prefixes=),
 - per-service =.env= credentials (=ORES_<NAME>_SERVICE_DB_USER= / =_PASSWORD= /
-  =_DATABASE=), via =compass env init=.
+  =_DATABASE=), via =compass env configure=.
 
 Never hand-maintain a service list anywhere else. The full procedure is the
 recipe [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]]; the regeneration invocation itself is
@@ -172,7 +172,7 @@ missing):
 - [ ] *Service registry* — entry in =projects/modeling/service_registry.org=
   (=psql_var=, =env_key=, =iam_role=, =email=, DML/Select prefixes), regenerated.
 - [ ] *service_vars.sh* — =SERVICE_NAMES= contains the service (generated).
-- [ ] *.env credentials* — =ORES_<NAME>_SERVICE_DB_*= present (=compass env init=).
+- [ ] *.env credentials* — =ORES_<NAME>_SERVICE_DB_*= present (=compass env configure=).
 - [ ] *DB user + grants* — provisioned by =compass db recreate=.
 - [ ] *NATS mTLS cert* — =build/keys/nats/ores.<name>.service.crt/.key= exist.
 - [ ] *IAM account* — row in =ores_iam_accounts_tbl= (from registry).

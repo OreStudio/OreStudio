@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :nats:messaging:external:knowledge:
 #+created: 2026-05-26
-#+updated: 2026-05-26
+#+updated: 2026-07-12
 
 [[https://nats.io][NATS]] is an open-source, cloud-native messaging system written in Go
 and maintained by [[https://synadia.com][Synadia]]. It provides publish/subscribe,
@@ -118,7 +118,7 @@ ORE Studio manages NATS setup through two =compass nats= subcommands:
   certificate per service under [[proj:build/keys/nats][=build/keys/nats/=]]. Idempotent; use =--force=
   to rotate.
 
-Both are called automatically by =compass env init=.
+Both are called automatically by =compass env configure=.
 
 To add a certificate for a new service, add its name to the =_SERVICES= list
 in [[proj:projects/ores.compass/src/nats_certs.py][=projects/ores.compass/src/nats_certs.py=]] and re-run =compass nats certs=.

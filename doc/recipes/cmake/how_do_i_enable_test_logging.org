@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :cmake:build:tests:logging:recipe:
 #+created: 2026-05-21
-#+updated: 2026-06-04
+#+updated: 2026-07-12
 
 Test logging is /off/ by default for performance. The conceptual
 description lives in [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]]§"Test logging"; this recipe is
@@ -64,7 +64,7 @@ The compass test pillar provides the toggle:
        ctest --preset linux-clang-debug-ninja
    #+end_src
 
-=compass env init --enable-logging [level]= and =--disable-logging=
+=compass env configure --enable-logging [level]= and =--disable-logging=
 remain as aliases for the same operation.
 
 * Script

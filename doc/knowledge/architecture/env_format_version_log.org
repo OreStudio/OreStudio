@@ -2,7 +2,7 @@
 :ID: BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD
 :END:
 #+title: Environment format version log
-#+description: Canonical, parseable log of .env-format versions and their descriptions. compass env init writes the current version as ORES_ENV_VERSION; compass env new-version appends a row; the version check reads it. The single source of truth for the .env schema version.
+#+description: Canonical, parseable log of .env-format versions and their descriptions. compass env configure writes the current version as ORES_ENV_VERSION; compass env version new appends a row; the version check reads it. The single source of truth for the .env schema version.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:architecture:environment:versioning:compass:
@@ -14,18 +14,18 @@
 This document is the single source of truth for the =.env= /format
 version/ — the integer written as =ORES_ENV_VERSION= in every generated
 =.env=. The *current version is the highest row* in the table below.
-=compass env init= reads it and stamps it into the =.env=; the version
+=compass env configure= reads it and stamps it into the =.env=; the version
 check (run before =recreate_database=) compares a checkout's
 =ORES_ENV_VERSION= against it and tells the user to re-run
-=compass env init= if the =.env= is older. Record a new version with
-=compass env new-version "<description>"=, which appends a dated row —
+=compass env configure= if the =.env= is older. Record a new version with
+=compass env version new "<description>"=, which appends a dated row —
 do this whenever a change alters the =.env= shape (a new service in the
 [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][service registry]], a new or renamed variable).
 
 * Versions
 
 The table is machine-parsed: each data row is =| <integer> | <date> |
-<description> |=. Do not edit it by hand — use =compass env new-version=.
+<description> |=. Do not edit it by hand — use =compass env version new=.
 
 | Version | Date | Description |
 |---------+------+-------------|
@@ -40,6 +40,7 @@ The table is machine-parsed: each data row is =| <integer> | <date> |
 | 9 | 2026-07-05 | Added SCCACHE_DIR, SCCACHE_CACHE_SIZE, and CMAKE_BUILD_PARALLEL_LEVEL for shared SSD sccache cache and tuned build parallelism |
 | 10 | 2026-07-05 | Removed SCCACHE_DIR/SCCACHE_CACHE_SIZE (sccache now reads its cache location from its own global config); added ORES_COMPILER_CACHE to select sccache/ccache for local builds |
 | 11 | 2026-07-10 | NATS client/monitor and other per-environment ports moved below the kernel ephemeral port range (BASE_PORT_START 50000 -> 20000) to prevent spurious bind failures from unrelated processes' ephemeral source ports colliding with a fixed listener |
+| 12 | 2026-07-12 | Retroactively applied version 11's port migration by hand to every pre-existing environment's .env (base ports 50000-56000 -> 20000-26000), since compass env configure only migrates on regeneration and does not touch environments whose .env already has an ORES_BASE_PORT set |
 
 * See also
 

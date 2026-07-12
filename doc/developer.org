@@ -24,7 +24,7 @@ First-time checkout and environment initialisation.
 | Recipe | What it does |
 |--------+--------------|
 | [[id:49F7DA81-ADB7-44ED-BE7E-06DBFBB32A84][How do I set up a development environment?]] | Install all required packages on Ubuntu/Debian/WSL with one script, then initialise the database. |
-| [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]] | Generate the =.env= file, NATS certificates, and IAM keys for a local checkout with =compass env init=. |
+| [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]] | Generate the =.env= file, NATS certificates, and IAM keys for a local checkout with =compass env configure=. |
 | [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] | Show, diff, and update the =.env= — credential generation, masked variable listing, env-format versioning. |
 | [[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available CMake presets?]] | Run =cmake --list-presets= to see all configure presets defined in =CMakePresets.json=. |
 

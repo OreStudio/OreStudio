@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 4FEB154D-50EF-4346-BB75-B0881188E4F5
+:END:
+#+title: Code Run Feature Test
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :llm:skill:skills:claude_code:code:testing:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+#+begin_export markdown
+---
+name: code-run-feature-test
+description: Test a feature after finishing implementation: full build, run all tests, validate schemas, recreate the database, provision the Barclays Plc tenant, write a test scenario (CRUD + eventing for entity features), and hand the client to the user to execute.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When implementation of a feature or task is otherwise complete and it's
+time to verify it before raising a PR: a full build, the full test
+suite, schema/docs validation, a fresh database, the Barclays Plc
+tenant, a written test scenario, and a client handed to the user to
+execute it.
+
+* How to use this skill
+
+Run [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]] end to end:
+
+1. Build the affected targets, then run the full test suite (=rat=)
+   — treat any failure as a blocker.
+2. Validate SQL schemas, and codegen docs if the feature is a codegen
+   entity.
+3. Recreate the database from scratch so the feature is exercised
+   against a clean load.
+4. Provision the Barclays Plc tenant (default; ask if a different
+   tenant fits better).
+5. Create a =test_scenario= doc for the feature. Always lead with a
+   connect/login step sourced from the provisioning script's
+   credentials — never hardcode or guess them. For an entity/CRUD
+   feature, include the Create/Read/Update/Delete/History/Eventing
+   test plan the recipe lays out; the eventing step needs a second
+   client instance to actually exercise the NATS relay, not just the
+   repository layer ctest already covers.
+6. Start the Qt client with =--open-scenario= pointing at the new
+   scenario (absolute path) and ask the user to execute it — do not
+   run the UI steps yourself.
+
+* Recipes
+
+- [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]]
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]
+- [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]
+- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]
+
+* Reference
+
+- [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]] — the =test_scenario= doc shape.
+- [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]] — the sibling skill this one hands off to for =--open-scenario=.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

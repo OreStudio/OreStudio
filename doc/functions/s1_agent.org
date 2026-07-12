@@ -71,6 +71,10 @@ The Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] you invoke p
 - [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][code-add-tests]] — when the task adds or changes code that
   needs Catch2 coverage.
 - [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][code-investigate-test-failure]] — when a test goes red mid-task.
+- [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][code-run-feature-test]] — once implementation is otherwise done,
+  before raising a PR: full build, run all tests, validate schemas,
+  recreate the database, provision the tenant, write and hand off a
+  test scenario for manual QA.
 - [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory]] — when the user gives feedback that should outlive
   this session, file a memory before moving on.
 - [[id:7562DD4F-8F75-408B-BAE2-BB943839969D][devops-run-environment]] — when a task needs a live, logged-in-ready

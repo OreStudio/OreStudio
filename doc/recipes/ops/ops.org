@@ -17,6 +17,10 @@ environments. New recipes go in this folder; edit this inventory to add a link.
 - [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]
 - [[id:B7726C15-7A7B-4FC6-A0E2-48A6EE64216F][How do I find the log files for an environment?]]
 
+* Testing
+
+- [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]]
+
 * Database
 
 - [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]]

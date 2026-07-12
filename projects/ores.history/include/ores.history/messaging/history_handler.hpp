@@ -26,9 +26,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <expected>
 #include <functional>
-#include <optional>
 #include <string>
 
 namespace ores::history::messaging {
@@ -47,13 +48,16 @@ inline auto& history_handler_lg() {
  * (see dispatch_registry::history_provider) from the raw NATS
  * message — typically validating a JWT and packing tenant_id
  * (and, where relevant, party_id/actor) into a provider-agreed
- * string. Returns nullopt to reject the request as unauthorized.
+ * string. Returns the resolved error_code (e.g. unauthorized or
+ * token_expired, mirroring ores::service::service::make_request_context's
+ * distinction) to reject the request.
  *
  * Supplied by the composing service, which — unlike this
  * dependency-free leaf — has ores.security/ores.database available
  * to do the actual validation.
  */
-using caller_context_resolver = std::function<std::optional<std::string>(const ores::nats::message&)>;
+using caller_context_resolver = std::function<std::expected<std::string, ores::service::error_code>(
+    const ores::nats::message&)>;
 
 /**
  * @brief NATS handler for the one generic history subject.
@@ -81,16 +85,16 @@ public:
         using namespace ores::logging;
 
         [[maybe_unused]] const auto correlation_id = log_handler_entry(history_handler_lg(), msg);
+        auto caller_context = resolve_context_(msg);
+        if (!caller_context) {
+            BOOST_LOG_SEV(history_handler_lg(), warn) << "Unauthorized: " << msg.subject;
+            error_reply(nats_, msg, caller_context.error());
+            return;
+        }
         auto req = decode<get_entity_history_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(history_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
-        }
-        auto caller_context = resolve_context_(msg);
-        if (!caller_context) {
-            BOOST_LOG_SEV(history_handler_lg(), warn) << "Unauthorized: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::unauthorized);
             return;
         }
         const auto resp = registry_.dispatch(*req, *caller_context);

@@ -97,5 +97,7 @@ via its "Verifies task" field.
 | 8 | no unit tests for history_handler/registrar | history_handler.hpp, registrar.cpp | Declined | Matches existing convention — no other component's NATS handler/registrar pairs are unit-tested directly (need a live client); covered by dispatch_registry's own tests plus future integration tests |
 | 9 | registrar is a free function returning one subscription, unlike the class + vector<subscription> shape used elsewhere | registrar.hpp/.cpp | Declined | Deliberate: there is exactly one shared subject, not N per-entity ones |
 | 10 | messaging namespace reopened twice in the PlantUML diagram | ores.history.puml | Accepted | Merged into a single namespace block |
+| 11 | caller_context_resolver collapses token_expired into unauthorized, breaking ores.nats's re-auth/session-expired UX once a real JWT resolver is wired | history_handler.hpp | Accepted | Changed resolver to return std::expected<std::string, error_code> instead of std::optional<std::string>; history() now propagates the resolver's actual error_code via error_reply |
+| 12 | request decoded before caller_context resolved, opposite order to every other handler (auth first) | history_handler.hpp | Accepted | Reordered: resolve caller_context first, then decode, matching currency_handler and the rest of the codebase |
 
 * Result

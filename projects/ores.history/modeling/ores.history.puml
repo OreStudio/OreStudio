@@ -59,7 +59,7 @@ namespace ores #F2F2F2 {
             history_handler ..> caller_context_resolver : resolves caller_context via
 
             class caller_context_resolver <<using>> {
-                (const nats::message&) -> optional<string>
+                (const nats::message&) -> expected<string, error_code>
             }
         }
         namespace service #FEFECE {

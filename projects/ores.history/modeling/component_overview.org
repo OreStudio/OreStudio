@@ -44,11 +44,14 @@ crosses the wire for history; every frontend renders the same shape.
   provider unpacks it in whatever shape it and the resolver privately
   agree on.
 - A *caller_context_resolver* —
-  =std::function<std::optional<std::string>(const nats::message&)>=
+  =std::function<std::expected<std::string, ores::service::error_code>(const nats::message&)>=
   — supplied by the composing service to validate/authorize each
   inbound request (typically a JWT check) and produce its
-  =caller_context=; returning =nullopt= rejects the request as
-  unauthorized. Lives outside this leaf because it needs
+  =caller_context=; a returned error (e.g. =unauthorized= or
+  =token_expired=, mirroring =make_request_context='s distinction)
+  rejects the request with that same code, preserving the re-auth/
+  session-expired UX every other handler's =error_reply= relies on.
+  Lives outside this leaf because it needs
   =ores.security=/=ores.database=, which =ores.history= deliberately
   does not depend on.
 - A =get_entity_history_request= (=entity_type=, =entity_id=) arriving

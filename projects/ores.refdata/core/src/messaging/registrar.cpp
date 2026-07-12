@@ -71,6 +71,17 @@
 #include "ores.refdata.core/messaging/counterparty_contact_handler.hpp"
 #include "ores.refdata.core/messaging/party_contact_handler.hpp"
 #include "ores.refdata.core/messaging/publish_from_dq_handler.hpp"
+
+// Generic history.v1.get subject (pilot: currency only).
+#include "ores.history/messaging/registrar.hpp"
+#include "ores.history/service/dispatch_registry.hpp"
+#include "ores.history/service/version_builder.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.core/presentation/currency_history_field_mapper.hpp"
+#include "ores.refdata.core/service/currency_service.hpp"
+#include "ores.service/service/request_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+
 #include <array>
 #include <iterator>
 #include <memory>
@@ -80,6 +91,14 @@ namespace ores::refdata::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.refdata.service";
+
+// Function-local static: must outlive the history.v1.get subscription
+// (see ores::history::messaging::register_history_handlers's doc), and
+// register_handlers is only ever called once per service process.
+ores::history::service::dispatch_registry& history_registry() {
+    static ores::history::service::dispatch_registry instance;
+    return instance;
+}
 } // namespace
 
 std::vector<ores::nats::service::subscription>
@@ -263,6 +282,39 @@ registrar::register_handlers(ores::nats::service::client& nats,
             subs.push_back(nats.queue_subscribe(
                 subject, queue_group, [h](ores::nats::message msg) { h->handle(std::move(msg)); }));
         }
+    }
+
+    // ----------------------------------------------------------------
+    // Generic history.v1.get subject (pilot: currency only). caller_context
+    // is the requesting tenant_id, resolved once per request from the
+    // caller's JWT — see ores.history's design note on why this leaf
+    // never sees a database::context/jwt_authenticator directly.
+    // ----------------------------------------------------------------
+    {
+        auto& hist_registry = history_registry();
+        hist_registry.register_history_provider(
+            "ores.refdata.currency",
+            [ctx](const std::string& caller_context, const std::string& entity_id) {
+                auto tid = ores::utility::uuid::tenant_id::from_string(caller_context);
+                if (!tid)
+                    throw std::runtime_error("Invalid caller_context: not a tenant_id");
+                auto scoped_ctx = ctx.with_tenant(*tid, "");
+                service::currency_service svc(scoped_ctx);
+                auto versions = svc.get_currency_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_currency_fields);
+            });
+
+        auto resolve_context = [ctx, verifier](const ores::nats::message& msg)
+            -> std::expected<std::string, ores::service::error_code> {
+            auto ctx_expected = ores::service::service::make_request_context(ctx, msg, verifier);
+            if (!ctx_expected)
+                return std::unexpected(ctx_expected.error());
+            return ctx_expected->tenant_id().to_string();
+        };
+
+        subs.push_back(ores::history::messaging::register_history_handlers(
+            nats, hist_registry, queue_group, resolve_context));
     }
 
     return subs;

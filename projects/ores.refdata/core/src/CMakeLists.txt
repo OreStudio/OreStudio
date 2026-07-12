@@ -47,6 +47,7 @@ target_link_libraries(${lib_target_name}
         ores.diff.lib
     PRIVATE
         ores.dq.api.lib
+        ores.history.lib
         ores.service.lib
         pugixml::pugixml
         ores.variability.api.lib

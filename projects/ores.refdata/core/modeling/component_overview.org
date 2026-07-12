@@ -45,7 +45,9 @@ drives UI drop-downs and validation.
 
 - =include/ores.refdata.core/ores.refdata.core.hpp= — aggregate include.
 - =include/ores.refdata.core/messaging/registrar.hpp= — registers all NATS
-  handlers with the service host.
+  handlers with the service host, including a currency history_provider
+  (pilot) on [[id:9562F9CA-DCEB-44C6-8DB1-F3FC56D7703A][ores.history]]'s generic =history.v1.get= subject —
+  see =src/messaging/registrar.cpp= for the wiring.
 - =include/ores.refdata.core/service/= — per-entity service headers.
 
 * Dependencies
@@ -53,6 +55,10 @@ drives UI drop-downs and validation.
 - =ores.refdata.api= — shared domain types and NATS protocol schemas.
 - =ores.dq= — ORM base classes and data-quality infrastructure.
 - =ores.iam.core= — identity and authorisation context.
+- [[id:9562F9CA-DCEB-44C6-8DB1-F3FC56D7703A][ores.history]] — generic entity-history dispatch: registrar.cpp
+  registers a currency history_provider and subscribes the shared
+  =history.v1.get= subject alongside currency's existing (still live)
+  per-entity history subject.
 - =rfl= — JSON serialisation via reflection.
 - =fort= — formatted table output.
 - =soci= — SQL ORM for PostgreSQL persistence.

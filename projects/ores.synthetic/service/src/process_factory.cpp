@@ -34,7 +34,7 @@ auto& lg() {
 }
 }
 
-std::unique_ptr<ores::marketdata::domain::IStochasticProcess>
+std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>
 process_factory::make_process(const std::string& process_type,
                               std::vector<double> means,
                               std::vector<double> stdevs,

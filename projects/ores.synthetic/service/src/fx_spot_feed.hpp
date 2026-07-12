@@ -21,7 +21,7 @@
 #define ORES_SYNTHETIC_SERVICE_FX_SPOT_FEED_HPP
 
 #include "ores.marketdata.api/domain/i_fx_spot_feed.hpp"
-#include "ores.marketdata.api/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.nats/service/client.hpp"
 #include <atomic>
 #include <memory>
@@ -52,7 +52,7 @@ public:
     fx_spot_feed(ores::nats::service::client& nats,
                  std::string ore_key,
                  std::string nats_subject,
-                 std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process,
+                 std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process,
                  double ticks_per_hour);
 
     std::string ore_key() const override;
@@ -65,7 +65,7 @@ public:
 private:
     ores::nats::service::client& nats_;
     std::string ore_key_;
-    std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process_;
+    std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process_;
     double ticks_per_hour_;
     std::string nats_subject_;
     std::atomic<bool> stop_flag_{false};

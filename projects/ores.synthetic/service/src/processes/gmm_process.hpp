@@ -20,7 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_PROCESSES_GMM_PROCESS_HPP
 #define ORES_SYNTHETIC_SERVICE_PROCESSES_GMM_PROCESS_HPP
 
-#include "ores.marketdata.api/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include <cstdint>
 #include <random>
 #include <vector>
@@ -37,7 +37,7 @@ namespace ores::synthetic::service {
  * Parameters (means, stdevs, weights) are statically seeded for the PoC.
  * Live calibration to historical data is out of scope.
  */
-class gmm_process final : public ores::marketdata::domain::IStochasticProcess {
+class gmm_process final : public ores::analytics::quant::domain::IStochasticProcess {
 public:
     gmm_process(std::vector<double> means,
                 std::vector<double> stdevs,

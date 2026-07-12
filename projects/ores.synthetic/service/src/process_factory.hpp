@@ -20,7 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_PROCESS_FACTORY_HPP
 #define ORES_SYNTHETIC_SERVICE_PROCESS_FACTORY_HPP
 
-#include "ores.marketdata.api/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -50,7 +50,7 @@ public:
      * process reverts toward its own starting level by default. means is
      * unused for "ou".
      */
-    static std::unique_ptr<ores::marketdata::domain::IStochasticProcess>
+    static std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>
     make_process(const std::string& process_type,
                  std::vector<double> means,
                  std::vector<double> stdevs,

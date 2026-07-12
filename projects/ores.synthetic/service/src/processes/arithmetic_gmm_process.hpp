@@ -20,7 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_PROCESSES_ARITHMETIC_GMM_PROCESS_HPP
 #define ORES_SYNTHETIC_SERVICE_PROCESSES_ARITHMETIC_GMM_PROCESS_HPP
 
-#include "ores.marketdata.api/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include <cstdint>
 #include <random>
 #include <vector>
@@ -39,7 +39,7 @@ namespace ores::synthetic::service {
  * exercise the IStochasticProcess abstraction (we are not hardcoded to the
  * geometric case) and to let the UI contrast engines.
  */
-class arithmetic_gmm_process final : public ores::marketdata::domain::IStochasticProcess {
+class arithmetic_gmm_process final : public ores::analytics::quant::domain::IStochasticProcess {
 public:
     arithmetic_gmm_process(std::vector<double> means,
                            std::vector<double> stdevs,

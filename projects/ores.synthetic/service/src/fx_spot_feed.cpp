@@ -43,7 +43,7 @@ auto& lg() {
 fx_spot_feed::fx_spot_feed(ores::nats::service::client& nats,
                            std::string ore_key,
                            std::string nats_subject,
-                           std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process,
+                           std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process,
                            double ticks_per_hour)
     : nats_(nats)
     , ore_key_(std::move(ore_key))

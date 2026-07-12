@@ -17,17 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MARKETDATA_API_DOMAIN_I_STOCHASTIC_PROCESS_HPP
-#define ORES_MARKETDATA_API_DOMAIN_I_STOCHASTIC_PROCESS_HPP
+#ifndef ORES_ANALYTICS_QUANT_DOMAIN_I_STOCHASTIC_PROCESS_HPP
+#define ORES_ANALYTICS_QUANT_DOMAIN_I_STOCHASTIC_PROCESS_HPP
 
-namespace ores::marketdata::domain {
+namespace ores::analytics::quant::domain {
 
 /**
  * @brief Pure interface for all stochastic and deterministic price processes.
  *
- * Lives in ores.marketdata.api (not ores.synthetic) so that a future
- * calibration service can instantiate processes without depending on the
- * synthetic service binary.
+ * Lives in ores.analytics.quant (not ores.synthetic) so that any consumer —
+ * a calibration service, ores.marketdata, ores.synthetic — can instantiate
+ * processes without depending on a heavier service binary.
  *
  * Each call to next() advances the process by one step and returns the
  * new price as a double. The process owns its state (current price, RNG
@@ -48,6 +48,6 @@ public:
     virtual double current() const = 0;
 };
 
-}
+} // namespace ores::analytics::quant::domain
 
 #endif

@@ -8,7 +8,7 @@
 #+filetags: :crm_implementation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/fix-rate-engine-concurrency-crash
-#+pr:
+#+pr: 1524
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -233,7 +233,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1524][#1524]] | [analytics.quant] Fix intermittent SIGSEGV/SIGABRT in rate_engine concurrency test |
 
 * Review
 

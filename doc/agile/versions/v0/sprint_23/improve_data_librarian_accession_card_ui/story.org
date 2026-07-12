@@ -8,7 +8,7 @@
 #+filetags: :qt:librarian:ux:data_quality:sprint_23:v0:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -28,7 +28,7 @@ column/tab rework. The interactive lineage graph proposed for
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -56,7 +56,7 @@ column/tab rework. The interactive lineage graph proposed for
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:6FF3D889-123F-4C5D-BB28-0F38BA32C9E9][Rework DatasetDetailDialog into a persistent-header, two-column layout]] | STARTED | 2026-07-12 | | Implement the phased redesign: persistent header banner + UUID copy, status pills, merged Provenance/Methodology tab, asymmetric two-column layout — librarian-only, DetailDialogBase untouched. |
 
 * Decisions
 

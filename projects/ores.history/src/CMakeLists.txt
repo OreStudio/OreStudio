@@ -38,6 +38,9 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.diff.lib)
+        ores.diff.lib
+        ores.nats.lib
+        ores.service.lib
+        ores.logging.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

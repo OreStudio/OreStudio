@@ -49,6 +49,13 @@ namespace ores #F2F2F2 {
             get_entity_history_response o-- entity_history_version
             entity_history_version ..> ores::diff::domain::field_value : renders
             entity_history_version ..> ores::diff::domain::diff_result : diffs
+
+            class history_handler <<class>> {
+                +history(msg) : void
+            }
+            history_handler --> service::dispatch_registry : dispatches via
+            history_handler ..> get_entity_history_request : decodes
+            history_handler ..> get_entity_history_response : replies with
         }
         namespace service #FEFECE {
             class dispatch_registry <<class>> {
@@ -62,5 +69,11 @@ namespace ores #F2F2F2 {
         }
     }
 }
+
+note right of ores::history::messaging::history_handler
+  register_history_handlers(nats, registry, queue_group)
+  subscribes the single history.v1.get subject to a
+  history_handler backed by the caller-owned registry.
+end note
 
 @enduml

@@ -8,7 +8,7 @@
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch: feature/generic-history-subject
-#+pr: 1521
+#+pr: 1523
 #+blocked_on: 5C873944-1152-4A79-9C92-C24AEB65834A
 #+blocked_since:
 #+created: 2026-07-11
@@ -28,10 +28,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
+| Now          | history_handler + register_history_handlers wired (single history.v1.get subject); no service registers real providers yet. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-11                               |
+| Next         | Wire real per-entity providers (repository + codegen'd render_{entity}_fields()) into a dispatch_registry per service, and remove the old per-entity get_<entity>_history subjects as each entity migrates. |
+| Last touched | 2026-07-12                               |
 
 * Acceptance
 
@@ -60,6 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1523][#1523]] | [history] Add history_handler and single-subject registrar |
 | [[https://github.com/OreStudio/OreStudio/pull/1521][#1521]] | [history] Add ores.history component with dispatch registry |
 
 * Review
@@ -70,5 +71,11 @@ via its "Verifies task" field.
 | 2 | dispatch_registry not thread-safe (cf. event_channel_registry mutex) | dispatch_registry.hpp | Declined | Scaffolding increment; registration happens at startup before dispatch, no concurrent access yet. Revisit when real providers are wired |
 | 3 | dispatch_registry copyable/movable by default | dispatch_registry.hpp | Declined | Minor; not an issue at current scope, no single-owned-instance requirement yet |
 | 4 | get_entity_history_response field order differs from workflow_query_protocol.hpp sibling | history_protocol.hpp | Declined | Cosmetic, not house-style-mandated |
+| 5 | decode failure leaves the caller hanging (no error_reply) | history_handler.hpp | Accepted | Added error_reply(bad_request) on the decode-failure path, matching every other handler in the codebase |
+| 6 | dispatch_registry parameter/member could be const& (only const dispatch() is called) | history_handler.hpp, registrar.hpp/.cpp | Accepted | Tightened to const service::dispatch_registry& throughout |
+| 7 | no auth/tenant-scoping on the generic handler; history_provider has no context parameter | history_handler.hpp, dispatch_registry.hpp | Declined for this increment | No service registers a real provider yet, so this is inert. Tracked as design work for the "wire real per-entity providers" increment — history_provider's signature will need a context/tenant parameter before any provider touches per-tenant data |
+| 8 | no unit tests for history_handler/registrar | history_handler.hpp, registrar.cpp | Declined | Matches existing convention — no other component's NATS handler/registrar pairs are unit-tested directly (need a live client); covered by dispatch_registry's own tests plus future integration tests |
+| 9 | registrar is a free function returning one subscription, unlike the class + vector<subscription> shape used elsewhere | registrar.hpp/.cpp | Declined | Deliberate: there is exactly one shared subject, not N per-entity ones |
+| 10 | messaging namespace reopened twice in the PlantUML diagram | ores.history.puml | Accepted | Merged into a single namespace block |
 
 * Result

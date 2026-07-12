@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 573F9165-C20B-463C-B0B3-F324AFE4E81F
+:END:
+#+title: Curve Point Provenance
+#+description: The metadata tracked per term-structure point (rejected, interpolated, back-filled, overridden) and why a broken date is never promoted into a standard tenor.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+Every point on a [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term
+structure]] carries provenance metadata alongside its value: whether it
+was rejected by a consensus provider, whether it is interpolated, whether
+it is back-filled (and if so, its age), and whether it has been
+overridden. This provenance is what lets a user interface distinguish a
+directly-quoted standard pillar from a
+[[id:4DF1F49A-9AB4-4B56-B170-808490071799][broken date]] or an
+interpolated point at a glance, rather than presenting every point as
+equally authoritative. One consequence of tracking provenance this way,
+rather than mutating a point's classification over time, is that a broken
+date is never "promoted" into a standard tenor: once added, it remains
+tracked as a broken date indefinitely.
+
+* Detail
+
+** The provenance fields
+
+Each curve point's metadata records:
+
+- Whether it was *rejected* by a consensus data provider.
+- Whether it is *interpolated* (derived from surrounding points, see
+  [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] for
+  the interpolate/extrapolate/flatten regions this applies within).
+- Whether it is *back-filled*, and if so, its age — how long ago the value
+  it now shows was actually current.
+- Whether it has been *overridden* — replaced by a manual value rather
+  than the value a feed or interpolation would otherwise produce.
+
+This is the same underlying mechanism that lets a user interface
+colour-code or otherwise visually flag broken dates and interpolated
+points as distinct from directly-quoted standard tenors — the visual
+treatment is a presentation of the provenance metadata, not a separate
+tracking mechanism.
+
+** No promotion over time
+
+A [[id:4DF1F49A-9AB4-4B56-B170-808490071799][broken date]] is added to a
+term structure as, and remains tracked as, a broken date — there is no
+mechanism by which repeated use or the passage of time converts it into a
+standard tenor indistinguishable from the pillars around it. The
+provenance record is what makes this durable: a point's classification
+(standard / broken date / turn, see
+[[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn
+Points]]'s three-way classification) is a stored fact about that point,
+not a derived judgement that could drift as the point ages.
+
+** Related: illiquid cut times
+
+A related but distinct provenance-adjacent problem appears for option
+expiries rather than term-structure tenors: a barrier option expiring at a
+non-standard, illiquid cut time is risk-managed by placing a *Date Shift
+Reserve* against the nearest *liquid* cut time, rather than by sourcing
+market data for the illiquid cut directly. This is the closest analogue to
+"mapping an illiquid point to the nearest liquid one" outside the tenor
+domain proper — it operates on option cut times, not on a term structure's
+own tenor ladder, and is recorded here only as a cross-reference, not
+elaborated further in this cluster.
+
+* See also
+
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — the three-way classification this provenance record supports.
+- [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — the interpolate/extrapolate/flatten regions provenance distinguishes between.
+- [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the series each point with provenance belongs to.

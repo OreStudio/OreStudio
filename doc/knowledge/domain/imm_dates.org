@@ -34,7 +34,9 @@ fixed set, not an arithmetic offset.
 
 ** Uses
 
-- As an alternative bucketing scheme for position reporting.
+- As an alternative bucketing scheme for position reporting, alongside
+  standard monthly [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+  buckets.
 - As the underlying schedule for Eurodollar / Short Sterling futures used
   in USD curve bootstrapping — see
   [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]'s

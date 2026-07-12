@@ -52,9 +52,19 @@ for vol surface tenors see
   standard rolling conventions).
 - *Irregular dates* → [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken
   Dates and Turn Points]] (bespoke maturities vs. fixed-calendar-time
-  discontinuities) and [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM
-  Dates]] (the fixed quarterly roll schedule CDS and STIR futures use
-  instead of horizon-relative tenor arithmetic).
+  discontinuities, the three-way tenor classification, and how broken
+  dates are entered/displayed) and
+  [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]] (the fixed
+  quarterly roll schedule CDS and STIR futures use instead of
+  horizon-relative tenor arithmetic).
+- *How far a curve goes* → [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term
+  Structure Extent]] (30Y for interest rate curves, 5Y-default/30Y-available
+  for vol surfaces, open-ended for CDS, and the flatten-beyond-the-end
+  convention).
+- *Tracking a point's history* → [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve
+  Point Provenance]] (rejected/interpolated/back-filled/overridden
+  metadata, and why a broken date is never promoted into a standard
+  tenor).
 
 ** Where these concepts are consumed
 

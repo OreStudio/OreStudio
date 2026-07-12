@@ -52,7 +52,70 @@ date]] advances, in contrast to how every other tenor point on the same
 term structure is expressed relative to the horizon date. They require
 special handling in interpolation — a term structure's interpolation
 method must isolate the turn effect's spike so that it does not bleed into
-the value of adjacent, structurally ordinary tenor points.
+the value of adjacent, structurally ordinary tenor points. A turn point
+also differs from a broken date in kind, not just in calendar behaviour: it
+"nudges" the rates around it rather than defining a tradeable maturity in
+its own right — see the three-way classification below.
+
+** Three-way tenor classification
+
+Every entry on a curve's tenor ladder is classified as exactly one of
+three kinds, and the system tracks which throughout the entry's lifetime
+(see [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+for how that classification is recorded and why it never changes):
+
+- *Standard*: a normal named [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+  (=O/N=, =1M=, =1Y=, and so on).
+- *Broken date*: a non-standard, interpolated maturity added explicitly
+  (e.g. 47 days), tracked distinctly from the standard tenors around it —
+  this document's "broken dates (odd dates)" section above.
+- *Turn*: a fixed-calendar-date discontinuity, potentially spanning
+  multiple days, which nudges rates around it rather than defining a
+  tradeable maturity — this document's "turn points" section above.
+
+** Entry and display
+
+How a broken date is added to and shown on a curve's tenor ladder follows
+several conventions, all specific to broken dates rather than to standard
+tenors:
+
+- A broken date can be added or removed directly on the ladder — a user is
+  not limited to the pre-defined standard tenor set.
+- It can be entered either as an absolute *date* or as a *tenor label*
+  where applicable — the same date-vs-tenor duality used for other
+  single-instrument date fields (e.g. an option's expiry).
+- As part of supporting broken-date and forward-forward analysis, the
+  system must provide an isolated calculation surface, separate from the
+  live term structure, on which a user can price an arbitrary
+  forward-forward relationship (e.g. "the rate 3M in 6M") or an arbitrary
+  bespoke maturity before deciding whether it is worth adding as a real
+  broken date. This is necessary because such exploration is inherently
+  speculative — a user comparing several hypothetical structures needs to
+  try many of them without any one attempt mutating the curve every other
+  part of the system reads from. To satisfy this, the surface must: (a)
+  use the same [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+  resolution and interpolation machinery the live term structure uses, so
+  a result is a faithful preview of what adding the point for real would
+  produce, not an approximation; (b) read the live curve's current state
+  to ground its calculations in real market levels, without ever writing
+  a result back into that curve's point set; and (c) leave no
+  [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][provenance]] trace on the
+  live curve — an explored-but-discarded hypothesis must be exactly as if
+  it had never been tried, consistent with provenance's "no promotion"
+  rule applying only to points that were actually added, not to
+  speculative ones that never were.
+- A broken date is not necessarily purely interpolated: each tenor entry,
+  including a broken date, can carry its own market data feed, so a broken
+  date can in principle be directly quoted rather than derived.
+- The [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][hub]]'s deferred "Out Of"
+  convention (Out of Today / Out of Tomorrow / Out of Spot) affects broken
+  dates the same way it affects standard tenors: when a non-standard
+  basis is selected, affected tenors — broken dates included — must be
+  visually distinguished so the user knows they are not on the
+  conventional spot basis.
+- On volatility surfaces specifically, a separate toggle controls whether
+  *interpolated* tenors are displayed at all — a distinct control from the
+  FX forward ladder's broken-date handling described above.
 
 * See also
 
@@ -60,3 +123,18 @@ the value of adjacent, structurally ordinary tenor points.
 - [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the standard labels a broken date falls between.
 - [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — where an interpolation method is specified.
 - [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — the concrete interpolation methods (log-linear, zero-linear, cubic spline, monotone spline) this document assumes.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — how the three-way classification is recorded and tracked over a point's lifetime.
+- [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — the interpolate/extrapolate/flatten regions a broken date's position determines.
+
+** Further reading: terminology verification
+
+"Broken date"/"odd date" and "the turn"/"turn effect" were checked against
+independent market sources (not this notebook) to confirm they are real,
+standard industry terminology rather than local naming:
+
+- [[https://www.poems.com.sg/glossary/investment/broken-date/][Broken Date: Meaning, Impact & Fundamentals in Financial Markets]]
+- [[https://www.bestx.co.uk/publications/bestx-fx-forward-methodology-on-broken-dates][BestX FX Forward Methodology on Broken Dates]]
+- [[https://thefullfx.com/ncfx-extends-fx-forward-benchmarks-to-broken-dates/][NCFX Extends FX Forward Benchmarks to Broken Dates]]
+- [[https://www.cmegroup.com/education/articles-and-reports/understanding-and-analyzing-year-end-effects-in-the-fx-swap-market.html][Understanding and Analyzing Year-End Effects in the FX Swap Market (CME Group)]]
+- [[https://www.lseg.com/en/insights/fx/the-case-for-turn-impact-adjusted-fx-forward-curves][The case for turn impact-adjusted FX forward curves (LSEG)]]
+- [[https://www.clarusft.com/year-end-turn-rates/][Year End Turn Rates (Clarus FT)]]

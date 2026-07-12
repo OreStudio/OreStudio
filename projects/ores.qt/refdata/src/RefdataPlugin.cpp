@@ -260,11 +260,13 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                     this);
     connectControllerSignals(bookStatusController_.get());
 
-    // RegulatoryBookTypeController does not yet take a ChangeReasonCache --
-    // tracked in the sibling "Book codegen drift remediation" story
-    // (regenerate_regulatory_book_type task).
     regulatoryBookTypeController_ = std::make_unique<RegulatoryBookTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+        ctx_.main_window,
+        ctx_.mdi_area,
+        ctx_.client_manager,
+        ctx_.change_reason_cache,
+        ctx_.username,
+        this);
     connectControllerSignals(regulatoryBookTypeController_.get());
 
     partyTypeController_ = std::make_unique<PartyTypeController>(ctx_.main_window,

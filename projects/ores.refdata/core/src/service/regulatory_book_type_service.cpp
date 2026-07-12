@@ -42,6 +42,12 @@ std::uint32_t regulatory_book_type_service::count_types() {
     return repo_.get_total_type_count(ctx_);
 }
 
+std::optional<domain::regulatory_book_type>
+regulatory_book_type_service::get_type_at_version(const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting regulatory book type at version: " << code
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, code, version);
+}
 
 std::optional<domain::regulatory_book_type>
 regulatory_book_type_service::get_type(const std::string& code) {

@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 7264225E-9838-4D71-8371-38CD80E7F77B
+:END:
+#+title: Test Scenario: Verify regulatory_book_type list/detail/history after codegen regeneration
+#+description: Manual Qt client steps confirming the regenerated regulatory_book_type entity (list, detail, history windows, save, change-reason cache, event registrar) works end to end with no regressions after being brought onto the current codegen templates.
+#+type: test_scenario
+#+level: s1
+#+filetags: :book_data_model_cleanup:sprint_23:v0:book_codegen_drift_remediation:
+#+target_dialog:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:CCED67A5-5003-4B5F-A747-0C4F79C72228][Regenerate regulatory_book_type]] in [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:CCED67A5-5003-4B5F-A747-0C4F79C72228][Regenerate regulatory_book_type]] |
+| Parent story  | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]]   |
+| Target dialog | RegulatoryBookTypeMdiWindow / RegulatoryBookTypeDetailDialog / RegulatoryBookTypeHistoryDialog (Reference Data > Book Codes) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A fresh, Barclays-provisioned database:
+  #+begin_src sh :results verbatim
+  compass db recreate -y -k
+  compass services start
+  compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+  #+end_src
+- A running Qt client, not yet logged in.
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Log in and select Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
+=BARCLAYS PLC=. Confirm all menus enable with no errors.
+
+** Regulatory Book Types list opens from Reference Data > Book Codes
+
+Open Reference Data > Book Codes > Regulatory Book Types. Confirm
+exactly two rows appear — Trading, Banking — each with Description and
+Display Order populated, no error banner.
+
+** Detail dialog opens and displays fields correctly
+
+Double-click the "Trading" row. Confirm Code (read-only), Name,
+Description, Display Order, Version, and Modified By all populate
+correctly.
+
+** Edit and save a regulatory book type
+
+Change the "Trading" row's Description and Save. Confirm the change-
+reason prompt appears (new: has_change_reason_cache was just added),
+the save succeeds, the grid refreshes, and Version increments by 1.
+
+** History dialog opens and shows the new version
+
+Open History on "Trading". Confirm both versions appear with distinct
+valid_from/valid_to timestamps, and that closing the history dialog
+only closes the sub-window, not the whole app.
+
+** No error toast or log error during the whole flow
+
+Check the client's log tail
+(=build/output/<preset>/publish/log/ores.qt.<colour>.log=) for any
+ERROR-level line — in particular no "Server reported failure" message
+(the new success-check added to ClientRegulatoryBookTypeModel.cpp).
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

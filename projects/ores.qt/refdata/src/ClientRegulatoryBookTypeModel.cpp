@@ -202,6 +202,8 @@ void ClientRegulatoryBookTypeModel::fetch_types(std::uint32_t offset, std::uint3
                 }
 
                 refdata::messaging::get_regulatory_book_types_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -215,12 +217,29 @@ void ClientRegulatoryBookTypeModel::fetch_types(std::uint32_t offset, std::uint3
                             .error_details = {}};
                 }
 
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .types = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
+                            .error_details = {}};
+                }
+
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->types.size() << " regulatory book types";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->types.size());
+                    << "Fetched " << result->types.size()
+                    << " regulatory book types, total available: " << result->total_available_count;
                 return {.success = true,
                         .types = std::move(result->types),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

@@ -33,6 +33,7 @@ namespace ores::qt {
 
 class RegulatoryBookTypeMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing regulatory book type windows and operations.
@@ -56,6 +57,7 @@ public:
     RegulatoryBookTypeController(QMainWindow* mainWindow,
                                  QMdiArea* mdiArea,
                                  ClientManager* clientManager,
+                                 ChangeReasonCache* changeReasonCache,
                                  const QString& username,
                                  QObject* parent = nullptr);
 
@@ -84,6 +86,7 @@ private:
     void showDetailWindow(const refdata::domain::regulatory_book_type& type);
     void showHistoryWindow(const QString& code);
 
+    ChangeReasonCache* changeReasonCache_;
     RegulatoryBookTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

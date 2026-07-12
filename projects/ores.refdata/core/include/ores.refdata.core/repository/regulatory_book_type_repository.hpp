@@ -24,7 +24,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <chrono>
 #include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -73,6 +75,19 @@ public:
      * @brief Reads all regulatory book types, possibly filtered by code.
      */
     std::vector<domain::regulatory_book_type> read_all(context ctx, const std::string& code);
+
+    /**
+     * @brief Reads a single regulatory book type as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param code The code to look up
+     * @param version The version to fetch
+     */
+    std::optional<domain::regulatory_book_type>
+    read_at_version(context ctx, const std::string& code, std::uint32_t version);
 
 
     /**

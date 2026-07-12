@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/regulatory_book_type_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -75,6 +76,16 @@ public:
      */
     std::uint32_t count_types();
 
+    /**
+     * @brief Retrieves a single regulatory book type as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param code The code of the regulatory book type.
+     * @param version The version to fetch.
+     * @return The regulatory book type at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::regulatory_book_type> get_type_at_version(const std::string& code,
+                                                                    std::uint32_t version);
 
     /**
      * @brief Retrieves a single regulatory book type by its code.

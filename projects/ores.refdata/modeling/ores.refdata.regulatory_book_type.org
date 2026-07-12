@@ -164,6 +164,8 @@ faker::number::integer(1, 100)
 :item_var:               type
 :key_field:              code
 :has_uuid_primary_key:   false
+:has_pagination:         true
+:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_regulatory_book_types_request
 :get_response_class:     refdata::messaging::get_regulatory_book_types_response
 :get_message_type:       get_regulatory_book_types_request

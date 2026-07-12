@@ -17,7 +17,8 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 Discovered while modelling [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][fx_convention]]:
 =day_count_fraction_type= lives in =ores.trading=
-([[id:7856FDEB-E15B-4A72-BFA5-57ECF053AFFF][ores.trading.day_count_fraction_type]]), with exactly one consumer
+(=ores.trading.day_count_fraction_type=, since removed — see
+[[id:D639B3AB-7421-4A7C-A17A-02000709E22F][ores.refdata.day_count_fraction_type]]), with exactly one consumer
 (=trading_swap_legs=), while every =*_convention= entity that would
 also need it (=ibor_index_convention=, =zero_convention=,
 =fx_convention=, etc.) lives in =ores.refdata=. Move it to

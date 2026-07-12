@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: AA4A5326-FA02-42D7-ACE2-9B27B20B19C7
+:END:
+#+title: Story: IAM party_cache invalidation on party changes
+#+description: ores.iam.core's party_cache never subscribes to any change notification — subscribe it to ores.refdata's existing ores.refdata.party_changed outbox event and reload on receipt, so activated parties are reflected without an IAM restart.
+#+type: story
+#+level: s2
+#+filetags: :iam:refdata:caching:bug:sprint_23:v0:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+When a party is activated (or otherwise changed) in ores.refdata, any
+ores.iam.core instance holding that tenant's =party_cache= sees the
+change without needing an IAM service restart.
+
+Root cause (confirmed by reading the code, not the capture's
+original hypothesis): =ores.refdata='s side is fine. Party writes go
+through the standard postgres outbox pattern — =application.cpp=
+registers =party_changed_event= against table
+=ores_refdata_parties=, and every save already publishes to NATS
+subject =ores.refdata.party_changed= (see
+=party_changed_event.hpp='s =event_traits=). Party is *not* one of
+the 26 refdata entities missing an event registrar.
+
+The bug is entirely on the consumer side, in
+=ores.iam.core/service/party_cache.hpp=. Its docstring claims it is
+"reloaded on receipt of =refdata.v1.parties.changed= notifications"
+— but that subject string appears nowhere except the docstring, and
+=party_cache::load()= is only ever called from the read-at-startup /
+read-on-miss path (=registrar.cpp=,
+=auth_handler.hpp='s =auth_ensure_parties_cached=). There is no NATS
+subscription anywhere in =ores.iam.core= to
+=ores.refdata.party_changed= (or to anything else). The docstring
+describes a mechanism that was never implemented.
+
+Fix: add a NATS subscription in =ores.iam.core= (in =registrar.cpp=,
+alongside where =party_cache= is constructed) to
+=ores.refdata.party_changed=, and reload the affected tenant's
+partition — via =party_cache::load(tenant_id)= or a more targeted
+per-party update — when it fires. Correct the docstring's stale
+subject name to match reality once fixed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-12                               |
+
+* Acceptance
+
+- =ores.iam.core= subscribes to NATS subject
+  =ores.refdata.party_changed= (the outbox event refdata already
+  publishes on every party save/activation) and reloads the affected
+  tenant's =party_cache= partition on receipt.
+- =party_cache.hpp='s docstring is corrected to name the real subject
+  (=ores.refdata.party_changed=), not the nonexistent
+  =refdata.v1.parties.changed=.
+- Reproduction from the capture no longer occurs: activating a party
+  via =save_party_request= (e.g. through
+  =barclays_system_provision.ores=) is visible to a subsequent IAM
+  login without restarting the IAM service.
+- Regression/unit test coverage added for cache
+  reload-on-notification in =ores.iam.core=.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A4797CFE-FC29-4209-B7C2-7505247EC29C][Subscribe party_cache to ores.refdata.party_changed]] | BACKLOG | | | Add a NATS subscription in ores.iam.core (registrar.cpp, where party_cache is constructed) to ores.refdata.party_changed; reload the affected tenant's party_cache partition on receipt. Correct party_cache.hpp's docstring to name the real subject instead of the nonexistent refdata.v1.parties.changed. |
+| [[id:70C81DFD-E94E-4F3B-A35B-CE14A4F6A82B][Test party_cache reload-on-notification]] | BACKLOG | | | Add regression/unit test coverage in ores.iam.core for the new subscription: publishing ores.refdata.party_changed for a tenant causes party_cache to reload that tenant's partition, and lookup_party/compute_visible_party_ids reflect the change without a restart. |
+| [[id:5D32B9C6-7D16-4472-9DDB-619607F34529][Verify activation reproduction is fixed end-to-end]] | BACKLOG | | | Re-run the capture's original reproduction: activate a party via save_party_request (e.g. barclays_system_provision.ores) against a running environment and confirm a subsequent IAM login reflects Active status without restarting the IAM service. |
+
+* Decisions
+
+- 2026-07-12: Original capture hypothesised the bug was on
+  =ores.refdata='s producer side (missing publish). Reading the code
+  showed refdata's outbox eventing for party already works correctly
+  and publishes =ores.refdata.party_changed= on every save. The bug
+  is entirely on =ores.iam.core='s consumer side: =party_cache= never
+  subscribes to anything. Story goal/acceptance updated accordingly;
+  scope narrows to IAM-side subscription wiring only.
+
+* Out of scope
+
+- General TTL/reload-on-miss fallback strategy for =party_cache=,
+  unless the eventing fix proves unreliable during implementation.
+- Broader ores.iam/ores.refdata service-boundary cleanup (tracked
+  separately as "IAM/Refdata service boundary cleanup").

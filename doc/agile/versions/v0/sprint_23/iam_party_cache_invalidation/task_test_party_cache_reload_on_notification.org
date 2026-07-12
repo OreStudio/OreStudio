@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 70C81DFD-E94E-4F3B-A35B-CE14A4F6A82B
+:END:
+#+title: Task: Test party_cache reload-on-notification
+#+description: Add regression/unit test coverage in ores.iam.core for the new subscription: publishing ores.refdata.party_changed for a tenant causes party_cache to reload that tenant's partition, and lookup_party/compute_visible_party_ids reflect the change without a restart.
+#+type: task
+#+level: s1
+#+filetags: :iam_party_cache_invalidation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Regression coverage in =ores.iam.core= proving the new subscription
+actually works: publishing =ores.refdata.party_changed= for a given
+tenant causes =party_cache= to reload that tenant's partition, and
+=lookup_party=/=compute_visible_party_ids= reflect the updated data
+without any restart. Without this, the previous silent-staleness bug
+could regress unnoticed the same way it went unnoticed originally.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- Unit/integration test publishes a =party_changed_event= (or its
+  wire form on =ores.refdata.party_changed=) for a tenant with a
+  pre-populated =party_cache= and asserts the partition is reloaded.
+- Test covers a status change (e.g. Inactive → Active) surfacing via
+  =lookup_party= after the notification, with no manual =load()=
+  call.
+- Existing startup / read-on-miss tests remain green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: A4797CFE-FC29-4209-B7C2-7505247EC29C
+:END:
+#+title: Task: Subscribe party_cache to ores.refdata.party_changed
+#+description: Add a NATS subscription in ores.iam.core (registrar.cpp, where party_cache is constructed) to ores.refdata.party_changed; reload the affected tenant's party_cache partition on receipt. Correct party_cache.hpp's docstring to name the real subject instead of the nonexistent refdata.v1.parties.changed.
+#+type: task
+#+level: s1
+#+filetags: :iam_party_cache_invalidation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores.iam.core= subscribes to NATS subject
+=ores.refdata.party_changed= (published by refdata's outbox on every
+party save/activation, alongside where =party_cache= is constructed
+in =registrar.cpp=) and, on receipt, reloads the affected tenant's
+=party_cache= partition via =party_cache::load(tenant_id)= (or a more
+targeted per-party update if that proves cheaper). Also correct
+=party_cache.hpp='s docstring, which currently names the
+nonexistent subject =refdata.v1.parties.changed=, to reflect the
+real one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- =registrar.cpp= subscribes to =ores.refdata.party_changed= and
+  triggers a =party_cache= reload for the tenant(s) named in the
+  event's =tenant_id=.
+- =party_cache.hpp='s class docstring names the real subject.
+- No behaviour change to the existing startup / read-on-miss load
+  path.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 5D32B9C6-7D16-4472-9DDB-619607F34529
+:END:
+#+title: Task: Verify activation reproduction is fixed end-to-end
+#+description: Re-run the capture's original reproduction: activate a party via save_party_request (e.g. barclays_system_provision.ores) against a running environment and confirm a subsequent IAM login reflects Active status without restarting the IAM service.
+#+type: task
+#+level: s1
+#+filetags: :iam_party_cache_invalidation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Manual, end-to-end confirmation that the fix closes the exact gap
+the capture reported. Unit tests can pass while the wiring is still
+wrong end-to-end (wrong subject string, missed application.cpp
+registration, etc.), so this task re-runs the original real-system
+reproduction against a live environment as the final check before
+closing the story.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- Environment recreated/started with the fix applied.
+- A party is activated via the normal =save_party_request= path
+  (=barclays_system_provision.ores= or equivalent), on an IAM
+  instance that already cached that party pre-activation.
+- A subsequent IAM login shows the party as Active — no "still
+  marked Inactive" warning — without restarting the IAM service.
+- Result recorded in this task's =* Result= section.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

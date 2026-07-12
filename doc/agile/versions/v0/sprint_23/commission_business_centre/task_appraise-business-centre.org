@@ -26,11 +26,11 @@ A complete per-layer appraisal of business_centre's current state, identifying a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -166,3 +166,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Checklist scored across all applicable layers via static inspection.
+Four findings recorded (details in Notes above); three drove a story
+rescope (two new tasks added: SQL security/bootstrap fix,
+Qt-to-RefdataPlugin move), one (no live codegen model) recorded as an
+out-of-scope known gap. No trivial fixes were made inline -- all
+findings are substantial enough to warrant their own task or explicit
+out-of-scope decision.

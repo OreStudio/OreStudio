@@ -19,6 +19,14 @@
  */
 
 -- Drop observations and fixings before series (they reference it).
+-- CRM config: driver_pairs/enabled_derived_pairs before topology_configs
+-- (foreign key references it).
+\ir ./marketdata_crm_enabled_derived_pairs_notify_trigger_drop.sql
+\ir ./marketdata_crm_enabled_derived_pairs_drop.sql
+\ir ./marketdata_crm_driver_pairs_notify_trigger_drop.sql
+\ir ./marketdata_crm_driver_pairs_drop.sql
+\ir ./marketdata_crm_topology_configs_notify_trigger_drop.sql
+\ir ./marketdata_crm_topology_configs_drop.sql
 \ir ./marketdata_feed_bindings_notify_trigger_drop.sql
 \ir ./marketdata_feed_bindings_drop.sql
 \ir ./marketdata_market_fixings_notify_trigger_drop.sql

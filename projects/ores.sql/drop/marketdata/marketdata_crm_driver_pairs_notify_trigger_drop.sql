@@ -18,9 +18,5 @@
  *
  */
 
-drop policy if exists fixings_tbl_tenant_isolation_policy on ores_marketdata_fixings_tbl;
-drop policy if exists observations_tbl_tenant_isolation_policy on ores_marketdata_observations_tbl;
-drop policy if exists series_tbl_tenant_isolation_policy on ores_marketdata_series_tbl;
-drop policy if exists crm_topology_configs_tbl_tenant_isolation_policy on ores_marketdata_crm_topology_configs_tbl;
-drop policy if exists crm_driver_pairs_tbl_tenant_isolation_policy on ores_marketdata_crm_driver_pairs_tbl;
-drop policy if exists crm_enabled_derived_pairs_tbl_tenant_isolation_policy on ores_marketdata_crm_enabled_derived_pairs_tbl;
+drop trigger if exists ores_marketdata_crm_driver_pairs_notify_trg on "ores_marketdata_crm_driver_pairs_tbl";
+drop function if exists ores_marketdata_crm_driver_pairs_notify_fn;

@@ -1,0 +1,158 @@
+:PROPERTIES:
+:ID: 3F8C1A2D-6B4E-4A9F-8D2C-1E7A9B5C3F0D
+:ores.cpp.qt.enabled: false
+:END:
+#+title: ores.marketdata.crm_topology_config
+#+description: Codegen entity model for the marketdata crm_topology_config table; a named, party-scoped CRM topology (pivot currency) for ores.analytics.quant.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:crm:
+#+entity_singular: crm_topology_config
+#+entity_plural: crm_topology_configs
+#+entity_title: CRM Topology Config
+#+brief: A named, party-scoped CRM topology config (pivot currency) driving ores.analytics.quant's rate_engine.
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+A top-level container that owns the [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree topology]]'s pivot currency
+and the set of [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][CRM]] driver pairs (=crm_driver_pair=, a separate,
+=config_id=-referencing entity) that hang off it. =ores.marketdata.service=
+reads the enabled config per (tenant, party) and its enabled driver pairs,
+feeds them through =ores.analytics.quant::topology_builder::build=, and
+keeps one =service::rate_engine= per (tenant, party) up to date -- see
+[[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]]. Qt UI is deferred to a later task
+(=ores.cpp.qt.enabled: false= above), same as =market_series=.
+
+Scoped to a tenant and a party so each party runs its own, independent
+CRM -- two parties in the same tenant may have entirely different
+topologies and never share an engine.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this configuration.
+
+* Natural keys
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Owning party (legal entity) this CRM topology belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Stable name for this configuration, unique per tenant and party (e.g.
+"primary").
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+* Columns
+
+** pivot_currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO code of the pivot (aggregation) currency every driver pair's path
+runs through (soft FK to currencies) -- see [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][CRM graph topology and
+spanning tree]].
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** enabled
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether this is the active CRM topology for this (tenant, party) --
+=ores.marketdata.service= runs at most one active =rate_engine= per
+(tenant, party); a second config may exist disabled (e.g. while being
+edited) without disrupting the running engine.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_marketdata_crm_topology_configs_tbl
+:END:
+
+** Checks
+
+| expression                    |
+|--------------------------------|
+| "pivot_currency_code" <> ''   |
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: crm_topology_config
+:entity_plural_short:   crm_topology_configs
+:entity_singular_words: CRM topology config
+:entity_plural_words:   CRM topology configs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:

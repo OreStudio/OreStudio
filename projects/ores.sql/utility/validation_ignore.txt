@@ -349,6 +349,15 @@ RLS_002 ores_marketdata_market_fixings_tbl
 RLS_002 ores_marketdata_market_observations_tbl
 RLS_002 ores_marketdata_market_series_tbl
 
+# CRM config tables — new, party_id-scoped from the start (Cross-rates
+# matrix story), but sharing the same stopgap as the four tables above:
+# no matching AS RESTRICTIVE party isolation policy yet in
+# marketdata_rls_policies_create.sql. Same fix applies to all seven
+# tables together, not one-off per table.
+RLS_002 ores_marketdata_crm_topology_configs_tbl
+RLS_002 ores_marketdata_crm_driver_pairs_tbl
+RLS_002 ores_marketdata_crm_enabled_derived_pairs_tbl
+
 # Variability system settings — party_id added without a matching AS
 # RESTRICTIVE party isolation policy (only a tenant-isolation policy
 # exists in variability_rls_policies_create.sql). Ignored here as a

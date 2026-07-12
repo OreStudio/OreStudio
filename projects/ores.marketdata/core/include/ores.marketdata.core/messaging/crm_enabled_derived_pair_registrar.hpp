@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,10 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_MARKETDATA_CORE_MESSAGING_CRM_ENABLED_DERIVED_PAIR_REGISTRAR_HPP
+#define ORES_MARKETDATA_CORE_MESSAGING_CRM_ENABLED_DERIVED_PAIR_REGISTRAR_HPP
 
-drop policy if exists fixings_tbl_tenant_isolation_policy on ores_marketdata_fixings_tbl;
-drop policy if exists observations_tbl_tenant_isolation_policy on ores_marketdata_observations_tbl;
-drop policy if exists series_tbl_tenant_isolation_policy on ores_marketdata_series_tbl;
-drop policy if exists crm_topology_configs_tbl_tenant_isolation_policy on ores_marketdata_crm_topology_configs_tbl;
-drop policy if exists crm_driver_pairs_tbl_tenant_isolation_policy on ores_marketdata_crm_driver_pairs_tbl;
-drop policy if exists crm_enabled_derived_pairs_tbl_tenant_isolation_policy on ores_marketdata_crm_enabled_derived_pairs_tbl;
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
+
+namespace ores::marketdata::messaging {
+
+std::vector<ores::nats::service::subscription> register_crm_enabled_derived_pair_handlers(
+    ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+} // namespace ores::marketdata::messaging
+
+#endif

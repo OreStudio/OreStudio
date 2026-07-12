@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,10 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.api/domain/crm_topology_config_table_io.hpp"
+#include "ores.marketdata.api/domain/crm_topology_config_table.hpp"
+#include <ostream>
 
-drop policy if exists fixings_tbl_tenant_isolation_policy on ores_marketdata_fixings_tbl;
-drop policy if exists observations_tbl_tenant_isolation_policy on ores_marketdata_observations_tbl;
-drop policy if exists series_tbl_tenant_isolation_policy on ores_marketdata_series_tbl;
-drop policy if exists crm_topology_configs_tbl_tenant_isolation_policy on ores_marketdata_crm_topology_configs_tbl;
-drop policy if exists crm_driver_pairs_tbl_tenant_isolation_policy on ores_marketdata_crm_driver_pairs_tbl;
-drop policy if exists crm_enabled_derived_pairs_tbl_tenant_isolation_policy on ores_marketdata_crm_enabled_derived_pairs_tbl;
+namespace ores::marketdata::domain {
+
+namespace {
+
+void print_crm_topology_config_table(std::ostream& s, const std::vector<crm_topology_config>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
+}
+
+std::ostream& operator<<(std::ostream& s, const std::vector<crm_topology_config>& v) {
+    print_crm_topology_config_table(s, v);
+    return s;
+}
+
+}

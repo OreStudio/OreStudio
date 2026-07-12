@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 467F77DB-3829-4F15-8E8E-C64FAA369459
+:END:
+#+title: Codegen leaves new entities unwired: RLS policies and the create/drop aggregators
+#+description: No template in ores.codegen emits ENABLE ROW LEVEL SECURITY/CREATE POLICY for entities with :has_tenant_id: true, and generated per-table SQL is never linked into the component's hand-maintained *_create.sql/_drop.sql aggregator (the \ir include list) -- both are manual steps every entity author has to remember, and both were missed while adding the CRM config tables.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:sql:rls:security:gap:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two related gaps, both "codegen writes a new entity's SQL but something
+still has to be hand-wired afterwards":
+
+1. *RLS policies*: add a codegen facet (e.g. =ores.sql.rls-policy=) that
+   generates =ENABLE ROW LEVEL SECURITY= + a tenant-isolation
+   =CREATE POLICY= for any entity whose model declares
+   =:has_tenant_id: true= -- mirroring the existing per-table
+   hand-written blocks in each component's
+   =*_rls_policies_create.sql=/=_drop.sql= (e.g.
+   =marketdata_rls_policies_create.sql=). A stretch goal is a second
+   policy for =:has_party_id:=-equivalent entities (party-level
+   RESTRICTIVE isolation), which today has no first-class model flag at
+   all -- =party_id= is currently just an ordinary natural-key column,
+   indistinguishable in the model from any other UUID key, so codegen
+   has no signal to key a party-RLS facet off even if the tenant-RLS
+   facet existed.
+2. *Create/drop aggregator wiring*: each component's
+   =<component>_create.sql=/=_drop.sql= (e.g.
+   =marketdata_create.sql=) is a hand-maintained, ordered list of
+   =\ir= includes -- codegen writes
+   e.g. =marketdata_crm_topology_configs_create.sql= but never adds the
+   =\ir ./marketdata_crm_topology_configs_create.sql= line that makes it
+   reachable from =setup_schema.sql=. A brand-new entity's tables
+   silently don't exist after =compass db recreate= until someone
+   notices and wires them in by hand, in the correct dependency order
+   (create: referenced-before-referencing; drop: reverse). Possibly
+   fixable without a new facet at all -- codegen could rewrite/append to
+   the aggregator file as part of generating an entity's SQL facet,
+   the same way it already writes the SQL files themselves.
+
+* Why
+
+Every entity with =:has_tenant_id: true= structurally needs a tenant
+isolation RLS policy, but no codegen template emits one -- it is a
+purely manual step, hand-added to a shared, non-generated
+=*_rls_policies_create.sql= file per component. This is easy to forget:
+=doc/agile/product_backlog/next/commit_83292021a_added_party_id_to_ores_marketdata.org=
+already tracks four marketdata tables that shipped with =party_id= but
+no matching RESTRICTIVE policy (a =validate_schemas.sh --strict=
+RLS_002 stopgap, entries in
+=projects/ores.sql/utility/validation_ignore.txt=). While wiring the
+[[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] into =ores.marketdata=, three new
+tenant+party-scoped tables (=crm_topology_config=, =crm_driver_pair=,
+=crm_enabled_derived_pair=) needed the same hand-added tenant-isolation
+policy just to pass RLS_001, and were added to the same RLS_002 ignore
+list for the party-level gap -- the exact same class of manual step,
+repeated a third time.
+
+The aggregator gap is worse in one respect: it isn't caught by any
+validation script. =compass db recreate= silently succeeds even when a
+new entity's tables were never created -- the first symptom is a
+confusing "relation does not exist" much later (in this case, from the
+RLS policy statement referencing the never-created table), not an error
+pointing at the actual missing =\ir= line. Both gaps were hit, in this
+order, while adding the same three CRM tables: RLS first (caught by
+=validate_schemas.sh=), then the aggregator (only caught by actually
+running =db recreate= and reading the failure).
+
+* References
+
+- =projects/ores.sql/create/marketdata/marketdata_rls_policies_create.sql= --
+  the hand-maintained file every component's tenant-isolation policies
+  currently live in.
+- =projects/ores.sql/create/marketdata/marketdata_create.sql= /
+  =projects/ores.sql/drop/marketdata/marketdata_drop.sql= -- the
+  hand-maintained =\ir= aggregators.
+- =projects/ores.sql/utility/validate_schemas.sh= -- the RLS_001/RLS_002
+  checks that catch (but don't prevent) the RLS gap; nothing catches the
+  aggregator gap.
+- =projects/ores.sql/utility/validation_ignore.txt= -- the growing
+  stopgap list.
+
+* See also
+
+- [[id:F70CF285-C22F-4A09-A36C-5FE7A834F056][Add RESTRICTIVE party-isolation RLS policies for the marketdata tables]] --
+  the concrete instance of this gap this capture generalises from.
+- [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Story: Cross-rates matrix (CRM)]] -- where the third recurrence was hit.

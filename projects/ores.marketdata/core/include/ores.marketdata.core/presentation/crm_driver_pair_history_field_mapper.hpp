@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,10 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_MARKETDATA_CORE_PRESENTATION_CRM_DRIVER_PAIR_HISTORY_FIELD_MAPPER_HPP
+#define ORES_MARKETDATA_CORE_PRESENTATION_CRM_DRIVER_PAIR_HISTORY_FIELD_MAPPER_HPP
 
-drop policy if exists fixings_tbl_tenant_isolation_policy on ores_marketdata_fixings_tbl;
-drop policy if exists observations_tbl_tenant_isolation_policy on ores_marketdata_observations_tbl;
-drop policy if exists series_tbl_tenant_isolation_policy on ores_marketdata_series_tbl;
-drop policy if exists crm_topology_configs_tbl_tenant_isolation_policy on ores_marketdata_crm_topology_configs_tbl;
-drop policy if exists crm_driver_pairs_tbl_tenant_isolation_policy on ores_marketdata_crm_driver_pairs_tbl;
-drop policy if exists crm_enabled_derived_pairs_tbl_tenant_isolation_policy on ores_marketdata_crm_enabled_derived_pairs_tbl;
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.marketdata.api/domain/crm_driver_pair.hpp"
+#include "ores.marketdata.core/export.hpp"
+#include <vector>
+
+namespace ores::marketdata::presentation {
+
+/**
+ * @brief Renders a crm_driver_pair to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_MARKETDATA_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_crm_driver_pair_fields(const domain::crm_driver_pair& v);
+
+}
+
+#endif

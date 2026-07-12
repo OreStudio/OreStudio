@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:84475B75-7777-446C-8E44-FCFEC79CFBFB][Verify day_count_fraction_type CRUD and eventing]] | PENDING | Two-client (blue/red) CRUD + eventing scenario; loaded in blue's Scenario Runner. |
 
 * PRs
 

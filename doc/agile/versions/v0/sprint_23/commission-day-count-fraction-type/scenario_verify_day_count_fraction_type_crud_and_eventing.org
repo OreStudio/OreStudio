@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 84475B75-7777-446C-8E44-FCFEC79CFBFB
+:END:
+#+title: Test Scenario: Verify day_count_fraction_type CRUD and eventing
+#+description: Manual verification of the new ores.refdata day_count_fraction_type entity: create/read/update/delete/history in the Qt UI, and cross-client eventing via the LISTEN/NOTIFY-to-NATS relay.
+#+type: test_scenario
+#+level: s1
+#+filetags: :commission-day-count-fraction-type:sprint_23:v0:
+#+target_dialog: DayCountFractionTypeDetailDialog
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment: prime_origin
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:307A9F1A-2F12-48E9-8D01-0E109D5DEC67][Model day_count_fraction_type as an ores.refdata entity]] in [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:307A9F1A-2F12-48E9-8D01-0E109D5DEC67][Model day_count_fraction_type as an ores.refdata entity]] |
+| Parent story  | [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]]   |
+| Target dialog | =DayCountFractionTypeDetailDialog= / =DayCountFractionTypeHistoryDialog= |
+| Clients       | blue, red                               |
+| State         | PENDING                                 |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** blue
+
+*** Connect and log in
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= (from
+=projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+— the exact credentials this scenario's provisioning step used). Select
+the *Barclays Plc* / *BARCLAYS PLC* party. If the database has been
+recreated since provisioning, re-run:
+
+#+begin_src sh
+./compass.sh shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+#+end_src
+
+*** Open the Day Count Fraction Types list
+
+Menu: *Reference Data > Trading Conventions > Day Count Fraction
+Types*. Confirm the list loads with the seeded rows (A360, A365F,
+A365, ActAct(ISDA), ActAct(ISMA), ActAct(AFB), 30/360, 30E/360,
+30E/360(ISDA), Business252, 1/1, Simple).
+
+*** Create
+
+Click *Add*. Enter code =TestDCF=, name =Test Day Count Fraction=,
+description =Scenario test row=, display order =99=. Save. Confirm
+the new row appears in the list with the values just entered.
+
+*** Read
+
+Double-click the =TestDCF= row to reopen its detail dialog. Confirm
+every field round-trips exactly as saved (code, name, description,
+display order).
+
+*** Update
+
+Edit the =TestDCF= row's description to =Scenario test row (updated)=
+and save. Confirm the list refreshes with the new description without
+a manual reload, and that a change-reason prompt was shown and
+recorded.
+
+*** Delete
+
+Select the =TestDCF= row and click *Delete*, confirming the prompt.
+Confirm the row disappears from the list.
+
+*** History
+
+Reopen the =TestDCF= row (it should still resolve by code even though
+its current version is deleted — via History, not the main list) and
+open the History dialog. Confirm all three prior operations — create,
+update, delete — are listed in order with the change reasons entered
+above.
+
+** red
+
+*** Connect as a second instance
+
+Log in with the same credentials as the =blue= instance
+(=tenant_admin@barclays_plc= / =Secure-Password-123=) and open the Day
+Count Fraction Types list here too, *before* the =blue= instance
+performs its Create step above.
+
+*** Confirm the create event arrives
+
+After =blue='s Create step, confirm the =TestDCF= row appears in this
+=red= instance's list *without a manual reload* — this is what
+exercises the Postgres LISTEN/NOTIFY-to-NATS relay end to end, not
+just the repository layer ctest already covers.
+
+*** Confirm the update and delete events arrive
+
+After =blue='s Update step, confirm the description change lands here
+automatically. After =blue='s Delete step, confirm the row disappears
+here automatically too.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

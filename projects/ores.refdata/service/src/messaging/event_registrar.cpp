@@ -36,6 +36,7 @@
 #include "ores.refdata.service/messaging/currency_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_pair_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_pair_event_registrar.hpp"
+#include "ores.refdata.service/messaging/day_count_fraction_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/purpose_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/regulatory_book_type_event_registrar.hpp"
@@ -62,6 +63,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_currency_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_pair_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_pair_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_day_count_fraction_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_purpose_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_regulatory_book_type_event_mapping(event_source, event_bus, nats));

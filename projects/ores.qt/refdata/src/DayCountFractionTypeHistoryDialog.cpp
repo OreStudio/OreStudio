@@ -19,9 +19,8 @@
  */
 #include "ores.qt/DayCountFractionTypeHistoryDialog.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.trading.api/messaging/day_count_fraction_type_protocol.hpp"
+#include "ores.refdata.api/messaging/day_count_fraction_type_protocol.hpp"
 #include "ui_DayCountFractionTypeHistoryDialog.h"
-#include <QHeaderView>
 
 namespace ores::qt {
 
@@ -36,74 +35,91 @@ DayCountFractionTypeHistoryDialog::DayCountFractionTypeHistoryDialog(const QStri
     , clientManager_(clientManager) {
 
     ui_->setupUi(this);
-
-    ui_->titleLabel->setText(QString("History for: %1").arg(code_));
-
     ui_->versionListWidget->setColumnCount(5);
-    ui_->versionListWidget->setHorizontalHeaderLabels(
-        {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
-
-    initializeHistoryUi({.versionList = ui_->versionListWidget,
-                         .changesTable = ui_->changesTableWidget,
-                         .titleLabel = ui_->titleLabel,
-                         .closeButton = ui_->closeButton});
+    ui_->versionListWidget->setHorizontalHeaderLabels({tr("Version"),
+                                                       tr("Recorded At"),
+                                                       tr("Modified By"),
+                                                       tr("Performed By"),
+                                                       tr("Commentary")});
+    ui_->changesTableWidget->setColumnCount(3);
+    ui_->changesTableWidget->setHorizontalHeaderLabels(
+        {tr("Field"), tr("Old Value"), tr("New Value")});
+    initializeHistoryUi(
+        {ui_->versionListWidget, ui_->changesTableWidget, ui_->titleLabel, ui_->closeButton});
 }
 
-DayCountFractionTypeHistoryDialog::~DayCountFractionTypeHistoryDialog() = default;
+DayCountFractionTypeHistoryDialog::~DayCountFractionTypeHistoryDialog() {
+    delete ui_;
+}
+
+QString DayCountFractionTypeHistoryDialog::code() const {
+    return code_;
+}
 
 void DayCountFractionTypeHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), debug) << "Loading history for day count fraction type: "
                                << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
-    trading::messaging::get_day_count_fraction_type_history_request request;
+    refdata::messaging::get_day_count_fraction_type_history_request request;
     request.code = code_.toStdString();
 
-    runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
-        if (!response.success) {
-            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
-            historyLoadFailed(QString::fromStdString(response.message));
-            return;
-        }
-        versions_ = std::move(response.history);
-        historyLoaded();
-    });
+    QPointer<DayCountFractionTypeHistoryDialog> self = this;
+    runHistoryRequest(
+        clientManager_,
+        std::move(request),
+        [self](refdata::messaging::get_day_count_fraction_type_history_response response) {
+            if (!self)
+                return;
+            if (!response.success) {
+                self->historyLoadFailed(QString::fromStdString(response.message));
+                return;
+            }
+            self->versions_ = std::move(response.history);
+            self->historyLoaded();
+        });
 }
 
 int DayCountFractionTypeHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow DayCountFractionTypeHistoryDialog::versionRow(int index) const {
-    const auto& version = versions_[index];
-    return {.version = version.version,
-            .cells = {relative_time_helper::format(version.recorded_at),
-                      QString::fromStdString(version.modified_by),
-                      QString::fromStdString(version.performed_by),
-                      QString::fromStdString(version.change_commentary)}};
-}
-
 QString DayCountFractionTypeHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::DiffResult
-DayCountFractionTypeHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
-    const auto& current = versions_[current_index];
-    const auto& previous = versions_[previous_index];
+HistoryDialogBase::VersionRow DayCountFractionTypeHistoryDialog::versionRow(int index) const {
+    const auto& v = versions_[index];
+    return {v.version,
+            {relative_time_helper::format(v.recorded_at),
+             QString::fromStdString(v.modified_by),
+             QString::fromStdString(v.performed_by),
+             QString::fromStdString(v.change_commentary)}};
+}
 
+HistoryDialogBase::DiffResult DayCountFractionTypeHistoryDialog::calculateDiffAt(int ci,
+                                                                                 int pi) const {
     DiffResult diffs;
-    checkString(diffs, "Code", current.code, previous.code);
-    checkString(diffs, "Description", current.description, previous.description);
+    const auto& curr = versions_[ci];
+    const auto& prev = versions_[pi];
 
+    checkString(diffs, tr("Code"), curr.code, prev.code);
+    checkString(diffs, tr("Name"), curr.name, prev.name);
+    checkString(diffs, tr("Description"), curr.description, prev.description);
+    checkInt(diffs, tr("Display Order"), curr.display_order, prev.display_order);
     return diffs;
 }
 
 void DayCountFractionTypeHistoryDialog::displayFullDetails(int index) {
+    if (index < 0 || static_cast<size_t>(index) >= versions_.size())
+        return;
+
     const auto& version = versions_[index];
 
     ui_->codeValue->setText(QString::fromStdString(version.code));
+    ui_->nameValue->setText(QString::fromStdString(version.name));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
+    ui_->displayOrderValue->setText(QString::number(version.display_order));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
@@ -111,20 +127,11 @@ void DayCountFractionTypeHistoryDialog::displayFullDetails(int index) {
 }
 
 void DayCountFractionTypeHistoryDialog::openVersionAt(int index) {
-    const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening day count fraction type version " << version.version
-                              << " in read-only mode";
-    emit openVersionRequested(version, version.version);
+    emit openVersionRequested(versions_[index], versions_[index].version);
 }
 
 void DayCountFractionTypeHistoryDialog::revertToVersionAt(int index) {
-    // The base has already confirmed with the user; the server handles
-    // versioning.
-    const auto& selected = versions_[index];
-
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
-
-    emit revertVersionRequested(selected);
+    emit revertVersionRequested(versions_[index]);
 }
 
 }

@@ -25,12 +25,13 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.trading.api/domain/day_count_fraction_type.hpp"
+#include "ores.refdata.api/domain/day_count_fraction_type.hpp"
 #include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolBar>
 
 namespace ores::qt {
+
 
 /**
  * @brief MDI window for displaying and managing day count fraction types.
@@ -56,22 +57,28 @@ public:
                                            QWidget* parent = nullptr);
     ~DayCountFractionTypeMdiWindow() override = default;
 
-public slots:
-    void doReload() override;
-
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showTypeDetails(const trading::domain::day_count_fraction_type& type);
+    void showTypeDetails(const refdata::domain::day_count_fraction_type& type);
     void addNewRequested();
     void typeDeleted(const QString& code);
-    void showTypeHistory(const trading::domain::day_count_fraction_type& type);
+    void showTypeHistory(const refdata::domain::day_count_fraction_type& type);
+    // Extra signal declarations seam: a future
+    // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
+    // to declare any entity-specific signals (e.g. a cross-navigation
+    // request to a related entity's list window) — see
+    // paste_blocks_in_codegen.org. Left empty when no entity implements
+    // this kind.
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();

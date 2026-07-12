@@ -24,7 +24,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.trading.api/domain/day_count_fraction_type.hpp"
+#include "ores.refdata.api/domain/day_count_fraction_type.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
 
@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class DayCountFractionTypeMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing day count fraction type windows and operations.
@@ -55,6 +56,7 @@ public:
     DayCountFractionTypeController(QMainWindow* mainWindow,
                                    QMdiArea* mdiArea,
                                    ClientManager* clientManager,
+                                   ChangeReasonCache* changeReasonCache,
                                    const QString& username,
                                    QObject* parent = nullptr);
 
@@ -62,25 +64,28 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
-    void onShowDetails(const trading::domain::day_count_fraction_type& type);
+    void onShowDetails(const refdata::domain::day_count_fraction_type& type);
     void onAddNewRequested();
-    void onShowHistory(const trading::domain::day_count_fraction_type& type);
-    void onRevertVersion(const trading::domain::day_count_fraction_type& type);
-    void onOpenVersion(const trading::domain::day_count_fraction_type& type, int versionNumber);
+    void onShowHistory(const refdata::domain::day_count_fraction_type& type);
+    void onRevertVersion(const refdata::domain::day_count_fraction_type& type);
+    void onOpenVersion(const refdata::domain::day_count_fraction_type& type, int versionNumber);
 
 private:
     void showAddWindow();
-    void showDetailWindow(const trading::domain::day_count_fraction_type& type);
+    void showDetailWindow(const refdata::domain::day_count_fraction_type& type);
     void showHistoryWindow(const QString& code);
 
+    ChangeReasonCache* changeReasonCache_;
     DayCountFractionTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

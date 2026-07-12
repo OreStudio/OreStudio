@@ -1,0 +1,214 @@
+:PROPERTIES:
+:ID: D639B3AB-7421-4A7C-A17A-02000709E22F
+:END:
+#+title: ores.refdata.day_count_fraction_type
+#+description: Codegen entity model for the refdata day_count_fraction_type table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: day_count_fraction_type
+#+entity_plural: day_count_fraction_types
+#+entity_title: Day Count Fraction Type
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+brief: Day count fraction convention code (e.g. Actual/360, Actual/365, 30/360).
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+Reference data table defining valid day count fraction conventions used to
+compute accrual fractions between two dates (e.g. for coupon accrual on
+instrument legs and the =*_convention= entities). Values are sourced from
+ORE's =ore_types.xsd=. Follows the same aux-type pattern (code / name /
+description / display_order) as
+[[id:B94A2D2A-7653-4165-AD13-B13008BE3B5A][business_day_convention_type]].
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:is_text:  true
+:END:
+
+Unique day count fraction type code.
+
+Examples: 'A360', 'A365F', 'Thirty360', 'ActActISDA'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_dcf"
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable name of the day count fraction (e.g. "Actual/360").
+
+#+begin_src cpp :name generator
+"Test Day Count Fraction " + std::to_string(faker::number::integer(1000, 9999))
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable description of the day count fraction.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Ordinal position for dropdown/list display.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_day_count_fraction_types_tbl
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function                |
+|--------------------+-------------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn  |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: day count fraction type
+:entity_plural_words:   day count fraction types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: t
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| code         | Code         |
+| name         | Name         |
+| description  | Description  |
+| display_order| Display Order|
+| modified_by  | Modified By  |
+| version      | Version      |
+
+** Qt
+:PROPERTIES:
+:domain_include:              ores.refdata.api/domain/day_count_fraction_type.hpp
+:domain_class:                refdata::domain::day_count_fraction_type
+:protocol_include:            ores.refdata.api/messaging/day_count_fraction_type_protocol.hpp
+:collection_name:             types
+:item_var:                    type
+:key_field:                   code
+:has_uuid_primary_key:        false
+:has_change_reason_cache:     true
+:get_request_class:           refdata::messaging::get_day_count_fraction_types_request
+:get_response_class:          refdata::messaging::get_day_count_fraction_types_response
+:get_message_type:            get_day_count_fraction_types_request
+:save_request_class:          refdata::messaging::save_day_count_fraction_type_request
+:save_response_class:         refdata::messaging::save_day_count_fraction_type_response
+:save_message_type:           save_day_count_fraction_type_request
+:delete_request_class:        refdata::messaging::delete_day_count_fraction_type_request
+:delete_response_class:       refdata::messaging::delete_day_count_fraction_type_response
+:delete_message_type:         delete_day_count_fraction_type_request
+:delete_request_id_field:     codes
+:delete_request_id_is_plural: true
+:history_request_class:       refdata::messaging::get_day_count_fraction_type_history_request
+:history_response_class:      refdata::messaging::get_day_count_fraction_type_history_response
+:history_message_type:        get_day_count_fraction_type_history_request
+:history_request_id_field:    code
+:history_response_data_field: history
+:settings_group:              DayCountFractionTypeListWindow
+:window_title:                Day Count Fraction Types
+:icon:                        CalendarClock
+:END:
+
+*** Detail fields
+
+| field         | label         | widget            | type      | is_key | is_required | placeholder                 |
+|---------------+---------------+-------------------+-----------+--------+-------------+------------------------------|
+| code          | Code          | codeEdit          | line_edit | true   | true        | e.g. A360                   |
+| name          | Name          | nameEdit          | line_edit |        | true        | e.g. Actual/360              |
+| description   | Description   | descriptionEdit   | line_edit |        |             | Short description            |
+| display_order | Display Order | displayOrderEdit  | spin_box  |        |             |                              |
+
+*** Columns (Qt model)
+
+| enum_name     | field         | header        | type      | width |
+|---------------+---------------+---------------+-----------+-------|
+| Code          | code          | Code          | string    | 200   |
+| Name          | name          | Name          | string    | 220   |
+| Description   | description   | Description   | string    | 350   |
+| DisplayOrder  | display_order | Display Order | int       | 90    |
+| Version       | version       | Version       | int       | 80    |
+| ModifiedBy    | modified_by   | Modified By   | string    | 120   |
+| RecordedAt    | recorded_at   | Recorded At   | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:B94A2D2A-7653-4165-AD13-B13008BE3B5A][business_day_convention_type]] — sibling aux-type entity this model follows.

@@ -30,7 +30,6 @@
 #include "ores.cli/config/add_compute_workunit_options.hpp"
 #include "ores.cli/config/add_country_options.hpp"
 #include "ores.cli/config/add_currency_options.hpp"
-#include "ores.cli/config/add_day_count_fraction_type_options.hpp"
 #include "ores.cli/config/add_floating_index_type_options.hpp"
 #include "ores.cli/config/add_leg_type_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
@@ -65,7 +64,6 @@ using add_options = std::variant<add_currency_options,
                                  add_compute_app_version_options,
                                  add_compute_batch_options,
                                  add_compute_workunit_options,
-                                 add_day_count_fraction_type_options,
                                  add_floating_index_type_options,
                                  add_payment_frequency_type_options,
                                  add_leg_type_options>;

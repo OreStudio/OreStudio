@@ -88,39 +88,6 @@ register_trade_handlers(ores::nats::service::client& nats,
             h.export_trades_to_storage(std::move(msg));
         }));
 
-    // Instrument reference data — day count fraction types
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_day_count_fraction_types_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 instrument_ref_handler h(nats, ctx, verifier);
-                                 h.list_day_count_fraction_types(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(save_day_count_fraction_type_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 instrument_ref_handler h(nats, ctx, verifier);
-                                 h.save_day_count_fraction_type(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(delete_day_count_fraction_type_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 instrument_ref_handler h(nats, ctx, verifier);
-                                 h.delete_day_count_fraction_type(std::move(msg));
-                             }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(get_day_count_fraction_type_history_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 instrument_ref_handler h(nats, ctx, verifier);
-                                 h.history_day_count_fraction_type(std::move(msg));
-                             }));
-
     // Instrument reference data — floating index types
     subs.push_back(nats.queue_subscribe(std::string(get_floating_index_types_request::nats_subject),
                                         queue,

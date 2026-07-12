@@ -109,8 +109,8 @@ begin
     -- Validate leg_type_code
     NEW.leg_type_code := ores_trading_validate_leg_type_fn(NEW.tenant_id, NEW.leg_type_code);
 
-    -- Validate day_count_fraction_code
-    NEW.day_count_fraction_code := ores_trading_validate_day_count_fraction_type_fn(
+    -- Validate day_count_fraction_code (moved to ores.refdata)
+    NEW.day_count_fraction_code := ores_refdata_validate_day_count_fraction_type_fn(
         NEW.tenant_id, NEW.day_count_fraction_code);
 
     -- Validate business_day_convention_code (moved to ores.refdata)

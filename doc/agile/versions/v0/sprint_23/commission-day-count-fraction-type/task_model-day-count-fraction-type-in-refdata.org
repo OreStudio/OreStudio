@@ -8,7 +8,7 @@
 #+filetags: :commission-day-count-fraction-type:sprint_23:v0:
 #+owner: marco
 #+branch: feature/model-day-count-fraction-type-in-refdata
-#+pr:
+#+pr: 1525
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -115,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1525][#1525]] | [refdata] Move day_count_fraction_type from ores.trading to ores.refdata |
 
 * Review
 

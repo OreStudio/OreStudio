@@ -238,6 +238,14 @@ TEST_CASE("concurrent updates and batched reads never crash or hang", "[rate_eng
         }
     });
 
+    // Catch2 assertion macros (REQUIRE/CHECK) are not thread-safe -- they
+    // mutate the current test case's shared, non-atomic result-capture
+    // state, so calling them from a worker thread is itself a data race
+    // (this was the actual root cause of an intermittent SIGSEGV/SIGABRT
+    // here, not a bug in rate_engine: reader threads collect a per-thread
+    // failure count instead, and only the main thread asserts, after
+    // every thread has joined).
+    std::atomic<int> failures{0};
     std::vector<std::thread> readers;
     for (int i = 0; i < 4; ++i) {
         readers.emplace_back([&] {
@@ -245,8 +253,8 @@ TEST_CASE("concurrent updates and batched reads never crash or hang", "[rate_eng
                 const auto results =
                     engine.rates({{"EUR", "USD"}, {"EUR", "JPY"}, {"GBP", "JPY"}}, epoch(0));
                 for (const auto& r : results) {
-                    REQUIRE(r.status == rate_status::fresh);
-                    REQUIRE(r.rate > 0.0);
+                    if (r.status != rate_status::fresh || r.rate <= 0.0)
+                        failures.fetch_add(1);
                 }
             }
         });
@@ -255,4 +263,6 @@ TEST_CASE("concurrent updates and batched reads never crash or hang", "[rate_eng
         t.join();
     stop.store(true);
     writer.join();
+
+    CHECK(failures.load() == 0);
 }

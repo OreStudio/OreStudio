@@ -59,7 +59,7 @@ Finance concepts the codebase relies on, grouped by topic.
 ** Rates and curves
 
 - [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — day-count conventions, discount factors,
-  bootstrapping, and interpolation methods for rate curves.
+  and bootstrapping for rate curves.
 - [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Families]] — hub note for how a currency's
   curves compose beyond a single curve: funding/projection families,
   multi-curve build order, storage grouping, the review UI, and

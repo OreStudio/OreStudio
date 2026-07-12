@@ -65,6 +65,14 @@ for vol surface tenors see
   Point Provenance]] (rejected/interpolated/back-filled/overridden
   metadata, and why a broken date is never promoted into a standard
   tenor).
+- *Filling the gaps* → [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]]
+  (local vs. non-local methods, the curve split tenor) and
+  [[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][Extrapolation]] (before the
+  start vs. flattening beyond the end).
+- *Which reference point a ladder is quoted off* →
+  [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]] (Out of
+  Spot, Tomorrow, or Today, and why non-default bases must be visually
+  flagged).
 
 ** Where these concepts are consumed
 
@@ -80,11 +88,18 @@ Families]]. For the equivalent tenor concept on the volatility side, see
 
 ** Deferred: FX short-end forward conventions
 
-The following FX-specific conventions were part of this document's
-previous, monolithic form and are preserved here verbatim rather than
-atomized, since they are out of scope for the current interest-rate work
-and it would be premature to design their final home before returning to
-them.
+The following FX-settlement-specific conventions were part of this
+document's previous, monolithic form and are preserved here verbatim
+rather than atomized, since they are out of scope for the current
+interest-rate work and it would be premature to design their final home
+before returning to them. The *"Out Of" convention* that used to sit
+alongside these has since been promoted to its own atomic doc,
+[[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]], rather than
+staying deferred here — unlike the two conventions below, it is not
+FX-settlement-specific: it is a general spot/forward-curve quoting-basis
+convention already load-bearing for
+[[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn
+Points]]'s entry and display rules.
 
 *** Spot days and the pre-spot region
 
@@ -102,16 +117,6 @@ must be adjusted by the short-end rates:
 - *T+2 spot currencies*:
   - Outright today = Spot rate − T/N points × scaling factor − O/N points × scaling factor
   - Outright tomorrow = Spot rate − T/N points × scaling factor
-
-*** The "Out Of" convention on forward ladders
-
-A forward rate ladder can be expressed starting from different reference
-points:
-
-- *Out of Spot* (standard): rates beyond =S/N= are computed off spot.
-- *Out of Tomorrow*: rates beyond =T/N= are computed off tomorrow.
-- *Out of Today*: all rates are computed off today. Tenors in this mode are
-  non-standard and should be visually distinguished to alert users.
 
 *** Tom/Next and funding
 

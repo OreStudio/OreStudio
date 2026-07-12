@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 85B48CF7-3858-44C8-97AA-91D21C634A9D
+:END:
+#+title: Interpolation
+#+description: Why a term structure needs interpolation between pillars, and the local vs non-local method families used to provide it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+* Summary
+
+A [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term structure]] is only
+directly observed at its own pillar [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+points — a bootstrapped curve has no market-quoted value for a date that
+falls *between* two pillars, yet a consumer (a cash flow landing on an
+off-pillar date, a [[id:4DF1F49A-9AB4-4B56-B170-808490071799][broken
+date]] a user adds) still needs a value there. *Interpolation* is the rule
+that manufactures that value from the surrounding known points. Two
+families of interpolation method exist — local and non-local — trading off
+stability against smoothness, and the choice matters beyond aesthetics:
+different methods produce different forward rates at the same off-pillar
+date, so every system consuming a given curve must agree on which method
+that curve uses.
+
+* Detail
+
+** Why interpolation is needed
+
+A [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][bootstrapped]] curve fixes a
+discount factor (or rate) at each of its pillar tenors and nowhere else.
+Anything that needs a value elsewhere *within* the pillar range — pricing
+a cash flow on an arbitrary date, resolving a
+[[id:4DF1F49A-9AB4-4B56-B170-808490071799][broken date]] a user has added
+to the ladder — must derive it from the pillars bracketing it. This is
+distinct from asking for a value *outside* the pillar range altogether,
+which is [[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][extrapolation]], a
+related but separate concept with its own conventions.
+
+** Local methods
+
+Local methods use only the immediately bracketing pillars; changing one
+pillar does not affect distant tenors.
+
+- *Log-linear (linear in log-DF)*: the discount factor changes by a
+  constant ratio every day within an interval, so daily forward rates are
+  constant within each interval. Simple and stable; the industry default
+  for the short end.
+- *Zero-linear (linear in zero rate)*: linear in $-\ln(DF)/t$. Daily
+  forward rates change at a constant rate within each interval.
+
+Both perform well in low-curvature regimes.
+
+** Non-local methods
+
+Non-local methods take into account the full shape of the curve, producing
+smoother results but introducing the risk that changing one pillar affects
+distant tenors.
+
+- *Cubic spline*: a piecewise cubic polynomial fitted globally. Produces
+  smooth forward curves but can generate oscillations and negative forward
+  rates in extreme cases.
+- *Monotone spline*: a shape-preserving variant of the cubic spline that
+  prevents oscillations while maintaining smoothness.
+
+** Mixing methods and the curve split tenor
+
+A single curve may use different interpolation methods at different tenor
+ranges — e.g. log-linear at the short end, cubic spline beyond =2Y=. A
+*curve split tenor* (typically =5Y=) separates the short-end and long-end
+spline segments, preventing a change at one end from propagating to the
+other. The same split-tenor idea recurs on the volatility side: a
+volatility surface's default 5-year extent, described in
+[[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]], is
+conventionally reused as its own curve split tenor.
+
+** Agreement across consuming systems
+
+It is critical that every system consuming the same curve agree on the
+interpolation method: different methods produce different forward rates
+at off-pillar dates, so a mismatch between, say, a pricer and a risk
+engine reading the same nominal curve produces silently inconsistent
+results rather than an error.
+
+* See also
+
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — the hub.
+- [[id:F85AB5BD-CCBF-4031-AD73-ADD9797DE5C2][Extrapolation]] — the sister concept for values outside the pillar range entirely.
+- [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the series interpolation fills in the gaps of.
+- [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — how far a curve's pillar range extends by curve type.
+- [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — the entries on a ladder that interpolation, or a direct feed, resolves.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — how an interpolated point is flagged as such.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — where these methods are applied to a concrete bootstrapped curve.

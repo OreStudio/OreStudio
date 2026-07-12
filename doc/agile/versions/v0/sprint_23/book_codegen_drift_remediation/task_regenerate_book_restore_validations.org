@@ -8,7 +8,7 @@
 #+filetags: :book_data_model_cleanup:sprint_23:v0:book_codegen_drift_remediation:
 #+owner: marco
 #+branch: feature/regenerate-book-restore-validations
-#+pr:
+#+pr: 1516
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1516][#1516]] | [refdata,qt,sql,agile] Book codegen drift remediation: relocate Qt plugin ownership, regenerate book/book_status/regulatory_book_type |
 
 * Review
 

@@ -68,9 +68,20 @@ public:
     void setAccountType(const std::string& accountType);
     /**
      * @brief Marks which assigned party (if any) is the account's default
-     * quick-login party. Pass a nil UUID to indicate no default is set.
+     * quick-login party, and resets the "combo has been seeded" state —
+     * for the initial per-account setup path only (setAccount()), before
+     * load() has run. Pass a nil UUID to indicate no default is set.
      */
     void setDefaultPartyId(const boost::uuids::uuid& defaultPartyId);
+    /**
+     * @brief Rebases the "pending change" baseline to a value just
+     * persisted by a successful save, without touching whether the combo
+     * has been seeded (isDefaultPartyReady() stays true if it already was
+     * — unlike setDefaultPartyId(), this isn't followed by a guaranteed
+     * load()/populateDefaultPartyCombo() call when the save didn't also
+     * change party membership).
+     */
+    void rebaseDefaultParty(const boost::uuids::uuid& defaultPartyId);
     /**
      * @brief Load parties. If accountId is set, also fetches assigned parties.
      * If accountId is nil (create mode), only available parties are loaded.

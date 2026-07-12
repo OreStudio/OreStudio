@@ -124,6 +124,11 @@ void AccountPartiesWidget::setDefaultPartyId(const boost::uuids::uuid& defaultPa
     refreshView();
 }
 
+void AccountPartiesWidget::rebaseDefaultParty(const boost::uuids::uuid& defaultPartyId) {
+    defaultPartyId_ = defaultPartyId;
+    refreshView();
+}
+
 void AccountPartiesWidget::setAccountType(const std::string& accountType) {
     accountType_ = accountType;
 }

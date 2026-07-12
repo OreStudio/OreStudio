@@ -785,10 +785,16 @@ void AccountDetailDialog::onSaveClicked() {
                             self->currentAccount_.default_party_id =
                                 newDefault.is_nil() ? std::nullopt :
                                                       std::optional(newDefault);
-                            // Resets the "pending change" baseline to what was just
+                            // Rebases the "pending change" baseline to what was just
                             // saved, so the combo doesn't keep reporting a dirty
-                            // selection after a successful save.
-                            self->partiesWidget_->setDefaultPartyId(newDefault);
+                            // selection after a successful save. Deliberately not
+                            // setDefaultPartyId() — that also resets the "combo has
+                            // been seeded" flag, and nothing is guaranteed to flip it
+                            // back on (load() only re-runs below if party membership
+                            // itself changed), which would permanently disable Save
+                            // for the rest of the dialog session after a
+                            // default-party-only save.
+                            self->partiesWidget_->rebaseDefaultParty(newDefault);
                         }
 
                         if (needsPartySave && self->partiesWidget_)

@@ -66,6 +66,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | dispatch() doesn't guard against a provider throwing | dispatch_registry.cpp | Accepted | Wrapped provider call in try/catch, mapped std::exception to failure response; added throwing-provider test |
+| 2 | dispatch_registry not thread-safe (cf. event_channel_registry mutex) | dispatch_registry.hpp | Declined | Scaffolding increment; registration happens at startup before dispatch, no concurrent access yet. Revisit when real providers are wired |
+| 3 | dispatch_registry copyable/movable by default | dispatch_registry.hpp | Declined | Minor; not an issue at current scope, no single-owned-instance requirement yet |
+| 4 | get_entity_history_response field order differs from workflow_query_protocol.hpp sibling | history_protocol.hpp | Declined | Cosmetic, not house-style-mandated |
 
 * Result

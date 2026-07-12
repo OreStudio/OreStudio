@@ -18,6 +18,7 @@
  *
  */
 #include "ores.history/service/dispatch_registry.hpp"
+#include <exception>
 
 namespace ores::history::service {
 
@@ -42,7 +43,13 @@ dispatch_registry::dispatch(const messaging::get_entity_history_request& request
                .message = "No history provider registered for entity_type: " + request.entity_type};
     }
 
-    return {.versions = it->second(request.entity_id), .success = true, .message = {}};
+    try {
+        return {.versions = it->second(request.entity_id), .success = true, .message = {}};
+    } catch (const std::exception& e) {
+        return {.versions = {},
+               .success = false,
+               .message = "History provider for entity_type '" + request.entity_type + "' failed: " + e.what()};
+    }
 }
 
 }

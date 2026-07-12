@@ -68,8 +68,9 @@ public:
     /**
      * @brief Dispatches a request to the provider registered for its
      * entity_type. Returns a failure response (success = false) when
-     * no provider is registered, rather than throwing — the caller is
-     * a NATS handler that must always reply.
+     * no provider is registered, or when the registered provider
+     * throws, rather than propagating an exception — the caller is a
+     * NATS handler that must always reply.
      */
     [[nodiscard]] messaging::get_entity_history_response
     dispatch(const messaging::get_entity_history_request& request) const;

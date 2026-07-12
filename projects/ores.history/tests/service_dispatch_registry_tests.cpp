@@ -121,3 +121,17 @@ TEST_CASE("dispatch_only_calls_the_provider_matching_the_requested_entity_type",
     CHECK_FALSE(currency_provider_called);
     CHECK(party_provider_called);
 }
+
+TEST_CASE("dispatch_returns_a_failure_response_when_the_provider_throws", tags) {
+    dispatch_registry registry;
+
+    registry.register_history_provider("ores.refdata.currency", [](const std::string&) -> std::vector<entity_history_version> {
+        throw std::runtime_error("database unavailable");
+    });
+
+    const auto response = registry.dispatch({.entity_type = "ores.refdata.currency", .entity_id = "USD"});
+
+    CHECK_FALSE(response.success);
+    CHECK(response.versions.empty());
+    CHECK(response.message.find("database unavailable") != std::string::npos);
+}

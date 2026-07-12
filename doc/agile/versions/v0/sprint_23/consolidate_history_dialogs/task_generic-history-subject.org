@@ -8,7 +8,7 @@
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch: feature/generic-history-subject
-#+pr:
+#+pr: 1521
 #+blocked_on: 5C873944-1152-4A79-9C92-C24AEB65834A
 #+blocked_since:
 #+created: 2026-07-11
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1521][#1521]] | [history] Add ores.history component with dispatch registry |
 
 * Review
 

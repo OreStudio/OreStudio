@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-11                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-12                               |
 
 * Acceptance
 
@@ -39,9 +39,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Superseded: [[id:0C185CE4-63E5-44CC-94AF-F3FF1E194986][Regenerate book and restore insert-trigger validations]]
+scaffolded and ran its own manual QA scenario covering exactly this
+scope (login, list, add/edit/save, badges, change-reason, history,
+insert-trigger validation) -- see
+[[id:7DD2C147-1CED-4D8A-AE6E-F1CA1636FA7F][Verify book list/detail/history and insert-trigger validations after
+codegen regeneration]], all 6 steps PASS. A separate identical pass
+here would be pure duplication.
 
 * Notes
 

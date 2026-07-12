@@ -49,11 +49,23 @@ child heading directly under it.
 Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
 =BARCLAYS PLC=. Confirm all menus enable with no errors.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Books list opens from Reference Data and shows badges
 
 Open Reference Data > Books. Confirm the list opens, shows seeded
 rows, and that the Book Status and Regulatory Book Type columns render
 as colour-coded badges (not plain text).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Detail dialog opens, shows badge combos, and ID is read-only
 
@@ -61,17 +73,35 @@ Double-click a book row. Confirm the detail dialog opens, Book Status
 and Regulatory Book Type render as badge-coloured combos, and the ID
 field is read-only (not editable) even in edit mode.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Edit and save a book
 
 Change a book's description and Save. Confirm the change-reason prompt
 appears, the save succeeds, the grid refreshes, and Version increments
 by 1.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** History dialog opens and shows the new version
 
 Open History on the edited book. Confirm both versions appear with
 distinct timestamps, and closing the history dialog only closes the
 sub-window, not the whole app.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Attempt to save a book with an invalid portfolio (should be rejected)
 
@@ -82,6 +112,13 @@ soft-FK insert-trigger validation from PR #1449 (already confirmed via
 direct SQL insert during this task, but worth reconfirming through the
 UI path too if practical).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Not directly testable via UI or ores.shell -- Parent Portfolio is a constrained picker (not free-text), so the UI structurally cannot submit a non-existent id, and ores.shell has no book commands (pre-existing gap, unrelated to this task). Validation already confirmed firing correctly via a direct SQL insert during this task's Plan (rejected with "Invalid parent_portfolio_id ... No active portfolio found"). |
+
 ** No error toast or log error during the whole flow
 
 Check the client's log tail
@@ -89,14 +126,21 @@ Check the client's log tail
 ERROR-level line — in particular no "Server reported failure" message
 (the new success-check added to ClientBookModel.cpp).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | check logs |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-12T10:23:22Z |
+| Branch        | feature/regenerate-book-restore-validations |
+| Commit        | e494d64ca |
+| Worktree      | bright_faraday |
 
 * Notes

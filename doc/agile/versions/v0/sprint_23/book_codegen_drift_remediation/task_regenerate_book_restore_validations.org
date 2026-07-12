@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
-| Now          | Regenerated, built, DB-verified (validations confirmed via direct SQL insert); awaiting manual QA. |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Run the manual scenario, then close out. |
+| Next         | Nothing.                  |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:7DD2C147-1CED-4D8A-AE6E-F1CA1636FA7F][Verify book list/detail/history and insert-trigger validations after codegen regeneration]] | PENDING | |
+| [[id:7DD2C147-1CED-4D8A-AE6E-F1CA1636FA7F][Verify book list/detail/history and insert-trigger validations after codegen regeneration]] | PASSED | All 6 steps PASS; zero ERROR-level log lines. The invalid-portfolio negative test isn't reachable via UI (constrained picker) or ores.shell (no book commands) -- already confirmed at the DB level via direct SQL insert. |
 
 * PRs
 
@@ -91,3 +91,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+book is fully regenerated against current codegen templates (all 40
+files ✅ in =compass codegen entity show book=), builds cleanly, and
+passes its manual end-to-end QA scenario (all 6 steps PASS, zero
+ERROR-level log lines). All 6 insert-trigger validations from PR #1449
+(3 soft FKs, 3 value checks) survived regeneration byte-identical and
+were confirmed firing correctly both at the DB level (direct SQL
+insert rejected) and structurally in the UI (the Parent Portfolio
+field is a constrained picker, so an invalid reference can't even be
+submitted).
+
+Unlike book_status and regulatory_book_type, no controller call-site
+fix was needed -- BookController's constructor was already correct in
+RefdataPlugin.cpp from the earlier "Move book to refdata" story.

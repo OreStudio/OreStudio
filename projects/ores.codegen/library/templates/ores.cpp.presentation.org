@@ -1,0 +1,12 @@
+:PROPERTIES:
+:ID: 4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D
+:END:
+#+title: ores.cpp.presentation
+#+description: Server-side rendering of a domain type for display: history field mapper.
+#+type: facet
+#+model_types: schema domain_entity
+#+level: cross
+#+facet_group: ores.cpp
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-07-11
+#+updated: 2026-07-11

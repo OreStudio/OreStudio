@@ -159,7 +159,9 @@ that rollout produces.
 | [[id:3C17FB4F-F9F2-4A0F-AEF7-AAC8EE8C53A7][Redesign server-side history-diff architecture]] | DONE | 2026-07-11 | 2026-07-11 | Superseded the reverted currency pilot: one generic history subject dispatched server-side to codegen'd per-entity handlers, ores.diff extended with intra-value diff spans, single non-templated HistoryDialog for every entity. See History Diff Architecture. |
 | [[id:DD614A9F-7949-4564-A78F-B4A4C4892732][ores.diff: intra-value diff spans]] | DONE | 2026-07-11 | 2026-07-11 | Add diff_span (offset/length) to diff_entry; implement span computation in engine::compute (prefix/suffix for single-line, line-LCS + per-line token diff for multiline); exhaustive test coverage per the redesign task's Notes (single-char, whole-word, prefix/suffix-only, no-overlap, multiline LCS, per-line token diff, added/removed field, identical values, empty-vs-non-empty, unicode). |
 | [[id:352B308F-8696-4BF3-881B-6990C9E3FA6D][Codegen the entity_type_of() identifier trait]] | DONE | 2026-07-11 | 2026-07-11 | Added to the existing domain class header archetype (not a new file); generated for 27 clean ores.refdata entities, 7 skipped due to pre-existing drift. |
-| [[id:03363327-CAD3-49DB-881F-A8017036BBAC][Generic server-side history dispatch: one subject, per-entity handlers]] | BACKLOG | | | Add the generic history.v1.get NATS subject and its dispatch-table handler (reapplying the entity-composed-registrars meta-pattern); add the codegen'd per-entity field mapper facet; register each entity's mapper as a history provider keyed by entity_type_of(); remove the per-entity get_<entity>_history subjects/handlers as each entity migrates. |
+| [[id:03363327-CAD3-49DB-881F-A8017036BBAC][Generic server-side history dispatch: one subject, per-entity handlers]] | ABANDONED | 2026-07-11 | 2026-07-11 | Split into two finer-grained sibling tasks below before implementation started; no code changes. |
+| [[id:5C873944-1152-4A79-9C92-C24AEB65834A][Codegen per-entity history field mapper]] | DONE | 2026-07-11 | 2026-07-12 | New ores.cpp.presentation facet: render_{entity}_fields() per entity, generated for the same 27 clean ores.refdata entities as entity_type_of(). |
+| [[id:15CFB0BE-C411-4B12-B733-974F6F5A44A5][Generic history.v1.get NATS subject and server-side dispatch registry]] | BACKLOG | | | Add the generic history.v1.get NATS subject and request/response types (entity_type, entity_id -> version/fields/changes), a server-side dispatch registry keyed by entity_type_of() reapplying the entity-composed-registrars meta-pattern, and register each entity's history field mapper as a provider. Remove the per-entity get_<entity>_history subjects/handlers as each entity migrates. |
 | [[id:7D8659AB-220E-4077-BD17-3C4DCA1937D8][Single generic HistoryDialog widget in ores.qt]] | BACKLOG | | | Build the single, non-templated HistoryDialog widget (version list, async load, toolbar, diff_span colour-highlighted changes tab per the GitHub-style capture) taking (entity_type, entity_id); add the codegen'd per-entity Open/Revert action registry; wire callers to construct HistoryDialog instead of a typed dialog subclass; wire the composite-entity 'Details' affordance for child-driven versions to open another HistoryDialog instance. |
 | [[id:CB042B99-9B2F-46E9-9CF5-73B47185BCD1][Retire HistoryDialogBase, per-entity dialogs, and their templates]] | BACKLOG | | | Once every entity has migrated onto the generic HistoryDialog, delete HistoryDialogBase, every remaining per-entity *HistoryDialog class, and cpp_qt_history_dialog.{hpp,cpp}.mustache/qt_history_dialog_ui.mustache; confirm via zero-diff regeneration guardrails that no facet still emits a per-entity dialog class. |
 | [[id:E4DDC1B9-8609-4C11-9172-F2EE79242E66][Generic unified-diff history renderer in ores.shell]] | BACKLOG | | | Replace the disabled currencies history-diff command with one generic, entity-parameterised unified-diff renderer consuming the generic history.v1.get response (context lines from fields, +/- pairs with span-based highlighting from changes); re-enable it for every entity; update the shell recipes. |
@@ -200,6 +202,15 @@ that rollout produces.
   within it, to entities whose regeneration surfaced no pre-existing
   drift — see the task's Notes for the affected entities (including
   =party=), deferred as a known gap.
+- The history field mapper's per-column type dispatch (new
+  =render_is_*= flags) is derived from each column's raw =cpp_type=
+  string — the same ground truth the domain class template itself
+  emits verbatim — never from the repository/SQL layer's
+  =is_uuid=/=is_nullable_string=/=is_already_optional= flags, which
+  encode a nullable-to-optional promotion the domain class template
+  does not apply. A first implementation attempt used the wrong flags
+  and failed to compile against real entities; see the
+  history-field-mapper task's Notes for the full story.
 
 * Out of scope
 

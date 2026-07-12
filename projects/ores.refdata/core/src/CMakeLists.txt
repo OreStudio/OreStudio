@@ -44,6 +44,7 @@ target_link_libraries(${lib_target_name}
         ores.refdata.api.lib
         ores.database.lib
         ores.nats.lib
+        ores.diff.lib
     PRIVATE
         ores.dq.api.lib
         ores.service.lib

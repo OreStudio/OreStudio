@@ -1,0 +1,203 @@
+:PROPERTIES:
+:ID: 5C873944-1152-4A79-9C92-C24AEB65834A
+:END:
+#+title: Task: Codegen per-entity history field mapper
+#+description: Codegen'd, plain (not hand-written, not generic reflection) per-entity mapper rendering a domain type to an ordered ores::diff::domain::field_value list, per History Diff Architecture layer 1. Handles the field types actually present in ores.refdata entities: std::string, numeric, bool, std::optional<T>, timestamps, uuids.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_history_dialogs:sprint_23:v0:
+#+owner: marco
+#+branch: feature/generic-history-dispatch
+#+pr: 1513
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-11
+#+updated: 2026-07-11
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a new =presentation= codegen facet: =render_{entity}_fields()=, a
+plain, generated (not hand-written, not runtime-reflective) per-entity
+function converting a domain value to an ordered
+=ores::diff::domain::field_value= list, per
+[[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] layer 1.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing — task closed.                 |
+| Last touched | 2026-07-12                             |
+
+* Acceptance
+
+- New =presentation= facet (=ores.cpp.presentation=, both the literate
+  doc group and the physical-space address node) declares/implements
+  =render_{entity}_fields(const domain::{entity}&)= per entity.
+- Generated for the same 27 =ores.refdata= entities as
+  =entity_type_of()= (task 352B308F) — the established clean baseline
+  for this story; the same 7 drifted entities stay excluded.
+- One =field_value= push per field: primary key, natural keys,
+  columns, audit columns, =recorded_at=. Labels are mechanical
+  title-case, not hand-curated.
+- Handles every =cpp_type= actually present across the 27 entities:
+  =std::string=, =std::optional<std::string>=, =int=,
+  =std::optional<int>=, =double=, =std::optional<double>=, =bool=,
+  =std::optional<bool>=, =boost::uuids::uuid=,
+  =std::optional<boost::uuids::uuid>=, plus =recorded_at='s fixed
+  =std::chrono::system_clock::time_point= via the existing
+  =ores::platform::time::datetime::to_iso8601_utc()=.
+- Local build clean (full repo, =-j3=); full ctest suite green
+  (69/69 suites, 215s).
+
+* Plan
+
+1. Investigated whether the existing per-column type flags
+   (=is_uuid=/=is_nullable_string=/=is_already_optional=/
+   =is_plain_string=, used by the repository/SQL facets) could be
+   reused directly for the mapper. *They could not* — see Notes for
+   why; this cost a full round of regenerate → compile-fail →
+   diagnose → fix.
+2. Added a new, independent set of =render_is_*= column flags in
+   =core.py=, derived directly from each column's raw =cpp_type=
+   string (the same ground truth the domain class template itself
+   emits verbatim) — =render_is_string=, =render_is_optional_string=,
+   =render_is_bool=, =render_is_optional_bool=, =render_is_int=,
+   =render_is_optional_int=, =render_is_double=,
+   =render_is_optional_double=, =render_is_uuid=,
+   =render_is_optional_uuid=, =render_is_timestamp=,
+   =render_is_optional_timestamp=. Also added =render_label=
+   (mechanical title-case) to =columns=, =natural_keys=, and
+   =primary_key= — none had a label before (the closest existing
+   thing, the Qt =Detail Fields= table's curated =label= column, is
+   about widget wiring and isn't guaranteed present for every entity).
+3. Added the =ores.cpp.presentation= facet: two archetypes
+   (=cpp_history_field_mapper.hpp/cpp.mustache=, tangled from
+   =ores.cpp.presentation.history_field_mapper_header/impl.org=), a
+   facet-group literate doc (=cpp_presentation.org=), a
+   =facet_catalogue.org= entry, and the separate physical-space
+   address node (=ores.cpp.presentation.org=) the =--address=
+   resolution mechanism requires (distinct from the literate group
+   doc — see Notes).
+4. Proved the facet on =currency= alone first via
+   =codegen generate --model ... --profile ores.cpp.presentation=
+   (note: =--profile <name>= only works when =<name>= is the real
+   =ores.cpp.<facet>= address, not a bare facet-catalogue heading —
+   see Notes).
+5. First attempt used the wrong flags (repository/SQL layer's
+   nullable-promotion flags) and produced code that failed to compile
+   against =book= (uuid primary key rendered as a plain string;
+   nullable text columns with an explicit non-optional =cpp_type=
+   override called =.value_or()= on a plain =std::string=). Root-
+   caused (see Notes) and replaced with the =render_is_*= flags above.
+6. Regenerated all 27 clean entities via
+   =codegen regenerate --component refdata-cpp --profile
+   ores.cpp.presentation=; removed the 7 known-drifted entities'
+   output to stay consistent with the established baseline.
+7. Added =ores.diff.lib= to =ores.refdata.core='s link libraries
+   (public, since =field_value.hpp= is now in a public header).
+8. Added =projects/ores.refdata/core/tests/presentation_currency_history_field_mapper_tests.cpp=
+   covering field count/uniqueness, string/int rendering, optional-
+   uuid (both empty and populated), and =recorded_at= formatting.
+9. Verified: full local build clean, full ctest suite green (69/69).
+
+* Notes
+
+*Why the repository/SQL layer's type flags don't apply to the domain
+class.* =is_uuid=/=is_nullable_string=/=is_already_optional=/
+=is_plain_string= encode a nullable-to-=std::optional=-promotion
+decision that only the repository entity and SQL facets apply. The
+domain class template (=cpp_domain_type_class.hpp.mustache=) does
+*not* apply that promotion — it emits =\{\{\{cpp_type\}\}\}= verbatim.
+A column can have =:nullable: true= in its model but an explicit
+=:cpp_type: std::string= override, and the domain struct gets a plain
+=std::string= field, not =std::optional<std::string>= — exactly what
+happened with =book='s =description=/=gl_account_ref=/=cost_center=,
+and what made the first implementation attempt fail to compile. The
+=render_is_*= flags fix this by deriving straight from the raw
+=cpp_type= string — the same source of truth the domain class template
+itself uses — rather than from the derived nullable-promotion flags.
+
+*Two separate facet-registration files are needed for a new facet*:
+the literate group doc (e.g. =cpp_presentation.org=, human-facing,
+indexes archetypes) is *not* the same thing =generator.py='s
+=--address= resolution reads. That reads a *physical-space address
+graph* built from files matching =ores.*.org= in the templates
+directory (=ores.cpp.presentation.org= here), each declaring
+=#+type: facet=, =#+model_types:=, and =#+facet_group:=. Forgetting
+this file produces "unknown address" errors that look like a typo but
+aren't. =--profile <name>= only works as a bare facet name for the
+small set of legacy curated profiles (=domain=, =sql=, =all-cpp=,
+...); any other name is treated as a literal address and must be the
+full =ores.cpp.<facet>= form.
+
+*Regenerating a new facet is comparatively low-risk for drift* (no
+prior generated files exist to diff against — every output is a new
+file), unlike modifying an existing facet's template. The risk here
+is instead per-entity field-type coverage gaps, not silent drift.
+
+*Scope not covered by this facet* (deferred, matching precedent from
+entity_type_of and the redesign task):
+- =has_identity_group=/=has_audit_group= entities (none of the 27
+  covered entities use them).
+- Enum columns (=is_enum=; none present in the 27 covered entities).
+- The 7 entities excluded from =entity_type_of()= for pre-existing
+  model drift (=business_unit=, =contact_type=,
+  =currency_market_tier=, =monetary_nature=, =party=,
+  =party_id_scheme=, =rounding_type=) — =party= in particular is a
+  known gap the generic-history-subject task inherits.
+- Junction models (not in the =domain=/=presentation= facets'
+  =model_types= scope at all).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1513][#1513]] | [refdata,codegen] Add history field mapper facet |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | CI drift check failed: cpp_group.org facet inventory not regenerated after adding the presentation facet | cpp_group.org | Fixed | Ran regenerate_facet_inventories.py; 1-line addition. |
+| 2 | has_uuid_columns include-guard derived from nullable-promotion flags could drift from render_is_uuid's raw-cpp_type dispatch — same bug class this PR fixed for strings, just latent (no covered entity hits it yet) | core.py, cpp_history_field_mapper.cpp.mustache | Fixed | Added a dedicated has_render_uuid_columns flag from the same render_is_uuid/render_is_optional_uuid ground truth; switched the mapper's include guard to it. 8 entities' generated .cpp lost the now-unneeded include. |
+
+* Result
+
+Added the =ores.cpp.presentation= codegen facet: =render_{entity}_fields()=
+per entity, generated for all 27 clean =ores.refdata= entities (same
+baseline as =entity_type_of()=). First implementation attempt reused
+the repository/SQL layer's nullable-promotion type flags and produced
+code that failed to compile against real entities (=book='s uuid
+primary key, and nullable-but-explicitly-non-optional string columns)
+— root-caused to the domain class template using raw =cpp_type=
+verbatim rather than a promoted type, and fixed with a new,
+independent =render_is_*= flag set derived from that same raw
+=cpp_type= ground truth. Added =ores.diff.lib= as a public dependency
+of =ores.refdata.core=. New test coverage in
+=presentation_currency_history_field_mapper_tests.cpp=. Full local
+build clean; full ctest suite green (69/69 suites, 215s).
+
+Distilled into the story's Decisions: field-mapper rendering logic
+must derive from raw =cpp_type=, never from the repository/SQL
+layer's nullable-promotion flags — the two facets diverge whenever a
+column has an explicit =cpp_type= override.

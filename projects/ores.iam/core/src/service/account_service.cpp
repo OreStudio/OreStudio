@@ -600,7 +600,13 @@ std::string account_service::set_my_default_party(const boost::uuids::uuid& acco
     }
 
     if (accounts[0].default_party_id == party_id) {
-        return "New default party is the same as current default party";
+        // Idempotent no-op: re-running "set default to X" when X is already
+        // the default should succeed silently, not fail — callers like
+        // provisioning scripts and the shell command may legitimately repeat
+        // this call against an already-provisioned system.
+        BOOST_LOG_SEV(lg(), debug) << "Default party unchanged for account: "
+                                   << boost::uuids::to_string(account_id);
+        return "";
     }
 
     auto account = accounts[0];

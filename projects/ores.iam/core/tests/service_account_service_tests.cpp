@@ -417,3 +417,90 @@ TEST_CASE("login_with_different_ip_addresses", tags) {
         CHECK(account.username == login.username);
     }
 }
+
+TEST_CASE("set_my_default_party_persists_the_new_default", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_service sut(h.context());
+
+    const auto e = generate_synthetic_account(ctx);
+    const std::string password = faker::internet::password();
+    const auto a = sut.create_account(e.username, e.email, password, e.modified_by);
+
+    boost::uuids::random_generator gen;
+    const auto party_id = gen();
+
+    const auto err = sut.set_my_default_party(a.id, party_id);
+    CHECK(err.empty());
+
+    const auto reloaded = sut.find_account_by_id(a.id);
+    REQUIRE(reloaded.has_value());
+    REQUIRE(reloaded->default_party_id.has_value());
+    CHECK(*reloaded->default_party_id == party_id);
+}
+
+TEST_CASE("set_my_default_party_is_idempotent_when_already_the_default", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_service sut(h.context());
+
+    const auto e = generate_synthetic_account(ctx);
+    const std::string password = faker::internet::password();
+    const auto a = sut.create_account(e.username, e.email, password, e.modified_by);
+
+    boost::uuids::random_generator gen;
+    const auto party_id = gen();
+
+    CHECK(sut.set_my_default_party(a.id, party_id).empty());
+    // Re-running with the same party must succeed silently (no-op), not
+    // fail — provisioning scripts and the shell command may legitimately
+    // repeat this call against an already-provisioned system.
+    CHECK(sut.set_my_default_party(a.id, party_id).empty());
+}
+
+TEST_CASE("set_my_default_party_for_nonexistent_account_returns_error", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    service::account_service sut(h.context());
+
+    boost::uuids::random_generator gen;
+    const auto non_existent_id = gen();
+    const auto party_id = gen();
+
+    const auto err = sut.set_my_default_party(non_existent_id, party_id);
+    CHECK(!err.empty());
+}
+
+TEST_CASE("update_account_sets_and_clears_default_party_id", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_service sut(h.context());
+
+    const auto e = generate_synthetic_account(ctx);
+    const std::string password = faker::internet::password();
+    const auto a = sut.create_account(e.username, e.email, password, e.modified_by);
+
+    boost::uuids::random_generator gen;
+    const auto party_id = gen();
+
+    CHECK(sut.update_account(a.id, a.email, party_id, a.modified_by, "common.non_material_update", ""));
+
+    auto reloaded = sut.find_account_by_id(a.id);
+    REQUIRE(reloaded.has_value());
+    REQUIRE(reloaded->default_party_id.has_value());
+    CHECK(*reloaded->default_party_id == party_id);
+
+    CHECK(sut.update_account(
+        a.id, a.email, std::nullopt, a.modified_by, "common.non_material_update", ""));
+
+    reloaded = sut.find_account_by_id(a.id);
+    REQUIRE(reloaded.has_value());
+    CHECK(!reloaded->default_party_id.has_value());
+}

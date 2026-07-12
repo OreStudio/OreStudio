@@ -30,6 +30,7 @@
 #include <QListWidget>
 #include <QToolButton>
 #include <QWidget>
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <vector>
 
@@ -144,7 +145,7 @@ private:
 
     ClientManager* clientManager_ = nullptr;
     boost::uuids::uuid accountId_;
-    boost::uuids::uuid defaultPartyId_;
+    boost::uuids::uuid defaultPartyId_ = boost::uuids::nil_uuid();
     bool defaultPartyComboInitialized_ = false;
     std::string accountType_;
     bool readOnly_ = false;

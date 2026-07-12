@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 93D75350-C321-4056-8603-6D61C50BC230
+:END:
+#+title: Portfolio window/history dialog does not live-refresh on NATS events
+#+description: Manual QA on the Portfolio/Book composite-versioning scenario found Portfolio's own list/history windows don't live-update when a book change bumps the portfolio's version (or possibly on other portfolio-changed events in general -- unclear if pre-existing). Correct data is only visible after a manual reload. Portfolio's Qt layer is still unmigrated to RefdataPlugin (separate scope); worth re-checking once that relocation lands, since it may be the same class of gap as Book's own event-registrar wiring was.
+#+type: capture
+#+level: cross
+#+filetags: :qt:portfolio:bug:eventing:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -49,10 +49,23 @@ child heading directly under it.
 Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
 =BARCLAYS PLC=. Confirm all menus enable with no errors.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Note a portfolio's current version
 
 Open Trading > Portfolios, pick any portfolio, open its History
 dialog, and note the current (highest) version number.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | using Regulatory Capital at version 4 |
 
 ** Add a book under that portfolio and confirm the portfolio's version bumps
 
@@ -62,15 +75,36 @@ portfolio's History dialog: confirm a new version row appears (one
 higher than before), even though no field on the portfolio itself was
 directly edited.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | added test book using portfolio explorer. change was correctly evented within portfolio explorer but not in portfolio main window. however after manual reload i can see version 5. |
+
 ** Edit the book and confirm the portfolio bumps again
 
 Edit the new book (e.g. change its description) and Save. Re-check the
 portfolio's History dialog: confirm another new version row appeared.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | edited the test book from books screen. it correctly evented to portfolio explorer and to books window but not to portfolios window. after manual reload i can see version 6.; ; also GUID field should be readonly. |
+
 ** Delete the book and confirm the portfolio bumps once more
 
 Delete the book. Re-check the portfolio's History dialog: confirm yet
 another new version row appeared (the delete-side bump).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | version does not appear to bump on delete. |
 
 ** Normal Book and Portfolio CRUD still work unaffected
 
@@ -78,20 +112,34 @@ Confirm ordinary Book and Portfolio list/detail/history/save flows
 (unrelated to the parent_portfolio_id FK) behave exactly as before —
 no regressions from the composite wiring.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | not sure if this was working before or not but portfolio eventing in portfolio dialog seems broken. |
+
 ** No error toast or log error during the whole flow
 
 Check the client's log tail
 (=build/output/<preset>/publish/log/ores.qt.<colour>.log=) for any
 ERROR-level line.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | check logs |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-12T15:43:10Z |
+| Branch        | feature/migrate-book-to-composite-entity-versioning |
+| Commit        | 7972f7ac6 |
+| Worktree      | bright_faraday |
 
 * Notes

@@ -31,9 +31,9 @@ correctly compose the books it contained at that point in time.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
-| Now          | Implemented and DB-verified end to end; awaiting manual QA. |
+| Now          | Backend confirmed correct via manual QA + direct SQL cross-check. Recursive (multi-level) bump gap found -- fixing next. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the manual scenario, then close out. |
+| Next         | Add self-referencing :bump_parent_version: on portfolio.org's own parent_portfolio_id FK to propagate bumps up a nested portfolio tree. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:1DCA1F0C-C993-4EE4-9097-6ABAF07D041F][Verify Portfolio/Book composite version bump and history]] | PENDING | |
+| [[id:1DCA1F0C-C993-4EE4-9097-6ABAF07D041F][Verify Portfolio/Book composite version bump and history]] | FAILED | UI showed 3 "FAIL"s (Portfolio window not live-refreshing on book-driven bumps), but direct SQL cross-check confirmed the backend mechanism fired correctly every time (add->v5, edit->v6, delete->v7, in sequence). Not a backend defect -- Portfolio's own Qt layer is unmigrated/out of scope for this task, so it not reacting to NATS events from a sibling entity's write is expected, not a regression. Also surfaced a real gap (see Plan): bumps don't propagate recursively up a nested portfolio tree. |
 
 * PRs
 

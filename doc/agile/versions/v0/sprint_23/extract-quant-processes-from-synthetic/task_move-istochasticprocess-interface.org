@@ -8,7 +8,7 @@
 #+filetags: :extract-quant-processes-from-synthetic:sprint_23:v0:
 #+owner: marco
 #+branch: feature/move-istochasticprocess-interface
-#+pr:
+#+pr: 1519
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -69,7 +69,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1519][#1519]] | [analytics.quant] Extract stochastic process math from ores.synthetic |
 
 * Review
 

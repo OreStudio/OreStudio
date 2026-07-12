@@ -29,7 +29,6 @@
 #include "ores.cli/config/add_compute_workunit_options.hpp"
 #include "ores.cli/config/add_country_options.hpp"
 #include "ores.cli/config/add_currency_options.hpp"
-#include "ores.cli/config/add_day_count_fraction_type_options.hpp"
 #include "ores.cli/config/add_floating_index_type_options.hpp"
 #include "ores.cli/config/add_leg_type_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
@@ -106,15 +105,12 @@
 #include "ores.refdata.core/repository/zero_convention_repository.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.security/validation/password_validator.hpp"
-#include "ores.trading.api/domain/day_count_fraction_type_json_io.hpp"
-#include "ores.trading.api/domain/day_count_fraction_type_table_io.hpp"
 #include "ores.trading.api/domain/floating_index_type_json_io.hpp"
 #include "ores.trading.api/domain/floating_index_type_table_io.hpp"
 #include "ores.trading.api/domain/leg_type_json_io.hpp"
 #include "ores.trading.api/domain/leg_type_table_io.hpp"
 #include "ores.trading.api/domain/payment_frequency_type_json_io.hpp"
 #include "ores.trading.api/domain/payment_frequency_type_table_io.hpp"
-#include "ores.trading.core/repository/day_count_fraction_type_repository.hpp"
 #include "ores.trading.core/repository/floating_index_type_repository.hpp"
 #include "ores.trading.core/repository/leg_type_repository.hpp"
 #include "ores.trading.core/repository/payment_frequency_type_repository.hpp"
@@ -742,37 +738,6 @@ void application::export_compute_results(const config::export_options& cfg) cons
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " compute result(s).";
 }
 
-void application::export_day_count_fraction_types(const config::export_options& cfg) const {
-    BOOST_LOG_SEV(lg(), debug) << "Exporting day count fraction types.";
-
-    trading::repository::day_count_fraction_type_repository repo;
-    std::vector<trading::domain::day_count_fraction_type> items;
-
-    if (!cfg.key.empty()) {
-        items = cfg.all_versions ? repo.read_all(context_, cfg.key) :
-                                   repo.read_latest(context_, cfg.key);
-    } else {
-        items = repo.read_latest(context_);
-    }
-
-    if (cfg.target_format == config::format::json) {
-        output_stream_ << "[";
-        const char* sep = "";
-        for (const auto& item : items) {
-            output_stream_ << sep << item;
-            sep = ",";
-        }
-        output_stream_ << "]" << std::endl;
-    } else if (cfg.target_format == config::format::table) {
-        output_stream_ << items << std::endl;
-    } else {
-        BOOST_THROW_EXCEPTION(application_exception(
-            "Only JSON and table formats are supported for day count fraction types"));
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " day count fraction type(s).";
-}
-
 void application::export_floating_index_types(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting floating index types.";
 
@@ -925,9 +890,6 @@ void application::export_data(const std::optional<config::export_options>& ocfg)
         case config::entity::feature_flags:
             BOOST_THROW_EXCEPTION(
                 application_exception("Export is not yet supported for feature flags."));
-        case config::entity::day_count_fraction_types:
-            export_day_count_fraction_types(cfg);
-            break;
         case config::entity::floating_index_types:
             export_floating_index_types(cfg);
             break;
@@ -1136,9 +1098,6 @@ void application::delete_data(const std::optional<config::delete_options>& ocfg)
         case config::entity::feature_flags:
             BOOST_THROW_EXCEPTION(
                 application_exception("Delete is not yet supported for feature flags."));
-        case config::entity::day_count_fraction_types:
-            delete_day_count_fraction_type(cfg);
-            break;
         case config::entity::floating_index_types:
             delete_floating_index_type(cfg);
             break;
@@ -1149,14 +1108,6 @@ void application::delete_data(const std::optional<config::delete_options>& ocfg)
             delete_leg_type(cfg);
             break;
     }
-}
-
-void application::delete_day_count_fraction_type(const config::delete_options& cfg) const {
-    BOOST_LOG_SEV(lg(), debug) << "Deleting day count fraction type: " << cfg.key;
-    trading::repository::day_count_fraction_type_repository repo;
-    repo.remove(context_, cfg.key);
-    output_stream_ << "Day count fraction type deleted successfully: " << cfg.key << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Deleted day count fraction type: " << cfg.key;
 }
 
 void application::delete_floating_index_type(const config::delete_options& cfg) const {
@@ -1619,25 +1570,6 @@ void application::add_compute_workunit(const config::add_compute_workunit_option
     BOOST_LOG_SEV(lg(), info) << "Added compute workunit: " << boost::uuids::to_string(record.id);
 }
 
-void application::add_day_count_fraction_type(
-    const config::add_day_count_fraction_type_options& cfg) const {
-    BOOST_LOG_SEV(lg(), debug) << "Adding day count fraction type: " << cfg.code;
-
-    trading::domain::day_count_fraction_type record;
-    record.code = cfg.code;
-    record.modified_by = cfg.modified_by;
-    record.performed_by = cfg.modified_by;
-    record.recorded_at = std::chrono::system_clock::now();
-    if (cfg.description)
-        record.description = *cfg.description;
-
-    trading::repository::day_count_fraction_type_repository repo;
-    repo.write(context_, record);
-
-    output_stream_ << "Successfully added day count fraction type: " << cfg.code << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Added day count fraction type: " << cfg.code;
-}
-
 void application::add_floating_index_type(
     const config::add_floating_index_type_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding floating index type: " << cfg.code;
@@ -1732,8 +1664,6 @@ void application::add_data(const std::optional<config::add_options>& ocfg) const
                 add_compute_batch(opts);
             } else if constexpr (std::is_same_v<T, config::add_compute_workunit_options>) {
                 add_compute_workunit(opts);
-            } else if constexpr (std::is_same_v<T, config::add_day_count_fraction_type_options>) {
-                add_day_count_fraction_type(opts);
             } else if constexpr (std::is_same_v<T, config::add_floating_index_type_options>) {
                 add_floating_index_type(opts);
             } else if constexpr (std::is_same_v<T, config::add_payment_frequency_type_options>) {

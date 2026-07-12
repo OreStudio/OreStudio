@@ -21,7 +21,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.trading.api/messaging/day_count_fraction_type_protocol.hpp"
+#include "ores.refdata.api/messaging/day_count_fraction_type_protocol.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
@@ -51,8 +51,6 @@ DayCountFractionTypeMdiWindow::DayCountFractionTypeMdiWindow(ClientManager* clie
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
@@ -61,6 +59,7 @@ void DayCountFractionTypeMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -126,10 +125,13 @@ void DayCountFractionTypeMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+
     initializeTableSettings(tableView_,
                             model_,
                             "DayCountFractionTypeListWindow",
-                            {ClientDayCountFractionTypeModel::Description},
+                            {
+                                ClientDayCountFractionTypeModel::Description,
+                            },
                             {900, 400},
                             1);
 }
@@ -308,11 +310,10 @@ void DayCountFractionTypeMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << codes.size() << " day count fraction types";
+            << "Making delete request for " << codes.size() << " day count fraction types";
 
-        trading::messaging::delete_day_count_fraction_type_request request;
+        refdata::messaging::delete_day_count_fraction_type_request request;
         request.codes = codes;
-
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -327,6 +328,7 @@ void DayCountFractionTypeMdiWindow::deleteSelected() {
         for (const auto& code : codes) {
             results.push_back({code, {response_result->success, response_result->message}});
         }
+
         return results;
     };
 
@@ -381,5 +383,6 @@ void DayCountFractionTypeMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

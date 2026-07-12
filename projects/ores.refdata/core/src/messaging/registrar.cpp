@@ -36,6 +36,7 @@
 #include "ores.refdata.core/messaging/currency_pair_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_registrar.hpp"
+#include "ores.refdata.core/messaging/day_count_fraction_type_registrar.hpp"
 #include "ores.refdata.core/messaging/deposit_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/fra_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/ibor_index_convention_registrar.hpp"
@@ -111,6 +112,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_currency_pair_classification_handlers(nats, ctx, verifier));
     append(register_currency_pair_convention_handlers(nats, ctx, verifier));
     append(register_currency_pair_handlers(nats, ctx, verifier));
+    append(register_day_count_fraction_type_handlers(nats, ctx, verifier));
     append(register_deposit_convention_handlers(nats, ctx, verifier));
     append(register_fra_convention_handlers(nats, ctx, verifier));
     append(register_ibor_index_convention_handlers(nats, ctx, verifier));

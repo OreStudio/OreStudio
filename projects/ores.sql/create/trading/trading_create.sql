@@ -49,11 +49,6 @@
 \ir ./trading_trade_id_types_notify_trigger_create.sql
 
 -- Instrument reference data
-\ir ./trading_day_count_fraction_types_create.sql
-\ir ./trading_day_count_fraction_types_notify_trigger_create.sql
-\ir ./trading_day_count_fraction_types_validate_fn_create.sql
-
-
 \ir ./trading_floating_index_types_create.sql
 \ir ./trading_floating_index_types_notify_trigger_create.sql
 \ir ./trading_floating_index_types_validate_fn_create.sql

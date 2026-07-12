@@ -21,7 +21,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.trading.api/messaging/day_count_fraction_type_protocol.hpp"
+#include "ores.refdata.api/messaging/day_count_fraction_type_protocol.hpp"
 #include <QtConcurrent>
 
 namespace ores::qt {
@@ -30,7 +30,7 @@ using namespace ores::logging;
 
 namespace {
 std::string
-day_count_fraction_type_key_extractor(const trading::domain::day_count_fraction_type& e) {
+day_count_fraction_type_key_extractor(const refdata::domain::day_count_fraction_type& e) {
     return e.code;
 }
 }
@@ -84,8 +84,12 @@ QVariant ClientDayCountFractionTypeModel::data(const QModelIndex& index, int rol
         switch (index.column()) {
             case Code:
                 return QString::fromStdString(type.code);
+            case Name:
+                return QString::fromStdString(type.name);
             case Description:
                 return QString::fromStdString(type.description);
+            case DisplayOrder:
+                return static_cast<qlonglong>(type.display_order);
             case Version:
                 return static_cast<qlonglong>(type.version);
             case ModifiedBy:
@@ -113,8 +117,12 @@ QVariant ClientDayCountFractionTypeModel::headerData(int section,
     switch (section) {
         case Code:
             return tr("Code");
+        case Name:
+            return tr("Name");
         case Description:
             return tr("Description");
+        case DisplayOrder:
+            return tr("Display Order");
         case Version:
             return tr("Version");
         case ModifiedBy:
@@ -194,19 +202,33 @@ void ClientDayCountFractionTypeModel::fetch_types(std::uint32_t offset, std::uin
                             .error_details = {}};
                 }
 
-                trading::messaging::get_day_count_fraction_types_request request;
+                refdata::messaging::get_day_count_fraction_types_request request;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to fetch day count fraction types: " << result.error();
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .types = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch day count fraction types: " + result.error()),
+                            .error_message = QString::fromStdString(result.error()),
+                            .error_details = {}};
+                }
+
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .types = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
                 }
 
@@ -271,13 +293,14 @@ void ClientDayCountFractionTypeModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const trading::domain::day_count_fraction_type*
+const refdata::domain::day_count_fraction_type*
 ClientDayCountFractionTypeModel::getType(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= types_.size())
         return nullptr;
     return &types_[idx];
 }
+
 
 QVariant ClientDayCountFractionTypeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

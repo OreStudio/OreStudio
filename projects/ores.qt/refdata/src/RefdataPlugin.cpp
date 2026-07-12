@@ -158,8 +158,13 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                              this);
     connectControllerSignals(datasetController_.get());
 
-    dayCountFractionTypeController_ = std::make_unique<DayCountFractionTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    dayCountFractionTypeController_ =
+        std::make_unique<DayCountFractionTypeController>(ctx_.main_window,
+                                                          ctx_.mdi_area,
+                                                          ctx_.client_manager,
+                                                          ctx_.change_reason_cache,
+                                                          ctx_.username,
+                                                          this);
     connectControllerSignals(dayCountFractionTypeController_.get());
 
     businessDayConventionTypeController_ =

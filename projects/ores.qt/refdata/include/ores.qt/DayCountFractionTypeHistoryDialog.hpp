@@ -23,10 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
-#include "ores.trading.api/domain/day_count_fraction_type.hpp"
-#include <QString>
-#include <memory>
-#include <vector>
+#include "ores.refdata.api/domain/day_count_fraction_type.hpp"
 
 namespace Ui {
 class DayCountFractionTypeHistoryDialog;
@@ -59,33 +56,27 @@ public:
     ~DayCountFractionTypeHistoryDialog() override;
 
     void loadHistory() override;
-
-    /**
-     * @brief Returns the identifier of the day count fraction type.
-     */
-    [[nodiscard]] QString code() const override {
-        return code_;
-    }
+    [[nodiscard]] QString code() const override;
 
 signals:
-    void openVersionRequested(const trading::domain::day_count_fraction_type& type,
+    void openVersionRequested(const refdata::domain::day_count_fraction_type& type,
                               int versionNumber);
-    void revertVersionRequested(const trading::domain::day_count_fraction_type& type);
+    void revertVersionRequested(const refdata::domain::day_count_fraction_type& type);
 
 protected:
     [[nodiscard]] int historySize() const override;
     [[nodiscard]] VersionRow versionRow(int index) const override;
     [[nodiscard]] QString historyTitle() const override;
-    [[nodiscard]] DiffResult calculateDiffAt(int current_index, int previous_index) const override;
+    [[nodiscard]] DiffResult calculateDiffAt(int ci, int pi) const override;
     void displayFullDetails(int index) override;
     void openVersionAt(int index) override;
     void revertToVersionAt(int index) override;
 
 private:
-    std::unique_ptr<Ui::DayCountFractionTypeHistoryDialog> ui_;
+    Ui::DayCountFractionTypeHistoryDialog* ui_;
     QString code_;
     ClientManager* clientManager_;
-    std::vector<trading::domain::day_count_fraction_type> versions_;
+    std::vector<refdata::domain::day_count_fraction_type> versions_;
 };
 
 }

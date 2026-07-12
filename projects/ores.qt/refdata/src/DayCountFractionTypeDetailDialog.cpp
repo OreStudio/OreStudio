@@ -18,13 +18,13 @@
  *
  */
 #include "ores.qt/DayCountFractionTypeDetailDialog.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.trading.api/messaging/day_count_fraction_type_protocol.hpp"
+#include "ores.refdata.api/messaging/day_count_fraction_type_protocol.hpp"
 #include "ui_DayCountFractionTypeDetailDialog.h"
 #include <QFutureWatcher>
 #include <QMessageBox>
-#include <QPlainTextEdit>
 #include <QtConcurrent>
 
 namespace ores::qt {
@@ -39,6 +39,11 @@ DayCountFractionTypeDetailDialog::DayCountFractionTypeDetailDialog(QWidget* pare
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 DayCountFractionTypeDetailDialog::~DayCountFractionTypeDetailDialog() {
@@ -55,6 +60,10 @@ QWidget* DayCountFractionTypeDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* DayCountFractionTypeDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString DayCountFractionTypeDetailDialog::code() const {
+    return QString::fromStdString(type_.code);
 }
 
 void DayCountFractionTypeDetailDialog::setupUi() {
@@ -87,8 +96,12 @@ void DayCountFractionTypeDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &DayCountFractionTypeDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit,
+            &QLineEdit::textChanged,
+            this,
+            &DayCountFractionTypeDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit,
-            &QPlainTextEdit::textChanged,
+            &QLineEdit::textChanged,
             this,
             &DayCountFractionTypeDetailDialog::onFieldChanged);
 }
@@ -102,7 +115,7 @@ void DayCountFractionTypeDetailDialog::setUsername(const std::string& username) 
 }
 
 void DayCountFractionTypeDetailDialog::setType(
-    const trading::domain::day_count_fraction_type& type) {
+    const refdata::domain::day_count_fraction_type& type) {
     type_ = type;
     updateUiFromType();
 }
@@ -116,9 +129,15 @@ void DayCountFractionTypeDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
+void DayCountFractionTypeDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void DayCountFractionTypeDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
+    ui_->nameEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
@@ -126,7 +145,9 @@ void DayCountFractionTypeDetailDialog::setReadOnly(bool readOnly) {
 
 void DayCountFractionTypeDetailDialog::updateUiFromType() {
     ui_->codeEdit->setText(QString::fromStdString(type_.code));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(type_.description));
+    ui_->nameEdit->setText(QString::fromStdString(type_.name));
+    ui_->descriptionEdit->setText(QString::fromStdString(type_.description));
+    ui_->displayOrderEdit->setValue(type_.display_order);
 
     populateProvenance(type_.version,
                        type_.modified_by,
@@ -143,9 +164,10 @@ void DayCountFractionTypeDetailDialog::updateTypeFromUi() {
     if (createMode_) {
         type_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
-    type_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    type_.name = ui_->nameEdit->text().trimmed().toStdString();
+    type_.description = ui_->descriptionEdit->text().trimmed().toStdString();
+    type_.display_order = ui_->displayOrderEdit->value();
     type_.modified_by = username_;
-    type_.performed_by = username_;
 }
 
 void DayCountFractionTypeDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -165,7 +187,9 @@ void DayCountFractionTypeDetailDialog::updateSaveButtonState() {
 
 bool DayCountFractionTypeDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
-    return !code_val.isEmpty();
+    const QString name_val = ui_->nameEdit->text().trimmed();
+
+    return true && !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void DayCountFractionTypeDetailDialog::onSaveClicked() {
@@ -181,6 +205,15 @@ void DayCountFractionTypeDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    type_.change_reason_code = crSel->reason_code;
+    type_.change_commentary = crSel->commentary;
 
     updateTypeFromUi();
 
@@ -198,7 +231,7 @@ void DayCountFractionTypeDetailDialog::onSaveClicked() {
             return {false, "Dialog closed"};
         }
 
-        trading::messaging::save_day_count_fraction_type_request request;
+        refdata::messaging::save_day_count_fraction_type_request request;
         request.data = type;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -254,6 +287,11 @@ void DayCountFractionTypeDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting day count fraction type: " << type_.code;
 
     QPointer<DayCountFractionTypeDetailDialog> self = this;
@@ -268,7 +306,7 @@ void DayCountFractionTypeDetailDialog::onDeleteClicked() {
             return {false, "Dialog closed"};
         }
 
-        trading::messaging::delete_day_count_fraction_type_request request;
+        refdata::messaging::delete_day_count_fraction_type_request request;
         request.codes = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -301,5 +339,6 @@ void DayCountFractionTypeDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

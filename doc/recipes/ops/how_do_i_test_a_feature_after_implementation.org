@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: BE325E3E-1BAB-4D9D-964E-78333CDB97D7
+:END:
+#+title: How do I test a feature after implementation?
+#+description: Full build, run all tests, validate schemas, recreate the database, provision Barclays Plc, write a test scenario (including CRUD and eventing), and hand the client to the user to execute.
+#+type: recipe
+#+level: cross
+#+filetags: :ops:testing:recipe:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+Chains local verification ([[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]), schema validation, environment
+readying ([[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]), and manual QA (the =test_scenario=
+doc type, run through the QA Validation Runner panel) into the single
+sequence a task should run once implementation is otherwise done, before
+raising a PR (see [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][PR Raise]]).
+
+* Question
+
+How do I test a feature after finishing implementation?
+
+* Answer
+
+1. /Full build/ — build the affected targets (or =all= if unsure which):
+
+   #+begin_src sh :results verbatim
+   cmake --build --preset <preset>
+   #+end_src
+
+2. /Run all tests/ — the =rat= target runs the full suite; treat any
+   failure as a blocker, not something to defer to review:
+
+   #+begin_src sh :results verbatim
+   cmake --build --preset <preset> --target rat
+   #+end_src
+
+   See [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] for per-component targets and logging knobs.
+
+3. /Validate SQL schemas/ — if the feature touched any table, trigger,
+   or function:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.sql/utility/validate_schemas.sh
+   #+end_src
+
+   If the feature is a codegen entity, also run:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.codegen/validate_docs.sh
+   #+end_src
+
+4. /Recreate the database/ — rebuilds roles, schema, and seed data from
+   scratch, so the new feature is exercised against a clean load rather
+   than a possibly-stale local DB:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh db recreate -y
+   #+end_src
+
+5. /Provision the Barclays Plc tenant/ — the default tenant for manual
+   testing (see [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh shell -f \
+     projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+   #+end_src
+
+   The login credentials for the test scenario's connection step come
+   *from this script* — read the =provision system=/=login= lines in
+   [[proj:projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores][=barclays_system_provision.ores=]] rather than hardcoding them into the
+   scenario doc, since they can change independently of this recipe.
+
+6. /Create a test scenario/ for the new feature, scaffolded via
+   =compass add=:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh add test_scenario \
+     --slug verify_<feature> \
+     --parent-dir doc/agile/versions/<version>/<sprint>/<story-slug> \
+     --title "Test Scenario: Verify <feature>" \
+     --description "<one sentence: what this scenario checks>." \
+     --story-id <story-uuid> --story-title "<story title>" \
+     --parent-id <task-uuid> --parent-title "<task title>"
+   #+end_src
+
+   Fill in the =* Scenario Info= table before writing steps:
+   - *Target dialog* — the Qt dialog class(es) under test, *and* the
+     exact menu path to reach them (e.g. "=DayCountFractionTypeDetailDialog=
+     — Menu: Reference Data > Trading Conventions > Day Count Fraction
+     Types"). A bare class name forces the tester to hunt through menus
+     to find a screen that may not exist yet in their muscle memory;
+     the menu path is the whole reason this field exists.
+   - *Clients* — leave empty for one client; list every colour/label a
+     multi-client scenario needs (e.g. "blue, red").
+
+   Fill in =* Steps= per [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]]. The
+   *first* step under every client (not just the first client, if the
+   scenario has more than one) must be its own connect/login step: the
+   exact account and password to log in as (from step 5's provisioning
+   script) and which party/tenant to select — never leave the tester
+   to guess starting state, and never assume a second client instance
+   inherits the first one's session.
+
+   For an entity/CRUD feature, include a *CRUD test plan* as part of
+   the steps — one step per operation, in order:
+   - *Create*: add a new record via the list window's Add action; verify
+     it appears in the list and the detail dialog shows the saved values.
+   - *Read*: reopen the detail dialog for the created record; verify
+     all fields round-trip correctly.
+   - *Update*: edit a field and save; verify the list refreshes with the
+     new value and the change reason is recorded.
+   - *Delete*: delete the record; verify it disappears from the list.
+   - *History*: open the History dialog for the record; verify
+     create/update/delete are all present with correct change reasons.
+   - *Eventing*: with a second client instance running (see the
+     =Clients= field in the scenario's =* Scenario Info=), perform an
+     operation in the first instance and verify the change lands as a
+     NATS notification and refreshes the second instance's list without
+     a manual reload — this is what actually exercises the
+     LISTEN/NOTIFY-to-NATS relay end to end, not just the repository
+     layer that ctest already covers.
+
+7. /Start the client with the scenario pre-loaded/ and hand it to the
+   user — do not execute the scenario yourself, since it verifies a Qt
+   UI a human needs to drive:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh client start --colour <colour> \
+     --open-scenario /absolute/path/to/verify_<feature>.org
+   #+end_src
+
+   Tell the user the scenario is loaded in Scenario Runner (System >
+   Testing) and ask them to execute it, ticking each step as they go —
+   see [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]] for the =--open-scenario= mechanics and why it must
+   be an absolute path.
+
+* Script
+
+No single wrapper script — each step delegates to its own tool
+(=cmake=, =validate_schemas.sh=, =validate_docs.sh=, =compass db=,
+=compass shell -f=, =compass add test_scenario=, =compass client
+start=); this recipe is the sequencing. The [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][code-run-feature-test]] skill
+executes it as one pass.
+
+* Tested by
+
+Manual: run the full sequence for a real feature branch and confirm the
+scenario opens pre-loaded in the client's Scenario Runner and the
+tester can tick through steps to a saved =* Results= section.
+
+* See also
+
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]
+- [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]
+- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]
+- [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]]
+- [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]]
+- [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]]
+- [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][PR Raise]]
+- [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][code-run-feature-test]] — the skill that executes this recipe.

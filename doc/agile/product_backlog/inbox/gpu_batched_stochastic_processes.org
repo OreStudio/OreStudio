@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: A1A92FFB-FCFF-4B51-B5DF-6F8A240E0B21
+:END:
+#+title: Investigate GPU-batched stochastic process generation
+#+description: Investigate a GPU/tensor-batched implementation for simulating large numbers of stochastic processes simultaneously, to avoid a future performance bottleneck.
+#+type: capture
+#+level: cross
+#+filetags: :analytics.quant:performance:gpu:synthetic:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every stochastic process implemented so far in
+=ores.analytics.quant= (GMM/geometric, arithmetic, OU, and the new
+Vasicek/CIR/Hull-White short-rate engines) generates one path,
+sequentially, on the CPU. Investigate a GPU/tensor-batched
+implementation capable of advancing a large number of independent
+process instances in one kernel launch -- effectively treating a
+batch of processes as a tensor (instances x state dimensions) rather
+than one object per process -- so that generating hundreds or
+thousands of instances simultaneously (many currency pairs, many
+IR curve families, many vol surface pillars) does not become a
+per-instance CPU bottleneck as the synthetic data generation scope
+grows. Investigate whether a suitable library or prior-art approach
+already exists (e.g. cuRAND/cuBLAS-based batched SDE simulation,
+JAX/PyTorch-style vectorised random-number and elementwise-op
+libraries usable from C++, QuantLib-adjacent GPU pricing work, or
+finance-specific batched Monte Carlo engines) before considering a
+bespoke kernel.
+
+* Why
+
+The synthetic market data generator's own design target
+(=doc/analysis/gemini_ir_rates_synthetic_support.org=,
+=doc/knowledge/domain/interest_rate_curve_bundles.org=) is 30-50 FX
+rates, hundreds of IR rates, and tens of vol surfaces generated per
+tick, with =ores.analytics.quant= deliberately kept dependency-light
+and free of database/messaging/refdata coupling specifically to
+leave room for this kind of optimisation later (see
+=projects/ores.analytics.quant/modeling/component_overview.org=).
+Sequential per-instance CPU generation is very unlikely to keep up
+once the instance count reaches that scale, especially once every IR
+curve family instance also has to evaluate a closed-form bond-price
+formula per configured tenor on every tick (see
+[[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve
+Families]]). Investigating this now, before the instance count
+actually grows, avoids a late, disruptive rearchitecture of the
+process interfaces once performance becomes a blocker.
+
+* References
+
+- =projects/ores.analytics.quant/modeling/component_overview.org= --
+  the component's stated design rationale for staying dependency-light.
+- =doc/agile/versions/v0/sprint_23/ir-rates-synthetic-generation/story.org=
+  -- the IR Rates synthetic data generation story whose short-rate
+  process work surfaced this concern.
+
+* See also
+
+- [[id:D9424733-9602-45DB-8E87-88F2851C3C29][ores.analytics.quant]] --
+  the component this would apply to.
+- [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Families]]
+  -- the per-tenor, per-tick bond-price evaluation this would need to
+  scale.

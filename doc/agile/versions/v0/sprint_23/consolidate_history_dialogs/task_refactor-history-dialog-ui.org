@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 1EAE3E54-1943-46DA-AB9A-FFC9D26287E6
+:END:
+#+title: Task: Refactor history dialog UI per Gemini review
+#+description: Redesign HistoryDialogBase per doc/analysis/gemini_review_history_dialog.org: master-detail split with a live side-by-side diff panel (semantic colour highlighting, inline word diffing), multi-version compare mode, and a compressed timeline with version pill badges, replacing the current flat Old Value/New Value table and dead right-hand space.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_history_dialogs:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Redesign =HistoryDialogBase= from a flat database-log view into an
+interactive, "Git-style" version comparison tool, per
+[[id:34D92C7A-4714-47CF-852C-0B236F6E1161][Gemini Review: History Dialog UI/UX]]:
+
+- A master-detail split (~30/70) replacing the dead right-hand space:
+  a compressed version timeline on the left, a live side-by-side diff
+  panel on the right.
+- Semantic diff colouring and inline word-level diffing, so a changed
+  field's delta is visible without re-reading the whole value.
+- Multi-version selection ("Compare Selected"), so users can diff any
+  two versions directly, not just adjacent ones.
+- Visual timeline polish: version "pill" badges and a connecting line
+  between entries.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- =HistoryDialogBase= shows a master-detail layout: version timeline
+  on the left, live diff panel on the right — no dead space, no
+  separate =Changes= / =Full Details= tab row.
+- Selecting a version renders its diff against the previous version
+  immediately in the right-hand panel, with changed fields
+  colour-highlighted and only the changed span of each value
+  called out.
+- Selecting two versions (via multi-select) computes and displays
+  the diff between exactly those two, not just adjacent versions.
+- Existing history dialog behaviour (reload, open selected, revert
+  to version) is preserved.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Related, narrower-scoped tasks already on this story:
+[[id:7454EE7E-1763-495B-94F4-0AFC9BADB2C5][GitHub-style diff view in history changes tab]] (intra-line
+colour highlighting within the existing tab layout) and
+[[id:7D8659AB-220E-4077-BD17-3C4DCA1937D8][Single generic HistoryDialog widget in ores.qt]] (the generic,
+non-templated widget itself). This task is the broader layout/UX
+redesign from [[id:34D92C7A-4714-47CF-852C-0B236F6E1161][Gemini Review: History Dialog UI/UX]] — master-detail
+split, live diff panel, multi-version compare, timeline polish — and
+should land on top of (or be reconciled with) that widget work
+rather than duplicate it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

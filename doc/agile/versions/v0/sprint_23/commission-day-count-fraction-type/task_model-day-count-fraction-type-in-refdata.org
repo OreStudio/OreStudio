@@ -31,11 +31,11 @@ already live in =ores.refdata=.
 
 | Field        | Value                                          |
 |--------------+-------------------------------------------------|
-| State        | STARTED                                        |
+| State        | DONE                                        |
 | Parent story | [[id:CF179370-5F28-49DC-9277-E5BB28654E23][Commission: day_count_fraction_type]] |
-| Now          | Implementation complete; build green. Ready for PR. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                       |
-| Next         | Raise PR.                                      |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                                       |
 
 * Acceptance
@@ -124,3 +124,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Moved =day_count_fraction_type= from =ores.trading= to =ores.refdata=,
+modelled as a codegen aux-type entity (code/name/description/display_order)
+matching the =business_day_convention_type= precedent. All layers
+generated and wired: SQL (create/drop/notify/populate), domain,
+repository, service, protocol, NATS registrar and event_registrar, and
+the full Qt Controller/MdiWindow/DetailDialog/HistoryDialog set (fixing
+a latent =change_reason_cache= wiring bug in the process). The
+=ores.trading= original — SQL, generated C++, NATS wiring, CLI wiring,
+and the =.org= model — was removed in full, and =trading_swap_legs='s
+validation was repointed at the new =ores.refdata= function.
+
+Verified: =validate_schemas.sh= and =validate_docs.sh= pass (pre-existing
+docs drift captured separately); =ores.refdata.core/api/service=,
+=ores.trading.core/api=, =ores.cli.exe=, and =ores.qt.refdata.lib= build
+clean; local test suites for all affected components pass 7/7
+(=ores.cli.tests=, =ores.refdata.api/core/service.tests=,
+=ores.trading.api/core/service.tests=).

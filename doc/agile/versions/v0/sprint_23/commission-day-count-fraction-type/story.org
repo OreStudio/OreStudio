@@ -32,35 +32,49 @@ same-component, matching every other refdata soft-FK.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Scaffolding and starting the first task.  |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Model day_count_fraction_type in ores.refdata. |
+| Next          | Nothing.                               |
 | Last touched  | 2026-07-12                               |
 
 * Acceptance
 
-- [ ] =day_count_fraction_type= exists in =ores.refdata=, modelled as an
+- [X] =day_count_fraction_type= exists in =ores.refdata=, modelled as an
   =ores.codegen.entity= (not the legacy =table= type), following the
   aux-type pattern (=code=/=name=/=description=/=display_order=).
-- [ ] SQL, domain, repository, service, messaging, and Qt UI are all
+- [X] SQL, domain, repository, service, messaging, and Qt UI are all
   generated via codegen, matching the entity evaluation checklist's
   criteria for an auxiliary type.
-- [ ] =trading_swap_legs='s soft-FK is repointed at the new
+- [X] =trading_swap_legs='s soft-FK is repointed at the new
   =ores.refdata= validate function; swap leg validation behaviour is
   unchanged.
-- [ ] The =ores.trading= original (SQL, =.org= model, generated C++) is
+- [X] The =ores.trading= original (SQL, =.org= model, generated C++) is
   fully removed, not left dangling alongside the new one.
-- [ ] Site/build/tests stay green after the move.
+- [X] Site/build/tests stay green after the move.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:307A9F1A-2F12-48E9-8D01-0E109D5DEC67][Model day_count_fraction_type as an ores.refdata entity]] | STARTED | 2026-07-12 | | Add day_count_fraction_type as an ores.codegen.entity in ores.refdata (aux-type pattern: code/name/description/display_order), following the Domain entity evaluation checklist, so SQL/domain/repository/service/messaging/Qt UI can all be generated via codegen. |
+| [[id:307A9F1A-2F12-48E9-8D01-0E109D5DEC67][Model day_count_fraction_type as an ores.refdata entity]] | DONE | 2026-07-12 | 2026-07-12 | Add day_count_fraction_type as an ores.codegen.entity in ores.refdata (aux-type pattern: code/name/description/display_order), following the Domain entity evaluation checklist, so SQL/domain/repository/service/messaging/Qt UI can all be generated via codegen. |
 
 * Decisions
+
+- Followed the =business_day_convention_type= move precedent exactly
+  (same aux-type shape, same removal checklist for the =ores.trading=
+  original) rather than inventing a new pattern — consistency across
+  sibling migrations matters more than any per-entity optimisation.
+- Verified before repointing: none of the =ores.refdata= =*_convention=
+  tables validated =day_count_fraction= against a function prior to
+  this change (plain unvalidated text columns), so only
+  =trading_swap_legs='s existing soft-FK needed repointing.
+- =ores.qt/refdata/RefdataPlugin= already carried speculative
+  forward-declarations and menu wiring for a
+  =DayCountFractionTypeController= with no backend — a latent bug
+  (missing =change_reason_cache= constructor argument) surfaced only
+  once the backend was generated and wired.
 
 * Out of scope
 

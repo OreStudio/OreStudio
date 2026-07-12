@@ -8,7 +8,7 @@
 #+category: feature
 #+filetags: :market_data:synthetic:rates:sprint_23:v0:
 #+created: 2026-07-03
-#+updated: 2026-07-11
+#+updated: 2026-07-12
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -43,7 +43,7 @@ vol surfaces).
 | Now           | First task (tenor type) started; domain-knowledge groundwork done, C++ implementation not yet begun. See task Notes and the * Analysis section below. |
 | Waiting on    | Nothing — [[https://github.com/OreStudio/OreStudio/pull/1409][PR #1409]] ([[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]], which added =ou_process= and =ores.synthetic.api::domain::validate_process_parameters()=) merged via =4be33f2b4= prior to this branch's rebase. |
 | Next          | Implement the tenor type in =ores.marketdata= against the new [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] knowledge cluster. |
-| Last touched  | 2026-07-03                               |
+| Last touched  | 2026-07-12                               |
 
 * Acceptance
 

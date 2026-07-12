@@ -110,8 +110,13 @@ implementation should now be written against:
 
 * Review
 
+PR #1517 review round (3 automated passes, issue-level comments, no line comments):
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | =multi_curve_grid_ui.org= title "Multicurve Management" doesn't match filename | multi_curve_grid_ui.org | Declined | Intentional — the title was deliberately renamed away from the literal source-screen name per design discussion; the filename/id stay stable for URL continuity, same pattern as other docs in the cluster (e.g. =fx_currency_pairs.org= titled "Currency pairs") |
+| 2 | env-format-version-12 log row bundled into the "fix env init -> configure drift" commit, whose stated purpose is a rename fix | env_format_version_log.org | Declined | Both changes are legitimate env-tooling documentation from the same session; splitting now would require a history rewrite on a branch under review, which is avoided per convention |
+| 3 | story.org's =Last touched= field and top-level =#+updated= were stale (2026-07-03/2026-07-11) despite this session's edits | story.org | Fixed | Updated both to 2026-07-12 |
 | 1 | ou_process / validate_process_parameters cited as existing prior art but absent from the repo (reported independently by three review passes) | story.org, task_short-rate-process.org, task_tenor-collision-validation.org, task_tick-batch-publishing.org | Fixed | bd0104de5 — added explicit "Waiting on PR #1409" note; the references are real (live on PR #1409/story/gmm-improvements, which has since merged) |
 | 2 | Filename typo: gemini_ir_curve_boostrapping.org vs its correctly-spelled .png companion | doc/analysis/ | Fixed | bd0104de5 — renamed |
 | 3 | Missing required #+category: field | story.org | Fixed | bd0104de5 — added "feature" |

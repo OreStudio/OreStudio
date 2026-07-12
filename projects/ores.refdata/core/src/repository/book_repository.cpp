@@ -167,6 +167,7 @@ std::uint32_t book_repository::get_total_book_count_by_parent_portfolio_id(
     BOOST_LOG_SEV(lg(), debug) << "Total active books count by parent_portfolio_id: " << count;
     return count;
 }
+
 std::vector<domain::book> book_repository::read_by_parent_portfolio_id_as_of(
     context ctx,
     const std::string& parent_portfolio_id,
@@ -193,6 +194,7 @@ std::vector<domain::book> book_repository::read_by_parent_portfolio_id_as_of(
         lg(),
         "Reading books as of window by parent_portfolio_id.");
 }
+
 
 void book_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book: " << id;

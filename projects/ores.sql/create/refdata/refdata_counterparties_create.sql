@@ -78,6 +78,78 @@ create index if not exists counterparties_full_name_idx
 on "ores_refdata_counterparties_tbl" (tenant_id, full_name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+
+-- =============================================================================
+-- Touch-version function for counterparty
+-- Bumps this entity's version without changing any of its own columns,
+-- called by a child entity's insert trigger / delete rule when that
+-- child is flagged :bump_parent_version: true against this entity. See
+-- the "Temporal composite entity versioning" architecture doc.
+--
+-- Deliberately does NOT duplicate the version/valid_from/valid_to
+-- management here: it fetches the current row, resets version to the
+-- 0 sentinel, and re-inserts — the table's own insert trigger (below)
+-- then performs the exact same close-current/bump-version dance a
+-- normal application save does. This also sidesteps a real footgun:
+-- current_timestamp is frozen for the whole transaction, so a
+-- same-transaction bulk import (parent + child created together, as
+-- GLEIF provisioning does) would otherwise make the just-inserted
+-- parent row's own valid_from collide with this function's close
+-- timestamp.
+--
+-- Defined before the insert trigger/delete rule below (not after):
+-- for a self-referencing entity (this entity is its own composite
+-- parent, e.g. a portfolio tree), the delete rule calling this
+-- function lives in the *same* file. PostgreSQL parses CREATE RULE
+-- eagerly, so the function must already exist by then -- unlike a
+-- PL/pgSQL function body (e.g. the insert trigger function), which is
+-- opaque at CREATE time and only resolves calls at execution.
+--
+-- p_reason_code is passed through as-is (already a validated code from
+-- the child's own row); p_child_entity distinguishes which child
+-- triggered the bump in the free-text commentary.
+-- =============================================================================
+create or replace function ores_refdata_counterparties_touch_version_fn(
+    p_tenant_id uuid,
+    p_id uuid,
+    p_reason_code text,
+    p_commentary text,
+    p_modified_by text,
+    p_performed_by text,
+    p_child_entity text
+) returns void as $$
+declare
+    rec ores_refdata_counterparties_tbl%rowtype;
+begin
+    -- for update: takes the same row lock the parent's own insert
+    -- trigger takes, so the snapshot in rec can't be based on a
+    -- business-column value a concurrent direct edit is about to
+    -- change — without this, that concurrent edit could be silently
+    -- reverted once this function's later insert proceeds. See the
+    -- "Temporal composite entity versioning" architecture doc,
+    -- Concurrency section.
+    select * into rec
+    from "ores_refdata_counterparties_tbl"
+    where tenant_id = p_tenant_id
+      and id = p_id
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    if not found then
+        return;
+    end if;
+
+    rec.version := 0;
+    rec.modified_by := p_modified_by;
+    rec.performed_by := p_performed_by;
+    rec.change_reason_code := p_reason_code;
+    rec.change_commentary := format('Bumped by child %s: %s', p_child_entity, coalesce(p_commentary, ''));
+
+    insert into "ores_refdata_counterparties_tbl"
+    select (rec).*;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
 create or replace function ores_refdata_counterparties_insert_fn()
 returns trigger as $$
 declare
@@ -163,70 +235,6 @@ on delete to "ores_refdata_counterparties_tbl" do instead (
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
-
--- =============================================================================
--- Touch-version function for counterparty
--- Bumps this entity's version without changing any of its own columns,
--- called by a child entity's insert trigger / delete rule when that
--- child is flagged :bump_parent_version: true against this entity. See
--- the "Temporal composite entity versioning" architecture doc.
---
--- Deliberately does NOT duplicate the version/valid_from/valid_to
--- management here: it fetches the current row, resets version to the
--- 0 sentinel, and re-inserts — the table's own insert trigger (above)
--- then performs the exact same close-current/bump-version dance a
--- normal application save does. This also sidesteps a real footgun:
--- current_timestamp is frozen for the whole transaction, so a
--- same-transaction bulk import (parent + child created together, as
--- GLEIF provisioning does) would otherwise make the just-inserted
--- parent row's own valid_from collide with this function's close
--- timestamp.
---
--- p_reason_code is passed through as-is (already a validated code from
--- the child's own row); p_child_entity distinguishes which child
--- triggered the bump in the free-text commentary.
--- =============================================================================
-create or replace function ores_refdata_counterparties_touch_version_fn(
-    p_tenant_id uuid,
-    p_id uuid,
-    p_reason_code text,
-    p_commentary text,
-    p_modified_by text,
-    p_performed_by text,
-    p_child_entity text
-) returns void as $$
-declare
-    rec ores_refdata_counterparties_tbl%rowtype;
-begin
-    -- for update: takes the same row lock the parent's own insert
-    -- trigger takes, so the snapshot in rec can't be based on a
-    -- business-column value a concurrent direct edit is about to
-    -- change — without this, that concurrent edit could be silently
-    -- reverted once this function's later insert proceeds. See the
-    -- "Temporal composite entity versioning" architecture doc,
-    -- Concurrency section.
-    select * into rec
-    from "ores_refdata_counterparties_tbl"
-    where tenant_id = p_tenant_id
-      and id = p_id
-      and valid_to = ores_utility_infinity_timestamp_fn()
-    for update;
-
-    if not found then
-        return;
-    end if;
-
-    rec.version := 0;
-    rec.modified_by := p_modified_by;
-    rec.performed_by := p_performed_by;
-    rec.change_reason_code := p_reason_code;
-    rec.change_commentary := format('Bumped by child %s: %s', p_child_entity, coalesce(p_commentary, ''));
-
-    insert into "ores_refdata_counterparties_tbl"
-    select (rec).*;
-end;
-$$ language plpgsql security definer set search_path = public, pg_temp;
-
 
 -- =============================================================================
 -- Hierarchy traversal for counterparties.

@@ -436,6 +436,30 @@ begin
             raise exception '{{error_message}}', NEW.{{column}}
                 using errcode = '23503';
         end if;
+{{#prevent_cycle}}
+
+        -- Reject a {{column}} pointing back at NEW's own row, directly or
+        -- transitively, since the touch-version mechanism re-fires this
+        -- same trigger walking up {{column}} -- an undetected cycle would
+        -- recurse without bound instead of failing cleanly.
+        if exists (
+            with recursive ancestor_chain as (
+                select id, {{column}} as parent_id
+                from {{table}}
+                where id = NEW.{{column}}
+                  and valid_to = ores_utility_infinity_timestamp_fn()
+                union all
+                select t.id, t.{{column}} as parent_id
+                from {{table}} t
+                join ancestor_chain a on t.id = a.parent_id
+                where t.valid_to = ores_utility_infinity_timestamp_fn()
+            )
+            select 1 from ancestor_chain where id = NEW.{{domain_entity.primary_key.column}}
+        ) then
+            raise exception 'Invalid {{column}}: % would create a cycle in the {{table}} hierarchy.', NEW.{{column}}
+                using errcode = '23514';
+        end if;
+{{/prevent_cycle}}
     end if;
 
 {{/nullable}}

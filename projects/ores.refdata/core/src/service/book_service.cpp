@@ -53,6 +53,7 @@ book_service::count_books_by_parent_portfolio_id(const std::string& parent_portf
                                << parent_portfolio_id;
     return repo_.get_total_book_count_by_parent_portfolio_id(ctx_, parent_portfolio_id);
 }
+
 std::vector<domain::book> book_service::list_books_by_parent_portfolio_id_as_of(
     const std::string& parent_portfolio_id,
     std::chrono::system_clock::time_point valid_from_bound,
@@ -62,6 +63,8 @@ std::vector<domain::book> book_service::list_books_by_parent_portfolio_id_as_of(
     return repo_.read_by_parent_portfolio_id_as_of(
         ctx_, parent_portfolio_id, valid_from_bound, valid_to_bound);
 }
+
+
 std::optional<domain::book> book_service::get_book_at_version(const std::string& id,
                                                               std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting book at version: " << id << " version: " << version;

@@ -117,7 +117,6 @@ std::optional<domain::book_status> book_status_repository::read_at_version(conte
     return entities.front();
 }
 
-
 void book_status_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book status: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));

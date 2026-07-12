@@ -107,6 +107,7 @@ public:
     std::uint32_t
     get_total_book_count_by_parent_portfolio_id(context ctx,
                                                 const std::string& parent_portfolio_id);
+
     /**
      * @brief Reads books filtered by parent_portfolio_id that were live at
      * any point during [valid_from_bound, valid_to_bound) — i.e. the set of
@@ -123,6 +124,7 @@ public:
                                       const std::string& parent_portfolio_id,
                                       std::chrono::system_clock::time_point valid_from_bound,
                                       std::chrono::system_clock::time_point valid_to_bound);
+
 
     /**
      * @brief Reads latest books with pagination support.

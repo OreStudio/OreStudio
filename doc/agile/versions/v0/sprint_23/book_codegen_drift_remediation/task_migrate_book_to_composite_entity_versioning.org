@@ -133,7 +133,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Minor codegen template gap: no blank line between count_by/list_by and the following as_of function | cpp_domain_type_repository.cpp/hpp.mustache, cpp_service.cpp/hpp.mustache | Accepted | Fixed the four .org sources and re-tangled; regenerated book/book_status/regulatory_book_type. Also collapsed a pre-existing duplicate blank line before remove() surfaced by the same boundary. |
+| 2 | No cycle prevention on parent_portfolio_id -- recursive bump could hit unbounded recursion on a cycle | refdata_portfolios_create.sql / sql_schema_domain_entity_create.org | Accepted | Added a generic =:prevent_cycle: true= FK flag to the shared template: a recursive-CTE ancestor walk raises a clean exception instead of relying on Postgres's stack-depth error. Applied to portfolio.org's self-referencing parent_portfolio_id. |
+| 3 | Template change leaves counterparty generated SQL stale (touch-function still ordered after its trigger/rule) | refdata_counterparties_create.sql | Accepted | Regenerated (=--address ores.sql.schema=); diff confirmed content unchanged, only the touch-function relocated earlier, as previously analysed. |
+| 4 | Missing blank lines between new method definitions in book_repository/book_service | book_repository.cpp, book_service.cpp/.hpp | Accepted | Same root cause as #1 -- fixed by the same template edit. |
 
 * Result
 

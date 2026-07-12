@@ -93,6 +93,7 @@ public:
      * @return Total number of matching books.
      */
     std::uint32_t count_books_by_parent_portfolio_id(const std::string& parent_portfolio_id);
+
     /**
      * @brief Lists books filtered by parent_portfolio_id that were live at
      * any point during a parent version's own [valid_from, valid_to) window.
@@ -107,6 +108,8 @@ public:
     list_books_by_parent_portfolio_id_as_of(const std::string& parent_portfolio_id,
                                             std::chrono::system_clock::time_point valid_from_bound,
                                             std::chrono::system_clock::time_point valid_to_bound);
+
+
     /**
      * @brief Retrieves a single book as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.

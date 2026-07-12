@@ -284,6 +284,7 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
     return count;
 }
 {{/list_by}}
+
 {{#list_by_as_of}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_by_{{column}}_as_of(
@@ -315,7 +316,6 @@ std::vector<domain::{{entity_singular}}>
 }
 {{/list_by_as_of}}
 {{/foreign_keys}}
-
 void {{entity_singular}}_repository::remove(context ctx, const std::string& {{primary_key.column}}) {
     BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}: " << {{primary_key.column}};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));

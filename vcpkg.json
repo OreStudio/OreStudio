@@ -37,7 +37,8 @@
         "croncpp",
         "cnats",
         "libarchive",
-        "sqlite3"
+        "sqlite3",
+        "immer"
     ],
     "default-features": [ "wt" ],
     "features": {

@@ -1,0 +1,127 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.analytics.quant -- CRM engine (design proposal)
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace analytics #F2F2F2 {
+        namespace quant #F2F2F2 {
+            namespace crm #F2F2F2 {
+
+                class currency_id <<value type>> {
+                    +index : uint16_t
+                }
+
+                class ccy_pair <<value type>> {
+                    +base : currency_id
+                    +quote : currency_id
+                }
+
+                class driver_quote <<value type>> {
+                    +pair : ccy_pair
+                    +rate : double
+                    +value_date : date
+                    +observed_at : timestamp
+                }
+
+                enum topology_error_kind {
+                    missing_major
+                    cycle_conflict
+                    disconnected_currency
+                    duplicate_edge
+                }
+
+                class topology_error <<value type>> {
+                    +kind : topology_error_kind
+                    +offending_pair : ccy_pair
+                    +describe() : string
+                }
+
+                class topology_build_error <<exception>> {
+                    +errors : vector<topology_error>
+                    +what() : const char*
+                }
+
+                class crm_topology <<immutable>> {
+                    -pivot_ : currency_id
+                    -parent_ : vector<currency_id>
+                    -edge_of_ : vector<optional<ccy_pair>>
+                    -currency_index_ : map<string, currency_id>
+                    +vertex_count() : size_t
+                    +path_to_pivot(currency_id) : span<ccy_pair>
+                }
+
+                class topology_builder {
+                    +build(pairs, driver_assignment, majors) : crm_topology
+                    .. throws topology_build_error on cycle,\nmissing major, or disconnected currency ..
+                }
+
+                enum rate_status {
+                    fresh
+                    stale
+                    unavailable
+                }
+
+                class vertex_state <<immutable>> {
+                    +log_rate : double
+                    +as_of : timestamp
+                    +valid : bool
+                }
+
+                class rate_snapshot <<immutable>> {
+                    -states_ : immer::vector<vertex_state>
+                }
+
+                class staleness_policy <<value type>> {
+                    +max_age : duration
+                }
+
+                class derived_rate <<value type>> {
+                    +pair : ccy_pair
+                    +rate : double
+                    +status : rate_status
+                    +as_of : timestamp
+                }
+
+                class rate_engine {
+                    -topology_ : crm_topology
+                    -policy_ : staleness_policy
+                    -snapshot_ : immer::atom<rate_snapshot>
+                    +update(driver_quote) : void
+                    +rate(ccy_pair) : derived_rate
+                    +rates(span<ccy_pair>) : vector<derived_rate>
+                }
+
+                topology_builder ..> crm_topology : builds
+                topology_builder ..> topology_build_error : throws
+                topology_build_error "1" *-- "many" topology_error
+                rate_engine "1" o-- "1" crm_topology : reads (fixed)
+                rate_engine "1" *-- "1" rate_snapshot : atom<>
+                rate_snapshot "1" *-- "many" vertex_state
+                rate_engine ..> driver_quote : consumes
+                rate_engine ..> derived_rate : produces
+                rate_engine ..> staleness_policy : applies
+            }
+        }
+    }
+}
+
+@enduml

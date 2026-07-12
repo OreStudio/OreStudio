@@ -1,0 +1,52 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title CRM topology build (Phase 1 -- build & validate, done once)
+
+participant Client
+participant "topology_builder" as Builder
+participant "boost::adjacency_list" as Graph
+participant "boost::disjoint_sets" as UnionFind
+
+Client -> Builder : build(pairs, driver_assignment, majors)
+
+loop for each (pair, is_driver) in input
+    Builder -> UnionFind : find(base), find(quote)
+    alt same set already
+        Builder -> Builder : record topology_error{cycle_conflict}
+    else different sets
+        Builder -> Graph : add_edge(base, quote, is_driver)
+        Builder -> UnionFind : union(base, quote)
+    end
+end
+
+Builder -> Graph : connected_components()
+alt any major/currency unreached from pivot
+    Builder -> Builder : record topology_error{missing_major | disconnected_currency}
+end
+
+alt errors non-empty
+    Builder --> Client : throw topology_build_error{errors}\n(readable, one entry per offending pair --\nno ambiguous config is ever silently resolved)
+else
+    Builder -> Graph : breadth_first_search(from: pivot)
+    Builder -> Builder : assign parent[] / edge_of[] per vertex
+    Builder --> Client : crm_topology (immutable)
+end
+
+@enduml

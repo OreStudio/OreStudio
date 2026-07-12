@@ -475,17 +475,21 @@ void AccountPartiesWidget::populateDefaultPartyCombo() {
                                     QString::fromStdString(boost::uuids::to_string(ap.party_id)));
     }
 
-    if (!defaultPartyComboInitialized_) {
-        // First populate after a fresh load(): seed the selection from the
-        // account's actual stored default, not from whatever was left over
-        // in the combo from a previously-viewed account.
-        const int idx = defaultPartyId_.is_nil() ?
-            0 :
-            defaultPartyCombo_->findData(
-                QString::fromStdString(boost::uuids::to_string(defaultPartyId_)));
-        defaultPartyCombo_->setCurrentIndex(idx >= 0 ? idx : 0);
-        defaultPartyComboInitialized_ = true;
-    }
+    // Always re-seed the selection from defaultPartyId_ (the authoritative
+    // baseline, whether freshly set via setDefaultPartyId() or rebased via
+    // rebaseDefaultParty() after a save) — not just on first populate.
+    // clear() above resets the combo's currentIndex to whatever Qt
+    // auto-selects for the first re-added item (index 0, "(none)"), even
+    // under a QSignalBlocker, so skipping this on a later reload (e.g. the
+    // load() triggered by a party add/remove alongside an unrelated
+    // default-party save) would desync the visible selection from the real
+    // default and, if saved again, silently clear it.
+    const int idx = defaultPartyId_.is_nil() ?
+        0 :
+        defaultPartyCombo_->findData(
+            QString::fromStdString(boost::uuids::to_string(defaultPartyId_)));
+    defaultPartyCombo_->setCurrentIndex(idx >= 0 ? idx : 0);
+    defaultPartyComboInitialized_ = true;
 }
 
 void AccountPartiesWidget::updateButtonStates() {

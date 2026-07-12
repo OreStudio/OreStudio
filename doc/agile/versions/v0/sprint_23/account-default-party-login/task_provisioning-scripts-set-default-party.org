@@ -8,7 +8,7 @@
 #+filetags: :account-default-party-login:sprint_23:v0:
 #+owner: marco
 #+branch: feature/add-default-party-id-field
-#+pr:
+#+pr: 1514
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1514][#1514]] | [ores.iam,ores.qt] Add default party per account with quick-login checkbox |
 
 * Review
 

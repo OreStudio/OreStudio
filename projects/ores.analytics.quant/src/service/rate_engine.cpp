@@ -34,8 +34,7 @@ using domain::vertex_state;
 
 namespace {
 
-immer::vector<vertex_state> make_initial_states(const domain::crm_topology& topology,
-                                                std::chrono::system_clock::time_point now) {
+immer::vector<vertex_state> make_initial_states(const domain::crm_topology& topology) {
     immer::vector<vertex_state> states;
     auto transient = states.transient();
     for (std::size_t v = 0; v < topology.vertex_count(); ++v)
@@ -44,7 +43,10 @@ immer::vector<vertex_state> make_initial_states(const domain::crm_topology& topo
     vertex_state pivot_state;
     pivot_state.valid = true;
     pivot_state.edge_valid = true; // trivially: the pivot needs no edge
-    pivot_state.as_of = now;
+    // The pivot itself is never stale -- it must never be the vertex that
+    // caps a descendant's as_of via the min() in update(), so it is seeded
+    // to the latest possible time_point rather than construction time.
+    pivot_state.as_of = std::chrono::system_clock::time_point::max();
     transient.set(topology.pivot().index(), pivot_state);
 
     return transient.persistent();
@@ -52,13 +54,11 @@ immer::vector<vertex_state> make_initial_states(const domain::crm_topology& topo
 
 } // namespace
 
-rate_engine::rate_engine(domain::crm_topology topology,
-                         domain::staleness_policy policy,
-                         std::chrono::system_clock::time_point now)
+rate_engine::rate_engine(domain::crm_topology topology, domain::staleness_policy policy)
     : topology_(std::move(topology))
     , policy_(policy)
     , children_(topology_.vertex_count())
-    , snapshot_(rate_snapshot(make_initial_states(topology_, now))) {
+    , snapshot_(rate_snapshot(make_initial_states(topology_))) {
     for (std::size_t v = 0; v < topology_.vertex_count(); ++v) {
         const currency_id id(static_cast<std::uint16_t>(v));
         if (id == topology_.pivot())
@@ -66,6 +66,12 @@ rate_engine::rate_engine(domain::crm_topology topology,
         children_[topology_.parent(id).index()].push_back(id);
     }
 }
+
+rate_engine::rate_engine(rate_engine&& other)
+    : topology_(std::move(other.topology_))
+    , policy_(other.policy_)
+    , children_(std::move(other.children_))
+    , snapshot_(other.snapshot_.load()) {}
 
 void rate_engine::update(const driver_quote& quote) {
     const auto base_id = topology_.currency_id_for(quote.base_code);

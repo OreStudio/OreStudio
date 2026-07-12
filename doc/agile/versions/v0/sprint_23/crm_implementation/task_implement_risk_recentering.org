@@ -1,0 +1,171 @@
+:PROPERTIES:
+:ID: 6EA4B5FC-4581-484C-B5EB-ECF868B3A61D
+:END:
+#+title: Task: Implement risk recentering
+#+description: Re-root the CRM into a star-shaped matrix around a chosen aggregation currency without changing any derived rate's value: rebuild topology as a star, seed it by pulling current derived rates from the source engine for each currency.
+#+type: task
+#+level: s1
+#+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:
+#+owner: marco
+#+branch: feature/implement-risk-recentering
+#+pr: 1515
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a =recenter= operation that re-roots the CRM into a star-shaped
+matrix around a caller-chosen aggregation currency -- every other
+currency directly connected to it -- without changing any derived rate's
+value, per [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]]: bumping one pair in the
+recentred matrix must not disturb any other pair, which the current
+general-tree topology cannot guarantee (a bump ripples to everything
+reachable through it).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- =service::recenter(source_engine, aggregation_code, policy, now)= builds
+  a *new* star-shaped =crm_topology= (the aggregation currency as pivot,
+  every other known currency directly connected to it, =n-1= edges) via
+  the existing =topology_builder= -- no new topology-construction logic,
+  a star is trivially a valid spanning tree.
+- The new engine is seeded, for every currency, with the *current*
+  derived rate from the source engine (=source.rate(aggregation_code,
+  code, now)=) -- so every rate in the recentred matrix is numerically
+  identical to what the source engine reports right now. A currency whose
+  rate is =unavailable= in the source is left unseeded in the recentred
+  engine, not defaulted to some fabricated value.
+- After recentering, bumping (re-=update()=-ing) any one currency's edge
+  in the new engine leaves every other currency's rate against the
+  aggregation currency unchanged -- verified with a test that recenters,
+  bumps one leg, and asserts every other leg is bit-identical to before.
+- =rate_engine= gains a =topology()= accessor (needed by =recenter= to
+  enumerate the source's known currencies and read =pivot()=/=parent()=
+  where relevant) -- the minimum surface needed, not a general-purpose
+  topology export.
+- Recentering is a point-in-time snapshot operation (matches the
+  knowledge doc: risk runs recenter once per run), not a live/continuous
+  transform -- it produces one new, independent =rate_engine= that the
+  caller owns from then on; it does not keep the source and recentred
+  engines in sync.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+** Design
+
+=service::recenter=, a free function (not a class -- it is a one-shot
+transform, not a stateful object):
+
+#+begin_src c++
+domain::crm_topology build_star_topology(
+    const domain::crm_topology& source, const std::string& aggregation_code);
+
+rate_engine recenter(
+    const rate_engine& source, const std::string& aggregation_code,
+    domain::staleness_policy policy, std::chrono::system_clock::time_point now);
+#+end_src
+
+1. Enumerate every currency code known to =source.topology()= (iterate
+   vertex indices 0..vertex_count-1, =code_of= each -- no new
+   =crm_topology= enumeration API needed, this is the one caller so it
+   stays local to =recenter.cpp=).
+2. Build a =ccy_pair_input= for each non-aggregation currency:
+   ={aggregation_code, code, true}=, and run them through the *existing*
+   =topology_builder::build= with =pivot_code = aggregation_code= and
+   =required_majors= = every currency -- reuses all the existing
+   validation (duplicate/missing-major/etc.) for free; a star can never
+   trigger a cycle_conflict since every edge shares the aggregation
+   currency as one side.
+3. Construct a fresh =rate_engine= over the star topology.
+4. For each non-aggregation currency, query
+   =source.rate(aggregation_code, code, now)=; if =fresh= or =stale=
+   (i.e. seeded at all), =update()= the new engine with that rate and its
+   original =as_of= timestamp (not =now=) -- so the recentred engine's
+   own staleness accounting stays honest about how old the underlying
+   data actually is, it doesn't get artificially refreshed by the act of
+   recentering.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1515][#1515]] | [analytics.quant] Add CRM risk recentering, fix pivot as_of staleness bug |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =recenter()= called =source.rate()= once per currency (each its own atomic snapshot load), undermining the documented "point-in-time snapshot" guarantee under a concurrently-ticking source | src/service/risk_recentering.cpp | Accepted | Replaced with a single =source.rates(pairs, now)= batch call -- one atomic snapshot load for every currency, matching =rate_engine='s own batch-atomicity contract. |
+| 2 | =recenter()= not marked =[[nodiscard]]=, unlike other factory-style functions in the component (=topology_builder::build=, =rate_engine::rate=/=rates=) | include/.../service/risk_recentering.hpp | Accepted | Added =[[nodiscard]]=. |
+| 3 | =topology_builder::build(..., currency_codes)= passes every currency as =required_majors=, but they're all always reachable by construction (every edge shares =aggregation_code=) -- the =missing_major= diagnostic can never fire, so this is inert/misleading | src/service/risk_recentering.cpp | Accepted | Pass =\{\}= instead, with a comment explaining why; the real "unknown aggregation currency" case is already checked explicitly earlier. |
+
+* Result
+
+Shipped =service::recenter= (a free function, not a class -- a one-shot
+transform) in =ores.analytics.quant=:
+
+- Builds a fresh star-shaped =crm_topology= around the aggregation
+  currency by feeding =topology_builder::build= one edge per known
+  currency (=aggregation_code=/=code=), reusing all its existing
+  validation for free.
+- Seeds the new =rate_engine= with each currency's *current* derived
+  rate from the source engine, preserving the original =as_of=
+  timestamp (not the recentering time) so the recentred engine's own
+  staleness accounting stays honest. A currency that is =unavailable=
+  in the source is left unseeded.
+- =rate_engine= gained a =topology()= accessor and an explicit move
+  constructor (=immer::atom= disallows copy/move, so returning a new
+  engine by value needed one).
+- 5 new Catch2 test cases (23 total in the component, 44,000+
+  assertions): rate preservation across recentering, =as_of=
+  preservation, bump-one-leg-leaves-others-unchanged, unavailable
+  currencies stay unseeded, and rejection of an unknown aggregation
+  currency.
+
+*Bug found and fixed along the way* (pre-existing, from the previous
+task's PR, not this task's own code): the pivot's =as_of= was seeded to
+construction time instead of the maximum time_point, which wrongly
+floored every other vertex's freshness at that instant forever via the
+=min()= in =update()=. Surfaced by a recentering test where a driver
+ticked well after engine construction; fixed in =make_initial_states=,
+and the constructor's now-vestigial =now= parameter was removed
+end-to-end (header, impl, ~15 call sites across tests) rather than left
+as unused/misleading API surface, per the pattern flagged in PR #1512's
+review.
+
+Acceptance met in full. Story remains STARTED: wiring the CRM into
+=ores.marketdata='s ingest path and the management UI are still open.

@@ -125,6 +125,14 @@ namespace ores #F2F2F2 {
                 rate_engine ..> driver_quote : consumes
                 rate_engine ..> derived_rate : produces
                 rate_engine ..> staleness_policy : applies
+
+                class "recenter()" as recenter_fn <<free function>> {
+                    +recenter(source, aggregation_code, policy, now) : rate_engine
+                    .. star-shapes a new engine around\naggregation_code, preserving current values ..
+                }
+                recenter_fn ..> rate_engine : reads (source)
+                recenter_fn ..> topology_builder : builds star topology
+                recenter_fn ..> rate_engine : produces (new)
             }
         }
     }

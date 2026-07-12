@@ -53,9 +53,24 @@ namespace ores::analytics::quant::service {
  */
 class ORES_ANALYTICS_QUANT_EXPORT rate_engine {
 public:
-    rate_engine(domain::crm_topology topology,
-                domain::staleness_policy policy,
-                std::chrono::system_clock::time_point now = std::chrono::system_clock::now());
+    rate_engine(domain::crm_topology topology, domain::staleness_policy policy);
+
+    /// immer::atom disallows copy/move, so the default special members are
+    /// all implicitly deleted; a move constructor is defined explicitly
+    /// (loading the moved-from atom's current value into a freshly
+    /// constructed one) so an engine can still be returned by value from a
+    /// factory function such as @c recenter. Copy and move-assignment stay
+    /// deleted -- nothing currently needs them.
+    rate_engine(rate_engine&& other);
+    rate_engine(const rate_engine&) = delete;
+    rate_engine& operator=(const rate_engine&) = delete;
+    rate_engine& operator=(rate_engine&&) = delete;
+
+    /// The fixed topology this engine was constructed with -- e.g. so
+    /// @c recenter can enumerate every currency this engine knows about.
+    [[nodiscard]] const domain::crm_topology& topology() const noexcept {
+        return topology_;
+    }
 
     /// Applies one tick to a driver edge already present in the topology.
     /// Throws @c std::invalid_argument if either code is unknown or the

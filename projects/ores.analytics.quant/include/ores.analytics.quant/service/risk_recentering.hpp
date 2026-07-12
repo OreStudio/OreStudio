@@ -46,7 +46,7 @@ namespace ores::analytics::quant::service {
  * shares @p aggregation_code as one side, so it can never trigger a
  * cycle conflict.
  */
-ORES_ANALYTICS_QUANT_EXPORT rate_engine
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT rate_engine
 recenter(const rate_engine& source,
          const std::string& aggregation_code,
          domain::staleness_policy policy,

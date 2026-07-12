@@ -54,14 +54,30 @@ rate_engine recenter(const rate_engine& source,
     for (const auto& code : currency_codes)
         star_edges.push_back({aggregation_code, code, true});
 
-    auto star_topology = topology_builder::build(star_edges, aggregation_code, currency_codes);
+    // Every currency in `currency_codes` is directly wired to
+    // aggregation_code by star_edges above, so all are always reachable;
+    // required_majors is intentionally left empty rather than passing
+    // currency_codes again -- the missing_major diagnostic could never
+    // fire here.
+    auto star_topology = topology_builder::build(star_edges, aggregation_code, {});
     rate_engine recentred(std::move(star_topology), policy);
 
-    for (const auto& code : currency_codes) {
-        const auto current = source.rate(aggregation_code, code, now);
+    // One atomic snapshot load of `source` for every currency, not one
+    // load per currency -- otherwise a concurrent update() on `source`
+    // could seed different legs of the recentred star from different
+    // instants of `source`'s history, breaking the point-in-time
+    // guarantee this function documents.
+    std::vector<std::pair<std::string, std::string>> pairs;
+    pairs.reserve(currency_codes.size());
+    for (const auto& code : currency_codes)
+        pairs.emplace_back(aggregation_code, code);
+
+    const auto current_rates = source.rates(pairs, now);
+    for (const auto& current : current_rates) {
         if (current.status == rate_status::unavailable)
             continue;
-        recentred.update(driver_quote{aggregation_code, code, current.rate, current.as_of});
+        recentred.update(
+            driver_quote{current.base_code, current.quote_code, current.rate, current.as_of});
     }
 
     return recentred;

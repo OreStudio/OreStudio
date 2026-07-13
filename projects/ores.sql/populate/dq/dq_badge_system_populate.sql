@@ -76,6 +76,10 @@ BEGIN
         'Basel III/IV FRTB trading book / banking book classification a book carries.', 19);
 
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'is_sweepable', 'Sweepable',
+        'Spot-sweep eligibility flag for a book (Yes, No).', 27);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'portfolio_status', 'Portfolio Status',
         'Lifecycle status codes for portfolio records.', 3);
 
@@ -443,6 +447,14 @@ BEGIN
         'regulatory_book_type', 'Trading', 'pending');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'regulatory_book_type', 'Banking', 'inactive');
+
+    -- is_sweepable: renders the boolean as a Yes/No badge, same
+    -- true/false -> string("true")/string("false") the Qt model already
+    -- emits for is_bool columns.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'is_sweepable', 'true', 'active');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'is_sweepable', 'false', 'inactive');
 
     -- portfolio_status
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),

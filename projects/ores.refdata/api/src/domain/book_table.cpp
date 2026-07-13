@@ -29,11 +29,12 @@ std::string convert_to_table(const std::vector<book>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Name" << "Party" << "Currency" << "Status" << "Regulatory Book Type"
-          << "Modified By" << "Version" << fort::endr;
+          << "Sweepable" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& bk : v) {
         table << bk.name << boost::uuids::to_string(bk.party_id) << bk.ledger_ccy << bk.book_status
-              << bk.regulatory_book_type << bk.modified_by << bk.version << fort::endr;
+              << bk.regulatory_book_type << bk.is_sweepable << bk.modified_by << bk.version
+              << fort::endr;
     }
     return table.to_string();
 }

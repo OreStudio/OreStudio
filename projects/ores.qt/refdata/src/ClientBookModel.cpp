@@ -90,6 +90,8 @@ QVariant ClientBookModel::data(const QModelIndex& index, int role) const {
                 return QString::fromStdString(book.cost_center);
             case RegulatoryBookType:
                 return QString::fromStdString(book.regulatory_book_type);
+            case IsSweepable:
+                return book.is_sweepable ? tr("true") : tr("false");
             case Version:
                 return static_cast<qlonglong>(book.version);
             case ModifiedBy:
@@ -128,6 +130,8 @@ QVariant ClientBookModel::headerData(int section, Qt::Orientation orientation, i
             return tr("Cost Center");
         case RegulatoryBookType:
             return tr("Regulatory Book Type");
+        case IsSweepable:
+            return tr("Sweepable");
         case Version:
             return tr("Version");
         case ModifiedBy:

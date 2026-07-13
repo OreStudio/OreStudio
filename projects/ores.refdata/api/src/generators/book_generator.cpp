@@ -53,6 +53,7 @@ domain::book generate_synthetic_book(utility::generation::generation_context& ct
     r.cost_center = std::string("CC-001");
     r.book_status = std::string("Active");
     r.regulatory_book_type = std::string("Trading");
+    r.is_sweepable = false;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

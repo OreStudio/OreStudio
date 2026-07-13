@@ -21,15 +21,15 @@
 /**
  * Test Data Books Artefact Population Script
  *
- * Populates 20 trading books as leaf nodes of the portfolio tree.
+ * Populates 22 trading books as leaf nodes of the portfolio tree.
  * Each book belongs to exactly one leaf portfolio.
  *
  * Portfolio -> Books mapping:
- *   GBP Rates       -> GBP Vanilla Swaps, GBP Rates Options
+ *   GBP Rates       -> GBP Nostro Sweep (is_sweepable), GBP Vanilla Swaps, GBP Rates Options
  *   EUR Rates       -> EUR Vanilla Swaps, EUR Exotic Rates
  *   IG Credit EMEA  -> IG CDS EMEA, IG Bonds EMEA
  *   G10 FX EMEA     -> G10 FX Spot Forward, G10 FX Options
- *   USD Rates       -> USD Vanilla Swaps, USD Rates Options
+ *   USD Rates       -> USD Cash Management Sweep (is_sweepable), USD Vanilla Swaps, USD Rates Options
  *   CAD Rates       -> CAD Swaps
  *   IG Credit Amer  -> IG CDS Americas, IG Bonds Americas
  *   JPY Rates       -> JPY Vanilla Swaps, JPY Rates Options
@@ -67,138 +67,154 @@ begin
     insert into ores_dq_books_artefact_tbl (
         dataset_id, tenant_id, id, version, name,
         parent_portfolio_id, ledger_ccy, gl_account_ref, cost_center,
-        book_status, regulatory_book_type
+        book_status, regulatory_book_type, is_sweepable
     )
     values
+        -- GBP Rates portfolio (20..004): Nostro sweep target -- collects
+        -- GBP cash balances swept from other sweepable books (see the
+        -- Spot and ledger sweep knowledge doc).
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
+         '45811f01-f222-422f-8dcb-4b7b75b0e5cb', 0,
+         'GBP Nostro Sweep',
+         '9bf0f7d9-b808-4b62-aec2-bcc3c906c0bc', 'GBP',
+         'GL-TREAS-001', 'CC-EMEA-TREASURY', 'Active', 'Trading', true),
+
+        -- USD Rates portfolio (20..00c): Cash management sweep book.
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
+         '81717504-de4d-43b2-b801-d872aa009624', 0,
+         'USD Cash Management Sweep',
+         'b7cc43eb-4063-4f21-b453-ccfc77aefba7', 'USD',
+         'GL-TREAS-002', 'CC-AMER-TREASURY', 'Active', 'Trading', true),
+
         -- GBP Rates portfolio (20..004) books
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000001', 0,
+         '137a93e3-3341-4dea-86c2-7309b8ce3e8e', 0,
          'GBP Vanilla Swaps',
-         '20000000-0000-4000-a000-000000000004', 'GBP',
-         'GL-RATES-001', 'CC-EMEA-RATES', 'Active', 'Trading'),
+         '9bf0f7d9-b808-4b62-aec2-bcc3c906c0bc', 'GBP',
+         'GL-RATES-001', 'CC-EMEA-RATES', 'Active', 'Trading', false),
 
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000002', 0,
+         '42430630-c8da-453e-a7b6-7cb3ad0f4ed0', 0,
          'GBP Rates Options',
-         '20000000-0000-4000-a000-000000000004', 'GBP',
-         'GL-RATES-002', 'CC-EMEA-RATES', 'Active', 'Trading'),
+         '9bf0f7d9-b808-4b62-aec2-bcc3c906c0bc', 'GBP',
+         'GL-RATES-002', 'CC-EMEA-RATES', 'Active', 'Trading', false),
 
         -- EUR Rates portfolio (20..005) books
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000003', 0,
+         'e54579c9-e0ba-41e4-a654-b70b8d9e7977', 0,
          'EUR Vanilla Swaps',
-         '20000000-0000-4000-a000-000000000005', 'EUR',
-         'GL-RATES-003', 'CC-EMEA-RATES', 'Active', 'Trading'),
+         '99eca864-434a-406d-a04f-0ae2d221f4de', 'EUR',
+         'GL-RATES-003', 'CC-EMEA-RATES', 'Active', 'Trading', false),
 
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000004', 0,
+         '40a97f4d-e6eb-4039-ae4a-479aef3774d6', 0,
          'EUR Exotic Rates',
-         '20000000-0000-4000-a000-000000000005', 'EUR',
-         'GL-RATES-004', 'CC-EMEA-RATES', 'Active', 'Trading'),
+         '99eca864-434a-406d-a04f-0ae2d221f4de', 'EUR',
+         'GL-RATES-004', 'CC-EMEA-RATES', 'Active', 'Trading', false),
 
         -- IG Credit EMEA portfolio (20..007) books
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000005', 0,
+         '4d62fc95-b017-4746-bb03-e336cba850a1', 0,
          'IG CDS EMEA',
-         '20000000-0000-4000-a000-000000000007', 'EUR',
-         'GL-CREDIT-001', 'CC-EMEA-CREDIT', 'Active', 'Trading'),
+         'e28c5d02-a928-48b3-9ead-d444886d0989', 'EUR',
+         'GL-CREDIT-001', 'CC-EMEA-CREDIT', 'Active', 'Trading', false),
 
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000006', 0,
+         '8b4e9466-00c7-45cb-bac0-3c28fffcfd46', 0,
          'IG Bonds EMEA',
-         '20000000-0000-4000-a000-000000000007', 'EUR',
-         'GL-CREDIT-002', 'CC-EMEA-CREDIT', 'Active', 'Banking'),
+         'e28c5d02-a928-48b3-9ead-d444886d0989', 'EUR',
+         'GL-CREDIT-002', 'CC-EMEA-CREDIT', 'Active', 'Banking', false),
 
         -- G10 FX EMEA portfolio (20..009) books
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000007', 0,
+         '180ec717-f41d-4fdd-a136-a0572602b456', 0,
          'G10 FX Spot Forward',
-         '20000000-0000-4000-a000-000000000009', 'EUR',
-         'GL-FX-001', 'CC-EMEA-FX', 'Active', 'Trading'),
+         'db06e9f0-36b1-46f9-b3f2-fcc4e1725c51', 'EUR',
+         'GL-FX-001', 'CC-EMEA-FX', 'Active', 'Trading', false),
 
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000008', 0,
+         '622b12ab-63a1-4aff-a7fc-70cad5f3c4cd', 0,
          'G10 FX Options',
-         '20000000-0000-4000-a000-000000000009', 'EUR',
-         'GL-FX-002', 'CC-EMEA-FX', 'Active', 'Trading'),
+         'db06e9f0-36b1-46f9-b3f2-fcc4e1725c51', 'EUR',
+         'GL-FX-002', 'CC-EMEA-FX', 'Active', 'Trading', false),
 
         -- USD Rates portfolio (20..00c) books
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000009', 0,
+         '2fd7083d-686a-407f-855a-84e77122c3ac', 0,
          'USD Vanilla Swaps',
-         '20000000-0000-4000-a000-00000000000c', 'USD',
-         'GL-RATES-005', 'CC-AMER-RATES', 'Active', 'Trading'),
+         'b7cc43eb-4063-4f21-b453-ccfc77aefba7', 'USD',
+         'GL-RATES-005', 'CC-AMER-RATES', 'Active', 'Trading', false),
 
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-00000000000a', 0,
+         '0e04ffc8-8342-496a-8b66-ae55f3738848', 0,
          'USD Rates Options',
-         '20000000-0000-4000-a000-00000000000c', 'USD',
-         'GL-RATES-006', 'CC-AMER-RATES', 'Active', 'Trading'),
+         'b7cc43eb-4063-4f21-b453-ccfc77aefba7', 'USD',
+         'GL-RATES-006', 'CC-AMER-RATES', 'Active', 'Trading', false),
 
         -- CAD Rates portfolio (20..00d) book
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-00000000000b', 0,
+         'a2f4d8ca-c2ef-466c-93b8-bc0674159741', 0,
          'CAD Swaps',
-         '20000000-0000-4000-a000-00000000000d', 'CAD',
-         'GL-RATES-007', 'CC-AMER-RATES', 'Active', 'Trading'),
+         '12734755-dd8d-4b01-b312-52055a67c235', 'CAD',
+         'GL-RATES-007', 'CC-AMER-RATES', 'Active', 'Trading', false),
 
         -- IG Credit Americas portfolio (20..00f) books
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-00000000000c', 0,
+         'da8e93b9-2527-4401-b306-5be85d09b378', 0,
          'IG CDS Americas',
-         '20000000-0000-4000-a000-00000000000f', 'USD',
-         'GL-CREDIT-003', 'CC-AMER-CREDIT', 'Active', 'Trading'),
+         'd2932457-de3c-4db6-9c33-fc9c5bd5b9b8', 'USD',
+         'GL-CREDIT-003', 'CC-AMER-CREDIT', 'Active', 'Trading', false),
 
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-00000000000d', 0,
+         '4f802c39-f3df-49d9-85a2-edb31fca4e78', 0,
          'IG Bonds Americas',
-         '20000000-0000-4000-a000-00000000000f', 'USD',
-         'GL-CREDIT-004', 'CC-AMER-CREDIT', 'Active', 'Banking'),
+         'd2932457-de3c-4db6-9c33-fc9c5bd5b9b8', 'USD',
+         'GL-CREDIT-004', 'CC-AMER-CREDIT', 'Active', 'Banking', false),
 
         -- JPY Rates portfolio (20..012) books
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-00000000000e', 0,
+         'c37dc90a-79ca-4837-9f9c-72ce7d71dd94', 0,
          'JPY Vanilla Swaps',
-         '20000000-0000-4000-a000-000000000012', 'JPY',
-         'GL-RATES-008', 'CC-APAC-RATES', 'Active', 'Trading'),
+         'f2d6c228-3528-4ba0-bd0e-7a61eb4e7fcd', 'JPY',
+         'GL-RATES-008', 'CC-APAC-RATES', 'Active', 'Trading', false),
 
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-00000000000f', 0,
+         '129951c6-cbac-415e-8611-8a40727e6c34', 0,
          'JPY Rates Options',
-         '20000000-0000-4000-a000-000000000012', 'JPY',
-         'GL-RATES-009', 'CC-APAC-RATES', 'Active', 'Trading'),
+         'f2d6c228-3528-4ba0-bd0e-7a61eb4e7fcd', 'JPY',
+         'GL-RATES-009', 'CC-APAC-RATES', 'Active', 'Trading', false),
 
         -- FX APAC portfolio (20..013) books
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000010', 0,
+         '6c795ed4-b782-409b-a378-f5a7b21a20cf', 0,
          'APAC FX Spot Forward',
-         '20000000-0000-4000-a000-000000000013', 'JPY',
-         'GL-FX-003', 'CC-APAC-FX', 'Active', 'Trading'),
+         '30741c42-ee10-4206-a62b-3bfb9cf1c29a', 'JPY',
+         'GL-FX-003', 'CC-APAC-FX', 'Active', 'Trading', false),
 
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000011', 0,
+         'c4a6995f-bca0-4ab0-a627-87f27b430841', 0,
          'APAC FX NDF',
-         '20000000-0000-4000-a000-000000000013', 'JPY',
-         'GL-FX-004', 'CC-APAC-FX', 'Active', 'Trading'),
+         '30741c42-ee10-4206-a62b-3bfb9cf1c29a', 'JPY',
+         'GL-FX-004', 'CC-APAC-FX', 'Active', 'Trading', false),
 
         -- Regulatory Capital portfolio (20..014) books
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000012', 0,
+         '0f419e5d-9a05-4ac5-b020-cffc6d6d2afb', 0,
          'Regulatory Banking Book',
-         '20000000-0000-4000-a000-000000000014', 'USD',
-         'GL-REG-001', 'CC-RISK', 'Active', 'Banking'),
+         '1f89906e-c6bc-49e9-97df-6ad8fc56a2b0', 'USD',
+         'GL-REG-001', 'CC-RISK', 'Active', 'Banking', false),
 
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000013', 0,
+         'e155b3cb-55ec-4114-b8b8-e8cbb152e95a', 0,
          'Regulatory Trading Book',
-         '20000000-0000-4000-a000-000000000014', 'USD',
-         'GL-REG-002', 'CC-RISK', 'Active', 'Trading'),
+         '1f89906e-c6bc-49e9-97df-6ad8fc56a2b0', 'USD',
+         'GL-REG-002', 'CC-RISK', 'Active', 'Trading', false),
 
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
-         '30000000-0000-4000-a000-000000000014', 0,
+         'd6a27f65-c064-43a1-9d81-be4edfee1b88', 0,
          'Regulatory CVA Book',
-         '20000000-0000-4000-a000-000000000014', 'USD',
-         'GL-REG-003', 'CC-RISK', 'Closed', 'Trading');
+         '1f89906e-c6bc-49e9-97df-6ad8fc56a2b0', 'USD',
+         'GL-REG-003', 'CC-RISK', 'Closed', 'Trading', false);
 
     get diagnostics v_count = row_count;
     raise debug 'Successfully populated % books', v_count;
@@ -228,4 +244,8 @@ where book_status = 'Active'
 union all
 select 'Closed Books', count(*)
 from ores_dq_books_artefact_tbl
-where book_status = 'Closed';
+where book_status = 'Closed'
+union all
+select 'Sweepable Books', count(*)
+from ores_dq_books_artefact_tbl
+where is_sweepable;

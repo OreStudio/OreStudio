@@ -689,3 +689,29 @@ with check (
     ores_iam_visible_party_ids_fn() is null
     or party_id = ANY(ores_iam_visible_party_ids_fn())
 );
+
+-- -----------------------------------------------------------------------------
+-- Book Purpose Types
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_book_purpose_types_tbl enable row level security;
+
+create policy book_purpose_types_tenant_isolation_policy on ores_refdata_book_purpose_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Ledger Feed Types
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_ledger_feed_types_tbl enable row level security;
+
+create policy ledger_feed_types_tenant_isolation_policy on ores_refdata_ledger_feed_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

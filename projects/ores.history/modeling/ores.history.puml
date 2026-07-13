@@ -56,18 +56,14 @@ namespace ores #F2F2F2 {
             history_handler --> service::dispatch_registry : dispatches via
             history_handler ..> get_entity_history_request : decodes
             history_handler ..> get_entity_history_response : replies with
-            history_handler ..> caller_context_resolver : resolves caller_context via
-
-            class caller_context_resolver <<using>> {
-                (const nats::message&) -> expected<string, error_code>
-            }
+            history_handler ..> ores::database::context : resolves via make_request_context()
         }
         namespace service #FEFECE {
             class dispatch_registry <<class>> {
                 +register_history_provider(entity_type, provider) : void
                 +has_provider(entity_type) : bool
                 +provider_count() : size_t
-                +dispatch(request, caller_context) : get_entity_history_response
+                +dispatch(request, ctx) : get_entity_history_response
             }
             dispatch_registry ..> messaging::get_entity_history_request : consumes
             dispatch_registry ..> messaging::get_entity_history_response : produces
@@ -82,12 +78,12 @@ namespace ores #F2F2F2 {
 }
 
 note right of ores::history::messaging::history_handler
-  register_history_handlers(nats, registry, queue_group, resolve_context)
+  register_history_handlers(nats, registry, queue_group, ctx, verifier)
   subscribes the single history.v1.get subject to a
   history_handler backed by the caller-owned registry.
-  caller_context is opaque to ores.history: the resolver
-  and each history_provider agree on its shape privately
-  (typically tenant_id, optionally party_id/actor).
+  Each request is resolved into a scoped database::context
+  via make_request_context(), exactly like every other NATS
+  handler in the composing service — no bespoke auth channel.
 end note
 
 @enduml

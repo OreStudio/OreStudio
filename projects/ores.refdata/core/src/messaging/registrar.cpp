@@ -71,6 +71,15 @@
 #include "ores.refdata.core/messaging/counterparty_contact_handler.hpp"
 #include "ores.refdata.core/messaging/party_contact_handler.hpp"
 #include "ores.refdata.core/messaging/publish_from_dq_handler.hpp"
+
+// Generic history.v1.get subject (pilot: currency only).
+#include "ores.history/messaging/registrar.hpp"
+#include "ores.history/service/dispatch_registry.hpp"
+#include "ores.history/service/version_builder.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.core/presentation/currency_history_field_mapper.hpp"
+#include "ores.refdata.core/service/currency_service.hpp"
+
 #include <array>
 #include <iterator>
 #include <memory>
@@ -80,6 +89,14 @@ namespace ores::refdata::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.refdata.service";
+
+// Function-local static: must outlive the history.v1.get subscription
+// (see ores::history::messaging::register_history_handlers's doc), and
+// register_handlers is only ever called once per service process.
+ores::history::service::dispatch_registry& history_registry() {
+    static ores::history::service::dispatch_registry instance;
+    return instance;
+}
 } // namespace
 
 std::vector<ores::nats::service::subscription>
@@ -263,6 +280,28 @@ registrar::register_handlers(ores::nats::service::client& nats,
             subs.push_back(nats.queue_subscribe(
                 subject, queue_group, [h](ores::nats::message msg) { h->handle(std::move(msg)); }));
         }
+    }
+
+    // ----------------------------------------------------------------
+    // Generic history.v1.get subject (pilot: currency only). The
+    // registrar resolves each request into a scoped context exactly
+    // like every other subject (make_request_context), so a provider
+    // sees the same tenant/party/roles/workspace visibility any other
+    // handler in this file would.
+    // ----------------------------------------------------------------
+    {
+        auto& hist_registry = history_registry();
+        hist_registry.register_history_provider(
+            "ores.refdata.currency",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::currency_service svc(scoped_ctx);
+                auto versions = svc.get_currency_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_currency_fields);
+            });
+
+        subs.push_back(ores::history::messaging::register_history_handlers(
+            nats, hist_registry, queue_group, ctx, verifier));
     }
 
     return subs;

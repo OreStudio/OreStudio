@@ -95,9 +95,9 @@ QVariant ClientPartyModel::data(const QModelIndex& index, int role) const {
 
     if (role == Qt::DecorationRole && index.column() == BusinessCenterCode) {
         if (imageCache_) {
-            auto it = bc_code_to_image_id_.find(party.business_center_code);
-            if (it != bc_code_to_image_id_.end() && !it->second.empty()) {
-                return imageCache_->getIcon(it->second);
+            auto it = bc_code_to_country_alpha2_.find(party.business_center_code);
+            if (it != bc_code_to_country_alpha2_.end() && !it->second.empty()) {
+                return imageCache_->getCountryFlagIcon(it->second);
             }
             return imageCache_->getNoFlagIcon();
         }
@@ -360,7 +360,7 @@ void ClientPartyModel::fetch_business_centres() {
         if (!self || mapping.empty())
             return;
 
-        self->bc_code_to_image_id_ = std::move(mapping);
+        self->bc_code_to_country_alpha2_ = std::move(mapping);
 
         if (!self->parties_.empty()) {
             emit self->dataChanged(self->index(0, 0),
@@ -369,8 +369,8 @@ void ClientPartyModel::fetch_business_centres() {
         }
     });
 
-    watcher->setFuture(
-        QtConcurrent::run([cm = clientManager_]() { return fetch_business_centre_image_map(cm); }));
+    watcher->setFuture(QtConcurrent::run(
+        [cm = clientManager_]() { return fetch_business_centre_country_map(cm); }));
 }
 
 }

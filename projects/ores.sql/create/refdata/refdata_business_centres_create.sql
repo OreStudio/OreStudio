@@ -17,14 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/*
+/**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_table_create.mustache
+ * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
+ *
+ * Business Centre Table
+ *
+ * Business centres identify financial trading locations used for holiday
+ * calendar determination (e.g. "USNY" for New York, "GBLO" for London),
+ * using FpML-style codes. Each code is unique per tenant regardless of
+ * coding scheme (e.g. FpML vs ISDA) -- matching party_id_scheme's
+ * code-only primary key -- and optionally linked to a country for
+ * flag-icon display in the Qt UI. Referenced by business_unit as a
+ * soft FK.
  */
--- =============================================================================
--- The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets.
--- =============================================================================
 
 create table if not exists "ores_refdata_business_centres_tbl" (
     "code" text not null,
@@ -33,44 +40,35 @@ create table if not exists "ores_refdata_business_centres_tbl" (
     "source" text null,
     "description" text null,
     "city_name" text null,
-    "coding_scheme_code" text not null,
     "country_alpha2_code" text null,
-    "image_id" uuid,
+    "coding_scheme_code" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, code, coding_scheme_code, valid_from, valid_to),
+    primary key (tenant_id, code, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
         code WITH =,
-        coding_scheme_code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
     check ("code" <> '')
 );
 
+-- Version uniqueness for optimistic concurrency
 create unique index if not exists business_centres_version_uniq_idx
-on "ores_refdata_business_centres_tbl" (tenant_id, code, coding_scheme_code, version)
+on "ores_refdata_business_centres_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists business_centres_code_uniq_idx
-on "ores_refdata_business_centres_tbl" (tenant_id, code, coding_scheme_code)
+on "ores_refdata_business_centres_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists business_centres_tenant_idx
 on "ores_refdata_business_centres_tbl" (tenant_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create index if not exists business_centres_coding_scheme_idx
-on "ores_refdata_business_centres_tbl" (coding_scheme_code)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create index if not exists business_centres_country_idx
-on "ores_refdata_business_centres_tbl" (tenant_id, country_alpha2_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_business_centres_insert_fn()
@@ -79,90 +77,77 @@ declare
     current_version integer;
 begin
     -- Validate tenant_id
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate foreign key references
-    if NEW.coding_scheme_code is not null and not exists (
-        select 1 from ores_dq_coding_schemes_tbl
-        where code = NEW.coding_scheme_code
-        and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
-        using errcode = '23503';
+    -- Validate country_alpha2_code (optional field -- skip validation when null)
+    if NEW.country_alpha2_code is not null then
+        NEW.country_alpha2_code := ores_refdata_validate_country_fn(NEW.tenant_id, NEW.country_alpha2_code);
     end if;
 
-    -- Validate country_alpha2_code foreign key
-    if NEW.country_alpha2_code is not null
-       and exists (select 1 from ores_refdata_countries_tbl limit 1)
-       and not exists (
-        select 1 from ores_refdata_countries_tbl
-        where alpha2_code = NEW.country_alpha2_code
-          and tenant_id = NEW.tenant_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid country_alpha2_code: %. Country must exist.', NEW.country_alpha2_code
-        using errcode = '23503';
-    end if;
+    -- Validate coding_scheme_code
+    NEW.coding_scheme_code := ores_refdata_validate_business_centre_coding_scheme_fn(NEW.tenant_id, NEW.coding_scheme_code);
 
     -- Validate change_reason_code
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- Version management
     select version into current_version
     from "ores_refdata_business_centres_tbl"
-    where tenant_id = new.tenant_id
-      and code = new.code
-      and coding_scheme_code = new.coding_scheme_code
+    where tenant_id = NEW.tenant_id
+      and code = NEW.code
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
-        if new.version != 0 and new.version != current_version then
+        if NEW.version != 0 and NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
-                new.version, current_version
+                NEW.version, current_version
                 using errcode = 'P0002';
         end if;
-        new.version = current_version + 1;
+        NEW.version = current_version + 1;
 
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_refdata_business_centres_tbl"
-        set valid_to = current_timestamp
-        where tenant_id = new.tenant_id
-          and code = new.code
-          and coding_scheme_code = new.coding_scheme_code
+        set valid_to = clock_timestamp()
+        where tenant_id = NEW.tenant_id
+          and code = NEW.code
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
-        new.version = 1;
+        NEW.version = 1;
     end if;
 
-    new.valid_from = current_timestamp;
-    new.valid_to = ores_utility_infinity_timestamp_fn();
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    NEW.valid_from = clock_timestamp();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    return new;
+    return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_business_centres_insert_trg
 before insert on "ores_refdata_business_centres_tbl"
-for each row
-execute function ores_refdata_business_centres_insert_fn();
+for each row execute function ores_refdata_business_centres_insert_fn();
 
 create or replace rule ores_refdata_business_centres_delete_rule as
-on delete to "ores_refdata_business_centres_tbl"
-do instead
-  update "ores_refdata_business_centres_tbl"
-  set valid_to = current_timestamp
-  where tenant_id = old.tenant_id
-  and code = old.code
-  and coding_scheme_code = old.coding_scheme_code
-  and valid_to = ores_utility_infinity_timestamp_fn();
+on delete to "ores_refdata_business_centres_tbl" do instead (
+    update "ores_refdata_business_centres_tbl"
+    set valid_to = clock_timestamp()
+    where tenant_id = OLD.tenant_id
+      and code = OLD.code
+      and valid_to = ores_utility_infinity_timestamp_fn();
+);
 
 -- =============================================================================
 -- Validation function for business_centre
 -- Validates that a code exists in the business_centres table.
 -- Returns the validated value, or default if null/empty.
--- Uses current tenant data.
+-- Validates against the tenant's own data only.
 -- =============================================================================
 create or replace function ores_refdata_validate_business_centre_fn(
     p_tenant_id uuid,
@@ -175,12 +160,16 @@ begin
             using errcode = '23502';
     end if;
 
-    -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_refdata_business_centres_tbl limit 1) then
+    -- Allow pass-through if this tenant has no active business_centres yet.
+    if not exists (
+        select 1 from ores_refdata_business_centres_tbl
+        where tenant_id = p_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
         return p_value;
     end if;
 
-    -- Validate against reference data
+    -- Validate against this tenant's values.
     if not exists (
         select 1 from ores_refdata_business_centres_tbl
         where tenant_id = p_tenant_id
@@ -197,4 +186,4 @@ begin
 
     return p_value;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;

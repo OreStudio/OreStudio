@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: 183B2813-A7A8-4EC1-A43A-E37CCFF83C21
+:END:
+#+title: Task: Appraise business_centre against the entity evaluation checklist
+#+description: Score business_centre across all layers (SQL, domain, repository, service, generator, protocol, NATS eventing/handler, Qt) using the entity evaluation checklist; findings drive the rest of the story's tasks.
+#+type: task
+#+level: s1
+#+filetags: :commission_business_centre:sprint_23:v0:
+#+owner: marco
+#+branch: feature/appraise-business-centre
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A complete per-layer appraisal of business_centre's current state, identifying any codegen drift, missing pieces, or regressions to fix in later tasks.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- Checklist scored for every layer; findings recorded in the task's Notes/Result; any drift or gaps found are either fixed inline (trivial) or become explicit follow-on task scope.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Ran the [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] against =business_centre=. Per
+the [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] SQL/Domain/Tbl IO/JSON IO/Qt were already
+marked =Y=; static inspection below confirms most of that but surfaces
+four findings, two of them real bugs.
+
+** DB layer
+
+- Table, temporal columns, GIST exclusion, primary key, version/natural-key
+  unique indexes, tenant index, insert trigger, soft-delete rule, and
+  validate function are all present and structurally correct
+  ([[file:../../../../../projects/ores.sql/create/refdata/refdata_business_centres_create.sql][refdata_business_centres_create.sql]]).
+- *Finding 1 (security gap):* neither
+  =ores_refdata_business_centres_insert_fn()= nor
+  =ores_refdata_validate_business_centre_fn()= carries =security definer=
+  or =set search_path = public, pg_temp=. Same class of bug the
+  [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story fixed and the checklist calls out by name
+  -- without both, a service role with a manipulated search path can
+  shadow =ores_refdata_business_centres_tbl= and bypass validation.
+- *Finding 2 (bootstrap guard):* the validate function's bootstrap
+  pass-through is ~if not exists (select 1 from
+  ores_refdata_business_centres_tbl limit 1)~ -- no =valid_to =
+  ores_utility_infinity_timestamp_fn()= filter. Same bug pattern as
+  Commission: country: a table left with only soft-deleted rows would
+  incorrectly skip the pass-through.
+- Foreign-key validation for =coding_scheme_code= / =country_alpha2_code=
+  is inlined directly in the insert trigger (raises its own exception)
+  rather than delegating to a =validate_<other-entity>_fn=. Functionally
+  fine, just a style inconsistency versus the documented pattern --
+  not fixing as part of this story.
+
+** Codegen layer
+
+- *Finding 3 (no live model):* =refdata_business_centres_create.sql=
+  carries an "AUTO-GENERATED FILE -- DO NOT EDIT MANUALLY,
+  =sql_schema_table_create.mustache=" banner, but no codegen entity
+  model exists anywhere in the tree for =business_centre= --
+  searched =projects/ores.codegen/library=, =projects/modeling/*.org=
+  (=entity_view= docs), and every =*.json=/=*.yaml= in the repo. The
+  entity is effectively hand-maintained today despite the banner's
+  claim. Authoring a fresh codegen model is out of scope for the
+  codegen-sync task below (documented as a known gap instead) -- it is
+  a materially bigger effort (new =entity_view= + regenerating and
+  diffing all twelve output profiles from scratch) than "sync existing
+  drift", and risks destabilising a currently-working entity mid-story.
+
+** Domain / repository / service / messaging layers
+
+- Domain struct ([[file:../../../../../projects/ores.refdata/api/include/ores.refdata.api/domain/business_centre.hpp][business_centre.hpp]]) covers every DB column including
+  =recorded_at=; canonical C++ types throughout; no business logic in
+  the struct.
+- Repository/service/messaging headers present and match the standard
+  shape (entity, mapper, repository, service, json_io, protocol).
+- NATS eventing: =business_centre_changed_event= is registered in the
+  LISTEN/NOTIFY-to-NATS relay in
+  [[file:../../../../../projects/ores.refdata/service/src/app/application.cpp][application.cpp]] (=register_mapping<...>= + =event_bus.subscribe<...>=
+  both present) -- not the party_type-style miss the checklist warns
+  about.
+
+** Qt layer
+
+- *Finding 4 (wrong plugin -- matches the "should be in refdata"
+  instinct that kicked off this story):* all of business_centre's Qt
+  CRUD code (=BusinessCentreController=, =BusinessCentreMdiWindow=,
+  =BusinessCentreDetailDialog=, =BusinessCentreHistoryDialog=,
+  =ClientBusinessCentreModel=) lives under =ores.qt/party=, and
+  =PartyPlugin.cpp= constructs the controller and wires its "Business
+  Centres" menu action. This is the exact cross-component leakage
+  pattern the [[id:0E63013B-3B02-4968-A9EA-ED85C00EC7AF][Move book to refdata]] story fixed for Book/BookStatus/
+  RegulatoryBookType: the C++ backend is correctly in =ores.refdata=,
+  but the Qt layer sits under the wrong plugin. =business_unit= and
+  =contact_type= (two other open Commission stories) show the exact
+  same pattern under =PartyPlugin= -- out of scope here, worth a
+  capture for whoever picks those up next.
+- All five expected Qt artefacts (list/detail/history/controller/model)
+  otherwise exist; the manual end-to-end verification (list loads,
+  detail round-trips, history correct, delete preserves history,
+  cross-session eventing) is deferred to the dedicated Qt-verification
+  task, and should happen *after* the plugin move so it isn't repeated
+  twice like the Book story's rationale for sequencing.
+
+** Manual layer
+
+- No entity chapter exists under =doc/manual= for =business_centre=
+  today -- confirmed by the =document-business-centre= task already in
+  this story's scope.
+
+** Rescope decision (see story =* Decisions=)
+
+Findings 1, 2, and 4 are real, fixable gaps in scope for a commissioning
+story (not just "verify," but "commission"), so two new tasks were added
+to the story ahead of Qt verification: move the Qt CRUD/plugin wiring to
+=ores.qt/refdata= / =RefdataPlugin=, and fix the two SQL security/bootstrap
+gaps. Finding 3 (no codegen model) is recorded as a known gap, not
+actioned -- the =sync-codegen-business-centre= task is downgraded to a
+drift/consistency check against the DB-vs-domain-vs-checklist criteria by
+hand, since there is no model to regenerate from.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Checklist scored across all applicable layers via static inspection.
+Four findings recorded (details in Notes above); three drove a story
+rescope (two new tasks added: SQL security/bootstrap fix,
+Qt-to-RefdataPlugin move), one (no live codegen model) recorded as an
+out-of-scope known gap. No trivial fixes were made inline -- all
+findings are substantial enough to warrant their own task or explicit
+out-of-scope decision.

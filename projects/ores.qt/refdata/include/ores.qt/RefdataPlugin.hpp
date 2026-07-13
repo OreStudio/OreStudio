@@ -67,6 +67,7 @@ class CurrencyPairController;
 class CurrencyPairConventionController;
 class CdsConventionController;
 class PartyTypeController;
+class BusinessCentreController;
 class BookController;
 class BookStatusController;
 class RegulatoryBookTypeController;
@@ -128,6 +129,7 @@ private:
     QAction* act_countries_{nullptr};
     QAction* act_currency_pairs_{nullptr};
     QAction* act_books_{nullptr};
+    QAction* act_business_centres_{nullptr};
     QAction* act_data_librarian_{nullptr};
 
     // Singleton MDI sub-window for Data Librarian (nullptr when not open)
@@ -152,6 +154,7 @@ private:
     std::unique_ptr<RoundingTypeController> roundingTypeController_;
     std::unique_ptr<PurposeTypeController> purposeTypeController_;
     std::unique_ptr<PartyTypeController> partyTypeController_;
+    std::unique_ptr<BusinessCentreController> businessCentreController_;
     std::unique_ptr<ZeroConventionController> zeroConventionController_;
     std::unique_ptr<DepositConventionController> depositConventionController_;
     std::unique_ptr<SwapConventionController> swapConventionController_;

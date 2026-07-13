@@ -56,10 +56,16 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'iso.currencies', 11);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_pairs', 12);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_pair_conventions', 13);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'iso.coding_schemes', 14);
 
     -- FpML Standards
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.coding_schemes', 100);
+    -- NOTE: iso.coding_schemes/fpml.coding_schemes are deliberately NOT bundle
+    -- members here. They are published once, unconditionally, to the system
+    -- tenant at DB build time (see iso_populate.sql/fpml_populate.sql) and
+    -- every coding-scheme validator (business_centre, party_id_scheme, ...)
+    -- checks only the system tenant's rows. Publishing them again per-tenant
+    -- via this bundle produced dead, RLS-visible duplicate rows (every code
+    -- appearing twice in tenant-scoped combos) with no validator ever
+    -- consulting the tenant-owned copy.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.account_type', 101);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.asset_class', 102);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.asset_measure', 103);
@@ -107,13 +113,13 @@ BEGIN
     -- ISO Standards
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'iso.countries', 10);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'iso.currencies', 11);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'iso.coding_schemes', 12);
 
     -- Cryptocurrency
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'crypto.small', 20);
 
     -- FpML Standards
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.coding_schemes', 100);
+    -- NOTE: iso.coding_schemes/fpml.coding_schemes deliberately omitted; see
+    -- the 'base' bundle above for why.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.account_type', 101);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.asset_class', 102);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crypto', 'fpml.asset_measure', 103);

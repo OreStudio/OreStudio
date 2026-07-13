@@ -24,6 +24,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -31,14 +34,14 @@
 namespace ores::refdata::repository {
 
 /**
- * @brief Reads and writes business centres off of data storage.
+ * @brief Reads and writes business centres to data storage.
  */
 class ORES_REFDATA_CORE_EXPORT business_centre_repository {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.business_centre_repository";
 
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
@@ -56,8 +59,8 @@ public:
      * @brief Writes business centres to database.
      */
     /**@{*/
-    void write(context ctx, const domain::business_centre& bc);
-    void write(context ctx, const std::vector<domain::business_centre>& bcs);
+    void write(context ctx, const domain::business_centre& v);
+    void write(context ctx, const std::vector<domain::business_centre>& v);
     /**@}*/
 
     /**
@@ -69,33 +72,38 @@ public:
     /**@}*/
 
     /**
+     * @brief Reads all business centres, possibly filtered by code.
+     */
+    std::vector<domain::business_centre> read_all(context ctx, const std::string& code);
+
+    /**
+     * @brief Reads a single business centre as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param code The code to look up
+     * @param version The version to fetch
+     */
+    std::optional<domain::business_centre>
+    read_at_version(context ctx, const std::string& code, std::uint32_t version);
+
+    /**
      * @brief Reads latest business centres with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
      */
     std::vector<domain::business_centre>
     read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active business centres.
+     * @param ctx Repository context with database connection
+     * @return Total number of active business centres
      */
-    std::uint32_t get_total_business_centre_count(context ctx);
-
-    /**
-     * @brief Reads business centres at the supplied time point, possibly
-     * filtered by code.
-     */
-    /**@{*/
-    std::vector<domain::business_centre> read_at_timepoint(context ctx, const std::string& as_of);
-    std::vector<domain::business_centre>
-    read_at_timepoint(context ctx, const std::string& as_of, const std::string& code);
-    /**@}*/
-
-    /**
-     * @brief Reads all business centres, possibly filtered by code.
-     */
-    /**@{*/
-    std::vector<domain::business_centre> read_all(context ctx);
-    std::vector<domain::business_centre> read_all(context ctx, const std::string& code);
-    /**@}*/
+    std::uint32_t get_total_centre_count(context ctx);
 
     /**
      * @brief Deletes a business centre by closing its temporal validity.

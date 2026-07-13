@@ -19,6 +19,8 @@
  */
 #include "ores.refdata.core/service/business_centre_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -27,66 +29,69 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 business_centre_service::business_centre_service(context ctx)
-    : ctx_(std::move(ctx))
-    , repo_{} {}
+    : ctx_(std::move(ctx)) {}
 
-std::vector<domain::business_centre>
-business_centre_service::list_business_centres(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing business centres with offset=" << offset
-                               << " limit=" << limit;
+std::vector<domain::business_centre> business_centre_service::list_centres(std::uint32_t offset,
+                                                                           std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all business centres";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::uint32_t business_centre_service::count_business_centres() {
-    BOOST_LOG_SEV(lg(), debug) << "Counting business centres";
-    return repo_.get_total_business_centre_count(ctx_);
-}
-
-void business_centre_service::save_business_centre(const domain::business_centre& bc) {
-    if (bc.code.empty()) {
-        throw std::invalid_argument("Business centre code cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving business centre: " << bc.code;
-    auto b = bc;
-    stamp(b, ctx_);
-    repo_.write(ctx_, b);
-}
-
-void business_centre_service::save_business_centres(
-    const std::vector<domain::business_centre>& business_centres) {
-    for (const auto& bc : business_centres) {
-        if (bc.code.empty())
-            throw std::invalid_argument("Business centre code cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << business_centres.size() << " business centres";
-    auto stamped = business_centres;
-    for (auto& b : stamped)
-        stamp(b, ctx_);
-    repo_.write(ctx_, stamped);
-}
-
-void business_centre_service::delete_business_centre(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Deleting business centre: " << code;
-    repo_.remove(ctx_, code);
-}
-
-void business_centre_service::delete_business_centres(const std::vector<std::string>& codes) {
-    repo_.remove(ctx_, codes);
+std::uint32_t business_centre_service::count_centres() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total business centres count";
+    return repo_.get_total_centre_count(ctx_);
 }
 
 std::optional<domain::business_centre>
-business_centre_service::get_business_centre(const std::string& code) {
+business_centre_service::get_centre_at_version(const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting business centre at version: " << code
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, code, version);
+}
+
+std::optional<domain::business_centre>
+business_centre_service::get_centre(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting business centre: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) {
+    if (results.empty())
         return std::nullopt;
-    }
     return results.front();
 }
 
+void business_centre_service::save_centre(const domain::business_centre& v) {
+    if (v.code.empty())
+        throw std::invalid_argument("Business Centre code cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving business centre: " << v.code;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved business centre: " << v.code;
+}
+
+void business_centre_service::save_centres(const std::vector<domain::business_centre>& centres) {
+    for (const auto& e : centres)
+        if (e.code.empty())
+            throw std::invalid_argument("Business Centre code cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << centres.size() << " business centres";
+    auto ts = centres;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void business_centre_service::delete_centre(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing business centre: " << code;
+    repo_.remove(ctx_, code);
+    BOOST_LOG_SEV(lg(), info) << "Removed business centre: " << code;
+}
+
+void business_centre_service::delete_centres(const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
+}
+
 std::vector<domain::business_centre>
-business_centre_service::get_business_centre_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting business centre history for: " << code;
+business_centre_service::get_centre_history(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for business centre: " << code;
     return repo_.read_all(ctx_, code);
 }
 

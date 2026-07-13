@@ -101,6 +101,18 @@ ORES_QT_API QIcon business_centre_flag_icon(ImageCache& imageCache,
                                             const std::string& businessCentreCode);
 
 /**
+ * @brief Flag icon for one country, keyed by its ISO 3166-1 alpha-2 code —
+ * the =icon_columns= accessor counterpart to =currency_flag_icon()= for
+ * entities whose flag is derived from a country code they hold (e.g.
+ * business_centre's =country_alpha2_code=) rather than their own uploaded
+ * =image_id=.
+ *
+ * @param imageCache Shared image cache (country alpha-2 -> image_id mapping).
+ * @param alpha2Code Country ISO 3166-1 alpha-2 code.
+ */
+ORES_QT_API QIcon country_flag_icon(ImageCache& imageCache, const std::string& alpha2Code);
+
+/**
  * @brief Standard single-flag height (device-independent pixels) every list
  * view showing a currency/country/business-centre flag should use.
  *

@@ -23,8 +23,12 @@
 
 namespace ores::refdata::domain {
 
+namespace {
+
 void print_business_centre_table(std::ostream& s, const std::vector<business_centre>& v) {
-    s << convert_to_table(v);
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
 }
 
 std::ostream& operator<<(std::ostream& s, const std::vector<business_centre>& v) {

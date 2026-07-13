@@ -23,8 +23,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
+#include <vector>
 
 namespace Ui {
 class BusinessCentreDetailDialog;
@@ -56,15 +58,24 @@ public:
     ~BusinessCentreDetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
-    void setImageCache(ImageCache* imageCache);
     void setUsername(const std::string& username);
-    void setBusinessCentre(const refdata::domain::business_centre& business_centre);
+    void setCentre(const refdata::domain::business_centre& business_centre);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
+
 signals:
-    void businessCentreSaved(const QString& code);
-    void businessCentreDeleted(const QString& code);
+    void business_centreSaved(const QString& code);
+    void business_centreDeleted(const QString& code);
 
 private slots:
     void onSaveClicked();
@@ -76,29 +87,33 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    QString code() const override;
 
 private:
     void setupUi();
     void setupConnections();
-    void populateCountries();
-    void updateUiFromBusinessCentre();
-    void updateBusinessCentreFromUi();
+    void setupCombos();
+    void updateUiFromCentre();
+    void updateCentreFromUi();
     void updateSaveButtonState();
     bool validateInput();
 
+    void populateCodingSchemeCombo();
+
+
+    void populateCountryAlpha2CodeCombo();
+
+
     Ui::BusinessCentreDetailDialog* ui_;
     ClientManager* clientManager_;
-    ImageCache* imageCache_{nullptr};
     std::string username_;
     refdata::domain::business_centre business_centre_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
-    std::string pending_country_;
 };
 
 }

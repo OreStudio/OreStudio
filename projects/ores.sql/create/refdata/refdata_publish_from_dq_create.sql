@@ -947,8 +947,7 @@ begin
             dq.code,
             dq.coding_scheme_code,
             dq.source,
-            dq.description,
-            dq.image_id
+            dq.description
         from ores_dq_business_centres_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_utility_system_tenant_id_fn()
@@ -984,12 +983,12 @@ begin
         insert into ores_refdata_business_centres_tbl (
             tenant_id,
             code, version, coding_scheme_code, country_alpha2_code,
-            source, description, city_name, image_id,
+            source, description, city_name,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
             p_target_tenant_id,
             r.code, 0, r.coding_scheme_code, v_country_alpha2,
-            r.source, r.description, v_city_name, r.image_id,
+            r.source, r.description, v_city_name,
             coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )

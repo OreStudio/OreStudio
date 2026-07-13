@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 0FCD3745-61CD-4644-BAE2-CBCD994448FE
+:END:
+#+title: Task: Regenerate business_centre from its codegen model and reconcile diffs
+#+description: Run compass codegen generate against the business_centre model authored in the previous task, across every enabled profile. Diff each generated file against the current hand-written one and reconcile (zero-diff, fix-template, fix-code, or accept) per file -- this is where the SQL security-definer/bootstrap-guard fix and the Qt CRUD's move to ores.qt/refdata come from, as a byproduct of correct codegen output rather than hand edits.
+#+type: task
+#+level: s1
+#+filetags: :commission_business_centre:sprint_23:v0:
+#+owner: marco
+#+branch: feature/regenerate-business-centre-reconcile-diffs
+#+pr: 1552
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-13
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every codegen profile for business_centre produces a zero-diff or explicitly signed-off delta against the repo, per the entity commissioning reference's codegen sync acceptance criteria. In particular: the SQL insert/validate functions carry security definer + set search_path (from the already-fixed sql_schema_create.mustache template) and the bootstrap guard filters active rows; the Qt CRUD (controller, MDI window, detail/history dialogs, client model) lands under ores.qt/refdata (from the model's component=refdata) instead of ores.qt/party, with RefdataPlugin wired to construct/menu it instead of PartyPlugin -- no cross-component leakage, achieved via regeneration rather than hand-moving files.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- Output-location check done first for every profile (per the entity commissioning reference): each generated file lands under the correct split-project root (ores.refdata.api / ores.refdata.core / ores.qt/refdata), never the monolith.
+- Every generated file is either a zero-diff against the corresponding hand-written file, or has its delta classified and a fix-template / fix-code / accept decision recorded.
+- grep for BusinessCentreController in PartyPlugin.cpp returns no construction/menu-wiring hits after reconciliation; RefdataPlugin.cpp constructs the controller and contributes its menu entry.
+- Full build (api/core/service/qt.refdata/qt.party/qt.exe) is clean; ores.refdata.core.tests pass; a full compass db recreate applies the regenerated SQL cleanly.
+- No generated files for other entities are left modified.
+
+* Plan
+
+Ran =compass codegen entity generate business_centre= across every
+enabled profile and reconciled each diff against the hand-written
+files it replaced:
+
+- SQL/domain/repository/service/Qt-CRUD split-project output landed
+  correctly (security-definer + bootstrap-guard already came from
+  the template, moved Qt CRUD to =ores.qt/refdata= with
+  =RefdataPlugin= wiring instead of =PartyPlugin=).
+- Feature-tested the result (=code-run-feature-test=: full build,
+  =compass db recreate=, provision Barclays Plc, a =test_scenario=
+  doc, both clients driven manually) and used what that surfaced to
+  fix three further gaps: missing =has_pagination=, =coding_scheme_code=
+  as a hand-written free-text field instead of a fetch-backed combo
+  (plus a stale =FPML_BUSINESS_CENTRE= vs seeded =FPML_BUSINESS_CENTER=
+  spelling mismatch), and no flag icon for =country_alpha2_code= now
+  that =image_id= was dropped from the model — the last one needed a
+  new =icon_columns= accessor (=country_flag_icon=) since the
+  existing single-=flag_icon_column= mechanism is =image_id=-keyed.
+- Found and fixed a stale =#+image_id: true= frontmatter flag that
+  would have resurrected the dropped column on the next regenerate.
+- Found and fixed a codegen bug (=org_loader.py=): insert-trigger
+  =Validations= rows never carried a column's own =:nullable:= flag,
+  so a nullable field wired to a validation function had it invoked
+  unconditionally — fixed at the template/loader level, not by
+  hand-patching the generated SQL (business_centre's
+  =country_alpha2_code= was the first entity to hit this).
+- Manual retest of the fixed coding-scheme combo surfaced every code
+  listed twice; traced to =iso.coding_schemes=/=fpml.coding_schemes=
+  being both seeded unconditionally to the system tenant at DB build
+  time *and* republished per-tenant via the =base=/=crypto= dataset
+  bundles during =provision tenant= — dead weight, since every
+  coding-scheme validator checks only the system tenant. Removed the
+  two bundle-member entries; captured the broader missing
+  system-vs-tenant publish-scope convention as a backlog item
+  (=doc/agile/product_backlog/inbox/clarify_system_vs_tenant_dataset_publish_scope.org=)
+  rather than fixing it wholesale here.
+- Filed the codegen nullable-guard bug as its own backlog capture too
+  (=doc/agile/product_backlog/inbox/codegen_nullable_validation_not_guarded.org=)
+  since a hand-patch had been applied first before the root cause was
+  traced to =org_loader.py=, and the fix there is worth a dedicated
+  audit of other nullable+validated fields.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario                                          | State  | Notes                                    |
+|----------------------------------------------------+--------+-------------------------------------------|
+| [[id:9FF8709A-6730-4861-B22E-77DA87FFD833][Test Scenario: Verify business_centre]] | PASSED | CRUD, History, Eventing all green on retest after the pagination/coding-scheme/flag fixes. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1552][#1552]] | [refdata] Regenerate business_centre and reconcile diffs |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1552#issuecomment-4962638988][4962638988]] | Stale "coding-scheme scoped" prose contradicts the regenerated code-only primary key | =ores.refdata.business_centre.org= (+ regenerated domain/SQL headers) | Fixed | Updated the model's prose to describe the actual code-only-per-tenant uniqueness and regenerated; raised independently by all three review passes. |
+| [[https://github.com/OreStudio/OreStudio/pull/1552#issuecomment-4962638988][4962638988]] | Already-provisioned tenants keep their duplicate per-tenant coding-scheme rows; the bundle fix only stops new duplicates | =dq_dataset_bundle_member_populate.sql= | Declined | No live/deployed tenants exist yet -- every environment is `compass db recreate`'d from scratch, so there is nothing to backfill. Flagged in the system-vs-tenant publish-scope backlog capture for whenever real deployments exist. |
+
+* Result
+
+business_centre fully regenerated from its codegen model across
+every enabled profile (SQL, domain/repository/service, Qt CRUD now
+under =ores.qt/refdata=), all diffs reconciled, and feature-tested
+end to end with the QA Validation Runner scenario passing (Create,
+Read, Update, Delete, History, Eventing across two clients). Full
+local build clean (=linux-clang-debug-make=); =ctest= 72/72 test
+binaries passed. Fixed along the way, at their root cause rather than
+by hand-patching generated output: a stale =image_id: true= model
+frontmatter flag, a codegen bug dropping nullable guards on
+insert-trigger validations, three UX/data gaps surfaced by manual
+testing (missing pagination, coding-scheme free-text field instead of
+a validated combo plus a coding-scheme-code spelling mismatch, and a
+missing country flag icon), and a provisioning bug duplicating
+coding-scheme rows into every tenant. Two follow-up backlog captures
+filed for the broader patterns behind the codegen and provisioning
+bugs.

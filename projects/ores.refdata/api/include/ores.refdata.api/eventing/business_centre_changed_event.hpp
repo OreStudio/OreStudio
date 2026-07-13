@@ -30,8 +30,8 @@ namespace ores::refdata::eventing {
 /**
  * @brief Domain event indicating that business centre data has changed.
  *
- * This event is published when any business centre entity is created, updated,
- * or deleted in the database.
+ * Published when any business centre entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct business_centre_changed_event final {
     /**
@@ -40,7 +40,7 @@ struct business_centre_changed_event final {
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief Codes of business centres that changed.
+     * @brief Changed business centre codes.
      */
     std::vector<std::string> codes;
 

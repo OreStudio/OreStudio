@@ -18,7 +18,6 @@
  */
 #include "ores.qt/PartyPlugin.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.qt/BusinessCentreController.hpp"
 #include "ores.qt/BusinessUnitController.hpp"
 #include "ores.qt/BusinessUnitTypeController.hpp"
 #include "ores.qt/CounterpartyController.hpp"
@@ -93,15 +92,6 @@ void PartyPlugin::on_login(const plugin_context& ctx) {
                                                                        this);
     connectControllerSignals(counterpartyController_.get());
 
-    businessCentreController_ = std::make_unique<BusinessCentreController>(ctx_.main_window,
-                                                                           ctx_.mdi_area,
-                                                                           ctx_.client_manager,
-                                                                           ctx_.image_cache,
-                                                                           ctx_.change_reason_cache,
-                                                                           ctx_.username,
-                                                                           this);
-    connectControllerSignals(businessCentreController_.get());
-
     businessUnitController_ = std::make_unique<BusinessUnitController>(ctx_.main_window,
                                                                        ctx_.mdi_area,
                                                                        ctx_.client_manager,
@@ -152,11 +142,6 @@ void PartyPlugin::setup_menus(const shared_menus_context& smc) {
 
     ref->addSeparator();
 
-    act_business_centres_ = ref->addAction(ico(Icon::BuildingBank), tr("&Business Centres"));
-    connect(act_business_centres_, &QAction::triggered, this, [this]() {
-        if (businessCentreController_)
-            businessCentreController_->showListWindow();
-    });
     act_business_units_ = ref->addAction(ico(Icon::PeopleTeam), tr("Business &Units"));
     connect(act_business_units_, &QAction::triggered, this, [this]() {
         if (businessUnitController_)
@@ -201,9 +186,9 @@ QList<QMenu*> PartyPlugin::create_menus() {
 }
 
 QList<QAction*> PartyPlugin::toolbar_actions() {
-    if (!act_business_centres_ || !act_parties_ || !act_counterparties_ || !act_business_units_)
+    if (!act_parties_ || !act_counterparties_ || !act_business_units_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
-    return {act_business_centres_, act_parties_, act_counterparties_, act_business_units_};
+    return {act_parties_, act_counterparties_, act_business_units_};
 }
 
 // ---------------------------------------------------------------------------
@@ -213,7 +198,6 @@ void PartyPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     businessUnitTypeController_.reset();
     businessUnitController_.reset();
-    businessCentreController_.reset();
     counterpartyController_.reset();
     partyController_.reset();
     partyIdSchemeController_.reset();

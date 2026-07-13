@@ -24,7 +24,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
@@ -34,6 +33,7 @@ namespace ores::qt {
 class BusinessCentreMdiWindow;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
+class ImageCache;
 
 /**
  * @brief Controller for managing business centre windows and operations.
@@ -66,12 +66,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::business_centre& business_centre);
@@ -83,10 +85,9 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::business_centre& business_centre);
-    void showHistoryWindow(const refdata::domain::business_centre& business_centre);
+    void showHistoryWindow(const QString& code);
 
-    ImageCache* imageCache_;
-    ChangeReasonCache* changeReasonCache_{nullptr};
+    ChangeReasonCache* changeReasonCache_;
     BusinessCentreMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

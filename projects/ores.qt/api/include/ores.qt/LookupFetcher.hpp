@@ -20,6 +20,7 @@
 #ifndef ORES_QT_LOOKUP_FETCHER_HPP
 #define ORES_QT_LOOKUP_FETCHER_HPP
 
+#include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.qt/export.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
@@ -98,6 +99,15 @@ ORES_QT_API lookup_result fetch_tenant_lookups(ClientManager* cm);
 ORES_QT_API std::vector<std::string> fetch_currency_codes(ClientManager* cm);
 
 /**
+ * @brief Fetches all country alpha-2 codes from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by detail dialogs that need a country combo box.
+ * Returns empty vector on failure.
+ */
+ORES_QT_API std::vector<std::string> fetch_country_codes(ClientManager* cm);
+
+/**
  * @brief Fetches currency pair codes (e.g. "EUR/USD") from the server.
  *
  * Synchronous call intended to be run from within QtConcurrent::run.
@@ -117,14 +127,16 @@ ORES_QT_API std::vector<std::string> fetch_currency_pair_codes(ClientManager* cm
 ORES_QT_API std::unordered_map<std::string, std::string> fetch_currency_names(ClientManager* cm);
 
 /**
- * @brief Fetches business centre code to image ID mapping from the server.
+ * @brief Fetches business centre code to country alpha-2 code mapping from
+ * the server.
  *
  * Synchronous call intended to be run from within QtConcurrent::run.
- * Used by list models that display country flag icons for business centres.
+ * Used by list models that display country flag icons for business centres
+ * (via ImageCache::getCountryFlagIcon).
  * Returns empty map on failure.
  */
 ORES_QT_API std::unordered_map<std::string, std::string>
-fetch_business_centre_image_map(ClientManager* cm);
+fetch_business_centre_country_map(ClientManager* cm);
 
 /**
  * @brief Fetches business centre codes (e.g. "GBLO", "USNY") from the
@@ -264,6 +276,16 @@ fetch_tenor_resolution_algorithms(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::tenor_anchor>, QString>
 fetch_tenor_anchors(ClientManager* cm);
+
+/**
+ * @brief Fetches all coding schemes from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by BusinessCentre's coding_scheme_code combo. Returns an error
+ * message on failure, distinguishing it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<dq::domain::coding_scheme>, QString>
+fetch_coding_schemes(ClientManager* cm);
 
 }
 

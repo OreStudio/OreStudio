@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 34E655ED-E560-4C87-A0D4-524B904B5C26
+:END:
+#+title: Task: Update business_centre codegen model and enable variability knobs
+#+description: business_centre has no live codegen model despite its SQL carrying an AUTO-GENERATED banner. Author/update the model to match the entity's current hand-written structure, and enable the correct variability knobs (sql, domain, repository, service, generator, protocol, nats-eventing, nats-handler, qt) so regeneration produces the full stack.
+#+type: task
+#+level: s1
+#+filetags: :commission_business_centre:sprint_23:v0:
+#+owner: marco
+#+branch: feature/appraise-business-centre
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-13
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+business_centre has a codegen entity model (=projects/modeling/business_centre.org= or equivalent =entity_org=) that accurately describes its current DB/domain/repository/service/messaging/Qt structure, with the variability knobs enabled for every profile the entity should have (sql, domain, repository, service, generator, protocol, nats-eventing, nats-handler, qt), so it can be regenerated end-to-end instead of remaining hand-maintained.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] |
+| Now          | Nothing.                                |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- A codegen entity model for business_centre exists, modelled on an already-commissioned comparable entity (e.g. currency or country), with every field from the current hand-written domain struct/DB table represented.
+- The model's variability knobs are enabled for sql, domain, repository, service, generator, protocol, nats-eventing, nats-handler, and qt (component = refdata throughout).
+- The model does not itself regenerate anything -- that is the next task's scope. This task ends with a model that `compass codegen generate` can run against.
+
+* Plan
+
+Scaffolded via =compass add entity_org --component refdata --slug
+business_centre=, producing
+=projects/ores.refdata/modeling/ores.refdata.business_centre.org=
+(=#+type: ores.codegen.entity=, the current unified format -- studied
+[[file:../../../../../projects/ores.refdata/modeling/ores.refdata.business_day_convention_type.org][business_day_convention_type.org]] and
+[[file:../../../../../projects/ores.refdata/modeling/ores.refdata.currency_pair.org][currency_pair.org]] as precedent for the shape, plus the meta-model doc
+=projects/ores.codegen/modeling/org_entity_meta_model.org=). Filled in:
+
+- Frontmatter =#+has_tenant_id: true=, =#+coding_scheme: required=,
+  =#+image_id: true= -- traced =has_coding_scheme=/=has_image_id=
+  through =projects/ores.codegen/src/codegen/core.py= and
+  =sql_schema_create.mustache= to confirm =coding_scheme: required=
+  generates exactly business_centre's existing composite primary key
+  ~(tenant_id, code, coding_scheme_code, valid_from, valid_to)~ and
+  FK-validates =coding_scheme_code= against
+  =ores_dq_coding_schemes_tbl= -- matching the current hand-written SQL
+  precisely. No other entity in the tree yet uses
+  =coding_scheme: required= (business_centre is the first); confirmed
+  by grep across every =*.org= model.
+- =country_alpha2_code= wired to the standard Insert-trigger
+  Validations table, calling =ores_refdata_validate_country_fn= (same
+  pattern as =currency_pair='s FK columns) -- this is what produces
+  =security definer set search_path= automatically (verified: the
+  fixed =sql_schema_create.mustache= template already carries it,
+  unlike the older =sql_schema_table_create.mustache= business_centre's
+  current SQL banner references).
+- Qt: standard =flagged_combo= wiring for =country_alpha2_code=, same
+  shape as =currency_pair='s currency combos -- flagged a gap in
+  =* Notes=: =fetch_country_codes= doesn't exist yet in
+  =LookupFetcher.hpp= (only =fetch_currency_codes= and siblings); the
+  current hand-written =BusinessCentreDetailDialog::populateCountries()=
+  uses a bespoke =QtConcurrent= fetch instead. Also flagged
+  =city_name='s "derived from description" domain comment as
+  unconfirmed -- the current dialog just treats it as always-read-only
+  free text, no live derivation found.
+- Validated with =compass codegen generate --model ... --profile <p>
+  --dry-run= for =all=, =qt=, =nats-eventing=, and =nats-handler=: every
+  profile parses cleanly and every output path lands in the correct
+  split-project location (=ores.refdata.api=, =ores.refdata.core=,
+  =ores.qt/refdata=, =ores.sql=) -- confirms the model is well-formed
+  and the =qt= profile in particular resolves to =ores.qt/refdata=, not
+  =ores.qt/party=, satisfying the story's cross-component-leakage
+  acceptance criterion once actually regenerated.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Model authored, all applicable variability knobs enabled (sql, domain,
+repository, service, generator, protocol, nats-eventing, nats-handler,
+qt), and validated via dry-run across every profile with zero errors
+and correct output locations. Not yet regenerated -- that's the next
+task. Two gaps flagged in the model's own =* Notes= for that task to
+resolve: missing =fetch_country_codes= LookupFetcher, and an
+unconfirmed =city_name= derivation claim.

@@ -32,12 +32,13 @@ portfolios are the logical representation*.
 - Portfolios organise books into whatever hierarchy makes sense for
   risk management and are never reflected into the accounting system.
 - Books belong to exactly one legal entity, business, and branch —
-  accounting concepts. A book can itself have child books, but only
-  via ledger setup, never ad hoc from the trading system; a book that
-  contains child books should not itself directly hold deals — deals
-  belong at leaf books only. A single global *Root Book* sits at the
-  top of the hierarchy and contains all books; a *Recycle Bin* holds
-  retired/closed books rather than physically deleting them (see
+  accounting concepts. In the ledger's own hierarchy a book can have
+  child books, but only via ledger setup, never ad hoc from the
+  trading system; a book that contains child books should not itself
+  directly hold deals — deals belong at leaf books only. A single
+  global *Root Book* sits at the top of that ledger hierarchy and
+  contains all books; a *Recycle Bin* holds retired/closed books
+  rather than physically deleting them (see
   [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]]).
 - *This book-to-book hierarchy is a real-world accounting concept that
   ORE Studio deliberately does not model.* The [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] domain type has

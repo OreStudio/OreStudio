@@ -85,7 +85,7 @@ std::vector<domain::currency> currency_repository::read_all(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_entity>> |
                        where("tenant_id"_c == tid && "iso_code"_c == iso_code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<currency_entity, domain::currency>(
         ctx,

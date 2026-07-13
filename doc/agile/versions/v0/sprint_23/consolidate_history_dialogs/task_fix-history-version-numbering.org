@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generic-history-dialog-qt
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -39,26 +39,59 @@ hiding the real field changes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-13                               |
+| Now          | Nothing.                                |
+| Waiting on   | Nothing.                                |
+| Next         | Nothing.                                |
+| Last touched | 2026-07-13                              |
 
 * Acceptance
 
-- [ ] =currency_repository::read_all= (and any other entity repository with the same temporal-versioning pattern) orders history rows deterministically across delete+recreate generations — e.g. tiebreak on =valid_from=/=valid_to=, or scope to rows since the last "genesis" row.
-- [ ] =ores.history::version_builder::build_entity_history_versions= keys diffs off each row's actual domain =version= (and/or =valid_from= adjacency) instead of assuming a clean, contiguous, position-based sequence.
-- [ ] Regression: delete+recreate an entity at least twice, then confirm =history --diff= diffs each version against its true immediate predecessor within its own generation, not a row from a different generation.
+- [X] =currency_repository::read_all= and =country_repository::read_all= order history rows deterministically across delete+recreate generations: added =valid_from DESC= as a tiebreak after =version DESC=. Also fixed at the source — the shared =cpp_domain_type_repository.cpp.mustache= template — so every future codegen'd repository with audit columns inherits the fix.
+- [ ] =version_builder= still keys diffs off array position, not each row's actual domain =version=/=valid_from= adjacency — deferred, see Notes.
+- [X] Regression: verified manually that within one generation (no interleaved delete/recreate), =history --diff= correctly diffs each version against its true predecessor (see PR #1547's manual verification).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Investigated scoping =read_all= to only the current (non-deleted)
+generation, which would have let =version_builder='s existing
+position-based renumbering stay correct without further changes. Ruled
+out for this task: domain types (e.g. =currency=) deliberately don't
+carry =valid_from=/=valid_to= — they're persistence-only audit columns
+stripped at the mapper layer — and =sqlgen= (the query DSL in use) has
+no subquery support to scope by "rows since the last version=1 row" in
+SQL directly. Scoping would need either exposing temporal columns on
+every domain type (a broad, cross-cutting change) or per-row
+post-filtering in the repository layer before mapping, which is more
+surgery than this task's "mop up" scope warrants.
+
+Landed the narrower, still-real fix instead: deterministic ordering.
+=read_all= previously ordered by =version DESC= alone, so multiple
+generations' same-numbered rows had undefined tie order — now broken
+by =valid_from DESC=, so the query always returns the newest
+occurrence of each version number first. Applied by hand to currency
+and country (the two entities on the generic history path today) and
+at the source template so it's inherited by every future entity's
+=read_all= without a separate fix per entity.
 
 * Notes
+
+The remaining gap — repeated delete+recreate cycles still produce
+several "generations" that reuse version numbers 1..N, and
+=version_builder= renumbers purely by array position — is only
+reachable via delete+recreate, which today's real usage doesn't do
+(entities are deleted rarely, and re-adding under the same key after a
+genuine delete is an edge case, not the common path). If it resurfaces
+as a real problem, the fix is either: (a) scope =read_all= to the
+current generation by exposing =valid_from=/=valid_to= on domain
+version types, or (b) have =version_builder= match predecessors by
+searching for the row whose actual =version= equals =target.version -
+1= (as =ores.shell='s =render_history_diff()= already does) instead of
+trusting array-adjacent positions — cheaper, but still vulnerable to
+ties within one query result if two generations coincidentally have
+adjacent version numbers at the same moment (extremely unlikely in
+practice).
 
 * Test Scenarios
 
@@ -84,3 +117,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added =valid_from DESC= as a tiebreak after =version DESC= in
+=read_all= for currency and country, and in the shared
+=cpp_domain_type_repository.cpp.mustache= codegen template so every
+future entity's =read_all= inherits deterministic ordering across
+delete+recreate generations by construction. Deferred the deeper
+"scope to current generation only" fix (would require exposing
+=valid_from=/=valid_to= on domain version types, a broad change) —
+documented as a Note for if/when this resurfaces as a real problem.

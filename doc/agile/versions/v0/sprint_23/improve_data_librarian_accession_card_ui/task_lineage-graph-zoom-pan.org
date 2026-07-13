@@ -8,7 +8,7 @@
 #+filetags: :improve_data_librarian_accession_card_ui:sprint_23:v0:
 #+owner: marco
 #+branch: feature/lineage-graph-zoom-pan
-#+pr:
+#+pr: 1549
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -69,7 +69,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1549][#1549]] | [refdata] Add zoom/pan controls to the Dependencies lineage graph |
 
 * Review
 

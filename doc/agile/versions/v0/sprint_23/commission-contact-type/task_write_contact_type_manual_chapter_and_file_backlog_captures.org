@@ -7,30 +7,33 @@
 #+level: s1
 #+filetags: :commission-contact-type:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/verify-contact-type-qt-ui-post-nats
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add the =contact_type= entity chapter to the user manual (Qt windows
+only — shell and CLI sections are added later by their own top-level
+commissioning stories, not per-entity), and file backlog captures for
+the missing shell, CLI, Wt, and HTTP layers.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                                |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing — see this task's own =* Result= section below for the split-off follow-ups. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -69,3 +72,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned the manual-chapter half of this task on user direction:
+=contact_type= is an auxiliary/lookup type (code/name/description/
+display_order), not a primary domain entity, and the
+[[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] is explicit that aux types don't
+get their own manual chapter — they get a subsection in the manual
+chapter of the primary entity that consumes them ("Aux type documented
+in parent chapter | ... | Subsection in parent entity chapter"). For
+=contact_type= that consuming entity is conceptually "Contact" /
+"Contact Information" (party and counterparty contact records), which
+has no manual chapter of its own yet — writing a standalone
+=contact_type= chapter would have been documenting the lookup without
+the thing it looks up into, which reads wrong to a user. Filed a
+capture ([[id:EC281267-A651-4995-B2F8-AF0023E1923A][Document Contact/Contact Information with contact_type as a
+subsection]]) to write the real parent chapter later, with
+=contact_type= folded in as its "valid values" subsection at that
+point, per the checklist's own convention — rather than doing it out
+of order here.
+
+The backlog-captures half of this task (shell, CLI, Wt, HTTP support)
+is unaffected by this and split off into
+[[id:2AFB3102-B9AB-452C-AEF5-7EFECA039BA0][File shell/CLI/Wt/HTTP backlog captures for contact_type]] instead of
+being finished here, so this task's abandonment reason stays legible
+in isolation.

@@ -48,10 +48,17 @@ the symptom:
 4. Only once the regenerated output builds clean, do a full manual Qt
    UI test end-to-end post-NATS (list, detail, history, delete,
    eventing with a second client) and fix anything the test still
-   finds. Add the entity chapter to the user manual (Qt windows only
-   — shell and CLI are handled by their own top-level commissioning
-   stories, not per-entity). File backlog captures for Wt and HTTP
-   support.
+   finds. File backlog captures for shell, CLI, Wt, and HTTP support.
+
+*Manual documentation is deferred, not done here*: =contact_type= is
+an auxiliary/lookup type (code/name/description/display_order), and
+the [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] is explicit that aux types
+don't get their own manual chapter — they get a subsection in the
+manual chapter of the primary entity that consumes them. That
+consuming entity (Contact / Contact Information) has no manual chapter
+of its own yet, so writing a standalone =contact_type= chapter here
+would have documented the lookup without the thing it looks up into.
+Deferred to a backlog capture instead of written out of order.
 
 *Hand-patching generated C++ is not an acceptable substitute for any
 of the above.* Earlier in this story's own work, =ContactTypeController.cpp='s
@@ -63,11 +70,11 @@ been reverted; this Goal exists precisely to prevent a repeat.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                               |
+| State         | DONE                               |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Model regenerated, built, and manually verified end-to-end (11/11 scenario steps passed). Remaining: manual chapter and backlog captures. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Write the manual chapter; file shell/CLI/Wt/HTTP backlog captures. |
+| Next          | Nothing. |
 | Last touched  | 2026-07-13                               |
 
 * Acceptance
@@ -90,9 +97,10 @@ been reverted; this Goal exists precisely to prevent a repeat.
 - Qt history window: shows change history for the entity.
 - Qt delete command: removes the record; history is preserved.
 - Qt eventing: a change made in one connected session appears in a second session without manual refresh.
-- Manual: entity chapter documents all Qt windows (shell and CLI sections added
-  later, once the top-level Shell entity commands / CLI commands stories reach
-  this entity).
+- Manual: deferred — contact_type is an aux type and documents as a
+  subsection of the (not-yet-written) Contact / Contact Information
+  chapter, per the Domain entity evaluation checklist; tracked via a
+  backlog capture rather than written here.
 - Backlog captures filed for shell, CLI, Wt, and HTTP support.
 - All regressions found are fixed by correcting the model and regenerating, not by hand-patching output.
 - Site builds cleanly.
@@ -103,4 +111,5 @@ been reverted; this Goal exists precisely to prevent a repeat.
 |------+-------+-------+-----+-------------|
 | [[id:BD717BF3-DFD6-41C6-9A88-90B0470A37A7][Update contact_type codegen model and regenerate all layers]] | DONE | 2026-07-13 | 2026-07-13 | Bring ores.refdata.contact_type.org up to the latest meta-model (checklist review, variability knobs), regenerate every facet via compass codegen entity generate, and review every diff before accepting. |
 | [[id:3EDC9F9F-65AF-4B2E-B09D-BA63769C30DE][Verify contact_type Qt UI end-to-end post-NATS]] | DONE | 2026-07-13 | 2026-07-13 | List window, detail dialog, history dialog, delete, and eventing against live services, using the regenerated output from the model-update task; fix anything still found by correcting the model and regenerating. |
-| [[id:D3BEE5AE-2F56-43AC-A36D-03C5B7919D26][Write contact_type manual chapter and file shell/CLI/Wt/HTTP backlog captures]] | BACKLOG | | | Add the contact_type entity chapter to the user manual (Qt windows only) and file backlog captures for shell, CLI, Wt, and HTTP support. |
+| [[id:D3BEE5AE-2F56-43AC-A36D-03C5B7919D26][Write contact_type manual chapter and file shell/CLI/Wt/HTTP backlog captures]] | ABANDONED | 2026-07-13 | 2026-07-13 | Manual-chapter half abandoned: contact_type is an aux type and doesn't get a standalone chapter per the Domain entity evaluation checklist. See split-off tasks below. |
+| [[id:2AFB3102-B9AB-452C-AEF5-7EFECA039BA0][File shell/CLI/Wt/HTTP backlog captures for contact_type]] | DONE | 2026-07-13 | 2026-07-13 | Split off from the task above; files backlog captures for the missing shell, CLI, Wt, and HTTP layers. |

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 4D928BD7-DFEA-4DB2-9B3B-DCA3644DDA98
+:END:
+#+title: Task: DQ dataset for tenor reference data (tenor/tenor_anchor/tenor_convention)
+#+description: Populate script and DQ dataset registration seeding the standard tenor catalog, tenor anchors, and tenor conventions/resolutions, following the sql_dataset_refdata/sql_populate_refdata populate-script skeleton.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
+#+owner: marco
+#+branch: feature/tenor-dq-dataset
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ship idempotent populate scripts seeding ores_marketdata_tenors_tbl, ores_marketdata_tenor_anchors_tbl, ores_marketdata_tenor_conventions_tbl, and ores_marketdata_tenor_convention_resolutions_tbl with the standard tenor set (O/N through 30Y, SPOT, and the special short-end labels) and the spot/forward, FX swap, and credit/CDS conventions, registered as a DQ dataset via ores_dq_datasets_upsert_fn and wired into the appropriate bundle so it is selectable/publishable from the Librarian.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- Standard tenor rows (per tenor.org's table) and SPOT/TODAY/TOMORROW/NEAR_LEG/IMM_ROLL anchors are seeded
+- Tenor convention rows (spot/forward, FX swap near-leg, credit/CDS IMM) and their tenor_convention_resolution membership/override rows are seeded
+- Dataset registered via ores_dq_datasets_upsert_fn and added to the appropriate existing bundle, not a new standalone one, unless investigation shows otherwise
+- Populate scripts are idempotent and validate_schemas.sh passes
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

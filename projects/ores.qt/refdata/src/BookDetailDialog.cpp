@@ -113,6 +113,7 @@ void BookDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &BookDetailDialog::onFieldChanged);
+    connect(ui_->isSweepableCheckBox, &QCheckBox::toggled, this, &BookDetailDialog::onFieldChanged);
 }
 
 void BookDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -219,6 +220,7 @@ void BookDetailDialog::updateUiFromBook() {
     ui_->bookStatusCombo->setCurrentText(QString::fromStdString(book_.book_status));
     ui_->regulatoryBookTypeCombo->setCurrentText(
         QString::fromStdString(book_.regulatory_book_type));
+    ui_->isSweepableCheckBox->setChecked(book_.is_sweepable);
 
     populateProvenance(book_.version,
                        book_.modified_by,
@@ -238,6 +240,7 @@ void BookDetailDialog::updateBookFromUi() {
     book_.cost_center = ui_->costCenterEdit->text().trimmed().toStdString();
     book_.book_status = ui_->bookStatusCombo->currentText().toStdString();
     book_.regulatory_book_type = ui_->regulatoryBookTypeCombo->currentText().toStdString();
+    book_.is_sweepable = ui_->isSweepableCheckBox->isChecked();
     book_.modified_by = username_;
 }
 

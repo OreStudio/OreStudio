@@ -32,7 +32,7 @@ std::string convert_to_table(const std::vector<{{entity_singular}}>& v) {
     table << fort::header{{#cpp.table_display}} << "{{header}}"{{/cpp.table_display}} << fort::endr;
 
     for (const auto& {{cpp.iterator_var}} : v) {
-        table{{#cpp.table_display}}{{#is_uuid}} << boost::uuids::to_string({{iter_var}}.{{column}}){{/is_uuid}}{{^is_uuid}}{{#is_optional}} << opt_str({{iter_var}}.{{column}}){{/is_optional}}{{^is_optional}} << {{iter_var}}.{{column}}{{/is_optional}}{{/is_uuid}}{{/cpp.table_display}} << fort::endr;
+        table{{#cpp.table_display}}{{#is_uuid}} << boost::uuids::to_string({{iter_var}}.{{column}}){{/is_uuid}}{{^is_uuid}}{{#is_optional}} << opt_str({{iter_var}}.{{column}}){{/is_optional}}{{^is_optional}}{{#is_bool}} << ({{iter_var}}.{{column}} ? "true" : "false"){{/is_bool}}{{^is_bool}} << {{iter_var}}.{{column}}{{/is_bool}}{{/is_optional}}{{/is_uuid}}{{/cpp.table_display}} << fort::endr;
     }
     return table.to_string();
 }

@@ -61,6 +61,18 @@ policy just to pass RLS_001, and were added to the same RLS_002 ignore
 list for the party-level gap -- the exact same class of manual step,
 repeated a third time.
 
+Recurred a fourth time (tenant-isolation only, no party dimension) in
+=book_purpose_type= and =ledger_feed_type= (see [[id:5C89033D-224E-4105-A8CF-B0336C2A9014][Add book_purpose_type
+lookup entity to book]] and [[id:DC13CC83-2807-4AA9-B56E-BA7D6BA896D2][Add ledger_feed_type lookup entity to book]]) --
+both merged without RLS policies, silently missed since
+=validate_schemas.sh= was never run as part of either task, and only
+surfaced when =is_sweepable='s task ran it explicitly. Notably,
+=book_status=/=regulatory_book_type= (their older siblings) are
+*also* missing RLS to this day -- this is not just a per-entity
+oversight, it is a systemic gap across every =:has_tenant_id: true=
+refdata lookup table in the codebase, reinforcing that a codegen facet
+(not another reminder to hand-wire it) is the right fix.
+
 The aggregator gap is worse in one respect: it isn't caught by any
 validation script. =compass db recreate= silently succeeds even when a
 new entity's tables were never created -- the first symptom is a

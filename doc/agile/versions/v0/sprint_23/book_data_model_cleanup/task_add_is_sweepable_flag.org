@@ -7,41 +7,119 @@
 #+level: s1
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-is-sweepable-flag
+#+pr: 1545
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
 #+updated: 2026-07-11
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add is_sweepable as a plain boolean column on book (not a lookup
+entity, unlike book_purpose_type/ledger_feed_type), rendered as a
+Yes/No badge in the Book list consistent with the regulatory_book_type
+badge combo, and editable via a checkbox in the detail dialog.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-13                               |
 
 * Acceptance
 
--
+- is_sweepable added to book.org (boolean, default false), generated
+  across domain/SQL/repository/Qt CRUD, rendered as a badge (reusing
+  the active/inactive colour pair) consistent with book_status/
+  regulatory_book_type.
+- validate_schemas.sh passes with zero warnings (found and fixed two
+  pre-existing gaps: book_purpose_type and ledger_feed_type were both
+  missing RLS policies -- neither specific to this task, both filed as
+  further evidence on the existing codegen_rls_policy_facet capture).
+- Fixed a real, pre-existing codegen bug: check_box widgets were never
+  wired into the detail dialog's setupConnections(), so toggling any
+  checkbox anywhere in the app never marked the dialog dirty -- Save
+  stayed disabled. Fixed in the shared template
+  (ores.cpp.qt.detail_dialog_impl.org), scoped the regen to book only
+  since the other check_box-using entities are independently stale/
+  drifted across their whole Qt layer (out of scope here).
+- refdata_publish_from_dq_create.sql's explicit-column INSERT for
+  books didn't include the new is_sweepable column -- would have
+  broken Barclays provisioning with a NOT NULL violation. Fixed by
+  adding is_sweepable to the dq_books_artefact_tbl artefact table and
+  threading it through the publish function instead of hardcoding
+  false.
+- Testdata book/portfolio artefact scripts' sequential fake UUIDs
+  (=20000000-.../30000000-...=) replaced with real random UUIDs at the
+  user's request; added 2 realistic sweep-participating books (GBP
+  Nostro Sweep, USD Cash Management Sweep) with is_sweepable=true.
+- Manual QA scenario PASSED (4/4 steps, zero log errors).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Straightforward boolean column addition to book.org, following the
+=check_box= widget pattern already used by cds_convention/
+deposit_convention/etc. (=type: boolean=, =cpp_type: bool=,
+=nullable: false=, =default_value: false=). Badge rendering reuses the
+existing =is_badge=/=badge_key= mechanism (=dq_badge_system_populate.sql=)
+with a new =is_sweepable= code domain and =true=/=false= mappings onto
+the existing active/inactive colour definitions -- the Qt model's
+=is_bool= formatter already emits =tr("true")=/=tr("false")= strings,
+which is what the badge lookup keys off.
+
+=validate_schemas.sh= (run for the first time as part of this task,
+per user direction) surfaced two real, pre-existing gaps unrelated to
+is_sweepable itself: book_purpose_type and ledger_feed_type (both
+merged in earlier tasks) were missing RLS policies entirely --
+tenant-isolation =ENABLE ROW LEVEL SECURITY=/=CREATE POLICY= is 100%
+hand-maintained per component, no codegen facet generates it (matches
+an existing backlog capture, =codegen_rls_policy_facet.org=, updated
+with this fourth recurrence). Fixed both by hand, matching the
+existing convention in =refdata_rls_policies_create.sql=.
+
+Manual QA surfaced a second real, pre-existing bug: the check_box
+widget type was scaffolded into the Qt detail-dialog codegen template
+(populate/collect field logic existed) but never wired into
+=setupConnections()= -- so toggling a checkbox never marked the dialog
+dirty via =onFieldChanged()=, and Save stayed disabled until some
+other field was also touched. This affects every entity using
+=check_box= fields (cds_convention, deposit_convention,
+currency_pair_convention, ibor_index_convention, ois_convention, and
+two synthetic/marketdata entities), not just book. Fixed in the shared
+=.org= source (=ores.cpp.qt.detail_dialog_impl.org=) using
+=&QCheckBox::toggled= (the version-portable signal, matching existing
+hand-written checkbox code elsewhere in the codebase) -- deliberately
+did *not* regenerate the other affected entities, since their whole Qt
+layer is independently stale/drifted already and pulling that in would
+have been unrelated scope creep for this task.
+
+Also found and fixed: =refdata_publish_from_dq_create.sql='s
+explicit-column =INSERT INTO ores_refdata_books_tbl= (used by the
+"Publish Datasets" / Barclays-provisioning workflow) didn't include
+=is_sweepable=, which is =not null= with no DB default -- would have
+broken provisioning outright. Rather than hardcoding =false= for every
+published book, added =is_sweepable= as a real column on
+=ores_dq_books_artefact_tbl= (the DQ staging table) and threaded it
+through, so individual seed books can be marked sweepable.
+
+Per user direction, also replaced the testdata books/portfolios
+artefact scripts' sequential fake UUIDs
+(=20000000-0000-4000-a000-...=/=30000000-0000-4000-a000-...=) with
+real random ones (verified no other file in the codebase references
+the old fake values before replacing), and added two realistic
+sweep-participating books (=GBP Nostro Sweep=, =USD Cash Management
+Sweep=, both =is_sweepable = true=) under the existing GBP/USD Rates
+portfolios, per the [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Spot and ledger sweep]] domain doc's naming.
 
 * Notes
 
@@ -54,13 +132,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:D6A0DF06-B718-44DB-85FF-3C85A46E7CFF][Verify is_sweepable flag on Book]] | PASSED | First run FAILED on the checkbox-save step -- traced to the missing setupConnections() wiring for check_box widgets. Second run (after the template fix and rebuild) PASSED all 4 steps, zero log errors; confirmed via SQL that toggling the checkbox correctly bumped the book's version each way (v1 false -> v2 true -> v3 false). |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1545][#1545]] | [refdata,qt,sql,codegen] Add is_sweepable flag to book |
 
 * Review
 
@@ -69,3 +147,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+is_sweepable is added to book as a plain boolean (domain/SQL/
+repository/Qt CRUD), rendered as a Yes/No badge in the Book list and
+editable via a checkbox in the detail dialog, both consistent with the
+existing regulatory_book_type badge pattern.
+
+Along the way, per user direction, ran =validate_schemas.sh= and found
++ fixed two pre-existing RLS-policy gaps (book_purpose_type,
+ledger_feed_type -- both merged in earlier tasks, neither specific to
+this one), updating the existing =codegen_rls_policy_facet.org=
+backlog capture with this fourth recurrence. Manual QA then found and
+fixed a real, pre-existing codegen bug affecting every =check_box=
+field in the codebase: the widget type was never wired into the detail
+dialog's =setupConnections()=, so toggling a checkbox never enabled
+Save. Fixed in the shared template, scoped the regen to book only
+(other check_box entities are independently stale, out of scope).
+
+Also fixed a real provisioning-breaking gap found during testing:
+=refdata_publish_from_dq_create.sql='s explicit-column book INSERT
+didn't include the new not-null =is_sweepable= column. Per user
+direction, replaced the testdata books/portfolios artefact scripts'
+sequential fake UUIDs with real random ones, and added two realistic
+sweep-participating seed books (=GBP Nostro Sweep=, =USD Cash
+Management Sweep=) with =is_sweepable = true=.
+
+Manual QA scenario PASSED (4/4 steps, zero log errors) after the
+checkbox fix; verified via SQL that the fix correctly bumps the book's
+version on each toggle. =ores.refdata.*/ores.qt.*= tests 5/5 passed.
+
+book_purpose_type/ledger_feed_type FK wiring onto book remains
+separate follow-up scope, matching precedent from those tasks.

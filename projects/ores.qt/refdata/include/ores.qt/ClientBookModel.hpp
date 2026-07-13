@@ -59,6 +59,7 @@ public:
         BookStatus,
         CostCenter,
         RegulatoryBookType,
+        IsSweepable,
         Version,
         ModifiedBy,
         RecordedAt,

@@ -8,11 +8,11 @@
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch: feature/add-book-classification-flags
-#+pr:
-#+blocked_on: F0DAFC8D-3C94-4F97-B546-D7AF7469A29E
-#+blocked_since: 2026-07-11
+#+pr: 1534
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-08
-#+updated: 2026-07-11
+#+updated: 2026-07-13
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,22 +20,30 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add book_purpose_type as a lookup entity (domain/SQL/repository/
+protocol/service/Qt CRUD), mirroring regulatory_book_type's pattern,
+seeded with the 9 mutually-exclusive purpose values, and available
+under Reference Data > Book Codes.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | book_purpose_type entity model scaffolded ([[id:F2DD5F1F-759C-44E3-8BBD-EB451494E9A0][ores.refdata.book_purpose_type.org]]), generation paused. |
-| Waiting on   | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] -- book must be on a clean, composite-entity-versioned codegen baseline before adding this FK. |
-| Next         | Resume once the drift remediation story is DONE.        |
-| Last touched | 2026-07-11                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-13                               |
 
 * Acceptance
 
--
+- book_purpose_type generated (all layers) and manually QA'd: list,
+  detail, save with change-reason prompt, history, no log errors.
+- The 9 seed values present under the system tenant and copied into
+  every provisioned tenant (matching book_statuses/regulatory_book_types).
+- book itself does not yet reference book_purpose_type -- wiring the
+  FK onto book is out of scope for this task (see Plan).
 
 * Plan
 
@@ -88,18 +96,102 @@ repository/protocol/Qt CRUD + badge-coloured combo), not the
 originally-scoped checkbox pattern. The companion fields above split
 into their own sibling tasks under this story.
 
+** Implementation
+
+Reviewed the pre-scaffolded =ores.refdata.book_purpose_type.org=
+against =regulatory_book_type.org= and proactively added
+=:has_pagination: true= and =:has_change_reason_cache: true= (the
+same gap that caused real bugs for book_status/regulatory_book_type
+earlier in the sprint -- caught this time before generating). Ran
+=compass codegen entity generate book_purpose_type= (full/supported
+set) -- all layers generated cleanly, byte-for-byte following
+regulatory_book_type's shape.
+
+Manual QA surfaced two real gaps, both fixed:
+
+- *NATS handler never wired.* Codegen generates
+  =book_purpose_type_registrar.cpp/hpp= (the request handlers) but
+  nothing calls =register_book_purpose_type_handlers()= --
+  =projects/ores.refdata/core/src/messaging/registrar.cpp= is a
+  hand-maintained dispatch list, not itself generated, and wiring a
+  new entity's CRUD handlers into it is a manual step the codegen
+  workflow doesn't cover (only the *eventing* registrar,
+  =event_registrar.cpp=, was wired proactively, which is why the
+  Postgres NOTIFY -> NATS event subscription showed up in the service
+  log but the actual list/detail/save requests silently failed with
+  "Failed to fetch ... from server" -- the client's request had no
+  handler to answer it). Added the missing =append(...)= call.
+- *New system reference data wasn't copied into existing tenants.*
+  =iam_tenant_provisioner_create.sql= has a hand-written, per-entity
+  copy block that seeds a newly-provisioned tenant's lookup tables
+  from the system tenant's rows at provisioning time --
+  book_purpose_type wasn't in that list (it didn't exist when that
+  function was last touched), so Barclays' tenant only ever saw the 0
+  rows it started with. This is the same publish-at-provisioning
+  mechanism book_statuses/regulatory_book_types/purpose_types already
+  use -- confirmed via direct SQL comparison (regulatory_book_types
+  showed 2 system-tenant rows *and* 2 Barclays-tenant rows; book_purpose_types
+  showed 9 system-tenant rows but 0 Barclays-tenant rows before the fix).
+  Added the matching copy block; re-provisioned Barclays and confirmed
+  exactly 9 rows landed under its tenant.
+
+Neither gap is specific to book_purpose_type -- both are pre-existing,
+undocumented manual steps in the "add a new lookup entity" workflow
+that happened to not bite book_status/regulatory_book_type/purpose_type
+only because whoever added them (in earlier sessions/sprints) happened
+to remember. Worth a backlog item to either codify these as codegen
+steps or document them explicitly in the entity-creation runbook.
+
 * Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:B95F7ECA-ABD7-499E-9337-30B3E70EAA25][Verify book_purpose_type list/detail/history]] | PASSED | First run FAILED (list came back empty) -- traced to the missing NATS handler registration. Second run (after the fix, DB recreate, re-provision) showed a FAIL that was actually tester error (Regulatory Book Types window opened instead of Book Purpose Types -- confirmed via screenshot and zero book_purpose_type requests in the client log). Third run: all 6 steps PASS, zero ERROR-level log lines. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1534][#1534]] | [refdata,qt,sql] Add book_purpose_type lookup entity |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Include ordering broken by the new entity's #include lines (registrar.cpp, event_registrar.cpp, RefdataPlugin.cpp) | registrar.cpp, event_registrar.cpp, RefdataPlugin.cpp | Accepted | Re-sorted alphabetically in all three files. |
+| 2 | code doc comment example uses 'Write-off' (the name) instead of 'WriteOff' (the actual code), inconsistent with the camelCase SweepTarget/RemittanceTarget examples right next to it | ores.refdata.book_purpose_type.org | Accepted | Fixed in the .org source (the code-column doc block only; the general-prose example higher up correctly uses human-readable names) and regenerated. |
+| 3 | Backlog capture left * What/* Why as literal template placeholders, with all real content in #+description | new_lookup_entity_manual_wiring_gaps.org | Accepted | Filled in both sections properly, following sibling captures' style. |
 
 * Result
+
+book_purpose_type is fully generated (domain/SQL/repository/protocol/
+service/Qt CRUD) following regulatory_book_type's pattern, seeded with
+its 9 mutually-exclusive values (Trading, Reserve, Funding, Wash,
+Write-off, Test, Sales, Sweep target, Remittance target), and exposed
+under Reference Data > Book Codes > Book Purpose Types.
+
+Manual QA found and fixed two real, pre-existing gaps in the
+"add a new lookup entity" workflow -- neither specific to this entity
+-- rather than a code defect in book_purpose_type itself:
+
+- The generated NATS request handlers were never registered in
+  =registrar.cpp= (a hand-maintained dispatch list codegen doesn't
+  touch), so list/detail/save silently failed.
+- =iam_tenant_provisioner_create.sql='s per-entity copy block, which
+  seeds a new tenant's lookup tables from the system tenant at
+  provisioning time, didn't include book_purpose_type.
+
+Both fixed; filed [[id:55FD445F-EA4F-4961-A578-9D9C78B17CF3][a backlog capture]] to codify or document these
+steps so future entities don't hit the same silent gaps. Manual QA
+scenario PASSED (6/6 steps, zero log errors) after the fixes;
+=ores.refdata.*/ores.qt.*= tests 5/5 passed.
+
+book itself does not yet reference book_purpose_type -- that FK wiring
+is separate follow-up scope, not part of this task.

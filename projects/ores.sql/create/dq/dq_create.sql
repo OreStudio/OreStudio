@@ -113,6 +113,7 @@
 
 -- Market data artefact tables
 \ir ./dq_market_data_observations_artefact_create.sql
+\ir ./dq_crm_topology_bundles_artefact_create.sql
 
 -- GLEIF LEI artefact tables
 \ir ./dq_lei_entities_artefact_create.sql

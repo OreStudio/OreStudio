@@ -43,10 +43,13 @@ Examples:
         --from 2016-01-01 --to 2016-01-31 --format sql
 """
 import argparse
+import hashlib
+import json
 import re
 import sys
 import urllib.request
-from datetime import date, datetime
+import zipfile
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 CURRENCY_NAMES = {
@@ -58,6 +61,9 @@ CURRENCY_NAMES = {
     "al": "AUD/USD",
     "ca": "USD/CAD",
     "nz": "NZD/USD",
+    "sf": "USD/ZAR",
+    "mx": "USD/MXN",
+    "in": "USD/INR",
 }
 
 BASE_URL = "https://www.federalreserve.gov/releases/h10/hist/dat00_{code}.htm"
@@ -84,6 +90,45 @@ def download(code: str, cache_dir: Path, force: bool) -> Path:
         data = resp.read()
     out_path.write_bytes(data)
     return out_path
+
+
+def archive(html_paths: dict, zip_path: Path, invocation: str) -> None:
+    """Write a reproducibility archive: a zip of the raw downloaded pages,
+    plus a single manifest.json next to it (not inside it) describing how
+    the archive was produced -- retrieval timestamp, the exact command
+    that produced it, and per-page source URL/sha256/size -- so the exact
+    bytes a dataset was generated from are independently verifiable
+    without re-downloading from the Fed's site.
+    """
+    zip_path.parent.mkdir(parents=True, exist_ok=True)
+    retrieved_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    manifest = {
+        "retrieved_at": retrieved_at,
+        "source": "https://www.federalreserve.gov/releases/h10/hist/",
+        "command": invocation,
+        "archive": zip_path.name,
+        "pages": [],
+    }
+
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+        for code, html_path in sorted(html_paths.items()):
+            data = html_path.read_bytes()
+            sha256 = hashlib.sha256(data).hexdigest()
+            zf.write(html_path, arcname=html_path.name)
+            manifest["pages"].append({
+                "code": code,
+                "pair": CURRENCY_NAMES.get(code, code),
+                "file": html_path.name,
+                "source_url": BASE_URL.format(code=code),
+                "sha256": sha256,
+                "size_bytes": len(data),
+            })
+
+    manifest_path = zip_path.parent / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=False) + "\n")
+
+    print(f"  archived {len(html_paths)} page(s) -> {zip_path}", file=sys.stderr)
+    print(f"  wrote {manifest_path}", file=sys.stderr)
 
 
 def parse_rows(html_path: Path) -> dict:
@@ -130,6 +175,10 @@ def main():
     ap.add_argument("--cache-dir", default=str(DEFAULT_CACHE_DIR),
                     help=f"Where downloaded pages are cached (default: {DEFAULT_CACHE_DIR})")
     ap.add_argument("--force", action="store_true", help="Re-download even if cached")
+    ap.add_argument("--archive-zip",
+                    help="Also write a zip + manifest.json of the raw downloaded pages to this "
+                         "path, for reproducibility independent of the Fed's site staying up "
+                         "(e.g. external/fed_h10/pages.zip)")
     args = ap.parse_args()
 
     if not args.dates and not (args.date_from and args.date_to):
@@ -139,9 +188,15 @@ def main():
     codes = [c.strip() for c in args.currency.split(",")]
 
     parsed_by_code = {}
+    html_paths = {}
     for code in codes:
         html_path = download(code, cache_dir, args.force)
+        html_paths[code] = html_path
         parsed_by_code[code] = parse_rows(html_path)
+
+    if args.archive_zip:
+        invocation = "./tools/fetch_fed_h10_rates.py " + " ".join(sys.argv[1:])
+        archive(html_paths, Path(args.archive_zip), invocation)
 
     if args.dates:
         requested = []

@@ -27,11 +27,10 @@ Model flags consumed by this template:
 - =read_for_cache= (bool, Flags) — wire the generated
   =read_<entity_plural>_for_cache= subject to the handler's
   =read_for_cache= method. Requires =has_tenant_id=. This is the
-  standard archetype for the bulk cache-warming read; =party= still
-  wires its own hand-written =read_parties_for_cache= via the
-  custom-subscription paste point below pending a fix to its
-  codegen drift, and is the template's motivating example, not this
-  flag's.
+  standard archetype for the bulk cache-warming read. =party= motivated
+  this archetype but does not use it yet — it still wires its own
+  hand-written =read_parties_for_cache= via the custom-subscription
+  paste point below, pending a fix to its codegen drift.
 
 Custom-includes paste point: the marker
 =<<paste:068323E2-D722-46F1-8B86-46BD32426003>>= is emitted after the standard

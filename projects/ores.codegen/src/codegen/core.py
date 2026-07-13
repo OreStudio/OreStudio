@@ -1396,6 +1396,25 @@ def _format_columns_for_doxygen(columns):
             col['detail'] = _format_detail_for_doxygen(col['detail'])
 
 
+def validate_read_for_cache(domain_entity):
+    """
+    Validate and default the read_for_cache messaging flag: a bulk
+    unpaginated read of a tenant's active entities, used to warm
+    client-side caches. Requires tenant scoping.
+
+    Args:
+        domain_entity (dict): mutated in place; defaults read_for_cache
+            to False if unset.
+
+    Raises:
+        ValueError: if read_for_cache is set without has_tenant_id.
+    """
+    if domain_entity.get('read_for_cache') and not domain_entity.get('has_tenant_id'):
+        raise ValueError(
+            f"{domain_entity.get('entity_singular', '?')}: read_for_cache requires has_tenant_id")
+    domain_entity.setdefault('read_for_cache', False)
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -2071,12 +2090,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             pk_col + 's' if pk_type == 'text' else 'ids')
         domain_entity.setdefault('history_request_id_field', pk_col)
         domain_entity.setdefault('single_delete', False)
-        # read_for_cache: bulk unpaginated read of a tenant's active entities,
-        # used to warm client-side caches. Requires tenant scoping.
-        if domain_entity.get('read_for_cache') and not domain_entity.get('has_tenant_id'):
-            raise ValueError(
-                f"{domain_entity.get('entity_singular', '?')}: read_for_cache requires has_tenant_id")
-        domain_entity.setdefault('read_for_cache', False)
+        validate_read_for_cache(domain_entity)
         # Derive paged list-by-foreign-key NATS operations (protocol/handler/
         # registrar) from any foreign key opted in via :list_by: true. The
         # repository/service methods themselves are generated directly off

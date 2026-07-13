@@ -313,6 +313,8 @@ public:
                 using ores::database::service::tenant_context;
                 auto tctx = tenant_context::with_tenant(ctx_, req->tenant_id);
                 service::{{entity_singular}}_service svc(tctx);
+                // No dedicated unpaginated list method is generated; reuse
+                // the paginated one with an unbounded limit.
                 auto {{entity_plural_short}} = svc.list_{{entity_plural_short}}(
                     0, std::numeric_limits<std::uint32_t>::max());
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)

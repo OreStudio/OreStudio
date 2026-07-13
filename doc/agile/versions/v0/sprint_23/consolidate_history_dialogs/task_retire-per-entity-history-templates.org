@@ -45,6 +45,24 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+Flagged during PR #1553 review (task 7D8659AB, currency's first
+migration onto the generic =HistoryDialog=): currency's own org model
+(=projects/ores.refdata/modeling/ores.refdata.currency.org=) still
+fully declares the per-entity history facet (=history_request_class=,
+=history_response_class=, etc.), and the codegen templates
+(=cpp_qt_history_dialog.hpp.mustache=,
+=cpp_qt_controller.cpp.mustache=) still generate a per-entity
+=CurrencyHistoryDialog=-shaped class and
+=VersionNavigationHelper.hpp= include for any entity whose model has
+=has_version_navigation= set — both deleted by PR #1553 by hand, not
+via codegen. If codegen is ever re-run for currency before this task
+retires the template, it would regenerate the just-deleted files
+(a build break, or a duplicate dialog alongside the new generic one).
+When migrating each entity as part of this task's rollout, turn off
+that entity's history-dialog facet config in its own model as part of
+the same change that deletes its hand-rolled =*HistoryDialog=, so
+regeneration can't resurrect what was just removed.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

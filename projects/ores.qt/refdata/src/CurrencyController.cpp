@@ -488,32 +488,37 @@ void CurrencyController::onRevertVersion(const refdata::domain::currency& curren
 }
 
 void CurrencyController::fetchCurrencyHistory(
-    const QString& isoCode, std::function<void(std::vector<refdata::domain::currency>)> callback) {
+    const QString& isoCode,
+    std::function<void(std::expected<std::vector<refdata::domain::currency>, QString>)> callback) {
     refdata::messaging::get_currency_history_request request;
     request.iso_code = isoCode.toStdString();
 
+    using FetchResult = std::expected<std::vector<refdata::domain::currency>, QString>;
+
     QPointer<CurrencyController> self = this;
     QPointer<ClientManager> clientManager = clientManager_;
-    auto future = QtConcurrent::run(
-        [clientManager, request = std::move(request)]() -> std::vector<refdata::domain::currency> {
+    auto future =
+        QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
             if (!clientManager || !clientManager->isConnected())
-                return {};
+                return std::unexpected(QString("Not connected to server"));
             auto result = clientManager->process_authenticated_request(std::move(request));
-            if (!result || !result->success)
-                return {};
+            if (!result)
+                return std::unexpected(QString::fromStdString(result.error()));
+            if (!result->success)
+                return std::unexpected(QString::fromStdString(result->message));
             return std::move(result->history);
         });
 
-    auto* watcher = new QFutureWatcher<std::vector<refdata::domain::currency>>(this);
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
     connect(watcher,
-            &QFutureWatcher<std::vector<refdata::domain::currency>>::finished,
+            &QFutureWatcher<FetchResult>::finished,
             this,
             [self, watcher, callback = std::move(callback)]() mutable {
-                auto history = watcher->result();
+                auto result = watcher->result();
                 watcher->deleteLater();
                 if (!self)
                     return;
-                callback(std::move(history));
+                callback(std::move(result));
             });
     watcher->setFuture(future);
 }
@@ -521,9 +526,17 @@ void CurrencyController::fetchCurrencyHistory(
 void CurrencyController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
     QPointer<CurrencyController> self = this;
     fetchCurrencyHistory(
-        entityId, [self, entityId, versionNumber](std::vector<refdata::domain::currency> history) {
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::currency>, QString> result) {
             if (!self)
                 return;
+            if (!result) {
+                emit self->errorMessage(
+                    QString("Failed to load history for '%1': %2").arg(entityId).arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
             const auto it = std::find_if(
                 history.begin(), history.end(),
                 [&](const auto& c) { return c.version == versionNumber; });
@@ -539,9 +552,17 @@ void CurrencyController::onOpenHistoryVersion(const QString& entityId, int versi
 void CurrencyController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
     QPointer<CurrencyController> self = this;
     fetchCurrencyHistory(
-        entityId, [self, entityId, versionNumber](std::vector<refdata::domain::currency> history) {
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<refdata::domain::currency>, QString> result) {
             if (!self)
                 return;
+            if (!result) {
+                emit self->errorMessage(
+                    QString("Failed to load history for '%1': %2").arg(entityId).arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
             const auto it = std::find_if(
                 history.begin(), history.end(),
                 [&](const auto& c) { return c.version == versionNumber; });

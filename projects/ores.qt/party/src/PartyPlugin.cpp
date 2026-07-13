@@ -20,7 +20,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/BusinessUnitController.hpp"
 #include "ores.qt/BusinessUnitTypeController.hpp"
-#include "ores.qt/CounterpartyController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PartyController.hpp"
@@ -82,16 +81,6 @@ void PartyPlugin::on_login(const plugin_context& ctx) {
                                                          this);
     connectControllerSignals(partyController_.get());
 
-    counterpartyController_ = std::make_unique<CounterpartyController>(ctx_.main_window,
-                                                                       ctx_.mdi_area,
-                                                                       ctx_.client_manager,
-                                                                       ctx_.image_cache,
-                                                                       ctx_.change_reason_cache,
-                                                                       ctx_.badge_cache,
-                                                                       ctx_.username,
-                                                                       this);
-    connectControllerSignals(counterpartyController_.get());
-
     businessUnitController_ = std::make_unique<BusinessUnitController>(ctx_.main_window,
                                                                        ctx_.mdi_area,
                                                                        ctx_.client_manager,
@@ -134,12 +123,6 @@ void PartyPlugin::setup_menus(const shared_menus_context& smc) {
         if (partyController_)
             partyController_->showListWindow();
     });
-    act_counterparties_ = ref->addAction(ico(Icon::Handshake), tr("&Counterparties"));
-    connect(act_counterparties_, &QAction::triggered, this, [this]() {
-        if (counterpartyController_)
-            counterpartyController_->showListWindow();
-    });
-
     ref->addSeparator();
 
     act_business_units_ = ref->addAction(ico(Icon::PeopleTeam), tr("Business &Units"));
@@ -186,9 +169,9 @@ QList<QMenu*> PartyPlugin::create_menus() {
 }
 
 QList<QAction*> PartyPlugin::toolbar_actions() {
-    if (!act_parties_ || !act_counterparties_ || !act_business_units_)
+    if (!act_parties_ || !act_business_units_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
-    return {act_parties_, act_counterparties_, act_business_units_};
+    return {act_parties_, act_business_units_};
 }
 
 // ---------------------------------------------------------------------------
@@ -198,7 +181,6 @@ void PartyPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     businessUnitTypeController_.reset();
     businessUnitController_.reset();
-    counterpartyController_.reset();
     partyController_.reset();
     partyIdSchemeController_.reset();
     partyStatusController_.reset();

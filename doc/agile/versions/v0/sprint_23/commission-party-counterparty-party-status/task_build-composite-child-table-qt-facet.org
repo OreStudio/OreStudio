@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 8DC4ABA3-B053-4C40-B575-6EDFCF3C86DE
+:ID: E930D771-C8DA-4105-A556-69E137C3DB30
 :END:
-#+title: Task: Verify counterparty Qt UI end-to-end post-NATS
-#+description: Re-verify the counterparty Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that the hierarchy widget blocker is resolved; fix regressions found.
+#+title: Task: Build composite child-entity table Qt facet for party and counterparty
+#+description: The generated CounterpartyDetailDialog/PartyDetailDialog have no facet for embedding child-entity tables (identifiers, contact information) or the hierarchy tree; the old hand-maintained EntityDetailDialog/Operations classes (now deleted for counterparty) handled these as full editable grids. Design and wire a generic child-entity-table Qt facet into the detail-dialog codegen templates, plus bind the existing HierarchyTreeWidget/hierarchy model-builder, restoring full feature parity for both entities.
 #+type: task
 #+level: s1
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
@@ -28,9 +28,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Counterparty's Qt layer is migrated to ores.qt.refdata and builds clean, but identifier/contact-information editing is temporarily missing (deferred to the child-table facet task). List/detail/history/delete/eventing can be verified now; full parity verification should wait on that task. |
-| Waiting on   | [[id:E930D771-C8DA-4105-A556-69E137C3DB30][Build composite child-entity table Qt facet for party and counterparty]] for full parity (identifier/contact editing). |
-| Next         | Verify list/detail/history/delete/eventing now; re-verify identifier/contact editing once the facet task lands. |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
 | Last touched | 2026-07-13                               |
 
 * Acceptance

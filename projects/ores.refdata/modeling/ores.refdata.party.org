@@ -275,9 +275,9 @@ Everything below is consumed by the C++ codegen pipeline only.
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.refdata/domain/party.hpp
+:domain_include:         ores.refdata.api/domain/party.hpp
 :domain_class:           refdata::domain::party
-:protocol_include:       ores.refdata/messaging/party_protocol.hpp
+:protocol_include:       ores.refdata.api/messaging/party_protocol.hpp
 :collection_name:        parties
 :item_var:               party
 :key_field:              short_code
@@ -492,18 +492,255 @@ party_repository::read_descendants(context ctx, const boost::uuids::uuid& root_i
 }
 #+end_src
 
+** Custom NATS protocol messages
+
+=party= exposes two hand-crafted NATS message pairs beyond the standard CRUD
+surface: =read_parties_for_cache= (a bulk read used to warm client-side
+caches) and =composite_as_of= (reads a party as it stood at a specific
+version, together with its identifiers and contact information as they
+stood during that same version's window — see the "Temporal composite
+entity versioning" architecture doc).
+
+#+begin_src cpp :name protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
+#include "ores.refdata.api/domain/party_contact_information.hpp"
+#include "ores.refdata.api/domain/party_identifier.hpp"
+#+end_src
+
+#+begin_src cpp :name composite_as_of_messages :implements 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
+/**
+ * @brief Reads all active parties for a tenant — used by IAM party cache.
+ *
+ * Returns the full, unpaginated party set for the given tenant so that
+ * consumers can build an in-process cache without multiple round-trips.
+ */
+struct read_parties_for_cache_request {
+    using response_type = struct read_parties_for_cache_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.parties.read";
+    std::string tenant_id;
+};
+
+struct read_parties_for_cache_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::refdata::domain::party> parties;
+};
+
+/**
+ * @brief Reads a party as it stood at a specific version, together with its
+ * identifiers and contact information as they stood during that same
+ * version's [valid_from, valid_to) window. See the "Temporal composite
+ * entity versioning" architecture doc.
+ */
+struct get_party_composite_as_of_request {
+    using response_type = struct get_party_composite_as_of_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.parties.composite_as_of";
+    std::string id;
+    int version = 0;
+};
+
+struct get_party_composite_as_of_response {
+    bool success = false;
+    std::string message;
+    ores::refdata::domain::party party;
+    std::vector<ores::refdata::domain::party_identifier> identifiers;
+    std::vector<ores::refdata::domain::party_contact_information> contacts;
+};
+#+end_src
+
+** Custom NATS handler methods
+
+Hand-written handler methods for the two message pairs above, dispatching to
+=party_service=/=party_identifier_service=/=party_contact_information_service=.
+
+#+begin_src cpp :name handler_includes :implements F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
+#include "ores.refdata.core/service/party_contact_information_service.hpp"
+#include "ores.refdata.core/service/party_identifier_service.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.service/messaging/workflow_helpers.hpp"
+#include <chrono>
+#+end_src
+
+=save='s workflow-step-command branch (below) special-cases orchestration
+commands ahead of the generated standard flow: it bypasses JWT auth and
+uses the X-Tenant-Id header instead, replays a cached result if the step
+already completed (idempotency), and reports completion/failure back to
+the workflow engine rather than replying to the caller directly.
+
+#+begin_src cpp :name save_workflow_override :implements 6D3A9F1E-7C2B-4E8A-9D5F-1B6C4E2A8F3D
+        using ores::service::messaging::is_workflow_command;
+        using ores::service::messaging::extract_workflow_header;
+        using ores::service::messaging::publish_step_completion;
+        using ores::service::messaging::check_step_idempotency;
+        using ores::service::messaging::workflow_step_id_header;
+        using ores::service::messaging::workflow_instance_id_header;
+        using ores::service::messaging::workflow_tenant_id_header;
+
+        // Workflow step command: bypass JWT auth; use X-Tenant-Id for context.
+        if (is_workflow_command(msg)) {
+            const auto step_id = extract_workflow_header(msg, workflow_step_id_header);
+            const auto inst_id = extract_workflow_header(msg, workflow_instance_id_header);
+            const auto tenant_id = extract_workflow_header(msg, workflow_tenant_id_header);
+
+            // Idempotency guard: replay cached result if this step already completed.
+            if (auto cached = check_step_idempotency(nats_, step_id)) {
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        cached->outcome,
+                                        cached->result_json,
+                                        cached->error_message,
+                                        cached->log);
+                return;
+            }
+
+            auto req = decode<save_party_request>(msg);
+            if (!req) {
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::failed,
+                                        "",
+                                        "Failed to decode save_party_request");
+                return;
+            }
+            try {
+                using ores::database::service::tenant_context;
+                auto wf_ctx = tenant_context::with_tenant(ctx_, tenant_id);
+                service::party_service svc(wf_ctx);
+                svc.save_party(req->data);
+                BOOST_LOG_SEV(party_handler_lg(), debug)
+                    << "Workflow step completed: " << msg.subject;
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::completed,
+                                        rfl::json::write(save_party_response{.success = true}),
+                                        "");
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(party_handler_lg(), error)
+                    << "Workflow step failed: " << msg.subject << " — " << e.what();
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::failed,
+                                        "",
+                                        e.what());
+            }
+            return;
+        }
+#+end_src
+
+#+begin_src cpp :name custom_handler_methods :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+    void read_for_cache(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(party_handler_lg(), msg);
+        auto req = decode<read_parties_for_cache_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            reply(nats_,
+                  msg,
+                  read_parties_for_cache_response{.success = false,
+                                                  .message = "Failed to decode request"});
+            return;
+        }
+        try {
+            using ores::database::service::tenant_context;
+            auto tctx = tenant_context::with_tenant(ctx_, req->tenant_id);
+            service::party_service svc(tctx);
+            auto parties = svc.list_parties();
+            BOOST_LOG_SEV(party_handler_lg(), debug)
+                << "Completed " << msg.subject << " (tenant=" << req->tenant_id
+                << ", count=" << parties.size() << ")";
+            reply(nats_,
+                  msg,
+                  read_parties_for_cache_response{.success = true, .parties = std::move(parties)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(
+                nats_, msg, read_parties_for_cache_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void composite_as_of(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(party_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        auto req = decode<get_party_composite_as_of_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_party_composite_as_of_response{.success = false,
+                                                     .message = "Failed to decode request"});
+            return;
+        }
+        try {
+            boost::uuids::string_generator gen;
+            const auto id_uuid = gen(req->id);
+            service::party_service party_svc(ctx);
+            const auto version = static_cast<std::uint32_t>(req->version);
+            auto current = party_svc.get_party_at_version(id_uuid, version);
+            if (!current) {
+                reply(nats_,
+                      msg,
+                      get_party_composite_as_of_response{.success = false,
+                                                         .message =
+                                                             "No such party version: " + req->id +
+                                                             " v" + std::to_string(version)});
+                return;
+            }
+
+            // Windows are contiguous by construction: the next version's
+            // valid_from is this version's valid_to. If there is no next
+            // version, this is the current one — its window is still open,
+            // so bound it with a safely-far-future instant instead (see the
+            // "Temporal composite entity versioning" architecture doc; the
+            // domain object does not surface valid_to directly).
+            auto next = party_svc.get_party_at_version(id_uuid, version + 1);
+            const auto window_end =
+                next ? next->recorded_at :
+                       std::chrono::system_clock::now() + std::chrono::hours(24 * 365 * 100);
+
+            service::party_identifier_service identifier_svc(ctx);
+            auto identifiers = identifier_svc.list_party_identifiers_by_party_id_as_of(
+                req->id, current->recorded_at, window_end);
+
+            service::party_contact_information_service contact_svc(ctx);
+            auto contacts = contact_svc.list_party_contact_informations_by_party_as_of(
+                id_uuid, current->recorded_at, window_end);
+
+            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_party_composite_as_of_response{.success = true,
+                                                     .party = std::move(*current),
+                                                     .identifiers = std::move(identifiers),
+                                                     .contacts = std::move(contacts)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  get_party_composite_as_of_response{.success = false, .message = e.what()});
+        }
+    }
+#+end_src
+
 ** Custom NATS subscriptions
 
 Hand-crafted subjects wired into the generated =party_registrar.cpp= via the
-=nats-sub-registrar= facet's custom-subscription paste point. =party= exposes
-=read_parties_for_cache=, a bulk read used to warm client-side caches; its
-request/response structs live in =party_protocol.hpp= (a custom protocol not
-modelled by codegen) and =read_for_cache= is a hand-written handler method.
+=nats-sub-registrar= facet's custom-subscription paste point.
 
 #+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
     subs.push_back(nats.queue_subscribe(
         read_parties_for_cache_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->read_for_cache(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_party_composite_as_of_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->composite_as_of(std::move(msg));
+        }));
 #+end_src
 
 ** Cache aux index

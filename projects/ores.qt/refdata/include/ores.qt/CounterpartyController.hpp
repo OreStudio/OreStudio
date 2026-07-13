@@ -24,16 +24,12 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
-#include <QDateTime>
 #include <QMainWindow>
 #include <QMdiArea>
 
 namespace ores::qt {
 
-class BadgeCache;
-class ChangeReasonCache;
 class CounterpartyMdiWindow;
 class DetachableMdiSubWindow;
 
@@ -59,16 +55,13 @@ public:
     CounterpartyController(QMainWindow* mainWindow,
                            QMdiArea* mdiArea,
                            ClientManager* clientManager,
-                           ImageCache* imageCache,
-                           ChangeReasonCache* changeReasonCache,
-                           BadgeCache* badgeCache,
                            const QString& username,
                            QObject* parent = nullptr);
-    ~CounterpartyController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
     void reloadListWindow() override;
+
 
 signals:
     void statusMessage(const QString& message);
@@ -76,6 +69,7 @@ signals:
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::counterparty& counterparty);
@@ -83,19 +77,12 @@ private slots:
     void onShowHistory(const refdata::domain::counterparty& counterparty);
     void onRevertVersion(const refdata::domain::counterparty& counterparty);
     void onOpenVersion(const refdata::domain::counterparty& counterparty, int versionNumber);
-    void onNotificationReceived(const QString& eventType,
-                                const QDateTime& timestamp,
-                                const QStringList& entityIds,
-                                const QString& tenantId);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::counterparty& counterparty);
     void showHistoryWindow(const refdata::domain::counterparty& counterparty);
 
-    ImageCache* imageCache_;
-    ChangeReasonCache* changeReasonCache_;
-    BadgeCache* badgeCache_;
     CounterpartyMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

@@ -47,6 +47,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.refdata.api/eventing/party_changed_event.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <memory>
@@ -77,7 +78,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // --- Party cache ---
     // Warm the cache at startup for all known active tenants, then subscribe
     // to change events so each affected tenant is reloaded on any mutation.
-    auto pc = std::make_shared<service::party_cache>(nats);
+    auto pc = std::make_shared<service::cache::party_cache>(nats);
     try {
         repository::tenant_repository tenant_repo(ctx);
         const auto tenants = tenant_repo.read_latest();
@@ -87,7 +88,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Party cache warm-up failed: " << e.what();
     }
-    subs.push_back(nats.subscribe("refdata.v1.parties.changed", [pc](ores::nats::message msg) {
+    using ores::eventing::domain::event_traits;
+    using ores::refdata::eventing::party_changed_event;
+    subs.push_back(nats.subscribe(std::string(event_traits<party_changed_event>::name),
+                                  [pc](ores::nats::message msg) {
         using ores::eventing::domain::entity_change_event;
         auto evt = rfl::json::read<entity_change_event>(ores::nats::as_string_view(msg.data));
         if (evt && !evt->tenant_id.empty()) {

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: A4797CFE-FC29-4209-B7C2-7505247EC29C
 :END:
-#+title: Task: Subscribe party_cache to ores.refdata.party_changed
-#+description: Add a NATS subscription in ores.iam.core (registrar.cpp, where party_cache is constructed) to ores.refdata.party_changed; reload the affected tenant's party_cache partition on receipt. Correct party_cache.hpp's docstring to name the real subject instead of the nonexistent refdata.v1.parties.changed.
+#+title: Task: Implement generic partitioned_cache<PartitionKey,Key,Value> primitive
+#+description: Layer A of the generic entity-mirror cache: an immer::atom<immer::map<PartitionKey,immer::map<Key,Value>>>-backed template, following the rate_engine/rate_snapshot idiom already in ores.analytics.quant. Wait-free reads, CAS-safe partition replacement, optional aux-index policy for entity-specific derived structure (e.g. party's parent/child tree).
 #+type: task
 #+level: s1
 #+filetags: :iam_party_cache_invalidation:sprint_23:v0:
@@ -20,15 +20,24 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-=ores.iam.core= subscribes to NATS subject
-=ores.refdata.party_changed= (published by refdata's outbox on every
-party save/activation, alongside where =party_cache= is constructed
-in =registrar.cpp=) and, on receipt, reloads the affected tenant's
-=party_cache= partition via =party_cache::load(tenant_id)= (or a more
-targeted per-party update if that proves cheaper). Also correct
-=party_cache.hpp='s docstring, which currently names the
-nonexistent subject =refdata.v1.parties.changed=, to reflect the
-real one.
+A reusable, entity-agnostic =partitioned_cache<PartitionKey, Key,
+Value>= template exists (e.g. in =ores.eventing.core=) that any
+future consumer-side cache can be built on without hand-writing
+concurrency code again. Storage is
+=immer::atom<immer::map<PartitionKey, immer::map<Key, Value>>>=:
+readers take a wait-free atomic =load()= of the whole structure and
+are never blocked by a concurrent reload; a partition replace goes
+through the atom's compare-and-swap =update()=, not a blind
+=store()=, so concurrently reloading two different partitions never
+races into a lost update. An optional aux-index policy (a callable
+applied when a partition is replaced) lets entity-specific derived
+structure — e.g. party's parent/child hierarchy — stay generic
+rather than hardcoded into the primitive.
+
+The hand-written =party_cache.hpp= prototype produced during this
+story's investigation (already on =immer::atom=, already correctly
+subject-bound) becomes the reference this template is extracted
+from — not a shipped deliverable itself.
 
 * Status
 
@@ -43,12 +52,16 @@ real one.
 
 * Acceptance
 
-- =registrar.cpp= subscribes to =ores.refdata.party_changed= and
-  triggers a =party_cache= reload for the tenant(s) named in the
-  event's =tenant_id=.
-- =party_cache.hpp='s class docstring names the real subject.
-- No behaviour change to the existing startup / read-on-miss load
-  path.
+- =partitioned_cache<PartitionKey, Key, Value>= implemented with
+  wait-free =get(partition, key)=/=snapshot(partition)= reads and a
+  CAS-safe =replace_partition(partition, entries)= write.
+- Aux-index policy hook supports building a derived structure (e.g.
+  a parent→children map) alongside the primary key→value map,
+  without the primitive itself knowing about hierarchy.
+- Unit tests: concurrent =replace_partition= calls for different
+  partitions never lose an update; a reader's =snapshot()= never
+  observes a torn mix of old/new entries within one call; a
+  concurrent reader is never blocked by a writer or vice versa.
 
 * Plan
 

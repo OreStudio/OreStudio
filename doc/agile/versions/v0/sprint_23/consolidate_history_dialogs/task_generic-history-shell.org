@@ -12,7 +12,7 @@
 #+blocked_on: 15CFB0BE-C411-4B12-B733-974F6F5A44A5
 #+blocked_since:
 #+created: 2026-07-11
-#+updated: 2026-07-11
+#+updated: 2026-07-13
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,28 +20,50 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Re-enable the shell's =history-diff= command, disabled since the
+currency pilot's hand-written shape was reverted, as one generic,
+entity-parameterised unified-diff renderer that consumes the generic
+=history.v1.get= response. Context lines come from unchanged fields;
++/- pairs come from the server-computed changes. All comparison
+happens server-side (=ores.history='s =dispatch_registry= +
+per-entity history provider); the shell renderer is pure formatting,
+shared by every entity's =history-diff= command.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | STARTED                                |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-11                               |
+| Now          | =ores.history= split into api/core; generic =render_history_diff= added and wired to currency's =history-diff= command. Build verified clean end-to-end. |
+| Waiting on   | Nothing.                                |
+| Next         | Manually exercise =currencies history-diff= in the shell against a real currency with edits, then roll the same wiring out to the other entities. |
+| Last touched | 2026-07-13                              |
 
 * Acceptance
 
--
+- [X] =ores.history= restructured to the api/core layout used elsewhere in the codebase.
+- [X] Generic =render_history_diff()= added in =ores.shell=, consuming the generic =history.v1.get= subject and formatting the server-computed diff as unified-diff text (context lines + -/+ pairs, or full addition from =/dev/null= for the oldest version).
+- [X] Currency's =history-diff= command re-enabled on top of the generic renderer (both latest-version and explicit-version overloads).
+- [ ] Manually verified against a live currency with real history.
+- [ ] Rolled out to the remaining entities' =history-diff= commands.
+- [ ] Shell recipes updated to document the re-enabled command.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Split =ores.history= into =api/= (protocol types, =version_builder=)
+  and =core/= (=registrar=, =dispatch_registry=, handler), matching
+  the api/core layout already used by =ores.refdata= and siblings.
+- Add =ores.shell::app::commands::render_history_diff()=: takes the
+  dispatch key (=entity_type_of()=), entity id, and an optional
+  version; queries =history.v1.get= over the NATS session and prints
+  the response as a unified diff.
+- Re-enable currency's =history-diff= command (previously disabled
+  dead code) by delegating to the new generic renderer instead of the
+  removed hand-written =currency_version_history= shape.
+- Remaining: exercise it manually, then repeat the "delegate to
+  =render_history_diff="' wiring for the other 26 entities and update
+  the shell recipes.
 
 * Notes
 

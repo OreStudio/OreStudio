@@ -29,11 +29,11 @@ badge combo, and editable via a checkbox in the detail dialog.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Implemented, manually QA'd, PASSED.    |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close out.                             |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance

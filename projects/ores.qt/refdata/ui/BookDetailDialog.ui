@@ -153,6 +153,20 @@
             </property>
            </widget>
           </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="labelRatesCentreCode">
+            <property name="text">
+             <string>Rates Centre:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QComboBox" name="ratesCentreCodeCombo">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

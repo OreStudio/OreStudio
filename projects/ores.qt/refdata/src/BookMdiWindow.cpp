@@ -141,6 +141,7 @@ void BookMdiWindow::setupTable() {
             cs::text_left,
             cs::badge_centered,
             cs::badge_centered,
+            cs::icon_text_left,
             cs::mono_center,
             cs::text_left,
             cs::text_left,

@@ -209,6 +209,30 @@ book_purpose_type; see [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classific
 false
 #+end_src
 
+** rates_centre_code
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "WRLD"
+:END:
+
+Rates centre determining which revaluation market data snapshot this
+book uses at end-of-day; see
+[[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]].
+
+Soft FK to business_centres by code (e.g. "GBLO", "USNY"), reusing
+the same location reference already used by
+counterparty/party/business_unit rather than modeling a dedicated
+rates-centre entity. Defaults to =WRLD= (the global sentinel business
+centre, seeded for every tenant) for the same reason =book_status=
+defaults to =Active= -- a freshly-constructed book always carries a
+value the FK-validation trigger accepts.
+
+#+begin_src cpp :name generator
+std::string("WRLD")
+#+end_src
+
 * SQL
 
 ** Flags
@@ -251,6 +275,7 @@ false
 | ledger_ccy           | ores_refdata_validate_currency_fn         |
 | book_status          | ores_refdata_validate_book_status_fn      |
 | regulatory_book_type | ores_refdata_validate_regulatory_book_type_fn |
+| rates_centre_code    | ores_refdata_validate_business_centre_fn  |
 
 * C++
 
@@ -299,6 +324,7 @@ false
 | book_status          | Status              |
 | regulatory_book_type | Regulatory Book Type |
 | is_sweepable          | Sweepable            |
+| rates_centre_code    | Rates Centre         |
 | modified_by          | Modified By         |
 | version              | Version             |
 
@@ -335,16 +361,17 @@ false
 
 *** Detail fields
 
-| field                | label                 | widget                  | type          | is_key | is_required | placeholder                 | flag_source | combo_domain_type                     | combo_fetch_include        | combo_fetch_fn               | combo_watcher_name        | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label            | combo_setter_pascal       | badge_key            |
-|----------------------+-----------------------+-------------------------+---------------+--------+-------------+------------------------------+--------------+------------------------------------------+-----------------------------+-------------------------------+---------------------------+-------------------+----------------------+-------------------+------------------------+---------------------------+-----------------------|
-| id                   | Id                    | idEdit                  | line_edit     | true   | true        | Book id                      |              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
-| name                 | Name                  | nameEdit                | line_edit     |        | true        | Enter book name               |              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
-| ledger_ccy           | Ledger Currency       | ledgerCcyEdit           | flagged_combo |        |             |                               | currency     |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
-| gl_account_ref       | GL Account Ref        | glAccountRefEdit        | line_edit     |        |             | Enter GL account reference    |              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
-| cost_center          | Cost Center           | costCenterEdit          | line_edit     |        |             | Enter cost center             |              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
-| book_status          | Status                | bookStatusCombo         | dynamic_combo |        |             |                               |              | refdata::domain::book_status           | ores.qt/LookupFetcher.hpp  | fetch_book_statuses           | bookStatusWatcher         | code              | description          | display_order     | book statuses          | BookStatusCombo           | book_status           |
-| regulatory_book_type | Regulatory Book Type  | regulatoryBookTypeCombo | dynamic_combo |        |             |                               |              | refdata::domain::regulatory_book_type  | ores.qt/LookupFetcher.hpp  | fetch_regulatory_book_types   | regulatoryBookTypeWatcher | code              | description          | display_order     | regulatory book types  | RegulatoryBookTypeCombo   | regulatory_book_type |
-| is_sweepable         | Sweepable             | isSweepableCheckBox     | check_box     |        |             |                               |              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
+| field                | label                 | widget                  | type          | is_key | is_required | placeholder                 | flag_source      | combo_allow_blank | combo_fetch                 | combo_domain_type                     | combo_fetch_include        | combo_fetch_fn               | combo_watcher_name        | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label            | combo_setter_pascal       | badge_key             |
+|----------------------+-----------------------+-------------------------+---------------+--------+-------------+------------------------------+-------------------+--------------------+-------------------------------+------------------------------------------+-----------------------------+-------------------------------+---------------------------+-------------------+----------------------+-------------------+------------------------+---------------------------+------------------------|
+| id                   | Id                    | idEdit                  | line_edit     | true   | true        | Book id                      |                   |                    |                              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
+| name                 | Name                  | nameEdit                | line_edit     |        | true        | Enter book name               |                   |                    |                              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
+| ledger_ccy           | Ledger Currency       | ledgerCcyEdit           | flagged_combo |        |             |                               | currency          |                    |                              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
+| gl_account_ref       | GL Account Ref        | glAccountRefEdit        | line_edit     |        |             | Enter GL account reference    |                   |                    |                              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
+| cost_center          | Cost Center           | costCenterEdit          | line_edit     |        |             | Enter cost center             |                   |                    |                              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
+| book_status          | Status                | bookStatusCombo         | dynamic_combo |        |             |                               |                   |                    |                              | refdata::domain::book_status           | ores.qt/LookupFetcher.hpp  | fetch_book_statuses           | bookStatusWatcher         | code              | description          | display_order     | book statuses          | BookStatusCombo           | book_status           |
+| regulatory_book_type | Regulatory Book Type  | regulatoryBookTypeCombo | dynamic_combo |        |             |                               |                   |                    |                              | refdata::domain::regulatory_book_type  | ores.qt/LookupFetcher.hpp  | fetch_regulatory_book_types   | regulatoryBookTypeWatcher | code              | description          | display_order     | regulatory book types  | RegulatoryBookTypeCombo   | regulatory_book_type  |
+| is_sweepable         | Sweepable             | isSweepableCheckBox     | check_box     |        |             |                               |                   |                    |                              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
+| rates_centre_code    | Rates Centre          | ratesCentreCodeCombo    | flagged_combo |        |             |                               | business_centre   | false              | fetch_business_centre_codes | | ores.qt/LookupFetcher.hpp  |                               |                           |                   |                      |                   |                        |                           |                       |
 
 *** Columns (Qt model)
 
@@ -356,6 +383,7 @@ false
 | CostCenter         | cost_center          | Cost Center          | string    | 120   |          |                       |           |                    |
 | RegulatoryBookType | regulatory_book_type | Regulatory Book Type | string    | 130   | true     | regulatory_book_type |           |                    |
 | IsSweepable        | is_sweepable          | Sweepable            | bool      | 90    | true     | is_sweepable          |           |                    |
+| RatesCentreCode    | rates_centre_code    | Rates Centre         | string    | 110   |          |                       |           |                    |
 | Version            | version              | Version              | int       | 80    |          |                       |           |                    |
 | ModifiedBy         | modified_by          | Modified By          | string    | 120   |          |                       |           |                    |
 | RecordedAt         | recorded_at          | Recorded At          | timestamp | 150   |          |                       |           |                    |
@@ -366,9 +394,10 @@ Ledger currency gets its own flag icon, same as any other
 single-currency cell (e.g. Currency's own code column) — no
 compositing needed since it's a single column.
 
-| column    | accessor           | field1     | field2 |
-|-----------+--------------------+------------+--------|
-| LedgerCcy | currency_flag_icon | ledger_ccy |        |
+| column         | accessor                 | field1             | field2 |
+|----------------+---------------------------+---------------------+--------|
+| LedgerCcy      | currency_flag_icon        | ledger_ccy          |        |
+| RatesCentreCode | business_centre_flag_icon | rates_centre_code  |        |
 
 ** Custom repository methods
 

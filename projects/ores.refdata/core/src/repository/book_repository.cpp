@@ -195,6 +195,7 @@ std::vector<domain::book> book_repository::read_by_parent_portfolio_id_as_of(
         "Reading books as of window by parent_portfolio_id.");
 }
 
+
 void book_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -257,5 +258,6 @@ void book_repository::remove(context ctx, const std::vector<std::string>& ids) {
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing books.");
 }
+
 
 }

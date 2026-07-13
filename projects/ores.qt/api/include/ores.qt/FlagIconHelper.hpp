@@ -86,6 +86,21 @@ ORES_QT_API QIcon currency_flag_icon_from_pair_code(ImageCache& imageCache,
                                                     const std::string& pairCode);
 
 /**
+ * @brief Flag icon for one business centre code (e.g. "GBLO", "USNY"),
+ * delegating to ImageCache::getBusinessCentreFlagIcon() -- the free-function
+ * counterpart to currency_flag_icon(), for model-column accessors (e.g.
+ * book's RatesCentreCode column) that need the same call shape as
+ * currency_flag_icon rather than a direct ImageCache method call.
+ *
+ * @param imageCache Shared image cache (business centre code -> country ->
+ * image_id mapping).
+ * @param businessCentreCode Business centre code; an empty icon is returned
+ * for an empty code.
+ */
+ORES_QT_API QIcon business_centre_flag_icon(ImageCache& imageCache,
+                                            const std::string& businessCentreCode);
+
+/**
  * @brief Standard single-flag height (device-independent pixels) every list
  * view showing a currency/country/business-centre flag should use.
  *

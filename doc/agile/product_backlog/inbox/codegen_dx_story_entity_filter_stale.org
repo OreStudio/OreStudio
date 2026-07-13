@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 0D85575C-011B-41E3-9DB2-8E6C41779B48
+:END:
+#+title: Codegen DX story's entity-filter item is stale; recipe pointed at the wrong command
+#+description: Story A083FE26 lists 'no entity-level filter' as an open gap, but compass codegen entity generate <entity> (compass_codegen_entity.py) already does this; a codegen recipe was telling readers to use the component-wide command and hand-discard the diff instead.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:tooling:docs:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+[[id:A083FE26-521D-4046-9E58-AFB901B28809][Story: Codegen developer experience improvements]] (BACKLOG, not
+started) lists three gaps, one of which is "No entity-level filter...
+There is currently no way to restrict generation to a named subset."
+That's no longer true: =compass codegen entity generate <entity>
+[--address <addr>]= (=projects/ores.compass/src/compass_codegen_entity.py=)
+already does exactly this — targets one entity across every
+applicable profile, with =list=/=show=/=diff= companion subcommands.
+Whoever built this either didn't know about or close out this story
+item, so the story's Goal/description is now stale on point 2 (points
+1 and 3 — spurious component-mode ERRORs, and logical entity
+groups/scopes — may still be genuinely open, needs review). Compounding
+the staleness: =doc/recipes/codegen/how_do_i_regenerate_all_layers_for_a_domain_entity.org=
+told readers "There is no single command that targets one entity
+across all profiles... Run component-wide and scope the diff
+manually," actively steering people to the wrong, noisier workflow.
+Already fixed that recipe directly (points at =codegen entity
+generate= now); this capture is to re-scope/partially-close the story
+itself and check for other docs making the same stale claim.
+
+* Why
+
+Followed the stale recipe's advice while adding book's
+=rates_centre_code= field: ran =codegen regenerate --component
+refdata-cpp --profile all-cpp= (and =--profile qt=), which touched 300+
+files across every entity in the component, requiring extensive manual
+discarding — including once accidentally reverting genuine hand-written
+changes that happened to live outside a "Book"-named file. All of that
+churn would have been avoided by the already-existing =codegen entity
+generate book= command.
+
+* References
+
+- [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — recipe fixed
+  as part of discovering this.
+- [[id:3A49A0B0-9FCF-466C-B097-ECF9A60C0F3D][Adding a flagged combo field to a codegen entity]] — knowledge doc
+  with the fuller narrative.
+
+* See also
+
+- [[id:A083FE26-521D-4046-9E58-AFB901B28809][Story: Codegen developer experience improvements]] — the story to
+  re-scope.

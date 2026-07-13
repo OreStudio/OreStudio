@@ -127,6 +127,18 @@ ORES_QT_API std::unordered_map<std::string, std::string>
 fetch_business_centre_image_map(ClientManager* cm);
 
 /**
+ * @brief Fetches business centre codes (e.g. "GBLO", "USNY") from the
+ * server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by detail dialogs that need a plain business centre combo box (e.g.
+ * book's rates_centre_code field) -- the business-centre counterpart to
+ * fetch_currency_codes.
+ * Returns empty vector on failure.
+ */
+ORES_QT_API std::vector<std::string> fetch_business_centre_codes(ClientManager* cm);
+
+/**
  * @brief A name/id pair for a portfolio, used to populate parent combos.
  */
 struct portfolio_entry {

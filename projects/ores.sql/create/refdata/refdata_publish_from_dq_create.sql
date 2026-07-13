@@ -2836,19 +2836,33 @@ begin
     insert into ores_refdata_books_tbl (
         tenant_id, id, version, party_id, name,
         parent_portfolio_id, ledger_ccy, gl_account_ref, cost_center,
-        book_status, regulatory_book_type, is_sweepable, owner_unit_id,
+        book_status, regulatory_book_type, is_sweepable, rates_centre_code, owner_unit_id,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
         p_target_tenant_id,
         gen_random_uuid(), 0, v_root_party_id, a.name,
         pmap.published_id, a.ledger_ccy, a.gl_account_ref, a.cost_center,
-        a.book_status, a.regulatory_book_type, a.is_sweepable, pmap.published_owner_unit_id,
+        a.book_status, a.regulatory_book_type, a.is_sweepable,
+        -- The artefact template can't know which party it will be
+        -- published to, so a region-agnostic book (e.g. a group-level
+        -- regulatory capital book) leaves rates_centre_code null in the
+        -- artefact, meaning "inherit the publishing party's own
+        -- location" rather than a hardcoded region. Desk-level books
+        -- keep their real, party-independent region code in the
+        -- artefact (a GBP rates desk trades out of London regardless of
+        -- which legal entity owns the book).
+        coalesce(a.rates_centre_code, v_root_party.business_center_code),
+        pmap.published_owner_unit_id,
         coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
         'Published from organisation dataset'
     from ores_dq_books_artefact_tbl a
     join portfolio_ref_map pmap on pmap.artefact_id = a.parent_portfolio_id
-    where a.dataset_id = p_dataset_id;
+    cross join ores_refdata_parties_tbl v_root_party
+    where a.dataset_id = p_dataset_id
+      and v_root_party.id = v_root_party_id
+      and v_root_party.tenant_id = p_target_tenant_id
+      and v_root_party.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_inserted = row_count;
 

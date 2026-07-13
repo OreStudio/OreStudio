@@ -87,6 +87,12 @@ QIcon currency_flag_icon_from_pair_code(ImageCache& imageCache, const std::strin
     return currency_flag_icon(imageCache, pairCode.substr(0, sep), pairCode.substr(sep + 1));
 }
 
+QIcon business_centre_flag_icon(ImageCache& imageCache, const std::string& businessCentreCode) {
+    if (businessCentreCode.empty())
+        return {};
+    return imageCache.getBusinessCentreFlagIcon(businessCentreCode);
+}
+
 void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source, QSize iconSize) {
     if (!combo || !cache)
         return;

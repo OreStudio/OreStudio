@@ -29,9 +29,9 @@ enrichment).
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | 6/9 tasks done. book_purpose_type, ledger_feed_type, and is_sweepable all shipped and QA'd. |
+| Now           | 10/13 tasks done. book_purpose_type, ledger_feed_type, and is_sweepable shipped and QA'd; hierarchy docs, legal-entity/branch investigation, allowed-lists analysis, and Wash paired-risk-book sizing closed as a doc-only batch (PR #1546). |
 | Waiting on    | Nothing.                               |
-| Next          | Pick up the next BACKLOG task (one of the investigation/rename/allowed-lists tasks, or the Wash paired-risk-book link). |
+| Next          | Pick up the next BACKLOG task: rates centre, the ledger_ccy rename, or the Book window toolbar buttons. |
 | Last touched  | 2026-07-13                               |
 
 * Acceptance

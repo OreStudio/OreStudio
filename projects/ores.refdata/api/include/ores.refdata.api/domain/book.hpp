@@ -134,6 +134,13 @@ struct book final {
     std::string regulatory_book_type = "Trading";
 
     /**
+     * @brief Whether this book is eligible for spot-sweep transfers to the designated Sweep target
+     * book -- independent of ledger_feed_type and book_purpose_type; see
+     * [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]].
+     */
+    bool is_sweepable = false;
+
+    /**
      * @brief Username of the person who last modified this book.
      */
     std::string modified_by;

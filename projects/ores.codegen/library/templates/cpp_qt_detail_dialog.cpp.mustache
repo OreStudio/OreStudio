@@ -335,6 +335,10 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
     connect(ui_->{{widget}}, &QComboBox::currentIndexChanged, this,
             &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
 {{/is_flagged_combo}}
+{{#is_check_box}}
+    connect(ui_->{{widget}}, &QCheckBox::toggled, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
+{{/is_check_box}}
 {{/is_key}}
 {{/domain_entity.qt.detail_fields}}
 {{! see * Extension points above }}

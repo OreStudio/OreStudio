@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: D6A0DF06-B718-44DB-85FF-3C85A46E7CFF
+:END:
+#+title: Test Scenario: Verify is_sweepable flag on Book
+#+description: Manual Qt client steps confirming the new is_sweepable boolean flag on Book renders as a Yes/No badge in the list, edits correctly in the detail dialog, and shows correctly in history, with no regressions.
+#+type: test_scenario
+#+level: s1
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:FA28F852-012F-47A7-94E7-FEDAEF2F2DF9][Add is_sweepable flag to book]] in [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:FA28F852-012F-47A7-94E7-FEDAEF2F2DF9][Add is_sweepable flag to book]] |
+| Parent story  | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]   |
+| Target dialog | BookMdiWindow / BookDetailDialog / BookHistoryDialog (Reference Data > Books) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A fresh, Barclays-provisioned database:
+  #+begin_src sh :results verbatim
+  compass db recreate -y -k
+  compass services start
+  compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+  #+end_src
+- A running Qt client, not yet logged in.
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Log in and select Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
+=BARCLAYS PLC=. Confirm all menus enable with no errors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Books list shows the Sweepable column as a badge
+
+Open Reference Data > Books. Confirm a "Sweepable" column appears
+after Regulatory Book Type, rendering "false" as a badge (grey/
+secondary) for every seeded book, no error banner.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Detail dialog shows and edits the Sweepable checkbox
+
+Double-click any book. Confirm a "Sweepable:" checkbox appears
+(unchecked, matching the seeded false value). Check it and Save.
+Confirm the change-reason prompt appears, the save succeeds, the grid
+refreshes, the badge now shows "true" (green/success), and Version
+increments by 1.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Root cause fixed: check_box widgets were never wired into setupConnections() in the detail-dialog codegen template, so toggling one never marked the dialog dirty (affected every entity with a checkbox field, not just Book). Fixed in the shared template and confirmed via SQL: USD Rates Options went v1(false)->v2(true, checkbox save)->v3(false, toggled back), zero log errors. |
+
+** History dialog shows the Sweepable change
+
+Open History on that book. Confirm both versions appear, with the
+diff highlighting the Sweepable change from false to true, and that
+closing the history dialog only closes the sub-window, not the whole
+app.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** No error toast or log error during the whole flow
+
+Check the client's log tail
+(=build/output/<preset>/publish/log/ores.qt.<colour>.log=) for any
+ERROR-level line.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | check logs |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-13T12:07:00Z |
+| Branch        | feature/add-is-sweepable-flag |
+| Commit        | a669d2222 |
+| Worktree      | bright_faraday |
+
+* Notes

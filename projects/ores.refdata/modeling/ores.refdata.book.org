@@ -193,6 +193,22 @@ to =Trading= for the same reason =book_status= defaults to =Active=.
 std::string("Trading")
 #+end_src
 
+** is_sweepable
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+Whether this book is eligible for spot-sweep transfers to the
+designated Sweep target book -- independent of ledger_feed_type and
+book_purpose_type; see [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]].
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
 * SQL
 
 ** Flags
@@ -282,6 +298,7 @@ std::string("Trading")
 | ledger_ccy           | Currency            |
 | book_status          | Status              |
 | regulatory_book_type | Regulatory Book Type |
+| is_sweepable          | Sweepable            |
 | modified_by          | Modified By         |
 | version              | Version             |
 
@@ -327,6 +344,7 @@ std::string("Trading")
 | cost_center          | Cost Center           | costCenterEdit          | line_edit     |        |             | Enter cost center             |              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
 | book_status          | Status                | bookStatusCombo         | dynamic_combo |        |             |                               |              | refdata::domain::book_status           | ores.qt/LookupFetcher.hpp  | fetch_book_statuses           | bookStatusWatcher         | code              | description          | display_order     | book statuses          | BookStatusCombo           | book_status           |
 | regulatory_book_type | Regulatory Book Type  | regulatoryBookTypeCombo | dynamic_combo |        |             |                               |              | refdata::domain::regulatory_book_type  | ores.qt/LookupFetcher.hpp  | fetch_regulatory_book_types   | regulatoryBookTypeWatcher | code              | description          | display_order     | regulatory book types  | RegulatoryBookTypeCombo   | regulatory_book_type |
+| is_sweepable         | Sweepable             | isSweepableCheckBox     | check_box     |        |             |                               |              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
 
 *** Columns (Qt model)
 
@@ -337,6 +355,7 @@ std::string("Trading")
 | BookStatus         | book_status          | Status               | string    | 100   | true     | book_status           |           |                    |
 | CostCenter         | cost_center          | Cost Center          | string    | 120   |          |                       |           |                    |
 | RegulatoryBookType | regulatory_book_type | Regulatory Book Type | string    | 130   | true     | regulatory_book_type |           |                    |
+| IsSweepable        | is_sweepable          | Sweepable            | bool      | 90    | true     | is_sweepable          |           |                    |
 | Version            | version              | Version              | int       | 80    |          |                       |           |                    |
 | ModifiedBy         | modified_by          | Modified By          | string    | 120   |          |                       |           |                    |
 | RecordedAt         | recorded_at          | Recorded At          | timestamp | 150   |          |                       |           |                    |

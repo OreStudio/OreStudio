@@ -140,6 +140,7 @@ void BookMdiWindow::setupTable() {
             cs::badge_centered,
             cs::text_left,
             cs::badge_centered,
+            cs::badge_centered,
             cs::mono_center,
             cs::text_left,
             cs::text_left,
@@ -164,6 +165,18 @@ void BookMdiWindow::setupTable() {
             if (!cache)
                 return fallback;
             auto* def = cache->resolve("regulatory_book_type", value.toStdString());
+            if (!def)
+                return fallback;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    delegate->set_badge_color_resolver(
+        5, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
+            if (!cache)
+                return fallback;
+            auto* def = cache->resolve("is_sweepable", value.toStdString());
             if (!def)
                 return fallback;
             return {QColor(QString::fromStdString(def->background_colour)),

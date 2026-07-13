@@ -114,6 +114,7 @@ HistoryDialogBase::DiffResult BookHistoryDialog::calculateDiffAt(int ci, int pi)
     checkString(diffs, tr("Status"), curr.book_status, prev.book_status);
     checkString(
         diffs, tr("Regulatory Book Type"), curr.regulatory_book_type, prev.regulatory_book_type);
+    checkBool(diffs, tr("Sweepable"), curr.is_sweepable, prev.is_sweepable);
     return diffs;
 }
 
@@ -130,6 +131,7 @@ void BookHistoryDialog::displayFullDetails(int index) {
     ui_->costCenterValue->setText(QString::fromStdString(version.cost_center));
     ui_->bookStatusValue->setText(QString::fromStdString(version.book_status));
     ui_->regulatoryBookTypeValue->setText(QString::fromStdString(version.regulatory_book_type));
+    ui_->isSweepableCheckBox->setText(version.is_sweepable ? tr("true") : tr("false"));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

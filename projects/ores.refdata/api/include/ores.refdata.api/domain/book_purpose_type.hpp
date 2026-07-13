@@ -56,7 +56,7 @@ struct book_purpose_type final {
     /**
      * @brief Unique book purpose type code.
      *
-     * Examples: 'Trading', 'Reserve', 'Funding', 'Wash', 'Write-off', 'Test', 'Sales',
+     * Examples: 'Trading', 'Reserve', 'Funding', 'Wash', 'WriteOff', 'Test', 'Sales',
      * 'SweepTarget', 'RemittanceTarget'.
      */
     std::string code;

@@ -45,7 +45,7 @@ and ledger feed.
 
 Unique book purpose type code.
 
-Examples: 'Trading', 'Reserve', 'Funding', 'Wash', 'Write-off', 'Test',
+Examples: 'Trading', 'Reserve', 'Funding', 'Wash', 'WriteOff', 'Test',
 'Sales', 'SweepTarget', 'RemittanceTarget'.
 
 #+begin_src cpp :name generator

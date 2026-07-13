@@ -13,11 +13,37 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+Adding a new codegen'd lookup entity requires two hand-edits the
+codegen workflow doesn't cover or document. First, the generated NATS
+CRUD handlers must be registered in
+=projects/ores.refdata/core/src/messaging/registrar.cpp= -- only the
+*eventing* registrar (=event_registrar.cpp=) gets proactively wired by
+convention; the request/response handler registrar is a separate,
+hand-maintained dispatch list codegen never touches. Second, a copy
+block must be added to
+=projects/ores.sql/create/iam/iam_tenant_provisioner_create.sql= so
+the new entity's system-tenant seed rows get copied into newly (or
+already-) provisioned tenants, matching the existing
+book_statuses/regulatory_book_types/purpose_types blocks. Either fix
+the codegen profile to generate these two wiring points automatically,
+or document them explicitly as required manual steps in the
+entity-creation runbook (=codegen-add-entity= skill /
+=entity_lifecycle.md=).
 
 * Why
 
-(Motivation, problem being solved, related context.)
+Both gaps are silent: no build or test failure catches them, only a
+runtime symptom found via manual QA -- a "Failed to fetch ... from
+server" error for the missing handler registration, or an empty list
+for a real tenant for the missing tenant-provisioning copy. They
+surfaced while adding =book_purpose_type= (see [[id:5C89033D-224E-4105-A8CF-B0336C2A9014][Add book_purpose_type
+lookup entity to book]]), but neither gap is specific to that entity --
+=book_status=/=regulatory_book_type=/=purpose_type= only avoided it
+because whoever added them (in earlier sprints) happened to remember
+both steps by hand. Left undocumented, every future lookup entity is
+one missed step away from the same silent failure, and the failure
+mode gives almost no signal pointing back at "you forgot to wire the
+registrar" -- it just looks like a server-side bug.
 
 * References
 

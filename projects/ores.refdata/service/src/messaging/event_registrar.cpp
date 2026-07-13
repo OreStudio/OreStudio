@@ -30,12 +30,12 @@
 // separately. Those ten stay hand-wired in application.cpp until that drift
 // is resolved; see the migrate-remaining-entities capture.
 #include "ores.refdata.service/messaging/book_event_registrar.hpp"
+#include "ores.refdata.service/messaging/book_purpose_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_status_event_registrar.hpp"
 #include "ores.refdata.service/messaging/business_day_convention_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/country_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_pair_convention_event_registrar.hpp"
-#include "ores.refdata.service/messaging/book_purpose_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_pair_event_registrar.hpp"
 #include "ores.refdata.service/messaging/day_count_fraction_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_type_event_registrar.hpp"

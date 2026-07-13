@@ -42,11 +42,24 @@ projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
 =tenant_admin@barclays_plc= / =Secure-Password-123=, and pick
 =BARCLAYS PLC= as the active party if not already selected.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open "CRM Topology &Configs" from the Market Data menu
 
 Confirm the list window opens and shows two rows for BARCLAYS PLC:
 "majors" and "exotics", both with =pivot_currency_code = USD= and
 =enabled= showing a green "Yes"-style badge.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | no market data menu entry. also, this data is ref data |
 
 ** Open "CRM &Driver Pairs" from the Market Data menu
 
@@ -55,12 +68,24 @@ Confirm 11 rows total for BARCLAYS PLC: 8 majors driver pairs
 NZD/USD) + 3 exotics driver pairs (USD/ZAR, USD/MXN, USD/INR), each
 linked to its =config_id= and showing the =enabled= badge.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Open "CRM &Enabled Derived Pairs" from the Market Data menu
 
 Confirm 3 rows for BARCLAYS PLC's "majors" config (EUR/GBP, EUR/JPY,
 GBP/JPY, or whichever curated crosses the publish task seeded) and
 none for "exotics" (a pure USD-pivot star has no derived pairs by
 design).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Open the detail dialog for one row in each of the three windows
 
@@ -69,20 +94,32 @@ opens pre-filled with that row's data (id, party_id, config_id where
 applicable, currency codes, enabled checkbox) and closes cleanly
 without editing.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Open the history dialog for one row in each of the three windows
 
 Right-click (or the history toolbar action) on a row in each list
 window; confirm the history dialog opens and shows at least one
 version (the original insert from provisioning).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-13T19:29:39Z |
+| Branch        | feature/crm-topology-full-stack-codegen |
+| Commit        | 0d4d915dd |
+| Worktree      | clever_dijkstra |
 
 * Notes

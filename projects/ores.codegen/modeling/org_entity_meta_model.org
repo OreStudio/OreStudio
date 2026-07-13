@@ -524,6 +524,79 @@ Templates reference: =<<paste:C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A>>=.
 Entity attachment: any babel block with
 =:implements C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A= contributes its body.
 
+** NATS protocol: custom message includes
+:PROPERTIES:
+:ID: 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
+:END:
+
+Additional =#include= directives injected into the generated
+=<entity>_protocol.hpp=, after the standard generated includes.
+
+Use this for domain headers needed by custom message types declared via
+=2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F= (e.g. a child entity's domain header
+for a composite as-of response).
+
+Templates reference: =<<paste:8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F>>=.
+
+** NATS protocol: custom message types
+:PROPERTIES:
+:ID: 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
+:END:
+
+Additional request/response struct definitions injected into the generated
+=<entity>_protocol.hpp=, after the standard generated structs (and the
+=has_parent_id= hierarchy structs, if present) but inside the
+=messaging= namespace.
+
+Use this for entity-specific NATS message types beyond the standard CRUD
+surface (e.g. a bulk cache-warming read, a composite as-of read spanning a
+parent and its child entities) — paired with the "NATS handler: custom
+public methods" and =nats-sub-registrar='s custom-subscription paste points
+to wire the full request/handler/subscription trio.
+
+Templates reference: =<<paste:2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F>>=.
+
+Entity attachment example (=party='s composite-as-of read):
+
+#+begin_src org
+,** Custom NATS protocol messages
+
+,#+begin_src cpp :name composite_as_of_messages :implements 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
+struct get_party_composite_as_of_request {
+    using response_type = struct get_party_composite_as_of_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.parties.composite_as_of";
+    std::string id;
+    int version = 0;
+};
+
+struct get_party_composite_as_of_response {
+    bool success = false;
+    std::string message;
+    ores::refdata::domain::party party;
+    std::vector<ores::refdata::domain::party_identifier> identifiers;
+    std::vector<ores::refdata::domain::party_contact_information> contacts;
+};
+,#+end_src
+#+end_src
+
+** NATS handler: save() early-exit override
+:PROPERTIES:
+:ID: 6D3A9F1E-7C2B-4E8A-9D5F-1B6C4E2A8F3D
+:END:
+
+Placeholder inserted at the very top of the generated =save()= method body,
+before the standard JWT-authenticated request-context flow.
+
+Use this for an entity whose =save= subject must special-case some inbound
+messages before falling through to the standard flow (e.g. workflow-step
+orchestration commands that bypass JWT auth and use a header-supplied
+tenant id instead). The paste block should contain its own early
+=return= for the cases it handles; anything falling through continues
+into the generated standard flow below unaffected. =party= uses this
+for its workflow-step =save= command.
+
+Templates reference: =<<paste:6D3A9F1E-7C2B-4E8A-9D5F-1B6C4E2A8F3D>>=.
+
 ** NATS handler: extra includes
 :PROPERTIES:
 :ID: F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F

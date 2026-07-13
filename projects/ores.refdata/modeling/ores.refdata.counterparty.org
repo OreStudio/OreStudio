@@ -235,9 +235,9 @@ std::string("Active")
 
 ** Qt
 :PROPERTIES:
-:domain_include:          ores.refdata/domain/counterparty.hpp
+:domain_include:          ores.refdata.api/domain/counterparty.hpp
 :domain_class:            refdata::domain::counterparty
-:protocol_include:        ores.refdata/messaging/counterparty_protocol.hpp
+:protocol_include:        ores.refdata.api/messaging/counterparty_protocol.hpp
 :collection_name:         counterparties
 :item_var:                counterparty
 :key_field:               short_code
@@ -284,6 +284,127 @@ std::string("Active")
 | RecordedAt         | recorded_at          | Recorded At     | timestamp | 150   |
 
 ** Custom repository methods
+
+** Custom NATS protocol messages
+
+=counterparty= exposes a hand-crafted =composite_as_of= message pair: reads
+a counterparty as it stood at a specific version, together with its
+identifiers and contact information as they stood during that same
+version's window — see the "Temporal composite entity versioning"
+architecture doc.
+
+#+begin_src cpp :name protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
+#include "ores.refdata.api/domain/counterparty_contact_information.hpp"
+#include "ores.refdata.api/domain/counterparty_identifier.hpp"
+#+end_src
+
+#+begin_src cpp :name composite_as_of_messages :implements 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
+/**
+ * @brief Reads a counterparty as it stood at a specific version, together
+ * with its identifiers and contact information as they stood during that
+ * same version's [valid_from, valid_to) window. See the "Temporal composite
+ * entity versioning" architecture doc.
+ */
+struct get_counterparty_composite_as_of_request {
+    using response_type = struct get_counterparty_composite_as_of_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparties.composite_as_of";
+    std::string id;
+    int version = 0;
+};
+
+struct get_counterparty_composite_as_of_response {
+    bool success = false;
+    std::string message;
+    ores::refdata::domain::counterparty counterparty;
+    std::vector<ores::refdata::domain::counterparty_identifier> identifiers;
+    std::vector<ores::refdata::domain::counterparty_contact_information> contacts;
+};
+#+end_src
+
+** Custom NATS handler methods
+
+#+begin_src cpp :name handler_includes :implements F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
+#include "ores.refdata.core/service/counterparty_contact_information_service.hpp"
+#include "ores.refdata.core/service/counterparty_identifier_service.hpp"
+#include <boost/uuid/string_generator.hpp>
+#include <chrono>
+#+end_src
+
+#+begin_src cpp :name custom_handler_methods :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+    void composite_as_of(ores::nats::message msg) {
+        BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<get_counterparty_composite_as_of_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        try {
+            service::counterparty_service cpty_svc(req_ctx);
+            const auto version = static_cast<std::uint32_t>(req->version);
+            auto current = cpty_svc.get_counterparty_at_version(req->id, version);
+            if (!current) {
+                reply(nats_,
+                      msg,
+                      get_counterparty_composite_as_of_response{
+                          .success = false,
+                          .message = "No such counterparty version: " + req->id + " v" +
+                                     std::to_string(version)});
+                return;
+            }
+
+            // See party_handler::composite_as_of — windows are contiguous
+            // by construction; the domain object doesn't surface valid_to.
+            auto next = cpty_svc.get_counterparty_at_version(req->id, version + 1);
+            const auto window_end =
+                next ? next->recorded_at :
+                       std::chrono::system_clock::now() + std::chrono::hours(24 * 365 * 100);
+
+            boost::uuids::string_generator gen;
+            service::counterparty_identifier_service identifier_svc(req_ctx);
+            auto identifiers =
+                identifier_svc.list_counterparty_identifiers_by_counterparty_id_as_of(
+                    req->id, current->recorded_at, window_end);
+
+            service::counterparty_contact_information_service contact_svc(req_ctx);
+            auto contacts =
+                contact_svc.list_counterparty_contact_informations_by_counterparty_as_of(
+                    gen(req->id), current->recorded_at, window_end);
+
+            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_counterparty_composite_as_of_response{.success = true,
+                                                            .counterparty = std::move(*current),
+                                                            .identifiers = std::move(identifiers),
+                                                            .contacts = std::move(contacts)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  get_counterparty_composite_as_of_response{.success = false, .message = e.what()});
+        }
+    }
+#+end_src
+
+** Custom NATS subscriptions
+
+Hand-crafted subject wired into the generated =counterparty_registrar.cpp=
+via the =nats-sub-registrar= facet's custom-subscription paste point.
+
+#+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
+    subs.push_back(
+        nats.queue_subscribe(get_counterparty_composite_as_of_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) { h->composite_as_of(std::move(msg)); }));
+#+end_src
 
 * See also
 

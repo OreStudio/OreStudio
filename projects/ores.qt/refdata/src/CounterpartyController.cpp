@@ -18,16 +18,14 @@
  *
  */
 #include "ores.qt/CounterpartyController.hpp"
-#include "ores.qt/BadgeCache.hpp"
-#include "ores.qt/CounterpartyDetailOperations.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/CounterpartyDetailDialog.hpp"
 #include "ores.qt/CounterpartyHistoryDialog.hpp"
 #include "ores.qt/CounterpartyMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/EntityDetailDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/counterparty_changed_event.hpp"
-#include "ores.refdata.api/eventing/counterparty_contact_information_changed_event.hpp"
-#include "ores.refdata.api/eventing/counterparty_identifier_changed_event.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -39,64 +37,19 @@ using namespace ores::logging;
 namespace {
 constexpr std::string_view counterparty_event_name =
     eventing::domain::event_traits<refdata::eventing::counterparty_changed_event>::name;
-constexpr std::string_view counterparty_identifier_event_name =
-    eventing::domain::event_traits<refdata::eventing::counterparty_identifier_changed_event>::name;
-constexpr std::string_view counterparty_contact_event_name = eventing::domain::event_traits<
-    refdata::eventing::counterparty_contact_information_changed_event>::name;
-
-auto make_counterparty_ops() {
-    return std::make_shared<counterparty_detail_operations>();
-}
 }
 
 CounterpartyController::CounterpartyController(QMainWindow* mainWindow,
                                                QMdiArea* mdiArea,
                                                ClientManager* clientManager,
-                                               ImageCache* imageCache,
-                                               ChangeReasonCache* changeReasonCache,
-                                               BadgeCache* badgeCache,
                                                const QString& username,
                                                QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
-    , imageCache_(imageCache)
-    , changeReasonCache_(changeReasonCache)
-    , badgeCache_(badgeCache)
+    : EntityController(
+          mainWindow, mdiArea, clientManager, username, counterparty_event_name, parent)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "CounterpartyController created";
-
-    if (clientManager_) {
-        connect(clientManager_,
-                &ClientManager::notificationReceived,
-                this,
-                &CounterpartyController::onNotificationReceived);
-
-        auto subscribeAll = [self = QPointer<CounterpartyController>(this)]() {
-            if (!self)
-                return;
-            BOOST_LOG_SEV(lg(), info) << "Subscribing to counterparty change events";
-            self->clientManager_->subscribeToEvent(std::string{counterparty_event_name});
-            self->clientManager_->subscribeToEvent(std::string{counterparty_identifier_event_name});
-            self->clientManager_->subscribeToEvent(std::string{counterparty_contact_event_name});
-        };
-
-        connect(clientManager_, &ClientManager::loggedIn, this, subscribeAll);
-        connect(clientManager_, &ClientManager::reconnected, this, subscribeAll);
-
-        if (clientManager_->isConnected()) {
-            subscribeAll();
-        }
-    }
-}
-
-CounterpartyController::~CounterpartyController() {
-    BOOST_LOG_SEV(lg(), debug) << "CounterpartyController destroyed";
-    if (clientManager_) {
-        clientManager_->unsubscribeFromEvent(std::string{counterparty_event_name});
-        clientManager_->unsubscribeFromEvent(std::string{counterparty_identifier_event_name});
-        clientManager_->unsubscribeFromEvent(std::string{counterparty_contact_event_name});
-    }
 }
 
 void CounterpartyController::showListWindow() {
@@ -109,7 +62,7 @@ void CounterpartyController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new CounterpartyMdiWindow(clientManager_, imageCache_, username_, badgeCache_);
+    listWindow_ = new CounterpartyMdiWindow(clientManager_, username_);
 
     // Connect signals
     connect(listWindow_,
@@ -148,6 +101,8 @@ void CounterpartyController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -196,6 +151,7 @@ void CounterpartyController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void CounterpartyController::onShowHistory(const refdata::domain::counterparty& counterparty) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << counterparty.short_code;
     showHistoryWindow(counterparty);
@@ -204,25 +160,21 @@ void CounterpartyController::onShowHistory(const refdata::domain::counterparty& 
 void CounterpartyController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new counterparty";
 
-    auto* detailDialog = new EntityDetailDialog(make_counterparty_ops(), mainWindow_);
+    auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
-    detailDialog->setImageCache(imageCache_);
-    if (changeReasonCache_) {
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
     connect(detailDialog,
-            &EntityDetailDialog::statusMessage,
+            &CounterpartyDetailDialog::statusMessage,
             this,
             &CounterpartyController::statusMessage);
     connect(detailDialog,
-            &EntityDetailDialog::errorMessage,
+            &CounterpartyDetailDialog::errorMessage,
             this,
             &CounterpartyController::errorMessage);
     connect(detailDialog,
-            &EntityDetailDialog::entitySaved,
+            &CounterpartyDetailDialog::counterpartySaved,
             this,
             [self = QPointer<CounterpartyController>(this)](const QString& code) {
                 if (!self)
@@ -256,26 +208,22 @@ void CounterpartyController::showDetailWindow(const refdata::domain::counterpart
 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << counterparty.short_code;
 
-    auto* detailDialog = new EntityDetailDialog(make_counterparty_ops(), mainWindow_);
+    auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
-    detailDialog->setImageCache(imageCache_);
-    if (changeReasonCache_) {
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
-    detailDialog->setEntityData(to_entity_data(counterparty));
+    detailDialog->setCounterparty(counterparty);
 
     connect(detailDialog,
-            &EntityDetailDialog::statusMessage,
+            &CounterpartyDetailDialog::statusMessage,
             this,
             &CounterpartyController::statusMessage);
     connect(detailDialog,
-            &EntityDetailDialog::errorMessage,
+            &CounterpartyDetailDialog::errorMessage,
             this,
             &CounterpartyController::errorMessage);
     connect(detailDialog,
-            &EntityDetailDialog::entitySaved,
+            &CounterpartyDetailDialog::counterpartySaved,
             this,
             [self = QPointer<CounterpartyController>(this)](const QString& code) {
                 if (!self)
@@ -284,7 +232,7 @@ void CounterpartyController::showDetailWindow(const refdata::domain::counterpart
                 self->handleEntitySaved();
             });
     connect(detailDialog,
-            &EntityDetailDialog::entityDeleted,
+            &CounterpartyDetailDialog::counterpartyDeleted,
             this,
             [self = QPointer<CounterpartyController>(this), key](const QString& code) {
                 if (!self)
@@ -303,6 +251,7 @@ void CounterpartyController::showDetailWindow(const refdata::domain::counterpart
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<CounterpartyController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -368,10 +317,12 @@ void CounterpartyController::showHistoryWindow(const refdata::domain::counterpar
     historyWindow->setWindowTitle(QString("Counterparty History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<CounterpartyController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -398,18 +349,14 @@ void CounterpartyController::onOpenVersion(const refdata::domain::counterparty& 
         return;
     }
 
-    auto* detailDialog = new EntityDetailDialog(make_counterparty_ops(), mainWindow_);
+    auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
-    detailDialog->setImageCache(imageCache_);
-    if (changeReasonCache_) {
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    }
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setEntityData(to_entity_data(counterparty));
+    detailDialog->setCounterparty(counterparty);
     detailDialog->setReadOnly(true);
 
     connect(detailDialog,
-            &EntityDetailDialog::statusMessage,
+            &CounterpartyDetailDialog::statusMessage,
             this,
             [self = QPointer<CounterpartyController>(this)](const QString& message) {
                 if (!self)
@@ -417,7 +364,7 @@ void CounterpartyController::onOpenVersion(const refdata::domain::counterparty& 
                 emit self->statusMessage(message);
             });
     connect(detailDialog,
-            &EntityDetailDialog::errorMessage,
+            &CounterpartyDetailDialog::errorMessage,
             this,
             [self = QPointer<CounterpartyController>(this)](const QString& message) {
                 if (!self)
@@ -451,26 +398,25 @@ void CounterpartyController::onRevertVersion(const refdata::domain::counterparty
     BOOST_LOG_SEV(lg(), info) << "Reverting counterparty to version: " << counterparty.version;
 
     // Open detail dialog with the old version data for editing
-    auto* detailDialog = new EntityDetailDialog(make_counterparty_ops(), mainWindow_);
+    auto* detailDialog = new CounterpartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
-    detailDialog->setImageCache(imageCache_);
-    if (changeReasonCache_) {
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    }
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setEntityData(to_entity_data(counterparty));
+    auto reverted_counterparty = counterparty;
+    reverted_counterparty.version = 0;
+    detailDialog->setCounterparty(reverted_counterparty);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog,
-            &EntityDetailDialog::statusMessage,
+            &CounterpartyDetailDialog::statusMessage,
             this,
             &CounterpartyController::statusMessage);
     connect(detailDialog,
-            &EntityDetailDialog::errorMessage,
+            &CounterpartyDetailDialog::errorMessage,
             this,
             &CounterpartyController::errorMessage);
     connect(detailDialog,
-            &EntityDetailDialog::entitySaved,
+            &CounterpartyDetailDialog::counterpartySaved,
             this,
             [self = QPointer<CounterpartyController>(this)](const QString& code) {
                 if (!self)
@@ -499,24 +445,25 @@ EntityListMdiWindow* CounterpartyController::listWindow() const {
     return listWindow_;
 }
 
-void CounterpartyController::onNotificationReceived(const QString& eventType,
-                                                    const QDateTime& timestamp,
-                                                    const QStringList& entityIds,
-                                                    const QString& /*tenantId*/) {
+void CounterpartyController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
 
-    const auto eventStd = eventType.toStdString();
-    if (eventStd != counterparty_event_name && eventStd != counterparty_identifier_event_name &&
-        eventStd != counterparty_contact_event_name) {
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Received " << eventStd << " notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString() << " with "
-                              << entityIds.size() << " ids";
-
-    if (listWindow_) {
-        listWindow_->markAsStale();
-        BOOST_LOG_SEV(lg(), debug) << "Marked counterparty list window as stale";
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
     }
 }
 

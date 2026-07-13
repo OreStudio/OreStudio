@@ -23,15 +23,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
-#include <QAbstractTableModel>
 #include <QFutureWatcher>
-#include <cstdint>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 namespace ores::qt {
@@ -39,7 +35,7 @@ namespace ores::qt {
 /**
  * @brief Model for displaying counterparties fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches counterparty
+ * This model extends AbstractClientModel and fetches counterparty
  * data asynchronously using the ores.comms client.
  */
 class ClientCounterpartyModel final : public AbstractClientModel {
@@ -59,21 +55,18 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
-        BusinessCenterCode,
         ShortCode,
         FullName,
-        TransliteratedName,
         PartyType,
         Status,
+        BusinessCenterCode,
         Version,
         ModifiedBy,
         RecordedAt,
         ColumnCount
     };
 
-    explicit ClientCounterpartyModel(ClientManager* clientManager,
-                                     ImageCache* imageCache,
-                                     QObject* parent = nullptr);
+    explicit ClientCounterpartyModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientCounterpartyModel() override = default;
 
     // QAbstractTableModel interface
@@ -85,21 +78,8 @@ public:
 
     /**
      * @brief Refresh counterparty data from server asynchronously.
-     *
-     * When replace is true, existing data is cleared before loading.
-     * When false, new data is appended (for pagination).
-     *
-     * @param replace If true, replace existing data; if false, append.
      */
-    void refresh(bool replace = true);
-
-    /**
-     * @brief Load a specific page of counterparty data.
-     *
-     * @param offset Number of records to skip
-     * @param limit Number of records to fetch
-     */
-    void load_page(std::uint32_t offset, std::uint32_t limit);
+    void refresh();
 
     /**
      * @brief Get counterparty at the specified row.
@@ -109,25 +89,33 @@ public:
      */
     const refdata::domain::counterparty* getCounterparty(int row) const;
 
+
+    /**
+     * @brief Load a specific page of data.
+     */
+    void load_page(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Get the page size used for pagination.
+     */
     std::uint32_t page_size() const {
         return page_size_;
     }
+
+    /**
+     * @brief Set the page size for pagination.
+     */
     void set_page_size(std::uint32_t size);
+
+    /**
+     * @brief Get the total number of records available on the server.
+     */
     std::uint32_t total_available_count() const {
         return total_available_count_;
     }
 
-signals:
-    /**
-     * @brief Emitted when data has been successfully loaded.
-     */
-
-    /**
-     * @brief Emitted when an error occurs during data loading.
-     */
-
 private slots:
-    void onCounterpartysLoaded();
+    void onCounterpartiesLoaded();
     void onPulseStateChanged(bool isOn);
     void onPulsingComplete();
 
@@ -146,7 +134,6 @@ private:
     void fetch_business_centres();
 
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
     std::vector<refdata::domain::counterparty> counterparties_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};

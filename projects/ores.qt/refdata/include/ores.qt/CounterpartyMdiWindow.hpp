@@ -24,7 +24,6 @@
 #include "ores.qt/ClientCounterpartyModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include <QSortFilterProxyModel>
@@ -33,7 +32,6 @@
 
 namespace ores::qt {
 
-class BadgeCache;
 
 /**
  * @brief MDI window for displaying and managing counterparties.
@@ -55,14 +53,9 @@ private:
 
 public:
     explicit CounterpartyMdiWindow(ClientManager* clientManager,
-                                   ImageCache* imageCache,
                                    const QString& username,
-                                   BadgeCache* badgeCache,
                                    QWidget* parent = nullptr);
     ~CounterpartyMdiWindow() override = default;
-
-public slots:
-    void doReload() override;
 
 signals:
     void statusChanged(const QString& message);
@@ -71,12 +64,21 @@ signals:
     void addNewRequested();
     void counterpartyDeleted(const QString& code);
     void showCounterpartyHistory(const refdata::domain::counterparty& counterparty);
+    // Extra signal declarations seam: a future
+    // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
+    // to declare any entity-specific signals (e.g. a cross-navigation
+    // request to a related entity's list window) — see
+    // paste_blocks_in_codegen.org. Left empty when no entity implements
+    // this kind.
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();
@@ -97,15 +99,13 @@ private:
     void updateActionStates();
 
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
     QString username_;
-    BadgeCache* badgeCache_;
 
     QToolBar* toolbar_;
     QTableView* tableView_;
-    PaginationWidget* pagination_widget_;
     ClientCounterpartyModel* model_;
     QSortFilterProxyModel* proxyModel_;
+    PaginationWidget* paginationWidget_;
 
     // Toolbar actions
     QAction* reloadAction_;

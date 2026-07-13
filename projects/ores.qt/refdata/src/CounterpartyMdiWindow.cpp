@@ -18,12 +18,9 @@
  *
  */
 #include "ores.qt/CounterpartyMdiWindow.hpp"
-#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
@@ -37,20 +34,16 @@ namespace ores::qt {
 using namespace ores::logging;
 
 CounterpartyMdiWindow::CounterpartyMdiWindow(ClientManager* clientManager,
-                                             ImageCache* imageCache,
                                              const QString& username,
-                                             BadgeCache* badgeCache,
                                              QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
-    , imageCache_(imageCache)
     , username_(username)
-    , badgeCache_(badgeCache)
     , toolbar_(nullptr)
     , tableView_(nullptr)
-    , pagination_widget_(nullptr)
     , model_(nullptr)
     , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
     , reloadAction_(nullptr)
     , addAction_(nullptr)
     , editAction_(nullptr)
@@ -59,13 +52,10 @@ CounterpartyMdiWindow::CounterpartyMdiWindow(ClientManager* clientManager,
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
 void CounterpartyMdiWindow::setupUi() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();
@@ -75,8 +65,8 @@ void CounterpartyMdiWindow::setupUi() {
     setupTable();
     layout->addWidget(tableView_);
 
-    pagination_widget_ = new PaginationWidget(this);
-    layout->addWidget(pagination_widget_);
+    paginationWidget_ = new PaginationWidget(this);
+    layout->addWidget(paginationWidget_);
 }
 
 void CounterpartyMdiWindow::setupToolbar() {
@@ -119,7 +109,7 @@ void CounterpartyMdiWindow::setupToolbar() {
 }
 
 void CounterpartyMdiWindow::setupTable() {
-    model_ = new ClientCounterpartyModel(clientManager_, imageCache_, this);
+    model_ = new ClientCounterpartyModel(clientManager_, this);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -129,50 +119,17 @@ void CounterpartyMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    using cs = column_style;
-    auto* delegate = new EntityItemDelegate(
-        {
-            cs::mono_bold_left, // BusinessCenterCode (flag icon inline via DecorationRole)
-            cs::text_left,      // ShortCode
-            cs::text_left,      // FullName
-            cs::text_left,      // TransliteratedName
-            cs::text_left,      // PartyType
-            cs::badge_centered, // Status
-            cs::mono_center,    // Version
-            cs::text_left,      // ModifiedBy
-            cs::mono_left       // RecordedAt
-        },
-        tableView_);
-    delegate->set_badge_color_resolver(
-        5, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair fallback{color_constants::badge_fallback,
-                                                   color_constants::badge_fallback_text};
-            if (!cache)
-                return fallback;
-            auto* def = cache->resolve("party_status", value.toStdString());
-            if (!def)
-                return fallback;
-            return {QColor(QString::fromStdString(def->background_colour)),
-                    QColor(QString::fromStdString(def->text_colour))};
-        });
-    tableView_->setItemDelegate(delegate);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
-    tableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    initializeTableSettings(tableView_,
-                            model_,
-                            "CounterpartyListWindow",
-                            {ClientCounterpartyModel::TransliteratedName},
-                            {900, 400},
-                            4);
+
+    initializeTableSettings(tableView_, model_, "CounterpartyListWindow", {}, {900, 400}, 1);
 }
 
 void CounterpartyMdiWindow::setupConnections() {
     connect(
         model_, &ClientCounterpartyModel::dataLoaded, this, &CounterpartyMdiWindow::onDataLoaded);
     connect(model_, &ClientCounterpartyModel::loadError, this, &CounterpartyMdiWindow::onLoadError);
-    connectModel(model_);
 
     connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
@@ -180,41 +137,32 @@ void CounterpartyMdiWindow::setupConnections() {
             &CounterpartyMdiWindow::onSelectionChanged);
     connect(tableView_, &QTableView::doubleClicked, this, &CounterpartyMdiWindow::onDoubleClicked);
 
-    // Connect pagination widget signals
     connect(
-        pagination_widget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
-            BOOST_LOG_SEV(lg(), debug) << "Page size changed to: " << size;
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
             model_->set_page_size(size);
-            model_->refresh(true);
+            model_->refresh();
         });
 
-    connect(pagination_widget_, &PaginationWidget::load_all_requested, this, [this]() {
-        BOOST_LOG_SEV(lg(), debug) << "Load all requested from pagination widget";
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
-            emit statusChanged("Loading all counterparties...");
             model_->set_page_size(total);
-            model_->refresh(true);
-        } else if (total > 1000) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Total count " << total << " exceeds maximum page size of 1000";
-            emit statusChanged("Cannot load all - too many records (max 1000)");
+            model_->refresh();
         }
     });
 
-    connect(pagination_widget_,
-            &PaginationWidget::page_requested,
-            this,
-            [this](std::uint32_t offset, std::uint32_t limit) {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Page requested: offset=" << offset << ", limit=" << limit;
-                emit statusChanged("Loading counterparties...");
-                model_->load_page(offset, limit);
-            });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
+
+    connectModel(model_);
 }
 
 void CounterpartyMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading counterparties";
+    clearStaleIndicator();
     emit statusChanged(tr("Loading counterparties..."));
     model_->refresh();
 }
@@ -222,14 +170,11 @@ void CounterpartyMdiWindow::doReload() {
 void CounterpartyMdiWindow::onDataLoaded() {
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
+    emit statusChanged(tr("Loaded %1 of %2 counterparties").arg(loaded).arg(total));
 
-    pagination_widget_->update_state(loaded, total);
-
-    const bool has_more = loaded < total && total > 0 && total <= 1000;
-    pagination_widget_->set_load_all_enabled(has_more);
-
-    const QString message = QString("Loaded %1 of %2 counterparties").arg(loaded).arg(total);
-    emit statusChanged(message);
+    paginationWidget_->update_state(loaded, total);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
 }
 
 void CounterpartyMdiWindow::onLoadError(const QString& error_message, const QString& details) {
@@ -305,12 +250,12 @@ void CounterpartyMdiWindow::deleteSelected() {
         return;
     }
 
-    std::vector<boost::uuids::uuid> ids;
+    std::vector<std::string> ids;
     std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* counterparty = model_->getCounterparty(sourceIndex.row())) {
-            ids.push_back(counterparty->id);
+            ids.push_back(boost::uuids::to_string(counterparty->id));
             codes.push_back(counterparty->short_code);
         }
     }
@@ -340,8 +285,7 @@ void CounterpartyMdiWindow::deleteSelected() {
     }
 
     QPointer<CounterpartyMdiWindow> self = this;
-    using DeleteResult =
-        std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
+    using DeleteResult = std::vector<std::tuple<std::string, std::string, bool, std::string>>;
 
     auto task = [self, ids, codes]() -> DeleteResult {
         DeleteResult results;
@@ -349,12 +293,10 @@ void CounterpartyMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << ids.size() << " counterparties";
+            << "Making delete request for " << ids.size() << " counterparties";
 
         refdata::messaging::delete_counterparty_request request;
-        for (const auto& id : ids) {
-            request.ids.push_back(boost::uuids::to_string(id));
-        }
+        request.ids = ids;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -367,8 +309,8 @@ void CounterpartyMdiWindow::deleteSelected() {
         }
 
         for (std::size_t i = 0; i < ids.size(); ++i) {
-            std::string code = (i < codes.size()) ? codes[i] : "";
-            results.push_back({ids[i], code, response_result->success, response_result->message});
+            results.push_back(
+                {ids[i], codes[i], response_result->success, response_result->message});
         }
 
         return results;
@@ -423,5 +365,6 @@ void CounterpartyMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

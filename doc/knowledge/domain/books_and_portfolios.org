@@ -39,6 +39,19 @@ portfolios are the logical representation*.
   top of the hierarchy and contains all books; a *Recycle Bin* holds
   retired/closed books rather than physically deleting them (see
   [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]]).
+- *This book-to-book hierarchy is a real-world accounting concept that
+  ORE Studio deliberately does not model.* The [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] domain type has
+  no self-referencing parent field, and there is no plan to add one.
+  Instead, ORE Studio expresses all hierarchy — the role that Root
+  Book, Recycle Bin, and child-book branches play above — through the
+  *portfolio* tree: =portfolio= has a self-referencing
+  =parent_portfolio_id=, and every book links to exactly one portfolio.
+  This is a design choice, not a gap: portfolios already give the
+  trading system an arbitrary, freely-editable hierarchy, so
+  duplicating that structure on the accounting side would add a second
+  tree to keep in sync for no benefit to the trading system, whose
+  only job is to hold a view of the ledger's books, not to manage
+  their hierarchy.
 
 ** The filesystem analogy
 

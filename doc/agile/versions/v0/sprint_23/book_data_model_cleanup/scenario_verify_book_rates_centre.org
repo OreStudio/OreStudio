@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 62FEDE9C-2DBE-41BE-9279-459F9D9FAE00
+:END:
+#+title: Test Scenario: Verify rates centre flag on Book
+#+description: Manual Qt client steps confirming book.rates_centre_code renders as a flagged combo (list flag icon + detail-dialog picker), edits correctly, and shows correctly in history, with no regressions.
+#+type: test_scenario
+#+level: s1
+#+filetags: :book_data_model_cleanup:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:DE683A9D-4FBC-45CB-94B8-30ABBE2DD04F][Add rates centre to book, reusing business_centre]] in [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:DE683A9D-4FBC-45CB-94B8-30ABBE2DD04F][Add rates centre to book, reusing business_centre]] |
+| Parent story  | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]]   |
+| Target dialog | BookMdiWindow / BookDetailDialog / BookHistoryDialog (Reference Data > Books) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A fresh, Barclays-provisioned database:
+  #+begin_src sh :results verbatim
+  compass db recreate -y -k
+  compass services start
+  compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+  #+end_src
+- A running Qt client, not yet logged in.
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Log in and select Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
+=BARCLAYS PLC=. Confirm all menus enable with no errors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+** Books list shows the Rates Centre column with a flag icon
+
+Open Reference Data > Books. Confirm a "Rates Centre" column appears
+after Sweepable, rendering blank (no flag) for every seeded book —
+the field is nullable and no seed data sets it — with no error
+banner.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+** Detail dialog shows and edits the Rates Centre combo
+
+Double-click any book. Confirm a "Rates Centre:" combo box appears
+(blank/unselected initially). Open the dropdown, confirm it is
+populated with business centre codes each showing a small flag icon
+(e.g. =GBLO=, =USNY=). Select one, Save. Confirm the change-reason
+prompt appears, the save succeeds, the grid refreshes, the list's
+Rates Centre column now shows the matching flag icon, and Version
+increments by 1.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+** History dialog shows the Rates Centre change
+
+Open History on that book. Confirm both versions appear, with the
+diff highlighting the Rates Centre change from blank to the selected
+code, and that closing the history dialog only closes the sub-window,
+not the whole app.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+** No error toast or log error during the whole flow
+
+Check the client's log tail
+(=build/output/<preset>/publish/log/ores.qt.<colour>.log=) for any
+ERROR-level line.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

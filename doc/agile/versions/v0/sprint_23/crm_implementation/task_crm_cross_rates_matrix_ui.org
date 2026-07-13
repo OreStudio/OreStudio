@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :market_data:crm:fx:sprint_23:v0:ui:crm_implementation:
 #+owner: marco
-#+branch:
+#+branch: feature/crm-cross-rates-matrix-ui
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: [[id:6D953558-A61C-461F-859D-CBD28AD5D8F5][Publish realistic named CRM synthetic bundles (majors, exotics) via DQ]]
+#+blocked_since: 2026-07-13
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,11 +33,11 @@ pixel-accurate spec, just the shape: a matrix, not a list.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
-| Waiting on   | The service-wiring task's =marketdata.v1.crm.rates= endpoint. |
-| Next         | Begin implementation.                  |
+| Now          | Widget/controller/plugin wiring implemented and builds clean, but untestable without real CRM data. |
+| Waiting on   | [[id:6D953558-A61C-461F-859D-CBD28AD5D8F5][Publish realistic named CRM synthetic bundles (majors, exotics) via DQ]], itself waiting on [[id:BA82072F-0B2B-48F4-9C22-8D6D39337099][multi-named-config engine support]]. |
+| Next         | Once a real publish provides data, add a named-CRM selector to the panel (multi-CRM support changes the =marketdata.v1.crm.rates= contract) and complete manual QA. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -89,6 +89,24 @@ the task starts, following whatever conventions
 already settled on, rather than inventing a new pattern here.
 
 * Notes
+
+Implemented =CrmCrossRatesMatrixMdiWindow= (custom =QWidget=, following
+the =ServiceDashboardMdiWindow= pattern rather than the entity-list
+=EntityListMdiWindow= one -- this is a computed NxN grid, not a paginated
+row list) plus =CrmCrossRatesMatrixController= and =MarketdataPlugin=
+menu wiring ("Cross-&Rates Matrix"). Manual reload only, no timer, no
+NATS subscription, per acceptance. Builds clean.
+
+Blocked before manual QA: bringing up the environment and calling
+=marketdata.v1.crm.rates= only ever returns an empty result, because no
+party in any environment has a real =crm_topology_config= configured --
+there is no seed/publish path for CRM data today. Rather than hand-seed
+rows in one local database (untestable by anyone else, and not what a
+real user would ever see), this surfaced a real product gap: users need
+a realistic CRM available after a normal synthetic-data publish. Raised
+[[id:BA82072F-0B2B-48F4-9C22-8D6D39337099][multi-named-config engine support]] and
+[[id:6D953558-A61C-461F-859D-CBD28AD5D8F5][the DQ publishing task]] to close that gap; this task resumes once
+they land.
 
 * Test Scenarios
 

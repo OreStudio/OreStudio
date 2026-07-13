@@ -33,6 +33,10 @@
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.refdata.api/messaging/regulatory_book_type_protocol.hpp"
 #include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
+#include "ores.refdata.api/messaging/tenor_anchor_protocol.hpp"
+#include "ores.refdata.api/messaging/tenor_kind_protocol.hpp"
+#include "ores.refdata.api/messaging/tenor_resolution_algorithm_protocol.hpp"
+#include "ores.refdata.api/messaging/tenor_unit_protocol.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -225,6 +229,54 @@ fetch_regulatory_book_types(ClientManager* cm) {
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
     return std::move(response->types);
+}
+
+std::expected<std::vector<refdata::domain::tenor_kind>, QString>
+fetch_tenor_kinds(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_tenor_kinds_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->kinds);
+}
+
+std::expected<std::vector<refdata::domain::tenor_unit>, QString>
+fetch_tenor_units(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_tenor_units_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->units);
+}
+
+std::expected<std::vector<refdata::domain::tenor_resolution_algorithm>, QString>
+fetch_tenor_resolution_algorithms(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_tenor_resolution_algorithms_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->algorithms);
+}
+
+std::expected<std::vector<refdata::domain::tenor_anchor>, QString>
+fetch_tenor_anchors(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_tenor_anchors_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->anchors);
 }
 
 std::expected<std::vector<refdata::domain::rounding_type>, QString>

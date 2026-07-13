@@ -412,6 +412,14 @@ BEGIN
         'currency_market_tier', 'Currency Market Tier',
         'Liquidity tier classification codes for currencies (G10, emerging, exotic, frontier, historical).', 26);
 
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_kind', 'Tenor Kind',
+        'Whether a tenor is a fixed PERIOD duration or a convention-resolved SPECIAL label.', 27);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_unit', 'Tenor Unit',
+        'Period unit for a tenor''s duration (day/week/month/year), or NONE for a SPECIAL tenor.', 28);
+
     -- =============================================================================
     -- Badge Mappings
     -- =============================================================================
@@ -649,6 +657,28 @@ BEGIN
         'currency_market_tier', 'frontier', 'tier_frontier');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'currency_market_tier', 'historical', 'tier_historical');
+
+    -- tenor_kind (reuses type_virtual/type_physical as a neutral distinct
+    -- pair, purely to give PERIOD/SPECIAL visually distinct badges -- not
+    -- to convey status, same pattern as regulatory_book_type above)
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_kind', 'PERIOD', 'type_physical');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_kind', 'SPECIAL', 'type_virtual');
+
+    -- tenor_unit (four reused-but-distinct badges for DAY/WEEK/MONTH/YEAR,
+    -- purely for visual differentiation; NONE genuinely means "not
+    -- applicable" so gray/inactive is a semantic fit, not just reuse)
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_unit', 'DAY', 'origin_primary');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_unit', 'WEEK', 'nature_simulated');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_unit', 'MONTH', 'treatment_enriched');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_unit', 'YEAR', 'state_running');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_unit', 'NONE', 'inactive');
 
     -- =============================================================================
     -- Summary

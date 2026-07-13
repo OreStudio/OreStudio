@@ -1,0 +1,216 @@
+:PROPERTIES:
+:ID: 01E76440-B9A5-4D0A-A32C-B0C4A7484B26
+:END:
+#+title: ores.refdata.tenor_unit
+#+description: Codegen entity model for the refdata tenor_unit table: the period unit (day/week/month/year) for PERIOD tenors, or NONE for SPECIAL tenors.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:tenor:
+#+entity_singular: tenor_unit
+#+entity_plural: tenor_units
+#+entity_title: Tenor Unit
+#+brief: Period unit for a PERIOD tenor's nD/nW/nM/nY duration, or NONE for a SPECIAL tenor with no fixed offset.
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+Reference data table defining the valid [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+period unit values: =DAY=, =WEEK=, =MONTH=, =YEAR= for =PERIOD= tenors, and the
+sentinel =NONE= for =SPECIAL= tenors (which carry no fixed unit/multiplier of
+their own). =NONE= exists so =tenor.unit= can stay a required, FK-validated
+column rather than nullable free text. Managed by the system tenant, like
+other tenor code tables.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique tenor unit code.
+
+Examples: 'DAY', 'WEEK', 'MONTH', 'YEAR', 'NONE'.
+
+#+begin_src cpp :name generator
+std::string("TenorUnit")
+#+end_src
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the tenor unit.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Unit"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the tenor unit.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_tenor_units_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_tenor_unit_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: unit
+:entity_plural_short:   units
+:entity_singular_words: tenor unit
+:entity_plural_words:   tenor units
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tu
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/tenor_unit.hpp
+:domain_class:           refdata::domain::tenor_unit
+:protocol_include:       ores.refdata.api/messaging/tenor_unit_protocol.hpp
+:collection_name:        units
+:item_var:               unit
+:key_field:              code
+:has_uuid_primary_key:   false
+:has_pagination:         true
+:has_change_reason_cache: true
+:get_request_class:      refdata::messaging::get_tenor_units_request
+:get_response_class:     refdata::messaging::get_tenor_units_response
+:get_message_type:       get_tenor_units_request
+:save_request_class:     refdata::messaging::save_tenor_unit_request
+:save_response_class:    refdata::messaging::save_tenor_unit_response
+:save_message_type:      save_tenor_unit_request
+:delete_request_class:   refdata::messaging::delete_tenor_unit_request
+:delete_response_class:  refdata::messaging::delete_tenor_unit_response
+:delete_message_type:    delete_tenor_unit_request
+:history_request_class:  refdata::messaging::get_tenor_unit_history_request
+:history_response_class: refdata::messaging::get_tenor_unit_history_response
+:history_message_type:   get_tenor_unit_history_request
+:settings_group:         TenorUnitListWindow
+:window_title:           Tenor Units
+:icon:                   Tag
+:has_export_macro:       true
+:END:
+
+*** Detail fields
+
+| field         | label         | widget          | type      | is_key | is_required | placeholder            |
+|---------------+---------------+-----------------+-----------+--------+-------------+-------------------------|
+| code          | Code          | codeEdit        | line_edit | true   | true        | Enter tenor unit code   |
+| name          | Name          | nameEdit        | line_edit |        | true        | Enter name              |
+| description   | Description   | descriptionEdit | text_edit |        | true        | Enter a description     |
+| display_order | Display Order | displayOrderEdit | spin_box |        | true        |                         |
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | auto  |
+| Name         | name          | Name          | string    | auto  |
+| Description  | description   | Description   | string    | auto  |
+| DisplayOrder | display_order | Display Order | int       | 70    |
+| Version      | version      | Version       | int       | 70    |
+| ModifiedBy   | modified_by   | Modified By   | string    | auto  |
+| RecordedAt   | recorded_at   | Recorded At   | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the entity this unit measures.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

@@ -204,6 +204,31 @@ oversight).
 | algorithm | =account_type_algorithm=  |
 | llm       | =account_type_llm=        |
 
+*** Tenor kind (=tenor_kind=)
+
+Reuses =type_virtual=/=type_physical= as a neutral distinct pair, purely
+to give PERIOD/SPECIAL visually distinct badges — not to convey status.
+
+| Value   | Badge            |
+|---------+-------------------|
+| PERIOD  | =type_physical=  |
+| SPECIAL | =type_virtual=   |
+
+*** Tenor unit (=tenor_unit=)
+
+Four reused-but-distinct badges for DAY/WEEK/MONTH/YEAR, purely for
+visual differentiation. =NONE= genuinely means "not applicable" for a
+SPECIAL tenor, so gray/=inactive= is a semantic fit (rule 1), not just
+reuse.
+
+| Value | Badge                 |
+|-------+------------------------|
+| DAY   | =origin_primary=      |
+| WEEK  | =nature_simulated=    |
+| MONTH | =treatment_enriched=  |
+| YEAR  | =state_running=       |
+| NONE  | =inactive=            |
+
 * See also
 
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the colour-semantics rules this catalogue instantiates.

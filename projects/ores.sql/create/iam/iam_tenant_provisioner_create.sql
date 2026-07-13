@@ -39,6 +39,8 @@
 --   - day_count_fraction_types: Day count fraction conventions
 --   - rounding_types: Rounding method definitions
 --   - monetary_natures, currency_market_tiers: Currency classification
+--   - tenor_anchors, tenors, tenor_conventions, tenor_convention_resolutions:
+--     Tenor labels and their per-convention resolution rules
 --
 -- Transactional reference data (currencies, countries, parties, etc.)
 -- is NOT copied during provisioning. Tenants populate that data via the
@@ -424,6 +426,118 @@ begin
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % currency market tiers', v_copied_count;
+
+    -- Tenor kinds (e.g. PERIOD, SPECIAL)
+    insert into ores_refdata_tenor_kinds_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_tenor_kinds_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % tenor kinds', v_copied_count;
+
+    -- Tenor units (e.g. DAY, WEEK, MONTH, YEAR, NONE)
+    insert into ores_refdata_tenor_units_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_tenor_units_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % tenor units', v_copied_count;
+
+    -- Tenor resolution algorithms (e.g. ANCHOR_OFFSET, IMM_ROLL)
+    insert into ores_refdata_tenor_resolution_algorithms_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_tenor_resolution_algorithms_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % tenor resolution algorithms', v_copied_count;
+
+    -- Tenor anchors (e.g. SPOT, TODAY, TOMORROW, NEAR_LEG, IMM_ROLL, NONE)
+    insert into ores_refdata_tenor_anchors_tbl (
+        code, tenant_id, version, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_tenor_anchors_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % tenor anchors', v_copied_count;
+
+    -- Tenors (e.g. O/N, 1M, 1Y, SPOT)
+    insert into ores_refdata_tenors_tbl (
+        code, tenant_id, version, display_name, description, sort_order, kind, unit, multiplier,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, display_name, description, sort_order, kind, unit, multiplier,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_tenors_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % tenors', v_copied_count;
+
+    -- Tenor conventions (e.g. RATES_SPOT_FORWARD, FX_SWAP_NEAR_LEG, CREDIT_CDS_IMM)
+    insert into ores_refdata_tenor_conventions_tbl (
+        code, tenant_id, version, description, measured_from, resolution_algorithm,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, description, measured_from, resolution_algorithm,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_tenor_conventions_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % tenor conventions', v_copied_count;
+
+    -- Tenor convention resolutions (which tenors belong to which convention, and overrides)
+    insert into ores_refdata_tenor_convention_resolutions_tbl (
+        convention_code, tenant_id, tenor_code, version, anchor_override, offset_unit, offset_multiplier,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        convention_code, v_tenant_id, tenor_code, 0, anchor_override, offset_unit, offset_multiplier,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_tenor_convention_resolutions_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % tenor convention resolutions', v_copied_count;
 
     -- DQ change reason categories (system, common, trade taxonomy)
     insert into ores_dq_change_reason_categories_tbl (

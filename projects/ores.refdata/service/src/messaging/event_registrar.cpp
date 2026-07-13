@@ -43,6 +43,12 @@
 #include "ores.refdata.service/messaging/party_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/purpose_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/regulatory_book_type_event_registrar.hpp"
+#include "ores.refdata.service/messaging/tenor_anchor_event_registrar.hpp"
+#include "ores.refdata.service/messaging/tenor_convention_event_registrar.hpp"
+#include "ores.refdata.service/messaging/tenor_event_registrar.hpp"
+#include "ores.refdata.service/messaging/tenor_kind_event_registrar.hpp"
+#include "ores.refdata.service/messaging/tenor_resolution_algorithm_event_registrar.hpp"
+#include "ores.refdata.service/messaging/tenor_unit_event_registrar.hpp"
 
 namespace ores::refdata::service::messaging {
 
@@ -73,6 +79,12 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_party_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_purpose_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_regulatory_book_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_tenor_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_tenor_anchor_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_tenor_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_tenor_kind_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_tenor_unit_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_tenor_resolution_algorithm_event_mapping(event_source, event_bus, nats));
 
     return subs;
 }

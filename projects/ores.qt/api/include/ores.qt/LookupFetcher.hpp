@@ -26,6 +26,10 @@
 #include "ores.refdata.api/domain/monetary_nature.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"
 #include "ores.refdata.api/domain/rounding_type.hpp"
+#include "ores.refdata.api/domain/tenor_anchor.hpp"
+#include "ores.refdata.api/domain/tenor_kind.hpp"
+#include "ores.refdata.api/domain/tenor_resolution_algorithm.hpp"
+#include "ores.refdata.api/domain/tenor_unit.hpp"
 #include <QString>
 #include <expected>
 #include <string>
@@ -206,6 +210,48 @@ fetch_book_statuses(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::regulatory_book_type>, QString>
 fetch_regulatory_book_types(ClientManager* cm);
+
+/**
+ * @brief Fetches all tenor kinds from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Tenor's kind combo. Returns an error message on failure,
+ * distinguishing it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::tenor_kind>, QString>
+fetch_tenor_kinds(ClientManager* cm);
+
+/**
+ * @brief Fetches all tenor units from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Tenor's unit combo. Returns an error message on failure,
+ * distinguishing it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::tenor_unit>, QString>
+fetch_tenor_units(ClientManager* cm);
+
+/**
+ * @brief Fetches all tenor resolution algorithms from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Tenor Convention's resolution_algorithm combo. Returns an
+ * error message on failure, distinguishing it from a legitimately-empty
+ * result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::tenor_resolution_algorithm>, QString>
+fetch_tenor_resolution_algorithms(ClientManager* cm);
+
+/**
+ * @brief Fetches all tenor anchors from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by Tenor Convention's measured_from combo. Returns an error
+ * message on failure, distinguishing it from a legitimately-empty
+ * result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::tenor_anchor>, QString>
+fetch_tenor_anchors(ClientManager* cm);
 
 }
 

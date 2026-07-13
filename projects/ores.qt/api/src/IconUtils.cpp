@@ -38,6 +38,8 @@ static IconDef getIconDef(Icon icon) {
     switch (icon) {
         case Icon::Add:
             return {"ic_fluent_add_20", "add-circle.svg"};
+        case Icon::Anchor:
+            return {"ic_fluent_pin_20", "pin.svg"};
         case Icon::Archive:
             return {"ic_fluent_archive_20", "archive.svg"};
         case Icon::ArrowClockwise:

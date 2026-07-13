@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 987FD4D9-7293-4E27-8688-6466A7FA4211
+:END:
+#+title: Task: Fix domain/generator/repository Mustache templates for junction-shaped data
+#+description: Adapt the three facets' templates so junction generation (composite left/right key, no single primary_key) produces compilable, correct C++ -- template branching or a data-normalisation shim in core.py.
+#+type: task
+#+level: s1
+#+filetags: :codegen:tooling:junction:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make junction generation for the domain/generator/repository facets
+actually produce compilable, correct C++, not just "attempt to render"
+(whatever state the previous task leaves it in).
+
+Two candidate approaches, pick whichever the previous task's findings
+point toward:
+
+1. *Template-level branching*: the =cpp_domain_type_class.hpp.mustache=
+   etc. templates gain =`{{#domain_entity}}...{{/domain_entity}}`= /
+   =`{{#junction}}...{{/junction}}`= sections so the same template file
+   renders correctly from either data shape. Mustache sections are
+   falsy/absent-safe, so a template already written this way costs
+   nothing when rendering a real =domain_entity=.
+2. *Data normalisation shim*: in =core.py=, when the model is a
+   junction, synthesize a =domain_entity=-shaped dict from
+   =junction.left=/=junction.right=/=junction.columns= (composite
+   =primary_key= made of both FK columns plus =valid_from=,
+   =entity_singular= = =junction.name_singular=, etc.) and feed that
+   into the *unmodified* existing domain_entity templates. Less template
+   churn, but a wrong synthetic mapping could get every future junction
+   subtly wrong at once — validate thoroughly against the concrete test
+   case in the next task before considering this generally correct for
+   all ~8 existing junction models, not just =tenor_convention_resolution=.
+
+Whichever approach: junctions do *not* have a single primary key the way
+a domain_entity does (their SQL primary key is
+=(tenant_id, left_column, right_column, valid_from)= — composite of both
+FK columns). The generated C++ entity/repository needs a composite-key
+read path (=read_all=/=read_latest= filtered by both FK columns, not a
+single =code=-style lookup) — see the hand-authored reference
+=tenor_convention_resolution_repository.{hpp,cpp}= (paths in the
+Validate task) for a concrete shape a generated version should be able
+to reproduce or improve on.
+
+Existing dead code worth reading first:
+=get_cpp_junction_template_mappings()= and the junction data-enrichment
+block (~line 2615-2660) in =core.py=, per the parent story's Analysis —
+this may already be most of a data-normalisation shim (approach 2),
+just never finished/tested.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- =compass codegen entity generate tenor_convention_resolution= produces
+  a domain struct (with =anchor_override=/=offset_unit=/
+  =offset_multiplier= nullable fields, matching the model's =Columns=
+  section) and a repository with at least a composite-key read path.
+- The generated code compiles (build the affected component).
+- Regenerating the sample of existing =domain_entity= models (same
+  sample as the prior two tasks) still produces zero diff.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

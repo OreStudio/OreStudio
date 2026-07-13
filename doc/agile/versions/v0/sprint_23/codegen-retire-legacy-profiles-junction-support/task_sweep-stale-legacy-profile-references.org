@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 05C64B72-418A-45E7-BBD2-2E91FD69DE45
+:END:
+#+title: Task: Sweep docs/skills/recipes for stale legacy-profile-system references
+#+description: Correct any remaining doc/knowledge/skill/recipe text describing the deleted facet_catalogue.org/--profile system, so documentation matches the physical-space system only.
+#+type: task
+#+level: s1
+#+filetags: :codegen:tooling:documentation:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Grep the tree for stale references to the deleted System 1 and correct
+them. Candidate locations, not exhaustive — search broadly rather than
+trusting this list alone:
+
+- =doc/knowledge/architecture/*variability*.org= (referenced from
+  =facet_catalogue.org='s own header as "see the ORE Studio Variability
+  Model for the theory") — likely describes the Profile Metamodel in
+  terms of the now-deleted system; needs correcting or re-pointing at
+  the physical-space model instead.
+- =doc/llm/skills/code-add-domain-type/SKILL.org= — already flagged and
+  partially fixed earlier this sprint for a different stale-JSON-model
+  issue (see commit history around "Fix stale codegen-model instructions
+  in code-add-domain-type"); re-check it doesn't also reference
+  =--profile=/=facet_catalogue.org=.
+- =projects/ores.codegen/docs/codegen_input_org_schema.org= — the
+  authoritative schema reference for model files; check its framing of
+  profiles/facets matches the physical-space system only.
+- Any =doc/recipes/codegen/*.org= recipe mentioning =--profile= or
+  =all-cpp= as a profile name (the =--address= equivalent, e.g.
+  =ores.cpp=, should be the documented form going forward).
+- =projects/ores.compass/src/compass_codegen*.py= docstrings/help text.
+
+For each hit: if it's describing behaviour that genuinely still exists
+(the physical-space system, just described using stale legacy
+terminology), fix the wording. If it's describing System 1 behaviour
+that no longer exists at all, remove that section rather than leaving a
+description of dead functionality.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- =grep -ri "facet_catalogue\|--profile" doc/ projects/ores.compass
+  projects/ores.codegen/docs= (or equivalent) returns no hits describing
+  current behaviour — only, at most, historical mentions in already-
+  closed task/story Notes (which are point-in-time records and are not
+  rewritten, per standing convention).
+- Every corrected doc still reads coherently (not just "delete the
+  sentence and leave a dangling reference").
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

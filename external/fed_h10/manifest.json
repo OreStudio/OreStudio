@@ -1,0 +1,37 @@
+{
+    "name": "Federal Reserve H.10 FX Rates",
+    "description": "Real, individually-quoted foreign exchange rates from the U.S. Federal Reserve Board's H.10 Foreign Exchange Rates release, sourced for the marketdata.fx_driver_rates dataset (Cross-Rates Matrix driver input).",
+    "downloaded_at": "2026-07-13",
+    "methodology_file": "methodology.txt",
+    "fetch_script": "tools/fetch_fed_h10_rates.py",
+    "archive": "pages.zip",
+    "sources": [
+        {
+            "name": "Federal Reserve Board H.10 Foreign Exchange Rates",
+            "description": "Historical daily FX rate release pages, one per currency, each covering the full multi-year series.",
+            "url": "https://www.federalreserve.gov/releases/h10/hist/",
+            "license": "U.S. Government Work (public domain)"
+        }
+    ],
+    "datasets": [
+        {
+            "name": "FX Driver Rates 2016",
+            "code": "marketdata.fx_driver_rates",
+            "catalog": "FX Driver Rates",
+            "subject_area": "FX Spot",
+            "domain": "Market Data",
+            "coding_scheme": "NONE",
+            "methodology": "Federal Reserve H.10 Historical Rates",
+            "description": "25 real Fed H.10 FX spot vintages across 2016 (start/end of each month, plus 2016-02-05 -- ORE's own bundled reference vintage date), a minimal USD-hub spanning tree over EUR/USD/GBP/CHF/JPY/SEK/AUD/CAD/NZD/ZAR/MXN/INR.",
+            "source_system": "federalreserve.gov/releases/h10",
+            "business_context": "Cross-Rates Matrix driver input and synthetic FX market data seeding",
+            "as_of_date": "2016-12-31",
+            "license": "Internal Use Only",
+            "artefact_type": "market_data_observations",
+            "currencies": {
+                "majors": ["EUR/USD", "GBP/USD", "USD/CHF", "USD/JPY", "USD/SEK", "AUD/USD", "USD/CAD", "NZD/USD"],
+                "exotics": ["USD/ZAR", "USD/MXN", "USD/INR"]
+            }
+        }
+    ]
+}

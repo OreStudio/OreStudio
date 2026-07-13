@@ -1,0 +1,75 @@
+Data Sourcing and Generation Steps:
+
+1. SOURCE DATA DOWNLOAD
+   Source: Federal Reserve Board, H.10 Foreign Exchange Rates, historical
+   release pages (https://www.federalreserve.gov/releases/h10/hist/) --
+   one page per currency, each holding that currency's full multi-year
+   daily series (so one download per currency covers any number of
+   requested dates -- no per-date network round-trip).
+   Script: tools/fetch_fed_h10_rates.py
+   Command:
+     ./tools/fetch_fed_h10_rates.py --currency eu,uk,sz,ja,sd,al,ca,nz,sf,mx,in \
+         --dates 2016-02-05 --format table \
+         --archive-zip external/fed_h10/pages.zip --force
+   Target: external/fed_h10/pages.zip (raw HTML pages + manifest.json)
+
+2. PARSE
+   The same script parses each page's fixed-format rows
+   (<th id="r1">DD-MON-YY</th> ... <td>value</td>) into (date, value)
+   pairs. Rows whose value is "ND" (no data, e.g. a bank holiday) are
+   skipped -- never interpolated or filled by us.
+
+3. GENERATE SQL
+   Command:
+     ./tools/fetch_fed_h10_rates.py --currency eu,uk,sz,ja,sd,al,ca,nz,sf,mx,in \
+         --dates <25 target dates, see marketdata_fx_driver_rates_populate.sql> \
+         --format sql
+   Output: SQL VALUES rows, each citing its own currency's Fed release
+   page as source_url -- pasted directly into
+   projects/ores.sql/populate/marketdata/marketdata_fx_driver_rates_populate.sql's
+   artefact seed block. Never hand-typed.
+
+4. VERIFY
+   Every row is independently verifiable two ways: (a) re-run step 1-3
+   and diff -- the Fed's historical pages don't change once published, so
+   the output is deterministic; (b) check pages.zip's manifest.json sha256
+   for each page against a fresh download.
+
+5. COMMIT
+   git add external/fed_h10/ tools/fetch_fed_h10_rates.py \
+       projects/ores.sql/populate/marketdata/marketdata_fx_driver_rates_populate.sql
+   git commit -m "[sql] Regenerate FX driver rates from Fed H.10"
+
+DATASET STRUCTURE
+------------------
+external/fed_h10/pages.zip
+  - dat00_<code>.htm (one per currency, raw Fed H.10 page)
+  - manifest.json (code, pair, source_url, sha256, size_bytes per page;
+    archive-level retrieved_at timestamp)
+
+projects/ores.sql/populate/marketdata/marketdata_fx_driver_rates_populate.sql
+  - Registers the marketdata.fx_driver_rates DQ dataset, methodology,
+    catalog, and bundle membership.
+  - Seeds ores_dq_market_data_observations_artefact_tbl with 25 vintages
+    (2016) x 11 currency pairs = 275 rows, each individually citing its
+    own source_url/retrieved_at.
+
+CURRENCY CLASSIFICATION
+-------------------------
+Majors (dense direct-quote CRM tier): EUR/USD, GBP/USD, USD/CHF,
+USD/JPY, USD/SEK, AUD/USD, USD/CAD, NZD/USD.
+
+Exotics (USD-pivot-star-only CRM tier): USD/ZAR, USD/MXN, USD/INR.
+
+VALUE INTEGRITY
+-----------------
+No value in this dataset is derived, computed, triangulated, or typed
+by hand -- every row is that currency's own Fed H.10 page, its own row,
+for its own target date. An earlier draft of this dataset's task
+documentation briefly (and incorrectly) hand-summarised two of these
+EM currencies' rates from a web-page-summarisation tool rather than the
+raw HTML; those values were wrong (off by ~5-8%) and were replaced with
+the script-parsed, HTML-verified values recorded here before this
+dataset was ever published. Lesson: only the fetch/parse/generate
+pipeline above is a trusted source for this dataset -- never a
+free-text summary of a page, however produced.

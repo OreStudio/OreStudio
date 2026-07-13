@@ -20,6 +20,7 @@
 #include "ores.qt/ClientBusinessCentreModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include <QtConcurrent>
@@ -101,6 +102,11 @@ QVariant ClientBusinessCentreModel::data(const QModelIndex& index, int role) con
             default:
                 return {};
         }
+    }
+
+    if (role == Qt::DecorationRole && imageCache_) {
+        if (index.column() == Column::CountryAlpha2Code)
+            return country_flag_icon(*imageCache_, business_centre.country_alpha2_code);
     }
 
     if (role == Qt::ForegroundRole) {
@@ -208,6 +214,8 @@ void ClientBusinessCentreModel::fetch_business_centres(std::uint32_t offset, std
                 }
 
                 refdata::messaging::get_business_centres_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -238,11 +246,12 @@ void ClientBusinessCentreModel::fetch_business_centres(std::uint32_t offset, std
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->centres.size() << " business centres";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->centres.size());
+                    << "Fetched " << result->centres.size()
+                    << " business centres, total available: " << result->total_available_count;
                 return {.success = true,
                         .business_centres = std::move(result->centres),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

@@ -19,8 +19,10 @@
  */
 #include "ores.qt/BusinessCentreDetailDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
@@ -110,8 +112,8 @@ void BusinessCentreDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &BusinessCentreDetailDialog::onFieldChanged);
-    connect(ui_->codingSchemeEdit,
-            &QLineEdit::textChanged,
+    connect(ui_->codingSchemeCombo,
+            &QComboBox::currentIndexChanged,
             this,
             &BusinessCentreDetailDialog::onFieldChanged);
     connect(ui_->countryAlpha2Combo,
@@ -122,6 +124,7 @@ void BusinessCentreDetailDialog::setupConnections() {
 
 void BusinessCentreDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateCodingSchemeCombo();
     populateCountryAlpha2CodeCombo();
 }
 
@@ -198,18 +201,35 @@ void BusinessCentreDetailDialog::setReadOnly(bool readOnly) {
     ui_->sourceEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->cityNameEdit->setReadOnly(true);
-    ui_->codingSchemeEdit->setReadOnly(readOnly);
+    ui_->codingSchemeCombo->setEnabled(!readOnly);
     ui_->countryAlpha2Combo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
+void BusinessCentreDetailDialog::populateCodingSchemeCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating coding_scheme_code combo";
+    populateDynamicCombo<dq::domain::coding_scheme>(
+        ui_->codingSchemeCombo,
+        this,
+        clientManager_,
+        &fetch_coding_schemes,
+        "codingSchemeWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.version; },
+        [this]() { return QString::fromStdString(business_centre_.coding_scheme_code); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load coding schemes: %1").arg(error));
+        });
+}
 void BusinessCentreDetailDialog::updateUiFromCentre() {
     ui_->codeEdit->setText(QString::fromStdString(business_centre_.code));
     ui_->sourceEdit->setText(QString::fromStdString(business_centre_.source));
     ui_->descriptionEdit->setText(QString::fromStdString(business_centre_.description));
     ui_->cityNameEdit->setText(QString::fromStdString(business_centre_.city_name));
-    ui_->codingSchemeEdit->setText(QString::fromStdString(business_centre_.coding_scheme_code));
+    ui_->codingSchemeCombo->setCurrentText(
+        QString::fromStdString(business_centre_.coding_scheme_code));
     {
         const auto val = QString::fromStdString(business_centre_.country_alpha2_code);
         const int idx = ui_->countryAlpha2Combo->findText(val);
@@ -236,7 +256,7 @@ void BusinessCentreDetailDialog::updateCentreFromUi() {
     if (createMode_) {
         business_centre_.city_name = ui_->cityNameEdit->text().trimmed().toStdString();
     }
-    business_centre_.coding_scheme_code = ui_->codingSchemeEdit->text().trimmed().toStdString();
+    business_centre_.coding_scheme_code = ui_->codingSchemeCombo->currentText().toStdString();
     business_centre_.country_alpha2_code = ui_->countryAlpha2Combo->currentText().toStdString();
     business_centre_.modified_by = username_;
 }
@@ -258,9 +278,9 @@ void BusinessCentreDetailDialog::updateSaveButtonState() {
 
 bool BusinessCentreDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
-    const QString coding_scheme_code_val = ui_->codingSchemeEdit->text().trimmed();
+    const bool coding_scheme_code_selected = ui_->codingSchemeCombo->currentIndex() >= 0;
 
-    return true && !code_val.isEmpty() && !coding_scheme_code_val.isEmpty();
+    return true && !code_val.isEmpty() && coding_scheme_code_selected;
 }
 
 void BusinessCentreDetailDialog::onSaveClicked() {

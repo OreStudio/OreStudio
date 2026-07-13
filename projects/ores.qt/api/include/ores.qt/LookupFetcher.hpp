@@ -20,6 +20,7 @@
 #ifndef ORES_QT_LOOKUP_FETCHER_HPP
 #define ORES_QT_LOOKUP_FETCHER_HPP
 
+#include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.qt/export.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
@@ -275,6 +276,16 @@ fetch_tenor_resolution_algorithms(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::tenor_anchor>, QString>
 fetch_tenor_anchors(ClientManager* cm);
+
+/**
+ * @brief Fetches all coding schemes from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by BusinessCentre's coding_scheme_code combo. Returns an error
+ * message on failure, distinguishing it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<dq::domain::coding_scheme>, QString>
+fetch_coding_schemes(ClientManager* cm);
 
 }
 

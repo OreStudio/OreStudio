@@ -76,6 +76,15 @@ public:
     QVariant
     headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
+protected:
+    /** @brief Columns whose Qt::DecorationRole shows an icon (flag, etc.). */
+    std::vector<int> iconColumns() const override {
+        return {
+            Column::CountryAlpha2Code,
+        };
+    }
+
+public:
     /**
      * @brief Refresh business centre data from server asynchronously.
      */

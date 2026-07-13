@@ -31,17 +31,7 @@
  */
 
 DO $$
-declare
-    v_image_id uuid;
 begin
-    -- Look up the UN flag image
-    select i.image_id into v_image_id
-    from ores_dq_images_artefact_tbl i
-    join ores_dq_datasets_tbl d on d.id = i.dataset_id
-    where d.code = 'assets.country_flags'
-      and i.key = 'un'
-    limit 1;
-
     if not exists (
         select 1 from ores_refdata_business_centres_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
@@ -50,14 +40,13 @@ begin
     ) then
         insert into ores_refdata_business_centres_tbl (
             code, tenant_id, version, coding_scheme_code,
-            source, description, image_id,
+            source, description,
             modified_by, performed_by,
             change_reason_code, change_commentary
         ) values (
             'WRLD', ores_utility_system_tenant_id_fn(), 0, 'NONE',
             'Internal',
             'World. Global business centre for entities not tied to a specific geographic location.',
-            v_image_id,
             current_user, current_user,
             'system.initial_load', 'System business centre for platform tenant'
         );
@@ -67,20 +56,19 @@ begin
         where tenant_id = ores_utility_system_tenant_id_fn()
         and code = 'WRLD'
         and valid_to = ores_utility_infinity_timestamp_fn()
-        and (source is distinct from 'Internal' or image_id is distinct from v_image_id)
+        and source is distinct from 'Internal'
     ) then
         insert into ores_refdata_business_centres_tbl (
             code, tenant_id, version, coding_scheme_code,
-            source, description, image_id,
+            source, description,
             modified_by, performed_by,
             change_reason_code, change_commentary
         ) values (
             'WRLD', ores_utility_system_tenant_id_fn(), 0, 'NONE',
             'Internal',
             'World. Global business centre for entities not tied to a specific geographic location.',
-            v_image_id,
             current_user, current_user,
-            'system.initial_load', 'Update source and image for WRLD system business centre'
+            'system.initial_load', 'Update source for WRLD system business centre'
         );
         raise debug 'Updated WRLD business centre for system tenant';
     else

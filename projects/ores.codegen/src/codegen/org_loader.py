@@ -753,6 +753,11 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         validations_section = _section(insert_section, "Validations")
         if validations_section:
             rows = _parse_org_table_rows(validations_section)
+            nullable_by_column = {
+                c["name"]: c.get("nullable", False) for c in de.get("columns", [])
+            }
+            for row in rows:
+                row["nullable"] = nullable_by_column.get(row.get("column"), False)
             de["insert_trigger"] = {"validations": rows}
 
     check_section = _section(doc.root, "Check constraints")

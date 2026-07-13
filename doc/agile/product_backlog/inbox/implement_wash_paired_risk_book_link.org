@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: CFA95E5F-B2E8-4FA7-95A3-13C4B4B27432
+:END:
+#+title: Implement paired risk-book link for Wash-purpose books
+#+description: Add nullable self-referencing book.paired_risk_book_id FK, plus conditional validation (settable only when book_purpose_type = Wash) and Qt UI conditional-enable support, neither of which has existing precedent in the codebase.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:book:wash:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a nullable self-referencing =book.paired_risk_book_id= FK to
+=books.id=, following the existing
+=business_unit.parent_business_unit_id=/=portfolio.parent_portfolio_id=
+precedent. Two things beyond the plain field-add: (1) conditional
+validation — the field must be set if and only if
+=book_purpose_type = Wash=, plus a self-loop guard — extending the
+existing =validate_*_fn= trigger plumbing to a cross-field condition
+for the first time; (2) Qt UI — the field should only be enabled when
+=book_purpose_type= is Wash, which needs either a codegen extension or
+a hand-written detail-dialog override since no generated dialog
+currently conditionally enables one field based on a sibling field's
+value.
+
+* Why
+
+Every wash back-to-back trade needs a routing target — see
+[[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]]: "a wash book must also carry a
+designated paired risk book — a book-to-book relationship, not merely
+a flag." Currently unimplemented.
+
+* References
+
+- Sizing from "Add paired risk-book link for Wash-purpose books" task,
+  recorded in =wash_books_and_risk_routing.org=.
+
+* See also
+
+- [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] — parent story of the sizing task.
+- [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] — the domain concept this implements.

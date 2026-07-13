@@ -61,6 +61,35 @@ discipline. A wash book must also carry a designated *paired risk
 book* — a book-to-book relationship, not merely a flag — since every
 back-to-back trade needs a target to route the risk into.
 
+*Implementation sizing (not yet built)*: a nullable self-referencing
+=book.paired_risk_book_id= FK to =books.id= is the right shape —
+directly following the existing =business_unit.parent_business_unit_id=
+and =portfolio.parent_portfolio_id= self-referencing nullable-FK
+precedent, so the field itself is a small, well-trodden addition. Two
+things push this past a trivial field-add and justify sizing it
+separately before pulling into a sprint:
+- *Conditional validation* — =paired_risk_book_id= must be set if and
+  only if =book_purpose_type = Wash=, plus a self-loop guard (a book
+  can't be paired to itself). The trigger/=validate_*_fn= plumbing
+  this needs already exists for single-field validation (e.g.
+  =regulatory_book_type=), so extending it to a second, cross-field
+  condition is straightforward, not a novel mechanism — but no
+  existing =book= (or other entity) validation function currently
+  checks one field's value against another's, so this is a genuinely
+  new trigger shape to write and test.
+- *Qt UI* — the field should only be enabled/visible when
+  =book_purpose_type= is Wash in the detail dialog. No existing
+  generated detail dialog conditionally enables one field based on
+  another field's live value (=setEnabled= calls found elsewhere only
+  gate toolbar actions/save buttons, not sibling form fields), so this
+  needs either a codegen extension or a hand-written override —
+  small in isolation, but the reason this doesn't already exist
+  anywhere to copy from.
+
+Both gaps are modest, not blocking, but real enough that this should
+land as its own scoped implementation task rather than a trivial field
+add. No code changes made as part of this sizing pass.
+
 ** Audit requirements
 
 Because risk is deliberately split across two books via a

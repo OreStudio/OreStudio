@@ -29,7 +29,8 @@ create table if not exists "ores_dq_books_artefact_tbl" (
     "cost_center" text null,
     "book_status" text not null,
     "regulatory_book_type" text not null,
-    "is_sweepable" boolean not null default false
+    "is_sweepable" boolean not null default false,
+    "rates_centre_code" text not null default 'WRLD'
 );
 
 create index if not exists books_artefact_dataset_idx

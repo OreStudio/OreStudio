@@ -144,11 +144,13 @@ struct book final {
      * @brief Rates centre determining which revaluation market data snapshot this book uses at
      * end-of-day; see [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]].
      *
-     * Optional soft FK to business_centres by code (e.g. "GBLO", "USNY"), reusing the same location
+     * Soft FK to business_centres by code (e.g. "GBLO", "USNY"), reusing the same location
      * reference already used by counterparty/party/business_unit rather than modeling a dedicated
-     * rates-centre entity.
+     * rates-centre entity. Defaults to WRLD (the global sentinel business centre, seeded for every
+     * tenant) for the same reason book_status defaults to Active -- a freshly-constructed book
+     * always carries a value the FK-validation trigger accepts.
      */
-    std::string rates_centre_code;
+    std::string rates_centre_code = "WRLD";
 
     /**
      * @brief Username of the person who last modified this book.

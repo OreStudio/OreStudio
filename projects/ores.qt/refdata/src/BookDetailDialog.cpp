@@ -153,7 +153,6 @@ void BookDetailDialog::populateRatesCentreCodeCombo() {
             const QString previous = combo->currentText();
             combo->blockSignals(true);
             combo->clear();
-            combo->addItem(QString());
             for (const auto& c : codes)
                 combo->addItem(QString::fromStdString(c));
             // fallback_selection is evaluated here (fetch-completion time), not

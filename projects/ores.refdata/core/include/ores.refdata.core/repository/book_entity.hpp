@@ -55,7 +55,7 @@ struct book_entity {
     std::string book_status = "Active";
     std::string regulatory_book_type = "Trading";
     bool is_sweepable = false;
-    std::optional<std::string> rates_centre_code;
+    std::string rates_centre_code = "WRLD";
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

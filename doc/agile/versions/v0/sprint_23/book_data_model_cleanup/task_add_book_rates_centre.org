@@ -97,10 +97,26 @@ Result).
 
 * Result
 
-Shipped =book.rates_centre_code= as a nullable soft-FK to
-=business_centres=, rendered as a flagged combo with flag icons in
-both the detail dialog and the Book list column. All acceptance items
-met; builds clean.
+Shipped =book.rates_centre_code= as a soft-FK to =business_centres=,
+rendered as a flagged combo with flag icons in both the detail dialog
+and the Book list column. All acceptance items met; builds clean.
+
+*Design revision after manual QA*: initially modeled as nullable.
+Manual testing showed every seeded book with a blank Rates Centre
+(no real value, since seed data didn't set one) and flagged this as a
+usability regression -- reused =WRLD= as the existing sentinel pattern
+already established for =book_status=/=regulatory_book_type=, so
+=rates_centre_code= is now required (=nullable: false=,
+=default_value: "WRLD"=), matching that convention rather than
+introducing a new nullable-field pattern. Updated
+=testdata_books_artefact_populate.sql= to assign each of the 22
+seeded books a real region-appropriate rates centre (=GBLO= for
+GBP/EMEA books, =USNY= for USD/Americas, =FRPA= for EUR, =JPTO= for
+JPY, =CATO= for CAD, =SGSI= for APAC FX, =WRLD= for the
+region-agnostic regulatory-capital books) instead of leaving it
+unset, and added the column to =dq_books_artefact_tbl= and the
+DQ-publish explicit-column INSERT (same class of gap as the
+=is_sweepable= fix from an earlier task).
 
 Manual QA (Barclays Plc party provisioning, which publishes seed
 =book= rows via =ores_refdata_publish_books_from_dq_fn=) surfaced and

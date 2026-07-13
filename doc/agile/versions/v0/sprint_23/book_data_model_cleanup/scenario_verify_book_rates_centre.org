@@ -25,6 +25,17 @@ This page documents a test scenario verifying [[id:DE683A9D-4FBC-45CB-94B8-30ABB
 | Clients       |                                          |
 | State         | PENDING                               |
 
+Round 1 (commit =85042d435=) FAILED: the field was nullable and no
+seed data set it, so every book showed a blank Rates Centre — and
+manually testing this also surfaced a real bug (fixed in a follow-up
+commit): the codegen Insert Trigger Validations mechanism never
+guarded validation on nullability, so *every* nullable-column
+validation was silently unconditional. Both issues led to a design
+change: =rates_centre_code= is now required (not nullable), defaulting
+to =WRLD= like =book_status=/=regulatory_book_type=, and testdata now
+assigns each seeded book a real rates centre by region. Re-run this
+scenario against the new commit.
+
 * Prerequisites
 
 - Services running: =compass services start=.
@@ -55,12 +66,13 @@ Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
 |--------+-------|
 | Status | |
 
-** Books list shows the Rates Centre column with a flag icon
+** Books list shows the Rates Centre column with a flag icon per book
 
 Open Reference Data > Books. Confirm a "Rates Centre" column appears
-after Sweepable, rendering blank (no flag) for every seeded book —
-the field is nullable and no seed data sets it — with no error
-banner.
+after Sweepable, rendering a flag icon for every seeded book (e.g.
+GBP-region books show =GBLO=, USD-region books show =USNY=, the
+regulatory capital books show =WRLD=) — no book should have a blank
+Rates Centre now that the field is required — with no error banner.
 
 *** Result
 
@@ -71,12 +83,12 @@ banner.
 ** Detail dialog shows and edits the Rates Centre combo
 
 Double-click any book. Confirm a "Rates Centre:" combo box appears
-(blank/unselected initially). Open the dropdown, confirm it is
-populated with business centre codes each showing a small flag icon
-(e.g. =GBLO=, =USNY=). Select one, Save. Confirm the change-reason
-prompt appears, the save succeeds, the grid refreshes, the list's
-Rates Centre column now shows the matching flag icon, and Version
-increments by 1.
+pre-selected to its seeded value (e.g. =GBLO=). Open the dropdown,
+confirm it is populated with business centre codes each showing a
+small flag icon. Select a different one, Save. Confirm the
+change-reason prompt appears, the save succeeds, the grid refreshes,
+the list's Rates Centre column now shows the newly-selected flag
+icon, and Version increments by 1.
 
 *** Result
 
@@ -87,9 +99,9 @@ increments by 1.
 ** History dialog shows the Rates Centre change
 
 Open History on that book. Confirm both versions appear, with the
-diff highlighting the Rates Centre change from blank to the selected
-code, and that closing the history dialog only closes the sub-window,
-not the whole app.
+diff highlighting the Rates Centre change from the original code to
+the newly-selected one, and that closing the history dialog only
+closes the sub-window, not the whole app.
 
 *** Result
 
@@ -113,10 +125,10 @@ ERROR-level line.
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | |
+| Completed at  | |
+| Branch        | feature/add-book-rates-centre |
+| Commit        | |
+| Worktree      | bright_faraday |
 
 * Notes

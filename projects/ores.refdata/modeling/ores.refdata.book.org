@@ -211,22 +211,26 @@ false
 
 ** rates_centre_code
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "WRLD"
 :END:
 
 Rates centre determining which revaluation market data snapshot this
 book uses at end-of-day; see
 [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]].
 
-Optional soft FK to business_centres by code (e.g. "GBLO", "USNY"),
-reusing the same location reference already used by
+Soft FK to business_centres by code (e.g. "GBLO", "USNY"), reusing
+the same location reference already used by
 counterparty/party/business_unit rather than modeling a dedicated
-rates-centre entity.
+rates-centre entity. Defaults to =WRLD= (the global sentinel business
+centre, seeded for every tenant) for the same reason =book_status=
+defaults to =Active= -- a freshly-constructed book always carries a
+value the FK-validation trigger accepts.
 
 #+begin_src cpp :name generator
-std::string("GBLO")
+std::string("WRLD")
 #+end_src
 
 * SQL
@@ -367,7 +371,7 @@ std::string("GBLO")
 | book_status          | Status                | bookStatusCombo         | dynamic_combo |        |             |                               |                   |                    |                              | refdata::domain::book_status           | ores.qt/LookupFetcher.hpp  | fetch_book_statuses           | bookStatusWatcher         | code              | description          | display_order     | book statuses          | BookStatusCombo           | book_status           |
 | regulatory_book_type | Regulatory Book Type  | regulatoryBookTypeCombo | dynamic_combo |        |             |                               |                   |                    |                              | refdata::domain::regulatory_book_type  | ores.qt/LookupFetcher.hpp  | fetch_regulatory_book_types   | regulatoryBookTypeWatcher | code              | description          | display_order     | regulatory book types  | RegulatoryBookTypeCombo   | regulatory_book_type  |
 | is_sweepable         | Sweepable             | isSweepableCheckBox     | check_box     |        |             |                               |                   |                    |                              |                                        |                             |                               |                           |                   |                      |                   |                        |                           |                       |
-| rates_centre_code    | Rates Centre          | ratesCentreCodeCombo    | flagged_combo |        |             |                               | business_centre   | true               | fetch_business_centre_codes | | ores.qt/LookupFetcher.hpp  |                               |                           |                   |                      |                   |                        |                           |                       |
+| rates_centre_code    | Rates Centre          | ratesCentreCodeCombo    | flagged_combo |        |             |                               | business_centre   | false              | fetch_business_centre_codes | | ores.qt/LookupFetcher.hpp  |                               |                           |                   |                      |                   |                        |                           |                       |
 
 *** Columns (Qt model)
 

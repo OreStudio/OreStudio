@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 751DE13E-8851-436B-B0BC-DED1BDC25E5F
+:END:
+#+title: Task: Codegen full-stack CRM topology entities (config, driver pair, derived pair) with refdata UI
+#+description: Generate domain/repository/service/HTTP/shell/Qt layers for crm_topology_config, crm_driver_pair, and crm_enabled_derived_pair, wired into the reference-data menu, so the DQ-published CRM bundles are viewable and testable outside raw SQL ahead of the (still-blocked) cross-rates matrix UI panel.
+#+type: task
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The [[id:6D953558-A61C-461F-859D-CBD28AD5D8F5][CRM DQ publishing task]] created three new tables
+(=ores_marketdata_crm_topology_configs_tbl=,
+=ores_marketdata_crm_driver_pairs_tbl=,
+=ores_marketdata_crm_enabled_derived_pairs_tbl=) with no entity layer
+above raw SQL -- no domain type, repository, service, HTTP endpoint,
+shell command, or Qt UI exists for any of them (confirmed: zero Qt
+references to =crm_topology= in the codebase today). Use the
+=codegen-add-entity= orchestrator to generate the full stack for all
+three entities (domain JSON/table I/O, repository, service,
+=ores.http.server= REST endpoints, =ores.shell= CLI commands, Qt list
+and detail views), then wire the new list view(s) into the
+reference-data menu, so the DQ-published "majors"/"exotics" CRM
+bundles are inspectable and testable through the app UI ahead of --
+and independent of -- the still-blocked cross-rates matrix UI panel.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- Full-stack entities exist for =crm_topology_config=,
+  =crm_driver_pair=, and =crm_enabled_derived_pair=: domain type with
+  JSON/table I/O, repository, service, HTTP CRUD endpoints, shell
+  list/history commands, Qt list window + detail/history dialogs --
+  following the same codegen conventions as other refdata entities.
+- The =crm_topology_config= list view (and its driver/derived pair
+  detail) is reachable from the reference-data menu in the Qt client,
+  not just creatable via raw SQL or DQ publish.
+- After a synthetic party publish, the UI shows both "majors" and
+  "exotics" configs for the party with correct driver/derived pair
+  counts (8+3 and 3+0 respectively), matching what was already
+  confirmed at the SQL layer.
+- Full local build clean, =ctest= green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

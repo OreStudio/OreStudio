@@ -20,8 +20,11 @@
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.analytics.quant/domain/process_parameter_validation.hpp"
 #include "ores.analytics.quant/service/processes/arithmetic_gmm_process.hpp"
+#include "ores.analytics.quant/service/processes/cir_process.hpp"
 #include "ores.analytics.quant/service/processes/gmm_process.hpp"
+#include "ores.analytics.quant/service/processes/hull_white_process.hpp"
 #include "ores.analytics.quant/service/processes/ou_process.hpp"
+#include "ores.analytics.quant/service/processes/vasicek_process.hpp"
 #include <stdexcept>
 
 namespace ores::analytics::quant::service {
@@ -55,6 +58,32 @@ process_factory::make_process(const std::string& process_type,
     // process_type should log around this call.
     return std::make_unique<gmm_process>(
         std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
+}
+
+std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess>
+process_factory::make_yield_curve_process(const std::string& process_type,
+                                          double kappa,
+                                          std::vector<double> theta_path,
+                                          double sigma,
+                                          double initial_rate,
+                                          std::uint32_t seed) {
+    const auto validation = ores::analytics::quant::domain::validate_yield_curve_process_parameters(
+        process_type, kappa, theta_path, sigma, initial_rate);
+    if (!validation.valid)
+        throw std::invalid_argument(validation.message);
+
+    if (process_type == "vasicek")
+        return std::make_unique<vasicek_process>(
+            kappa, theta_path.front(), sigma, initial_rate, seed);
+    if (process_type == "cir")
+        return std::make_unique<cir_process>(kappa, theta_path.front(), sigma, initial_rate, seed);
+    if (process_type == "hull_white")
+        return std::make_unique<hull_white_process>(
+            kappa, std::move(theta_path), sigma, initial_rate, seed);
+
+    throw std::invalid_argument(
+        "process_factory::make_yield_curve_process: unrecognised process_type '" + process_type
+        + "'");
 }
 
 }

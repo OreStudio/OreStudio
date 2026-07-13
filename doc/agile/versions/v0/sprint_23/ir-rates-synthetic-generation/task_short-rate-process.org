@@ -7,60 +7,72 @@
 #+level: s1
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/short-rate-process
+#+pr: 1555
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
 #+updated: 2026-07-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Add a mean-reverting short-rate stochastic process (Hull-White, CIR,
-or Vasicek — pick one for the first pass) implementing
-=IStochasticProcess=
-(=projects/ores.marketdata/api/include/ores.marketdata.api/domain/i_stochastic_process.hpp=),
-wired into =process_factory::make_process()=
-(=projects/ores.synthetic/service/src/process_factory.cpp=). Same
-shape as =ou_process=
-(=projects/ores.synthetic/service/src/processes/ou_process.hpp=): pure
-closed-form math, no QuantLib.
+Add mean-reverting short-rate stochastic processes implementing
+=IYieldCurveProcess=
+(=projects/ores.analytics.quant/include/ores.analytics.quant/domain/i_yield_curve_process.hpp=,
+a new interface extending =IStochasticProcess= with a
+=discount_factor()= method), wired into
+=process_factory::make_yield_curve_process()=
+(=projects/ores.analytics.quant/src/service/process_factory.cpp=).
+Same shape as =ou_process=: pure closed-form math, no QuantLib.
+
+Revised from the original goal in two ways, both decided with the
+user mid-task: (1) location moved from =ores.synthetic= to
+=ores.analytics.quant=, since that component was created (2026-07-11,
+after this task was originally written) specifically to hold
+dependency-light quant math; (2) scope widened from "pick one of the
+three" to implementing all three, once analysis showed Hull-White
+generalises Vasicek (constant-theta special case) rather than the
+reverse, so Vasicek could be composed on top of a general Hull-White
+engine instead of being separately-derived duplicate code. CIR
+remains a genuinely distinct third engine.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-03                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-12                               |
 
 * Acceptance
 
-- New process class implements =IStochasticProcess=, selectable via a
-  new =process_type= value in =process_factory=.
+- New process classes implement =IYieldCurveProcess=, selectable via
+  =process_factory::make_yield_curve_process()=: =vasicek=, =cir=,
+  =hull_white=.
 - No QuantLib dependency introduced anywhere in
-  =projects/ores.synthetic/=.
-- Parameters (kappa, theta, sigma — or the CIR/Hull-White equivalents)
-  are validated via =ores.synthetic.api::domain::validate_process_parameters=
-  (extend it for the new engine, don't duplicate its rules).
-- The process exposes the model's closed-form affine zero-coupon bond
-  price, =P(t,T) = A(t,T)·exp(-B(t,T)·r_t)=, as a function of the
-  current short-rate state =r_t= and maturity =T= — not just a path
-  of =r_t= samples. This is the "latent curve": every instrument
-  quote the Curve Template config task derives (deposit, FRA, swap,
-  at whatever tenor) must come from evaluating this one =P(t,T)=
-  formula at the current =r_t=, so the whole tick batch is
-  guaranteed, by construction, to be a slice of one internally
-  consistent curve rather than independently-noised, potentially
-  inconsistent quotes. See the parent story's "Open question: does a
-  single short-rate draw actually guarantee a bootstrappable curve?"
+  =projects/ores.analytics.quant/=.
+- Parameters (kappa, theta_path, sigma, initial_rate) are validated
+  via the new
+  =ores.analytics.quant::domain::validate_yield_curve_process_parameters=
+  (a second function alongside the existing
+  =validate_process_parameters=, not an overload onto its
+  incompatible means/stdevs/weights array shape — see Notes).
+- Each process exposes the model's closed-form affine zero-coupon
+  bond price via =discount_factor(ticks_ahead)=, evaluated from the
+  current short-rate state — not just a path of =r_t= samples. This
+  is the "latent curve": every instrument quote the Curve Template
+  config task derives (deposit, FRA, swap, at whatever tenor) must
+  come from evaluating this one formula at the current state, so the
+  whole tick batch is guaranteed, by construction, to be a slice of
+  one internally consistent curve rather than independently-noised,
+  potentially inconsistent quotes. See the parent story's "Analysis"
   section.
 
 * Plan
@@ -69,18 +81,136 @@ closed-form math, no QuantLib.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+1. New =IYieldCurveProcess= interface (=IStochasticProcess= +
+   =discount_factor(ticks_ahead)=), in =ores.analytics.quant::domain=.
+2. =hull_white_process=: general 1-factor Gaussian short-rate engine,
+   =dr = kappa*(theta(t)-r)*dt + sigma*dW=, written in the same
+   "target level" form as =ou_process= (not Hull & White's original
+   drift-intercept notation) specifically so the degenerate
+   =kappa <= 0= case and the constant-theta (Vasicek) case reduce to
+   *exactly* =ou_process='s formula, not an approximation of it.
+   =theta(t)= is a caller-supplied, piecewise-constant-per-tick
+   =theta_path= vector (held flat once it runs out) — fitting it to a
+   real market curve is out of scope (needs bootstrapping) and left
+   for future work; the engine itself doesn't need that fitting step
+   to be usable. =discount_factor()= uses an exact backward recursion
+   (Brigo & Mercurio's discrete-time affine-model derivation) over the
+   same one-tick transition law =next()= simulates, rather than a
+   separately-derived continuous-time integral — guarantees the two
+   are mutually consistent by construction.
+3. =vasicek_process=: literal composition, not reimplementation —
+   wraps a =hull_white_process= constructed with a single-element
+   =theta_path=. Tests assert bit-identical simulated paths and
+   identical =discount_factor()= output against the equivalent
+   =hull_white_process= directly, pinning the composition relationship
+   as a tested invariant, not just a design intention.
+4. =cir_process=: independent engine (=dr = kappa*(theta-r)*dt +
+   sigma*sqrt(r)*dW=), since CIR's square-root diffusion is genuinely
+   different from the Gaussian OU/Vasicek/Hull-White family, not a
+   special case of it. Exact simulation via the standard
+   Poisson-mixture-of-central-chi-squared construction (Glasserman
+   2003) — no Euler-discretisation approximation — using
+   =std::poisson_distribution= + =std::chi_squared_distribution= only
+   (no new dependency). =sigma == 0= is a separate deterministic-ODE
+   branch: the general stochastic formulas *and* the closed-form bond
+   price both have a =sigma=-in-the-denominator singularity at
+   =sigma == 0=, so this isn't an optimisation, it's required for
+   correctness at that boundary.
+5. Comprehensive Catch2 suites per class (deterministic-seed, edge
+   cases, statistical mean-reversion checks, closed-form cross-checks
+   against independently-recomputed oracle formulas), matching
+   =ou_process_tests.cpp='s existing conventions.
+
 * Notes
+
+- Component location: this task predates =ores.analytics.quant=
+  (created 2026-07-11) and originally targeted
+  =ores.synthetic/service/src/processes/= via =IStochasticProcess= in
+  =ores.marketdata.api=. Both of those paths are now stale — a fresh
+  =git fetch= mid-task showed =IStochasticProcess=,
+  =process_factory=, and every existing process implementation had
+  already moved wholesale into =ores.analytics.quant= on =main=
+  before this task started. Followed that existing move rather than
+  re-litigating it.
+- Extended =process_parameter_validation.hpp/.cpp= with a *second*
+  function, =validate_yield_curve_process_parameters=, instead of
+  overloading the existing
+  =validate_process_parameters(means,stdevs,weights,initial_price)=
+  signature — a =theta_path= vector plus =kappa=/=sigma=/
+  =initial_rate= doesn't fit that array shape without forcing an
+  awkward, misleading repurposing (unlike how "ou" already repurposes
+  =weights.front()=/=stdevs.front()=, which is a defensible stretch
+  for 2 scalars but not for a whole path vector).
+- =process_factory::make_yield_curve_process()= throws on an
+  unrecognised =process_type= rather than silently falling back to a
+  default engine (unlike =make_process()='s geometric fallback) — a
+  caller asking for a *yield-curve* process by an unrecognised name
+  is almost certainly a bug, not a case with a reasonable default.
+- Real bug found and fixed during testing: =std::poisson_distribution=
+  asserts =mean > 0.0= in libstdc++, which a zero short rate
+  (=r_t == 0=, a value CIR must be able to reach and simulate from)
+  triggers via =lambda == 0=. Guarded by skipping the Poisson draw
+  entirely when =lambda == 0= (deterministically =N = 0= in that
+  case) rather than constructing a zero-mean distribution.
+- Not PR-sized on its own: this is a pure math-library addition with
+  no consumer yet (the Curve Template config task, still BACKLOG,
+  is what will actually call =make_yield_curve_process()=). Filed
+  =document-stochastic-processes= as a new BACKLOG task on this story
+  for the knowledge-doc side (hub + per-process pages, Zettelkasten
+  style) this work also surfaced a need for. Also captured a
+  GPU-batched-simulation performance concern in the backlog inbox
+  (=doc/agile/product_backlog/inbox/gpu_batched_stochastic_processes.org=)
+  once instance counts grow beyond what sequential CPU generation can
+  keep up with.
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1555][#1555]] | [analytics.quant] Add Vasicek/CIR/Hull-White short-rate processes |
 
 * Review
 
+PR #1555 review round 1 (Claude automated, issue-level comment, no line comments):
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =cir_process::discount_factor= overflows to NaN for large =ticks_ahead= (=std::exp(gamma*tau)= overflows once =gamma*tau= exceeds ~709) | cir_process.cpp | Fixed | Rewrote B(tau)/A(tau) in the numerically-stable form dividing by =e^{gamma*tau}= up front, so every exponent stays non-positive; added a regression test with =ticks_ahead= up to 10000 asserting a finite result in (0,1] |
+| 2 | Misleading test name/comment in =hull_white_process_tests.cpp= (claims a Vasicek cross-check but only asserts positivity) | hull_white_process_tests.cpp | Declined | Non-blocking per the reviewer's own note; the real cross-check exists in =vasicek_process_tests.cpp=, not a coverage gap |
+| 3 | CI =site= job failing: literal =[[id:...]]= placeholder link in prose breaks org-roam link resolution | task_document-stochastic-processes.org | Fixed | Escaped as verbatim =[[id:...]]= text instead of a real link (this was a pre-existing bug in the doc carried over from the stale branch, unrelated to the reviewer's own findings, caught by CI's site-build check) |
 
 * Result
+
+Added =IYieldCurveProcess= (=IStochasticProcess= + =discount_factor()=)
+and three engines implementing it: =hull_white_process= (general
+1-factor Gaussian short-rate, exact one-step transition + backward
+recursion for the bond price), =vasicek_process= (composes
+=hull_white_process= with a single-element =theta_path=, tested for
+bit-identical output against the equivalent Hull-White instance —
+pinning the composition as a tested invariant), and =cir_process=
+(independent square-root-diffusion engine, exact
+Poisson-mixture-of-chi-squared simulation per Glasserman, with a
+dedicated =sigma == 0= deterministic-ODE branch since the general
+formulas have a =sigma=-denominator singularity there). All three
+selectable via =process_factory::make_yield_curve_process()=, which
+throws on an unrecognised =process_type= (unlike =make_process()='s
+geometric fallback) since a caller asking for a *yield-curve* process
+by an unrecognised name is almost certainly a bug. Parameters validated
+via a new =validate_yield_curve_process_parameters= (kept separate
+from the existing =validate_process_parameters= rather than overloaded
+onto its incompatible means/stdevs/weights shape).
+
+Comprehensive Catch2 suites per class, matching =ou_process_tests.cpp='s
+conventions: deterministic-seed reproducibility, edge cases (kappa <= 0
+degenerate walk, sigma == 0 ODE limit), statistical mean-reversion
+checks, and closed-form cross-checks against independently-recomputed
+oracle formulas.
+
+Filed two follow-ups this work surfaced: =document-stochastic-processes=
+(BACKLOG task on this story — knowledge hub + per-process pages) and a
+GPU-batched-simulation performance capture in the backlog inbox.
+
+Not wired into any consumer yet — the Curve Template config task
+(=ir_curve_generation_config=, still BACKLOG) is what will actually call
+=make_yield_curve_process()=; this task is the pure math-library
+addition underneath it.

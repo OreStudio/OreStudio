@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 2B3FBE54-CD22-4E4F-A282-04A94B1105BB
+:END:
+#+title: Task: Document stochastic processes: knowledge hub + per-process pages
+#+description: A stochastic-processes knowledge hub (GBM, Wiener/Brownian motion, Ito's lemma, OU/Vasicek, CIR, Hull-White) plus one atomic doc per process: layperson description, chart where applicable, paper summary and related-work references.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every stochastic process implemented in ores.analytics.quant (GMM/geometric, arithmetic, OU, and the new Vasicek/CIR/Hull-White short-rate engines) has a corresponding knowledge doc, plus foundational docs for the underlying math (Wiener process, Ito's lemma) they all build on, linked from a new hub. Each doc gives a layperson-accessible description, a chart where one clarifies the process's behaviour, and a summary of the originating paper(s) plus closely related work -- not just a formula dump.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- A new hub doc (e.g. 'Stochastic Processes') exists under doc/knowledge/domain, linking every process-specific atomic doc; GBM, Wiener process, and Ito's lemma each have their own atomic doc even though they predate this story, since they are prerequisites the others link to; OU/Vasicek/CIR/Hull-White (once implemented) each get one; every doc includes a paper-summary section with real citations, not just a bibliography line
+- Follows the Zettelkasten approach already established for the interest_rate_curve_bundles.org and time_structures_and_tenors.org clusters (see doc/knowledge/domain/): small, self-contained, single-concept docs -- not one large document covering every process -- cross-linked via org-roam =[[id:...]]= links (hub -> atomic doc, and atomic doc -> atomic doc where one process builds on another, e.g. OU/Vasicek -> Wiener process/Ito's lemma). Each atomic doc must be independently readable and independently linkable from elsewhere in the graph, exactly like the existing curve-family/tenor docs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

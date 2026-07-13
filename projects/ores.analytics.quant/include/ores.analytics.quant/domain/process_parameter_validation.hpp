@@ -66,6 +66,37 @@ validate_process_parameters(const std::string& process_type,
                             const std::vector<double>& weights,
                             double initial_price);
 
+/**
+ * @brief Validate the raw (kappa, theta_path, sigma, initial_rate) tuple
+ * for the given yield-curve process_type ("vasicek", "cir", "hull_white"),
+ * independent of both the UI and the process-construction machinery.
+ *
+ * Extends the single-source-of-truth validation above with a second
+ * function rather than overloading the mean/stdev/weight-array shape onto
+ * these engines' genuinely different parameter shape (a whole theta_path,
+ * not a single scalar).
+ *
+ * For "vasicek" and "hull_white": theta_path must be non-empty; sigma must
+ * be non-negative; kappa has no required sign (kappa <= 0 is a valid, if
+ * degenerate, driftless case, same as "ou"). initial_rate has no sign
+ * constraint here (a negative short rate is economically unusual but not
+ * invalid for a Gaussian model).
+ *
+ * For "cir": kappa and theta_path.front() (theta) must both be strictly
+ * positive (the sqrt(r) volatility term makes kappa <= 0 ill-posed, and
+ * CIR's mean-reversion level cannot be non-positive); sigma must be
+ * non-negative; initial_rate must be non-negative (CIR's domain is
+ * r >= 0). The Feller condition (2*kappa*theta >= sigma^2) is *not*
+ * enforced here -- violating it is valid (the process can then touch
+ * zero) rather than an error.
+ */
+ORES_ANALYTICS_QUANT_EXPORT process_parameter_validation_result
+validate_yield_curve_process_parameters(const std::string& process_type,
+                                        double kappa,
+                                        const std::vector<double>& theta_path,
+                                        double sigma,
+                                        double initial_rate);
+
 }
 
 #endif

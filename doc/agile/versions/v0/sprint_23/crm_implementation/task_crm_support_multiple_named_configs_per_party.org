@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: BA82072F-0B2B-48F4-9C22-8D6D39337099
+:END:
+#+title: Task: Support multiple concurrently-enabled named CRM configs per party
+#+description: Extend rate_engine/crm_ingest_bridge and the NATS rate/rates protocol to run and query several concurrently-enabled crm_topology_config rows per (tenant, party) by name (e.g. a majors CRM and an exotics CRM), replacing the current first-enabled-wins single-engine-per-party stopgap.
+#+type: task
+#+level: s1
+#+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:
+#+owner: marco
+#+branch:
+#+pr: 1533
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Real trading systems tier their cross-rates: a dense direct-quote mesh
+for liquid majors/G10 pairs, and a strict USD-pivot star for thin-liquidity
+exotics (nobody directly quotes e.g. TRY/ZAR). =crm_topology_config= already
+has a =name= natural key unique per (tenant, party), so the entity model
+already supports several named configs per party -- the gap is entirely in
+the engine and NATS layers, which currently assume at most one *enabled*
+config per (tenant, party) and warn-and-pick-first if more than one is
+enabled (see =crm_ingest_bridge::refresh()='s duplicate-enabled safeguard,
+landed in [[id:88FD9001-F2BA-4061-994C-5EBE8BBD590A][the service-wiring task]]).
+
+This task removes that stopgap: build and hold one =rate_engine= per
+enabled =(tenant, party, config name)=, and let =marketdata.v1.crm.rate=
+/=marketdata.v1.crm.rates= address a specific named CRM (or, for
+=rates=, return the union across every enabled CRM for that party,
+tagged by CRM name, when no name is given -- exact shape to be decided
+during implementation).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- =crm_ingest_bridge= keys its engines map by (tenant, party, config
+  name) instead of (tenant, party); every currently-enabled config for a
+  party gets its own =rate_engine=, built independently (one config's
+  ambiguous/invalid topology must not prevent the others from building).
+- The duplicate-enabled warn-and-pick-first safeguard is removed (no
+  longer applicable) and its stopgap note in
+  [[id:88FD9001-F2BA-4061-994C-5EBE8BBD590A][the service-wiring task]]'s
+  =* Result= is superseded.
+- =get_crm_rate_request=/=get_crm_rates_request= gain a way to select a
+  named CRM; =get_crm_rates_response= tags each returned rate (or the
+  response as a whole) with which named CRM it came from when serving
+  the multi-CRM case.
+- Existing single-CRM-per-party behaviour (today's only real usage)
+  keeps working unchanged.
+- Unit tests cover: two enabled configs for the same party building two
+  independent engines, a per-name lookup, and an all-CRMs batch fetch.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1533][#1533]] | [agile] Block CRM UI task; add multi-named-CRM engine and DQ tasks |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

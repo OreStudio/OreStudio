@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 6D953558-A61C-461F-859D-CBD28AD5D8F5
+:END:
+#+title: Task: Publish realistic named CRM synthetic bundles (majors, exotics) via DQ
+#+description: Seed each demo party with two realistic, concurrently-enabled crm_topology_config CRMs via the DQ synthetic data pipeline: a majors/G10 CRM (dense direct-quote mesh) and an exotics CRM (strict USD-pivot star), so the cross-rates matrix UI can be exercised against real, non-trivial data after a publish. Depends on multi-named-config engine support.
+#+type: task
+#+level: s1
+#+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:dq:synthetic:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: [[id:BA82072F-0B2B-48F4-9C22-8D6D39337099][Support multiple concurrently-enabled named CRM configs per party]]
+#+blocked_since: 2026-07-13
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Once [[id:BA82072F-0B2B-48F4-9C22-8D6D39337099][multi-named-config engine support]] lands, seed demo/test parties
+with realistic, concurrently-enabled CRMs via the DQ synthetic data
+pipeline (=ores.dq= dataset bundles, following the pattern used by
+[[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][the Basic/Realistic synthetic data collections story]]) so the
+cross-rates matrix UI panel can actually be exercised, and so any user
+who runs a synthetic publish gets a usable CRM out of the box -- not
+hand-seeded rows that only exist in one developer's local database.
+
+Two named CRMs per party, matching real FX desk practice:
+- *majors* -- USD-pivot, dense direct-quote mesh for G10 pairs
+  (EUR/USD, USD/JPY, GBP/USD, EUR/GBP, EUR/JPY, ... direct crosses where
+  liquidity justifies a direct quote, not just a triangulated one).
+- *exotics* -- USD-pivot star only (no direct EM/exotic crosses --
+  matches real liquidity: nobody quotes TRY/ZAR directly).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:BA82072F-0B2B-48F4-9C22-8D6D39337099][Support multiple concurrently-enabled named CRM configs per party]] |
+| Next         | Begin implementation once the engine task lands. |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- A DQ dataset bundle (or equivalent synthetic-generation config) that,
+  on publish, creates two enabled =crm_topology_config= rows per demo
+  party ("majors", "exotics"), each with its own =crm_driver_pair= set
+  (spanning-tree edges) and, for majors, a curated
+  =crm_enabled_derived_pair= list of commonly-quoted crosses.
+- Driver pairs are currencies/pairs the synthetic FX generator already
+  publishes ticks for (no CRM edge with no underlying feed).
+- Re-running the publish is idempotent (matches the existing
+  synthetic-data-collection conventions -- no duplicate configs).
+- Manually verified: after a publish, the CRM cross-rates matrix UI
+  panel ([[id:C685A8BE-0DF9-4D23-8AAB-E9DF9069E482][the blocked UI task]]) shows a non-trivial NxN grid for both
+  CRMs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

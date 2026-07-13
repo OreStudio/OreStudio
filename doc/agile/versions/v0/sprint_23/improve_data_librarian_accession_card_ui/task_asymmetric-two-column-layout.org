@@ -31,11 +31,11 @@ as possible.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -59,9 +59,12 @@ as possible.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Replaced overviewTree_/provenanceTree_/methodologyTree_ (QTreeWidget
+property grids) with QSplitter(Qt::Horizontal) in both tabs, ~65/35
+stretch factors. Added small card helpers (addPropertyCard,
+addProseCard, addFormRow, addBadgePlaceholder) reused across both
+tabs. Removed the QTreeWidget-based OverviewBadgeDelegate entirely —
+badges are now plain QLabels styled via BadgeLabelUtils::apply.
 
 * Notes
 
@@ -74,7 +77,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:C6239167-79BD-4560-B0E5-1459A1FFC03A][Verify asymmetric two-column card layout in the Data Librarian]] | PENDING | |
+| [[id:C6239167-79BD-4560-B0E5-1459A1FFC03A][Verify asymmetric two-column card layout in the Data Librarian]] | PASSED | 2 review rounds; see Review table |
 
 * PRs
 
@@ -86,6 +89,26 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Header banner has a near-black background; badges look oversized; Dependencies tab needs zoom/pan (out of scope, capture separately) | DatasetViewDialog.cpp | Accepted #1/#2, filed follow-up task for #3 | Dropped palette(alternate-base) fill, kept only a bottom border; tightened BadgeLabelUtils::apply's shared padding/font-size; filed task_lineage-graph-zoom-pan.org |
+| 2 | Badges still oversized after round 1's font/padding tightening | DatasetViewDialog.cpp | Accepted | Root cause was QFormLayout stretching the field column, not font-size — wrapped badges in a container + trailing stretch (addBadgePlaceholder), same fix pattern as the earlier QTreeWidget badge cells |
 
 * Result
+
+Reworked the Overview and Provenance & Methodology tabs into the
+asymmetric two-column "Card & Canvas" layout: QSplitter (~65/35),
+QGroupBox/QFormLayout cards on the sidebar, prose cards on the
+primary side. Removed the QTreeWidget-based property grids and the
+=OverviewBadgeDelegate= entirely.
+
+Two review rounds with the running client found real defects:
+a near-black header banner background (palette(alternate-base) in
+this dark theme) and oversized badges — the latter's true cause
+(QFormLayout stretching the field column) only surfaced after a
+first attempt at tightening padding/font-size didn't fix it. Also
+filed a follow-up task for Dependencies-tab zoom/pan, raised during
+QA but out of scope here.
+
+QA Validation Runner scenario now PASSES all 7 steps with no
+outstanding notes. The story's original two-phase scope (header/
+badges/tab-merge in Phase 1, two-column layout in Phase 2) is
+complete; the story stays open only for the zoom/pan follow-up task.

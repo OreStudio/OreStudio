@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 5211BA12-1820-4025-8D99-82D7D8748FA9
+:END:
+#+title: Test Scenario: Verify CRM topology config/driver pair/derived pair refdata UI
+#+description: Manual QA: after Barclays Plc provisioning, confirm the new CRM Topology Configs, CRM Driver Pairs, and CRM Enabled Derived Pairs list windows show correct majors/exotics data via the Market Data menu.
+#+type: test_scenario
+#+level: s1
+#+filetags: :crm_implementation:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:751DE13E-8851-436B-B0BC-DED1BDC25E5F][Codegen full-stack CRM topology entities (config, driver pair, derived pair) with refdata UI]] in [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:751DE13E-8851-436B-B0BC-DED1BDC25E5F][Codegen full-stack CRM topology entities (config, driver pair, derived pair) with refdata UI]] |
+| Parent story  | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]   |
+| Target dialog | CrmTopologyConfigMdiWindow, CrmDriverPairMdiWindow, CrmEnabledDerivedPairMdiWindow |
+| Clients       | (single client) |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Log in as tenant_admin@barclays_plc / Secure-Password-123, select party BARCLAYS PLC
+
+If the database has been recreated since Barclays Plc was last
+provisioned, re-run it first: =compass shell -f
+projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+(services must already be up). Then in the client: login screen,
+=tenant_admin@barclays_plc= / =Secure-Password-123=, and pick
+=BARCLAYS PLC= as the active party if not already selected.
+
+** Open "CRM Topology &Configs" from the Market Data menu
+
+Confirm the list window opens and shows two rows for BARCLAYS PLC:
+"majors" and "exotics", both with =pivot_currency_code = USD= and
+=enabled= showing a green "Yes"-style badge.
+
+** Open "CRM &Driver Pairs" from the Market Data menu
+
+Confirm 11 rows total for BARCLAYS PLC: 8 majors driver pairs
+(EUR/USD, GBP/USD, USD/CHF, USD/JPY, USD/SEK, AUD/USD, USD/CAD,
+NZD/USD) + 3 exotics driver pairs (USD/ZAR, USD/MXN, USD/INR), each
+linked to its =config_id= and showing the =enabled= badge.
+
+** Open "CRM &Enabled Derived Pairs" from the Market Data menu
+
+Confirm 3 rows for BARCLAYS PLC's "majors" config (EUR/GBP, EUR/JPY,
+GBP/JPY, or whichever curated crosses the publish task seeded) and
+none for "exotics" (a pure USD-pivot star has no derived pairs by
+design).
+
+** Open the detail dialog for one row in each of the three windows
+
+Double-click a row in each list window; confirm the detail dialog
+opens pre-filled with that row's data (id, party_id, config_id where
+applicable, currency codes, enabled checkbox) and closes cleanly
+without editing.
+
+** Open the history dialog for one row in each of the three windows
+
+Right-click (or the history toolbar action) on a row in each list
+window; confirm the history dialog opens and shows at least one
+version (the original insert from provisioning).
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

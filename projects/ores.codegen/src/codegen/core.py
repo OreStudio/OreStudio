@@ -2144,6 +2144,21 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             v.get('column') == 'change_reason_code'
             for v in domain_entity.get('insert_trigger', {}).get('validations', [])
         )
+        # The Validations table only declares (column, validation_function);
+        # it doesn't repeat nullability, so cross-reference each validated
+        # column against its own Columns/Natural-keys declaration and
+        # propagate 'nullable' onto the validation row -- the SQL template's
+        # {{#nullable}} guard (skip validation when NEW.<col> is null) reads
+        # this flag, and without it every validation was silently emitted
+        # unconditionally, rejecting a legitimate null on an otherwise
+        # nullable column.
+        _nullable_by_column = {
+            col.get('name', col.get('column')): bool(col.get('nullable', False))
+            for col in (domain_entity.get('columns', []) or [])
+            + (domain_entity.get('natural_keys', []) or [])
+        }
+        for v in domain_entity.get('insert_trigger', {}).get('validations', []):
+            v['nullable'] = _nullable_by_column.get(v.get('column'), False)
         # Mark last items in new iterable sql sub-sections for template rendering
         if 'fk_copy_validations' in sql_section:
             _mark_last_item(sql_section['fk_copy_validations'])

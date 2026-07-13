@@ -102,8 +102,25 @@ Shipped =book.rates_centre_code= as a nullable soft-FK to
 both the detail dialog and the Book list column. All acceptance items
 met; builds clean.
 
-Two process findings filed as backlog captures rather than fixed here
-(out of scope for this task):
+Manual QA (Barclays Plc party provisioning, which publishes seed
+=book= rows via =ores_refdata_publish_books_from_dq_fn=) surfaced and
+fixed a real codegen bug: the Insert Trigger =* Validations= table
+(=core.py='s =generate_from_model=) never propagated a column's
+=nullable= flag onto its validation row, so the SQL template's
+=\{\{#nullable\}\}= guard was always false and every Validations-table
+validation was emitted unconditionally — rejecting a legitimate null
+on an otherwise-nullable column. =rates_centre_code= is the first
+nullable column ever validated through this generic mechanism (every
+prior user -- =ledger_ccy=, =book_status=, =regulatory_book_type= --
+is non-nullable), which is why this had never surfaced before. Fixed
+by cross-referencing each validation row's column against the
+entity's own Columns/Natural-keys nullability in =core.py=, then
+regenerated =book='s SQL layer via =codegen entity generate book
+--address ores.sql.schema= (no other entity's generated SQL changed,
+confirming no unintended fallout).
+
+Two further process findings filed as backlog captures rather than
+fixed here (out of scope for this task):
 
 - [[id:0AF759FB-B1E9-48BC-93B7-D5ECED62F489][Validate flag_source library symbols exist at codegen time]] —
   codegen has no way to catch a missing =fetch_<source>_codes=/

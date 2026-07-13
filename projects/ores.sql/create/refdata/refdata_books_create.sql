@@ -139,8 +139,10 @@ begin
     -- Validate regulatory_book_type
     NEW.regulatory_book_type := ores_refdata_validate_regulatory_book_type_fn(NEW.tenant_id, NEW.regulatory_book_type);
 
-    -- Validate rates_centre_code
-    NEW.rates_centre_code := ores_refdata_validate_business_centre_fn(NEW.tenant_id, NEW.rates_centre_code);
+    -- Validate rates_centre_code (optional field -- skip validation when null)
+    if NEW.rates_centre_code is not null then
+        NEW.rates_centre_code := ores_refdata_validate_business_centre_fn(NEW.tenant_id, NEW.rates_centre_code);
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

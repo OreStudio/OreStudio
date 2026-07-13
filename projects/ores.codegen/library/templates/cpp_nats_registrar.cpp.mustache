@@ -51,6 +51,11 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
             h->hierarchy(std::move(msg));
         }));
 {{/has_parent_id}}
+{{#read_for_cache}}
+    subs.push_back(nats.queue_subscribe(
+        read_{{entity_plural}}_for_cache_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->read_for_cache(std::move(msg)); }));
+{{/read_for_cache}}
 <<paste:FB267332-79AB-4873-AFDA-CEEE68A0F398>>
     return subs;
 }

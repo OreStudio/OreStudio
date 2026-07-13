@@ -13,6 +13,24 @@
 
 Subject handler skeleton dispatching protocol messages to the entity service. =nats-handler= profile.
 
+Model flags consumed by this template:
+
+- =read_for_cache= (bool, Flags) — emit a =read_for_cache= handler method
+  that swaps to the request's tenant and calls the entity's existing
+  paginated =list_<entity_plural_short>= service method with an
+  unbounded limit. Requires =has_tenant_id=.
+
+  *Known gap, inherited from party's hand-written precedent*: unlike
+  every other handler method, =read_for_cache= does not call
+  =make_request_context= / =has_permission= — it trusts the
+  caller-supplied =tenant_id= outright. This mirrors party's existing
+  =read_parties_for_cache=, which is meant for trusted internal
+  service-to-service NATS calls (e.g. IAM's party-cache warm-up), not
+  end-user-facing traffic. If a future consumer exposes this subject to
+  less-trusted callers, add the same auth/permission check the other
+  methods use before relying on it. See the "Generic entity-mirror
+  cache primitive + codegen facet" story for the follow-up task.
+
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
 
@@ -45,6 +63,10 @@ The full template source. Edit here and re-tangle with
 {{#has_parent_id}}
 #include <boost/uuid/string_generator.hpp>
 {{/has_parent_id}}
+{{#read_for_cache}}
+#include "ores.database/service/tenant_context.hpp"
+#include <limits>
+{{/read_for_cache}}
 <<paste:F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F>>
 
 namespace ores::{{component}}::messaging {
@@ -325,6 +347,38 @@ public:
     }
 
 {{/has_parent_id}}
+{{#read_for_cache}}
+    void read_for_cache(ores::nats::message msg) {
+        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        if (auto req = decode<read_{{entity_plural}}_for_cache_request>(msg)) {
+            try {
+                using ores::database::service::tenant_context;
+                auto tctx = tenant_context::with_tenant(ctx_, req->tenant_id);
+                service::{{entity_singular}}_service svc(tctx);
+                // No dedicated unpaginated list method is generated; reuse
+                // the paginated one with an unbounded limit.
+                auto {{entity_plural_short}} = svc.list_{{entity_plural_short}}(
+                    0, std::numeric_limits<std::uint32_t>::max());
+                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
+                    << "Completed " << msg.subject << " (tenant=" << req->tenant_id
+                    << ", count=" << {{entity_plural_short}}.size() << ")";
+                reply(nats_, msg, read_{{entity_plural}}_for_cache_response{
+                    .success = true, .{{entity_plural_short}} = std::move({{entity_plural_short}})});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, read_{{entity_plural}}_for_cache_response{
+                    .success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+{{/read_for_cache}}
 <<paste:B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F>>
 private:
     ores::nats::service::client& nats_;

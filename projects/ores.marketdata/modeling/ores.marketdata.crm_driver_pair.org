@@ -1,6 +1,6 @@
 :PROPERTIES:
 :ID: 7A2E4B91-3C5D-4F6A-9B1E-2D8F0A6C4E7B
-:ores.cpp.qt.enabled: false
+:ores.cpp.qt.enabled: true
 :END:
 #+title: ores.marketdata.crm_driver_pair
 #+description: Codegen entity model for the marketdata crm_driver_pair table; a directly-quoted currency pair (topology edge) owned by a crm_topology_config.
@@ -199,3 +199,57 @@ crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
 :PROPERTIES:
 :iterator_var: p
 :END:
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.marketdata.api/domain/crm_driver_pair.hpp
+:domain_class:            marketdata::domain::crm_driver_pair
+:protocol_include:        ores.marketdata.api/messaging/crm_driver_pair_protocol.hpp
+:collection_name:         crm_driver_pairs
+:item_var:                pair
+:key_field:                id
+:has_uuid_primary_key:    true
+:has_pagination:          true
+:has_change_reason_cache: true
+:has_export_macro:        true
+:get_request_class:       marketdata::messaging::get_crm_driver_pairs_request
+:get_response_class:      marketdata::messaging::get_crm_driver_pairs_response
+:get_message_type:        get_crm_driver_pairs_request
+:save_request_class:      marketdata::messaging::save_crm_driver_pair_request
+:save_response_class:     marketdata::messaging::save_crm_driver_pair_response
+:save_message_type:       save_crm_driver_pair_request
+:save_request_item_field: data
+:delete_request_class:    marketdata::messaging::delete_crm_driver_pair_request
+:delete_response_class:   marketdata::messaging::delete_crm_driver_pair_response
+:delete_message_type:     delete_crm_driver_pair_request
+:history_request_class:   marketdata::messaging::get_crm_driver_pair_history_request
+:history_response_class:  marketdata::messaging::get_crm_driver_pair_history_response
+:history_message_type:    get_crm_driver_pair_history_request
+:settings_group:          CrmDriverPairListWindow
+:window_title:            CRM Driver Pairs
+:icon:                    ArrowSync
+:END:
+
+*** Detail fields
+
+| field                | label     | widget            | type      | is_key | is_required | placeholder             |
+|----------------------+-----------+-------------------+-----------+--------+-------------+--------------------------|
+| id                   | Id        | idEdit            | line_edit | true   | true        | CRM driver pair id      |
+| party_id             | Party Id  | partyIdEdit       | line_edit |        | true        | Owning party id         |
+| config_id            | Config Id | configIdEdit      | line_edit |        | true        | Owning CRM topology id  |
+| base_currency_code   | Base      | baseCcyEdit       | line_edit |        | true        | e.g. EUR                |
+| quote_currency_code  | Quote     | quoteCcyEdit      | line_edit |        | true        | e.g. USD                |
+| enabled              | Enabled   | enabledCheckBox   | check_box |        |             |                          |
+
+*** Columns (Qt model)
+
+| enum_name          | field                | header       | type      | width | is_badge | badge_key   |
+|--------------------+----------------------+--------------+-----------+-------+----------+-------------|
+| PartyId            | party_id             | Party Id     | uuid      | auto  |          |             |
+| ConfigId           | config_id            | Config Id    | uuid      | auto  |          |             |
+| BaseCurrencyCode   | base_currency_code   | Base         | string    | 80    |          |             |
+| QuoteCurrencyCode  | quote_currency_code  | Quote        | string    | 80    |          |             |
+| Enabled             | enabled              | Enabled      | bool      | 80    | true     | crm_enabled |
+| Version             | version              | Version      | int       | 70    |          |             |
+| ModifiedBy          | modified_by          | Modified By  | string    | auto  |          |             |
+| RecordedAt          | recorded_at          | Recorded At  | timestamp | auto  |          |             |

@@ -31,6 +31,9 @@ class QMenu;
 namespace ores::qt {
 
 class FeedBindingController;
+class CrmTopologyConfigController;
+class CrmDriverPairController;
+class CrmEnabledDerivedPairController;
 
 /**
  * @brief Marketdata plugin: market data authority and feed binding management.
@@ -64,6 +67,9 @@ private:
     plugin_context ctx_;
     QMenu* marketDataMenu_ = nullptr;
     std::unique_ptr<FeedBindingController> feedBindingController_;
+    std::unique_ptr<CrmTopologyConfigController> crmTopologyConfigController_;
+    std::unique_ptr<CrmDriverPairController> crmDriverPairController_;
+    std::unique_ptr<CrmEnabledDerivedPairController> crmEnabledDerivedPairController_;
 };
 
 }

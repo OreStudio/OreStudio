@@ -420,6 +420,10 @@ BEGIN
         'tenor_unit', 'Tenor Unit',
         'Period unit for a tenor''s duration (day/week/month/year), or NONE for a SPECIAL tenor.', 28);
 
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'crm_enabled', 'CRM Enabled',
+        'Whether a CRM topology config, driver pair, or enabled derived pair is currently active (Yes/No badge); shared across all three crm_* entities.', 29);
+
     -- =============================================================================
     -- Badge Mappings
     -- =============================================================================
@@ -679,6 +683,15 @@ BEGIN
         'tenor_unit', 'YEAR', 'state_running');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'tenor_unit', 'NONE', 'inactive');
+
+    -- crm_enabled: renders the boolean as a Yes/No badge, shared by
+    -- crm_topology_config, crm_driver_pair, and crm_enabled_derived_pair --
+    -- same true/false -> string("true")/string("false") the Qt model
+    -- already emits for is_bool columns, same convention as is_sweepable.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'crm_enabled', 'true', 'active');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'crm_enabled', 'false', 'inactive');
 
     -- =============================================================================
     -- Summary

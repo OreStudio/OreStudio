@@ -1,6 +1,6 @@
 :PROPERTIES:
 :ID: 3F8C1A2D-6B4E-4A9F-8D2C-1E7A9B5C3F0D
-:ores.cpp.qt.enabled: false
+:ores.cpp.qt.enabled: true
 :END:
 #+title: ores.marketdata.crm_topology_config
 #+description: Codegen entity model for the marketdata crm_topology_config table; a named, party-scoped CRM topology (pivot currency) for ores.analytics.quant.
@@ -187,3 +187,55 @@ crm_topology_config_repository::read_latest_all_tenants(context ctx) {
 :PROPERTIES:
 :iterator_var: c
 :END:
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.marketdata.api/domain/crm_topology_config.hpp
+:domain_class:            marketdata::domain::crm_topology_config
+:protocol_include:        ores.marketdata.api/messaging/crm_topology_config_protocol.hpp
+:collection_name:         crm_topology_configs
+:item_var:                config
+:key_field:                name
+:has_uuid_primary_key:    true
+:has_pagination:          true
+:has_change_reason_cache: true
+:has_export_macro:        true
+:get_request_class:       marketdata::messaging::get_crm_topology_configs_request
+:get_response_class:      marketdata::messaging::get_crm_topology_configs_response
+:get_message_type:        get_crm_topology_configs_request
+:save_request_class:      marketdata::messaging::save_crm_topology_config_request
+:save_response_class:     marketdata::messaging::save_crm_topology_config_response
+:save_message_type:       save_crm_topology_config_request
+:save_request_item_field: data
+:delete_request_class:    marketdata::messaging::delete_crm_topology_config_request
+:delete_response_class:   marketdata::messaging::delete_crm_topology_config_response
+:delete_message_type:     delete_crm_topology_config_request
+:history_request_class:   marketdata::messaging::get_crm_topology_config_history_request
+:history_response_class:  marketdata::messaging::get_crm_topology_config_history_response
+:history_message_type:    get_crm_topology_config_history_request
+:settings_group:          CrmTopologyConfigListWindow
+:window_title:            CRM Topology Configs
+:icon:                    Chart
+:END:
+
+*** Detail fields
+
+| field                | label           | widget        | type      | is_key | is_required | placeholder            |
+|----------------------+-----------------+---------------+-----------+--------+-------------+-------------------------|
+| id                   | Id              | idEdit        | line_edit | true   | true        | CRM topology config id |
+| party_id             | Party Id        | partyIdEdit   | line_edit |        | true        | Owning party id         |
+| name                 | Name            | nameEdit      | line_edit |        | true        | e.g. primary            |
+| pivot_currency_code  | Pivot Currency  | pivotCcyEdit  | line_edit |        | true        | e.g. USD                |
+| enabled              | Enabled         | enabledCheckBox | check_box |      |             |                         |
+
+*** Columns (Qt model)
+
+| enum_name          | field                | header          | type      | width | is_badge | badge_key   |
+|--------------------+----------------------+-----------------+-----------+-------+----------+-------------|
+| PartyId            | party_id             | Party Id        | uuid      | auto  |          |             |
+| Name                | name                 | Name            | string    | auto  |          |             |
+| PivotCurrencyCode  | pivot_currency_code  | Pivot Currency  | string    | 100   |          |             |
+| Enabled             | enabled              | Enabled         | bool      | 80    | true     | crm_enabled |
+| Version             | version              | Version         | int       | 70    |          |             |
+| ModifiedBy          | modified_by          | Modified By     | string    | auto  |          |             |
+| RecordedAt          | recorded_at          | Recorded At     | timestamp | auto  |          |             |

@@ -29,11 +29,11 @@ captures for anything out of scope.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] |
-| Now          | Unblocked: regenerated output builds clean and passes automated tests. Retesting the Qt UI against a fresh environment. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Work through the CRUD + eventing scenario in blue/red clients.  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -57,7 +57,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:E6E785F9-B8C9-4E51-9AC7-F7C9D3C570EA][Verify contact_type CRUD and eventing]] | PENDING | Two-client (blue/red) CRUD + eventing scenario; loaded in blue's Scenario Runner. |
+| [[id:E6E785F9-B8C9-4E51-9AC7-F7C9D3C570EA][Verify contact_type CRUD and eventing]] | PASSED | Two-client (blue/red) CRUD + eventing scenario; all 11 steps passed on the third run, against the regenerated entity and a deduplicated service fleet. |
 
 * PRs
 
@@ -72,3 +72,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All 11 scenario steps passed on the third manual QA run — list, create,
+read, update, delete, history, and cross-client eventing (create/
+update/delete all landing live in a second instance without a manual
+reload).
+
+The first two runs surfaced real infrastructure bugs, not code
+defects in the regenerated entity: (1) a stale build/link — the
+=ContactTypeController= constructor never ran because the running
+=ores.qt.refdata.so= was linked before the source changes were in
+place; a clean rebuild fixed it — and (2), found while re-diagnosing
+after the clean rebuild, every service in the =prime_origin= fleet had
+an orphaned duplicate process left over from an earlier
+=compass services stop= that killed only the top-level controller and
+not the child services it had spawned. Old and new instances of every
+service were bound to the same NATS queue groups, so requests
+routed unpredictably between them — explaining both the missing menu
+action/constructor log and a third symptom found along the way: a
+=refdata.v1.countries.publish-from-dq= provisioning request that
+completed its DB work but never replied, hanging the GLEIF tenant
+workflow at the same step on every attempt. Killed all orphaned PIDs,
+verified 1:1 process-to-service parity via =pgrep=, recreated the DB,
+reprovisioned Barclays Plc cleanly, and the retest passed.
+
+Filed a capture for the orphaned-process bug in =compass services
+stop= — see backlog.

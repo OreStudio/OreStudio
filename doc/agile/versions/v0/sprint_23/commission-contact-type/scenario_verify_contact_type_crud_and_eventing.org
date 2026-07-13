@@ -48,6 +48,14 @@ recreated since provisioning, re-run:
 #+end_src
 
 
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Open the Contact Types list
 
 Menu: *Reference Data > Organisation Codes > Contact Types*. Confirm
@@ -56,6 +64,14 @@ Billing), and that all columns (including Modified By / Recorded At)
 render values, not just headers.
 
 
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Create
 
 Click *Add*. Enter code =TestContact=, name =Test Contact Type=,
@@ -63,12 +79,28 @@ description =Scenario test row=, display order =99=. Save. Confirm
 the new row appears in the list with the values just entered.
 
 
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Read
 
 Double-click the =TestContact= row to reopen its detail dialog. Confirm
 every field round-trips exactly as saved (code, name, description,
 display order).
 
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 *** Update
 
@@ -78,11 +110,27 @@ description without a manual reload, and that a change-reason prompt
 was shown and recorded.
 
 
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Delete
 
 Select the =TestContact= row and click *Delete*, confirming the
 prompt. Confirm the row disappears from the list.
 
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 *** History
 
@@ -91,6 +139,14 @@ current version is deleted) and open the History dialog. Confirm all
 three prior operations — create, update, delete — are listed in order
 with the change reasons entered above.
 
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** red
 
@@ -102,12 +158,28 @@ Contact Types list here too, *before* the =blue= instance performs its
 Create step above.
 
 
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Confirm the create event arrives
 
 After =blue='s Create step, confirm the =TestContact= row appears in
 this =red= instance's list *without a manual reload* — this exercises
 the Postgres LISTEN/NOTIFY-to-NATS relay end to end.
 
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 *** Confirm the update and delete events arrive
 
@@ -116,15 +188,23 @@ automatically. After =blue='s Delete step, confirm the row disappears
 here automatically too.
 
 
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-13T10:50:40Z |
+| Branch        | feature/verify-contact-type-qt-ui-post-nats |
+| Commit        | 456b512df |
+| Worktree      | prime_origin |
 
 * Notes
 
@@ -137,5 +217,21 @@ hand-patch the symptom, =ores.refdata.contact_type.org= was brought up
 to the latest meta-model and every facet regenerated (including moving
 contact_type's Qt ownership from =ores.qt.party= to =ores.qt.refdata=,
 matching its domain component) — see [[id:BD717BF3-DFD6-41C6-9A88-90B0470A37A7][Update contact_type codegen model
-and regenerate all layers]]. This is a clean retest against that
-regenerated output; prior step results reset to PENDING.
+and regenerate all layers]]. Second run (commit 456b512df) still found
+=ContactTypeController= missing from the "Organisation Codes" menu and
+its "created" log line entirely absent. Root cause turned out to be
+deeper than a stale link: every single service in the =prime_origin=
+fleet had an orphaned duplicate process left over from an earlier
+=compass services stop= that only killed the top-level controller,
+not the child services it had spawned — including a stale
+=ores.refdata.service= and stale =ores.compute.wrapper= processes
+predating the clean rebuild. Both the old and new processes were
+bound to the same NATS queue groups, so requests routed
+unpredictably to whichever answered first: this explains the missing
+menu action, the missing constructor log line, and a third symptom
+found along the way (a =refdata.v1.countries.publish-from-dq=
+provisioning request that completed its DB work but never sent a
+reply, hanging the GLEIF tenant-provisioning workflow at the same
+step on every attempt). Killed all orphaned PIDs, verified 1:1
+process-to-service parity via =pgrep=, recreated the DB, and
+reprovisioned — this third run passed cleanly end to end.

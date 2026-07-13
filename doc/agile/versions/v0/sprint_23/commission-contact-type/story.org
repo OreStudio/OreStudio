@@ -5,12 +5,13 @@
 #+description: Commission contact_type: verify Qt UI post-NATS, fix regressions, add manual chapter, capture shell/CLI/Wt/HTTP backlog.
 #+type: story
 #+level: s2
-#+filetags: :product:refdata:commissioning:contact_type:sprint_22:v0:
+#+filetags: :product:refdata:commissioning:contact_type:sprint_23:v0:
 #+created: 2026-05-29
-#+updated: 2026-07-11
+#+updated: 2026-07-13
+#+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -24,12 +25,12 @@ File backlog captures for Wt and HTTP support.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
-| Parent sprint | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] |
-| Now           | Not yet started.                       |
+| State         | STARTED                               |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Verifying contact_type's Qt UI post-NATS. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-05-29                               |
+| Next          | Work through list/detail/history/delete/eventing checks. |
+| Last touched  | 2026-07-13                               |
 
 * Acceptance
 
@@ -49,4 +50,4 @@ File backlog captures for Wt and HTTP support.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:3EDC9F9F-65AF-4B2E-B09D-BA63769C30DE][Verify contact_type Qt UI end-to-end post-NATS]] | STARTED | 2026-07-13 | | List window, detail dialog, history dialog, delete, and eventing against live services; fix any regressions found. |

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 3EDC9F9F-65AF-4B2E-B09D-BA63769C30DE
+:END:
+#+title: Task: Verify contact_type Qt UI end-to-end post-NATS
+#+description: List window, detail dialog, history dialog, delete, and eventing against live services; fix any regressions found.
+#+type: task
+#+level: s1
+#+filetags: :commission-contact-type:sprint_23:v0:
+#+owner: marco
+#+branch: feature/verify-contact-type-qt-ui-post-nats
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Verify contact_type's Qt UI end-to-end against live services (post-NATS
+migration): list window, detail dialog, history dialog, delete, and
+cross-client eventing. Fix any regressions found inline; file backlog
+captures for anything out of scope.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

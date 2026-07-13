@@ -24,6 +24,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/PartyChildEntityTables.hpp"
+#include "ores.qt/PartyHierarchyTab.hpp"
 #include "ores.refdata.api/domain/party.hpp"
 #include <vector>
 
@@ -101,6 +102,7 @@ private:
 
 
     PartyChildEntityTables* childTables_{nullptr};
+    PartyHierarchyTab* hierarchyTab_{nullptr};
 
     Ui::PartyDetailDialog* ui_;
     ClientManager* clientManager_;

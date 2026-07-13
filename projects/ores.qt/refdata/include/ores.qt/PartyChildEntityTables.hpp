@@ -60,6 +60,9 @@ public:
                 ClientManager* clientManager,
                 const std::string& username);
 
+    /** @brief Disable add/delete/edit while the parent dialog is read-only (e.g. viewing history). */
+    void setReadOnly(bool readOnly);
+
 private:
     void loadIdentifiers();
     void loadContacts();
@@ -67,6 +70,7 @@ private:
     void onDeleteIdentifier(int row);
     void onAddContact();
     void onDeleteContact(int row);
+    void onEditContact(int row);
 
     QWidget* dialogParent_;
     ChildEntityTableWidget* identifierTable_{nullptr};
@@ -74,6 +78,7 @@ private:
     boost::uuids::uuid partyId_;
     ClientManager* clientManager_{nullptr};
     std::string username_;
+    bool readOnly_{false};
     std::vector<ores::refdata::domain::party_identifier> identifiers_;
     std::vector<ores::refdata::domain::party_contact_information> contacts_;
 };

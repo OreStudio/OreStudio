@@ -58,7 +58,7 @@ Confirm the list window opens and shows two rows for BARCLAYS PLC:
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Open "&Driver Pairs" from Reference Data > Cross Rates &Matrix
 
@@ -73,7 +73,7 @@ to the correct config.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Open "&Enabled Derived Pairs" from Reference Data > Cross Rates &Matrix
 
@@ -86,7 +86,7 @@ pure USD-pivot star has no derived pairs by design).
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Open the detail dialog for one row in each of the three windows
 
@@ -99,7 +99,7 @@ without editing.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Open the history dialog for one row in each of the three windows
 
@@ -111,16 +111,16 @@ version (the original insert from provisioning).
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-13T19:29:39Z |
+| Status        | PASSED |
+| Completed at  | 2026-07-13T23:17:07Z |
 | Branch        | feature/crm-topology-full-stack-codegen |
-| Commit        | 0d4d915dd |
+| Commit        | 7d0dc5d4e |
 | Worktree      | clever_dijkstra |
 
 * Notes

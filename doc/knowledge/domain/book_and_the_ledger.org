@@ -37,6 +37,21 @@ Units; a Legal Entity is composed of many Entities. Books also carry
 desk/sub-desk, location, and senior-funder metadata used for
 ownership and dimensional reporting.
 
+*Mapping onto the ORE Studio domain model*: no dedicated Legal Entity
+or Branch entity exists in the codebase, and none is needed — the
+existing =party=/=business_unit= pair already cover this hierarchy
+semantically. =book.party_id= (mandatory) is the Legal Entity: =party=
+is documented as "an internal legal entity participating in financial
+transactions". =book.owner_unit_id= (optional FK to =business_units=)
+covers Entity, Business Unit, and Branch alike — =business_unit= is
+deliberately generic ("desks, departments, branches") and
+self-referencing via =parent_business_unit_id=, so a branch is simply
+a business unit at the right depth in that chain rather than a
+distinct entity type. Cost Centre is separately tracked as free-form
+metadata on the book itself (see the ledger-book fields above), not as
+its own lookup entity. Investigated as part of the "Book data model
+cleanup" story; no new fields or entities were added as a result.
+
 ** Ledger book mechanics
 
 - Ledger books have their balances carried forward monthly as part of

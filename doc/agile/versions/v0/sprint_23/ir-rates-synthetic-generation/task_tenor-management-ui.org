@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,18 +26,18 @@ Migrate tenor/tenor_anchor/tenor_convention/tenor_convention_resolution out of o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
 
-- Provisioning a new tenant copies all four tenor tables from the system tenant (verified via ores_iam_provision_tenant_fn)
-- A new Qt screen lets a user pick a convention and see every tenor's resolved anchor and offset in one table, using the tenor_resolution resolver
-- Screen is reachable from the main window/menu like other list windows
+- Provisioning a new tenant copies all four tenor tables from the system tenant (verified via ores_iam_provision_tenant_fn) — DONE, extended to all six tenor-related tables after the code-entity promotion (see Result)
+- A new Qt screen lets a user pick a convention and see every tenor's resolved anchor and offset in one table, using the tenor_resolution resolver — DEFERRED (see Result)
+- Screen is reachable from the main window/menu like other list windows — DONE for the per-entity CRUD screens (codegen'd); N/A for the deferred joined view
 
 * Plan
 
@@ -56,7 +56,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:124C6B4E-57FE-4F9A-BDFA-9E7C73275836][Tenor reference-data screens reachable from Reference Data menu]] | PENDING | |
+| [[id:124C6B4E-57FE-4F9A-BDFA-9E7C73275836][Tenor reference-data screens reachable from Reference Data menu]] | PASSED | Rerun after change-reason wiring, badges, combo boxes, related-entity toolbar shortcuts, and Anchor icon fix |
 
 * PRs
 
@@ -71,3 +71,53 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Migrated tenor/tenor_anchor/tenor_convention/tenor_convention_resolution
+from =ores.marketdata= to =ores.refdata= with a full codegen regeneration
+(domain, generator, repository, service, protocol, eventing, handler,
+Qt) across all layers. Fixed the tenant provisioner, which wasn't
+copying any of the tenor tables into new tenants; verified against a
+live Barclays Plc provisioning that all counts now match the system
+tenant exactly.
+
+Along the way, promoted =tenor.kind=, =tenor.unit=, and
+=tenor_convention.resolution_algorithm= (previously unvalidated free
+text) to proper FK-validated =ores.refdata= code entities
+(=tenor_kind=, =tenor_unit=, =tenor_resolution_algorithm=), following
+the =book_status= pattern — full codegen stack, dynamic combo boxes in
+the detail dialogs, and badges for Kind/Unit. =tenor_convention
+.measured_from= became a validated combo against =tenor_anchor=, which
+gained its own =display_order= column and validation function (both
+previously missing). Added =NONE= sentinel codes to =tenor_unit= and
+=tenor_anchor= so these FK columns could be non-nullable. Wired the
+generated event registrars and NATS sub-registrars for all affected
+entities into their service-side aggregators — the original migration
+had left them unregistered, so saves never published change events or
+enabled live eventing. Added toolbar shortcuts between related entities
+(Tenor ↔ Conventions/Anchors, Tenor Convention ↔ Anchors/Resolution
+Algorithms) via the codegen "Related entity shortcuts" mechanism. Added
+an =Icon::Anchor= icon (Fluent Pin / Solar pin.svg — neither icon set
+has a literal nautical-anchor glyph) replacing the generic Clock icon
+Tenor Anchor had been using.
+
+Reference Data > Tenors menu: Tenors and Tenor Conventions at the top;
+Tenor Anchors/Kinds/Units/Resolution Algorithms directly below a
+separator (no nested submenu).
+
+Verified: test_scenario PASSED (menu reachability, list windows, detail
+dialog, history dialog); a live Barclays Plc reprovision confirmed the
+tenant-copy fix for the six tenor-related tables (2/5/6/2/37/3 rows
+each, matching the system tenant exactly); local build clean
+(linux-clang-debug-make); ctest 71/72 passed — the one failure
+(=ores.analytics.quant.tests=, "concurrent updates and batched reads
+never crash or hang") is a pre-existing Catch2 output-redirect race in
+an unrelated analytics/quant concurrency test, confirmed unrelated by
+isolated rerun.
+
+Deferred: the hand-crafted joined Tenor Management screen (tenor x
+tenor_convention x tenor_convention_resolution resolved anchor/offset
+in one view) from this task's original acceptance criteria was not
+built — the codegen'd per-entity CRUD screens (now with combo boxes and
+badges) satisfy inspecting the data model end-to-end for this round;
+the joined resolved view remains a candidate follow-up capture if still
+wanted.

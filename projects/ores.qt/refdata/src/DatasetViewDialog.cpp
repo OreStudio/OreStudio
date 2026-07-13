@@ -202,6 +202,10 @@ QWidget* DatasetViewDialog::createOverviewTab() {
     splitter->addWidget(sidebar);
     splitter->setStretchFactor(0, 65);
     splitter->setStretchFactor(1, 35);
+    // setStretchFactor only governs how *extra* space is redistributed on
+    // resize; the initial split comes from sizeHint()/equal-split unless
+    // pinned explicitly (see DataLibrarianWindow.cpp, MarketSimulatorWindow.cpp).
+    splitter->setSizes({650, 350});
     return splitter;
 }
 
@@ -276,6 +280,10 @@ QWidget* DatasetViewDialog::createProvenanceAndMethodologyTab() {
     splitter->addWidget(sidebar);
     splitter->setStretchFactor(0, 65);
     splitter->setStretchFactor(1, 35);
+    // setStretchFactor only governs how *extra* space is redistributed on
+    // resize; the initial split comes from sizeHint()/equal-split unless
+    // pinned explicitly (see DataLibrarianWindow.cpp, MarketSimulatorWindow.cpp).
+    splitter->setSizes({650, 350});
     return splitter;
 }
 
@@ -383,10 +391,6 @@ void DatasetViewDialog::updateProvenanceAndMethodologyTab() {
         dataset_.business_context.empty() ?
             tr("-") :
             QString::fromStdString(dataset_.business_context));
-    commentaryLabel_->setText(
-        dataset_.change_commentary.empty() ?
-            tr("-") :
-            QString::fromStdString(dataset_.change_commentary));
 
     asOfDateLabel_->setText(relative_time_helper::format(dataset_.as_of_date));
     ingestionLabel_->setText(relative_time_helper::format(dataset_.ingestion_timestamp));
@@ -408,6 +412,7 @@ void DatasetViewDialog::updateProvenanceAndMethodologyTab() {
     const auto* methodology = findMethodology(dataset_.methodology_id);
     if (!methodology) {
         methodologyDescriptionLabel_->setText(tr("No methodology assigned."));
+        commentaryLabel_->setText(tr("-"));
         methodologyNameLabel_->setText(tr("-"));
         methodologyVersionLabel_->setText(tr("-"));
         methodologyIdLabel_->setText(tr("-"));
@@ -421,6 +426,10 @@ void DatasetViewDialog::updateProvenanceAndMethodologyTab() {
     methodologyDescriptionLabel_->setText(
         methodology->description.empty() ? tr("-") :
                                            QString::fromStdString(methodology->description));
+    commentaryLabel_->setText(
+        methodology->change_commentary.empty() ?
+            tr("-") :
+            QString::fromStdString(methodology->change_commentary));
     methodologyNameLabel_->setText(QString::fromStdString(methodology->name));
     methodologyVersionLabel_->setText(QString::number(methodology->version));
     methodologyIdLabel_->setText(

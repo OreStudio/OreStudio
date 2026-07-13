@@ -91,6 +91,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Header banner has a near-black background; badges look oversized; Dependencies tab needs zoom/pan (out of scope, capture separately) | DatasetViewDialog.cpp | Accepted #1/#2, filed follow-up task for #3 | Dropped palette(alternate-base) fill, kept only a bottom border; tightened BadgeLabelUtils::apply's shared padding/font-size; filed task_lineage-graph-zoom-pan.org |
 | 2 | Badges still oversized after round 1's font/padding tightening | DatasetViewDialog.cpp | Accepted | Root cause was QFormLayout stretching the field column, not font-size — wrapped badges in a container + trailing stretch (addBadgePlaceholder), same fix pattern as the earlier QTreeWidget badge cells |
+| 3 | PR #1544 (3 reviewers): QSplitter::setStretchFactor doesn't pin the initial split ratio (no setSizes call); Provenance & Methodology "Commentary" card wrongly sourced dataset_.change_commentary instead of methodology->change_commentary, duplicating the Overview tab and silently dropping the methodology's own commentary | DatasetViewDialog.cpp | Accepted both | Added splitter->setSizes({650, 350}) to both tabs; moved commentaryLabel_ into the methodology-found branch, sourced from methodology->change_commentary with the usual "-" fallback |
 
 * Result
 

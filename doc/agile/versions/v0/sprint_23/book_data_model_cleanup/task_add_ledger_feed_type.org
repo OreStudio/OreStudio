@@ -30,11 +30,11 @@ Codes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Scaffolding the entity model.          |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Generate, wire NATS handler + tenant provisioning (per the gaps found in book_purpose_type), manual QA. |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -90,3 +90,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ledger_feed_type is fully generated (domain/SQL/repository/protocol/
+service/Qt CRUD) following book_purpose_type's pattern, seeded with
+its 3 mutually-exclusive values (None, Automatic, Manual), and exposed
+under Reference Data > Book Codes > Ledger Feed Types.
+
+Applied both workflow-gap fixes proactively this time, before manual
+QA rather than after (learned from [[id:5C89033D-224E-4105-A8CF-B0336C2A9014][Add book_purpose_type lookup entity
+to book]]'s task): NATS handler registration in registrar.cpp and
+event_registrar.cpp, and the tenant-provisioning copy block in
+iam_tenant_provisioner_create.sql. Confirmed both worked before even
+launching the Qt client -- direct SQL check showed 3 rows already
+present under Barclays' tenant right after provisioning. Manual QA
+scenario PASSED on the first run (6/6 steps, zero log errors), no
+rework cycle needed this time.
+
+book itself does not yet reference ledger_feed_type -- that FK wiring
+is separate follow-up scope, not part of this task.

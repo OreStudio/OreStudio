@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch: feature/generic-history-subject
 #+pr: 1537
-#+blocked_on: 5C873944-1152-4A79-9C92-C24AEB65834A
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
-#+updated: 2026-07-11
+#+updated: 2026-07-13
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -35,7 +35,16 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- One shared =history.v1.get= NATS subject exists, replacing typed
+  per-entity history subjects going forward.
+- A server-side =dispatch_registry= routes requests to a
+  caller-registered per-entity history_provider by =entity_type=.
+- At least one entity (currency) has a real, working provider proving
+  the full path: repository read -> field mapper -> diff -> generic
+  dispatch -> NATS reply.
+- Old per-entity history subjects/handlers are removed only once every
+  consuming frontend has migrated — deliberately not required for
+  this task's completion; tracked as follow-on story tasks.
 
 * Plan
 

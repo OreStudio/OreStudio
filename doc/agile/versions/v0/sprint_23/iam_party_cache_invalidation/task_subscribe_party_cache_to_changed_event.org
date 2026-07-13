@@ -8,7 +8,7 @@
 #+filetags: :iam_party_cache_invalidation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/subscribe-party-cache-to-changed-event
-#+pr:
+#+pr: 1540
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1540][#1540]] | [eventing] Add generic partitioned_cache primitive |
 
 * Review
 

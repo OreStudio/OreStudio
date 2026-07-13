@@ -269,30 +269,30 @@ public:
 
     void read_for_cache(ores::nats::message msg) {
         BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<read_parties_for_cache_request>(msg);
-        if (!req) {
+        if (auto req = decode<read_parties_for_cache_request>(msg)) {
+            try {
+                using ores::database::service::tenant_context;
+                auto tctx = tenant_context::with_tenant(ctx_, req->tenant_id);
+                service::party_service svc(tctx);
+                // No dedicated unpaginated list method is generated; reuse
+                // the paginated one with an unbounded limit.
+                auto parties = svc.list_parties(0, std::numeric_limits<std::uint32_t>::max());
+                BOOST_LOG_SEV(party_handler_lg(), debug)
+                    << "Completed " << msg.subject << " (tenant=" << req->tenant_id
+                    << ", count=" << parties.size() << ")";
+                reply(nats_,
+                      msg,
+                      read_parties_for_cache_response{.success = true,
+                                                      .parties = std::move(parties)});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      read_parties_for_cache_response{.success = false, .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(nats_,
-                  msg,
-                  read_parties_for_cache_response{.success = false,
-                                                  .message = "Failed to decode request"});
-            return;
-        }
-        try {
-            using ores::database::service::tenant_context;
-            auto tctx = tenant_context::with_tenant(ctx_, req->tenant_id);
-            service::party_service svc(tctx);
-            auto parties = svc.list_parties(0, std::numeric_limits<std::uint32_t>::max());
-            BOOST_LOG_SEV(party_handler_lg(), debug)
-                << "Completed " << msg.subject << " (tenant=" << req->tenant_id
-                << ", count=" << parties.size() << ")";
-            reply(nats_,
-                  msg,
-                  read_parties_for_cache_response{.success = true, .parties = std::move(parties)});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(
-                nats_, msg, read_parties_for_cache_response{.success = false, .message = e.what()});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 

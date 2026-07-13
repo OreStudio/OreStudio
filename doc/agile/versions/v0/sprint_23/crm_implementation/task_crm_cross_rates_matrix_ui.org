@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/crm-cross-rates-matrix-ui
 #+pr:
-#+blocked_on: [[id:6D953558-A61C-461F-859D-CBD28AD5D8F5][Publish realistic named CRM synthetic bundles (majors, exotics) via DQ]]
-#+blocked_since: 2026-07-13
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
 #+environment: clever_dijkstra
@@ -33,11 +33,11 @@ pixel-accurate spec, just the shape: a matrix, not a list.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Widget/controller/plugin wiring implemented and builds clean, but untestable without real CRM data. |
-| Waiting on   | [[id:6D953558-A61C-461F-859D-CBD28AD5D8F5][Publish realistic named CRM synthetic bundles (majors, exotics) via DQ]], itself waiting on [[id:BA82072F-0B2B-48F4-9C22-8D6D39337099][multi-named-config engine support]]. |
-| Next         | Once a real publish provides data, add a named-CRM selector to the panel (multi-CRM support changes the =marketdata.v1.crm.rates= contract) and complete manual QA. |
+| Now          | Unblocked: [[id:6D953558-A61C-461F-859D-CBD28AD5D8F5][the DQ publishing task]] landed, so a real, live-ticking majors + exotics CRM is now available after a synthetic_realistic party provisioning Apply. Widget/controller/plugin wiring from the earlier attempt still builds clean. |
+| Waiting on   | Nothing.                               |
+| Next         | Resume: add a named-CRM selector to the panel (multi-CRM support changed the =marketdata.v1.crm.rates= contract to take/tag =crm_name=) and complete manual QA against real data. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance

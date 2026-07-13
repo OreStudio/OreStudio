@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:dq:synthetic:
 #+owner: marco
-#+branch:
+#+branch: feature/crm-publish-named-synthetic-bundles
 #+pr:
-#+blocked_on: [[id:BA82072F-0B2B-48F4-9C22-8D6D39337099][Support multiple concurrently-enabled named CRM configs per party]]
-#+blocked_since: 2026-07-13
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -39,11 +39,11 @@ Two named CRMs per party, matching real FX desk practice:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:BA82072F-0B2B-48F4-9C22-8D6D39337099][Support multiple concurrently-enabled named CRM configs per party]] |
-| Next         | Begin implementation once the engine task lands. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -66,6 +66,65 @@ Two named CRMs per party, matching real FX desk practice:
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Investigation findings
+
+- The synthetic FX generator (=synthetic.fx_spot_configs.basic=/=.realistic=)
+  publishes exactly the same 8 USD-hub pairs as the already-DONE
+  [[id:C236C0DC-4ED1-4EEE-8DDD-CD841CED3AB2][FX driver-rate dataset task]] (PR #1497): EUR/USD, GBP/USD, USD/CHF,
+  USD/JPY, USD/SEK, AUD/USD, USD/CAD, NZD/USD. No EM/exotic currency
+  feed exists anywhere today -- an "exotics" CRM cannot be built from
+  real data without first adding EM feeds, per this task's own
+  acceptance criterion (no CRM edge with no underlying feed).
+- Confirmed (WebFetch, federalreserve.gov works even though SSRN
+  blocks fetches): Fed H.10 does publish South Africa (ZAR), so the
+  "real data, individually citable" bar the FX driver-rate task set
+  can be maintained for at least one EM currency; Mexico (MXN) and
+  India (INR) are also on Fed H.10's regular release list.
+- =ores_dq_dataset_dependencies_tbl= /
+  =ores_dq_dataset_dependencies_upsert_fn(tenant_id, dataset_code,
+  dependency_code, dependency_type)= already exists (used by e.g.
+  =crypto.large= -> =assets.crypto_icons=) -- the right mechanism to
+  declare the CRM dataset's dependency on the feed datasets it
+  presupposes.
+- Party-scoped bundle provisioning (Qt wizard + =ores.shell= CLI) is a
+  fixed, hand-written phase list in both places --
+  [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][a known, already-captured tech-debt story]] tracks replacing this
+  with a data-driven list; out of scope to fix here, but this task
+  reinforces that story's cost argument (another new phase needed in
+  both places).
+
+** Scope (revised after investigation, per explicit direction)
+
+1. *Augment* (not replace) =marketdata.fx_driver_rates= with 3 more
+   real Fed H.10 USD-hub EM rates for 2016-02-05: ZAR, MXN, INR. Same
+   artefact table/methodology shape as the existing 8.
+2. Add matching =synthetic.fx_spot_configs.basic=/=.realistic=
+   artefact rows for USD/ZAR, USD/MXN, USD/INR (=price_source =
+   'vintage'=, citing the augmented Fed dataset) -- same shape as the
+   existing 8.
+3. New DQ dataset =marketdata.crm_topology_bundles=: one artefact
+   table shaped =(crm_name, pivot_currency_code, base_currency_code,
+   quote_currency_code, row_kind ∈ {driver, derived})=, one
+   =ores_marketdata_publish_crm_topology_bundles_from_dq_fn=
+   (SECURITY DEFINER, mirrors the existing
+   =..._market_data_observations_from_dq_fn= temporal-insert idiom)
+   that find-or-creates =crm_topology_config= (per distinct
+   =crm_name=) + =crm_driver_pair= (=row_kind = 'driver'=) +
+   =crm_enabled_derived_pair= (=row_kind = 'derived'=) for the target
+   party. Two named CRMs seeded: *majors* (the 9-currency mesh, pivot
+   USD, all 8 original driver pairs + a curated derived-pairs list
+   e.g. EUR/GBP, EUR/JPY, GBP/JPY) and *exotics* (pivot USD, driver
+   pairs = ZAR/MXN/INR only -- a pure USD-pivot star, no derived pairs
+   needed since every configured exotic pair already is a driver
+   edge).
+4. Explicit dataset dependencies: =marketdata.crm_topology_bundles=
+   depends on =marketdata.fx_driver_rates= and both
+   =synthetic.fx_spot_configs.basic=/=.realistic=.
+5. Wire the new =marketdata.v1.crm-topology-bundles.publish-from-dq=
+   call into the same phase list =fx_spot_configs= already runs in
+   (Qt provisioning wizard, =ores.shell= CLI script), so a party gets
+   its FX feeds and its CRM topology in one atomic Apply.
 
 * Notes
 
@@ -93,3 +152,60 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped in three checkpointed commits on this branch:
+
+1. Augmented =marketdata.fx_driver_rates= from 8 to 11 USD-hub pairs
+   (added real Fed H.10 rates for ZAR, MXN, INR across all 25 existing
+   vintages, not just 2016-02-05). =tools/fetch_fed_h10_rates.py= gained
+   =--archive-zip= so download+parse+archive is one reproducible
+   command; the raw source pages + a sha256 manifest are archived at
+   =external/fed_h10/= (README/methodology/manifest, following the
+   =external/crypto/= precedent). Two of the three EM values were
+   initially mis-sourced via a web-page-summarisation tool rather than
+   the raw HTML (~5-8% off); caught before publishing and documented in
+   =methodology.txt= as the reason only the fetch/parse/generate
+   pipeline is trusted for this dataset.
+2. Extended both =synthetic.fx_spot_configs.basic=/=.realistic= to the
+   same 11 pairs, with Realistic individually calibrating each EM
+   pair's 2-component GMM to its own approximate 2016 realised vol
+   (ZAR 20%, MXN 17%, INR 7.5%).
+3. New =marketdata.crm_topology_bundles= DQ dataset + artefact table +
+   =ores_marketdata_publish_crm_topology_bundles_from_dq_fn=, seeding
+   "majors" (8 driver pairs + 3 curated derived crosses) and "exotics"
+   (3 EM driver pairs, USD-pivot star) per party. Registered as the
+   *second member* of the existing
+   =marketdata.reference_vintage_2016_02_05= bundle (after
+   =fx_driver_rates=), not a new standalone phase -- so it publishes
+   atomically with the driver-rate data it depends on, with zero new
+   hand-written provisioning-phase code.
+
+Found and fixed a real gap while wiring step 3: party provisioning (Qt
+wizard + =ores.shell= CLI) only ever published the plain 2-pair
+=synthetic.fx_spot_configs= starter, never Basic/Realistic -- so most
+of a majors CRM's driver pairs would have had no live feed at all.
+Switched both provisioning call sites from the =ore_analytics= bundle
+to the purpose-built =synthetic_realistic= bundle (which already
+existed, just wasn't wired to anything), keeping the existing
+opted-in-datasets whitelist so report-definition creation isn't
+re-triggered.
+
+Deliberately not pursued: fixing the hand-written-phase-list tech debt
+itself ([[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][already captured]]) -- turned out unnecessary for *this*
+dataset specifically, since bundle-membership was the right mechanism
+already available, but the general problem (a new standalone dataset,
+not a bundle member, would still need a new phase) remains open.
+
+Verified: =db recreate -y -k= clean; =validate_schemas.sh --strict=
+clean (235 tables; the one warning present throughout is a pre-existing,
+unrelated =RLS_001= on =refdata_book_purpose_types=, another
+environment's in-flight work); full local build clean including
+=ores.qt.exe=/=ores.shell.exe=; full =ctest= 71/71 suites passed;
+direct SQL call to the publish function against a fresh test party
+confirmed 16 rows inserted (2 configs + 11 driver pairs + 3 derived
+pairs) on first call, 16 skipped (fully idempotent) on a second call
+with identical inputs.
+
+Acceptance's "manually verified via the UI panel" item is not done --
+the UI panel task ([[id:C685A8BE-0DF9-4D23-8AAB-E9DF9069E482][still BLOCKED]]) is the next task in this story and will
+do that verification once it resumes.

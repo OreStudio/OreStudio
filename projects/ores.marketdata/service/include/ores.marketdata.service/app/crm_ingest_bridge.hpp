@@ -123,16 +123,15 @@ public:
     /// edges + enabled derived pairs) in one batch -- one atomic
     /// snapshot load, not N single-pair calls. Empty if no such engine
     /// exists for that (tenant, party, crm_name).
-    [[nodiscard]] std::vector<quant::domain::derived_rate>
-    rates(const std::string& tenant_id_str,
-          const std::string& party_id_str,
-          const std::string& crm_name) const;
+    [[nodiscard]] std::vector<quant::domain::derived_rate> rates(const std::string& tenant_id_str,
+                                                                 const std::string& party_id_str,
+                                                                 const std::string& crm_name) const;
 
     /// Every currently-configured pair across *every* enabled CRM for a
     /// party, each tagged with which CRM produced it. Empty if the
     /// party has no enabled CRM at all.
-    [[nodiscard]] std::vector<named_rate>
-    rates(const std::string& tenant_id_str, const std::string& party_id_str) const;
+    [[nodiscard]] std::vector<named_rate> rates(const std::string& tenant_id_str,
+                                                const std::string& party_id_str) const;
 
 private:
     using pair_key = std::pair<std::string, std::string>; // (tenant_id_str, party_id_str)

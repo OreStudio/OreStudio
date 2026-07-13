@@ -118,6 +118,14 @@ public:
             return;
         }
 
+        if (req->crm_name.empty()) {
+            reply(nats_,
+                  msg,
+                  get_crm_rate_response{
+                      .success = false, .message = "crm_name is required", .rate = {}});
+            return;
+        }
+
         const auto tenant_id_str = ctx.tenant_id().to_string();
         const auto result = bridge_->rate(tenant_id_str,
                                           req->party_id,
@@ -128,8 +136,8 @@ public:
             reply(nats_,
                   msg,
                   get_crm_rate_response{.success = false,
-                                       .message = "No such CRM configured for this party",
-                                       .rate = {}});
+                                        .message = "No such CRM configured for this party",
+                                        .rate = {}});
             return;
         }
         reply(nats_,

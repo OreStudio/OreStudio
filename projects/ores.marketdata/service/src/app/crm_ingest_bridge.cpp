@@ -28,8 +28,8 @@
 #include "ores.marketdata.core/repository/crm_driver_pair_repository.hpp"
 #include "ores.marketdata.core/repository/crm_enabled_derived_pair_repository.hpp"
 #include "ores.marketdata.core/repository/crm_topology_config_repository.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <map>
 #include <stdexcept>
@@ -80,16 +80,6 @@ void crm_ingest_bridge::refresh() {
         const auto party_id_str = boost::uuids::to_string(cfg.party_id);
         const pair_key key{tenant_id_str, party_id_str};
 
-        auto& named_engines = (*new_engines)[key];
-        if (std::ranges::any_of(
-                named_engines, [&](const auto& ne) { return ne.name == cfg.name; })) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "CRM: more than one enabled crm_topology_config named '" << cfg.name
-                << "' for tenant=" << tenant_id_str << " party=" << party_id_str
-                << " -- keeping the first, ignoring config id=" << cfg.id;
-            continue;
-        }
-
         const auto it = pairs_by_config.find(cfg.id);
         if (it == pairs_by_config.end() || it->second.empty()) {
             BOOST_LOG_SEV(lg(), info)
@@ -110,15 +100,37 @@ void crm_ingest_bridge::refresh() {
         }
 
         try {
+            // Two enabled configs sharing a name for the same (tenant,
+            // party) should be structurally impossible: the codegened
+            // crm_topology_configs_party_id_name_uniq_idx partial unique
+            // index (tenant_id, party_id, name) WHERE valid_to = infinity
+            // already rejects a second active row with the same name at
+            // write time, independent of `enabled`. If this ever fires
+            // it means that invariant was violated some other way (a
+            // direct DB write bypassing the repository, a migration
+            // bug, ...) -- loudly reject the duplicate rather than
+            // silently picking one, but isolate the failure to this one
+            // config via the existing catch below, same as a broken
+            // topology, so it can't take down every other party's CRM.
+            const auto existing_it = new_engines->find(key);
+            if (existing_it != new_engines->end() &&
+                std::ranges::any_of(existing_it->second,
+                                    [&](const auto& ne) { return ne.name == cfg.name; })) {
+                throw std::logic_error(
+                    "duplicate enabled crm_topology_config name '" + cfg.name +
+                    "' for tenant=" + tenant_id_str + " party=" + party_id_str +
+                    " -- this should be prevented by the DB's partial unique index");
+            }
+
             auto topology =
                 quant::service::topology_builder::build(edges, cfg.pivot_currency_code, majors);
             auto engine = std::make_shared<quant::service::rate_engine>(
                 std::move(topology), quant::domain::staleness_policy{default_staleness_max_age});
 
+            auto& named_engines = (*new_engines)[key];
             named_engines.push_back(
                 named_engine{cfg.name, std::move(engine), std::move(configured_pairs)});
-            engine_by_config_id.emplace(cfg.id,
-                                        std::make_pair(key, named_engines.size() - 1));
+            engine_by_config_id.emplace(cfg.id, std::make_pair(key, named_engines.size() - 1));
 
             BOOST_LOG_SEV(lg(), info) << "CRM: built rate_engine for tenant=" << tenant_id_str
                                       << " party=" << party_id_str << " config='" << cfg.name
@@ -142,7 +154,7 @@ void crm_ingest_bridge::refresh() {
             continue;
         const auto& [key, index] = it->second;
         (*new_engines)[key][index].configured_pairs.emplace_back(d.base_currency_code,
-                                                                  d.quote_currency_code);
+                                                                 d.quote_currency_code);
     }
 
     std::size_t total_engines = 0;
@@ -153,8 +165,7 @@ void crm_ingest_bridge::refresh() {
         std::lock_guard lock(engines_mutex_);
         engines_ = std::move(new_engines);
     }
-    BOOST_LOG_SEV(lg(), info) << "CRM: refresh complete, " << total_engines
-                              << " active engine(s)";
+    BOOST_LOG_SEV(lg(), info) << "CRM: refresh complete, " << total_engines << " active engine(s)";
 }
 
 void crm_ingest_bridge::update(const std::string& tenant_id_str,
@@ -212,8 +223,8 @@ crm_ingest_bridge::rates(const std::string& tenant_id_str,
     return named_it->engine->rates(named_it->configured_pairs);
 }
 
-std::vector<named_rate>
-crm_ingest_bridge::rates(const std::string& tenant_id_str, const std::string& party_id_str) const {
+std::vector<named_rate> crm_ingest_bridge::rates(const std::string& tenant_id_str,
+                                                 const std::string& party_id_str) const {
     const auto snap = snapshot();
     const auto it = snap->find(pair_key{tenant_id_str, party_id_str});
     if (it == snap->end())

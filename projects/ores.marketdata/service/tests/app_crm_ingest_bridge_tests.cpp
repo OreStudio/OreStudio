@@ -163,11 +163,8 @@ TEST_CASE("rate() returns nullopt for an unknown CRM name when others are config
     crm_ingest_bridge bridge(f.h.context());
     bridge.refresh();
 
-    const auto result = bridge.rate(f.h.tenant_id().to_string(),
-                                    boost::uuids::to_string(f.party_id),
-                                    "exotics",
-                                    "EUR",
-                                    "USD");
+    const auto result = bridge.rate(
+        f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id), "exotics", "EUR", "USD");
     CHECK_FALSE(result.has_value());
 }
 
@@ -271,4 +268,24 @@ TEST_CASE("two enabled configs for the same (tenant, party) build two independen
     }
     CHECK(majors_count == 2);
     CHECK(exotics_count == 1);
+}
+
+TEST_CASE("the DB rejects a second active crm_topology_config sharing a party's CRM name", tags) {
+    // crm_ingest_bridge::refresh() relies on this: it would throw
+    // std::logic_error if it ever saw two enabled, same-named configs for
+    // one party, but that can only happen if this DB invariant is somehow
+    // violated -- assert the invariant directly, at the layer that
+    // actually enforces it (crm_topology_configs_party_id_name_uniq_idx,
+    // a partial unique index on (tenant_id, party_id, name) for active
+    // rows), rather than trying to fabricate the impossible state to
+    // exercise refresh()'s defensive throw.
+    fixture f;
+    crm_topology_config_repository config_repo;
+
+    auto first = f.make_config("USD", "majors");
+    config_repo.write(f.h.context(), first);
+
+    auto second = f.make_config("USD", "majors"); // same party, same name
+    second.id = boost::uuids::random_generator{}();
+    CHECK_THROWS(config_repo.write(f.h.context(), second));
 }

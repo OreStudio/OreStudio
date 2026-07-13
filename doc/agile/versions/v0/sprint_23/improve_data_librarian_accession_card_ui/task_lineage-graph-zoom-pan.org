@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: A7A78BD8-604F-4951-8AD8-8FEE6C6B7757
+:END:
+#+title: Task: Add zoom/pan controls to the Dependencies lineage graph
+#+description: The Dependencies tab's interactive QGraphicsView lineage graph has no way to zoom in/out or scroll around beyond the initial fitInView; add mouse-wheel zoom and drag-to-pan.
+#+type: task
+#+level: s1
+#+filetags: :improve_data_librarian_accession_card_ui:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Dependencies tab's =QGraphicsView= lineage graph (=DatasetViewDialog::updateLineageView=)
+only ever shows the initial =fitInView= framing — there's no way to
+zoom in on a dense graph or pan around one that doesn't fit. Add
+mouse-wheel zoom and drag-to-pan, matching how other interactive
+graph/canvas views in the app behave. Surfaced during manual QA of
+the Phase 2 two-column layout.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- Mouse wheel zooms the lineage graph in/out, centered on the cursor.
+- Click-and-drag pans the view.
+- A reset-to-fit control (button or keyboard shortcut) restores the
+  original =fitInView= framing.
+- Manually verified against a dataset with several dependencies.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

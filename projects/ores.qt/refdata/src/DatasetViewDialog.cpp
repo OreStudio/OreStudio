@@ -30,6 +30,7 @@
 #include <QHBoxLayout>
 #include <QPainterPath>
 #include <QPushButton>
+#include <QSizePolicy>
 #include <QSplitter>
 #include <QVBoxLayout>
 #include <boost/uuid/uuid_io.hpp>
@@ -71,9 +72,11 @@ QWidget* DatasetViewDialog::createHeaderBanner() {
     auto* frame = new QFrame();
     frame->setFrameShape(QFrame::StyledPanel);
     frame->setObjectName("datasetHeaderBanner");
-    frame->setStyleSheet(
-        "#datasetHeaderBanner { background-color: palette(alternate-base); "
-        "border-bottom: 1px solid palette(mid); }");
+    // No background fill: palette(alternate-base) is meant for tight
+    // alternating list rows and renders near-black in this dark theme —
+    // a subtle separator border reads as "persistent header" without
+    // fighting the app's own palette.
+    frame->setStyleSheet("#datasetHeaderBanner { border-bottom: 1px solid palette(mid); }");
 
     auto* layout = new QHBoxLayout(frame);
     layout->setContentsMargins(12, 8, 12, 8);
@@ -143,13 +146,21 @@ void DatasetViewDialog::addFormRow(QFormLayout* form, const QString& name, const
     form->addRow(name, valueLabel);
 }
 
-void DatasetViewDialog::addBadgeRow(QFormLayout* form,
-                                   const QString& name,
-                                   const std::string& badgeDomain,
-                                   const std::string& value) {
-    auto* badge = new QLabel();
-    BadgeLabelUtils::apply(badge, badgeCache_, badgeDomain, value, QString::fromStdString(value));
-    form->addRow(name, badge);
+QLabel* DatasetViewDialog::addBadgePlaceholder(QFormLayout* form, const QString& name) {
+    // QFormLayout stretches its field column to fill the card's width, so a
+    // bare badge QLabel paints its background across the whole row instead
+    // of hugging its text. Wrap it in a container that left-aligns the
+    // badge and absorbs the rest of the width via a trailing stretch —
+    // same fix as the QTreeWidget badge cells used before this rework.
+    auto* container = new QWidget();
+    auto* containerLayout = new QHBoxLayout(container);
+    containerLayout->setContentsMargins(0, 0, 0, 0);
+    auto* badge = new QLabel(container);
+    badge->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    containerLayout->addWidget(badge);
+    containerLayout->addStretch();
+    form->addRow(name, container);
+    return badge;
 }
 
 QWidget* DatasetViewDialog::createOverviewTab() {
@@ -175,12 +186,9 @@ QWidget* DatasetViewDialog::createOverviewTab() {
     classificationForm->addRow(tr("Catalog"), overviewCatalogLabel_);
 
     auto* governanceForm = addPropertyCard(sidebarLayout, tr("Data Governance"));
-    overviewOriginBadge_ = new QLabel();
-    governanceForm->addRow(tr("Origin"), overviewOriginBadge_);
-    overviewNatureBadge_ = new QLabel();
-    governanceForm->addRow(tr("Nature"), overviewNatureBadge_);
-    overviewTreatmentBadge_ = new QLabel();
-    governanceForm->addRow(tr("Treatment"), overviewTreatmentBadge_);
+    overviewOriginBadge_ = addBadgePlaceholder(governanceForm, tr("Origin"));
+    overviewNatureBadge_ = addBadgePlaceholder(governanceForm, tr("Nature"));
+    overviewTreatmentBadge_ = addBadgePlaceholder(governanceForm, tr("Treatment"));
 
     auto* auditForm = addPropertyCard(sidebarLayout, tr("Audit"));
     overviewModifiedByLabel_ = new QLabel();

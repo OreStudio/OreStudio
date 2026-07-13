@@ -130,12 +130,11 @@ private:
     QFormLayout* addPropertyCard(QBoxLayout* parentLayout, const QString& title);
     QLabel* addProseCard(QBoxLayout* parentLayout, const QString& title);
     void addFormRow(QFormLayout* form, const QString& name, const QString& value);
-    // Render a value as a coloured badge — BadgeLabelUtils::apply on a plain
-    // QLabel, the same pattern AccountDetailDialog uses for its badges.
-    void addBadgeRow(QFormLayout* form,
-                     const QString& name,
-                     const std::string& badgeDomain,
-                     const std::string& value);
+    // Adds a row whose value is a badge, styled later via
+    // BadgeLabelUtils::apply (same pattern AccountDetailDialog uses).
+    // Returns the QLabel to style/update — wrapped so QFormLayout's field
+    // stretch doesn't turn the badge into a full-width bar.
+    QLabel* addBadgePlaceholder(QFormLayout* form, const QString& name);
 
     QString findMethodologyName(const std::optional<boost::uuids::uuid>& methodologyId) const;
     const dq::domain::methodology*

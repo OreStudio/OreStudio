@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:C6239167-79BD-4560-B0E5-1459A1FFC03A][Verify asymmetric two-column card layout in the Data Librarian]] | PENDING | |
 
 * PRs
 

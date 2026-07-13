@@ -66,9 +66,13 @@ via its "Verifies task" field.
 
 * Review
 
+PR #1554 review round (Claude automated, issue-level comment, no line comments):
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No cross-field validation between tenor.kind and tenor.unit/multiplier (e.g. SPECIAL + MONTH is not blocked) | TenorDetailDialog | Declined | UX/data-quality nicety, not a bug in what shipped; FK validation on kind/unit individually is correct and complete. Candidate follow-up if it matters in practice |
+| 2 | tenor_convention_resolution has no dedicated event registrar | ores.refdata/core/src/messaging/registrar.cpp | Declined | Intentional and pre-existing (unrelated to this PR) — it's a hand-authored, read-only junction with no save/delete mutation path, so there's nothing to publish an event for |
+| 3 | No new automated tests for tenor_kind/tenor_unit/tenor_resolution_algorithm | (new entities) | Declined | Matches existing convention for simple code-lookup entities (book_status also has none); coverage via manual test_scenario |
 
 * Result
 

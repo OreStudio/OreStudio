@@ -102,9 +102,12 @@ via its "Verifies task" field.
 
 * Review
 
+PR #1539 review round (3 automated passes, issue-level comments, no line comments):
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | RLS policy comment labels the hand-authored junction table "codegen-generated", contradicting the PR description | marketdata_rls_policies_create.sql | Fixed | Comment now reads "hand-authored junction table -- codegen does not yet generate SQL for junctions" |
+| 2 | measured_from's doc comment implies it's empty only for IMM_ROLL conventions, but FX_SWAP_NEAR_LEG (ANCHOR_OFFSET) also seeds it empty since every tenor carries its own anchor_override | ores.marketdata.tenor_convention.org (regenerated tenor_convention.hpp) | Fixed | Fixed at the model source and regenerated, not hand-edited in the generated header |
 
 * Result
 

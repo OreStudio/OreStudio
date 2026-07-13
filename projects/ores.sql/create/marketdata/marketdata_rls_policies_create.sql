@@ -209,7 +209,7 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Tenor Convention Resolutions (codegen-generated junction table)
+-- Tenor Convention Resolutions (hand-authored junction table -- codegen does not yet generate SQL for junctions)
 -- -----------------------------------------------------------------------------
 alter table ores_marketdata_tenor_convention_resolutions_tbl enable row level security;
 

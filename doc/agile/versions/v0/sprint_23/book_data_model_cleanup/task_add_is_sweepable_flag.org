@@ -8,7 +8,7 @@
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch: feature/add-is-sweepable-flag
-#+pr:
+#+pr: 1545
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
@@ -138,7 +138,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1545][#1545]] | [refdata,qt,sql,codegen] Add is_sweepable flag to book |
 
 * Review
 

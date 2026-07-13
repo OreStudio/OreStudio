@@ -21,10 +21,10 @@
 /**
  * Synthetic FX Spot Config Seed Population Script — Basic
  *
- * Registers the synthetic.fx_spot_configs.basic dataset: all 8 FX driver
- * pairs from the marketdata.fx_driver_rates dataset (see
- * marketdata_fx_driver_rates_populate.sql), seeded from the same
- * 2016-02-05 Fed H.10 vintage, each on a single-component geometric
+ * Registers the synthetic.fx_spot_configs.basic dataset: all 8 major +
+ * 3 EM/exotic FX driver pairs from the marketdata.fx_driver_rates
+ * dataset (see marketdata_fx_driver_rates_populate.sql), seeded from
+ * the same 2016-02-05 Fed H.10 vintage, each on a single-component geometric
  * (multiplicative) process with a deliberately exaggerated per-tick
  * volatility — the same for every pair, not individually calibrated —
  * so movement is easy to eyeball on a chart and every UI feature
@@ -66,7 +66,7 @@ BEGIN
         'Raw',
         'OreStudio Code Generation Methodology',
         'Synthetic FX Spot Configs: Basic',
-        'All 8 major FX driver pairs, single-component geometric process, deliberately exaggerated uniform volatility — easy to eyeball, exercises every UI feature.',
+        '8 major + 3 EM/exotic FX driver pairs, single-component geometric process, deliberately exaggerated uniform volatility — easy to eyeball, exercises every UI feature.',
         'ORESTUDIO',
         'Basic archetype for the Synthetic data collections bundle',
         current_date,
@@ -124,7 +124,8 @@ begin
         'vintage', 'fed.h10.2016-02-05', '2016-02-05'
     from (values
         ('EUR', 'USD'), ('GBP', 'USD'), ('USD', 'CHF'), ('USD', 'JPY'),
-        ('USD', 'SEK'), ('AUD', 'USD'), ('USD', 'CAD'), ('NZD', 'USD')
+        ('USD', 'SEK'), ('AUD', 'USD'), ('USD', 'CAD'), ('NZD', 'USD'),
+        ('USD', 'ZAR'), ('USD', 'MXN'), ('USD', 'INR')
     ) as p(base, quote);
 
     insert into ores_dq_synthetic_gmm_components_artefact_tbl (
@@ -137,6 +138,7 @@ begin
         0.0, v_stdev, 1.0
     from (values
         ('EUR', 'USD'), ('GBP', 'USD'), ('USD', 'CHF'), ('USD', 'JPY'),
-        ('USD', 'SEK'), ('AUD', 'USD'), ('USD', 'CAD'), ('NZD', 'USD')
+        ('USD', 'SEK'), ('AUD', 'USD'), ('USD', 'CAD'), ('NZD', 'USD'),
+        ('USD', 'ZAR'), ('USD', 'MXN'), ('USD', 'INR')
     ) as p(base, quote);
 end $$;

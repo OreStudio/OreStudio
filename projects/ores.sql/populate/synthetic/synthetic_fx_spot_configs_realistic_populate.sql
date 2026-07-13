@@ -21,20 +21,22 @@
 /**
  * Synthetic FX Spot Config Seed Population Script — Realistic
  *
- * Registers the synthetic.fx_spot_configs.realistic dataset: all 8 FX
- * driver pairs, seeded from the same 2016-02-05 Fed H.10 vintage as
- * Basic, but calibrated to look like real FX behaviour instead of an
- * exaggerated demo.
+ * Registers the synthetic.fx_spot_configs.realistic dataset: all 8 G10
+ * FX driver pairs plus 3 EM/exotic driver pairs (USD/ZAR, USD/MXN,
+ * USD/INR -- added for the Cross-Rates Matrix "exotics" tier), seeded
+ * from the same 2016-02-05 Fed H.10 vintage as Basic, but calibrated to
+ * look like real FX behaviour instead of an exaggerated demo.
  *
- * Process choice — geometric (GBM), not Ornstein-Uhlenbeck: all 8 pairs
- * are freely-floating G10 majors with no active peg or central-bank
- * defended band in 2016 (CHF's franc floor was abandoned in Jan 2015;
- * none of the others were ever pegged). Floating majors behave close to
- * a random walk at the tick/intraday horizons this generator operates
- * at — real mean reversion in FX shows up only at multi-year horizons
- * (PPP reversion), far beyond what a tick generator models. OU would
- * misrepresent these pairs; it belongs to a pegged/managed-band pair,
- * none of which are in this dataset.
+ * Process choice — geometric (GBM), not Ornstein-Uhlenbeck: every pair
+ * here is freely-floating (or, for INR, RBI-managed but not pegged/
+ * banded) with no active peg or central-bank defended band in 2016
+ * (CHF's franc floor was abandoned in Jan 2015; none of the others were
+ * ever pegged). Floating pairs behave close to a random walk at the
+ * tick/intraday horizons this generator operates at — real mean
+ * reversion in FX shows up only at multi-year horizons (PPP reversion),
+ * far beyond what a tick generator models. OU would misrepresent these
+ * pairs; it belongs to a pegged/managed-band pair, none of which are in
+ * this dataset.
  *
  * Per-pair volatility — each pair gets a 2-component Gaussian mixture: a
  * primary component (weight 0.95) calibrated to that pair's typical 2016
@@ -51,11 +53,14 @@
  * used to convert each pair's annualised vol into a per-tick stdev:
  *   ticks/year = 1800 * 24 * 365 = 15,768,000; sqrt(ticks/year) ~= 3970.9
  *   per-tick stdev = annualised_vol / 3970.9
- * Annualised vols are approximate, well-known 2016 G10 realised-vol
- * ranges (not fitted to any single data source):
+ * Annualised vols are approximate, well-known 2016 realised-vol ranges
+ * (not fitted to any single data source):
  *   EUR/USD 9.5%, GBP/USD 11.5% (elevated ahead of the Brexit
  *   referendum), USD/CHF 9.0%, USD/JPY 10.0%, USD/SEK 10.5%,
- *   AUD/USD 12.0%, USD/CAD 9.5%, NZD/USD 12.5%.
+ *   AUD/USD 12.0%, USD/CAD 9.5%, NZD/USD 12.5% (G10 majors);
+ *   USD/ZAR 20% (post-"Nenegate" 2015/16 volatility), USD/MXN 17%
+ *   (2016 US-election risk premium), USD/INR 7.5% (RBI-managed float,
+ *   structurally calmer than the other two EM currencies here) (EM).
  *
  * This script is idempotent.
  */
@@ -90,7 +95,7 @@ BEGIN
         'Raw',
         'OreStudio Code Generation Methodology',
         'Synthetic FX Spot Configs: Realistic',
-        'All 8 major FX driver pairs, 2-component geometric (GBM) Gaussian mixture per pair, calibrated to plausible 2016 realised FX volatility.',
+        '8 major + 3 EM/exotic FX driver pairs, 2-component geometric (GBM) Gaussian mixture per pair, calibrated to plausible 2016 realised FX volatility.',
         'ORESTUDIO',
         'Realistic archetype for the Synthetic data collections bundle',
         current_date,
@@ -144,7 +149,8 @@ begin
         'vintage', 'fed.h10.2016-02-05', '2016-02-05'
     from (values
         ('EUR', 'USD'), ('GBP', 'USD'), ('USD', 'CHF'), ('USD', 'JPY'),
-        ('USD', 'SEK'), ('AUD', 'USD'), ('USD', 'CAD'), ('NZD', 'USD')
+        ('USD', 'SEK'), ('AUD', 'USD'), ('USD', 'CAD'), ('NZD', 'USD'),
+        ('USD', 'ZAR'), ('USD', 'MXN'), ('USD', 'INR')
     ) as p(base, quote);
 
     -- Primary component: weight 0.95, calibrated per-pair stdev
@@ -164,7 +170,10 @@ begin
         ('USD', 'SEK', 10.5, 0.0000264),
         ('AUD', 'USD', 12.0, 0.0000302),
         ('USD', 'CAD', 9.5,  0.0000239),
-        ('NZD', 'USD', 12.5, 0.0000315)
+        ('NZD', 'USD', 12.5, 0.0000315),
+        ('USD', 'ZAR', 20.0, 0.0000504),
+        ('USD', 'MXN', 17.0, 0.0000428),
+        ('USD', 'INR', 7.5,  0.0000189)
     ) as p(base, quote, annualised_vol_pct, stdev);
 
     -- Tail component: weight 0.05, 4x the primary's stdev, adding the fat
@@ -184,6 +193,9 @@ begin
         ('USD', 'SEK', 0.0001056),
         ('AUD', 'USD', 0.0001208),
         ('USD', 'CAD', 0.0000956),
-        ('NZD', 'USD', 0.0001260)
+        ('NZD', 'USD', 0.0001260),
+        ('USD', 'ZAR', 0.0002015),
+        ('USD', 'MXN', 0.0001712),
+        ('USD', 'INR', 0.0000755)
     ) as p(base, quote, stdev);
 end $$;

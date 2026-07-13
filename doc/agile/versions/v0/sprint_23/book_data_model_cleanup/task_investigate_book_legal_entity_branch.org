@@ -7,41 +7,50 @@
 #+level: s1
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/document-no-book-hierarchy
+#+pr: 1546
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Determine whether =book= needs new legal-entity/branch fields (or new
+lookup entities) to satisfy the domain notes' "belongs to exactly one
+legal entity, business, and branch" statement, or whether the existing
+=party_id=/=owner_unit_id= fields already cover it. Produce a
+recommendation and record it in the domain knowledge docs.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-13                               |
 
 * Acceptance
 
--
+- Recommendation reached on whether party/business_unit already cover
+  legal entity and branch semantics for book.
+- Recommendation recorded in a Book domain knowledge doc, not just
+  this task file.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read =ores.refdata.book.org= (party_id, owner_unit_id fields),
+=ores.refdata.party.org=, and =ores.refdata.business_unit.org= to
+check what each entity actually models, then compared against
+=book_and_the_ledger.org='s Legal Entity → Entity → Business Unit →
+Cost Centre → Ledger Book hierarchy description.
 
 * Notes
 
@@ -49,7 +58,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1546][#1546]] | [agile,doc] Batch: hierarchy/legal-entity/allowed-lists/wash docs |
 
 * Review
 
@@ -58,3 +67,27 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+*Recommendation: no new fields or entities needed.* The existing
+=party=/=business_unit= pair already cover the domain notes'
+legal-entity/branch requirement:
+
+- =book.party_id= (mandatory) *is* the Legal Entity — =party= is
+  documented as "an internal legal entity participating in financial
+  transactions".
+- =book.owner_unit_id= (optional FK to =business_units=) covers
+  Entity, Business Unit, *and* Branch — =business_unit= is
+  deliberately generic ("desks, departments, branches" per its own
+  model doc) and self-referencing via =parent_business_unit_id=, so a
+  branch is just a business unit at the right depth in that chain, not
+  a distinct entity type. (=owner_unit_id= was already wired up to
+  =book= in an earlier task, per the =books_belong_to_business_unit=
+  backlog capture.)
+- Cost Centre is separately tracked as free-form ledger metadata on
+  the book itself, not as its own lookup entity — out of scope here.
+
+Recorded this mapping in =book_and_the_ledger.org= (the doc that
+already describes the Legal Entity → Entity → Business Unit → Cost
+Centre → Ledger Book hierarchy) so the connection between the
+real-world hierarchy and the ORE Studio domain model is explicit.
+No code changes.

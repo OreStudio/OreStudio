@@ -32,13 +32,27 @@ portfolios are the logical representation*.
 - Portfolios organise books into whatever hierarchy makes sense for
   risk management and are never reflected into the accounting system.
 - Books belong to exactly one legal entity, business, and branch —
-  accounting concepts. A book can itself have child books, but only
-  via ledger setup, never ad hoc from the trading system; a book that
-  contains child books should not itself directly hold deals — deals
-  belong at leaf books only. A single global *Root Book* sits at the
-  top of the hierarchy and contains all books; a *Recycle Bin* holds
-  retired/closed books rather than physically deleting them (see
+  accounting concepts. In the ledger's own hierarchy a book can have
+  child books, but only via ledger setup, never ad hoc from the
+  trading system; a book that contains child books should not itself
+  directly hold deals — deals belong at leaf books only. A single
+  global *Root Book* sits at the top of that ledger hierarchy and
+  contains all books; a *Recycle Bin* holds retired/closed books
+  rather than physically deleting them (see
   [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]]).
+- *This book-to-book hierarchy is a real-world accounting concept that
+  ORE Studio deliberately does not model.* The [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] domain type has
+  no self-referencing parent field, and there is no plan to add one.
+  Instead, ORE Studio expresses all hierarchy — the role that Root
+  Book, Recycle Bin, and child-book branches play above — through the
+  *portfolio* tree: =portfolio= has a self-referencing
+  =parent_portfolio_id=, and every book links to exactly one portfolio.
+  This is a design choice, not a gap: portfolios already give the
+  trading system an arbitrary, freely-editable hierarchy, so
+  duplicating that structure on the accounting side would add a second
+  tree to keep in sync for no benefit to the trading system, whose
+  only job is to hold a view of the ledger's books, not to manage
+  their hierarchy.
 
 ** The filesystem analogy
 
@@ -86,6 +100,28 @@ more generally to express a path to a book or portfolio node.
   restricting which deals may be booked into them; portfolios can
   carry similar rules. A book may also carry a set of *allowed* assets
   as well as the set of *actual* assets currently traded in it.
+
+*Implementation analysis (not yet built)*: an allowed-currency set and
+an allowed-product-type set are the two concrete instances of this
+trading-rule idea currently known. Recommended data shape for both,
+once implemented, is a many-to-many *junction table* — following the
+existing =currency_currency_group= and =party_currency= junction
+precedent (a first-class codegen facet: junction row per
+book/currency or book/product-type pair) — rather than a multi-value
+column, since it gives referential integrity and is directly
+queryable/joinable. For currency the FK is straightforward
+(=currencies.iso_code=); for product type, =ores.trading='s existing
+=product_type= C++/Postgres enum (8 fixed families) is the right
+reference, not a new lookup entity. Two questions remain genuinely
+open and need a product decision before implementation: (1) how an
+*'All'* wildcard state (no restriction) is distinguished from a
+deliberately empty set (nothing allowed) — no existing junction in the
+codebase has needed this distinction yet, so there's no established
+precedent to follow; and (2) the Qt multi-select widget shape (transfer
+list vs checkbox list) — no junction-membership editing UI exists yet
+in the Qt layer to follow as precedent either. Investigated as part of
+the "Book data model cleanup" story; implementation deferred to a
+follow-up task once those two questions are resolved.
 - Each book has exactly one EOD Cut, determining which end-of-day run
   produces its revaluation (REVAL) reports, and one functional
   currency designated by the ledger.

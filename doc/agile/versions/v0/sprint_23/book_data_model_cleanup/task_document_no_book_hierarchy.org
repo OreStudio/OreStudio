@@ -7,49 +7,83 @@
 #+level: s1
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/document-no-book-hierarchy
+#+pr: 1546
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+State explicitly, in the Book domain knowledge docs and the manual,
+that ORE Studio does not model an accounting-side book-to-book
+hierarchy: =book= has no self-referencing parent field, and all
+hierarchy is expressed through the portfolio tree instead. This is a
+design choice, not an open gap.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-13                               |
 
 * Acceptance
 
--
+- =books_and_portfolios.org= states plainly that the book-to-book
+  hierarchy described in the domain notes is not modelled by ORE
+  Studio, and explains why (portfolio tree covers it).
+- =chapter_7_books.org= makes the same point in user-facing terms,
+  without contradicting the filesystem analogy already used there.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Doc-only task, no code change. Updated the two docs named in the task
+description:
+- =doc/knowledge/domain/books_and_portfolios.org= — added a bullet
+  under "The core distinction" stating the book has no parent-book
+  field and that hierarchy lives entirely in the portfolio tree.
+- =doc/manual/user_guide/chapter_7_books.org= — reworded the
+  "child books... through ledger setup" sentence to state ORE Studio
+  doesn't model that hierarchy, and ties the folder/file analogy to
+  the portfolio tree being the tool's *whole* hierarchy, not just an
+  analogy for the accounting one.
 
 * Notes
+
+* Result
+
+Doc-only change, both acceptance items met:
+
+- =doc/knowledge/domain/books_and_portfolios.org= — added a bullet
+  under "The core distinction" stating plainly that ORE Studio does
+  not model the book-to-book hierarchy described in the domain notes:
+  =book= has no self-referencing parent field, and the reasoning why
+  (portfolio tree already gives the trading system an arbitrary,
+  freely-editable hierarchy; duplicating it on the accounting side
+  would add a second tree to keep in sync for no benefit).
+- =doc/manual/user_guide/chapter_7_books.org= — reworded the
+  "child books... through ledger setup" sentence to state the same
+  design choice in user-facing terms, and tied the existing
+  folder/file analogy to the portfolio tree being the tool's whole
+  hierarchy rather than just an analogy for the accounting one.
+
+No code changes; no build/test cycle needed.
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1546][#1546]] | [agile,doc] Batch: hierarchy/legal-entity/allowed-lists/wash docs |
 
 * Review
 

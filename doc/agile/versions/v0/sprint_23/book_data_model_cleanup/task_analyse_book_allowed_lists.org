@@ -7,41 +7,54 @@
 #+level: s1
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/document-no-book-hierarchy
+#+pr: 1546
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Analyse data shape and UI options for an allowed-currency and
+allowed-product-type set on book, and produce a recommendation —
+implementation is explicitly out of scope for this task pending that
+design analysis.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-13                               |
 
 * Acceptance
 
--
+- Data-shape recommendation reached (multi-value column vs junction
+  table) with a concrete precedent cited.
+- Product-type reference identified (new lookup entity vs existing
+  enum).
+- Open questions ('All' wildcard semantics, UI widget shape)
+  explicitly called out rather than guessed at, since no codebase
+  precedent exists for either.
+- Recommendation recorded in a Book domain knowledge doc.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Searched the codebase for existing many-to-many/multi-value patterns
+to use as precedent (=currency_currency_group_junction=,
+=party_currency_junction=) and for an existing product-type reference
+(=ores.trading='s =product_type= enum). Checked whether a junction
+membership-editing Qt UI already exists anywhere to follow as
+precedent for the multi-select question — it doesn't.
 
 * Notes
 
@@ -49,7 +62,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1546][#1546]] | [agile,doc] Batch: hierarchy/legal-entity/allowed-lists/wash docs |
 
 * Review
 
@@ -58,3 +71,34 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+*Recommendation, both allowed-currency and allowed-product-type
+lists*:
+
+- *Data shape*: many-to-many junction table, not a multi-value
+  column — following the existing =currency_currency_group= and
+  =party_currency= junction precedent (a first-class codegen
+  "junction" facet already exists and generates the full stack).
+  Gives referential integrity and direct SQL joinability instead of
+  serialisation tricks.
+- *Currency side*: FK to =currencies.iso_code=, same as the existing
+  junctions.
+- *Product side*: reference =ores.trading='s existing =product_type=
+  C++/Postgres enum (8 fixed structural families) rather than
+  inventing a new lookup entity — it is already the canonical
+  trade/instrument-type discriminator elsewhere in the codebase.
+
+*Two open questions, deliberately left unresolved* — no existing
+codebase precedent for either, so guessing at an answer here would be
+premature:
+
+1. How an *'All'* wildcard (no restriction) is distinguished from a
+   deliberately empty set (nothing allowed currently permitted).
+2. The Qt widget shape for editing junction membership (transfer list
+   vs checkbox list) — no junction-membership editing UI exists
+   anywhere in the Qt layer yet to follow.
+
+Recorded this analysis in =books_and_portfolios.org= under "System
+checks and permissions", where the allowed-currency/allowed-asset
+concept was already mentioned. No code changes; implementation is
+follow-up work once the two open questions get a product decision.

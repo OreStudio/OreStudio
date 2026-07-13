@@ -8,7 +8,7 @@
 #+filetags: :crm_implementation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/crm-topology-full-stack-codegen
-#+pr:
+#+pr: 1556
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -127,7 +127,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1556][#1556]] | [refdata,qt,sql,codegen] Full-stack CRM topology entities with Reference Data UI |
 
 * Review
 

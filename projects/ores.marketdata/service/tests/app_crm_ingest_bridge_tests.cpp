@@ -50,13 +50,14 @@ struct fixture {
     boost::uuids::uuid party_id = boost::uuids::random_generator{}();
     boost::uuids::uuid config_id = boost::uuids::random_generator{}();
 
-    crm_topology_config make_config(const std::string& pivot = "USD") {
+    crm_topology_config make_config(const std::string& pivot = "USD",
+                                    const std::string& name = "test") {
         crm_topology_config c;
         c.version = 0;
         c.tenant_id = h.tenant_id();
         c.id = config_id;
         c.party_id = party_id;
-        c.name = "test";
+        c.name = name;
         c.pivot_currency_code = pivot;
         c.enabled = true;
         c.modified_by = "system.test";
@@ -122,7 +123,7 @@ TEST_CASE("refresh builds an engine from persisted config and driver pairs, upda
     const auto party_id_str = boost::uuids::to_string(f.party_id);
 
     // Not yet ticked -- unavailable, not "no engine" (nullopt).
-    auto before = bridge.rate(tenant_id_str, party_id_str, "EUR", "USD");
+    auto before = bridge.rate(tenant_id_str, party_id_str, "test", "EUR", "USD");
     REQUIRE(before.has_value());
     CHECK(before->status == ores::analytics::quant::domain::rate_status::unavailable);
 
@@ -130,12 +131,12 @@ TEST_CASE("refresh builds an engine from persisted config and driver pairs, upda
     bridge.update(tenant_id_str, party_id_str, "EUR", "USD", 1.10, now);
     bridge.update(tenant_id_str, party_id_str, "USD", "JPY", 150.0, now);
 
-    auto direct = bridge.rate(tenant_id_str, party_id_str, "EUR", "USD");
+    auto direct = bridge.rate(tenant_id_str, party_id_str, "test", "EUR", "USD");
     REQUIRE(direct.has_value());
     CHECK(direct->status == ores::analytics::quant::domain::rate_status::fresh);
     CHECK(direct->rate == Catch::Approx(1.10));
 
-    auto derived = bridge.rate(tenant_id_str, party_id_str, "EUR", "JPY");
+    auto derived = bridge.rate(tenant_id_str, party_id_str, "test", "EUR", "JPY");
     REQUIRE(derived.has_value());
     CHECK(derived->status == ores::analytics::quant::domain::rate_status::fresh);
     CHECK(derived->rate == Catch::Approx(1.10 * 150.0));
@@ -146,8 +147,27 @@ TEST_CASE("rate() returns nullopt when no CRM is configured for the (tenant, par
     crm_ingest_bridge bridge(f.h.context());
     bridge.refresh(); // nothing persisted -- engines map stays empty
 
-    const auto result =
-        bridge.rate(f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id), "EUR", "USD");
+    const auto result = bridge.rate(
+        f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id), "test", "EUR", "USD");
+    CHECK_FALSE(result.has_value());
+}
+
+TEST_CASE("rate() returns nullopt for an unknown CRM name when others are configured", tags) {
+    fixture f;
+    crm_topology_config_repository config_repo;
+    crm_driver_pair_repository driver_repo;
+
+    config_repo.write(f.h.context(), f.make_config("USD", "majors"));
+    driver_repo.write(f.h.context(), f.make_driver_pair("EUR", "USD"));
+
+    crm_ingest_bridge bridge(f.h.context());
+    bridge.refresh();
+
+    const auto result = bridge.rate(f.h.tenant_id().to_string(),
+                                    boost::uuids::to_string(f.party_id),
+                                    "exotics",
+                                    "EUR",
+                                    "USD");
     CHECK_FALSE(result.has_value());
 }
 
@@ -190,7 +210,7 @@ TEST_CASE("rates() returns every configured pair (driver + enabled derived) in o
     bridge.update(tenant_id_str, party_id_str, "EUR", "USD", 1.10, now);
     bridge.update(tenant_id_str, party_id_str, "USD", "JPY", 150.0, now);
 
-    const auto results = bridge.rates(tenant_id_str, party_id_str);
+    const auto results = bridge.rates(tenant_id_str, party_id_str, "test");
 
     // Two driver pairs + one enabled derived pair = three configured pairs.
     REQUIRE(results.size() == 3);
@@ -198,24 +218,57 @@ TEST_CASE("rates() returns every configured pair (driver + enabled derived) in o
         CHECK(r.status == ores::analytics::quant::domain::rate_status::fresh);
 }
 
-TEST_CASE("a second enabled config for the same (tenant, party) is ignored, not merged", tags) {
+TEST_CASE("two enabled configs for the same (tenant, party) build two independent named engines",
+          tags) {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;
 
-    auto first = f.make_config();
-    config_repo.write(f.h.context(), first);
+    auto majors = f.make_config("USD", "majors");
+    config_repo.write(f.h.context(), majors);
     driver_repo.write(f.h.context(), f.make_driver_pair("EUR", "USD"));
+    driver_repo.write(f.h.context(), f.make_driver_pair("USD", "JPY"));
 
-    auto second = f.make_config();
-    second.id = boost::uuids::random_generator{}();
-    second.name = "test-2";
-    config_repo.write(f.h.context(), second);
+    auto exotics = f.make_config("USD", "exotics");
+    exotics.id = boost::uuids::random_generator{}();
+    config_repo.write(f.h.context(), exotics);
+    // exotics driver pairs must reference the exotics config_id.
+    auto try_usd = f.make_driver_pair("TRY", "USD");
+    try_usd.config_id = exotics.id;
+    driver_repo.write(f.h.context(), try_usd);
 
     crm_ingest_bridge bridge(f.h.context());
-    CHECK_NOTHROW(bridge.refresh()); // must not crash on the ambiguous config set
+    CHECK_NOTHROW(bridge.refresh());
 
-    const auto result =
-        bridge.rate(f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id), "EUR", "USD");
-    REQUIRE(result.has_value()); // exactly one of the two configs won
+    const auto tenant_id_str = f.h.tenant_id().to_string();
+    const auto party_id_str = boost::uuids::to_string(f.party_id);
+    const auto now = std::chrono::system_clock::now();
+
+    // A tick on a pair shared by both CRMs feeds both -- but here EUR/USD
+    // is only a driver edge of majors, TRY/USD only of exotics.
+    bridge.update(tenant_id_str, party_id_str, "EUR", "USD", 1.10, now);
+    bridge.update(tenant_id_str, party_id_str, "TRY", "USD", 0.030, now);
+
+    auto majors_rate = bridge.rate(tenant_id_str, party_id_str, "majors", "EUR", "USD");
+    REQUIRE(majors_rate.has_value());
+    CHECK(majors_rate->status == ores::analytics::quant::domain::rate_status::fresh);
+
+    auto exotics_rate = bridge.rate(tenant_id_str, party_id_str, "exotics", "TRY", "USD");
+    REQUIRE(exotics_rate.has_value());
+    CHECK(exotics_rate->status == ores::analytics::quant::domain::rate_status::fresh);
+
+    // All-CRMs batch: majors has 2 configured driver pairs (EUR/USD,
+    // USD/JPY), exotics has 1 (TRY/USD) -- 3 total, each tagged by name.
+    const auto all = bridge.rates(tenant_id_str, party_id_str);
+    REQUIRE(all.size() == 3);
+    std::size_t majors_count = 0;
+    std::size_t exotics_count = 0;
+    for (const auto& r : all) {
+        if (r.crm_name == "majors")
+            ++majors_count;
+        else if (r.crm_name == "exotics")
+            ++exotics_count;
+    }
+    CHECK(majors_count == 2);
+    CHECK(exotics_count == 1);
 }

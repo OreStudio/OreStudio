@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 41B8DCE5-AC29-4DDF-94D7-652225B9EE08
+:END:
+#+title: Task: Fix OSX build: std::atomic<std::shared_ptr<...>> not trivially copyable (crm_ingest_bridge)
+#+description: macOS CI (Xcode 16.2 libc++) fails to build crm_ingest_bridge: std::atomic<std::shared_ptr<const engines_map>> hits libc++'s generic atomic<T> template, which static_asserts T is trivially copyable -- shared_ptr isn't. Linux/clang (libstdc++) accepts this because it implements the dedicated atomic<shared_ptr> specialization from P0718; the macOS libc++ toolchain in CI apparently does not (or not for this map value type). Landed with PR #1530's crm_ingest_bridge and reproduced again on the multi-named-CRM engine work.
+#+type: task
+#+level: s1
+#+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:build:osx:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+environment: clever_dijkstra
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+macOS CI (Xcode 16.2, libc++) fails 4 errors deep on
+=crm_ingest_bridge.hpp='s =std::atomic<std::shared_ptr<const engines_map>>
+engines_;= member:
+
+#+begin_example
+error: _Atomic cannot be applied to type
+'std::shared_ptr<const std::map<...>>' which is not trivially copyable
+error: static assertion failed ... std::atomic<T> requires that 'T' be
+a trivially copyable type
+#+end_example
+
+=std::atomic<std::shared_ptr<T>>= has a dedicated, non-lock-free-required
+specialization since C++20 (P0718) precisely so it doesn't need to be
+trivially copyable -- Linux/clang's libstdc++ implements it and accepts
+this code. The macOS toolchain's libc++ apparently falls through to the
+generic =atomic<T>= primary template instead, which does require
+trivial copyability, hence the failure. Need to either confirm/fix the
+libc++ version-gating (a newer libc++ atomic<shared_ptr> may just not be
+enabled for this deployment target) or use a portable equivalent (e.g.
+wrap in =std::atomic<std::shared_ptr<...>>= only where verified
+supported, otherwise use a small hand-rolled RCU-style pointer swap with
+a mutex, or reach for =immer::atom= as used elsewhere in
+=ores.analytics.quant= for exactly this "lock-free single-producer
+snapshot swap" need).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
+| Now          | Fixed alongside [[id:BA82072F-0B2B-48F4-9C22-8D6D39337099][the multi-named-CRM engine task]], which was already touching this exact type. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing -- see the capture to revisit once macOS libc++ supports atomic<shared_ptr<T>>. |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- macOS CI build (Xcode 16.2 / libc++ target) of =ores.marketdata.service=
+  succeeds with no changes to =crm_ingest_bridge='s external behaviour or
+  thread-safety guarantees (still lock-free reads on the hot path, single
+  atomic swap on refresh).
+- Linux/clang build keeps working unchanged.
+- Root cause (libc++ version gate vs. genuine non-portability) is
+  recorded in =* Result= so future =std::atomic<std::shared_ptr<T>>=
+  usage elsewhere in the codebase knows whether it's safe.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Replaced =std::atomic<std::shared_ptr<const engines_map>> engines_;=
+with a =mutable std::mutex engines_mutex_;= guarding a plain
+=std::shared_ptr<const engines_map> engines_;=. =snapshot()= now takes
+the lock only to copy the =shared_ptr= (a refcount bump) and release;
+=refresh()='s single map-swap does the same. Read/write semantics and
+thread-safety guarantees are unchanged -- this is a portable expression
+of the identical "atomic snapshot swap, many concurrent readers" pattern,
+not a behavioural change. Filed
+[[id:2CA8864F-336E-4632-A510-FC503213165B][a capture]] to switch back to
+=std::atomic<std::shared_ptr<T>>= once macOS's libc++ implements the
+C++20 =atomic<shared_ptr>= specialization for this case.

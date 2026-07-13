@@ -28,6 +28,7 @@
 #include "ores.marketdata.core/repository/crm_driver_pair_repository.hpp"
 #include "ores.marketdata.core/repository/crm_enabled_derived_pair_repository.hpp"
 #include "ores.marketdata.core/repository/crm_topology_config_repository.hpp"
+#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <map>
@@ -66,6 +67,11 @@ void crm_ingest_bridge::refresh() {
 
     auto new_engines = std::make_shared<engines_map>();
 
+    // Track (tenant, party, config_id) -> the built named_engine's index so
+    // the enabled-derived-pairs pass below can find it without a second
+    // linear-name lookup.
+    std::map<boost::uuids::uuid, std::pair<pair_key, std::size_t>> engine_by_config_id;
+
     for (const auto& cfg : configs) {
         if (!cfg.enabled)
             continue;
@@ -74,13 +80,12 @@ void crm_ingest_bridge::refresh() {
         const auto party_id_str = boost::uuids::to_string(cfg.party_id);
         const pair_key key{tenant_id_str, party_id_str};
 
-        // Application-level safeguard for the not-yet-enforced
-        // single-enabled-config-per-party invariant (see the task's
-        // Review table): first enabled config wins, loudly.
-        if (new_engines->contains(key)) {
+        auto& named_engines = (*new_engines)[key];
+        if (std::ranges::any_of(
+                named_engines, [&](const auto& ne) { return ne.name == cfg.name; })) {
             BOOST_LOG_SEV(lg(), warn)
-                << "CRM: more than one enabled crm_topology_config for tenant=" << tenant_id_str
-                << " party=" << party_id_str
+                << "CRM: more than one enabled crm_topology_config named '" << cfg.name
+                << "' for tenant=" << tenant_id_str << " party=" << party_id_str
                 << " -- keeping the first, ignoring config id=" << cfg.id;
             continue;
         }
@@ -110,8 +115,10 @@ void crm_ingest_bridge::refresh() {
             auto engine = std::make_shared<quant::service::rate_engine>(
                 std::move(topology), quant::domain::staleness_policy{default_staleness_max_age});
 
-            party_engine pe{std::move(engine), std::move(configured_pairs)};
-            new_engines->emplace(key, std::move(pe));
+            named_engines.push_back(
+                named_engine{cfg.name, std::move(engine), std::move(configured_pairs)});
+            engine_by_config_id.emplace(cfg.id,
+                                        std::make_pair(key, named_engines.size() - 1));
 
             BOOST_LOG_SEV(lg(), info) << "CRM: built rate_engine for tenant=" << tenant_id_str
                                       << " party=" << party_id_str << " config='" << cfg.name
@@ -125,19 +132,28 @@ void crm_ingest_bridge::refresh() {
 
     // Enabled derived pairs don't affect the topology (they're never
     // edges), only which pairs rates() below considers "configured" --
-    // append them to whichever engines already exist.
+    // append them to whichever named engine their owning config built.
     const auto derived_pairs = derived_repo.read_latest_all_tenants(ctx_);
     for (const auto& d : derived_pairs) {
         if (!d.enabled)
             continue;
-        const pair_key key{d.tenant_id.to_string(), boost::uuids::to_string(d.party_id)};
-        const auto it = new_engines->find(key);
-        if (it != new_engines->end())
-            it->second.configured_pairs.emplace_back(d.base_currency_code, d.quote_currency_code);
+        const auto it = engine_by_config_id.find(d.config_id);
+        if (it == engine_by_config_id.end())
+            continue;
+        const auto& [key, index] = it->second;
+        (*new_engines)[key][index].configured_pairs.emplace_back(d.base_currency_code,
+                                                                  d.quote_currency_code);
     }
 
-    engines_.store(std::move(new_engines));
-    BOOST_LOG_SEV(lg(), info) << "CRM: refresh complete, " << snapshot()->size()
+    std::size_t total_engines = 0;
+    for (const auto& [key, named_engines] : *new_engines)
+        total_engines += named_engines.size();
+
+    {
+        std::lock_guard lock(engines_mutex_);
+        engines_ = std::move(new_engines);
+    }
+    BOOST_LOG_SEV(lg(), info) << "CRM: refresh complete, " << total_engines
                               << " active engine(s)";
 }
 
@@ -152,34 +168,65 @@ void crm_ingest_bridge::update(const std::string& tenant_id_str,
     if (it == snap->end())
         return; // no CRM configured for this (tenant, party)
 
-    try {
-        it->second.engine->update(quant::domain::driver_quote{
-            base_currency_code, quote_currency_code, rate, observed_at});
-    } catch (const std::invalid_argument&) {
-        // Not a driver edge of this party's topology (or an unknown
-        // currency) -- not every tick is a CRM-configured pair.
+    // A single tick may be a driver edge of several of this party's named
+    // CRMs at once (e.g. EUR/USD in both "majors" and "exotics") -- feed
+    // every one of them.
+    for (const auto& named_engine : it->second) {
+        try {
+            named_engine.engine->update(quant::domain::driver_quote{
+                base_currency_code, quote_currency_code, rate, observed_at});
+        } catch (const std::invalid_argument&) {
+            // Not a driver edge of this CRM's topology (or an unknown
+            // currency) -- not every tick is configured in every CRM.
+        }
     }
 }
 
 std::optional<quant::domain::derived_rate>
 crm_ingest_bridge::rate(const std::string& tenant_id_str,
                         const std::string& party_id_str,
+                        const std::string& crm_name,
                         const std::string& base_currency_code,
                         const std::string& quote_currency_code) const {
     const auto snap = snapshot();
     const auto it = snap->find(pair_key{tenant_id_str, party_id_str});
     if (it == snap->end())
         return std::nullopt;
-    return it->second.engine->rate(base_currency_code, quote_currency_code);
+    const auto named_it = std::ranges::find(it->second, crm_name, &named_engine::name);
+    if (named_it == it->second.end())
+        return std::nullopt;
+    return named_it->engine->rate(base_currency_code, quote_currency_code);
 }
 
 std::vector<quant::domain::derived_rate>
+crm_ingest_bridge::rates(const std::string& tenant_id_str,
+                         const std::string& party_id_str,
+                         const std::string& crm_name) const {
+    const auto snap = snapshot();
+    const auto it = snap->find(pair_key{tenant_id_str, party_id_str});
+    if (it == snap->end())
+        return {};
+    const auto named_it = std::ranges::find(it->second, crm_name, &named_engine::name);
+    if (named_it == it->second.end())
+        return {};
+    return named_it->engine->rates(named_it->configured_pairs);
+}
+
+std::vector<named_rate>
 crm_ingest_bridge::rates(const std::string& tenant_id_str, const std::string& party_id_str) const {
     const auto snap = snapshot();
     const auto it = snap->find(pair_key{tenant_id_str, party_id_str});
     if (it == snap->end())
         return {};
-    return it->second.engine->rates(it->second.configured_pairs);
+
+    std::vector<named_rate> result;
+    for (const auto& named_engine : it->second) {
+        auto rates = named_engine.engine->rates(named_engine.configured_pairs);
+        result.reserve(result.size() + rates.size());
+        for (auto& r : rates)
+            result.push_back(named_rate{named_engine.name, std::move(r)});
+    }
+    return result;
 }
 
 } // namespace ores::marketdata::service::app

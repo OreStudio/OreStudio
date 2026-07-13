@@ -65,8 +65,10 @@ inline std::string as_of_to_string(std::chrono::system_clock::time_point tp) {
     return std::format("{:%FT%TZ}", std::chrono::floor<std::chrono::seconds>(tp));
 }
 
-inline crm_rate_item to_item(const ores::analytics::quant::domain::derived_rate& r) {
-    return crm_rate_item{.base_currency_code = r.base_code,
+inline crm_rate_item to_item(const std::string& crm_name,
+                             const ores::analytics::quant::domain::derived_rate& r) {
+    return crm_rate_item{.crm_name = crm_name,
+                         .base_currency_code = r.base_code,
                          .quote_currency_code = r.quote_code,
                          .rate = r.rate,
                          .status = rate_status_to_string(r.status),
@@ -117,18 +119,23 @@ public:
         }
 
         const auto tenant_id_str = ctx.tenant_id().to_string();
-        const auto result = bridge_->rate(
-            tenant_id_str, req->party_id, req->base_currency_code, req->quote_currency_code);
+        const auto result = bridge_->rate(tenant_id_str,
+                                          req->party_id,
+                                          req->crm_name,
+                                          req->base_currency_code,
+                                          req->quote_currency_code);
         if (!result) {
             reply(nats_,
                   msg,
-                  get_crm_rate_response{
-                      .success = false, .message = "No CRM configured for this party", .rate = {}});
+                  get_crm_rate_response{.success = false,
+                                       .message = "No such CRM configured for this party",
+                                       .rate = {}});
             return;
         }
         reply(nats_,
               msg,
-              get_crm_rate_response{.success = true, .message = {}, .rate = to_item(*result)});
+              get_crm_rate_response{
+                  .success = true, .message = {}, .rate = to_item(req->crm_name, *result)});
     }
 
     void rates(ores::nats::message msg) {
@@ -150,13 +157,21 @@ public:
         }
 
         const auto tenant_id_str = ctx.tenant_id().to_string();
-        const auto results = bridge_->rates(tenant_id_str, req->party_id);
 
         get_crm_rates_response resp;
         resp.success = true;
-        resp.rates.reserve(results.size());
-        for (const auto& r : results)
-            resp.rates.push_back(to_item(r));
+        if (req->crm_name.empty()) {
+            // No CRM selected -- every enabled CRM the party has, tagged.
+            const auto results = bridge_->rates(tenant_id_str, req->party_id);
+            resp.rates.reserve(results.size());
+            for (const auto& r : results)
+                resp.rates.push_back(to_item(r.crm_name, r.rate));
+        } else {
+            const auto results = bridge_->rates(tenant_id_str, req->party_id, req->crm_name);
+            resp.rates.reserve(results.size());
+            for (const auto& r : results)
+                resp.rates.push_back(to_item(req->crm_name, r));
+        }
         reply(nats_, msg, resp);
     }
 

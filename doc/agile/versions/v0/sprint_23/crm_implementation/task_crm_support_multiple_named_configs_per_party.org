@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:
 #+owner: marco
-#+branch:
+#+branch: feature/crm-support-multiple-named-configs-per-party
 #+pr: 1533
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -41,11 +41,11 @@ during implementation).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -99,3 +99,44 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=crm_ingest_bridge= now keys its engines map by =(tenant, party)= ->
+a vector of named engines (=name=, =rate_engine=, =configured_pairs=)
+instead of one engine per party. =refresh()= builds one engine per
+*every* enabled =crm_topology_config= for a party (duplicate names for
+the same party still warn-and-skip the second, since names aren't yet
+enforced unique at the DB layer). =update()= feeds a driver tick to
+every named engine for the (tenant, party) that has it as an edge (a
+tick can be a driver for more than one of a party's CRMs at once).
+
+New/changed API:
+- =rate(tenant, party, crm_name, base, quote)= -- single named CRM,
+  =crm_name= now required (a pair can resolve differently per CRM).
+- =rates(tenant, party, crm_name)= -- batch for one named CRM.
+- =rates(tenant, party)= -- batch across *every* enabled CRM for the
+  party, returned as =std::vector<named_rate>= (a =derived_rate= tagged
+  with which CRM produced it).
+- =get_crm_rate_request=/=get_crm_rates_request= gained =crm_name=;
+  =crm_rate_item= gained =crm_name= in the response. Empty
+  =crm_name= on =get_crm_rates_request= means "every CRM, tagged".
+
+Also fixed the macOS build in the same change (touching the exact same
+type): replaced =std::atomic<std::shared_ptr<const engines_map>>= with
+a mutex-guarded =std::shared_ptr<const engines_map>= -- portable across
+toolchains, same lock-free-reads-mostly semantics (critical section is
+just a refcount bump). See
+[[id:41B8DCE5-AC29-4DDF-94D7-652225B9EE08][the OSX build task]] and
+[[id:2CA8864F-336E-4632-A510-FC503213165B][the capture]] to switch back
+once macOS's libc++ implements =atomic<shared_ptr<T>>= for this case.
+
+Verified: full local build clean (=linux-clang-debug-make=); full
+=ctest= 71/71 suites passed (=ores.marketdata.service.tests= covers the
+new multi-CRM behaviour: two independent named engines, per-name
+lookup, unknown-name nullopt, all-CRMs tagged batch); =db recreate -y
+-k= clean (no schema changes in this task); =validate_schemas.sh
+--strict= clean (233 tables, 0 warnings).
+
+Also raised a valgrind "possibly lost" report noticed in
+=rate_engine='s =immer= thread-local pool as a separate
+[[id:9F05583B-58A6-4FAC-99AB-24BBD983AC21][investigate task]] rather
+than folding an unrelated memory investigation into this change.

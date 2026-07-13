@@ -54,7 +54,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:B12A8474-32FF-45B7-BFD8-FF1B42845DAD][Verify counterparty Qt UI end-to-end post-NATS]] | PENDING | Covers list/create/read/identifiers/contacts/hierarchy/update/delete/history plus cross-client eventing (blue/red). |
 
 * PRs
 

@@ -8,7 +8,7 @@
 #+filetags: :iam_party_cache_invalidation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/add-nats-event-cache-facet
-#+pr:
+#+pr: 1551
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -123,7 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1551][#1551]] | [codegen] Add nats-event-cache facet: cache + registrar wiring |
 
 * Review
 

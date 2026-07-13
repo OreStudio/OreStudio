@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 48ACB094-DD19-4259-AA3D-80EC4FC8A5EC
+:END:
+#+title: Test Scenario: Verify DatasetViewDialog redesign in the Data Librarian
+#+description: Log in, open the Data Librarian, open a dataset detail view, and confirm the persistent header banner, merged Provenance & Methodology tab, and pill-styled governance values.
+#+type: test_scenario
+#+level: s1
+#+filetags: :improve_data_librarian_accession_card_ui:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:6FF3D889-123F-4C5D-BB28-0F38BA32C9E9][Rework DatasetViewDialog into a persistent-header, two-column layout]] in [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:6FF3D889-123F-4C5D-BB28-0F38BA32C9E9][Rework DatasetViewDialog into a persistent-header, two-column layout]] |
+| Parent story  | [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]]   |
+| Target dialog | DatasetViewDialog (Data Librarian accession card)   |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A running Qt client, not yet logged in.
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Log in and select Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
+=BARCLAYS PLC=. Confirm all menus enable with no errors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the Data Librarian and a dataset's accession card
+
+Open Reference Data > Data Librarian (or System > Data, wherever it
+lives in this build). Pick any seeded dataset (e.g. =ORE Asset
+Class=) and open its detail view (=DatasetViewDialog=).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | we should not have a librarian in system data or reference data.. I can't see it in menus there. it is in the correct place, Data Management, Data Librarian. |
+
+** Persistent header banner
+
+Confirm a header banner sits above the tabs showing the dataset's
+Name and, on a second line, Code and Version. Confirm a "Copy ID"
+button is present; click it and paste somewhere to confirm the full
+UUID was copied (the banner itself only shows a truncated ID with a
+tooltip holding the full UUID).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Overview tab: no more Name/Code/Version/ID rows, governance pills
+
+Open the Overview tab. Confirm the General section no longer repeats
+Name/Code/Version/ID (now only in the header banner). Confirm Origin,
+Nature, and Treatment in the Data Governance section render as
+coloured pill badges, not plain text.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Provenance & Methodology tab is merged
+
+Confirm there is a single "Provenance & Methodology" tab (not two
+separate tabs), showing the Provenance property tree, the Methodology
+property tree, and the implementation-details text browser stacked
+vertically.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Dependencies tab still shows the interactive lineage graph
+
+Confirm the Dependencies tab is unchanged: the interactive node/graph
+lineage view still renders correctly (this tab was intentionally left
+untouched by this task).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** No error toast or log error during the whole flow
+
+Check the client's log tail
+(=build/output/<preset>/publish/log/ores.qt.<colour>.log=) for any
+ERROR-level line during this flow.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | check logs |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-13T08:46:04Z |
+| Branch        | feature/rework-dataset-detail-dialog-layout |
+| Commit        | d37820197 |
+| Worktree      | merry_newton |
+
+* Notes

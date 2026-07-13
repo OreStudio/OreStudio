@@ -24,31 +24,37 @@
 #include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <QDialog>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QLabel>
 #include <QTabWidget>
 #include <QTextBrowser>
 #include <QTreeWidget>
+#include <QWidget>
 #include <map>
 #include <vector>
 
 namespace ores::qt {
 class ClientManager;
+class BadgeCache;
 }
 
 namespace ores::qt {
 
 /**
- * @brief Dialog for viewing dataset details with tabbed interface.
+ * @brief Widget for viewing dataset details with tabbed interface.
  *
- * Displays dataset information organized into tabs:
- * - Overview: general info, classification, data governance dimensions, audit info
- * - Provenance: methodology, source, dates, license, lineage info
- * - Methodology: methodology details and processing steps
- * - Lineage: visual diagram
+ * Embedded in a DetachableMdiSubWindow by the caller (DataLibrarianWindow)
+ * — same MDI pattern as every other window in the app — rather than shown
+ * as a floating QDialog.
+ *
+ * Displays dataset information organized into a persistent header
+ * (name, code, version, ID) followed by tabs:
+ * - Overview: classification, data governance dimensions, audit info
+ * - Provenance & Methodology: source, dates, license, lineage, methodology
+ * - Dependencies: interactive lineage diagram
  */
-class DatasetViewDialog : public QDialog {
+class DatasetViewDialog : public QWidget {
     Q_OBJECT
 
     // QSS-styleable properties for lineage diagram
@@ -85,6 +91,13 @@ public:
     explicit DatasetViewDialog(ClientManager* clientManager, QWidget* parent = nullptr);
     ~DatasetViewDialog() override;
 
+    QSize sizeHint() const override {
+        return QSize(950, 700);
+    }
+
+    void setBadgeCache(BadgeCache* badgeCache) {
+        badgeCache_ = badgeCache;
+    }
     void setDataset(const dq::domain::dataset& dataset);
     void setMethodologies(const std::vector<dq::domain::methodology>& methodologies);
     void setDatasetDependencies(const std::vector<dq::domain::dataset_dependency>& dependencies);
@@ -92,15 +105,17 @@ public:
 
 private:
     void setupUi();
+    QWidget* createHeaderBanner();
     QWidget* createOverviewTab();
-    QWidget* createProvenanceTab();
-    QWidget* createMethodologyTab();
+    QWidget* createProvenanceAndMethodologyTab();
     QWidget* createLineageTab();
 
+    void updateHeaderBanner();
     void updateOverviewTab();
     void updateProvenanceTab();
     void updateMethodologyTab();
     void updateLineageView();
+    void onCopyIdClicked();
 
     // Helper to add property to tree widget
     void addProperty(QTreeWidget* tree,
@@ -108,6 +123,12 @@ private:
                      const QString& value,
                      const QString& tooltip = {});
     void addSectionHeader(QTreeWidget* tree, const QString& title);
+    // Render a value as a coloured badge (BadgeLabelUtils, same system as
+    // every other badge in the app) instead of plain text.
+    void addBadgeProperty(QTreeWidget* tree,
+                          const QString& name,
+                          const std::string& badgeDomain,
+                          const std::string& value);
 
     QString findMethodologyName(const std::optional<boost::uuids::uuid>& methodologyId) const;
     const dq::domain::methodology*
@@ -146,10 +167,15 @@ private:
     void drawLabeledConnection(
         QGraphicsScene* scene, qreal x1, qreal y1, qreal x2, qreal y2, const QString& label) const;
 
+    // Persistent header banner
+    QLabel* headerNameLabel_;
+    QLabel* headerCodeVersionLabel_;
+    QLabel* headerIdLabel_;
+
     // Tab widget
     QTabWidget* tabWidget_;
 
-    // Overview tab (General + Classification + Data Governance + Audit)
+    // Overview tab (Classification + Data Governance + Audit)
     QTreeWidget* overviewTree_;
 
     // Provenance tab
@@ -164,6 +190,7 @@ private:
 
     // Data
     ClientManager* clientManager_;
+    BadgeCache* badgeCache_ = nullptr;
     dq::domain::dataset dataset_;
     std::vector<dq::domain::methodology> methodologies_;
     std::vector<dq::domain::dataset_dependency> datasetDependencies_;

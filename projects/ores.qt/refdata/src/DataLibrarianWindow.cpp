@@ -23,6 +23,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DatasetItemDelegate.hpp"
 #include "ores.qt/DatasetViewDialog.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/PublicationAuditDialog.hpp"
@@ -32,6 +33,7 @@
 #include <QFutureWatcher>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QMdiArea>
 #include <QMenu>
 #include <QSettings>
 #include <QVBoxLayout>
@@ -590,11 +592,11 @@ void DataLibrarianWindow::showDatasetDetailDialog(const dq::domain::dataset* dat
         return;
     }
 
-    // Create a new dialog for each dataset (allows multiple windows)
-    auto* dialog = new DatasetViewDialog(clientManager_, this);
-    dialog->setAttribute(Qt::WA_DeleteOnClose); // Auto-delete when closed
+    // Create a new view for each dataset (allows multiple windows)
+    auto* view = new DatasetViewDialog(clientManager_, nullptr);
+    view->setBadgeCache(badgeCache_);
 
-    // Collect methodologies for the dialog
+    // Collect methodologies for the view
     std::vector<dq::domain::methodology> methodologies;
     for (int i = 0; i < methodologyModel_->rowCount(); ++i) {
         const auto* methodology = methodologyModel_->getMethodology(i);
@@ -602,8 +604,8 @@ void DataLibrarianWindow::showDatasetDetailDialog(const dq::domain::dataset* dat
             methodologies.push_back(*methodology);
         }
     }
-    dialog->setMethodologies(methodologies);
-    dialog->setDatasetDependencies(datasetDependencyModel_->dependencies());
+    view->setMethodologies(methodologies);
+    view->setDatasetDependencies(datasetDependencyModel_->dependencies());
 
     // Build code-to-name lookup for dependency display
     std::map<std::string, std::string> datasetNames;
@@ -613,12 +615,29 @@ void DataLibrarianWindow::showDatasetDetailDialog(const dq::domain::dataset* dat
             datasetNames[ds->code] = ds->name;
         }
     }
-    dialog->setDatasetNames(datasetNames);
+    view->setDatasetNames(datasetNames);
 
-    dialog->setDataset(*dataset);
+    view->setDataset(*dataset);
 
-    // Show modeless dialog
-    dialog->show();
+    // Embed as an MDI subwindow — same pattern as every other window in
+    // the app — instead of a floating QDialog that stays on top.
+    auto* mdiArea = window()->findChild<QMdiArea*>();
+    if (!mdiArea) {
+        BOOST_LOG_SEV(lg(), warn) << "No QMdiArea found; cannot open dataset view.";
+        delete view;
+        return;
+    }
+
+    auto* subWindow = new DetachableMdiSubWindow(mdiArea);
+    subWindow->setWidget(view);
+    subWindow->setWindowTitle(tr("Dataset: %1").arg(QString::fromStdString(dataset->name)));
+    subWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
+    subWindow->setAttribute(Qt::WA_DeleteOnClose);
+
+    mdiArea->addSubWindow(subWindow);
+    subWindow->resize(view->sizeHint());
+    subWindow->show();
 }
 
 void DataLibrarianWindow::onRefreshClicked() {

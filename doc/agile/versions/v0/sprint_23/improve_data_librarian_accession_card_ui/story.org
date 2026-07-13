@@ -16,13 +16,15 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 * Goal
 
 Redesign the Data Librarian's dataset detail dialog
-(=DatasetDetailDialog=, the "accession card") away from its current
+(=DatasetViewDialog=, the "accession card") away from its current
 single-column, alternating-row property-sheet table toward a
 persistent-header, asymmetric two-column layout, per
 [[id:211CB159-F633-4897-A899-56CD91625396][OreStudio Data Librarian UI/UX Review]]. Phased: cosmetic wins
 (header banner, UUID copy, status pills) before the structural
-column/tab rework. The interactive lineage graph proposed for
-*Dependencies* is out of scope — a separate, bigger undertaking.
+column/tab rework. *Dependencies* already has a working interactive
+lineage graph (=QGraphicsScene= node/socket/connection rendering,
+not flat rows as the review assumed) — out of scope for this story,
+only cosmetic tab-count changes touch it, if any.
 
 * Status
 
@@ -50,19 +52,20 @@ column/tab rework. The interactive lineage graph proposed for
   metadata sidebar) instead of a single-column table, for *Overview*
   and the merged *Provenance & Governance* tab.
 - =DetailDialogBase= (shared by 78 other entity dialogs) is
-  untouched; the new layout lives in =DatasetDetailDialog= only.
+  untouched; the new layout lives in =DatasetViewDialog= only.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6FF3D889-123F-4C5D-BB28-0F38BA32C9E9][Rework DatasetDetailDialog into a persistent-header, two-column layout]] | STARTED | 2026-07-12 | | Implement the phased redesign: persistent header banner + UUID copy, status pills, merged Provenance/Methodology tab, asymmetric two-column layout — librarian-only, DetailDialogBase untouched. |
+| [[id:6FF3D889-123F-4C5D-BB28-0F38BA32C9E9][Rework DatasetViewDialog into a persistent-header, two-column layout]] | STARTED | 2026-07-12 | | Implement the phased redesign: persistent header banner + UUID copy, status pills, merged Provenance/Methodology tab, asymmetric two-column layout — librarian-only, DetailDialogBase untouched. |
 
 * Decisions
 
 * Out of scope
 
-- Interactive SVG/Canvas lineage graph for the *Dependencies* tab —
-  file as a separate future capture if this redesign lands well.
+- *Dependencies* tab internals — it already has a working
+  interactive lineage graph, contrary to the review's assumption of
+  flat rows.
 - Any change to =DetailDialogBase= or the other 77 entity dialogs
   built on it.

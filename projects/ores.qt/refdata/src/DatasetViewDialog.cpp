@@ -21,10 +21,14 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include <QApplication>
+#include <QClipboard>
+#include <QFrame>
 #include <QGraphicsTextItem>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QPainterPath>
+#include <QPushButton>
 #include <QSplitter>
 #include <QVBoxLayout>
 #include <boost/uuid/uuid_io.hpp>
@@ -48,17 +52,70 @@ void DatasetViewDialog::setupUi() {
 
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
+
+    mainLayout->addWidget(createHeaderBanner());
 
     // Create tab widget with tabs at the top
     tabWidget_ = new QTabWidget(this);
 
     // Add tabs
     tabWidget_->addTab(createOverviewTab(), tr("Overview"));
-    tabWidget_->addTab(createProvenanceTab(), tr("Provenance"));
-    tabWidget_->addTab(createMethodologyTab(), tr("Methodology"));
+    tabWidget_->addTab(createProvenanceAndMethodologyTab(), tr("Provenance & Methodology"));
     tabWidget_->addTab(createLineageTab(), tr("Dependencies"));
 
     mainLayout->addWidget(tabWidget_);
+}
+
+QWidget* DatasetViewDialog::createHeaderBanner() {
+    auto* frame = new QFrame();
+    frame->setFrameShape(QFrame::StyledPanel);
+    frame->setObjectName("datasetHeaderBanner");
+
+    auto* layout = new QHBoxLayout(frame);
+    layout->setContentsMargins(12, 8, 12, 8);
+
+    auto* textLayout = new QVBoxLayout();
+    headerNameLabel_ = new QLabel();
+    auto nameFont = headerNameLabel_->font();
+    nameFont.setPointSize(nameFont.pointSize() + 2);
+    nameFont.setBold(true);
+    headerNameLabel_->setFont(nameFont);
+
+    headerCodeVersionLabel_ = new QLabel();
+    headerCodeVersionLabel_->setStyleSheet("color: palette(mid);");
+
+    textLayout->addWidget(headerNameLabel_);
+    textLayout->addWidget(headerCodeVersionLabel_);
+    layout->addLayout(textLayout);
+    layout->addStretch();
+
+    headerIdLabel_ = new QLabel();
+    headerIdLabel_->setStyleSheet("color: palette(mid);");
+    layout->addWidget(headerIdLabel_);
+
+    auto* copyButton = new QPushButton(tr("Copy ID"));
+    connect(copyButton, &QPushButton::clicked, this, &DatasetViewDialog::onCopyIdClicked);
+    layout->addWidget(copyButton);
+
+    return frame;
+}
+
+void DatasetViewDialog::onCopyIdClicked() {
+    QApplication::clipboard()->setText(
+        QString::fromStdString(boost::uuids::to_string(dataset_.id)));
+}
+
+void DatasetViewDialog::updateHeaderBanner() {
+    headerNameLabel_->setText(QString::fromStdString(dataset_.name));
+    headerCodeVersionLabel_->setText(
+        tr("%1  |  v%2")
+            .arg(QString::fromStdString(dataset_.code))
+            .arg(dataset_.version));
+    const auto idString = boost::uuids::to_string(dataset_.id);
+    headerIdLabel_->setText(
+        tr("ID: %1…").arg(QString::fromStdString(idString.substr(0, 8))));
+    headerIdLabel_->setToolTip(QString::fromStdString(idString));
 }
 
 QWidget* DatasetViewDialog::createOverviewTab() {
@@ -78,10 +135,12 @@ QWidget* DatasetViewDialog::createOverviewTab() {
     return widget;
 }
 
-QWidget* DatasetViewDialog::createProvenanceTab() {
+QWidget* DatasetViewDialog::createProvenanceAndMethodologyTab() {
     auto* widget = new QWidget();
     auto* layout = new QVBoxLayout(widget);
     layout->setContentsMargins(8, 8, 8, 8);
+
+    auto* splitter = new QSplitter(Qt::Vertical);
 
     provenanceTree_ = new QTreeWidget();
     provenanceTree_->setHeaderLabels({tr("Property"), tr("Value")});
@@ -91,18 +150,6 @@ QWidget* DatasetViewDialog::createProvenanceTab() {
     provenanceTree_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     provenanceTree_->setStyleSheet("QTreeWidget::item { padding: 4px 0px; }");
 
-    layout->addWidget(provenanceTree_);
-    return widget;
-}
-
-QWidget* DatasetViewDialog::createMethodologyTab() {
-    auto* widget = new QWidget();
-    auto* layout = new QVBoxLayout(widget);
-    layout->setContentsMargins(8, 8, 8, 8);
-
-    auto* splitter = new QSplitter(Qt::Vertical);
-
-    // Top: properties tree
     methodologyTree_ = new QTreeWidget();
     methodologyTree_->setHeaderLabels({tr("Property"), tr("Value")});
     methodologyTree_->setAlternatingRowColors(true);
@@ -111,15 +158,16 @@ QWidget* DatasetViewDialog::createMethodologyTab() {
     methodologyTree_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     methodologyTree_->setStyleSheet("QTreeWidget::item { padding: 4px 0px; }");
 
-    // Bottom: implementation details text
     stepsText_ = new QTextBrowser();
     stepsText_->setPlaceholderText(tr("No implementation details available."));
     stepsText_->setOpenExternalLinks(true);
 
+    splitter->addWidget(provenanceTree_);
     splitter->addWidget(methodologyTree_);
     splitter->addWidget(stepsText_);
     splitter->setStretchFactor(0, 2);
-    splitter->setStretchFactor(1, 1);
+    splitter->setStretchFactor(1, 2);
+    splitter->setStretchFactor(2, 1);
 
     layout->addWidget(splitter);
     return widget;
@@ -159,6 +207,23 @@ void DatasetViewDialog::addProperty(QTreeWidget* tree,
         item->setToolTip(0, tooltip);
         item->setToolTip(1, tooltip);
     }
+}
+
+void DatasetViewDialog::addPillProperty(QTreeWidget* tree, const QString& name, const QString& value) {
+    auto* item = new QTreeWidgetItem(tree);
+    item->setText(0, name);
+    item->setFlags(item->flags() | Qt::ItemNeverHasChildren);
+
+    auto nameFont = item->font(0);
+    nameFont.setBold(true);
+    item->setFont(0, nameFont);
+
+    auto* pill = new QLabel(value, tree);
+    pill->setAlignment(Qt::AlignCenter);
+    pill->setStyleSheet(
+        "QLabel { background-color: palette(highlight); color: palette(highlighted-text); "
+        "border-radius: 8px; padding: 1px 10px; }");
+    tree->setItemWidget(item, 1, pill);
 }
 
 void DatasetViewDialog::addSectionHeader(QTreeWidget* tree, const QString& title) {
@@ -207,6 +272,7 @@ void DatasetViewDialog::setDataset(const dq::domain::dataset& dataset) {
     dataset_ = dataset;
     setWindowTitle(tr("Dataset: %1").arg(QString::fromStdString(dataset_.name)));
 
+    updateHeaderBanner();
     updateOverviewTab();
     updateProvenanceTab();
     updateMethodologyTab();
@@ -230,13 +296,8 @@ void DatasetViewDialog::setDatasetNames(const std::map<std::string, std::string>
 void DatasetViewDialog::updateOverviewTab() {
     overviewTree_->clear();
 
-    // General section
+    // General section (Name/Code/Version/ID now live in the header banner)
     addSectionHeader(overviewTree_, tr("General"));
-    addProperty(overviewTree_, tr("Name"), QString::fromStdString(dataset_.name));
-    addProperty(overviewTree_, tr("Code"), QString::fromStdString(dataset_.code));
-    addProperty(overviewTree_, tr("Version"), QString::number(dataset_.version));
-    addProperty(
-        overviewTree_, tr("ID"), QString::fromStdString(boost::uuids::to_string(dataset_.id)));
     addProperty(overviewTree_,
                 tr("Description"),
                 dataset_.description.empty() ? tr("-") :
@@ -253,9 +314,10 @@ void DatasetViewDialog::updateOverviewTab() {
 
     // Data Governance section
     addSectionHeader(overviewTree_, tr("Data Governance"));
-    addProperty(overviewTree_, tr("Origin"), QString::fromStdString(dataset_.origin_code));
-    addProperty(overviewTree_, tr("Nature"), QString::fromStdString(dataset_.nature_code));
-    addProperty(overviewTree_, tr("Treatment"), QString::fromStdString(dataset_.treatment_code));
+    addPillProperty(overviewTree_, tr("Origin"), QString::fromStdString(dataset_.origin_code));
+    addPillProperty(overviewTree_, tr("Nature"), QString::fromStdString(dataset_.nature_code));
+    addPillProperty(
+        overviewTree_, tr("Treatment"), QString::fromStdString(dataset_.treatment_code));
 
     // Audit section
     addSectionHeader(overviewTree_, tr("Audit"));

@@ -27,6 +27,7 @@
 #include <QDialog>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QLabel>
 #include <QTabWidget>
 #include <QTextBrowser>
 #include <QTreeWidget>
@@ -42,11 +43,11 @@ namespace ores::qt {
 /**
  * @brief Dialog for viewing dataset details with tabbed interface.
  *
- * Displays dataset information organized into tabs:
- * - Overview: general info, classification, data governance dimensions, audit info
- * - Provenance: methodology, source, dates, license, lineage info
- * - Methodology: methodology details and processing steps
- * - Lineage: visual diagram
+ * Displays dataset information organized into a persistent header
+ * (name, code, version, ID) followed by tabs:
+ * - Overview: classification, data governance dimensions, audit info
+ * - Provenance & Methodology: source, dates, license, lineage, methodology
+ * - Dependencies: interactive lineage diagram
  */
 class DatasetViewDialog : public QDialog {
     Q_OBJECT
@@ -92,15 +93,17 @@ public:
 
 private:
     void setupUi();
+    QWidget* createHeaderBanner();
     QWidget* createOverviewTab();
-    QWidget* createProvenanceTab();
-    QWidget* createMethodologyTab();
+    QWidget* createProvenanceAndMethodologyTab();
     QWidget* createLineageTab();
 
+    void updateHeaderBanner();
     void updateOverviewTab();
     void updateProvenanceTab();
     void updateMethodologyTab();
     void updateLineageView();
+    void onCopyIdClicked();
 
     // Helper to add property to tree widget
     void addProperty(QTreeWidget* tree,
@@ -108,6 +111,8 @@ private:
                      const QString& value,
                      const QString& tooltip = {});
     void addSectionHeader(QTreeWidget* tree, const QString& title);
+    // Render a value as a coloured pill instead of plain text.
+    void addPillProperty(QTreeWidget* tree, const QString& name, const QString& value);
 
     QString findMethodologyName(const std::optional<boost::uuids::uuid>& methodologyId) const;
     const dq::domain::methodology*
@@ -146,10 +151,15 @@ private:
     void drawLabeledConnection(
         QGraphicsScene* scene, qreal x1, qreal y1, qreal x2, qreal y2, const QString& label) const;
 
+    // Persistent header banner
+    QLabel* headerNameLabel_;
+    QLabel* headerCodeVersionLabel_;
+    QLabel* headerIdLabel_;
+
     // Tab widget
     QTabWidget* tabWidget_;
 
-    // Overview tab (General + Classification + Data Governance + Audit)
+    // Overview tab (Classification + Data Governance + Audit)
     QTreeWidget* overviewTree_;
 
     // Provenance tab

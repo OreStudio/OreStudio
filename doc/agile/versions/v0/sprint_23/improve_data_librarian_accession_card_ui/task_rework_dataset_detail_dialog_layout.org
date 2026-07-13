@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 6FF3D889-123F-4C5D-BB28-0F38BA32C9E9
 :END:
-#+title: Task: Rework DatasetDetailDialog into a persistent-header, two-column layout
+#+title: Task: Rework DatasetViewDialog into a persistent-header, two-column layout
 #+description: Implement the phased redesign: persistent header banner + UUID copy, status pills, merged Provenance/Methodology tab, asymmetric two-column layout — librarian-only, DetailDialogBase untouched.
 #+type: task
 #+level: s1
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Implement the full phased redesign of =DatasetDetailDialog= from
+Implement the full phased redesign of =DatasetViewDialog= from
 [[id:211CB159-F633-4897-A899-56CD91625396][OreStudio Data Librarian UI/UX Review]]: cheap-and-safe cosmetic
 wins first (persistent header banner, one-click UUID copy, status
 pills), then the structural rework (merge Provenance/Methodology,
@@ -52,9 +52,28 @@ untouched, and the interactive lineage graph is out of scope.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Corrected the target from the story's original =DatasetDetailDialog=
+(the create/edit form, only 2 tabs) to the actual accession-card
+viewer, =DatasetViewDialog= (=projects/ores.qt/refdata/src/DatasetViewDialog.cpp=),
+which has the 4 tabs (Overview, Provenance, Methodology, Dependencies)
+the review targets. Also found *Dependencies* already has a working
+=QGraphicsScene=-based interactive lineage graph — not flat rows as
+the review assumed — so that tab needs no rework.
+
+Phase 1 (this task):
+1. Add a persistent header banner above the tab widget: Name, Code,
+   Version, ID with a one-click copy button; remove the now-redundant
+   Name/Code/Version/ID rows from the Overview tab's General section.
+2. Merge *Provenance* and *Methodology* into a single
+   "Provenance & Methodology" tab (stacked via QSplitter, reusing the
+   existing per-tab update methods).
+3. Style Origin/Nature/Treatment values as visual pills (background
+   colour + bold) instead of plain tree rows.
+
+Deferred to a follow-up task if this phase lands well: the full
+asymmetric two-column layout (splitting each tab's tree into a
+primary-content region and a metadata sidebar) is a bigger structural
+change than fits this task's scope.
 
 * Notes
 
@@ -67,7 +86,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:48ACB094-DD19-4259-AA3D-80EC4FC8A5EC][Verify DatasetViewDialog redesign in the Data Librarian]] | PENDING | |
 
 * PRs
 

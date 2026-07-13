@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: 7D6E9249-CC1C-444F-86E5-6D083DFF402C
+:END:
+#+title: Test Scenario: Verify the generic HistoryDialog widget for currency
+#+description: Manually verify the new generic HistoryDialog (replacing CurrencyHistoryDialog): version list, changes tab, full details tab, Open, and Revert.
+#+type: test_scenario
+#+level: s1
+#+filetags: :consolidate_history_dialogs:sprint_23:v0:
+#+target_dialog: HistoryDialog
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:7D8659AB-220E-4077-BD17-3C4DCA1937D8][Single generic HistoryDialog widget in ores.qt]] in [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:7D8659AB-220E-4077-BD17-3C4DCA1937D8][Single generic HistoryDialog widget in ores.qt]] |
+| Parent story  | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]]   |
+| Target dialog | HistoryDialog                           |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in and select the Barclays Plc party
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= and
+select "BARCLAYS PLC" as the active party if prompted. If the
+database has been recreated since this was last provisioned, first
+run =./compass.sh shell -f
+projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+to reprovision it.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Add a test currency with two versions
+
+Reference Data > Currencies > Add. Add a currency with ISO code
+=TST=, then edit it once (e.g. change the name) so it has two
+versions to compare. Use change reason code =system.test=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | cannot save new currency. save buttton is disabled and i filled in all the fields but still no luck |
+
+** Open the currency's history and check the version list
+
+Reference Data > Currencies, select =TST=, open History. Confirm the
+version list shows both versions (newest first) with Version,
+Recorded At and Modified By columns populated.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | updated existing currency, looks good. |
+
+** Check the Changes tab
+
+Select the newest version. Confirm the Changes tab shows a
+Field/Old Value/New Value row for the field you changed (e.g. Name),
+and does not show unrelated unchanged fields.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check the Full Details tab
+
+With the newest version still selected, switch to the Full Details
+tab. Confirm it shows every field of that version as a Field/Value
+table (not typed widgets) — ISO Code, Name, Numeric Code, etc.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Select the oldest version and check its Changes tab
+
+Select the oldest (first) version in the list. Confirm its Changes
+tab shows a "(Initial version)" placeholder, not a diff.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Test Open
+
+Select the newest version and click Open (or double-click the row).
+Confirm a read-only currency detail window opens showing that
+version's data, with working first/prev/next/last navigation across
+the full history (not just the single opened version).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Test Revert
+
+Select the oldest version and click Revert. Confirm a confirmation
+dialog appears, then (on confirming) an editable currency detail
+window opens pre-populated with that version's data, dirty, ready to
+save as a new version.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Clean up
+
+Delete the =TST= currency once verification is complete.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-07-13T20:10:57Z |
+| Branch        | feature/generic-history-dialog-qt |
+| Commit        | 8a7c9136a |
+| Worktree      | brave_hopper |
+
+* Notes
+
+Both FAILs are unrelated to this task's changes: "Add a test currency
+with two versions" hit a pre-existing Save-button-disabled bug (filed
+separately, =doc/agile/product_backlog/inbox/currency_add_save_disabled.org=);
+"Clean up" failed only because nothing was created to delete as a
+result. All history-dialog-specific steps (version list, changes tab,
+full details, Open with version-nav, Revert) passed.
+
+After this run, =markAsStale()= was changed to pulse the Reload
+action instead of auto-reloading (see the parent task's Plan/Notes) —
+not re-run through this scenario's formal PASS/FAIL steps, but
+reviewed live against the running client and approved before merge.

@@ -18,8 +18,10 @@
  *
  */
 #include "ores.qt/HistoryDialogBase.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/RecencyPulseManager.hpp"
 #include <QAction>
 #include <QHeaderView>
 #include <QLabel>
@@ -39,6 +41,18 @@ const QIcon& historyIcon() {
     return icon;
 }
 
+const QIcon& reloadIcon() {
+    static const QIcon icon =
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor);
+    return icon;
+}
+
+const QIcon& reloadStaleIcon() {
+    static const QIcon icon =
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, color_constants::stale_indicator);
+    return icon;
+}
+
 }
 
 HistoryDialogBase::~HistoryDialogBase() {
@@ -53,8 +67,15 @@ HistoryDialogBase::~HistoryDialogBase() {
 }
 
 void HistoryDialogBase::markAsStale() {
-    emit statusChanged(QString("%1 was modified - reloading history...").arg(code()));
-    loadHistory();
+    emit statusChanged(
+        QString("%1 has new versions - click Reload to see them").arg(code()));
+    if (reloadPulse_)
+        reloadPulse_->start_pulsing();
+}
+
+void HistoryDialogBase::onReloadPulseStateChanged(bool is_on) {
+    if (reloadAction_)
+        reloadAction_->setIcon(is_on ? reloadStaleIcon() : reloadIcon());
 }
 
 QSize HistoryDialogBase::sizeHint() const {
@@ -66,6 +87,12 @@ void HistoryDialogBase::initializeHistoryUi(const HistoryWidgets& widgets) {
     widgets_ = widgets;
 
     setupToolbar();
+
+    reloadPulse_ = new RecencyPulseManager(this);
+    connect(reloadPulse_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &HistoryDialogBase::onReloadPulseStateChanged);
 
     if (widgets_.versionList) {
         connect(widgets_.versionList,
@@ -265,6 +292,9 @@ void HistoryDialogBase::updateActionStates() {
 }
 
 void HistoryDialogBase::onReloadClicked() {
+    if (reloadPulse_)
+        reloadPulse_->stop_pulsing();
+    onReloadPulseStateChanged(false);
     emit statusChanged(QString("Reloading history for %1...").arg(code()));
     loadHistory();
 }

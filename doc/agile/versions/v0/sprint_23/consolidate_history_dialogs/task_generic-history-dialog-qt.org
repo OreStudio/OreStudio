@@ -20,30 +20,104 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Build the single, non-templated =HistoryDialog= widget described in
+[[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]]: one concrete Qt class, parameterised at
+construction by =(entity_type, entity_id)=, consuming the generic
+=history.v1.get= response — no per-entity subclass, no typed domain
+payload. First slice (per 2026-07-13 scoping decision): the widget
+itself, wired in for currency only, replacing =CurrencyHistoryDialog=.
+Diff-span colour highlighting (task 7454EE7E) and the codegen'd
+Open/Revert action registry are explicitly deferred to follow-on work
+— see Plan.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Investigating HistoryDialogBase, an existing per-entity dialog, and the History Diff Architecture doc to scope the widget before implementation. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Draft the Plan below, then implement the generic HistoryDialog widget starting with currency. |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                              |
 
 * Acceptance
 
--
+- [X] =HistoryDialog= widget in =ores.qt.api=, extending =HistoryDialogBase= (reusing its toolbar/version-list/changes-tab/action-state machinery) but with no per-entity subclass: constructed with =(entity_type, entity_id, ClientManager*)=.
+- [X] Issues the generic =get_entity_history_request= and renders =entity_history_version::fields= (full-details tab, generic Field/Value table) and =::changes= (changes tab, flat Field/Old/New — diff-span colour highlighting is task 7454EE7E, not this one).
+- [X] Open/Revert emit generic signals carrying =(entity_type, entity_id, version)=, not a typed domain object.
+- [X] Wired into =CurrencyController= replacing =CurrencyHistoryDialog=; Open/Revert handlers adapted to fetch the typed currency at the requested version via the existing =get_currency_history_request= (one extra round trip, per the architecture doc's documented tradeoff) instead of using an in-memory typed payload.
+- [X] =CurrencyHistoryDialog= (class + .ui) deleted once =HistoryDialog= replaces it; the now-orphaned =VersionNavigationHelper.hpp= deleted too.
+- [X] =markAsStale()= no longer auto-reloads: it pulses the Reload toolbar action (gold =color_constants::stale_indicator=, via the existing =RecencyPulseManager=) so the user notices new versions and reloads on demand. Lives on =HistoryDialogBase=, so every future entity gets it for free.
+- [X] Manually verified via test scenario [[id:7D6E9249-CC1C-444F-86E5-6D083DFF402C][Verify the generic HistoryDialog widget for currency]]: table, changes tab, full details, Open (with full version-nav preserved), Revert all pass. Two unrelated pre-existing issues found and filed separately (see Notes), not blocking.
+
+Deferred to follow-on tasks (do not block this task on them):
+- Diff-span colour highlighting in the changes tab — task 7454EE7E, sequenced after this task per the story owner.
+- The codegen'd per-entity Open/Revert action registry and rollout to every other entity — task CB042B99 retires the remaining per-entity dialogs once that rollout completes.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =HistoryDialog= extends =HistoryDialogBase= rather than =QWidget=
+  directly: the base's toolbar wiring, version-list population, changes-
+  tab rendering, action-state management and async request plumbing
+  (=runHistoryRequest=) are all still exactly what's needed — what
+  disappears is the *per-entity subclass*, not the base machinery.
+  =HistoryDialogBase::calculateDiffAt(current_index, previous_index)= is
+  always called with =previous_index == current_index + 1= (adjacent
+  versions only), which matches exactly what the server precomputes per
+  version — so the override just converts =versions_[ci].changes= to
+  =DiffResult=, ignoring =pi=.
+- Lives in =ores.qt.api= (alongside =HistoryDialogBase=), not
+  =ores.qt.refdata=: it is entity-agnostic. Needs new dependencies on
+  =ores.history.api.lib= (the generic request/response types) and
+  =ores.diff.lib= (=field_value=, =diff_entry=) in
+  =ores.qt/api/src/CMakeLists.txt=.
+- Full-details tab: previously typed, per-field widgets
+  (=isoCodeValue=, =fractionsPerUnitSpinBox=, ...) in
+  =CurrencyHistoryDialog=. The generic dialog has no typed field
+  knowledge, so this becomes a plain two-column Field/Value table
+  populated from =entity_history_version::fields=, same shape as the
+  changes tab.
+- Open/Revert: emit =(entity_type, entity_id, version)= signals per the
+  architecture, not a typed domain object — =HistoryDialog= itself never
+  sees one. =CurrencyController= adapts: its =onOpenVersion=/
+  =onRevertVersion= handlers currently take a typed =currency= from the
+  dialog's in-memory history; change them to fetch that version via the
+  existing =get_currency_history_request= (already returns the full
+  typed =vector<currency>= history) and find the matching =version=
+  before proceeding as today. One extra round trip, exactly the
+  tradeoff the architecture doc calls out — acceptable since Open/Revert
+  are user-initiated, infrequent actions.
+- Delete =CurrencyHistoryDialog= (.hpp/.cpp/.ui) once
+  =CurrencyController= is wired to the generic dialog and the manual
+  verification passes.
+- Not in this slice: diff-span colour highlighting (7454EE7E, changes
+  tab stays plain Field/Old/New text for now) and the codegen'd
+  Open/Revert action registry (CB042B99's prerequisite, deferred until
+  more than one entity needs this dialog).
+- Manual verification surfaced a real gap: =markAsStale()= silently
+  auto-reloaded on a server-side change event, with no visual cue that
+  anything happened. Fixed on =HistoryDialogBase= (not just the generic
+  dialog, since every history dialog shares this base): =markAsStale()=
+  no longer calls =loadHistory()= directly; it starts a
+  =RecencyPulseManager= that alternates the Reload action's icon
+  between normal and =color_constants::stale_indicator= (gold — the
+  existing "new/changed data" visual language used elsewhere for row
+  highlighting, now used on a toolbar action for the first time) for a
+  few seconds, and =onReloadClicked()= stops the pulse. Reload stays
+  on-demand — the user decides when to fetch, matching how every other
+  entity-changed notification in the app already behaves.
 
 * Notes
+
+Two issues surfaced during manual verification, both unrelated to this
+task's changes and filed separately rather than fixed here:
+- Currency add: Save button stays disabled after filling in all
+  fields, blocking currency creation — capture
+  =doc/agile/product_backlog/inbox/currency_add_save_disabled.org=.
+- The scenario's own cleanup step (delete the test currency) failed as
+  a direct consequence of the Add failure above (nothing was ever
+  created to delete) — not a separate defect.
 
 * Test Scenarios
 
@@ -54,7 +128,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:7D6E9249-CC1C-444F-86E5-6D083DFF402C][Verify the generic HistoryDialog widget for currency]] | FAILED | All history-dialog-specific steps passed; the 2 FAILs are the pre-existing, unrelated currency-add bug and its downstream cleanup step. Reload-pulse addition reviewed live after this run, approved. |
 
 * PRs
 
@@ -69,3 +143,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Built =HistoryDialog=, the single non-templated Qt widget the
+architecture doc calls for: extends =HistoryDialogBase=, constructed
+with =(entity_type, entity_id, ClientManager*)=, no per-entity
+subclass. Renders the generic =history.v1.get= response as a plain
+Field/Value full-details table and a Field/Old/New changes table
+(diff-span colour highlighting deferred to 7454EE7E). Open/Revert emit
+generic =(entity_type, entity_id, version)= signals.
+
+Wired into =CurrencyController=, replacing =CurrencyHistoryDialog=
+(deleted, along with the now-orphaned =VersionNavigationHelper.hpp=).
+Open/Revert resolve the generic signal back to a typed currency via
+one extra =get_currency_history_request= round trip, preserving full
+version-nav (first/prev/next/last) in the opened detail dialog.
+
+Manual verification (test scenario 7D6E9249) surfaced a real gap:
+=markAsStale()= silently auto-reloaded with no visual cue. Fixed on
+=HistoryDialogBase= itself — pulses the Reload action gold via the
+existing =RecencyPulseManager= instead of auto-reloading; the user
+decides when to fetch. Benefits every future entity's history dialog,
+not just currency's.
+
+Two unrelated pre-existing issues found during verification were
+filed separately rather than fixed here (see Notes): a currency-add
+Save-button bug, and its consequent scenario cleanup-step failure.

@@ -8,7 +8,7 @@
 #+filetags: :product:refdata:commissioning:party:counterparty:party_status:sprint_23:v0:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -31,7 +31,7 @@ the backlog: [[id:469958E3-B249-4D4C-95A9-E7CDB703F0C0][CLI commands]], [[id:8BC
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing — both blockers ([[id:131C2E23-F41F-4F7A-B9EC-378710AF055B][Composite child-entity and hierarchy Qt widgets for codegen]], [[id:2BD6DBBF-6F05-47F3-87E8-2F4E179BB08B][Implement temporal composite entity versioning]]) are DONE. |
@@ -50,7 +50,7 @@ the backlog: [[id:469958E3-B249-4D4C-95A9-E7CDB703F0C0][CLI commands]], [[id:8BC
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:32700602-1610-4F40-9914-E704469FDA30][Verify party Qt UI end-to-end post-NATS]] | BACKLOG | | | Re-verify the party Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that the hierarchy widget blocker is resolved; fix regressions found. |
+| [[id:32700602-1610-4F40-9914-E704469FDA30][Verify party Qt UI end-to-end post-NATS]] | STARTED | 2026-07-13 | | Re-verify the party Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that the hierarchy widget blocker is resolved; fix regressions found. |
 | [[id:201AAA9C-8699-4CBD-91A2-F0C75E15FD65][Write party manual chapter]] | BACKLOG | | | Add the party entity chapter to the user manual covering Qt windows. |
 | [[id:8DC4ABA3-B053-4C40-B575-6EDFCF3C86DE][Verify counterparty Qt UI end-to-end post-NATS]] | BACKLOG | | | Re-verify the counterparty Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that the hierarchy widget blocker is resolved; fix regressions found. |
 | [[id:568153AE-7709-45CD-8807-63649A630282][Write counterparty manual chapter]] | BACKLOG | | | Add the counterparty entity chapter to the user manual covering Qt windows. |

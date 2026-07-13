@@ -20,40 +20,38 @@
 
 * Summary
 
-=ores.history= is a dependency-light leaf component owning the
-generic entity-history dispatch vocabulary, per
-[[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]]. It defines the one shared NATS request/
-response pair every entity's history uses (=get_entity_history_request=/
-=get_entity_history_response=, keyed by an =entity_type= string rather
-than a typed per-entity subject) and a server-side =dispatch_registry=
-that looks up a caller-registered *history provider* function by
-=entity_type= — the same composed-registrar meta-pattern
+=ores.history= owns the generic entity-history dispatch vocabulary,
+per [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]]. It defines the one shared NATS
+request/response pair every entity's history uses
+(=get_entity_history_request=/=get_entity_history_response=, keyed by
+an =entity_type= string rather than a typed per-entity subject) and a
+server-side =dispatch_registry= that looks up a caller-registered
+*history provider* function by =entity_type= — the same
+composed-registrar meta-pattern
 ([[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]]) applied as a runtime lookup table
 instead of N separate subject subscriptions. No typed domain payload
 crosses the wire for history; every frontend renders the same shape.
 
+The messaging/service layer (=dispatch_registry=, =history_handler=,
+=registrar=) depends on =ores.database=/=ores.security= — it is
+server-only glue, never touched client-side, and every service that
+would register a history_provider already links both. =history_handler=
+resolves each request via =make_request_context()= exactly like every
+other NATS handler in the codebase, so a provider receives the same
+fully-scoped =database::context= (tenant, party, roles, workspace)
+any other subject's handler would get — no bespoke auth-context
+threading. Only =history_protocol.hpp= (the wire types, decoded
+client-side too) and =version_builder.hpp= stay a true leaf, matching
+=ores.diff='s dependency discipline.
+
 * Inputs
 
-- Per-entity *history providers* — =std::function<std::vector<entity_history_version>(const std::string& caller_context, const std::string& entity_id)>=
+- Per-entity *history providers* — =std::function<std::vector<entity_history_version>(const database::context& ctx, const std::string& entity_id)>=
   — registered by each domain service/component at startup, keyed by
-  that entity's =entity_type_of()= string. =caller_context= is an
-  opaque string this leaf neither produces nor interprets: a
-  caller-supplied =caller_context_resolver= (see below) packs
-  whatever it needs — typically tenant_id, and where relevant
-  party_id/actor for row-level visibility — into it, and each
-  provider unpacks it in whatever shape it and the resolver privately
-  agree on.
-- A *caller_context_resolver* —
-  =std::function<std::expected<std::string, ores::service::error_code>(const nats::message&)>=
-  — supplied by the composing service to validate/authorize each
-  inbound request (typically a JWT check) and produce its
-  =caller_context=; a returned error (e.g. =unauthorized= or
-  =token_expired=, mirroring =make_request_context='s distinction)
-  rejects the request with that same code, preserving the re-auth/
-  session-expired UX every other handler's =error_reply= relies on.
-  Lives outside this leaf because it needs
-  =ores.security=/=ores.database=, which =ores.history= deliberately
-  does not depend on.
+  that entity's =entity_type_of()= string. =ctx= is the same
+  fully-resolved context any other handler in that service would
+  use — a provider calls its own repository/service with it exactly
+  like every other handler does, no unpacking required.
 - A =get_entity_history_request= (=entity_type=, =entity_id=) arriving
   on the shared =history.v1.get= NATS subject.
 
@@ -69,14 +67,15 @@ crosses the wire for history; every frontend renders the same shape.
 
 - =include/ores.history/messaging/history_protocol.hpp= — the shared
   request/response types and the =history.v1.get= subject constant.
+  Dependency-free leaf, embeddable client-side.
 - =include/ores.history/service/dispatch_registry.hpp= — the
   server-side registry: =register_history_provider(entity_type, fn)=
-  and =dispatch(request, caller_context)=.
+  and =dispatch(request, ctx)=.
 - =include/ores.history/messaging/history_handler.hpp= — the NATS
-  decode/resolve/dispatch/reply glue shared by every entity, and the
-  =caller_context_resolver= type.
+  auth/decode/dispatch/reply glue shared by every entity, resolving
+  each request via =make_request_context()=.
 - =include/ores.history/messaging/registrar.hpp= —
-  =register_history_handlers(nats, registry, queue_group, resolve_context)=,
+  =register_history_handlers(nats, registry, queue_group, ctx, verifier)=,
   subscribing the single =history.v1.get= subject to a =history_handler=
   backed by a caller-owned =dispatch_registry=. Call once per service
   process, after registering that service's own entities' providers.
@@ -87,17 +86,20 @@ crosses the wire for history; every frontend renders the same shape.
   =ores.diff::engine::compute= (empty diff for the oldest), and
   numbers versions descending from the count — matching every
   =*_repository::read_all(id)='s =version DESC= ordering.
+  Dependency-free leaf.
 
 * Dependencies
 
 - [[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] — =field_value=/=diff_result= embedded in
   =entity_history_version=.
+- =ores.database= / =ores.security= — =database::context= and
+  =jwt_authenticator=, used by =dispatch_registry=, =history_handler=
+  and =registrar= (server-only glue; the wire-type/version-builder
+  headers stay dependency-free).
 - =ores.nats= / =ores.service= / =ores.logging= — the NATS
   subscribe/decode/reply plumbing used by =history_handler= and
   =registrar=.
-- std and =rfl= only beyond that — deliberately a leaf so every domain
-  service depends on it without cycles, matching =ores.diff='s
-  dependency discipline.
+- std and =rfl= only beyond that for the leaf headers.
 
 * See also
 

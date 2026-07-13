@@ -47,15 +47,10 @@ drives UI drop-downs and validation.
 - =include/ores.refdata.core/messaging/registrar.hpp= — registers all NATS
   handlers with the service host, including a currency history_provider
   (pilot) on [[id:9562F9CA-DCEB-44C6-8DB1-F3FC56D7703A][ores.history]]'s generic =history.v1.get= subject —
-  see =src/messaging/registrar.cpp= for the wiring.
-- =include/ores.refdata.core/messaging/history_caller_context.hpp= —
-  =pack_history_caller_context(ctx)= / =unpack_history_caller_context(base_ctx, str)=,
-  round-tripping a full resolved request context (tenant, party,
-  visible parties, actor, roles, workspace) through the opaque
-  =caller_context= string every history_provider in this component
-  receives. Every per-entity history_provider registered here must
-  use this pair, not just forward =tenant_id=, or an entity with
-  party-level row visibility silently loses that filtering.
+  see =src/messaging/registrar.cpp= for the wiring. The provider
+  receives the same fully-scoped =database::context= (tenant, party,
+  roles, workspace) =make_request_context()= resolves for any other
+  subject — no bespoke context threading needed.
 - =include/ores.refdata.core/service/= — per-entity service headers.
 
 * Dependencies

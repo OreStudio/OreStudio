@@ -36,7 +36,7 @@ std::size_t dispatch_registry::provider_count() const {
 
 messaging::get_entity_history_response
 dispatch_registry::dispatch(const messaging::get_entity_history_request& request,
-                            const std::string& caller_context) const {
+                            const ores::database::context& ctx) const {
     const auto it = providers_.find(request.entity_type);
     if (it == providers_.end()) {
         return {.versions = {},
@@ -45,9 +45,7 @@ dispatch_registry::dispatch(const messaging::get_entity_history_request& request
     }
 
     try {
-        return {.versions = it->second(caller_context, request.entity_id),
-               .success = true,
-               .message = {}};
+        return {.versions = it->second(ctx, request.entity_id), .success = true, .message = {}};
     } catch (const std::exception& e) {
         return {.versions = {},
                .success = false,

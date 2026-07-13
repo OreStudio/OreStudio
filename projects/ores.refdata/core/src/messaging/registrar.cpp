@@ -77,10 +77,8 @@
 #include "ores.history/service/dispatch_registry.hpp"
 #include "ores.history/service/version_builder.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
-#include "ores.refdata.core/messaging/history_caller_context.hpp"
 #include "ores.refdata.core/presentation/currency_history_field_mapper.hpp"
 #include "ores.refdata.core/service/currency_service.hpp"
-#include "ores.service/service/request_context.hpp"
 
 #include <array>
 #include <iterator>
@@ -285,36 +283,25 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
 
     // ----------------------------------------------------------------
-    // Generic history.v1.get subject (pilot: currency only). caller_context
-    // round-trips the caller's full resolved context (tenant, party,
-    // visible parties, actor, roles, workspace) — see
-    // history_caller_context.hpp — so every history_provider registered
-    // here, not just currency's, sees the same visibility a request to
-    // any other subject would get. ores.history itself never sees a
-    // database::context/jwt_authenticator directly, per its design note.
+    // Generic history.v1.get subject (pilot: currency only). The
+    // registrar resolves each request into a scoped context exactly
+    // like every other subject (make_request_context), so a provider
+    // sees the same tenant/party/roles/workspace visibility any other
+    // handler in this file would.
     // ----------------------------------------------------------------
     {
         auto& hist_registry = history_registry();
         hist_registry.register_history_provider(
             "ores.refdata.currency",
-            [ctx](const std::string& caller_context, const std::string& entity_id) {
-                auto scoped_ctx = unpack_history_caller_context(ctx, caller_context);
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
                 service::currency_service svc(scoped_ctx);
                 auto versions = svc.get_currency_history(entity_id);
                 return ores::history::service::build_entity_history_versions(
                     versions, presentation::render_currency_fields);
             });
 
-        auto resolve_context = [ctx, verifier](const ores::nats::message& msg)
-            -> std::expected<std::string, ores::service::error_code> {
-            auto ctx_expected = ores::service::service::make_request_context(ctx, msg, verifier);
-            if (!ctx_expected)
-                return std::unexpected(ctx_expected.error());
-            return pack_history_caller_context(*ctx_expected);
-        };
-
         subs.push_back(ores::history::messaging::register_history_handlers(
-            nats, hist_registry, queue_group, resolve_context));
+            nats, hist_registry, queue_group, ctx, verifier));
     }
 
     return subs;

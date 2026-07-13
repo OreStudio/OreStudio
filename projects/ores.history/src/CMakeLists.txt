@@ -38,8 +38,10 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.database.lib
         ores.diff.lib
         ores.nats.lib
+        ores.security.lib
         ores.service.lib
         ores.logging.lib)
 

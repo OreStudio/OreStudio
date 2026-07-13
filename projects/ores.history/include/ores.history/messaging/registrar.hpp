@@ -20,11 +20,13 @@
 #ifndef ORES_HISTORY_MESSAGING_REGISTRAR_HPP
 #define ORES_HISTORY_MESSAGING_REGISTRAR_HPP
 
+#include "ores.database/domain/context.hpp"
 #include "ores.history/export.hpp"
-#include "ores.history/messaging/history_handler.hpp"
 #include "ores.history/service/dispatch_registry.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
 
 namespace ores::history::messaging {
 
@@ -32,9 +34,10 @@ namespace ores::history::messaging {
  * @brief Subscribes the one generic history subject (history.v1.get) to a
  * history_handler backed by @p registry, under the given queue group.
  *
- * @p resolve_context validates/authorizes each inbound request and
- * packs its opaque caller_context — see history_handler and
- * dispatch_registry::history_provider for the contract.
+ * @p ctx and @p verifier are the same service-level context/JWT
+ * verifier every other per-entity registrar in the composing service
+ * receives — each request is resolved into a scoped context via
+ * make_request_context() exactly like any other subject.
  *
  * Call once per service process, after registering that service's own
  * entities' providers on @p registry. Owns no state itself: registry must
@@ -44,7 +47,8 @@ ORES_HISTORY_EXPORT ores::nats::service::subscription
 register_history_handlers(ores::nats::service::client& nats,
                           const service::dispatch_registry& registry,
                           std::string_view queue_group,
-                          caller_context_resolver resolve_context);
+                          ores::database::context ctx,
+                          std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 }
 

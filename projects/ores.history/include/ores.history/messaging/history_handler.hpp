@@ -20,17 +20,17 @@
 #ifndef ORES_HISTORY_MESSAGING_HISTORY_HANDLER_HPP
 #define ORES_HISTORY_MESSAGING_HISTORY_HANDLER_HPP
 
+#include "ores.database/domain/context.hpp"
 #include "ores.history/export.hpp"
 #include "ores.history/messaging/history_protocol.hpp"
 #include "ores.history/service/dispatch_registry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.service/error_code.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <expected>
-#include <functional>
-#include <string>
+#include "ores.service/service/request_context.hpp"
+#include <optional>
 
 namespace ores::history::messaging {
 
@@ -44,38 +44,24 @@ inline auto& history_handler_lg() {
 } // namespace
 
 /**
- * @brief Resolves an inbound history request's opaque caller_context
- * (see dispatch_registry::history_provider) from the raw NATS
- * message — typically validating a JWT and packing tenant_id
- * (and, where relevant, party_id/actor) into a provider-agreed
- * string. Returns the resolved error_code (e.g. unauthorized or
- * token_expired, mirroring ores::service::service::make_request_context's
- * distinction) to reject the request.
- *
- * Supplied by the composing service, which — unlike this
- * dependency-free leaf — has ores.security/ores.database available
- * to do the actual validation.
- */
-using caller_context_resolver = std::function<std::expected<std::string, ores::service::error_code>(
-    const ores::nats::message&)>;
-
-/**
  * @brief NATS handler for the one generic history subject.
  *
- * Decodes a get_entity_history_request, resolves the caller's opaque
- * context via the injected resolver, delegates to the injected
+ * Resolves the caller's request-scoped context exactly like every
+ * other handler in the codebase (make_request_context), decodes a
+ * get_entity_history_request, delegates to the injected
  * dispatch_registry (which never throws — see its dispatch() doc), and
  * replies with the resulting response. The registry itself owns all
- * per-entity dispatch logic; this class is purely the NATS decode/
- * resolve/reply glue shared by every entity, replacing what would
+ * per-entity dispatch logic; this class is purely the NATS
+ * auth/decode/reply glue shared by every entity, replacing what would
  * otherwise be N near-identical per-entity history() methods.
  */
 class ORES_HISTORY_EXPORT history_handler final {
 public:
     history_handler(ores::nats::service::client& nats,
                     const service::dispatch_registry& registry,
-                    caller_context_resolver resolve_context)
-        : nats_(nats), registry_(registry), resolve_context_(std::move(resolve_context)) {}
+                    ores::database::context ctx,
+                    std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats), registry_(registry), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
 
     void history(ores::nats::message msg) const {
         using ores::service::messaging::decode;
@@ -85,10 +71,10 @@ public:
         using namespace ores::logging;
 
         [[maybe_unused]] const auto correlation_id = log_handler_entry(history_handler_lg(), msg);
-        auto caller_context = resolve_context_(msg);
-        if (!caller_context) {
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
             BOOST_LOG_SEV(history_handler_lg(), warn) << "Unauthorized: " << msg.subject;
-            error_reply(nats_, msg, caller_context.error());
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         auto req = decode<get_entity_history_request>(msg);
@@ -97,7 +83,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto resp = registry_.dispatch(*req, *caller_context);
+        const auto resp = registry_.dispatch(*req, *req_ctx_expected);
         BOOST_LOG_SEV(history_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
@@ -105,7 +91,8 @@ public:
 private:
     ores::nats::service::client& nats_;
     const service::dispatch_registry& registry_;
-    caller_context_resolver resolve_context_;
+    ores::database::context ctx_;
+    std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
 }

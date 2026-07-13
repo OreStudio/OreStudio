@@ -19,6 +19,7 @@
  */
 #include "ores.qt/MarketdataPlugin.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/CrmCrossRatesMatrixController.hpp"
 #include "ores.qt/FeedBindingController.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include <QAction>
@@ -70,6 +71,26 @@ void MarketdataPlugin::on_login(const plugin_context& ctx) {
             &FeedBindingController::detachableWindowDestroyed,
             this,
             &PluginBase::windowDestroyed);
+
+    crmCrossRatesMatrixController_ = std::make_unique<CrmCrossRatesMatrixController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager);
+
+    connect(crmCrossRatesMatrixController_.get(),
+            &CrmCrossRatesMatrixController::statusMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(crmCrossRatesMatrixController_.get(),
+            &CrmCrossRatesMatrixController::errorMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(crmCrossRatesMatrixController_.get(),
+            &CrmCrossRatesMatrixController::detachableWindowCreated,
+            this,
+            &PluginBase::windowCreated);
+    connect(crmCrossRatesMatrixController_.get(),
+            &CrmCrossRatesMatrixController::detachableWindowDestroyed,
+            this,
+            &PluginBase::windowDestroyed);
 }
 
 void MarketdataPlugin::setup_menus(const shared_menus_context& smc) {
@@ -89,6 +110,13 @@ void MarketdataPlugin::setup_menus(const shared_menus_context& smc) {
         if (feedBindingController_)
             feedBindingController_->showListWindow();
     });
+
+    auto* actCrmMatrix =
+        marketDataMenu_->addAction(ico(Icon::Currency), tr("Cross-&Rates Matrix"));
+    connect(actCrmMatrix, &QAction::triggered, this, [this]() {
+        if (crmCrossRatesMatrixController_)
+            crmCrossRatesMatrixController_->showMatrix();
+    });
 }
 
 QList<QMenu*> MarketdataPlugin::create_menus() {
@@ -102,6 +130,7 @@ QList<QAction*> MarketdataPlugin::toolbar_actions() {
 void MarketdataPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     feedBindingController_.reset();
+    crmCrossRatesMatrixController_.reset();
     ctx_ = {};
 }
 

@@ -84,6 +84,14 @@ tracking that made this sprint's paperwork hard to trust; one
 capture, re-broken-out once the real blockers clear, keeps the
 dependency visible in one place.
 
+* Superseded
+
+Promoted into [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Story: Commission: party, counterparty, and party_status]] in
+Sprint 23 on 2026-07-13 — both prerequisites (composite hierarchy Qt widgets,
+temporal composite entity versioning) and their binding/dialog/documentation
+tasks are now DONE, so the consolidated commission work could be broken back
+out into fresh per-entity tasks as planned above.
+
 * References
 
 - [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] — abandoned, points here.

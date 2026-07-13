@@ -8,7 +8,7 @@
 #+filetags: :improve_data_librarian_accession_card_ui:sprint_23:v0:
 #+owner: marco
 #+branch: feature/asymmetric-two-column-layout
-#+pr:
+#+pr: 1544
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1544][#1544]] | [refdata] Phase 2: asymmetric two-column card layout for DatasetViewDialog |
 
 * Review
 

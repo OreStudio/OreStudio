@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 9D115861-58B9-488F-A639-146666CA1059
+:END:
+#+title: Task: Phase 2: asymmetric two-column card layout
+#+description: Rework Overview and Provenance & Methodology tabs into an asymmetric two-column split (QSplitter, ~65/35) with QGroupBox/QFormLayout metadata cards, matching the Gemini review's mockup as closely as possible.
+#+type: task
+#+level: s1
+#+filetags: :improve_data_librarian_accession_card_ui:sprint_23:v0:
+#+owner: marco
+#+branch: feature/asymmetric-two-column-layout
+#+pr: 1544
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the Overview and Provenance & Methodology tabs' flat
+QTreeWidget property grids with the asymmetric two-column "Card &
+Canvas" layout from [[id:211CB159-F633-4897-A899-56CD91625396][OreStudio Data Librarian UI/UX Review]]: a
+QSplitter (~65/35) with prose on the left and QGroupBox/QFormLayout
+metadata cards on the right, matching the review's mockup as closely
+as possible.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- Overview tab: QSplitter (primary ~65% / sidebar ~35%). Primary side:
+  Description and Commentary prose cards. Sidebar: Classification,
+  Data Governance (badges), Audit cards.
+- Provenance & Methodology tab: same split. Primary side: Methodology,
+  Business Context, Commentary prose cards, Lifecycle Timeline card,
+  Implementation Details text browser. Sidebar: Source, Lineage
+  Metrics, Methodology Info, Audit cards.
+- Cards are QGroupBox + QFormLayout — the same grouping widget
+  ProvenanceWidget's "Record Provenance" box already uses elsewhere,
+  not a new bespoke "card" widget.
+- Governance badges use =BadgeLabelUtils::apply= on a plain QLabel
+  (the AccountDetailDialog precedent for form-based badges), not a
+  QTreeWidget delegate — that machinery is removed along with the
+  QTreeWidgets.
+- Dependencies tab (interactive lineage graph) untouched.
+- Manually verified in the running Qt client against a real dataset.
+
+* Plan
+
+Replaced overviewTree_/provenanceTree_/methodologyTree_ (QTreeWidget
+property grids) with QSplitter(Qt::Horizontal) in both tabs, ~65/35
+stretch factors. Added small card helpers (addPropertyCard,
+addProseCard, addFormRow, addBadgePlaceholder) reused across both
+tabs. Removed the QTreeWidget-based OverviewBadgeDelegate entirely —
+badges are now plain QLabels styled via BadgeLabelUtils::apply.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:C6239167-79BD-4560-B0E5-1459A1FFC03A][Verify asymmetric two-column card layout in the Data Librarian]] | PASSED | 2 review rounds; see Review table |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1544][#1544]] | [refdata] Phase 2: asymmetric two-column card layout for DatasetViewDialog |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Header banner has a near-black background; badges look oversized; Dependencies tab needs zoom/pan (out of scope, capture separately) | DatasetViewDialog.cpp | Accepted #1/#2, filed follow-up task for #3 | Dropped palette(alternate-base) fill, kept only a bottom border; tightened BadgeLabelUtils::apply's shared padding/font-size; filed task_lineage-graph-zoom-pan.org |
+| 2 | Badges still oversized after round 1's font/padding tightening | DatasetViewDialog.cpp | Accepted | Root cause was QFormLayout stretching the field column, not font-size — wrapped badges in a container + trailing stretch (addBadgePlaceholder), same fix pattern as the earlier QTreeWidget badge cells |
+| 3 | PR #1544 (3 reviewers): QSplitter::setStretchFactor doesn't pin the initial split ratio (no setSizes call); Provenance & Methodology "Commentary" card wrongly sourced dataset_.change_commentary instead of methodology->change_commentary, duplicating the Overview tab and silently dropping the methodology's own commentary | DatasetViewDialog.cpp | Accepted both | Added splitter->setSizes({650, 350}) to both tabs; moved commentaryLabel_ into the methodology-found branch, sourced from methodology->change_commentary with the usual "-" fallback |
+
+* Result
+
+Reworked the Overview and Provenance & Methodology tabs into the
+asymmetric two-column "Card & Canvas" layout: QSplitter (~65/35),
+QGroupBox/QFormLayout cards on the sidebar, prose cards on the
+primary side. Removed the QTreeWidget-based property grids and the
+=OverviewBadgeDelegate= entirely.
+
+Two review rounds with the running client found real defects:
+a near-black header banner background (palette(alternate-base) in
+this dark theme) and oversized badges — the latter's true cause
+(QFormLayout stretching the field column) only surfaced after a
+first attempt at tightening padding/font-size didn't fix it. Also
+filed a follow-up task for Dependencies-tab zoom/pan, raised during
+QA but out of scope here.
+
+QA Validation Runner scenario now PASSES all 7 steps with no
+outstanding notes. The story's original two-phase scope (header/
+badges/tab-merge in Phase 1, two-column layout in Phase 2) is
+complete; the story stays open only for the zoom/pan follow-up task.

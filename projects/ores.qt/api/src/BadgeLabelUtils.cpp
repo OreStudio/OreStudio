@@ -54,9 +54,9 @@ void BadgeLabelUtils::apply(QLabel* label,
     label->setStyleSheet(QString("QLabel {"
                                  "  background-color: %1;"
                                  "  color: %2;"
-                                 "  border-radius: 8px;"
-                                 "  padding: 2px 10px;"
-                                 "  font-size: 11px;"
+                                 "  border-radius: 6px;"
+                                 "  padding: 1px 6px;"
+                                 "  font-size: 10px;"
                                  "  font-weight: bold;"
                                  "}")
                              .arg(bg.name(), fg.name()));

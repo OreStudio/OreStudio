@@ -1,6 +1,8 @@
 # History
+# Show a currency's version history as a table, or as a unified diff via --diff.
 #
 # GENERATED from doc/recipes/shell/currencies/history_2.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
 currencies history USD
+currencies history USD --diff

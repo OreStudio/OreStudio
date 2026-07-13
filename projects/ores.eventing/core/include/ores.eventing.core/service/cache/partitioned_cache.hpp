@@ -65,6 +65,7 @@ template <typename PartitionKey,
 class partitioned_cache {
 public:
     using entries_map = immer::map<Key, Value, KeyHash>;
+    using aux_type = AuxIndex;
 
     struct partition {
         entries_map entries;

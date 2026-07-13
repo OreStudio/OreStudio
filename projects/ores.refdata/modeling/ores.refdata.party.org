@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D
+:ores.cpp.nats-event-cache.enabled: true
 :END:
 #+title: ores.refdata.party
 #+description: Codegen entity model for the refdata =party= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
@@ -224,6 +225,9 @@ Everything below is consumed by the C++ codegen pipeline only.
 :service_find_by_uuid:        true
 :service_find_by_code_column: short_code
 :service_pagination:          true
+:read_for_cache:              true
+:cached_by:                   iam
+:cache_aux_type:               children_map
 :END:
 
 ** Repository
@@ -500,6 +504,53 @@ modelled by codegen) and =read_for_cache= is a hand-written handler method.
     subs.push_back(nats.queue_subscribe(
         read_parties_for_cache_request::nats_subject, queue_group,
         [h](ores::nats::message msg) { h->read_for_cache(std::move(msg)); }));
+#+end_src
+
+** Cache aux index
+
+The generated =party_cache= (=nats-event-cache= facet, =cached_by:
+iam=) carries a parent/child aux index alongside the plain
+tenant/id → party map, so IAM can answer "which parties are visible
+from this root" without a DB round-trip. See the =cache_aux_type= flag
+under =* C++ / ** Flags= and the facet doc's "Optional aux index"
+section.
+
+#+begin_src cpp :name aux_type_decl :implements ADD930C7-EF33-44B4-A0A2-49254FCC7ACD
+    using children_map = immer::map<boost::uuids::uuid, std::vector<boost::uuids::uuid>, key_hash>;
+#+end_src
+
+#+begin_src cpp :name aux_build :implements 60520267-94E5-4369-97E9-7AED54CDEDD2
+            auto children_t = children_map{}.transient();
+            for (const auto& [id, p] : entries) {
+                if (p.parent_party_id) {
+                    const auto* existing = children_t.find(*p.parent_party_id);
+                    auto siblings = existing ? *existing : std::vector<boost::uuids::uuid>{};
+                    siblings.push_back(id);
+                    children_t.set(*p.parent_party_id, std::move(siblings));
+                }
+            }
+            auto aux = children_t.persistent();
+#+end_src
+
+#+begin_src cpp :name aux_methods :implements C0EDFBDF-F38F-4E02-874F-A086FB435FB0
+    std::vector<boost::uuids::uuid>
+    compute_visible_party_ids(const std::string& tenant_id, const boost::uuids::uuid& root_id) const {
+        const auto snap = cache_.snapshot(tenant_id);
+        if (!snap)
+            return {root_id};
+        std::vector<boost::uuids::uuid> result;
+        std::vector<boost::uuids::uuid> stack{root_id};
+        while (!stack.empty()) {
+            const auto node = stack.back();
+            stack.pop_back();
+            result.push_back(node);
+            const auto* siblings = snap->aux.find(node);
+            if (siblings)
+                for (const auto& child : *siblings)
+                    stack.push_back(child);
+        }
+        return result;
+    }
 #+end_src
 
 * See also

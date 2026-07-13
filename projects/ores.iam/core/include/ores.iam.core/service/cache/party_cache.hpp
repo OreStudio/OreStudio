@@ -17,9 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_SERVICE_PARTY_CACHE_HPP
-#define ORES_IAM_SERVICE_PARTY_CACHE_HPP
+#ifndef ORES_IAM_CORE_SERVICE_CACHE_PARTY_CACHE_HPP
+#define ORES_IAM_CORE_SERVICE_CACHE_PARTY_CACHE_HPP
 
+#include "ores.eventing.core/service/cache/partitioned_cache.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -27,13 +28,12 @@
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include <boost/container_hash/hash.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <immer/atom.hpp>
 #include <immer/map.hpp>
 #include <immer/map_transient.hpp>
 #include <optional>
 #include <rfl/json.hpp>
 #include <string>
-#include <unordered_map>
+#include <variant>
 #include <vector>
 
 namespace ores::iam::service::cache {
@@ -46,41 +46,27 @@ inline auto& party_cache_lg() {
 } // namespace
 
 /**
- * @brief In-process per-tenant cache of refdata party data.
+ * @brief In-process per-tenant cache of refdata parties data.
  *
- * Populated via NATS request to refdata.v1.parties.read at startup and
- * reloaded on receipt of ores.refdata.party_changed notifications (the
- * subject bound to ores::refdata::eventing::party_changed_event via
- * event_traits -- see ores.iam.core/messaging/registrar.cpp). Eliminates
- * direct cross-service DB reads from IAM to refdata party tables.
- *
- * Storage is an immer::atom<immer::map<tenant_id, partition>>: readers
- * (lookup_party, compute_visible_party_ids) take a wait-free atomic load
- * of the whole map and never block on -- or are blocked by -- a
- * concurrent reload. A reload replaces exactly one tenant's partition via
- * structural sharing, so other tenants' partitions are never copied or
- * touched, and concurrent reloads of different tenants never race each
- * other into a lost update (the update is a compare-and-swap loop, not a
- * blind store).
+ * Populated via NATS request to refdata's read_parties_for_cache
+ * subject at startup, and reloaded on receipt of a party
+ * changed-event notification for the affected tenant (see the
+ * nats-event-cache.registrar_wiring archetype). See the "Generic
+ * entity-mirror cache primitive + codegen facet" story.
  */
 class party_cache {
-    using uuid_hash = boost::hash<boost::uuids::uuid>;
-    using party_map = immer::map<boost::uuids::uuid, ores::refdata::domain::party, uuid_hash>;
-    using children_map =
-        immer::map<boost::uuids::uuid, std::vector<boost::uuids::uuid>, uuid_hash>;
-
-    struct partition_t {
-        party_map parties;
-        children_map children; // parent_id → [child_id, ...]
-    };
-
-    using tenant_map = immer::map<std::string, partition_t>;
+    using key_hash = boost::hash<boost::uuids::uuid>;
+    using children_map = immer::map<boost::uuids::uuid, std::vector<boost::uuids::uuid>, key_hash>;
+    using cache_t = ores::eventing::service::cache::partitioned_cache<std::string,
+                                                                      boost::uuids::uuid,
+                                                                      ores::refdata::domain::party,
+                                                                      children_map,
+                                                                      key_hash>;
 
 public:
     explicit party_cache(ores::nats::service::client& nats)
         : nats_(nats) {}
 
-    /// immer::atom disallows copy/move.
     party_cache(const party_cache&) = delete;
     party_cache& operator=(const party_cache&) = delete;
     party_cache(party_cache&&) = delete;
@@ -102,74 +88,58 @@ public:
                     << "Party cache load failed for tenant " << tenant_id << ": " << msg;
                 return;
             }
-
-            auto parties_t = party_map{}.transient();
+            auto entries_t = cache_t::entries_map{}.transient();
+            const auto count = resp->parties.size();
+            for (auto& v : resp->parties)
+                entries_t.set(v.id, std::move(v));
+            auto entries = entries_t.persistent();
             auto children_t = children_map{}.transient();
-            const auto party_count = resp->parties.size();
-            for (auto& p : resp->parties) {
+            for (const auto& [id, p] : entries) {
                 if (p.parent_party_id) {
                     const auto* existing = children_t.find(*p.parent_party_id);
                     auto siblings = existing ? *existing : std::vector<boost::uuids::uuid>{};
-                    siblings.push_back(p.id);
+                    siblings.push_back(id);
                     children_t.set(*p.parent_party_id, std::move(siblings));
                 }
-                parties_t.set(p.id, std::move(p));
             }
-            const partition_t data{.parties = parties_t.persistent(),
-                                   .children = children_t.persistent()};
-
-            // update()'s callback may run more than once on CAS
-            // contention, so it must not consume `data` by move -- a
-            // retry would then move from an already-moved-from value.
-            cache_.update([&](tenant_map m) { return std::move(m).set(tenant_id, data); });
-
+            auto aux = children_t.persistent();
+            cache_.replace_partition(tenant_id, entries, aux);
             BOOST_LOG_SEV(party_cache_lg(), debug)
-                << "Loaded " << party_count << " parties for tenant " << tenant_id;
+                << "Loaded " << count << " parties for tenant " << tenant_id;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(party_cache_lg(), warn)
                 << "Party cache load exception for tenant " << tenant_id << ": " << e.what();
         }
     }
 
-    std::optional<ores::refdata::domain::party>
-    lookup_party(const std::string& tenant_id, const boost::uuids::uuid& party_id) const {
-        const auto snapshot = cache_.load().get();
-        const auto* partition = snapshot.find(tenant_id);
-        if (!partition)
-            return std::nullopt;
-        const auto* party = partition->parties.find(party_id);
-        if (!party)
-            return std::nullopt;
-        return *party;
+    std::optional<ores::refdata::domain::party> lookup(const std::string& tenant_id,
+                                                       const boost::uuids::uuid& key) const {
+        return cache_.get(tenant_id, key);
     }
 
     std::vector<boost::uuids::uuid>
     compute_visible_party_ids(const std::string& tenant_id,
                               const boost::uuids::uuid& root_id) const {
-        const auto snapshot = cache_.load().get();
-        const auto* partition = snapshot.find(tenant_id);
-        if (!partition)
+        const auto snap = cache_.snapshot(tenant_id);
+        if (!snap)
             return {root_id};
         std::vector<boost::uuids::uuid> result;
-        collect_subtree(partition->children, root_id, result);
-        if (result.empty())
-            return {root_id};
+        std::vector<boost::uuids::uuid> stack{root_id};
+        while (!stack.empty()) {
+            const auto node = stack.back();
+            stack.pop_back();
+            result.push_back(node);
+            const auto* siblings = snap->aux.find(node);
+            if (siblings)
+                for (const auto& child : *siblings)
+                    stack.push_back(child);
+        }
         return result;
     }
 
 private:
-    void collect_subtree(const children_map& children,
-                         const boost::uuids::uuid& node,
-                         std::vector<boost::uuids::uuid>& out) const {
-        out.push_back(node);
-        const auto* siblings = children.find(node);
-        if (siblings)
-            for (const auto& child : *siblings)
-                collect_subtree(children, child, out);
-    }
-
     ores::nats::service::client& nats_;
-    immer::atom<tenant_map> cache_;
+    cache_t cache_;
 };
 
 } // namespace ores::iam::service::cache

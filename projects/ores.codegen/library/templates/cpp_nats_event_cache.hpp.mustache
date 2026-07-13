@@ -15,9 +15,12 @@
 #include <boost/uuid/uuid.hpp>
 #include <variant>
 {{/primary_key.is_uuid}}
+#include <immer/map.hpp>
+#include <immer/map_transient.hpp>
 #include <optional>
 #include <rfl/json.hpp>
 #include <string>
+#include <vector>
 
 namespace ores::{{cache_component}}::service::cache {
 
@@ -41,13 +44,18 @@ inline auto& {{entity_singular}}_cache_lg() {
 class {{entity_singular}}_cache {
 {{#primary_key.is_uuid}}
     using key_hash = boost::hash<{{primary_key.cpp_type}}>;
+{{/primary_key.is_uuid}}
+<<paste:ADD930C7-EF33-44B4-A0A2-49254FCC7ACD>>
+{{#primary_key.is_uuid}}
     using cache_t = ores::eventing::service::cache::partitioned_cache<std::string,
-        {{primary_key.cpp_type}}, ores::{{component}}::domain::{{entity_singular}}, std::monostate,
+        {{primary_key.cpp_type}}, ores::{{component}}::domain::{{entity_singular}},
+        {{#cache_aux_type}}{{cache_aux_type}}{{/cache_aux_type}}{{^cache_aux_type}}std::monostate{{/cache_aux_type}},
         key_hash>;
 {{/primary_key.is_uuid}}
 {{^primary_key.is_uuid}}
     using cache_t = ores::eventing::service::cache::partitioned_cache<std::string,
-        {{primary_key.cpp_type}}, ores::{{component}}::domain::{{entity_singular}}>;
+        {{primary_key.cpp_type}}, ores::{{component}}::domain::{{entity_singular}}
+        {{#cache_aux_type}}, {{cache_aux_type}}{{/cache_aux_type}}>;
 {{/primary_key.is_uuid}}
 
 public:
@@ -81,7 +89,9 @@ public:
             const auto count = resp->{{entity_plural_short}}.size();
             for (auto& v : resp->{{entity_plural_short}})
                 entries_t.set(v.{{primary_key.column}}, std::move(v));
-            cache_.replace_partition(tenant_id, entries_t.persistent());
+            auto entries = entries_t.persistent();
+<<paste:60520267-94E5-4369-97E9-7AED54CDEDD2>>
+            cache_.replace_partition(tenant_id, entries{{#cache_aux_type}}, aux{{/cache_aux_type}});
             BOOST_LOG_SEV({{entity_singular}}_cache_lg(), debug)
                 << "Loaded " << count << " {{entity_plural}} for tenant " << tenant_id;
         } catch (const std::exception& e) {
@@ -96,6 +106,7 @@ public:
         return cache_.get(tenant_id, key);
     }
 
+<<paste:C0EDFBDF-F38F-4E02-874F-A086FB435FB0>>
 private:
     ores::nats::service::client& nats_;
     cache_t cache_;

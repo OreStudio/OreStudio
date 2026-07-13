@@ -26,11 +26,11 @@ Every codegen profile for business_centre produces a zero-diff or explicitly sig
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -43,9 +43,47 @@ Every codegen profile for business_centre produces a zero-diff or explicitly sig
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Ran =compass codegen entity generate business_centre= across every
+enabled profile and reconciled each diff against the hand-written
+files it replaced:
+
+- SQL/domain/repository/service/Qt-CRUD split-project output landed
+  correctly (security-definer + bootstrap-guard already came from
+  the template, moved Qt CRUD to =ores.qt/refdata= with
+  =RefdataPlugin= wiring instead of =PartyPlugin=).
+- Feature-tested the result (=code-run-feature-test=: full build,
+  =compass db recreate=, provision Barclays Plc, a =test_scenario=
+  doc, both clients driven manually) and used what that surfaced to
+  fix three further gaps: missing =has_pagination=, =coding_scheme_code=
+  as a hand-written free-text field instead of a fetch-backed combo
+  (plus a stale =FPML_BUSINESS_CENTRE= vs seeded =FPML_BUSINESS_CENTER=
+  spelling mismatch), and no flag icon for =country_alpha2_code= now
+  that =image_id= was dropped from the model — the last one needed a
+  new =icon_columns= accessor (=country_flag_icon=) since the
+  existing single-=flag_icon_column= mechanism is =image_id=-keyed.
+- Found and fixed a stale =#+image_id: true= frontmatter flag that
+  would have resurrected the dropped column on the next regenerate.
+- Found and fixed a codegen bug (=org_loader.py=): insert-trigger
+  =Validations= rows never carried a column's own =:nullable:= flag,
+  so a nullable field wired to a validation function had it invoked
+  unconditionally — fixed at the template/loader level, not by
+  hand-patching the generated SQL (business_centre's
+  =country_alpha2_code= was the first entity to hit this).
+- Manual retest of the fixed coding-scheme combo surfaced every code
+  listed twice; traced to =iso.coding_schemes=/=fpml.coding_schemes=
+  being both seeded unconditionally to the system tenant at DB build
+  time *and* republished per-tenant via the =base=/=crypto= dataset
+  bundles during =provision tenant= — dead weight, since every
+  coding-scheme validator checks only the system tenant. Removed the
+  two bundle-member entries; captured the broader missing
+  system-vs-tenant publish-scope convention as a backlog item
+  (=doc/agile/product_backlog/inbox/clarify_system_vs_tenant_dataset_publish_scope.org=)
+  rather than fixing it wholesale here.
+- Filed the codegen nullable-guard bug as its own backlog capture too
+  (=doc/agile/product_backlog/inbox/codegen_nullable_validation_not_guarded.org=)
+  since a hand-patch had been applied first before the root cause was
+  traced to =org_loader.py=, and the fix there is worth a dedicated
+  audit of other nullable+validated fields.
 
 * Notes
 
@@ -56,9 +94,9 @@ through the QA Validation Runner panel) that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
 via its "Verifies task" field.
 
-| Scenario | State | Notes |
-|----------+-------+-------|
-|          |       |       |
+| Scenario                                          | State  | Notes                                    |
+|----------------------------------------------------+--------+-------------------------------------------|
+| [[id:9FF8709A-6730-4861-B22E-77DA87FFD833][Test Scenario: Verify business_centre]] | PASSED | CRUD, History, Eventing all green on retest after the pagination/coding-scheme/flag fixes. |
 
 * PRs
 
@@ -73,3 +111,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+business_centre fully regenerated from its codegen model across
+every enabled profile (SQL, domain/repository/service, Qt CRUD now
+under =ores.qt/refdata=), all diffs reconciled, and feature-tested
+end to end with the QA Validation Runner scenario passing (Create,
+Read, Update, Delete, History, Eventing across two clients). Full
+local build clean (=linux-clang-debug-make=); =ctest= 72/72 test
+binaries passed. Fixed along the way, at their root cause rather than
+by hand-patching generated output: a stale =image_id: true= model
+frontmatter flag, a codegen bug dropping nullable guards on
+insert-trigger validations, three UX/data gaps surfaced by manual
+testing (missing pagination, coding-scheme free-text field instead of
+a validated combo plus a coding-scheme-code spelling mismatch, and a
+missing country flag icon), and a provisioning bug duplicating
+coding-scheme rows into every tenant. Two follow-up backlog captures
+filed for the broader patterns behind the codegen and provisioning
+bugs.

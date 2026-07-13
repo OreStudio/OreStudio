@@ -70,7 +70,7 @@ for Wt and HTTP support.
 |------+-------+-------+-----+-------------|
 | [[id:183B2813-A7A8-4EC1-A43A-E37CCFF83C21][Appraise business_centre against the entity evaluation checklist]] | DONE | 2026-07-12 | 2026-07-12 | Score business_centre across all layers (SQL, domain, repository, service, generator, protocol, NATS eventing/handler, Qt) using the entity evaluation checklist; findings drive the rest of the story's tasks. |
 | [[id:34E655ED-E560-4C87-A0D4-524B904B5C26][Update business_centre codegen model and enable variability knobs]] | DONE | 2026-07-13 | 2026-07-13 | Author/update the codegen model to match business_centre's current structure and enable the correct variability knobs across every profile. |
-| [[id:0FCD3745-61CD-4644-BAE2-CBCD994448FE][Regenerate business_centre from its codegen model and reconcile diffs]] | STARTED | 2026-07-13 | | Run codegen against the updated model, diff every profile's output against the hand-written files, reconcile (zero-diff/fix-template/fix-code/accept). This is where the SQL security fix and Qt-to-RefdataPlugin relocation come from. |
+| [[id:0FCD3745-61CD-4644-BAE2-CBCD994448FE][Regenerate business_centre from its codegen model and reconcile diffs]] | DONE | 2026-07-13 | 2026-07-13 | Run codegen against the updated model, diff every profile's output against the hand-written files, reconcile (zero-diff/fix-template/fix-code/accept). This is where the SQL security fix and Qt-to-RefdataPlugin relocation come from. |
 | [[id:15F0D21E-EDE0-4834-9963-D32953CCF9A1][Verify business_centre Qt UI end-to-end post-NATS]] | BACKLOG | | | Exercise the business_centre Qt UI end-to-end (from its new RefdataPlugin location): MDI list window, detail window (edit/save round-trip), history window, delete command, and cross-session eventing. Fix any regressions found. |
 | [[id:996277E2-DBF4-4FF6-9AB3-E8534F675238][Write the business_centre manual chapter]] | BACKLOG | | | Add the business_centre entity chapter to the user manual, documenting the Qt windows (list, detail, history, delete). |
 | [[id:404A83BE-21BE-4AE5-9A98-A70346D26EFC][File Wt and HTTP backlog captures for business_centre]] | BACKLOG | | | File backlog captures for business_centre's Wt web UI and HTTP REST API support, since both are out of scope for this story (handled by the top-level Wt/HTTP commissioning stories). |
@@ -95,6 +95,30 @@ for Wt and HTTP support.
 - business_unit and contact_type show the identical wrong-plugin pattern
   (also under PartyPlugin) but are out of scope here -- their own
   Commission stories should pick this up, or a shared capture filed.
+- Codegen bugs and gaps found while regenerating are fixed at the
+  template/loader level, never by hand-patching generated output
+  (project convention) -- caught mid-task when a nullable-column
+  insert-trigger guard had initially been hand-patched into generated
+  SQL before its root cause was traced to =org_loader.py= not
+  propagating a column's =:nullable:= flag into the =Validations=
+  table rows.
+- Manual feature-testing (not just codegen diffing) is what surfaced
+  three further real gaps the regeneration alone didn't catch: missing
+  list pagination, =coding_scheme_code= as free text instead of a
+  validated combo (plus a spelling mismatch against the actual seeded
+  coding scheme), and no flag icon for the new
+  =country_alpha2_code=-derived flag mechanism -- all fixed via the
+  model + a new =icon_columns=/=country_flag_icon= codegen path rather
+  than hand-written Qt code.
+- The coding-scheme combo also exposed a provisioning bug unrelated to
+  business_centre itself: =iso.coding_schemes=/=fpml.coding_schemes=
+  were both seeded once to the system tenant at DB build time and
+  republished per-tenant via the =base=/=crypto= bundles, duplicating
+  every code for any provisioned tenant since every coding-scheme
+  validator only ever checks the system tenant. Fixed by removing the
+  two bundle-member entries; the broader missing system-vs-tenant
+  publish-scope convention is captured separately rather than
+  redesigned here.
 
 * Out of scope
 

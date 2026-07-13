@@ -43,11 +43,11 @@ from — not a shipped deliverable itself.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -65,9 +65,33 @@ from — not a shipped deliverable itself.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added =partitioned_cache<PartitionKey, Key, Value, AuxIndex>= to
+=ores.eventing.core/service/cache/partitioned_cache.hpp=:
+=immer::atom<immer::map<PartitionKey, partition>>= storage, wait-free
+=get=/=snapshot=, and a =replace_partition= write going through the
+atom's compare-and-swap =update()=. Scaffolded a new
+=ores.eventing.core= tests target (none existed before) mirroring
+=ores.analytics.quant='s no-DB test pattern, and wrote a test suite
+covering lookup, replacement, partition isolation, aux-index
+defaults/usage, and two concurrency properties: no lost updates
+across concurrently-replaced partitions, and no torn reads.
+
+The concurrency test caught a real bug on first run: =immer::atom::
+update()='s callback can be invoked more than once when the CAS
+loses a race and retries, but the callback was consuming its
+=partition= payload by =std::move=, so a retry moved from an
+already-moved-from value and silently produced an empty partition.
+Fixed by capturing the payload as a =const= value and copying it into
+each attempt (cheap — immer's structural sharing means it's not a
+deep copy). Applied the identical fix to the hand-written
+=party_cache.hpp= prototype, which had the same bug.
+
+Also discovered =find_package(Immer CONFIG REQUIRED)= was missing
+everywhere the =immer= CMake target is linked, including in the
+existing =ores.analytics.quant= convention this work follows and in
+=ores.iam.core= (whose =party_cache.hpp= already used =immer::atom=
+without it — would have failed to link the moment anyone tried to
+build it). Added it to all three CMakeLists that link =immer=.
 
 * Notes
 
@@ -95,3 +119,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added =partitioned_cache<PartitionKey, Key, Value, AuxIndex>= to
+=ores.eventing.core/service/cache/partitioned_cache.hpp=, with a new
+test target for =ores.eventing.core= (none existed) covering lookup,
+replacement, partition isolation, aux-index, and two concurrency
+properties (no lost updates, no torn reads) — 8 test cases, 8062
+assertions, all green. Fixed a real bug the concurrency test caught:
+=immer::atom::update='s retry-on-CAS-contention callback was
+consuming its payload by move, corrupting data on retry; applied the
+same fix to the =party_cache= prototype, which had the identical bug.
+Added the missing =find_package(Immer CONFIG REQUIRED)= wherever
+=immer= is linked (=ores.eventing.core=, =ores.iam.core=) — a latent
+gap in the existing convention this work follows.
+
+=party_cache.hpp= itself is *not yet* migrated onto the new
+primitive — it still hand-rolls the same atom/map/CAS machinery the
+primitive now provides generically. That migration is task
+"Migrate party to the generated cache", later in this story, after
+the read-for-cache archetype and the =nats-event-cache= facet exist.
+
+All acceptance criteria met. Verified with =ores.eventing.core.lib=,
+=ores.eventing.core.tests= (green), and =ores.iam.core.lib= (builds
+clean with the CAS fix applied to the prototype).

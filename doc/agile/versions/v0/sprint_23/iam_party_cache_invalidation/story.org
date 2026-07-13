@@ -111,7 +111,7 @@ favour of the generated version.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A4797CFE-FC29-4209-B7C2-7505247EC29C][Implement generic partitioned_cache<PartitionKey,Key,Value> primitive]] | STARTED | 2026-07-12 | | Layer A: an immer::atom<immer::map<PartitionKey,immer::map<Key,Value>>>-backed template, following the rate_engine/rate_snapshot idiom already in ores.analytics.quant. Wait-free reads, CAS-safe partition replacement, optional aux-index policy. |
+| [[id:A4797CFE-FC29-4209-B7C2-7505247EC29C][Implement generic partitioned_cache<PartitionKey,Key,Value> primitive]] | DONE | 2026-07-12 | 2026-07-13 | Layer A: an immer::atom<immer::map<PartitionKey,immer::map<Key,Value>>>-backed template, following the rate_engine/rate_snapshot idiom already in ores.analytics.quant. Wait-free reads, CAS-safe partition replacement, optional aux-index policy. |
 | [[id:3814875F-2CD5-4909-BBDE-3661485941F6][Generalize read-for-cache RPC into a standard archetype]] | BACKLOG | | | Today read_parties_for_cache is hand-written, only for party (see nats_registrar_implementation doc, which documents it as a manual escape hatch). Turn it into a standard generated archetype, like list/save/remove already are, so any cacheable entity gets a read-for-cache RPC generated on its producer side without hand-written code. |
 | [[id:884DDE80-7C59-4825-80BB-474F839F1C6B][Add nats-event-cache facet: cache class + registrar wiring archetypes]] | BACKLOG | | | Add a nats-event-cache facet to facet_catalogue.org generating two archetypes: the consumer-side {entity}_cache.hpp (a partitioned_cache instantiation) and the registrar subscribe/warm-up wiring snippet, subject-bound via event_traits (no hardcoded strings). Declared via a cached_by annotation on the entity's own model (where the entity is defined); the facet's output component token resolves from cached_by, not the entity's own component, since the generated cache must compile into the consumer's binary. |
 | [[id:763C5969-19EA-4990-A662-BE2623740325][Migrate party to the generated cache: first real nats-event-cache consumer]] | BACKLOG | | | Add cached_by: ores.iam to party's model in ores.refdata; regenerate ores.iam.core's party cache via the new facet; retire the hand-written prototype (task: Implement generic partitioned_cache primitive) in favour of the generated version. Confirms the facet design end-to-end on a real entity. |
@@ -151,6 +151,14 @@ favour of the generated version.
   the named consumer; the single source of truth for "who caches
   this entity" stays with the entity, like every other fact about
   it.
+- 2026-07-13: Layer A (=partitioned_cache=) implemented and merged
+  ahead of Layers B/C so it can be reviewed as a self-contained,
+  tested unit before the larger codegen-touching work starts. Its
+  concurrency tests caught a genuine bug (retry-callback consuming
+  its payload by move under CAS contention) present in both the new
+  primitive and the =party_cache= prototype it was extracted from —
+  confirms the value of writing the concurrency tests before, not
+  after, generalising.
 
 * Out of scope
 

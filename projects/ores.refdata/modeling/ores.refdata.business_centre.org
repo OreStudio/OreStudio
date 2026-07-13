@@ -11,7 +11,7 @@
 #+entity_title: Business Centre
 #+has_tenant_id: true
 #+coding_scheme: required
-#+image_id: true
+#+image_id: false
 #+brief: Financial trading location used for holiday calendar determination (FpML-style code).
 #+created: 2026-07-13
 #+updated: 2026-07-13
@@ -115,7 +115,7 @@ ISDA). Soft FK to =ores_dq_coding_schemes_tbl=, validated by
 =ores_refdata_validate_business_centre_coding_scheme_fn=.
 
 #+begin_src cpp :name generator
-std::string("FPML_BUSINESS_CENTRE")
+std::string("FPML_BUSINESS_CENTER")
 #+end_src
 
 * SQL
@@ -206,6 +206,7 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 :item_var:                    business_centre
 :key_field:                   code
 :has_uuid_primary_key:        false
+:has_pagination:              true
 :has_change_reason_cache:     true
 :get_request_class:           refdata::messaging::get_business_centres_request
 :get_response_class:          refdata::messaging::get_business_centres_response
@@ -230,14 +231,14 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 
 *** Detail fields
 
-| field                | label          | widget                    | type          | is_key | is_required | placeholder             | flag_source | combo_fetch          | combo_fetch_include        | combo_allow_blank | immutable |
-|----------------------+----------------+----------------------------+---------------+--------+-------------+---------------------------+--------------+-----------------------+-----------------------------+--------------------+-----------|
-| code                 | Code           | codeEdit                  | line_edit     | true   | true        | e.g. USNY                |              |                        |                              |                    |           |
-| source               | Source         | sourceEdit                | line_edit     |        |             | e.g. FpML                |              |                        |                              |                    |           |
-| description          | Description    | descriptionEdit           | line_edit     |        |             | Short description        |              |                        |                              |                    |           |
-| city_name            | City           | cityNameEdit               | line_edit     |        |             |                           |              |                        |                              |                    | true      |
-| coding_scheme_code   | Coding Scheme  | codingSchemeEdit           | line_edit     |        | true        | e.g. FpML                |              |                        |                              |                    |           |
-| country_alpha2_code  | Country        | countryAlpha2Combo         | flagged_combo |        |             |                           | country      | fetch_country_codes   | ores.qt/LookupFetcher.hpp   | true               |           |
+| field                | label          | widget                    | type          | is_key | is_required | placeholder             | flag_source | combo_fetch          | combo_fetch_include        | combo_allow_blank | immutable | combo_domain_type            | combo_fetch_fn        | combo_watcher_name       | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label     | combo_setter_pascal |
+|----------------------+----------------+----------------------------+---------------+--------+-------------+---------------------------+--------------+-----------------------+-----------------------------+--------------------+-----------+-------------------------------+------------------------+---------------------------+-------------------+----------------------+-------------------+------------------+-----------------------|
+| code                 | Code           | codeEdit                  | line_edit     | true   | true        | e.g. USNY                |              |                        |                              |                    |           |                               |                        |                           |                   |                      |                   |                  |                       |
+| source               | Source         | sourceEdit                | line_edit     |        |             | e.g. FpML                |              |                        |                              |                    |           |                               |                        |                           |                   |                      |                   |                  |                       |
+| description          | Description    | descriptionEdit           | line_edit     |        |             | Short description        |              |                        |                              |                    |           |                               |                        |                           |                   |                      |                   |                  |                       |
+| city_name            | City           | cityNameEdit               | line_edit     |        |             |                           |              |                        |                              |                    | true      |                               |                        |                           |                   |                      |                   |                  |                       |
+| coding_scheme_code   | Coding Scheme  | codingSchemeCombo          | dynamic_combo |        | true        |                           |              |                        | ores.qt/LookupFetcher.hpp   |                    |           | dq::domain::coding_scheme     | fetch_coding_schemes   | codingSchemeWatcher       | code              | description          | version           | coding schemes  | CodingSchemeCombo     |
+| country_alpha2_code  | Country        | countryAlpha2Combo         | flagged_combo |        |             |                           | country      | fetch_country_codes   | ores.qt/LookupFetcher.hpp   | true               |           |                               |                        |                           |                   |                      |                   |                  |                       |
 
 *** Columns (Qt model)
 
@@ -253,17 +254,23 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 | ModifiedBy          | modified_by         | Modified By     | string    | 120   |
 | RecordedAt          | recorded_at         | Recorded At     | timestamp | 150   |
 
+*** Icon columns (Qt model)
+
+Country gets its own flag icon in the list, keyed by
+=country_alpha2_code= via the generic country-code accessor (same
+mechanism as Book's =LedgerCcy= currency flag) -- business_centre has
+no =image_id= of its own (dropped in favour of this country-derived
+flag), so it uses =icon_columns= rather than the single
+=flag_icon_column= mechanism.
+
+| column             | accessor           | field1              | field2 |
+|--------------------+---------------------+---------------------+--------|
+| CountryAlpha2Code  | country_flag_icon   | country_alpha2_code |        |
+
 ** Custom repository methods
 
 * Notes
 
-- =fetch_country_codes= does not yet exist in =ores.qt/LookupFetcher.hpp=
-  (only =fetch_currency_codes= and friends) -- needs adding, mirroring
-  =fetch_currency_codes=, as part of the regenerate/reconcile task. The
-  current hand-written =BusinessCentreDetailDialog::populateCountries()=
-  fetches country codes via a bespoke =QtConcurrent= call instead of the
-  standard =LookupFetcher= pattern; reconciling onto the generated
-  =flagged_combo= wiring is expected to replace that bespoke method.
 - =city_name= is documented as "derived from description" and is
   currently always read-only in the hand-written dialog (=immutable:
   true= above matches that). Confirm during reconciliation whether any

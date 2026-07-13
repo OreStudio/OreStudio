@@ -46,7 +46,7 @@ generate_synthetic_business_centre(utility::generation::generation_context& ctx)
     r.description = std::string(faker::lorem::sentence());
     r.city_name = std::string(faker::location::city());
     r.country_alpha2_code = std::string("US");
-    r.coding_scheme_code = std::string("FPML_BUSINESS_CENTRE");
+    r.coding_scheme_code = std::string("FPML_BUSINESS_CENTER");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

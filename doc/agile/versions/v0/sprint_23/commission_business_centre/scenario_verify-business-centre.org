@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: 9FF8709A-6730-4861-B22E-77DA87FFD833
+:END:
+#+title: Test Scenario: Verify business_centre
+#+description: Verify business_centre CRUD, history, and eventing after regeneration and reconciliation.
+#+type: test_scenario
+#+level: s1
+#+filetags: :commission_business_centre:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:0FCD3745-61CD-4644-BAE2-CBCD994448FE][Regenerate business_centre from its codegen model and reconcile diffs]] in [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:0FCD3745-61CD-4644-BAE2-CBCD994448FE][Regenerate business_centre from its codegen model and reconcile diffs]] |
+| Parent story  | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]]   |
+| Target dialog | =BusinessCentreDetailDialog= / =BusinessCentreHistoryDialog= — Menu: Reference Data > Business Centres |
+| Clients       | blue, red |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+Retest note: the previous run (2026-07-13T18:25:31Z, commit
+646f4a865) failed on Create (missing coding-scheme combo + wrong
+seeded scheme code) and Read (list window had no pagination). Both
+are fixed now — coding_scheme_code is a fetch-backed combo populated
+from the real coding schemes table, the generator/seed data use the
+correct =FPML_BUSINESS_CENTER= code, the list window paginates, and
+the country combo/list now render a flag icon.
+
+** blue
+
+*** Connect and log in
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= (from
+=barclays_system_provision.ores=). Select party "BARCLAYS PLC" if
+prompted.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Create
+
+Menu: Reference Data > Business Centres. Click Add. Fill in a new
+code (e.g. "ZZTS"), pick a coding scheme from the combo (e.g.
+=FPML_BUSINESS_CENTER=), description, and a country (e.g. "US") via
+the flagged country combo. Save. Verify the new record appears in
+the list with its flag icon, and the detail dialog reopens showing
+the saved values.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Read
+
+Reopen the detail dialog for the record just created (double-click it
+in the list). Verify every field — code, coding scheme, description,
+country, city — round-trips correctly, including the flag icon next
+to the country combo. Also scroll/page through the list and confirm
+the new record is reachable (list now paginates past its first
+batch).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Update
+
+Edit the description (and/or country) and save with a change reason.
+Verify the list refreshes with the new value and the flag icon (if
+country changed) updates accordingly.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Delete
+
+Delete the record via the list window. Verify it disappears from the
+list.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** History
+
+Open the History dialog for the record. Verify Create, Update, and
+Delete entries are all present with the correct change reasons and
+field-level diffs.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** red
+
+*** Connect and log in
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= (same
+credentials as the blue client). Select party "BARCLAYS PLC". Open
+Reference Data > Business Centres so the list is visible and ready to
+observe live updates.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Eventing
+
+With the red client's Business Centres list open, go back to the blue
+client and create a new business centre (or edit an existing one).
+Verify the change lands as a NATS notification and the red client's
+list refreshes automatically — new/changed row visible — without a
+manual reload.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-13T19:46:02Z |
+| Branch        | feature/regenerate-business-centre-reconcile-diffs |
+| Commit        | 646f4a865 |
+| Worktree      | jolly_knuth |
+
+* Notes

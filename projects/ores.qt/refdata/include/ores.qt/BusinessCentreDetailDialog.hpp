@@ -101,6 +101,8 @@ private:
     void updateSaveButtonState();
     bool validateInput();
 
+    void populateCodingSchemeCombo();
+
 
     void populateCountryAlpha2CodeCombo();
 

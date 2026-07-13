@@ -93,6 +93,10 @@ QIcon business_centre_flag_icon(ImageCache& imageCache, const std::string& busin
     return imageCache.getBusinessCentreFlagIcon(businessCentreCode);
 }
 
+QIcon country_flag_icon(ImageCache& imageCache, const std::string& alpha2Code) {
+    return imageCache.getCountryFlagIcon(alpha2Code);
+}
+
 void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source, QSize iconSize) {
     if (!combo || !cache)
         return;

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/LookupFetcher.hpp"
+#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
@@ -198,7 +199,7 @@ std::vector<std::string> fetch_business_centre_codes(ClientManager* cm) {
     request.limit = lookup_fetch_limit;
     auto response = cm->process_authenticated_request(std::move(request));
     if (response) {
-        for (const auto& bc : response->business_centres) {
+        for (const auto& bc : response->centres) {
             codes.push_back(bc.code);
         }
     }
@@ -307,6 +308,19 @@ fetch_tenor_anchors(ClientManager* cm) {
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
     return std::move(response->anchors);
+}
+
+std::expected<std::vector<dq::domain::coding_scheme>, QString>
+fetch_coding_schemes(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    dq::messaging::get_coding_schemes_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->coding_schemes);
 }
 
 std::expected<std::vector<refdata::domain::rounding_type>, QString>

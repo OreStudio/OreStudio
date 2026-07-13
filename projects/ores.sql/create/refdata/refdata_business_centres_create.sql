@@ -78,8 +78,10 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate country_alpha2_code
-    NEW.country_alpha2_code := ores_refdata_validate_country_fn(NEW.tenant_id, NEW.country_alpha2_code);
+    -- Validate country_alpha2_code (optional field -- skip validation when null)
+    if NEW.country_alpha2_code is not null then
+        NEW.country_alpha2_code := ores_refdata_validate_country_fn(NEW.tenant_id, NEW.country_alpha2_code);
+    end if;
 
     -- Validate coding_scheme_code
     NEW.coding_scheme_code := ores_refdata_validate_business_centre_coding_scheme_fn(NEW.tenant_id, NEW.coding_scheme_code);

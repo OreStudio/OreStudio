@@ -30,7 +30,13 @@ create table if not exists "ores_dq_books_artefact_tbl" (
     "book_status" text not null,
     "regulatory_book_type" text not null,
     "is_sweepable" boolean not null default false,
-    "rates_centre_code" text not null default 'WRLD'
+    -- Null means "region-agnostic -- inherit the publishing party's own
+    -- business_center_code at publish time" (see
+    -- ores_refdata_publish_books_from_dq_fn); a template can't know
+    -- which party it will be published to. Only set this when the book
+    -- itself is tied to a real trading desk location regardless of
+    -- owning party (e.g. a GBP rates desk always trades out of London).
+    "rates_centre_code" text null
 );
 
 create index if not exists books_artefact_dataset_idx

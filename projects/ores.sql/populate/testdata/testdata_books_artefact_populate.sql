@@ -197,24 +197,28 @@ begin
          '30741c42-ee10-4206-a62b-3bfb9cf1c29a', 'JPY',
          'GL-FX-004', 'CC-APAC-FX', 'Active', 'Trading', false, 'SGSI'),
 
-        -- Regulatory Capital portfolio (20..014) books
+        -- Regulatory Capital portfolio (20..014) books: group-level,
+        -- region-agnostic. Rates centre left null -- the publish
+        -- function fills it in with the publishing party's own
+        -- business_center_code (e.g. Barclays Plc -> GBLO), so the same
+        -- template produces the right rates centre for any party.
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '0f419e5d-9a05-4ac5-b020-cffc6d6d2afb', 0,
          'Regulatory Banking Book',
          '1f89906e-c6bc-49e9-97df-6ad8fc56a2b0', 'USD',
-         'GL-REG-001', 'CC-RISK', 'Active', 'Banking', false, 'WRLD'),
+         'GL-REG-001', 'CC-RISK', 'Active', 'Banking', false, null),
 
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
          'e155b3cb-55ec-4114-b8b8-e8cbb152e95a', 0,
          'Regulatory Trading Book',
          '1f89906e-c6bc-49e9-97df-6ad8fc56a2b0', 'USD',
-         'GL-REG-002', 'CC-RISK', 'Active', 'Trading', false, 'WRLD'),
+         'GL-REG-002', 'CC-RISK', 'Active', 'Trading', false, null),
 
         (v_dataset_id, ores_utility_system_tenant_id_fn(),
          'd6a27f65-c064-43a1-9d81-be4edfee1b88', 0,
          'Regulatory CVA Book',
          '1f89906e-c6bc-49e9-97df-6ad8fc56a2b0', 'USD',
-         'GL-REG-003', 'CC-RISK', 'Closed', 'Trading', false, 'WRLD');
+         'GL-REG-003', 'CC-RISK', 'Closed', 'Trading', false, null);
 
     get diagnostics v_count = row_count;
     raise debug 'Successfully populated % books', v_count;

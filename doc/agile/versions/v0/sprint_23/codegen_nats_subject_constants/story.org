@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: BA6A0922-74FA-4B17-A424-0E3D26C75F0F
+:END:
+#+title: Story: Codegen: generate NATS subject constants per component
+#+description: Codegen currently produces NATS subject strings only as literals scattered across request/protocol structs, handler registrar files, and client call sites -- e.g. this session found a real bug where a new publish-from-dq subject was registered in SQL/DQ metadata but the handler's registrar.cpp never subscribed to it, because there is no compiler-checked single source of truth. Generate, per component, an API header of named constants for every NATS subject the component owns (requests, events, publish-from-dq subjects, ...), and have codegen-generated registrar/handler/client code reference those constants instead of raw string literals, so a missing subscription or a typo becomes a compile error instead of a silent runtime hang/failure.
+#+type: story
+#+level: s2
+#+filetags: :codegen:nats:sprint_23:v0:tech_debt:codegen_nats_subject_constants:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every NATS subject in the codebase today is a raw string literal,
+independently typed in at least three places: the protocol struct's
+=nats_subject= constant, the server-side registrar's =queue_subscribe=
+call, and (for publish-from-dq subjects specifically) DQ metadata SQL
+that registers a =target_subject= for an artefact type. Nothing checks
+these agree.
+
+This was not a hypothetical risk: the CRM story's DQ-publishing task
+([[id:6D953558-A61C-461F-859D-CBD28AD5D8F5][publish named CRM bundles]], PR #1543) registered
+=marketdata.v1.crm-topology-bundles.publish-from-dq= as a new artefact
+type's =target_subject= in SQL, added the corresponding SQL function,
+but never added a matching =queue_subscribe= in
+=registrar.cpp= nor allow-listed the new function in
+=publish_from_dq_handler.cpp='s =is_known_fn()= -- caught only by PR
+review (four independent automated review passes all found it), not by
+the build. Publishing that bundle would have hung/failed silently for
+every party provisioned after merge.
+
+Codegen should generate, per component, an API header
+(=ores.<component>.api/messaging/nats_subjects.hpp= or similar) of
+named =constexpr= subject constants for every NATS subject the
+component owns -- requests, events, publish-from-dq subjects -- derived
+from the same source-of-truth the protocol structs and DQ artefact-type
+registrations already read from. Registrar/handler/client code
+references the constant, never a literal; a subject typo or a missing
+subscription becomes a compile error (unresolved symbol) or, at worst,
+a single place to grep, not a silent runtime gap four LLM reviewers
+have to independently rediscover.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-13                               |
+
+* Acceptance
+
+- Codegen generates one API header per component listing every NATS
+  subject that component's protocol/request/event/publish-from-dq
+  facets define, as named =constexpr std::string_view= constants (or
+  equivalent).
+- Existing hand-written/codegen-generated registrar, handler, and
+  client call sites are migrated to reference the generated constants
+  instead of string literals, component by component -- no leftover
+  raw subject strings once a component is migrated.
+- For publish-from-dq subjects specifically: the DQ artefact-type
+  =target_subject= registration and the constant codegen generates are
+  both derived from the same single source (the entity/facet model),
+  so they cannot drift apart the way this story's motivating bug did.
+- A missing subscription for a subject a component's own constants
+  declare is at minimum easy to lint/grep for (ideally a build-time
+  check), not something that only surfaces via manual/reviewer
+  discovery at runtime.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

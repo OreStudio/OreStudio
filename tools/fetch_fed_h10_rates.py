@@ -92,16 +92,23 @@ def download(code: str, cache_dir: Path, force: bool) -> Path:
     return out_path
 
 
-def archive(html_paths: dict, zip_path: Path) -> None:
-    """Write a reproducibility archive: a zip of the raw downloaded pages
-    plus a manifest.json (one entry per page: currency code, pair, source
-    URL, sha256, size, retrieved_at) - so the exact bytes a dataset was
-    generated from are independently verifiable without re-downloading
-    from the Fed's site.
+def archive(html_paths: dict, zip_path: Path, invocation: str) -> None:
+    """Write a reproducibility archive: a zip of the raw downloaded pages,
+    plus a single manifest.json next to it (not inside it) describing how
+    the archive was produced -- retrieval timestamp, the exact command
+    that produced it, and per-page source URL/sha256/size -- so the exact
+    bytes a dataset was generated from are independently verifiable
+    without re-downloading from the Fed's site.
     """
     zip_path.parent.mkdir(parents=True, exist_ok=True)
     retrieved_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    manifest = {"retrieved_at": retrieved_at, "source": "https://www.federalreserve.gov/releases/h10/hist/", "pages": []}
+    manifest = {
+        "retrieved_at": retrieved_at,
+        "source": "https://www.federalreserve.gov/releases/h10/hist/",
+        "command": invocation,
+        "archive": zip_path.name,
+        "pages": [],
+    }
 
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for code, html_path in sorted(html_paths.items()):
@@ -116,10 +123,12 @@ def archive(html_paths: dict, zip_path: Path) -> None:
                 "sha256": sha256,
                 "size_bytes": len(data),
             })
-        manifest_bytes = json.dumps(manifest, indent=2, sort_keys=False).encode()
-        zf.writestr("manifest.json", manifest_bytes)
 
-    print(f"  archived {len(html_paths)} page(s) + manifest.json -> {zip_path}", file=sys.stderr)
+    manifest_path = zip_path.parent / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=False) + "\n")
+
+    print(f"  archived {len(html_paths)} page(s) -> {zip_path}", file=sys.stderr)
+    print(f"  wrote {manifest_path}", file=sys.stderr)
 
 
 def parse_rows(html_path: Path) -> dict:
@@ -186,7 +195,8 @@ def main():
         parsed_by_code[code] = parse_rows(html_path)
 
     if args.archive_zip:
-        archive(html_paths, Path(args.archive_zip))
+        invocation = "./tools/fetch_fed_h10_rates.py " + " ".join(sys.argv[1:])
+        archive(html_paths, Path(args.archive_zip), invocation)
 
     if args.dates:
         requested = []

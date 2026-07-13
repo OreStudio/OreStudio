@@ -60,8 +60,21 @@ public:
 
 protected:
     void wheelEvent(QWheelEvent* event) override {
+        const int deltaY = event->angleDelta().y();
+        if (deltaY == 0) {
+            // Horizontal-only wheel/trackpad input (e.g. shift+scroll) is
+            // not a zoom gesture; let the base class handle it as scrolling.
+            QGraphicsView::wheelEvent(event);
+            return;
+        }
+
         constexpr double zoomInFactor = 1.15;
-        const double factor = event->angleDelta().y() > 0 ? zoomInFactor : 1.0 / zoomInFactor;
+        constexpr double minScale = 0.1;
+        constexpr double maxScale = 10.0;
+        const double factor = deltaY > 0 ? zoomInFactor : 1.0 / zoomInFactor;
+        const double newScale = transform().m11() * factor;
+        if (newScale < minScale || newScale > maxScale)
+            return;
         scale(factor, factor);
     }
 
@@ -582,8 +595,7 @@ void DatasetViewDialog::updateLineageView() {
     QRectF sceneRect = scene->itemsBoundingRect();
     sceneRect.adjust(-16, -16, 16, 16);
     lineageView_->setFitRect(sceneRect);
-    lineageView_->resetTransform();
-    lineageView_->fitInView(sceneRect, Qt::KeepAspectRatio);
+    lineageView_->resetToFit();
 }
 
 qreal DatasetViewDialog::createLineageNode(QGraphicsScene* scene,

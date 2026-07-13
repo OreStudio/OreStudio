@@ -20,7 +20,9 @@
 #include "ores.shell/app/commands/currencies_commands.hpp"
 #include "ores.refdata.api/domain/currency_table_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/commands/history_diff_renderer.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <cli/cli.h>
@@ -125,12 +127,14 @@ void currencies_commands::register_commands(cli::Menu& root_menu,
         },
         "Delete a currency by ISO code");
 
-    // "history"/"history-diff" commands disabled: depended on
-    // currency_version/currency_version_history (hand-written, non-codegen
-    // types) removed when the Qt history dialog was migrated onto the
-    // standard flat std::vector<currency> history shape. Reimplement once
-    // shell entity commands are brought under codegen — see "Shell entity
-    // commands — top-level commissioning story".
+    currencies_menu->Insert(
+        "history",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get_currency_history(std::ref(out), std::ref(session), args);
+        },
+        "Show a currency's version history (--diff for a unified diff, --version <n> to pick "
+        "one)",
+        {"iso_code [--diff] [--version <n>]"});
 
     root_menu.Insert(std::move(currencies_menu));
 }
@@ -256,6 +260,71 @@ void currencies_commands::process_delete_currency(std::ostream& out,
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete currency: " << result->message;
         fail(out) << "Failed to delete currency: " << result->message << std::endl;
     }
+}
+
+void currencies_commands::process_get_currency_history(std::ostream& out,
+                                                        nats_client& session,
+                                                        const std::vector<std::string>& args) {
+    auto parsed = parse_args(args,
+                             {{.name = "diff", .requires_value = false, .default_value = "false"},
+                              {.name = "version", .requires_value = true, .default_value = ""}});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+    if (parsed->positionals.size() != 1) {
+        fail(out) << "Usage: currencies history iso_code [--diff] [--version <n>]" << std::endl;
+        return;
+    }
+    auto iso_code = parsed->positionals.front();
+
+    std::optional<int> version;
+    if (const auto& v = parsed->flag("version"); !v.empty()) {
+        const auto parsed_version = parse_uint32(v);
+        if (!parsed_version) {
+            fail(out) << "Invalid --version value: " << v << std::endl;
+            return;
+        }
+        version = static_cast<int>(*parsed_version);
+    }
+
+    if (parsed->flag_set("diff")) {
+        render_history_diff(out, session, "ores.refdata.currency", std::move(iso_code), version);
+        return;
+    }
+
+    if (version) {
+        fail(out) << "--version is only supported together with --diff." << std::endl;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get currency history for: " << iso_code;
+
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to get currency history." << std::endl;
+        return;
+    }
+
+    refdata::messaging::get_currency_history_request req;
+    req.iso_code = iso_code;
+
+    auto result = do_auth_request<refdata::messaging::get_currency_history_response>(
+        out, session, "refdata.v1.currencies.history", rfl::json::write(req));
+    if (!result)
+        return;
+
+    if (!result->success) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get currency history: " << result->message;
+        fail(out) << result->message << std::endl;
+        return;
+    }
+
+    if (result->history.empty()) {
+        out << "No history found for this currency." << std::endl;
+        return;
+    }
+
+    out << result->history << std::endl;
 }
 
 }

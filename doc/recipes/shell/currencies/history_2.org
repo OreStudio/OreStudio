@@ -2,18 +2,26 @@
 :ID: F807E5C7-198D-4D13-9105-68513D07C193
 :END:
 #+title: History
-#+description: History
+#+description: Show a currency's version history as a table, or as a unified diff via --diff.
 #+type: recipe
 #+level: cross
 #+filetags: :recipe:shell:currencies:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-07-13
 
-Get version history for a currency.
+Get version history for a currency, as a flat table by default. Add
+=--diff= for a unified diff instead: unchanged fields as context lines,
+the server-computed changes as -/+ pairs (or every field as an
+addition from =/dev/null= for the oldest version). =--version <n>=
+picks a specific version to diff against its predecessor; it is only
+valid together with =--diff=. All comparison happens server-side, over
+the generic =history.v1.get= subject — the shell performs no
+comparison of its own.
 
 #+name: currencies-history
 #+begin_src ores-shell :exports none
 currencies history USD
+currencies history USD --diff
 exit
 #+end_src
 
@@ -23,22 +31,3 @@ export ORES_SHELL_LOGIN_PASSWORD
 <<currencies-history>>
 EOF
 #+end_src
-
-#+RESULTS:
-#+begin_example
-✓ Connected to :51004
-✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell>
-+---------+----------+-----------+-------------+-------------------------------+----------------+
-| Version | ISO Code | Name      | Recorded By | Recorded At                   | Change Summary |
-+---------+----------+-----------+-------------+-------------------------------+----------------+
-| 2       | USD      | US Dollar | newuser3    | 2026-01-09 21:05:44.000000000 | Version 2      |
-| 1       | USD      | US Dollar | system      | 2026-01-09 16:37:39.000000000 | Version 1      |
-+---------+----------+-----------+-------------+-------------------------------+----------------+
-
-
-ores-shell> Bye!
-#+end_example

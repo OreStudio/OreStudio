@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :ores.shell:codegen:refdata:
 #+created: 2026-07-03
-#+updated: 2026-07-11
+#+updated: 2026-07-13
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
@@ -70,6 +70,24 @@ separate sibling story.
   =countries_commands.cpp=; wiring point: =projects/ores.shell/src/app/application.cpp=.
 - Existing shell service-scaffold templates (not per-entity):
   =projects/ores.codegen/library/templates/ores.shell*=.
+
+*2026-07-13 addendum*: rolling out the generic =history --diff=
+renderer (task E4DDC1B9, story "Consolidate history dialogs onto
+HistoryDialogBase") hit this exact gap. Currency and country both
+already had a codegen'd =*_history_field_mapper= and a
+=get_*_history= service method, so wiring them onto the generic
+=history.v1.get= dispatch registry plus the shell's merged
+=history [--diff] [--version <n>]= command was pure plumbing. The
+four other entities with a plain shell =history= command — tenants,
+accounts, change_reasons, change_reason_categories — have neither the
+field mapper nor a confirmed history service method, so rolling
+=--diff= out to them isn't wiring, it's the codegen work this story
+describes. The remaining ~22 commissioned entities have no shell
+history command at all yet, same gap. When this story's shell facet
+gets its =history= phase templatized, generating the field mapper +
+service method + dispatch-provider registration + merged
+=history [--diff] [--version]= command for every entity in one pass
+would fold that rollout in for free.
 
 * See also
 

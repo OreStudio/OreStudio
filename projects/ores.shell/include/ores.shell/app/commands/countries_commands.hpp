@@ -23,6 +23,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/pagination_context.hpp"
+#include <string>
+#include <vector>
 
 namespace cli {
 
@@ -108,17 +110,20 @@ public:
                                        std::string alpha2_code);
 
     /**
-     * @brief Process a get country history request.
+     * @brief Process a country history request.
      *
-     * Retrieves the version history for a country by its alpha-2 code.
+     * Shows a country's version history: the flat table by default, or
+     * (with --diff) a unified diff rendered via
+     * ores.shell::app::commands::render_history_diff(). --version <n>
+     * selects a specific version and is only valid together with --diff.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
-     * @param alpha2_code ISO 3166-1 alpha-2 code of the country
+     * @param args Raw command tokens: alpha2_code [--diff] [--version <n>]
      */
     static void process_get_country_history(std::ostream& out,
                                             ores::nats::service::nats_client& session,
-                                            std::string alpha2_code);
+                                            const std::vector<std::string>& args);
 };
 
 }

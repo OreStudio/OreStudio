@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: C7DA61D9-0A21-42BF-A6EF-EBF47BCCF75E
+:END:
+#+title: ores.history.api
+#+description: Generic entity-history wire protocol and version-diffing glue, shared by every frontend and every server-side history_provider.
+#+type: ores.codegen.component
+#+component_kind: api
+#+level: cross
+#+filetags: :history:api:component:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+name: history.api
+#+full_name: ores.history.api
+#+brief: Public API types for the generic history component.
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.history.api component diagram
+#+caption: ores.history.api
+[[file:ores.history.api.png][file:ores.history.api.png]]
+
+* Summary
+
+=ores.history.api= is the genuinely client-visible half of
+[[id:9562F9CA-DCEB-44C6-8DB1-F3FC56D7703A][ores.history]]: the one shared NATS request/response pair every
+entity's history uses (=get_entity_history_request=/
+=get_entity_history_response=, keyed by an =entity_type= string rather
+than a typed per-entity subject), and =build_entity_history_versions()=,
+the shared rendering/diffing glue every server-side history_provider
+needs. A dependency-free leaf — matching =ores.diff='s dependency
+discipline — so any frontend (Qt, shell, Wt, HTTP) can decode the
+response without pulling in server-only machinery.
+
+* Inputs
+
+- A domain type's newest-first version list and its codegen'd
+  =render_{entity}_fields()= mapper, fed into
+  =build_entity_history_versions()=.
+
+* Outputs
+
+- =get_entity_history_response=: an ordered list of
+  =entity_history_version= (version, =modified_by=, =recorded_at=,
+  rendered =fields=, and =changes= vs the previous version), or a
+  failure message when no provider is registered for the requested
+  =entity_type=.
+
+* Entry points
+
+- =include/ores.history.api/messaging/history_protocol.hpp= — the
+  shared request/response types and the =history.v1.get= subject
+  constant.
+- =include/ores.history.api/service/version_builder.hpp= —
+  =build_entity_history_versions(versions, render)=: renders each
+  newest-first version's fields, diffs each against the next-older one
+  via =ores.diff::engine::compute= (empty diff for the oldest), and
+  numbers versions descending from the count — matching every
+  =*_repository::read_all(id)='s =version DESC= ordering.
+
+* Dependencies
+
+- [[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] — =field_value=/=diff_result= embedded in
+  =entity_history_version=.
+- std and =rfl= only beyond that — deliberately a leaf so every
+  frontend and domain service depends on it without cycles.
+
+* See also
+
+- [[id:9562F9CA-DCEB-44C6-8DB1-F3FC56D7703A][ores.history]] — the group overview.
+- [[id:120B6248-6D47-407A-B26A-BE004EB4E33D][ores.history.core]] — the server-side dispatch registry consuming
+  these types.
+- [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] — the design this component implements.

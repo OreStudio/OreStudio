@@ -74,12 +74,15 @@
 #include "ores.refdata.core/messaging/party_contact_handler.hpp"
 #include "ores.refdata.core/messaging/publish_from_dq_handler.hpp"
 
-// Generic history.v1.get subject (pilot: currency only).
-#include "ores.history/messaging/registrar.hpp"
-#include "ores.history/service/dispatch_registry.hpp"
-#include "ores.history/service/version_builder.hpp"
+// Generic history.v1.get subject.
+#include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/messaging/registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.core/presentation/country_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/currency_history_field_mapper.hpp"
+#include "ores.refdata.core/service/country_service.hpp"
 #include "ores.refdata.core/service/currency_service.hpp"
 
 #include <array>
@@ -287,11 +290,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
 
     // ----------------------------------------------------------------
-    // Generic history.v1.get subject (pilot: currency only). The
-    // registrar resolves each request into a scoped context exactly
-    // like every other subject (make_request_context), so a provider
-    // sees the same tenant/party/roles/workspace visibility any other
-    // handler in this file would.
+    // Generic history.v1.get subject. The registrar resolves each
+    // request into a scoped context exactly like every other subject
+    // (make_request_context), so a provider sees the same
+    // tenant/party/roles/workspace visibility any other handler in
+    // this file would.
     // ----------------------------------------------------------------
     {
         auto& hist_registry = history_registry();
@@ -302,6 +305,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 auto versions = svc.get_currency_history(entity_id);
                 return ores::history::service::build_entity_history_versions(
                     versions, presentation::render_currency_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.country",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::country_service svc(scoped_ctx);
+                auto versions = svc.get_country_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_country_fields);
             });
 
         subs.push_back(ores::history::messaging::register_history_handlers(

@@ -5,18 +5,12 @@
 #+description: Generic entity-history dispatch: request/response types and a server-side registry keyed by entity_type string, per History Diff Architecture.
 #+type: ores.codegen.component
 #+level: cross
-#+filetags: 
+#+filetags: :history:component:
 #+created: 2026-07-12
-#+updated: 2026-07-12
+#+updated: 2026-07-13
 #+name: history
 #+full_name: ores.history
 #+brief: Generic history dispatch types and server-side registry
-
-* Diagram
-
-#+attr_html: :width 100% :alt ores.history component diagram
-#+caption: ores.history
-[[file:ores.history.png][file:ores.history.png]]
 
 * Summary
 
@@ -32,78 +26,22 @@ composed-registrar meta-pattern
 instead of N separate subject subscriptions. No typed domain payload
 crosses the wire for history; every frontend renders the same shape.
 
-The messaging/service layer (=dispatch_registry=, =history_handler=,
-=registrar=) depends on =ores.database=/=ores.security= — it is
-server-only glue, never touched client-side, and every service that
-would register a history_provider already links both. =history_handler=
-resolves each request via =make_request_context()= exactly like every
-other NATS handler in the codebase, so a provider receives the same
-fully-scoped =database::context= (tenant, party, roles, workspace)
-any other subject's handler would get — no bespoke auth-context
-threading. Only =history_protocol.hpp= (the wire types, decoded
-client-side too) and =version_builder.hpp= stay a true leaf, matching
-=ores.diff='s dependency discipline.
+Structured as a composite component: =.api= is the genuinely
+client-visible wire vocabulary (dependency-free leaf, matching
+=ores.diff='s discipline); =.core= is the server-only NATS dispatch
+glue, which depends on =ores.database=/=ores.security= directly since
+every service that registers a history_provider already links both.
 
-* Inputs
+* Sub-components
 
-- Per-entity *history providers* — =std::function<std::vector<entity_history_version>(const database::context& ctx, const std::string& entity_id)>=
-  — registered by each domain service/component at startup, keyed by
-  that entity's =entity_type_of()= string. =ctx= is the same
-  fully-resolved context any other handler in that service would
-  use — a provider calls its own repository/service with it exactly
-  like every other handler does, no unpacking required.
-- A =get_entity_history_request= (=entity_type=, =entity_id=) arriving
-  on the shared =history.v1.get= NATS subject.
-
-* Outputs
-
-- =get_entity_history_response=: an ordered list of
-  =entity_history_version= (version, =modified_by=, =recorded_at=,
-  rendered =fields=, and =changes= vs the previous version), or a
-  failure message when no provider is registered for the requested
-  =entity_type=.
-
-* Entry points
-
-- =include/ores.history/messaging/history_protocol.hpp= — the shared
-  request/response types and the =history.v1.get= subject constant.
-  Dependency-free leaf, embeddable client-side.
-- =include/ores.history/service/dispatch_registry.hpp= — the
-  server-side registry: =register_history_provider(entity_type, fn)=
-  and =dispatch(request, ctx)=.
-- =include/ores.history/messaging/history_handler.hpp= — the NATS
-  auth/decode/dispatch/reply glue shared by every entity, resolving
-  each request via =make_request_context()=.
-- =include/ores.history/messaging/registrar.hpp= —
-  =register_history_handlers(nats, registry, queue_group, ctx, verifier)=,
-  subscribing the single =history.v1.get= subject to a =history_handler=
-  backed by a caller-owned =dispatch_registry=. Call once per service
-  process, after registering that service's own entities' providers.
-- =include/ores.history/service/version_builder.hpp= —
-  =build_entity_history_versions(versions, render)=, the shared glue
-  every history_provider needs: renders each newest-first version's
-  fields, diffs each against the next-older one via
-  =ores.diff::engine::compute= (empty diff for the oldest), and
-  numbers versions descending from the count — matching every
-  =*_repository::read_all(id)='s =version DESC= ordering.
-  Dependency-free leaf.
-
-* Dependencies
-
-- [[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] — =field_value=/=diff_result= embedded in
-  =entity_history_version=.
-- =ores.database= / =ores.security= — =database::context= and
-  =jwt_authenticator=, used by =dispatch_registry=, =history_handler=
-  and =registrar= (server-only glue; the wire-type/version-builder
-  headers stay dependency-free).
-- =ores.nats= / =ores.service= / =ores.logging= — the NATS
-  subscribe/decode/reply plumbing used by =history_handler= and
-  =registrar=.
-- std and =rfl= only beyond that for the leaf headers.
+| Sub-component | Brief |
+|----------------+-------|
+| [[id:C7DA61D9-0A21-42BF-A6EF-EBF47BCCF75E][ores.history.api]] | Generic history wire protocol and version-diffing glue, shared by every frontend. |
+| [[id:120B6248-6D47-407A-B26A-BE004EB4E33D][ores.history.core]] | Server-side dispatch registry, NATS handler and registrar. |
 
 * See also
 
 - [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] — the design this component implements.
-- [[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] — the sibling leaf component this one embeds.
-- [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the meta-pattern this component's
-  dispatch registry reapplies as a runtime lookup table.
+- [[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] — the sibling leaf component =.api= embeds.
+- [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the meta-pattern =.core='s dispatch
+  registry reapplies as a runtime lookup table.

@@ -88,7 +88,6 @@ the runnable script library (=projects/ores.shell/scripts/library/marketdata/=).
 - [[id:EF2D7EDC-4470-4976-8A29-4189103CDC15][Add]]
 - [[id:51B7ADAA-2673-444E-A4AC-9367C4ADD568][Delete]]
 - [[id:F807E5C7-198D-4D13-9105-68513D07C193][History]]
-- [[id:2F47AE08-AD09-4F43-9735-4E2C22F1862E][History Diff]]
 
 * Roles
 

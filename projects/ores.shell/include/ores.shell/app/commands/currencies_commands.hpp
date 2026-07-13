@@ -23,6 +23,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/pagination_context.hpp"
+#include <string>
+#include <vector>
 
 namespace cli {
 
@@ -107,9 +109,22 @@ public:
                                         ores::nats::service::nats_client& session,
                                         std::string iso_code);
 
-    // "history"/"history-diff" removed: depended on currency_version/
-    // currency_version_history (hand-written, non-codegen types). See
-    // "Shell entity commands — top-level commissioning story".
+    /**
+     * @brief Process a currency history request.
+     *
+     * Shows a currency's version history: the flat table by default, or
+     * (with --diff) a unified diff rendered via
+     * ores.shell::app::commands::render_history_diff(), consuming
+     * ores.history's history.v1.get subject. --version <n> selects a
+     * specific version and is only valid together with --diff.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param args Raw command tokens: iso_code [--diff] [--version <n>]
+     */
+    static void process_get_currency_history(std::ostream& out,
+                                             ores::nats::service::nats_client& session,
+                                             const std::vector<std::string>& args);
 };
 
 }

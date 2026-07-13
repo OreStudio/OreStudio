@@ -23,9 +23,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/PartyChildEntityTables.hpp"
 #include "ores.refdata.api/domain/party.hpp"
 #include <vector>
-
 
 namespace Ui {
 class PartyDetailDialog;
@@ -99,6 +99,8 @@ private:
     void updateSaveButtonState();
     bool validateInput();
 
+
+    PartyChildEntityTables* childTables_{nullptr};
 
     Ui::PartyDetailDialog* ui_;
     ClientManager* clientManager_;

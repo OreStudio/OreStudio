@@ -20,22 +20,29 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Restore identifier/contact-information table editing for party and
+counterparty's generated Qt detail dialogs (deleted along with the old
+EntityDetailDialog/Operations classes), without regenerating a whole new
+declarative cross-entity Qt facet. Hierarchy tree binding is out of
+scope here (deferred — see Notes).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Both entities' Identifiers/Contact Information tabs restored and building clean. |
+| Waiting on   | Nothing further for this task. |
+| Next         | Hierarchy tree binding (party's parent_party_id tree) remains unaddressed -- was never wired even in the pre-codegen dialog; separate follow-up if wanted. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
 
--
+- Party: Identifiers and Contact Information tabs restored, load/add/delete working. DONE.
+- Counterparty: same. DONE.
+- ores.qt.refdata.lib builds clean (-j1). DONE.
+- Hierarchy tree binding. NOT DONE -- out of scope, see Notes.
 
 * Plan
 
@@ -43,7 +50,48 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+1. First attempt: embed the full ~250-line identifier/contact
+   setup/load/save/delete implementation directly as paste-block content
+   in party.org, mirroring the deleted EntityDetailDialog code verbatim.
+   Correctly rejected as too much hand-written C++ living inside an
+   org-mode literate model -- paste blocks are for small binding glue,
+   not entire feature implementations.
+2. Redesigned: a generic, entity-agnostic =ChildEntityTableWidget=
+   (ores.qt.api) -- a table + toolbar with add/delete signals, no
+   knowledge of any domain entity, in the same spirit as the existing
+   =HierarchyTreeWidget=. Then one small, hand-crafted (NOT codegen'd)
+   class per entity -- =PartyChildEntityTables=/
+   =CounterpartyChildEntityTables= in ores.qt.refdata -- owning two
+   =ChildEntityTableWidget= instances and doing the actual NATS
+   load/save/delete calls concretely (no cross-entity templating
+   attempted; the two classes are structurally identical but their
+   protocol/domain types differ enough that a template wouldn't clearly
+   pay for itself with only two consumers).
+3. Added four small new codegen paste-block kinds to the detail-dialog
+   templates (all documented in [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta model]]): header extra
+   includes (=9C3E6A1D=), composite child-entity tables constructor seam
+   (=7E4A2C8D=, sibling to the existing hierarchy-tree seam), and an
+   entity-set load hook (=D5A8E2F1=, end of =set<Entity>()=). Each
+   entity's paste blocks are now just ~15 lines: construct the
+   hand-written class, attach it to =tabWidget()=, reload it when the
+   entity's id is (re)set.
+4. Hit one real bug along the way: the header member
+   (=ChildEntityTables* childTables_=) needs the class's full type
+   visible in the *header*, but the include I originally wrote only
+   went into the *impl* file's include paste point -- an "unknown type
+   name" compile error that cascaded into confusing "not convertible to
+   DetailDialogBase" errors elsewhere. Fixed by adding the
+   =9C3E6A1D= header-includes paste point.
+
 * Notes
+
+*Hierarchy tree deferred*: party's =parent_party_id= hierarchy was never
+actually wired into the Qt UI even before this session's changes -- the
+old hand-written =PartyController= never constructed a hierarchy tree
+widget anywhere. The existing =9B165431= seam (hierarchy tree, from the
+"Composite child-entity and hierarchy Qt widgets for codegen" story) is
+still unimplemented by any entity. Left as a standing gap, not a
+regression from this task.
 
 * Test Scenarios
 

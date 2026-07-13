@@ -54,6 +54,7 @@
 #include "ores.qt/PartyTypeController.hpp"
 #include "ores.qt/PaymentFrequencyTypeController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
+#include "ores.qt/BookPurposeTypeController.hpp"
 #include "ores.qt/RegulatoryBookTypeController.hpp"
 #include "ores.qt/RoundingTypeController.hpp"
 #include "ores.qt/SubjectAreaController.hpp"
@@ -273,6 +274,15 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
         ctx_.username,
         this);
     connectControllerSignals(regulatoryBookTypeController_.get());
+
+    bookPurposeTypeController_ = std::make_unique<BookPurposeTypeController>(
+        ctx_.main_window,
+        ctx_.mdi_area,
+        ctx_.client_manager,
+        ctx_.change_reason_cache,
+        ctx_.username,
+        this);
+    connectControllerSignals(bookPurposeTypeController_.get());
 
     partyTypeController_ = std::make_unique<PartyTypeController>(ctx_.main_window,
                                                                  ctx_.mdi_area,
@@ -583,8 +593,8 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         });
 
         // Book Codes submenu: auxiliary/classification data for books and
-        // portfolios (Book Statuses, Regulatory Book Types today; room for
-        // Book Purpose Types, Ledger Feed Types, and portfolio-side codes
+        // portfolios (Book Statuses, Regulatory Book Types, Book Purpose
+        // Types today; room for Ledger Feed Types and portfolio-side codes
         // as they land). Reference-data lookups belong here, not in the
         // Trading menu's Trading Codes submenu.
         auto* menuBookCodes = ref->addMenu(tr("Book &Codes"));
@@ -599,6 +609,12 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         connect(actRegulatoryBookTypes, &QAction::triggered, this, [this]() {
             if (regulatoryBookTypeController_)
                 regulatoryBookTypeController_->showListWindow();
+        });
+        auto* actBookPurposeTypes =
+            menuBookCodes->addAction(ico(Icon::Flag), tr("Book &Purpose Types"));
+        connect(actBookPurposeTypes, &QAction::triggered, this, [this]() {
+            if (bookPurposeTypeController_)
+                bookPurposeTypeController_->showListWindow();
         });
 
         // Organisation Codes submenu: shared with ores.qt.party (host-owned,
@@ -784,6 +800,7 @@ void RefdataPlugin::on_logout() {
     zeroConventionController_.reset();
     partyTypeController_.reset();
     purposeTypeController_.reset();
+    bookPurposeTypeController_.reset();
     regulatoryBookTypeController_.reset();
     bookStatusController_.reset();
     bookController_.reset();

@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: D439EE01-5479-4425-81E6-9CF1F3C99214
+:END:
+#+title: Regenerate deposit/zero convention tables for bool table-display fix
+#+description: deposit_convention_table.cpp and zero_convention_table.cpp still stream raw bools into fort::char_table as 0/1, unlike book_table.cpp which was regenerated with the fixed template.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:refdata:tech-debt:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Regenerate =projects/ores.refdata/api/src/domain/deposit_convention_table.cpp=
+and =projects/ores.refdata/api/src/domain/zero_convention_table.cpp= from the
+codegen table_display templates. Both still stream a non-optional bool column
+raw into =fort::char_table= (=dc.index_based= at
+deposit_convention_table.cpp:48, =zc.tenor_based= at
+zero_convention_table.cpp:48), which integer-promotes it to =0=/=1= instead
+of =true=/=false=. Sibling entities =cds_convention= and
+=ibor_index_convention= don't include their bool fields in =table_display=
+at all, so they're unaffected and don't need touching.
+
+* Why
+
+PR #1545 (commit =7f8b8488=) fixed the underlying codegen template
+(=cpp_domain_type_table.cpp.mustache=, =ores.cpp.domain.table_impl.org=,
+=core.py='s =_prepare_table_display=) to detect non-optional bool columns and
+wrap them with a =("true" : "false")= ternary, and regenerated
+=book_table.cpp= accordingly, scoped to =book= only. These two sibling files
+were left with the pre-fix behaviour and just need the same regen so
+=deposit_convention list=/=zero_convention list= render consistently with
+=book list= and the rest of the codebase's =is_sweepable=-style bool
+rendering convention.
+
+* References
+
+- Flagged by the =claude-review= bot on PR #1545:
+  https://github.com/OreStudio/OreStudio/pull/1545
+
+* See also
+
+- [[id:FA28F852-012F-47A7-94E7-FEDAEF2F2DF9][Add is_sweepable flag to book]] — task that introduced the codegen fix.

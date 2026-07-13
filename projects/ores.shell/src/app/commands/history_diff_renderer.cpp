@@ -115,12 +115,25 @@ void render_history_diff(std::ostream& out,
     } else if (target->changes.entries.empty()) {
         out << "(no field changes recorded for this version)\n";
     } else {
-        // Changed fields only — no unchanged context lines.
+        // Unchanged fields as context, changed fields as -/+ pairs, in the
+        // current version's field order; fields the current version no
+        // longer has (removed) are appended last, in changes order.
+        for (const auto& f : target->fields) {
+            const auto entry = std::find_if(
+                target->changes.entries.begin(), target->changes.entries.end(),
+                [&](const auto& e) { return e.field_name == f.name; });
+            if (entry == target->changes.entries.end()) {
+                out << " " << f.name << ": " << f.value << "\n";
+            } else {
+                out << "-" << entry->field_name << ": " << entry->old_value << "\n";
+                out << "+" << entry->field_name << ": " << entry->new_value << "\n";
+            }
+        }
         for (const auto& e : target->changes.entries) {
-            if (!e.old_value.empty())
+            const auto in_fields = std::any_of(target->fields.begin(), target->fields.end(),
+                                               [&](const auto& f) { return f.name == e.field_name; });
+            if (!in_fields)
                 out << "-" << e.field_name << ": " << e.old_value << "\n";
-            if (!e.new_value.empty())
-                out << "+" << e.field_name << ": " << e.new_value << "\n";
         }
     }
     out << std::flush;

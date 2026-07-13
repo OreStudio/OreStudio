@@ -37,7 +37,7 @@ namespace ores::shell::app::commands {
  * every field as an addition from /dev/null. All comparison happens
  * server-side (ores.history's dispatch_registry + per-entity
  * history_provider); this is pure formatting of an already-diffed
- * response, shared by every entity's "history-diff" command.
+ * response, shared by every entity's "history --diff" command.
  *
  * @param out         Output stream for the rendered diff.
  * @param session     Client session for connectivity.

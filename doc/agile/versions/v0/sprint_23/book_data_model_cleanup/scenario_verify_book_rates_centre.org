@@ -64,7 +64,7 @@ Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** Books list shows the Rates Centre column with a flag icon per book
 
@@ -78,7 +78,7 @@ Rates Centre now that the field is required — with no error banner.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** Detail dialog shows and edits the Rates Centre combo
 
@@ -94,7 +94,7 @@ icon, and Version increments by 1.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** History dialog shows the Rates Centre change
 
@@ -107,7 +107,7 @@ closes the sub-window, not the whole app.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** No error toast or log error during the whole flow
 
@@ -119,16 +119,16 @@ ERROR-level line.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | |
-| Completed at  | |
+| Status        | PASSED |
+| Completed at  | 2026-07-13T21:30:03Z |
 | Branch        | feature/add-book-rates-centre |
-| Commit        | |
+| Commit        | 7b98678fc |
 | Worktree      | bright_faraday |
 
 * Notes

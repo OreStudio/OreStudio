@@ -20,7 +20,9 @@
 #include "ores.shell/app/commands/countries_commands.hpp"
 #include "ores.refdata.api/domain/country_table_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/country_protocol.hpp"
+#include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/commands/history_diff_renderer.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
 #include <functional>
@@ -105,10 +107,12 @@ void countries_commands::register_commands(cli::Menu& root_menu,
 
     countries_menu->Insert(
         "history",
-        [&session](std::ostream& out, std::string alpha2_code) {
-            process_get_country_history(std::ref(out), std::ref(session), std::move(alpha2_code));
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get_country_history(std::ref(out), std::ref(session), args);
         },
-        "Get version history for a country by alpha-2 code");
+        "Show a country's version history (--diff for a unified diff, --version <n> to pick "
+        "one)",
+        {"alpha2_code [--diff] [--version <n>]"});
 
     root_menu.Insert(std::move(countries_menu));
 }
@@ -227,7 +231,41 @@ void countries_commands::process_delete_country(std::ostream& out,
 
 void countries_commands::process_get_country_history(std::ostream& out,
                                                      nats_client& session,
-                                                     std::string alpha2_code) {
+                                                     const std::vector<std::string>& args) {
+    auto parsed = parse_args(args,
+                             {{.name = "diff", .requires_value = false, .default_value = "false"},
+                              {.name = "version", .requires_value = true, .default_value = ""}});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+    if (parsed->positionals.size() != 1) {
+        fail(out) << "Usage: countries history alpha2_code [--diff] [--version <n>]"
+                  << std::endl;
+        return;
+    }
+    auto alpha2_code = parsed->positionals.front();
+
+    std::optional<int> version;
+    if (const auto& v = parsed->flag("version"); !v.empty()) {
+        const auto parsed_version = parse_uint32(v);
+        if (!parsed_version) {
+            fail(out) << "Invalid --version value: " << v << std::endl;
+            return;
+        }
+        version = static_cast<int>(*parsed_version);
+    }
+
+    if (parsed->flag_set("diff")) {
+        render_history_diff(out, session, "ores.refdata.country", std::move(alpha2_code), version);
+        return;
+    }
+
+    if (version) {
+        fail(out) << "--version is only supported together with --diff." << std::endl;
+        return;
+    }
+
     BOOST_LOG_SEV(lg(), debug) << "Initiating get country history for: " << alpha2_code;
 
     // Check if logged in
@@ -237,7 +275,7 @@ void countries_commands::process_get_country_history(std::ostream& out,
     }
 
     refdata::messaging::get_country_history_request req;
-    req.alpha2_code = std::move(alpha2_code);
+    req.alpha2_code = alpha2_code;
 
     auto result = do_auth_request<refdata::messaging::get_country_history_response>(
         out, session, "refdata.v1.countries.history", rfl::json::write(req));

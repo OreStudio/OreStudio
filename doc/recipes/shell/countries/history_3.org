@@ -2,39 +2,30 @@
 :ID: 39BF64EC-A6C4-4359-8FAE-00E135826794
 :END:
 #+title: History
-#+description: History
+#+description: Show a country's version history as a table, or as a unified diff via --diff.
 #+type: recipe
 #+level: cross
 #+filetags: :recipe:shell:countries:
 #+created: 2026-05-21
-#+updated: 2026-06-25
+#+updated: 2026-07-13
 
-Get version history for a country.
+Get version history for a country, as a flat table by default. Add
+=--diff= for a unified diff instead: unchanged fields as context
+lines, the server-computed changes as -/+ pairs (or every field as an
+addition from =/dev/null= for the oldest version). =--version <n>=
+picks a specific version to diff against its predecessor; it is only
+valid together with =--diff=. All comparison happens server-side, over
+the generic =history.v1.get= subject — the shell performs no
+comparison of its own.
 
 #+name: countries-history
 #+begin_src ores-shell :exports none
 countries history GB
+countries history GB --diff
 exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output :wrap example
-printf 'countries history GB\nexit\n' | \
+printf 'countries history GB\ncountries history GB --diff\nexit\n' | \
   ./compass.sh shell -u 'tenant_admin@barclays_plc' -p 'Secure-Password-123' 2>&1
 #+end_src
-
-#+RESULTS:
-#+begin_example
-✓ Connected to nats://localhost:42230
-✓ Logged in as: tenant_admin
-  Tenant:  (36d4c3c9-195c-46b5-a4d8-b36cb48c8f46)
-ORE Studio Shell REPL v0.0.21
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell> +---------+---------+---------+---------+----------------+------------------------------------------------------+-----------------------------+-----------------------------------+-------------------------------+
-| Alpha-2 | Alpha-3 | Numeric | Version | Name           | Official Name                                        | Change Reason               | Modified By                       | Recorded At                   |
-+---------+---------+---------+---------+----------------+------------------------------------------------------+-----------------------------+-----------------------------------+-------------------------------+
-| GB      | GBR     | 826     | 1       | United Kingdom | United Kingdom of Great Britain and Northern Ireland | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
-+---------+---------+---------+---------+----------------+------------------------------------------------------+-----------------------------+-----------------------------------+-------------------------------+
-
-ores-shell> Bye!
-#+end_example

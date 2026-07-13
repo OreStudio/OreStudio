@@ -53,9 +53,14 @@ groups related books for a trading strategy or desk, and can itself be
 composed of other portfolios; a *book* is the leaf-level unit that
 actually carries positions. A useful shorthand is that books are the
 physical representation and portfolios the logical one — or, borrowing
-a filesystem analogy, a portfolio is a folder and a book is a file. A
-book can, in principle, have child books, but only through ledger
-setup, never created ad hoc from the trading system itself.
+a filesystem analogy, a portfolio is a folder and a book is a file. In
+the real-world accounting sense a book can have child books through
+ledger setup, but ORE Studio deliberately does not model that
+book-to-book hierarchy: a book has no parent-book field. Instead, all
+hierarchy in ORE Studio is expressed through the portfolio tree —
+portfolios can nest inside other portfolios, and every book links to
+exactly one portfolio — so the folder/file split above is also the
+whole of the tool's hierarchy, not just an analogy for it.
 
 Every book carries a *ledger currency* — the functional, or accounting,
 currency its positions are reported in. Trades themselves can happen in

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 2CA8864F-336E-4632-A510-FC503213165B
+:END:
+#+title: Revisit std::atomic<std::shared_ptr<T>> once macOS libc++ supports it
+#+description: crm_ingest_bridge uses a mutex-guarded shared_ptr snapshot instead of std::atomic<std::shared_ptr<const T>> because the macOS CI toolchain (Xcode 16.2 libc++) doesn't implement the C++20 atomic<shared_ptr> specialization for non-trivially-copyable T and fails to compile. Revisit once macOS/libc++ catches up: the atomic form is the more idiomatic modern-C++ expression of the same lock-free-reads-mostly snapshot-swap pattern.
+#+type: capture
+#+level: cross
+#+filetags: :build:osx:cpp20:crm:marketdata:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=crm_ingest_bridge= (=projects/ores.marketdata/service/.../app/crm_ingest_bridge.hpp=)
+guards its =engines_map= snapshot with a plain =std::mutex= + =shared_ptr=
+instead of =std::atomic<std::shared_ptr<const engines_map>>=, because the
+macOS CI toolchain (Xcode 16.2, libc++) fails to compile the atomic form:
+it falls through to libc++'s generic =atomic<T>= primary template for
+non-trivially-copyable =T=, which =static_assert=s trivial copyability --
+=shared_ptr= isn't trivially copyable. Linux/clang (libstdc++) accepts
+the atomic form fine, implementing the C++20 P0718 =atomic<shared_ptr>=
+specialization. Once macOS's libc++ (or whatever Xcode ships by then)
+implements that specialization for this case, switch back: it's the more
+idiomatic, self-documenting expression of the same lock-free-reads-mostly
+snapshot-swap pattern used elsewhere for this problem (cf.
+=ores.analytics.quant='s use of =immer::atom= for the same need).
+
+* Why
+
+Portability now over idiom now; don't let a toolchain gap force a
+permanently less-modern pattern once the gap closes. Low priority --
+purely a style/idiom improvement, no functional or performance
+difference once macOS support lands (see the mutex-vs-atomic discussion
+on [[id:BA82072F-0B2B-48F4-9C22-8D6D39337099][the multi-named-CRM engine task]]: an uncontended mutex around a
+shared_ptr copy is not measurably slower than the atomic form on this
+workload, since refresh() is rare and the critical section is just a
+refcount bump).
+
+* References
+
+- [[id:41B8DCE5-AC29-4DDF-94D7-652225B9EE08][The OSX build fix task]] that introduced the mutex-guarded form.
+- [[id:BA82072F-0B2B-48F4-9C22-8D6D39337099][The multi-named-CRM engine task]] this landed alongside.
+
+* See also
+
+-

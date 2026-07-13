@@ -25,10 +25,10 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.service/export.hpp"
-#include <atomic>
 #include <chrono>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <utility>
@@ -39,9 +39,28 @@ namespace ores::marketdata::service::app {
 namespace quant = ores::analytics::quant;
 
 /**
- * @brief Owns one ores.analytics.quant::service::rate_engine per (tenant,
- * party), built from that party's crm_topology_config + enabled
- * crm_driver_pair rows, and feeds it driver ticks as they arrive.
+ * @brief A rate tagged with the name of the CRM (crm_topology_config)
+ * that produced it -- returned by the all-CRMs overload of @c rates(),
+ * where the caller doesn't pre-select a single named CRM.
+ */
+struct named_rate {
+    std::string crm_name;
+    quant::domain::derived_rate rate;
+};
+
+/**
+ * @brief Owns one ores.analytics.quant::service::rate_engine per
+ * (tenant, party, CRM name), built from that party's
+ * crm_topology_config rows (every *enabled* one, not just one) and each
+ * config's enabled crm_driver_pair rows, and feeds driver ticks to every
+ * matching named engine as they arrive.
+ *
+ * A party may run several concurrently-enabled, independently-named
+ * CRMs at once -- e.g. a "majors" CRM with a dense direct-quote mesh for
+ * liquid G10 pairs, and an "exotics" CRM that's a strict USD-pivot star
+ * -- matching how real FX desks tier liquidity. There is deliberately no
+ * single "the" CRM per party any more; every query is either scoped to
+ * one CRM by name, or explicitly asks for all of them.
  *
  * Not multi-threaded itself -- spawns no threads -- but is thread-safe:
  * refresh() (rare, config-change-triggered) atomically swaps in a whole
@@ -54,12 +73,13 @@ namespace quant = ores::analytics::quant;
  * definition anyway -- this mirrors feed_ingest_loop's own
  * config-changes-are-rare, full-rebuild-is-fine design.
  *
- * update() is silently a no-op when no engine exists for the tick's
- * (tenant, party) (most ticks are not CRM-configured pairs), or when the
- * pair is not a driver edge of that party's topology (rate_engine
- * throws std::invalid_argument for a non-edge pair; caught and ignored
- * here rather than propagated, since feed_ingest_loop must not fail a
- * tick's persist+remap because of an unrelated CRM lookup).
+ * update() is silently a no-op for a given named engine when the pair is
+ * not one of its driver edges (rate_engine throws std::invalid_argument
+ * for a non-edge pair; caught and ignored here rather than propagated,
+ * since feed_ingest_loop must not fail a tick's persist+remap because of
+ * an unrelated CRM lookup) -- a single tick may feed several of a
+ * party's named engines at once (e.g. EUR/USD is very likely a driver
+ * edge of both a "majors" and an "exotics" CRM).
  */
 class ORES_MARKETDATA_SERVICE_EXPORT crm_ingest_bridge {
 private:
@@ -72,14 +92,14 @@ private:
 public:
     explicit crm_ingest_bridge(ores::database::context ctx);
 
-    /// Rebuilds every (tenant, party) engine from the current
+    /// Rebuilds every (tenant, party, CRM name) engine from the current
     /// crm_topology_config/crm_driver_pair rows. Call on startup and on
     /// crm_topology_config_changed_event/crm_driver_pair_changed_event.
     void refresh();
 
-    /// Feeds one driver tick into the (tenant, party)'s engine, if one
-    /// exists and the pair is one of its driver edges. See class doc for
-    /// why this never throws.
+    /// Feeds one driver tick into every named engine for the (tenant,
+    /// party) that has it as a driver edge. See class doc for why this
+    /// never throws.
     void update(const std::string& tenant_id_str,
                 const std::string& party_id_str,
                 const std::string& base_currency_code,
@@ -87,38 +107,59 @@ public:
                 double rate,
                 std::chrono::system_clock::time_point observed_at);
 
-    /// A single rate for a party; std::nullopt if no engine exists for
-    /// that (tenant, party) at all (CRM not configured), as opposed to
-    /// domain::rate_status::unavailable (configured, but not yet seeded).
+    /// A single rate from one named CRM; std::nullopt if no engine
+    /// exists for that (tenant, party, crm_name) at all (CRM not
+    /// configured or not enabled), as opposed to
+    /// domain::rate_status::unavailable (configured, but not yet
+    /// seeded).
     [[nodiscard]] std::optional<quant::domain::derived_rate>
     rate(const std::string& tenant_id_str,
          const std::string& party_id_str,
+         const std::string& crm_name,
          const std::string& base_currency_code,
          const std::string& quote_currency_code) const;
 
-    /// Every currently-configured pair for a party (its driver edges +
-    /// enabled derived pairs) in one batch -- one atomic snapshot load,
-    /// not N single-pair calls. Empty if no engine exists for that
-    /// (tenant, party).
-    [[nodiscard]] std::vector<quant::domain::derived_rate>
-    rates(const std::string& tenant_id_str, const std::string& party_id_str) const;
+    /// Every currently-configured pair for one named CRM (its driver
+    /// edges + enabled derived pairs) in one batch -- one atomic
+    /// snapshot load, not N single-pair calls. Empty if no such engine
+    /// exists for that (tenant, party, crm_name).
+    [[nodiscard]] std::vector<quant::domain::derived_rate> rates(const std::string& tenant_id_str,
+                                                                 const std::string& party_id_str,
+                                                                 const std::string& crm_name) const;
+
+    /// Every currently-configured pair across *every* enabled CRM for a
+    /// party, each tagged with which CRM produced it. Empty if the
+    /// party has no enabled CRM at all.
+    [[nodiscard]] std::vector<named_rate> rates(const std::string& tenant_id_str,
+                                                const std::string& party_id_str) const;
 
 private:
     using pair_key = std::pair<std::string, std::string>; // (tenant_id_str, party_id_str)
 
-    struct party_engine {
+    struct named_engine {
+        std::string name;
         std::shared_ptr<quant::service::rate_engine> engine;
         std::vector<std::pair<std::string, std::string>> configured_pairs;
     };
 
-    using engines_map = std::map<pair_key, party_engine>;
+    using engines_map = std::map<pair_key, std::vector<named_engine>>;
 
+    /// Snapshot load: briefly locks only to copy the shared_ptr (an
+    /// atomic refcount bump), never to touch the map itself -- readers
+    /// never block on refresh() building the next map, and refresh()
+    /// never blocks on a reader holding an old snapshot. A mutex here
+    /// (rather than std::atomic<std::shared_ptr<T>>) is a deliberate,
+    /// portable choice: some libc++ versions fall back to their generic
+    /// atomic<T> primary template for non-trivially-copyable T, which
+    /// static_asserts trivial copyability and fails to compile.
     [[nodiscard]] std::shared_ptr<const engines_map> snapshot() const {
-        return engines_.load();
+        std::lock_guard lock(engines_mutex_);
+        return engines_;
     }
 
     ores::database::context ctx_;
-    std::atomic<std::shared_ptr<const engines_map>> engines_;
+    mutable std::mutex engines_mutex_;
+    std::shared_ptr<const engines_map> engines_;
 };
 
 } // namespace ores::marketdata::service::app

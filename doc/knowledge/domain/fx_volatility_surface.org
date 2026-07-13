@@ -232,6 +232,44 @@ more /master/ pairs via a defined relationship:
 This mechanism reduces the number of independently managed surfaces while
 maintaining consistency across crosses.
 
+* Related Research
+
+** DYSANOS: Generative Dynamic Smooth Arbitrage-free Non-parametric Option Surfaces
+
+[[https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7047878][DYSANOS]]
+(Hans Buehler, University of Oxford — Mathematical Institute; Blanka Horvath,
+University of Oxford; Anastasis Kratsios, McMaster University) proposes
+generating *paths* of option price surfaces (not just a single static snapshot)
+that are strictly free of static arbitrage by construction, rather than
+smile-model-parametric (SABR, spline) or checked-after-the-fact. Any option at
+any strike can be priced off the model efficiently — cheap enough for a GPU
+training loop. The model is trained under the statistical (real-world) measure
+and the paper shows how to change to the risk-neutral measure, yielding what
+the authors call an /Option Market Model/: a joint generative model of the
+whole surface's evolution through time, rather than a per-tenor calibration.
+
+This is a different axis from the [[*Smile Models][smile models]] above (SABR,
+flat BS, five-point spline), which parameterise a *single* surface at a point
+in time from ATM/RR/STR pillars. DYSANOS instead targets *dynamics*: sampling
+plausible, arbitrage-free future surface paths, non-parametrically, without
+committing to a specific smile-model functional form. Two places this is
+directly relevant to ORE Studio:
+
+- *Synthetic market data generation* (=ores.synthetic=, cf. the GMM
+  (Gaussian Mixture Model) components already in the codebase): a
+  generative, arbitrage-free-by-construction path model is a natural fit for
+  producing realistic, internally-consistent synthetic vol surface time
+  series, rather than independently sampling static pillars per date and
+  risking arbitrage violations or unrealistic day-to-day dynamics.
+- *Scenario generation for risk*: arbitrage-free surface paths are exactly
+  what's needed for historical-simulation-style or Monte Carlo vol scenario
+  generation, as an alternative/complement to bumping SABR parameters
+  directly.
+
+Not yet evaluated for implementation feasibility (GPU training loop, model
+architecture, calibration to ORE Studio's own pillar/tenor conventions) — flagged
+here as a candidate direction, not a committed design.
+
 * ORE Studio Notes
 
 ORE uses the =FxVolatility= market datum type for FX vol surfaces. Relevant

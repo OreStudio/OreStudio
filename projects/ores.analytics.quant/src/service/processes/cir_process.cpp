@@ -85,11 +85,17 @@ double cir_process::discount_factor(std::size_t ticks_ahead) const {
         return std::exp(-integral);
     }
 
+    // Numerically stable form: the textbook formula divides through by
+    // e^{gamma*tau}, which overflows to +inf for large tau (e.g. a
+    // daily-tick 10Y+ tenor), collapsing b/a_base to inf/inf = NaN.
+    // Dividing numerator and denominator by e^{gamma*tau} up front keeps
+    // every exponent non-positive (gamma > kappa always, for sigma > 0),
+    // so this is exact and overflow-free for any tau.
     const double gamma = std::sqrt(kappa_ * kappa_ + 2.0 * sigma_ * sigma_);
-    const double e_gamma_tau = std::exp(gamma * tau);
-    const double denom = (gamma + kappa_) * (e_gamma_tau - 1.0) + 2.0 * gamma;
-    const double b = 2.0 * (e_gamma_tau - 1.0) / denom;
-    const double a_base = (2.0 * gamma * std::exp((kappa_ + gamma) * tau / 2.0)) / denom;
+    const double e_neg_gamma_tau = std::exp(-gamma * tau);
+    const double denom = (gamma + kappa_) * (1.0 - e_neg_gamma_tau) + 2.0 * gamma * e_neg_gamma_tau;
+    const double b = 2.0 * (1.0 - e_neg_gamma_tau) / denom;
+    const double a_base = (2.0 * gamma * std::exp(-(gamma - kappa_) * tau / 2.0)) / denom;
     const double exponent = 2.0 * kappa_ * theta_ / (sigma_ * sigma_);
     const double a = std::pow(a_base, exponent);
     return a * std::exp(-b * rate_);

@@ -36,7 +36,7 @@ Every stochastic process implemented in ores.analytics.quant (GMM/geometric, ari
 * Acceptance
 
 - A new hub doc (e.g. 'Stochastic Processes') exists under doc/knowledge/domain, linking every process-specific atomic doc; GBM, Wiener process, and Ito's lemma each have their own atomic doc even though they predate this story, since they are prerequisites the others link to; OU/Vasicek/CIR/Hull-White (once implemented) each get one; every doc includes a paper-summary section with real citations, not just a bibliography line
-- Follows the Zettelkasten approach already established for the interest_rate_curve_bundles.org and time_structures_and_tenors.org clusters (see doc/knowledge/domain/): small, self-contained, single-concept docs -- not one large document covering every process -- cross-linked via org-roam [[id:...]] links (hub -> atomic doc, and atomic doc -> atomic doc where one process builds on another, e.g. OU/Vasicek -> Wiener process/Ito's lemma). Each atomic doc must be independently readable and independently linkable from elsewhere in the graph, exactly like the existing curve-family/tenor docs.
+- Follows the Zettelkasten approach already established for the interest_rate_curve_bundles.org and time_structures_and_tenors.org clusters (see doc/knowledge/domain/): small, self-contained, single-concept docs -- not one large document covering every process -- cross-linked via org-roam =[[id:...]]= links (hub -> atomic doc, and atomic doc -> atomic doc where one process builds on another, e.g. OU/Vasicek -> Wiener process/Ito's lemma). Each atomic doc must be independently readable and independently linkable from elsewhere in the graph, exactly like the existing curve-family/tenor docs.
 
 * Plan
 

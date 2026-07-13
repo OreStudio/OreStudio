@@ -35,14 +35,20 @@ domain::party party_mapper::map(const party_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+
     r.full_name = v.full_name;
+
+
     r.short_code = v.short_code;
+
     r.codename = v.codename;
     r.transliterated_name = v.transliterated_name;
     r.party_category = v.party_category;
     r.party_type = v.party_type;
-    if (v.parent_party_id.has_value() && !v.parent_party_id->empty())
-        r.parent_party_id = boost::lexical_cast<boost::uuids::uuid>(*v.parent_party_id);
+    r.parent_party_id =
+        v.parent_party_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.parent_party_id)) :
+            std::nullopt;
     r.business_center_code = v.business_center_code;
     r.status = v.status;
     r.modified_by = v.modified_by;
@@ -62,14 +68,19 @@ party_entity party_mapper::map(const domain::party& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.full_name = v.full_name;
+
+
     r.short_code = v.short_code;
+
     r.codename = v.codename;
     r.transliterated_name = v.transliterated_name;
     r.party_category = v.party_category;
     r.party_type = v.party_type;
-    if (v.parent_party_id)
-        r.parent_party_id = boost::uuids::to_string(*v.parent_party_id);
+    r.parent_party_id = v.parent_party_id.has_value() ?
+                            std::optional(boost::uuids::to_string(*v.parent_party_id)) :
+                            std::nullopt;
     r.business_center_code = v.business_center_code;
     r.status = v.status;
     r.modified_by = v.modified_by;

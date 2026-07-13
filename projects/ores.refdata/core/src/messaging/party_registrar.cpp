@@ -49,12 +49,12 @@ register_party_handlers(ores::nats::service::client& nats,
             h->history(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        read_parties_for_cache_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->read_for_cache(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
         get_party_hierarchy_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->hierarchy(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        read_parties_for_cache_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->read_for_cache(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         get_party_composite_as_of_request::nats_subject, queue_group, [h](ores::nats::message msg) {

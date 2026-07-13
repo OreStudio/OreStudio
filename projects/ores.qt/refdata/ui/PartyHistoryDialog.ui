@@ -150,7 +150,7 @@
               </property>
               <layout class="QFormLayout" name="formLayout">
                <item row="0" column="0">
-                <widget class="QLabel" name="codeValueLabel">
+                <widget class="QLabel" name="short_codeLabel">
                  <property name="text">
                   <string>Short Code:</string>
                  </property>
@@ -164,7 +164,7 @@
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="nameValueLabel">
+                <widget class="QLabel" name="full_nameLabel">
                  <property name="text">
                   <string>Full Name:</string>
                  </property>
@@ -178,125 +178,97 @@
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="transliteratedNameValueLabel">
-                 <property name="text">
-                  <string>Transliterated Name:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QLabel" name="transliteratedNameValue">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="partyCategoryValueLabel">
-                 <property name="text">
-                  <string>Category:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QLabel" name="partyCategoryValue">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="partyTypeValueLabel">
+                <widget class="QLabel" name="party_typeLabel">
                  <property name="text">
                   <string>Party Type:</string>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1">
+               <item row="2" column="1">
                 <widget class="QLabel" name="partyTypeValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="statusValueLabel">
+               <item row="3" column="0">
+                <widget class="QLabel" name="statusLabel">
                  <property name="text">
                   <string>Status:</string>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="3" column="1">
                 <widget class="QLabel" name="statusValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0">
-                <widget class="QLabel" name="businessCenterValueLabel">
+               <item row="4" column="0">
+                <widget class="QLabel" name="business_center_codeLabel">
                  <property name="text">
-                  <string>Business Centre:</string>
+                  <string>Business Center:</string>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="1">
+               <item row="4" column="1">
                 <widget class="QLabel" name="businessCenterValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0">
+               <item row="5" column="0">
                 <widget class="QLabel" name="versionNumberLabel">
                  <property name="text">
                   <string>Version:</string>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="1">
+               <item row="5" column="1">
                 <widget class="QLabel" name="versionNumberValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="0">
+               <item row="6" column="0">
                 <widget class="QLabel" name="modifiedByLabel">
                  <property name="text">
                   <string>Modified By:</string>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="1">
+               <item row="6" column="1">
                 <widget class="QLabel" name="modifiedByValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="9" column="0">
+               <item row="7" column="0">
                 <widget class="QLabel" name="recordedAtLabel">
                  <property name="text">
                   <string>Recorded At:</string>
                  </property>
                 </widget>
                </item>
-               <item row="9" column="1">
+               <item row="7" column="1">
                 <widget class="QLabel" name="recordedAtValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0">
+               <item row="8" column="0">
                 <widget class="QLabel" name="changeCommentaryLabel">
                  <property name="text">
                   <string>Change Commentary:</string>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="1">
+               <item row="8" column="1">
                 <widget class="QLabel" name="changeCommentaryValue">
                  <property name="text">
                   <string/>
@@ -308,41 +280,6 @@
                </item>
               </layout>
              </widget>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="compositeTab">
-          <attribute name="title">
-           <string>Composite (as of this version)</string>
-          </attribute>
-          <layout class="QVBoxLayout" name="compositeTabLayout">
-           <item>
-            <widget class="QLabel" name="compositeIdentifiersLabel">
-             <property name="text">
-              <string>Identifiers:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QListWidget" name="compositeIdentifiersListWidget">
-             <property name="editTriggers">
-              <set>QAbstractItemView::NoEditTriggers</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="compositeContactsLabel">
-             <property name="text">
-              <string>Contact information:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QListWidget" name="compositeContactsListWidget">
-             <property name="editTriggers">
-              <set>QAbstractItemView::NoEditTriggers</set>
-             </property>
             </widget>
            </item>
           </layout>

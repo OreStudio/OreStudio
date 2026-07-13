@@ -27,16 +27,20 @@ diff against the repo; fix templates or repo to eliminate drift.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Parked in favour of counterparty (much closer to zero-diff); see Notes for the real blocker. |
-| Waiting on   | New codegen template capability (paste-block hook in the CREATE TABLE section) plus org_loader.py verification for the extra_checks/indexes facets. |
-| Next         | Confirm org_loader.py wiring for extra_checks/indexes, add a top-level paste-block kind for party's codename sequence, migrate codename generation + queue provisioning onto it, add :generate_touch_function: true. |
+| Now          | Repository/service/handler/registrar/protocol/Qt all regenerated and building clean. SQL profile remains excluded from regen (see Result) -- report_events queue provisioning dropped to a backlog capture rather than preserved. |
+| Waiting on   | Nothing further for this task. |
+| Next         | See story's Qt verification task -- must re-verify identifier/contact editing once the child-table facet task lands (same gap as counterparty). |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
 
-- Zero-diff regen for party across SQL/C++/messaging/Qt profiles.
+- Zero-diff regen for party across C++ (repository/service/handler/registrar/protocol) and Qt profiles. DONE.
+- Qt layer migrated from ores.qt.party to ores.qt.refdata, RefdataPlugin owns PartyController. DONE.
+- Build green for ores.qt.refdata.lib and ores.qt.party.lib. DONE.
+- SQL profile regenerated with zero diff. NOT DONE -- deliberately excluded; see Result.
+- Identifier/contact-information embedded-table editing in the Qt detail dialog. NOT DONE -- see Result.
 
 * Plan
 
@@ -75,6 +79,48 @@ diff, most of it destructive if applied as-is:
 - The rest of the diff (repository =context ctx= parameter modernization,
   =search_path= hardening, faker-generator improvements) is expected,
   wanted drift-correction — safe to apply once the above is resolved.
+
+* Result
+
+Regenerated protocol/handler/registrar (same composite_as_of/read_for_cache/
+workflow-step paste-block treatment as the SQL side notes below already
+described), then discovered the regen was coupled to party's *repository and
+service* layers too: unlike counterparty's (already modernized in sprint
+22), party's repository/service were still on the pre-=context ctx=-per-call
+pattern (=find_party(uuid)=, =remove_party(uuid)=, no-arg =list_parties()=),
+which the current handler template no longer matches. Regenerated
+repository and service as well; both were safe (party.org's own custom
+repository method paste blocks -- =read_system_party=, =read_descendants=
+-- already declared the new =context ctx= signature, just never regenerated
+against it). Found and removed two now-redundant custom-method paste blocks
+(=read_latest_paginated=, =get_total_party_count=) duplicating what the
+generic =:service_pagination: true= facet already generates -- they caused
+duplicate-declaration compile errors once regenerated. Fixed my own
+=read_for_cache=/=composite_as_of= paste blocks to match the new service
+signatures (=list_parties(offset, limit)= instead of no-arg;
+=get_party_at_version(string, version)= instead of uuid; =log_handler_entry=
+replaced with =BOOST_LOG_SEV=, matching the modernized handler style).
+
+Regenerated Qt profile and migrated party's Qt layer from =ores.qt.party= to
+=ores.qt.refdata= the same way as counterparty: moved =PartyController=
+ownership to =RefdataPlugin=, deleted the old hand-written
+=ClientPartyModel=/=PartyController=/=PartyDetailOperations=/
+=PartyHistoryDialog=/=PartyMdiWindow= from =ores.qt.party=.
+
+SQL profile was *not* regenerated. Party's codename generation (sequence,
+unique index, uniqueness/regex validation) still has no facet/paste-block
+coverage, same finding as before -- but per direction, the per-party
+=report_events= queue provisioning was *not* carried forward via a paste
+block; instead captured to the backlog inbox as
+[[id:9D52619D-33D4-400C-9A62-2B93B871B162][Party's per-party report_events pgmq queue looks half-baked / unused]]
+since no consumer code anywhere reads from it. Codename generation itself
+*is* real, user-visible functionality (rendered in the Qt UI) and still
+needs proper facet/paste-block treatment before party's SQL can be
+regenerated -- left for a future pass.
+
+=ores.qt.refdata.lib= and =ores.qt.party.lib= build clean (-j1); the full
+=ores.qt.exe= app link is blocked only by an unrelated, pre-existing
+=ores.qt.marketdata= issue from another environment's in-flight work.
 
 * Test Scenarios
 

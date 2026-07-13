@@ -22,9 +22,9 @@
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/TextUtils.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -36,18 +36,15 @@ std::string party_key_extractor(const refdata::domain::party& e) {
 }
 }
 
-ClientPartyModel::ClientPartyModel(ClientManager* clientManager,
-                                   ImageCache* imageCache,
-                                   QObject* parent)
+ClientPartyModel::ClientPartyModel(ClientManager* clientManager, QObject* parent)
     : AbstractClientModel(parent)
     , clientManager_(clientManager)
-    , imageCache_(imageCache)
     , watcher_(new QFutureWatcher<FetchResult>(this))
     , recencyTracker_(party_key_extractor)
     , pulseManager_(new RecencyPulseManager(this)) {
 
     connect(
-        watcher_, &QFutureWatcher<FetchResult>::finished, this, &ClientPartyModel::onPartysLoaded);
+        watcher_, &QFutureWatcher<FetchResult>::finished, this, &ClientPartyModel::onPartiesLoaded);
 
     connect(pulseManager_,
             &RecencyPulseManager::pulse_state_changed,
@@ -57,16 +54,6 @@ ClientPartyModel::ClientPartyModel(ClientManager* clientManager,
             &RecencyPulseManager::pulsing_complete,
             this,
             &ClientPartyModel::onPulsingComplete);
-
-    if (imageCache_) {
-        connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
-            if (!parties_.empty()) {
-                emit dataChanged(index(0, BusinessCenterCode),
-                                 index(rowCount() - 1, BusinessCenterCode),
-                                 {Qt::DecorationRole});
-            }
-        });
-    }
 
     fetch_business_centres();
 }
@@ -108,15 +95,8 @@ QVariant ClientPartyModel::data(const QModelIndex& index, int role) const {
         switch (index.column()) {
             case ShortCode:
                 return QString::fromStdString(party.short_code);
-            case Codename:
-                return QString::fromStdString(party.codename);
             case FullName:
-                return TextUtils::display_name_with_transliteration(party.full_name,
-                                                                    party.transliterated_name);
-            case TransliteratedName:
-                return QString::fromStdString(party.transliterated_name.value_or(""));
-            case PartyCategory:
-                return QString::fromStdString(party.party_category);
+                return QString::fromStdString(party.full_name);
             case PartyType:
                 return QString::fromStdString(party.party_type);
             case Status:
@@ -124,7 +104,7 @@ QVariant ClientPartyModel::data(const QModelIndex& index, int role) const {
             case BusinessCenterCode:
                 return QString::fromStdString(party.business_center_code);
             case Version:
-                return party.version;
+                return static_cast<qlonglong>(party.version);
             case ModifiedBy:
                 return QString::fromStdString(party.modified_by);
             case RecordedAt:
@@ -148,20 +128,14 @@ QVariant ClientPartyModel::headerData(int section, Qt::Orientation orientation, 
     switch (section) {
         case ShortCode:
             return tr("Code");
-        case Codename:
-            return tr("Codename");
         case FullName:
             return tr("Name");
-        case TransliteratedName:
-            return tr("Transliterated Name");
-        case PartyCategory:
-            return tr("Category");
         case PartyType:
             return tr("Type");
         case Status:
             return tr("Status");
         case BusinessCenterCode:
-            return tr("Centre");
+            return tr("Business Center");
         case Version:
             return tr("Version");
         case ModifiedBy:
@@ -173,7 +147,7 @@ QVariant ClientPartyModel::headerData(int section, Qt::Orientation orientation, 
     }
 }
 
-void ClientPartyModel::refresh(bool /*replace*/) {
+void ClientPartyModel::refresh() {
     BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
 
     if (is_fetching_) {
@@ -231,7 +205,7 @@ void ClientPartyModel::fetch_parties(std::uint32_t offset, std::uint32_t limit) 
         return exception_helper::wrap_async_fetch<FetchResult>(
             [&]() -> FetchResult {
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Making a parties request with offset=" << offset << ", limit=" << limit;
+                    << "Making parties request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false,
                             .parties = {},
@@ -241,30 +215,40 @@ void ClientPartyModel::fetch_parties(std::uint32_t offset, std::uint32_t limit) 
                 }
 
                 refdata::messaging::get_parties_request request;
-                request.offset = offset;
-                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch parties: " << result.error();
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .parties = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString("Failed to fetch parties: " +
-                                                                    result.error()),
+                            .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Received " << result->parties.size()
-                    << " parties, total available: " << result->total_available_count;
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .parties = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
+                            .error_details = {}};
+                }
 
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->parties.size() << " parties";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->parties.size());
                 return {.success = true,
                         .parties = std::move(result->parties),
-                        .total_available_count =
-                            static_cast<std::uint32_t>(result->total_available_count),
+                        .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};
             },
@@ -274,19 +258,7 @@ void ClientPartyModel::fetch_parties(std::uint32_t offset, std::uint32_t limit) 
     watcher_->setFuture(future);
 }
 
-void ClientPartyModel::set_page_size(std::uint32_t size) {
-    if (size == 0 || size > 1000) {
-        BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size
-                                  << ". Must be between 1 and 1000. Using default: 100";
-        page_size_ = 100;
-    } else {
-        page_size_ = size;
-        BOOST_LOG_SEV(lg(), info) << "Page size set to: " << page_size_;
-    }
-}
-
-void ClientPartyModel::onPartysLoaded() {
-    BOOST_LOG_SEV(lg(), debug) << "On parties loaded event.";
+void ClientPartyModel::onPartiesLoaded() {
     is_fetching_ = false;
 
     const auto result = watcher_->result();
@@ -317,7 +289,19 @@ void ClientPartyModel::onPartysLoaded() {
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " parties."
                               << " Total available: " << total_available_count_;
+
     emit dataLoaded();
+}
+
+void ClientPartyModel::set_page_size(std::uint32_t size) {
+    if (size == 0 || size > 1000) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size
+                                  << ". Must be between 1 and 1000. Using default: 100";
+        page_size_ = 100;
+    } else {
+        page_size_ = size;
+        BOOST_LOG_SEV(lg(), info) << "Page size set to: " << page_size_;
+    }
 }
 
 const refdata::domain::party* ClientPartyModel::getParty(int row) const {
@@ -326,6 +310,7 @@ const refdata::domain::party* ClientPartyModel::getParty(int row) const {
         return nullptr;
     return &parties_[idx];
 }
+
 
 QVariant ClientPartyModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

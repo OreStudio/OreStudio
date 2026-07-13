@@ -24,16 +24,12 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.refdata.api/domain/party.hpp"
-#include <QDateTime>
 #include <QMainWindow>
 #include <QMdiArea>
 
 namespace ores::qt {
 
-class BadgeCache;
-class ChangeReasonCache;
 class PartyMdiWindow;
 class DetachableMdiSubWindow;
 
@@ -59,17 +55,13 @@ public:
     PartyController(QMainWindow* mainWindow,
                     QMdiArea* mdiArea,
                     ClientManager* clientManager,
-                    ImageCache* imageCache,
-                    ChangeReasonCache* changeReasonCache,
-                    BadgeCache* badgeCache,
                     const QString& username,
                     QObject* parent = nullptr);
-
-    ~PartyController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
     void reloadListWindow() override;
+
 
 signals:
     void statusMessage(const QString& message);
@@ -77,6 +69,7 @@ signals:
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::party& party);
@@ -84,19 +77,12 @@ private slots:
     void onShowHistory(const refdata::domain::party& party);
     void onRevertVersion(const refdata::domain::party& party);
     void onOpenVersion(const refdata::domain::party& party, int versionNumber);
-    void onNotificationReceived(const QString& eventType,
-                                const QDateTime& timestamp,
-                                const QStringList& entityIds,
-                                const QString& tenantId);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::party& party);
     void showHistoryWindow(const refdata::domain::party& party);
 
-    ImageCache* imageCache_;
-    ChangeReasonCache* changeReasonCache_;
-    BadgeCache* badgeCache_;
     PartyMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

@@ -18,16 +18,14 @@
  *
  */
 #include "ores.qt/PartyController.hpp"
-#include "ores.qt/BadgeCache.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/EntityDetailDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/PartyDetailOperations.hpp"
+#include "ores.qt/PartyDetailDialog.hpp"
 #include "ores.qt/PartyHistoryDialog.hpp"
 #include "ores.qt/PartyMdiWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/party_changed_event.hpp"
-#include "ores.refdata.api/eventing/party_contact_information_changed_event.hpp"
-#include "ores.refdata.api/eventing/party_identifier_changed_event.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -39,64 +37,18 @@ using namespace ores::logging;
 namespace {
 constexpr std::string_view party_event_name =
     eventing::domain::event_traits<refdata::eventing::party_changed_event>::name;
-constexpr std::string_view party_identifier_event_name =
-    eventing::domain::event_traits<refdata::eventing::party_identifier_changed_event>::name;
-constexpr std::string_view party_contact_event_name = eventing::domain::event_traits<
-    refdata::eventing::party_contact_information_changed_event>::name;
-
-auto make_party_ops() {
-    return std::make_shared<party_detail_operations>();
-}
 }
 
 PartyController::PartyController(QMainWindow* mainWindow,
                                  QMdiArea* mdiArea,
                                  ClientManager* clientManager,
-                                 ImageCache* imageCache,
-                                 ChangeReasonCache* changeReasonCache,
-                                 BadgeCache* badgeCache,
                                  const QString& username,
                                  QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
-    , imageCache_(imageCache)
-    , changeReasonCache_(changeReasonCache)
-    , badgeCache_(badgeCache)
+    : EntityController(mainWindow, mdiArea, clientManager, username, party_event_name, parent)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "PartyController created";
-
-    if (clientManager_) {
-        connect(clientManager_,
-                &ClientManager::notificationReceived,
-                this,
-                &PartyController::onNotificationReceived);
-
-        auto subscribeAll = [self = QPointer<PartyController>(this)]() {
-            if (!self)
-                return;
-            BOOST_LOG_SEV(lg(), info) << "Subscribing to party change events";
-            self->clientManager_->subscribeToEvent(std::string{party_event_name});
-            self->clientManager_->subscribeToEvent(std::string{party_identifier_event_name});
-            self->clientManager_->subscribeToEvent(std::string{party_contact_event_name});
-        };
-
-        connect(clientManager_, &ClientManager::loggedIn, this, subscribeAll);
-        connect(clientManager_, &ClientManager::reconnected, this, subscribeAll);
-
-        if (clientManager_->isConnected()) {
-            subscribeAll();
-        }
-    }
-}
-
-PartyController::~PartyController() {
-    BOOST_LOG_SEV(lg(), debug) << "PartyController destroyed";
-    if (clientManager_) {
-        clientManager_->unsubscribeFromEvent(std::string{party_event_name});
-        clientManager_->unsubscribeFromEvent(std::string{party_identifier_event_name});
-        clientManager_->unsubscribeFromEvent(std::string{party_contact_event_name});
-    }
 }
 
 void PartyController::showListWindow() {
@@ -109,7 +61,7 @@ void PartyController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new PartyMdiWindow(clientManager_, imageCache_, username_, badgeCache_);
+    listWindow_ = new PartyMdiWindow(clientManager_, username_);
 
     // Connect signals
     connect(listWindow_, &PartyMdiWindow::statusChanged, this, &PartyController::statusMessage);
@@ -134,6 +86,8 @@ void PartyController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -182,6 +136,7 @@ void PartyController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void PartyController::onShowHistory(const refdata::domain::party& party) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << party.short_code;
     showHistoryWindow(party);
@@ -190,20 +145,15 @@ void PartyController::onShowHistory(const refdata::domain::party& party) {
 void PartyController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new party";
 
-    auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
+    auto* detailDialog = new PartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
-    detailDialog->setImageCache(imageCache_);
-    if (changeReasonCache_) {
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(
-        detailDialog, &EntityDetailDialog::statusMessage, this, &PartyController::statusMessage);
-    connect(detailDialog, &EntityDetailDialog::errorMessage, this, &PartyController::errorMessage);
+    connect(detailDialog, &PartyDetailDialog::statusMessage, this, &PartyController::statusMessage);
+    connect(detailDialog, &PartyDetailDialog::errorMessage, this, &PartyController::errorMessage);
     connect(detailDialog,
-            &EntityDetailDialog::entitySaved,
+            &PartyDetailDialog::partySaved,
             this,
             [self = QPointer<PartyController>(this)](const QString& code) {
                 if (!self)
@@ -237,21 +187,16 @@ void PartyController::showDetailWindow(const refdata::domain::party& party) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << party.short_code;
 
-    auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
+    auto* detailDialog = new PartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
-    detailDialog->setImageCache(imageCache_);
-    if (changeReasonCache_) {
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    }
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
-    detailDialog->setEntityData(to_entity_data(party));
+    detailDialog->setParty(party);
 
-    connect(
-        detailDialog, &EntityDetailDialog::statusMessage, this, &PartyController::statusMessage);
-    connect(detailDialog, &EntityDetailDialog::errorMessage, this, &PartyController::errorMessage);
+    connect(detailDialog, &PartyDetailDialog::statusMessage, this, &PartyController::statusMessage);
+    connect(detailDialog, &PartyDetailDialog::errorMessage, this, &PartyController::errorMessage);
     connect(detailDialog,
-            &EntityDetailDialog::entitySaved,
+            &PartyDetailDialog::partySaved,
             this,
             [self = QPointer<PartyController>(this)](const QString& code) {
                 if (!self)
@@ -260,7 +205,7 @@ void PartyController::showDetailWindow(const refdata::domain::party& party) {
                 self->handleEntitySaved();
             });
     connect(detailDialog,
-            &EntityDetailDialog::entityDeleted,
+            &PartyDetailDialog::partyDeleted,
             this,
             [self = QPointer<PartyController>(this), key](const QString& code) {
                 if (!self)
@@ -279,6 +224,7 @@ void PartyController::showDetailWindow(const refdata::domain::party& party) {
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<PartyController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -341,10 +287,12 @@ void PartyController::showHistoryWindow(const refdata::domain::party& party) {
     historyWindow->setWindowTitle(QString("Party History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<PartyController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -370,18 +318,14 @@ void PartyController::onOpenVersion(const refdata::domain::party& party, int ver
         return;
     }
 
-    auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
+    auto* detailDialog = new PartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
-    detailDialog->setImageCache(imageCache_);
-    if (changeReasonCache_) {
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    }
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setEntityData(to_entity_data(party));
+    detailDialog->setParty(party);
     detailDialog->setReadOnly(true);
 
     connect(detailDialog,
-            &EntityDetailDialog::statusMessage,
+            &PartyDetailDialog::statusMessage,
             this,
             [self = QPointer<PartyController>(this)](const QString& message) {
                 if (!self)
@@ -389,7 +333,7 @@ void PartyController::onOpenVersion(const refdata::domain::party& party, int ver
                 emit self->statusMessage(message);
             });
     connect(detailDialog,
-            &EntityDetailDialog::errorMessage,
+            &PartyDetailDialog::errorMessage,
             this,
             [self = QPointer<PartyController>(this)](const QString& message) {
                 if (!self)
@@ -422,21 +366,19 @@ void PartyController::onRevertVersion(const refdata::domain::party& party) {
     BOOST_LOG_SEV(lg(), info) << "Reverting party to version: " << party.version;
 
     // Open detail dialog with the old version data for editing
-    auto* detailDialog = new EntityDetailDialog(make_party_ops(), mainWindow_);
+    auto* detailDialog = new PartyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
-    detailDialog->setImageCache(imageCache_);
-    if (changeReasonCache_) {
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    }
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setEntityData(to_entity_data(party));
+    auto reverted_party = party;
+    reverted_party.version = 0;
+    detailDialog->setParty(reverted_party);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
-    connect(
-        detailDialog, &EntityDetailDialog::statusMessage, this, &PartyController::statusMessage);
-    connect(detailDialog, &EntityDetailDialog::errorMessage, this, &PartyController::errorMessage);
+    connect(detailDialog, &PartyDetailDialog::statusMessage, this, &PartyController::statusMessage);
+    connect(detailDialog, &PartyDetailDialog::errorMessage, this, &PartyController::errorMessage);
     connect(detailDialog,
-            &EntityDetailDialog::entitySaved,
+            &PartyDetailDialog::partySaved,
             this,
             [self = QPointer<PartyController>(this)](const QString& code) {
                 if (!self)
@@ -464,24 +406,25 @@ EntityListMdiWindow* PartyController::listWindow() const {
     return listWindow_;
 }
 
-void PartyController::onNotificationReceived(const QString& eventType,
-                                             const QDateTime& timestamp,
-                                             const QStringList& entityIds,
-                                             const QString& /*tenantId*/) {
+void PartyController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
 
-    const auto eventStd = eventType.toStdString();
-    if (eventStd != party_event_name && eventStd != party_identifier_event_name &&
-        eventStd != party_contact_event_name) {
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Received " << eventStd << " notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString() << " with "
-                              << entityIds.size() << " ids";
-
-    if (listWindow_) {
-        listWindow_->markAsStale();
-        BOOST_LOG_SEV(lg(), debug) << "Marked party list window as stale";
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
     }
 }
 

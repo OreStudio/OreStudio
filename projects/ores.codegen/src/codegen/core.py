@@ -2405,6 +2405,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 c.get('name'): c.get('cpp_type', '')
                 for c in domain_entity.get('columns', [])
             }
+            for nk in domain_entity.get('natural_keys', []):
+                if nk.get('column'):
+                    domain_col_types.setdefault(nk['column'], nk.get('cpp_type', ''))
             _pk = domain_entity.get('primary_key')
             if _pk and _pk.get('column'):
                 domain_col_types.setdefault(_pk['column'], _pk.get('cpp_type', ''))

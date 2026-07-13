@@ -21,6 +21,7 @@
 #define ORES_ANALYTICS_QUANT_DOMAIN_TOPOLOGY_BUILD_ERROR_HPP
 
 #include "ores.analytics.quant/domain/topology_error.hpp"
+#include "ores.analytics.quant/export.hpp"
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -36,8 +37,18 @@ namespace ores::analytics::quant::domain {
  * that admits more than one path between two currencies is always
  * rejected here -- @c topology_builder never silently picks one of
  * several possible paths.
+ *
+ * Explicitly exported (rather than left at the default hidden
+ * visibility a shared-library build applies to header-only classes):
+ * without it, this type's RTTI/typeinfo is not merged across the
+ * ores.analytics.quant.so/.dylib boundary, so a
+ * @c catch (const topology_build_error&) in a different link unit
+ * (e.g. a test binary) fails to match even though the exception
+ * itself is otherwise correct -- reproduces reliably on macOS
+ * (hidden-by-default dylib visibility), latent but real on any
+ * platform/toolchain with the same visibility defaults.
  */
-class topology_build_error : public std::runtime_error {
+class ORES_ANALYTICS_QUANT_EXPORT topology_build_error : public std::runtime_error {
 public:
     explicit topology_build_error(std::vector<topology_error> errors)
         : std::runtime_error(build_message(errors))

@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/tenor-dq-dataset
-#+pr:
+#+pr: 1539
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1539][#1539]] | [marketdata,codegen,sql] Combined tenor data model: entities, resolver, Foundation seed data |
 
 * Review
 

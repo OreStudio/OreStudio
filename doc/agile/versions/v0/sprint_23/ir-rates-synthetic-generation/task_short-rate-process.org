@@ -171,9 +171,13 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+PR #1555 review round 1 (Claude automated, issue-level comment, no line comments):
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =cir_process::discount_factor= overflows to NaN for large =ticks_ahead= (=std::exp(gamma*tau)= overflows once =gamma*tau= exceeds ~709) | cir_process.cpp | Fixed | Rewrote B(tau)/A(tau) in the numerically-stable form dividing by =e^{gamma*tau}= up front, so every exponent stays non-positive; added a regression test with =ticks_ahead= up to 10000 asserting a finite result in (0,1] |
+| 2 | Misleading test name/comment in =hull_white_process_tests.cpp= (claims a Vasicek cross-check but only asserts positivity) | hull_white_process_tests.cpp | Declined | Non-blocking per the reviewer's own note; the real cross-check exists in =vasicek_process_tests.cpp=, not a coverage gap |
+| 3 | CI =site= job failing: literal =[[id:...]]= placeholder link in prose breaks org-roam link resolution | task_document-stochastic-processes.org | Fixed | Escaped as verbatim =[[id:...]]= text instead of a real link (this was a pre-existing bug in the doc carried over from the stale branch, unrelated to the reviewer's own findings, caught by CI's site-build check) |
 
 * Result
 

@@ -132,6 +132,22 @@ TEST_CASE("cir_process discount_factor with zero volatility matches the determin
     }
 }
 
+TEST_CASE("cir_process discount_factor stays finite and in (0, 1] for long maturities",
+    "[cir_process]") {
+    // Regression test: the un-normalised textbook formula computes
+    // exp(gamma*tau) directly, which overflows to +inf once gamma*tau
+    // exceeds ~709 -- e.g. gamma around 0.3 with tau in the thousands
+    // (a realistic daily-tick 10Y+ tenor) -- collapsing the result to
+    // NaN instead of a valid price.
+    cir_process p(0.3, 0.03, 0.05, 0.03);
+    for (const std::size_t t : {100, 1000, 5000, 10000}) {
+        const double df = p.discount_factor(t);
+        CHECK(std::isfinite(df));
+        CHECK(df > 0.0);
+        CHECK(df <= 1.0);
+    }
+}
+
 TEST_CASE("cir_process rejects non-positive kappa", "[cir_process]") {
     CHECK_THROWS_AS(cir_process(0.0, 0.03, 0.05, 0.03), std::invalid_argument);
     CHECK_THROWS_AS(cir_process(-0.1, 0.03, 0.05, 0.03), std::invalid_argument);

@@ -29,6 +29,7 @@
 #include "ores.qt/CodeDomainController.hpp"
 #include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
 #include "ores.qt/CodingSchemeController.hpp"
+#include "ores.qt/ContactTypeController.hpp"
 #include "ores.qt/CountryController.hpp"
 #include "ores.qt/CurrencyController.hpp"
 #include "ores.qt/CurrencyMarketTierController.hpp"
@@ -151,6 +152,14 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                        ctx_.username,
                                                                        this);
     connectControllerSignals(codingSchemeController_.get());
+
+    contactTypeController_ = std::make_unique<ContactTypeController>(ctx_.main_window,
+                                                                      ctx_.mdi_area,
+                                                                      ctx_.client_manager,
+                                                                      ctx_.change_reason_cache,
+                                                                      ctx_.username,
+                                                                      this);
+    connectControllerSignals(contactTypeController_.get());
 
     datasetController_ = std::make_unique<DatasetController>(ctx_.main_window,
                                                              ctx_.mdi_area,
@@ -646,6 +655,12 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
                 if (partyTypeController_)
                     partyTypeController_->showListWindow();
             });
+            auto* actContactTypes = smc.organisation_codes_menu->addAction(
+                ico(Icon::PersonAccounts), tr("&Contact Types"));
+            connect(actContactTypes, &QAction::triggered, this, [this]() {
+                if (contactTypeController_)
+                    contactTypeController_->showListWindow();
+            });
         }
 
         ref->addSeparator();
@@ -830,6 +845,7 @@ void RefdataPlugin::on_logout() {
     businessDayConventionTypeController_.reset();
     dayCountFractionTypeController_.reset();
     datasetController_.reset();
+    contactTypeController_.reset();
     codingSchemeController_.reset();
     codeDomainController_.reset();
     codingSchemeAuthorityTypeController_.reset();

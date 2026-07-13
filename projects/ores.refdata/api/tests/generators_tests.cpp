@@ -118,7 +118,7 @@ TEST_CASE("contact_type_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_contact_type(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
@@ -126,7 +126,7 @@ TEST_CASE("contact_type_generator_produces_valid_instance", tags) {
     CHECK(sut.display_order <= 100);
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("contact_type_generator_produces_multiple_instances", tags) {

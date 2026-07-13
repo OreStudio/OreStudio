@@ -21,7 +21,6 @@
 #include "ores.qt/BusinessCentreController.hpp"
 #include "ores.qt/BusinessUnitController.hpp"
 #include "ores.qt/BusinessUnitTypeController.hpp"
-#include "ores.qt/ContactTypeController.hpp"
 #include "ores.qt/CounterpartyController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -73,14 +72,6 @@ void PartyPlugin::on_login(const plugin_context& ctx) {
                                                                          ctx_.username,
                                                                          this);
     connectControllerSignals(partyIdSchemeController_.get());
-
-    contactTypeController_ = std::make_unique<ContactTypeController>(ctx_.main_window,
-                                                                     ctx_.mdi_area,
-                                                                     ctx_.client_manager,
-                                                                     ctx_.change_reason_cache,
-                                                                     ctx_.username,
-                                                                     this);
-    connectControllerSignals(contactTypeController_.get());
 
     partyController_ = std::make_unique<PartyController>(ctx_.main_window,
                                                          ctx_.mdi_area,
@@ -193,12 +184,6 @@ void PartyPlugin::setup_menus(const shared_menus_context& smc) {
         if (partyIdSchemeController_)
             partyIdSchemeController_->showListWindow();
     });
-    auto* actContactTypes =
-        menuOrgCodes->addAction(ico(Icon::PersonAccounts), tr("&Contact Types"));
-    connect(actContactTypes, &QAction::triggered, this, [this]() {
-        if (contactTypeController_)
-            contactTypeController_->showListWindow();
-    });
     auto* actBizUnitTypes =
         menuOrgCodes->addAction(ico(Icon::PeopleTeam), tr("Business Unit &Types"));
     connect(actBizUnitTypes, &QAction::triggered, this, [this]() {
@@ -231,7 +216,6 @@ void PartyPlugin::on_logout() {
     businessCentreController_.reset();
     counterpartyController_.reset();
     partyController_.reset();
-    contactTypeController_.reset();
     partyIdSchemeController_.reset();
     partyStatusController_.reset();
 

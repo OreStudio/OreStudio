@@ -36,29 +36,75 @@ as a model property or paste-block instead.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] |
-| Now          | Reviewing the model against the checklist and a correct sibling. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Update the model, then regenerate and review diffs facet by facet. |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
 
-- [ ] =ores.refdata.contact_type.org= reviewed section-by-section against the Domain entity evaluation checklist.
-- [ ] Every variability knob the model's facets read (=has_uuid_primary_key=, =has_change_reason_cache=, =has_history=, =has_pagination=, =delete_request_id_is_plural=, =icon=, and any others the current meta-model defines) is explicitly set and deliberately chosen, not left implicit.
-- [ ] All facets (SQL, domain, repository, service, protocol, NATS handler/registrar/eventing, generator, Qt) regenerated via =compass codegen entity generate=.
-- [ ] Diff reviewed for every changed/new file before accepting; any genuinely custom behaviour ported forward via model properties, not silently dropped.
-- [ ] Regenerated output builds clean (affected targets).
-- [ ] No hand-patch to any codegen-owned file.
+- [X] =ores.refdata.contact_type.org= reviewed section-by-section against the Domain entity evaluation checklist.
+- [X] Every variability knob the model's facets read (=has_uuid_primary_key=, =has_change_reason_cache=, =has_history=, =has_pagination=, =delete_request_id_is_plural=, =icon=, and any others the current meta-model defines) is explicitly set and deliberately chosen, not left implicit.
+- [X] All facets (SQL, domain, repository, service, protocol, NATS handler/registrar/eventing, generator, Qt) regenerated via =compass codegen entity generate=.
+- [X] Diff reviewed for every changed/new file before accepting; any genuinely custom behaviour ported forward via model properties, not silently dropped.
+- [X] Regenerated output builds clean (affected targets).
+- [X] No hand-patch to any codegen-owned file.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Reviewed =ores.refdata.contact_type.org= against
+   =business_day_convention_type.org= / =day_count_fraction_type.org=
+   (both confirmed correct this session) and fixed: stale
+   =ores.refdata/...= include paths (should be =ores.refdata.api/...=);
+   missing =has_change_reason_cache=, =delete_request_id_field=/=_is_plural=,
+   =history_request_id_field=/=history_response_data_field=; =name=
+   column misplaced under =* Natural keys= with no matching DB unique
+   constraint (moved to =* Columns=); stale unused
+   =#include "sqlgen/Timestamp.hpp"= in Entity includes; missing
+   =*** Detail fields= subsection (added explicit widget/placeholder
+   config matching sibling convention).
+2. Ran =compass codegen entity generate --diff= first to confirm scope:
+   SQL/domain/repository/service diffs were small and additive
+   (template header updates, a new =entity_type_of= dispatch helper,
+   default-value fixes); the *protocol* diff was substantial and
+   breaking (NATS subjects hyphen→underscore,
+   =get_contact_types_response.contact_types= → =.types= + =success=/=message=
+   fields, =delete_contact_type_request.type= (singular) →
+   =.codes= (plural vector), =get_contact_type_history_request.type= →
+   =.code=); the entire Qt layer was net-new relative to committed
+   output.
+3. Generated for real via =compass codegen entity generate=.
+4. Discovered contact_type's Qt files lived in =ores.qt.party= while
+   its domain lives in =ores.refdata= (component-ownership drift,
+   same class of issue as the "Move book to refdata" precedent) —
+   deleted the party-side files, added
+   =ContactTypeController=/model construction, menu wiring (shared
+   =organisation_codes_menu=), and logout cleanup to =RefdataPlugin=,
+   removed the equivalent from =PartyPlugin=.
+5. Reconfigured CMake (glob-based file lists don't pick up
+   deletions/moves automatically) and rebuilt
+   =ores.refdata.core/api/service=, =ores.qt.party/refdata=,
+   =ores.qt.exe=, and the refdata test suites — all clean, no
+   warnings.
+6. =generators_tests.cpp='s =contact_type_generator_produces_valid_instance=
+   asserted the *previous* generator template's convention
+   (=version==1=, =change_reason_code=="system.new"=); the current
+   template (verified against =day_count_fraction_type=) produces
+   =version==0=/="system.test"=. Fixed the two assertions to match —
+   scoped to =contact_type= only; the other nine tests in that file
+   assert the same stale convention for entities not yet regenerated
+   in this task, intentionally left alone.
+7. =validate_schemas.sh= and the full =ores.refdata.api.tests= suite
+   (353 assertions, 61 cases) pass.
 
 * Notes
+
+Full protocol/Qt regeneration was a genuinely breaking change to the
+wire format and the Qt consumer — safe here because contact_type had
+no other consumer (no CLI/shell/HTTP/Wt wiring existed) and the only
+Qt consumer was regenerated in the same pass.
 
 * Test Scenarios
 
@@ -84,3 +130,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Fixed six drift points in =ores.refdata.contact_type.org= (stale
+include paths, missing variability knobs, misplaced natural key,
+stale unused include, missing Detail fields) and regenerated every
+facet the model drives. The protocol layer changed in a genuinely
+breaking way (NATS subject naming, field renames, singular→plural
+delete) — safe because the only consumer, the Qt layer, was
+regenerated in the same pass and had no other consumer (no CLI/shell/
+HTTP/Wt). Discovered and fixed a second drift class along the way:
+contact_type's Qt files lived in =ores.qt.party= even though its
+domain lives in =ores.refdata= — moved ownership (construction, menu,
+logout) from =PartyPlugin= to =RefdataPlugin=, deleting the stale
+party-side files. Fixed one stale test assertion (=contact_type=
+generator test expected the previous template's =version=/
+=change_reason_code= convention). Build clean across
+=ores.refdata.core/api/service=, =ores.qt.party/refdata=, =ores.qt.exe=;
+=validate_schemas.sh= and =ores.refdata.api.tests= (353 assertions)
+pass. Manual Qt verification is the next task's job.

@@ -24,6 +24,8 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.refdata.api/domain/contact_type.hpp"
+#include <vector>
+
 
 namespace Ui {
 class ContactTypeDetailDialog;
@@ -60,6 +62,16 @@ public:
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
+
 signals:
     void typeSaved(const QString& code);
     void typeDeleted(const QString& code);
@@ -77,6 +89,7 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    QString code() const override;
 
 private:
     void setupUi();
@@ -85,6 +98,7 @@ private:
     void updateTypeFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
 
     Ui::ContactTypeDetailDialog* ui_;
     ClientManager* clientManager_;

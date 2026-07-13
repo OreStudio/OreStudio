@@ -23,8 +23,12 @@ trail, cache invalidation, other services) reliably learn when the
 entity changes. Investigation at planning time found only 8 of 34
 entities wired: =book=, =business_day_convention_type=, =country=,
 =currency=, =currency_pair=, =currency_pair_convention=,
-=party_type=, =purpose_type=. The remaining 26 have a defined event
-type but no registrar — audit and close the gap for all of them. The
+=party_type=, =purpose_type=. Since then, =day_count_fraction_type=
+(new entity, wired at commissioning) and =contact_type= (wired as
+part of a full model regeneration — see [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]])
+have also been wired, leaving 24 of the original 26. The remaining 24
+have a defined event type but no registrar — audit and close the gap
+for all of them. The
 registrar work itself is simple and mechanical per entity (mirrors
 the existing =currency_event_registrar.cpp= pattern); the value here
 is systematic completeness, not novel design.
@@ -70,9 +74,10 @@ portfolios/misc".
 
 * Entities missing a registrar
 
-Has a =*_changed_event= type but no =*_event_registrar.cpp= (26):
+Has a =*_changed_event= type but no =*_event_registrar.cpp= (24, was
+26 — =contact_type= wired 2026-07-13):
 =business_centre=, =business_unit=, =cds_convention=,
-=contact_type=, =counterparty=, =counterparty_contact_information=,
+=counterparty=, =counterparty_contact_information=,
 =counterparty_identifier=, =currency_group=, =currency_market_tier=,
 =currency_pair_classification=, =deposit_convention=,
 =fra_convention=, =ibor_index_convention=, =monetary_nature=,
@@ -105,9 +110,10 @@ batch of entities, grouped by domain family:
    =fra_convention=, =ibor_index_convention=, =ois_convention=,
    =overnight_index_convention=, =swap_convention=, =zero_convention=.
 4. Books/portfolios/misc: =business_centre=, =business_unit=,
-   =contact_type=, =portfolio=, =regulatory_book_type=. *=business_unit=
-   and =portfolio= have stale =changed_event.hpp= output (see Goal's
-   caveat) — check consumers before regenerating.*
+   =portfolio=, =regulatory_book_type= (=contact_type= already wired,
+   2026-07-13). *=business_unit= and =portfolio= have stale
+   =changed_event.hpp= output (see Goal's caveat) — check consumers
+   before regenerating.*
 5. Add a test per new registrar confirming NATS publication on
    change (may fold into each batch's task above rather than a
    separate task, depending on effort).

@@ -36,24 +36,24 @@ std::string contact_type_repository::sql() {
     return generate_create_table_sql<contact_type_entity>(lg());
 }
 
-void contact_type_repository::write(context ctx, const domain::contact_type& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing contact type to database: " << type.code;
+void contact_type_repository::write(context ctx, const domain::contact_type& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing contact type: " << v.code;
     execute_write_query(
-        ctx, contact_type_mapper::map(type), lg(), "Writing contact type to database.");
+        ctx, contact_type_mapper::map(v), lg(), "Writing contact type to database.");
 }
 
-void contact_type_repository::write(context ctx, const std::vector<domain::contact_type>& types) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing contact types to database. Count: " << types.size();
+void contact_type_repository::write(context ctx, const std::vector<domain::contact_type>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing contact types. Count: " << v.size();
     execute_write_query(
-        ctx, contact_type_mapper::map(types), lg(), "Writing contact types to database.");
+        ctx, contact_type_mapper::map(v), lg(), "Writing contact types to database.");
 }
 
 std::vector<domain::contact_type> contact_type_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<contact_type_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("name"_c);
+                       order_by("code"_c);
 
     return execute_read_query<contact_type_entity, domain::contact_type>(
         ctx,
@@ -65,9 +65,8 @@ std::vector<domain::contact_type> contact_type_repository::read_latest(context c
 
 std::vector<domain::contact_type> contact_type_repository::read_latest(context ctx,
                                                                        const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest contact type. Code: " << code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest contact type. code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<contact_type_entity>> |
@@ -83,8 +82,7 @@ std::vector<domain::contact_type> contact_type_repository::read_latest(context c
 
 std::vector<domain::contact_type> contact_type_repository::read_all(context ctx,
                                                                     const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all contact type versions. Code: " << code;
-
+    BOOST_LOG_SEV(lg(), debug) << "Reading all contact type versions. code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<contact_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -98,10 +96,30 @@ std::vector<domain::contact_type> contact_type_repository::read_all(context ctx,
         "Reading all contact type versions by code.");
 }
 
-void contact_type_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing contact type from database: " << code;
+std::optional<domain::contact_type> contact_type_repository::read_at_version(
+    context ctx, const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading contact type at version. code: " << code
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<contact_type_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       sqlgen::limit(1);
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto entities = execute_read_query<contact_type_entity, domain::contact_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return contact_type_mapper::map(entities); },
+        lg(),
+        "Reading contact type at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+void contact_type_repository::remove(context ctx, const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing contact type: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::delete_from<contact_type_entity> |
@@ -110,9 +128,53 @@ void contact_type_repository::remove(context ctx, const std::string& code) {
     execute_delete_query(ctx, query, lg(), "Removing contact type from database.");
 }
 
-void contact_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
-    const auto query = sqlgen::delete_from<contact_type_entity> | where("code"_c.in(codes));
-    execute_delete_query(ctx, query, lg(), "batch removing contact_types");
+std::vector<domain::contact_type>
+contact_type_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest contact types with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<contact_type_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<contact_type_entity, domain::contact_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return contact_type_mapper::map(entities); },
+        lg(),
+        "Reading latest contact types with pagination.");
 }
+
+std::uint32_t contact_type_repository::get_total_type_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active contact type count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::select_from<contact_type_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active contact type count: " << count;
+    return count;
+}
+
+void contact_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<contact_type_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing contact types.");
+}
+
 
 }

@@ -23,6 +23,7 @@
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
@@ -41,7 +42,7 @@ struct contact_type_entity {
     int version = 0;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

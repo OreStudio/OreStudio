@@ -51,8 +51,6 @@ ContactTypeMdiWindow::ContactTypeMdiWindow(ClientManager* clientManager,
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
@@ -123,10 +121,13 @@ void ContactTypeMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+
     initializeTableSettings(tableView_,
                             model_,
                             "ContactTypeListWindow",
-                            {ClientContactTypeModel::Description},
+                            {
+                                ClientContactTypeModel::Description,
+                            },
                             {900, 400},
                             1);
 }
@@ -134,7 +135,6 @@ void ContactTypeMdiWindow::setupTable() {
 void ContactTypeMdiWindow::setupConnections() {
     connect(model_, &ClientContactTypeModel::dataLoaded, this, &ContactTypeMdiWindow::onDataLoaded);
     connect(model_, &ClientContactTypeModel::loadError, this, &ContactTypeMdiWindow::onLoadError);
-    connectModel(model_);
 
     connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
@@ -161,10 +161,13 @@ void ContactTypeMdiWindow::setupConnections() {
         &PaginationWidget::page_requested,
         this,
         [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
+
+    connectModel(model_);
 }
 
 void ContactTypeMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading contact types";
+    clearStaleIndicator();
     emit statusChanged(tr("Loading contact types..."));
     model_->refresh();
 }
@@ -292,18 +295,23 @@ void ContactTypeMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << codes.size() << " contact types";
+            << "Making delete request for " << codes.size() << " contact types";
+
+        refdata::messaging::delete_contact_type_request request;
+        request.codes = codes;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            for (const auto& code : codes) {
+                results.push_back({code, {false, "Failed to communicate with server"}});
+            }
+            return results;
+        }
 
         for (const auto& code : codes) {
-            refdata::messaging::delete_contact_type_request request;
-            request.type = code;
-            auto response_result =
-                self->clientManager_->process_authenticated_request(std::move(request));
-            if (!response_result) {
-                results.push_back({code, {false, "Failed to communicate with server"}});
-            } else {
-                results.push_back({code, {response_result->success, response_result->message}});
-            }
+            results.push_back({code, {response_result->success, response_result->message}});
         }
 
         return results;
@@ -358,5 +366,6 @@ void ContactTypeMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

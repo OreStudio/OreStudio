@@ -64,12 +64,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const refdata::domain::contact_type& type);
@@ -83,7 +85,7 @@ private:
     void showDetailWindow(const refdata::domain::contact_type& type);
     void showHistoryWindow(const QString& code);
 
-    ChangeReasonCache* changeReasonCache_{nullptr};
+    ChangeReasonCache* changeReasonCache_;
     ContactTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

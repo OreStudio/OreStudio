@@ -65,9 +65,9 @@ been reverted; this Goal exists precisely to prevent a repeat.
 |---------------+----------------------------------------|
 | State         | STARTED                               |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Bringing ores.refdata.contact_type.org up to the latest meta-model, before any further Qt testing. |
+| Now           | Model regenerated and builds clean; retesting the Qt UI end-to-end against a fresh environment. |
 | Waiting on    | Nothing.                               |
-| Next          | Review the model against the checklist and a correct sibling, then regenerate. |
+| Next          | Work through the CRUD + eventing scenario in blue/red clients. |
 | Last touched  | 2026-07-13                               |
 
 * Acceptance
@@ -101,5 +101,5 @@ been reverted; this Goal exists precisely to prevent a repeat.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:BD717BF3-DFD6-41C6-9A88-90B0470A37A7][Update contact_type codegen model and regenerate all layers]] | STARTED | 2026-07-13 | | Bring ores.refdata.contact_type.org up to the latest meta-model (checklist review, variability knobs), regenerate every facet via compass codegen entity generate, and review every diff before accepting. |
-| [[id:3EDC9F9F-65AF-4B2E-B09D-BA63769C30DE][Verify contact_type Qt UI end-to-end post-NATS]] | BLOCKED | 2026-07-13 | | List window, detail dialog, history dialog, delete, and eventing against live services, using the regenerated output from the model-update task; fix anything still found by correcting the model and regenerating. |
+| [[id:BD717BF3-DFD6-41C6-9A88-90B0470A37A7][Update contact_type codegen model and regenerate all layers]] | DONE | 2026-07-13 | 2026-07-13 | Bring ores.refdata.contact_type.org up to the latest meta-model (checklist review, variability knobs), regenerate every facet via compass codegen entity generate, and review every diff before accepting. |
+| [[id:3EDC9F9F-65AF-4B2E-B09D-BA63769C30DE][Verify contact_type Qt UI end-to-end post-NATS]] | STARTED | 2026-07-13 | | List window, detail dialog, history dialog, delete, and eventing against live services, using the regenerated output from the model-update task; fix anything still found by correcting the model and regenerating. |

@@ -25,6 +25,8 @@
 #include "ores.refdata.api/domain/contact_type.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/contact_type_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::refdata::service {
 
 /**
  * @brief Service for managing contact types.
+ *
+ * Provides a higher-level interface for contact type operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT contact_type_service {
 private:
@@ -47,20 +52,80 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a contact_type_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit contact_type_service(context ctx);
 
-    std::vector<domain::contact_type> list_types();
+    /**
+     * @brief Lists contact types with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of contact types for the requested page.
+     */
+    std::vector<domain::contact_type> list_types(std::uint32_t offset, std::uint32_t limit);
 
-    std::optional<domain::contact_type> find_type(const std::string& code);
+    /**
+     * @brief Gets the total count of active contact types.
+     *
+     * @return Total number of active contact types.
+     */
+    std::uint32_t count_types();
 
+    /**
+     * @brief Retrieves a single contact type as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param code The code of the contact type.
+     * @param version The version to fetch.
+     * @return The contact type at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::contact_type> get_type_at_version(const std::string& code,
+                                                            std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single contact type by its code.
+     *
+     * @param code The code of the contact type.
+     * @return The contact type if found, std::nullopt otherwise.
+     */
+    std::optional<domain::contact_type> get_type(const std::string& code);
+
+    /**
+     * @brief Saves a contact type (creates or updates).
+     *
+     * @param type The contact type to save.
+     * @throws std::exception on failure.
+     */
     void save_type(const domain::contact_type& type);
 
+    /**
+     * @brief Saves a batch of contact types.
+     *
+     * @param types The contact types to save.
+     * @throws std::exception on failure.
+     */
     void save_types(const std::vector<domain::contact_type>& types);
 
-    void remove_type(const std::string& code);
+    /**
+     * @brief Deletes a contact type by its code.
+     *
+     * @param code The code of the contact type to delete.
+     * @throws std::exception on failure.
+     */
+    void delete_type(const std::string& code);
 
-    void remove_types(const std::vector<std::string>& codes);
+    /**
+     * @brief Deletes contact types by their codes.
+     */
+    void delete_types(const std::vector<std::string>& codes);
 
+    /**
+     * @brief Retrieves all historical versions of a contact type.
+     */
     std::vector<domain::contact_type> get_type_history(const std::string& code);
 
 private:

@@ -87,9 +87,9 @@ QVariant ClientContactTypeModel::data(const QModelIndex& index, int role) const 
             case Description:
                 return QString::fromStdString(type.description);
             case DisplayOrder:
-                return type.display_order;
+                return static_cast<qlonglong>(type.display_order);
             case Version:
-                return type.version;
+                return static_cast<qlonglong>(type.version);
             case ModifiedBy:
                 return QString::fromStdString(type.modified_by);
             case RecordedAt:
@@ -204,22 +204,35 @@ void ClientContactTypeModel::fetch_types(std::uint32_t offset, std::uint32_t lim
                     self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to fetch contact types: " << result.error();
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .types = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch contact types: " + result.error()),
+                            .error_message = QString::fromStdString(result.error()),
+                            .error_details = {}};
+                }
+
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .types = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->contact_types.size() << " contact types";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->contact_types.size());
+                    << "Fetched " << result->types.size() << " contact types";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->types.size());
                 return {.success = true,
-                        .types = std::move(result->contact_types),
+                        .types = std::move(result->types),
                         .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};
@@ -282,6 +295,7 @@ const refdata::domain::contact_type* ClientContactTypeModel::getType(int row) co
         return nullptr;
     return &types_[idx];
 }
+
 
 QVariant ClientContactTypeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

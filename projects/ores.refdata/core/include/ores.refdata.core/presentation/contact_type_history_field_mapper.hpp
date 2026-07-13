@@ -17,27 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_GENERATORS_CONTACT_TYPE_GENERATOR_HPP
-#define ORES_REFDATA_API_GENERATORS_CONTACT_TYPE_GENERATOR_HPP
+#ifndef ORES_REFDATA_CORE_PRESENTATION_CONTACT_TYPE_HISTORY_FIELD_MAPPER_HPP
+#define ORES_REFDATA_CORE_PRESENTATION_CONTACT_TYPE_HISTORY_FIELD_MAPPER_HPP
 
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.refdata.api/domain/contact_type.hpp"
-#include "ores.refdata.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
+#include "ores.refdata.core/export.hpp"
 #include <vector>
 
-namespace ores::refdata::generators {
+namespace ores::refdata::presentation {
 
 /**
- * @brief Generates a synthetic contact_type.
+ * @brief Renders a contact_type to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-ORES_REFDATA_API_EXPORT domain::contact_type
-generate_synthetic_contact_type(utility::generation::generation_context& ctx);
-
-/**
- * @brief Generates N synthetic contact_types.
- */
-ORES_REFDATA_API_EXPORT std::vector<domain::contact_type>
-generate_synthetic_contact_types(std::size_t n, utility::generation::generation_context& ctx);
+[[nodiscard]] ORES_REFDATA_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_contact_type_fields(const domain::contact_type& v);
 
 }
 

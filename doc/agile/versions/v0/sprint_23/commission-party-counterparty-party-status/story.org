@@ -20,7 +20,9 @@ layers, superseding the three abandoned per-entity stories from Sprint 22
 ([[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]], [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]],
 [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]]) now that their shared blockers — composite
 child-entity/hierarchy Qt widgets and temporal composite entity versioning — are
-both DONE. Re-verify the Qt UI end-to-end post-NATS for party and counterparty
+both DONE. Regenerate party and counterparty against current codegen templates
+(which have drifted significantly since these entities were last touched) and
+verify zero-diff before re-verifying the Qt UI end-to-end post-NATS
 (party_status's Qt verification is already DONE), and add manual chapters for
 all three entities. Shell, CLI, Wt, and HTTP support are *not* tracked here —
 they're covered by the dedicated top-level commissioning stories already in
@@ -40,8 +42,8 @@ the backlog: [[id:469958E3-B249-4D4C-95A9-E7CDB703F0C0][CLI commands]], [[id:8BC
 
 * Acceptance
 
-- Party: Qt list/detail/history/delete/eventing verified end-to-end post-NATS; manual chapter written.
-- Counterparty: Qt list/detail/history/delete/eventing verified end-to-end post-NATS; manual chapter written.
+- Party: regenerated against current codegen templates with zero diff; Qt list/detail/history/delete/eventing verified end-to-end post-NATS; manual chapter written.
+- Counterparty: regenerated against current codegen templates with zero diff; Qt list/detail/history/delete/eventing verified end-to-end post-NATS; manual chapter written.
 - Party_status: manual chapter written.
 - All regressions found are fixed inline or filed as captures.
 - Site builds cleanly.
@@ -50,9 +52,11 @@ the backlog: [[id:469958E3-B249-4D4C-95A9-E7CDB703F0C0][CLI commands]], [[id:8BC
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:32700602-1610-4F40-9914-E704469FDA30][Verify party Qt UI end-to-end post-NATS]] | STARTED | 2026-07-13 | | Re-verify the party Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that the hierarchy widget blocker is resolved; fix regressions found. |
+| [[id:2E46351B-9787-48D1-B4D2-ED407B220904][Bring party under codegen; verify zero-diff regen]] | STARTED | 2026-07-13 | | Regenerate party's SQL/C++/messaging/Qt against current codegen templates (drifted significantly) and diff against the repo; fix templates or repo to eliminate drift before Qt re-verification. |
+| [[id:B9755647-D29D-4A9A-9FBE-F5DBBB33EDA0][Regenerate counterparty under codegen; verify zero-diff regen]] | BACKLOG | | | Regenerate counterparty's SQL/C++/messaging/Qt against current codegen templates (drifted significantly) and diff against the repo; fix templates or repo to eliminate drift before Qt re-verification. |
+| [[id:32700602-1610-4F40-9914-E704469FDA30][Verify party Qt UI end-to-end post-NATS]] | BACKLOG | | | Re-verify the party Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that party is under codegen; fix regressions found. |
 | [[id:201AAA9C-8699-4CBD-91A2-F0C75E15FD65][Write party manual chapter]] | BACKLOG | | | Add the party entity chapter to the user manual covering Qt windows. |
-| [[id:8DC4ABA3-B053-4C40-B575-6EDFCF3C86DE][Verify counterparty Qt UI end-to-end post-NATS]] | BACKLOG | | | Re-verify the counterparty Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that the hierarchy widget blocker is resolved; fix regressions found. |
+| [[id:8DC4ABA3-B053-4C40-B575-6EDFCF3C86DE][Verify counterparty Qt UI end-to-end post-NATS]] | BACKLOG | | | Re-verify the counterparty Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that counterparty is under codegen; fix regressions found. |
 | [[id:568153AE-7709-45CD-8807-63649A630282][Write counterparty manual chapter]] | BACKLOG | | | Add the counterparty entity chapter to the user manual covering Qt windows. |
 | [[id:0AEAA66B-3B71-4E25-B7FA-145416F46C38][Write party_status manual chapter]] | BACKLOG | | | Add the party_status entity chapter to the user manual covering Qt windows. |
 

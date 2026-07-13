@@ -115,12 +115,13 @@ public:
                 }
                 parties_t.set(p.id, std::move(p));
             }
-            partition_t data{.parties = parties_t.persistent(),
-                             .children = children_t.persistent()};
+            const partition_t data{.parties = parties_t.persistent(),
+                                   .children = children_t.persistent()};
 
-            cache_.update([&](tenant_map m) {
-                return std::move(m).set(tenant_id, std::move(data));
-            });
+            // update()'s callback may run more than once on CAS
+            // contention, so it must not consume `data` by move -- a
+            // retry would then move from an already-moved-from value.
+            cache_.update([&](tenant_map m) { return std::move(m).set(tenant_id, data); });
 
             BOOST_LOG_SEV(party_cache_lg(), debug)
                 << "Loaded " << party_count << " parties for tenant " << tenant_id;

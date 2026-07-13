@@ -15,6 +15,8 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+find_package(Immer CONFIG REQUIRED)
+
 set(name "ores.eventing.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -45,7 +47,8 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         ores.nats.lib
     PRIVATE
-        ores.utility.lib)
+        ores.utility.lib
+        immer)
 
 
 target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)

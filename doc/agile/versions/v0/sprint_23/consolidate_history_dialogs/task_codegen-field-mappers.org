@@ -28,12 +28,12 @@ org-model migration is complete.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-05                               |
+| Now          | Nothing.                                |
+| Waiting on   | Nothing.                                |
+| Next         | Nothing.                                |
+| Last touched | 2026-07-13                              |
 
 * Acceptance
 
@@ -65,3 +65,12 @@ org-model migration is complete.
 |   |                 |      |          |       |
 
 * Result
+
+Superseded by task [[id:5C873944-1152-4A79-9C92-C24AEB65834A][Codegen per-entity history field mapper]] (DONE
+2026-07-12): a dedicated =ores.cpp.presentation= codegen facet
+(=ores.cpp.presentation.history_field_mapper_header.org=/
+=..._impl.org=) generates =render_{entity}_fields()= for the 27 clean
+=ores.refdata= entities, matching this task's acceptance criteria
+verbatim (mappers generated from entity models, hand-written shape
+retired). Found stale/duplicate while triaging the story's remaining
+BACKLOG tasks; abandoning rather than re-doing already-shipped work.

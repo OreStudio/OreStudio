@@ -77,10 +77,10 @@
 #include "ores.history/service/dispatch_registry.hpp"
 #include "ores.history/service/version_builder.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.core/messaging/history_caller_context.hpp"
 #include "ores.refdata.core/presentation/currency_history_field_mapper.hpp"
 #include "ores.refdata.core/service/currency_service.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 
 #include <array>
 #include <iterator>
@@ -286,19 +286,19 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     // ----------------------------------------------------------------
     // Generic history.v1.get subject (pilot: currency only). caller_context
-    // is the requesting tenant_id, resolved once per request from the
-    // caller's JWT — see ores.history's design note on why this leaf
-    // never sees a database::context/jwt_authenticator directly.
+    // round-trips the caller's full resolved context (tenant, party,
+    // visible parties, actor, roles, workspace) — see
+    // history_caller_context.hpp — so every history_provider registered
+    // here, not just currency's, sees the same visibility a request to
+    // any other subject would get. ores.history itself never sees a
+    // database::context/jwt_authenticator directly, per its design note.
     // ----------------------------------------------------------------
     {
         auto& hist_registry = history_registry();
         hist_registry.register_history_provider(
             "ores.refdata.currency",
             [ctx](const std::string& caller_context, const std::string& entity_id) {
-                auto tid = ores::utility::uuid::tenant_id::from_string(caller_context);
-                if (!tid)
-                    throw std::runtime_error("Invalid caller_context: not a tenant_id");
-                auto scoped_ctx = ctx.with_tenant(*tid, "");
+                auto scoped_ctx = unpack_history_caller_context(ctx, caller_context);
                 service::currency_service svc(scoped_ctx);
                 auto versions = svc.get_currency_history(entity_id);
                 return ores::history::service::build_entity_history_versions(
@@ -310,7 +310,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             auto ctx_expected = ores::service::service::make_request_context(ctx, msg, verifier);
             if (!ctx_expected)
                 return std::unexpected(ctx_expected.error());
-            return ctx_expected->tenant_id().to_string();
+            return pack_history_caller_context(*ctx_expected);
         };
 
         subs.push_back(ores::history::messaging::register_history_handlers(

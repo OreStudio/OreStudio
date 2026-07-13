@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 968DF425-F244-4779-8726-DE078B17D732
+:END:
+#+title: compass add capture should search for related stories/captures first
+#+description: When scaffolding a new capture, compass should search existing stories/tasks/captures for the same topic and ask the user whether one already covers it, instead of always creating a new file.
+#+type: capture
+#+level: cross
+#+filetags: :compass:agile:tooling:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass add capture= currently scaffolds a brand-new capture file
+unconditionally, with no check for whether an existing capture, task,
+or story already covers the same topic. Before writing the new file,
+it should search the corpus (title/description/filetags, similar to
+=compass search=) for close matches and, if any are found, show them
+to the user and ask whether to update/link the existing document
+instead of creating a duplicate.
+
+This session hit the exact case the feature would catch: while working
+the =is_sweepable= task, a fresh RLS-policy gap was found and about to
+be captured as a new file, but =codegen_rls_policy_facet.org= already
+existed covering precisely this recurring class of gap (NATS handler
+registrar, tenant-provisioning copy block, RLS policies -- all
+"codegen writes the entity but something still has to be hand-wired
+afterwards"). The right move was to add this occurrence as further
+evidence to the existing capture, not create a new one -- but that
+required manually searching first; nothing prompted it.
+
+* Why
+
+Duplicate captures fragment the same underlying idea across multiple
+files, diluting its evidence trail (each recurrence should strengthen
+one capture's case for prioritisation, not scatter across N near-
+identical ones) and making the backlog harder to triage -- a reviewer
+has to notice the duplication themselves, the same problem this
+feature would solve for the person filing the capture in the first
+place.
+
+* References
+
+- =doc/agile/product_backlog/inbox/codegen_rls_policy_facet.org= -- the
+  capture this session correctly found and updated by hand instead of
+  duplicating, illustrating the workflow this feature would automate.
+
+* See also
+
+-

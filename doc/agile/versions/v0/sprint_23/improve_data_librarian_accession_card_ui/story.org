@@ -32,10 +32,10 @@ only cosmetic tab-count changes touch it, if any.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Not yet started.                       |
+| Now           | Phase 1 (header banner, badges, tab merge, MDI embedding) DONE and verified in-client. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-12                               |
+| Next          | File a follow-up task for Phase 2: the asymmetric two-column layout. |
+| Last touched  | 2026-07-13                               |
 
 * Acceptance
 
@@ -58,9 +58,24 @@ only cosmetic tab-count changes touch it, if any.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6FF3D889-123F-4C5D-BB28-0F38BA32C9E9][Rework DatasetViewDialog into a persistent-header, two-column layout]] | STARTED | 2026-07-12 | | Implement the phased redesign: persistent header banner + UUID copy, status pills, merged Provenance/Methodology tab, asymmetric two-column layout — librarian-only, DetailDialogBase untouched. |
+| [[id:6FF3D889-123F-4C5D-BB28-0F38BA32C9E9][Rework DatasetViewDialog into a persistent-header, two-column layout]] | DONE | 2026-07-12 | 2026-07-13 | Implement the phased redesign: persistent header banner + UUID copy, status pills, merged Provenance/Methodology tab, asymmetric two-column layout — librarian-only, DetailDialogBase untouched. |
 
 * Decisions
+
+- The dialog turned out to be =DatasetViewDialog= (the read-only
+  4-tab viewer), not =DatasetDetailDialog= (the 2-tab create/edit
+  form) the story originally named — corrected mid-task.
+- *Dependencies* already had a working =QGraphicsScene= lineage
+  graph, contrary to the source review's assumption of flat rows —
+  no rework needed there.
+- Governance badges must go through the same rendering path as
+  everywhere else in the app (=DelegatePaintUtils::draw_centered_badge=
+  + =BadgeCache=, via a small =QStyledItemDelegate=), not a one-off
+  =QLabel=/stylesheet pill — caught only by manually testing in the
+  running client, not by compiling.
+- =DatasetViewDialog= is now a =QWidget= embedded in a
+  =DetachableMdiSubWindow= (was a floating, always-on-top =QDialog=)
+  — matches every other window in the app.
 
 * Out of scope
 

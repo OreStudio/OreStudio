@@ -31,24 +31,33 @@ untouched, and the interactive lineage graph is out of scope.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
 
-- Persistent header banner shows =Name=/=Version=/=ID=/=Code= once,
-  with a one-click UUID copy action; removed from individual tabs.
-- Status identifiers render as visual pills.
+- Persistent header banner shows =Name=/=Code=/=Version=/=ID= once
+  (full UUID, selectable), with a one-click Copy ID action; removed
+  from the Overview tab's General section.
+- Origin/Nature/Treatment render as real badges — the same
+  =DelegatePaintUtils::draw_centered_badge= routine and =BadgeCache=
+  every other badge in the app uses, not a one-off widget.
 - *Provenance* and *Methodology* merge into one tab; lineage
   primitives are visually prominent.
-- *Overview* and the merged tab use an asymmetric two-column layout
-  (primary content + metadata sidebar).
+- Embedded as an MDI subwindow (=DetachableMdiSubWindow=), same
+  pattern as every other window in the app — not a floating,
+  always-on-top =QDialog=.
 - No changes to =DetailDialogBase= or other entity dialogs.
-- Manually verified in the running Qt client against a real dataset.
+- Manually verified in the running Qt client against a real dataset
+  via the QA Validation Runner scenario below — PASSED.
+
+The full asymmetric two-column layout (primary content + metadata
+sidebar) from the original review is deferred to a follow-up task —
+see =* Plan=.
 
 * Plan
 
@@ -86,7 +95,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:48ACB094-DD19-4259-AA3D-80EC4FC8A5EC][Verify DatasetViewDialog redesign in the Data Librarian]] | PENDING | |
+| [[id:48ACB094-DD19-4259-AA3D-80EC4FC8A5EC][Verify DatasetViewDialog redesign in the Data Librarian]] | PASSED | 3 review rounds; see Review table |
 
 * PRs
 
@@ -98,6 +107,32 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Layout completely unlike the review's mockup; low-contrast banner; stretched pills; centered grey section-header anti-pattern still present; dialog stays always-on-top | DatasetViewDialog.cpp/.hpp | Accepted | Fixed: banner background+contrast, pill sizing, section headers left-aligned; documented Phase 1 vs. deferred Phase 2 scope |
+| 2 | "Provenance & Methodology" tab title bugged ("_Methodology"); ID truncated with no full-line display; badges don't match main-window colours; dialog not an MDI window | DatasetViewDialog.cpp/.hpp, DataLibrarianWindow.cpp | Accepted | Escaped mnemonic (&&); full UUID on its own selectable line; converted QDialog to QWidget embedded via DetachableMdiSubWindow |
+| 3 | Badges use hand-rolled QLabel/stylesheet pill, not the app's actual badge rendering | DatasetViewDialog.cpp | Accepted | Replaced with OverviewBadgeDelegate calling DelegatePaintUtils::draw_centered_badge (same as DatasetItemDelegate/EntityItemDelegate), resolved via BadgeCache |
 
 * Result
+
+Shipped Phase 1 of the accession-card redesign on =DatasetViewDialog=:
+persistent header banner (Name/Code/Version/full selectable UUID +
+Copy ID button), Origin/Nature/Treatment rendered as real badges via
+a new =OverviewBadgeDelegate= (=DelegatePaintUtils::draw_centered_badge=
++ =BadgeCache=, matching every other badge in the app), *Provenance*
+and *Methodology* merged into one tab, and left-aligned section
+headers instead of the centered-grey-bar anti-pattern. Also fixed a
+real bug found only through manual testing: the dialog was a floating,
+always-on-top =QDialog=; converted to a =QWidget= embedded in a
+=DetachableMdiSubWindow=, same pattern as every other window in the
+app.
+
+Three review rounds with the running client surfaced real defects a
+compile-only check couldn't catch (Qt mnemonic bug swallowing the
+=&= in the tab title, stretched/oversized pills, a hand-rolled badge
+that diverged from the app's actual badge-rendering code, low-contrast
+banner text) — see the Review table. The QA Validation Runner scenario
+now PASSES all 7 steps with no outstanding notes.
+
+The full asymmetric two-column layout from the original review is
+deferred to a follow-up task — the "Compass improvements"-style
+catch-all pattern doesn't apply here; file it as a new task on this
+story when picked up.

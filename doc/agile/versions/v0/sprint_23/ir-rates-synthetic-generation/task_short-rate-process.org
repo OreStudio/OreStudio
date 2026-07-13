@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/short-rate-process
-#+pr:
+#+pr: 1555
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -167,7 +167,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1555][#1555]] | [analytics.quant] Add Vasicek/CIR/Hull-White short-rate processes |
 
 * Review
 

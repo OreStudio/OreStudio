@@ -44,11 +44,11 @@ remains a genuinely distinct third engine.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | All three engines implemented and tested; not yet wired into any consumer (no Curve Template exists yet to call make_yield_curve_process). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Wire into the Curve Template config task once it exists; this task alone is not PR-sized (pure math library addition, no consumer). |
+| Next         | Nothing. |
 | Last touched | 2026-07-12                               |
 
 * Acceptance
@@ -176,3 +176,37 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Added =IYieldCurveProcess= (=IStochasticProcess= + =discount_factor()=)
+and three engines implementing it: =hull_white_process= (general
+1-factor Gaussian short-rate, exact one-step transition + backward
+recursion for the bond price), =vasicek_process= (composes
+=hull_white_process= with a single-element =theta_path=, tested for
+bit-identical output against the equivalent Hull-White instance —
+pinning the composition as a tested invariant), and =cir_process=
+(independent square-root-diffusion engine, exact
+Poisson-mixture-of-chi-squared simulation per Glasserman, with a
+dedicated =sigma == 0= deterministic-ODE branch since the general
+formulas have a =sigma=-denominator singularity there). All three
+selectable via =process_factory::make_yield_curve_process()=, which
+throws on an unrecognised =process_type= (unlike =make_process()='s
+geometric fallback) since a caller asking for a *yield-curve* process
+by an unrecognised name is almost certainly a bug. Parameters validated
+via a new =validate_yield_curve_process_parameters= (kept separate
+from the existing =validate_process_parameters= rather than overloaded
+onto its incompatible means/stdevs/weights shape).
+
+Comprehensive Catch2 suites per class, matching =ou_process_tests.cpp='s
+conventions: deterministic-seed reproducibility, edge cases (kappa <= 0
+degenerate walk, sigma == 0 ODE limit), statistical mean-reversion
+checks, and closed-form cross-checks against independently-recomputed
+oracle formulas.
+
+Filed two follow-ups this work surfaced: =document-stochastic-processes=
+(BACKLOG task on this story — knowledge hub + per-process pages) and a
+GPU-batched-simulation performance capture in the backlog inbox.
+
+Not wired into any consumer yet — the Curve Template config task
+(=ir_curve_generation_config=, still BACKLOG) is what will actually call
+=make_yield_curve_process()=; this task is the pure math-library
+addition underneath it.

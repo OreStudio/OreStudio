@@ -22,7 +22,7 @@ This page documents a test scenario verifying [[id:751DE13E-8851-436B-B0BC-DED1B
 | Verifies task | [[id:751DE13E-8851-436B-B0BC-DED1BDC25E5F][Codegen full-stack CRM topology entities (config, driver pair, derived pair) with refdata UI]] |
 | Parent story  | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]   |
 | Target dialog | CrmTopologyConfigMdiWindow, CrmDriverPairMdiWindow, CrmEnabledDerivedPairMdiWindow |
-| Clients       | (single client) |
+| Clients       |          |
 | State         | PENDING                               |
 
 * Steps

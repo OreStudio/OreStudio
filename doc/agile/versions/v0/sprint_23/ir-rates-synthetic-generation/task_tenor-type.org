@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
-#+branch: feature/tenor-type
-#+pr: 1517
+#+branch: feature/tenor-runtime-value-type
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -34,12 +34,12 @@ tenor-collision validator task.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | Domain-knowledge groundwork done; C++ implementation not yet started. |
+| Now          | Complete.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Implement the tenor type in =ores.marketdata= (not =ores.utility= — see Notes) per the =Tenor= knowledge doc. |
-| Last touched | 2026-07-12                               |
+| Next         | Nothing.                                |
+| Last touched | 2026-07-13                               |
 
 * Acceptance
 
@@ -101,12 +101,30 @@ implementation should now be written against:
   restated in =pricing_configuration.org=) was replaced with links to
   the new atomic docs.
 
+A follow-up modeling review concluded a tenor also needs to be a
+persisted, orderable reference-data entity (users manage the standard
+tenor set and its per-convention resolution rules), not only an
+in-process value type. That redesign shipped separately as
+=ores.marketdata.tenor=/=tenor_anchor=/=tenor_convention=/
+=tenor_convention_resolution= codegen entity models (SQL, domain,
+repository, service, protocol, Qt UI). The original hand-authored
+=ores.marketdata::domain::tenor= value type from PR #1522 was salvaged
+onto a fresh branch and renamed =tenor_period= (parse()/end_date()/
+resolve_window()/windows_overlap()) to avoid colliding with the new
+persisted =domain::tenor= entity — it remains the runtime date-arithmetic
+companion the tenor-collision validator task needs, which the entity
+model alone does not provide. PR #1522 itself was closed unmerged: its
+knowledge-doc changes were superseded by #1528 (already merged), and its
+code is what this task now ships instead.
+
 * PRs
 
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/1517][#1517]] | [doc] Establish IR curve-family and time-structure/tenor knowledge clusters |
 | [[https://github.com/OreStudio/OreStudio/pull/1411][#1411]] | [agile] Raise IR Rates synthetic data generation story |
+| [[https://github.com/OreStudio/OreStudio/pull/1522][#1522]] | [marketdata] Add QuantLib-free tenor type (closed unmerged; docs superseded by #1528, code salvaged into this task) |
+| [[https://github.com/OreStudio/OreStudio/pull/1528][#1528]] | [doc] Term structure/tenor cluster: Pillar, provenance/ladder cleanup |
 
 * Review
 
@@ -124,3 +142,12 @@ PR #1517 review round (3 automated passes, issue-level comments, no line comment
 | 5 | "Waiting on PR #1409" note stale — PR #1409 merged into main (4be33f2b4) before this branch's rebase, but story.org still said "still open" | story.org | Fixed | Updated to "Nothing" with a note that #1409 merged prior to this branch's rebase |
 
 * Result
+
+Shipped as two parts: (1) the persisted, orderable tenor-as-entity
+redesign (=ores.marketdata.tenor=/=tenor_anchor=/=tenor_convention=/
+=tenor_convention_resolution=, full codegen layers including Qt UI,
+raised separately as part of the DQ dataset task); (2) the runtime
+=tenor_period= value type (parse/end_date/resolve_window/windows_overlap,
+10 test cases/33 assertions, salvaged and renamed from PR #1522 to avoid
+colliding with the persisted entity). PR #1522 closed unmerged; its docs
+were superseded by #1528, its code lives on here instead.

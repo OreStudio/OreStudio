@@ -61,6 +61,9 @@
 #include "ores.qt/RoundingTypeController.hpp"
 #include "ores.qt/SubjectAreaController.hpp"
 #include "ores.qt/SwapConventionController.hpp"
+#include "ores.qt/TenorAnchorController.hpp"
+#include "ores.qt/TenorConventionController.hpp"
+#include "ores.qt/TenorController.hpp"
 #include "ores.qt/TreatmentDimensionController.hpp"
 #include "ores.qt/ZeroConventionController.hpp"
 #include <QAction>
@@ -438,6 +441,18 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                        ctx_.username,
                                                        this);
     connectControllerSignals(treatmentDimensionController_.get());
+
+    tenorController_ = std::make_unique<TenorController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    connectControllerSignals(tenorController_.get());
+
+    tenorConventionController_ = std::make_unique<TenorConventionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    connectControllerSignals(tenorConventionController_.get());
+
+    tenorAnchorController_ = std::make_unique<TenorAnchorController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    connectControllerSignals(tenorAnchorController_.get());
 }
 
 void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
@@ -564,6 +579,25 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         connect(actCdsConventions, &QAction::triggered, this, [this]() {
             if (cdsConventionController_)
                 cdsConventionController_->showListWindow();
+        });
+
+        // Tenors submenu (tenor reference data: tenors, conventions, anchors)
+        auto* menuTenors = ref->addMenu(tr("&Tenors"));
+        auto* actTenors = menuTenors->addAction(ico(Icon::Tag), tr("&Tenors"));
+        connect(actTenors, &QAction::triggered, this, [this]() {
+            if (tenorController_)
+                tenorController_->showListWindow();
+        });
+        auto* actTenorConventions =
+            menuTenors->addAction(ico(Icon::Tag), tr("Tenor &Conventions"));
+        connect(actTenorConventions, &QAction::triggered, this, [this]() {
+            if (tenorConventionController_)
+                tenorConventionController_->showListWindow();
+        });
+        auto* actTenorAnchors = menuTenors->addAction(ico(Icon::Tag), tr("Tenor &Anchors"));
+        connect(actTenorAnchors, &QAction::triggered, this, [this]() {
+            if (tenorAnchorController_)
+                tenorAnchorController_->showListWindow();
         });
 
         ref->addSeparator();
@@ -818,6 +852,10 @@ void RefdataPlugin::on_logout() {
         data_librarian_window_->close();
         data_librarian_window_ = nullptr;
     }
+
+    tenorAnchorController_.reset();
+    tenorConventionController_.reset();
+    tenorController_.reset();
 
     treatmentDimensionController_.reset();
     natureDimensionController_.reset();

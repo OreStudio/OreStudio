@@ -428,7 +428,7 @@ begin
     raise notice 'Copied % currency market tiers', v_copied_count;
 
     -- Tenor anchors (e.g. SPOT, TODAY, TOMORROW, NEAR_LEG, IMM_ROLL)
-    insert into ores_marketdata_tenor_anchors_tbl (
+    insert into ores_refdata_tenor_anchors_tbl (
         code, tenant_id, version, description,
         modified_by, performed_by, change_reason_code, change_commentary
     )
@@ -436,7 +436,7 @@ begin
         code, v_tenant_id, 0, description,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_marketdata_tenor_anchors_tbl t
+    from ores_refdata_tenor_anchors_tbl t
     where t.tenant_id = v_system_tenant_id
       and t.valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -444,7 +444,7 @@ begin
     raise notice 'Copied % tenor anchors', v_copied_count;
 
     -- Tenors (e.g. O/N, 1M, 1Y, SPOT)
-    insert into ores_marketdata_tenors_tbl (
+    insert into ores_refdata_tenors_tbl (
         code, tenant_id, version, display_name, description, sort_order, kind, unit, multiplier,
         modified_by, performed_by, change_reason_code, change_commentary
     )
@@ -452,7 +452,7 @@ begin
         code, v_tenant_id, 0, display_name, description, sort_order, kind, unit, multiplier,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_marketdata_tenors_tbl t
+    from ores_refdata_tenors_tbl t
     where t.tenant_id = v_system_tenant_id
       and t.valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -460,7 +460,7 @@ begin
     raise notice 'Copied % tenors', v_copied_count;
 
     -- Tenor conventions (e.g. RATES_SPOT_FORWARD, FX_SWAP_NEAR_LEG, CREDIT_CDS_IMM)
-    insert into ores_marketdata_tenor_conventions_tbl (
+    insert into ores_refdata_tenor_conventions_tbl (
         code, tenant_id, version, description, measured_from, resolution_algorithm,
         modified_by, performed_by, change_reason_code, change_commentary
     )
@@ -468,7 +468,7 @@ begin
         code, v_tenant_id, 0, description, measured_from, resolution_algorithm,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_marketdata_tenor_conventions_tbl t
+    from ores_refdata_tenor_conventions_tbl t
     where t.tenant_id = v_system_tenant_id
       and t.valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -476,7 +476,7 @@ begin
     raise notice 'Copied % tenor conventions', v_copied_count;
 
     -- Tenor convention resolutions (which tenors belong to which convention, and overrides)
-    insert into ores_marketdata_tenor_convention_resolutions_tbl (
+    insert into ores_refdata_tenor_convention_resolutions_tbl (
         convention_code, tenant_id, tenor_code, version, anchor_override, offset_unit, offset_multiplier,
         modified_by, performed_by, change_reason_code, change_commentary
     )
@@ -484,7 +484,7 @@ begin
         convention_code, v_tenant_id, tenor_code, 0, anchor_override, offset_unit, offset_multiplier,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_marketdata_tenor_convention_resolutions_tbl t
+    from ores_refdata_tenor_convention_resolutions_tbl t
     where t.tenant_id = v_system_tenant_id
       and t.valid_to = ores_utility_infinity_timestamp_fn();
 

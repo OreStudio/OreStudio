@@ -72,6 +72,9 @@ class BookStatusController;
 class RegulatoryBookTypeController;
 class BookPurposeTypeController;
 class LedgerFeedTypeController;
+class TenorController;
+class TenorConventionController;
+class TenorAnchorController;
 
 /**
  * @brief Reference data plugin: currencies, countries, dimensions, coding
@@ -161,6 +164,9 @@ private:
     std::unique_ptr<RegulatoryBookTypeController> regulatoryBookTypeController_;
     std::unique_ptr<BookPurposeTypeController> bookPurposeTypeController_;
     std::unique_ptr<LedgerFeedTypeController> ledgerFeedTypeController_;
+    std::unique_ptr<TenorController> tenorController_;
+    std::unique_ptr<TenorConventionController> tenorConventionController_;
+    std::unique_ptr<TenorAnchorController> tenorAnchorController_;
 
     // Data Catalogue controllers (owned here, contributed to data_management_menu)
     std::unique_ptr<DataDomainController> dataDomainController_;

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 55FD445F-EA4F-4961-A578-9D9C78B17CF3
+:END:
+#+title: New lookup entity: two undocumented manual wiring steps (NATS handler registrar, tenant-provisioning copy block)
+#+description: Adding a new codegen'd lookup entity (e.g. book_purpose_type) requires two hand-edits the codegen workflow doesn't cover or document: (1) registering the generated NATS CRUD handlers in projects/ores.refdata/core/src/messaging/registrar.cpp (only the eventing registrar, event_registrar.cpp, gets proactively wired -- the request/response handler registrar is a separate hand-maintained dispatch list); (2) adding a copy block to projects/ores.sql/create/iam/iam_tenant_provisioner_create.sql so the new entity's system-tenant seed rows get copied into newly (or already-)provisioned tenants, matching book_statuses/regulatory_book_types/purpose_types. Both gaps were silent -- no build/test failure, only a runtime 'Failed to fetch ... from server' (gap 1) or an empty list for a real tenant (gap 2), caught only via manual QA. Codify as codegen steps or document explicitly in the entity-creation runbook (codegen-add-entity skill / entity_lifecycle.md).
+#+type: capture
+#+level: cross
+#+filetags: :codegen:book_data_model_cleanup:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

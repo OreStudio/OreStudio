@@ -110,6 +110,7 @@
 \ir ../refdata/refdata_book_statuses_populate.sql
 \ir ../refdata/refdata_regulatory_book_types_populate.sql
 \ir ../refdata/refdata_book_purpose_types_populate.sql
+\ir ../refdata/refdata_ledger_feed_types_populate.sql
 \ir ../refdata/refdata_business_unit_types_populate.sql
 \ir ../refdata/refdata_system_business_centre_populate.sql
 \ir ../refdata/refdata_system_party_populate.sql

@@ -7,41 +7,62 @@
 #+level: s1
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-ledger-feed-type
+#+pr: 1541
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
 #+updated: 2026-07-11
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add ledger_feed_type as a lookup entity (domain/SQL/repository/
+protocol/service/Qt CRUD), mirroring the book_purpose_type/
+regulatory_book_type pattern, seeded with 3 mutually-exclusive values
+(None, Automatic, Manual), available under Reference Data > Book
+Codes.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-13                               |
 
 * Acceptance
 
--
+- ledger_feed_type generated (all layers) and manually QA'd: list,
+  detail, save with change-reason prompt, history, no log errors.
+- The 3 seed values (None, Automatic, Manual) present under the system
+  tenant and copied into every provisioned tenant.
+- NATS handler registered in registrar.cpp and tenant-provisioning
+  copy block added -- learned from book_purpose_type's task, done
+  proactively this time instead of discovered via QA.
+- book itself does not yet reference ledger_feed_type -- wiring the FK
+  onto book is out of scope for this task, matching book_purpose_type's
+  precedent.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Follows [[id:5C89033D-224E-4105-A8CF-B0336C2A9014][Add book_purpose_type lookup entity to book]]'s pattern and
+lessons directly: a 3-state lookup entity (None/Automatic/Manual)
+replacing the originally-scoped is_ledger_book/is_manual_ledger_book
+boolean pair, which had an invalid state (manual=true, ledger=false).
+Two workflow gaps were discovered and fixed by hand for
+book_purpose_type (NATS handler never registered in registrar.cpp;
+tenant-provisioning copy block missing in
+iam_tenant_provisioner_create.sql) -- doing both proactively here
+before manual QA, not after. Confirmed it worked: manual QA passed
+6/6 on the first attempt (no rework cycle, unlike book_purpose_type's
+2 failed/1 tester-error rounds).
 
 * Notes
 
@@ -54,13 +75,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:C53FD00E-0A5E-40DE-AA20-9D03A466889E][Verify ledger_feed_type list/detail/history]] | PASSED | All 6 steps PASS on the first run, zero ERROR-level log lines. NATS handler registration and tenant-provisioning copy block were wired proactively before this run (per book_purpose_type's lessons), confirmed working: 3 rows present under Barclays' tenant before the client was even launched. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1541][#1541]] | [refdata,qt,sql] Add ledger_feed_type lookup entity |
 
 * Review
 
@@ -69,3 +90,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ledger_feed_type is fully generated (domain/SQL/repository/protocol/
+service/Qt CRUD) following book_purpose_type's pattern, seeded with
+its 3 mutually-exclusive values (None, Automatic, Manual), and exposed
+under Reference Data > Book Codes > Ledger Feed Types.
+
+Applied both workflow-gap fixes proactively this time, before manual
+QA rather than after (learned from [[id:5C89033D-224E-4105-A8CF-B0336C2A9014][Add book_purpose_type lookup entity
+to book]]'s task): NATS handler registration in registrar.cpp and
+event_registrar.cpp, and the tenant-provisioning copy block in
+iam_tenant_provisioner_create.sql. Confirmed both worked before even
+launching the Qt client -- direct SQL check showed 3 rows already
+present under Barclays' tenant right after provisioning. Manual QA
+scenario PASSED on the first run (6/6 steps, zero log errors), no
+rework cycle needed this time.
+
+book itself does not yet reference ledger_feed_type -- that FK wiring
+is separate follow-up scope, not part of this task.

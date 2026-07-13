@@ -45,6 +45,7 @@
 #include "ores.qt/FraConventionController.hpp"
 #include "ores.qt/IborIndexConventionController.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LedgerFeedTypeController.hpp"
 #include "ores.qt/LegTypeController.hpp"
 #include "ores.qt/MethodologyController.hpp"
 #include "ores.qt/MonetaryNatureController.hpp"
@@ -283,6 +284,15 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
         ctx_.username,
         this);
     connectControllerSignals(bookPurposeTypeController_.get());
+
+    ledgerFeedTypeController_ = std::make_unique<LedgerFeedTypeController>(
+        ctx_.main_window,
+        ctx_.mdi_area,
+        ctx_.client_manager,
+        ctx_.change_reason_cache,
+        ctx_.username,
+        this);
+    connectControllerSignals(ledgerFeedTypeController_.get());
 
     partyTypeController_ = std::make_unique<PartyTypeController>(ctx_.main_window,
                                                                  ctx_.mdi_area,
@@ -594,8 +604,8 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
 
         // Book Codes submenu: auxiliary/classification data for books and
         // portfolios (Book Statuses, Regulatory Book Types, Book Purpose
-        // Types today; room for Ledger Feed Types and portfolio-side codes
-        // as they land). Reference-data lookups belong here, not in the
+        // Types, Ledger Feed Types today; room for portfolio-side codes as
+        // they land). Reference-data lookups belong here, not in the
         // Trading menu's Trading Codes submenu.
         auto* menuBookCodes = ref->addMenu(tr("Book &Codes"));
         auto* actBookStatuses =
@@ -615,6 +625,12 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         connect(actBookPurposeTypes, &QAction::triggered, this, [this]() {
             if (bookPurposeTypeController_)
                 bookPurposeTypeController_->showListWindow();
+        });
+        auto* actLedgerFeedTypes =
+            menuBookCodes->addAction(ico(Icon::Flag), tr("&Ledger Feed Types"));
+        connect(actLedgerFeedTypes, &QAction::triggered, this, [this]() {
+            if (ledgerFeedTypeController_)
+                ledgerFeedTypeController_->showListWindow();
         });
 
         // Organisation Codes submenu: shared with ores.qt.party (host-owned,
@@ -800,6 +816,7 @@ void RefdataPlugin::on_logout() {
     zeroConventionController_.reset();
     partyTypeController_.reset();
     purposeTypeController_.reset();
+    ledgerFeedTypeController_.reset();
     bookPurposeTypeController_.reset();
     regulatoryBookTypeController_.reset();
     bookStatusController_.reset();

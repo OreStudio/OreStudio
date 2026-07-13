@@ -70,6 +70,7 @@ class BookController;
 class BookStatusController;
 class RegulatoryBookTypeController;
 class BookPurposeTypeController;
+class LedgerFeedTypeController;
 
 /**
  * @brief Reference data plugin: currencies, countries, dimensions, coding
@@ -157,6 +158,7 @@ private:
     std::unique_ptr<BookStatusController> bookStatusController_;
     std::unique_ptr<RegulatoryBookTypeController> regulatoryBookTypeController_;
     std::unique_ptr<BookPurposeTypeController> bookPurposeTypeController_;
+    std::unique_ptr<LedgerFeedTypeController> ledgerFeedTypeController_;
 
     // Data Catalogue controllers (owned here, contributed to data_management_menu)
     std::unique_ptr<DataDomainController> dataDomainController_;

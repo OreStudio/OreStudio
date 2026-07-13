@@ -29,9 +29,9 @@ enrichment).
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | 4/9 tasks done. book_purpose_type lookup entity shipped and QA'd. |
+| Now           | 5/9 tasks done. book_purpose_type and ledger_feed_type lookup entities shipped and QA'd. |
 | Waiting on    | Nothing.                               |
-| Next          | Pick up the next BACKLOG task (ledger_feed_type, is_sweepable, or one of the investigation/rename tasks). |
+| Next          | Pick up the next BACKLOG task (is_sweepable, or one of the investigation/rename tasks). |
 | Last touched  | 2026-07-13                               |
 
 * Acceptance
@@ -51,7 +51,7 @@ enrichment).
 | [[id:A4F81E5E-6795-4533-AD3A-371EE4F01D41][Rename ledger_ccy to functional_currency]] | BACKLOG | | | ledger_ccy is described in the domain notes as the book's functional/accounting currency, designated by the ledger. Rename the field (and its Qt label, column header, etc.) to functional_currency to match domain terminology precisely. |
 | [[id:ACB04B8D-06E6-4776-8396-0A9279BF200D][Analyse allowed-currency and allowed-product lists for book (needs further design)]] | BACKLOG | | | Book Currencies (domain notes): each book has a set of allowed currencies; only instruments whose currency intersects that set may be booked into it. Likely also needs an allowed-product-type list (books carry trading rules restricting which deals may be booked). Both probably need an explicit 'All' wildcard state distinct from an enumerated set. Needs further design analysis before implementation -- data shape (multi-value column vs junction table), UI (multi-select vs checkbox-per-value), and how 'All' interacts with an otherwise-enumerated list. |
 | [[id:3BD2AE6A-6B8F-4254-AD47-37F3797A1B75][Enrich the Books manual chapter with domain concepts]] | DONE | 2026-07-10 | 2026-07-10 | chapter_7_books.org currently documents only the Qt UI mechanics. Weave in the domain concepts from the new Book knowledge cluster (classification, books vs portfolios, lifecycle, ledger connection) so the manual explains what a book represents and why, not just how to click through its dialogs. |
-| [[id:DC13CC83-2807-4AA9-B56E-BA7D6BA896D2][Add ledger_feed_type lookup entity to book]] | BACKLOG | | | Replace the originally-scoped is_ledger_book/is_manual_ledger_book boolean pair with one 3-state ledger_feed_type field (None/Automatic/Manual), following the regulatory_book_type lookup-entity pattern -- removes the invalid state where manual=true but ledger=false. |
+| [[id:DC13CC83-2807-4AA9-B56E-BA7D6BA896D2][Add ledger_feed_type lookup entity to book]] | DONE | 2026-07-13 | 2026-07-13 | Replace the originally-scoped is_ledger_book/is_manual_ledger_book boolean pair with one 3-state ledger_feed_type field (None/Automatic/Manual), following the regulatory_book_type lookup-entity pattern -- removes the invalid state where manual=true but ledger=false. |
 | [[id:FA28F852-012F-47A7-94E7-FEDAEF2F2DF9][Add is_sweepable flag to book]] | BACKLOG | | | Add the is_sweepable boolean (spot-sweep eligibility only, unrelated to ledger sweep), rendered as a yes/no badge in the Book list consistent with the regulatory_book_type badge combo. |
 | [[id:077F2C20-50AE-4E23-A4E1-0FC053854313][Add paired risk-book link for Wash-purpose books]] | BACKLOG | | | A Wash-purpose book needs a nullable self-referencing FK to its designated risk book, since every wash back-to-back trade needs a routing target. Design validation (only settable when book_purpose_type = Wash) and scope size before pulling into a sprint -- discovered during the book_purpose_type design, not in original ask. |
 | [[id:4709CCA3-F181-47FB-8485-37EF7B23BD3C][Add child-entity toolbar buttons to Book window]] | BACKLOG | | | Book's MDI window should expose its lookup children (book_status, regulatory_book_type, book_purpose_type, ledger_feed_type) as toolbar buttons that open their respective list windows, mirroring CurrencyMdiWindow's RoundingType/MarketTier toolbar pattern. |

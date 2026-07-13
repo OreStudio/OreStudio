@@ -694,20 +694,23 @@ void provision_commands::process_party(std::ostream& out,
         }
     }
 
-    // Phase 4: publish the synthetic FX spot config dataset — a
-    // member of the ore_analytics bundle (alongside report
-    // definitions), opted in on its own so this doesn't re-trigger
-    // report creation already handled by Phase 3.
+    // Phase 4: publish the synthetic FX spot config dataset — a member
+    // of the synthetic_realistic bundle (alongside report definitions;
+    // not the plain 2-pair ore_analytics fx_spot_configs starter, so
+    // the party's driver feeds cover all 11 currency pairs the CRM
+    // story's majors/exotics topologies need real, live ticks for),
+    // opted in on its own so this doesn't re-trigger report creation
+    // already handled by Phase 3.
     out << "[4/6] Publishing synthetic FX spot configs for the party..." << std::endl;
     {
         dq::messaging::publish_bundle_request req;
-        req.bundle_code = "ore_analytics";
+        req.bundle_code = "synthetic_realistic";
         req.mode = dq::domain::publication_mode::upsert;
         req.published_by = username;
         req.atomic = true;
         dq::messaging::publish_bundle_params params;
         params.party_id = boost::uuids::to_string(party->id);
-        params.opted_in_datasets.push_back("synthetic.fx_spot_configs");
+        params.opted_in_datasets.push_back("synthetic.fx_spot_configs.realistic");
         req.params_json = dq::messaging::build_params_json(params);
         auto published = do_request(out, session, req, publish_timeout, true);
         if (!published)

@@ -786,10 +786,17 @@ void PartyExecutePage::startFxSpotConfigsPublish() {
             BundleResult result;
             dq::messaging::publish_bundle_params params;
             params.party_id = boost::uuids::to_string(clientManager->currentPartyId());
-            params.opted_in_datasets.push_back("synthetic.fx_spot_configs");
+            // Opted in on its own (not report_definitions, the bundle's
+            // other member) so this doesn't re-trigger report creation
+            // already handled by an earlier phase.
+            params.opted_in_datasets.push_back("synthetic.fx_spot_configs.realistic");
 
+            // synthetic_realistic (not the plain 2-pair ore_analytics
+            // fx_spot_configs starter) so the party's driver feeds cover
+            // all 11 currency pairs the CRM story's majors/exotics
+            // topologies need real, live ticks for.
             dq::messaging::publish_bundle_request request;
-            request.bundle_code = "ore_analytics";
+            request.bundle_code = "synthetic_realistic";
             request.mode = dq::domain::publication_mode::upsert;
             request.published_by = publishedBy;
             request.atomic = true;

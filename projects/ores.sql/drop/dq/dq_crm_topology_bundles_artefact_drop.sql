@@ -17,21 +17,4 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
-/**
- * Market Data Component Population Script
- *
- * Seeds DQ artefact/dataset data for market data reference vintages, so
- * they can be published from the Librarian into a party. All scripts are
- * idempotent.
- */
-
-\echo '=== Market Data Component Population ==='
-\echo ''
-
-\echo '--- FX Driver Rates Seed Data ---'
-\ir ./marketdata_fx_driver_rates_populate.sql
-\ir ./marketdata_crm_topology_bundles_populate.sql
-
-\echo ''
-\echo '=== Market Data Component Population Complete ==='
+drop table if exists "ores_dq_crm_topology_bundles_artefact_tbl";

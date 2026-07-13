@@ -136,6 +136,9 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'market_data_observations', 0, 'Market Data Observations', 'Curated FX driver rates (Federal Reserve H.10) for a fixed as-of date',
      'dq_market_data_observations_artefact_tbl', 'marketdata_market_observations_tbl', 'marketdata.v1.market-data-observations.publish-from-dq', 37,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'crm_topology_bundles', 0, 'CRM Topology Bundles', 'Named CRM (Cross-Rates Matrix) topology configs, driver pairs, and curated derived pairs (writes crm_topology_configs, crm_driver_pairs, and crm_enabled_derived_pairs)',
+     'dq_crm_topology_bundles_artefact_tbl', 'marketdata_crm_topology_configs_tbl', 'marketdata.v1.crm-topology-bundles.publish-from-dq', 38,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

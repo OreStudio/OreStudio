@@ -118,7 +118,6 @@ std::optional<domain::country> country_repository::read_at_version(context ctx,
     return entities.front();
 }
 
-
 void country_repository::remove(context ctx, const std::string& alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing country: " << alpha2_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));

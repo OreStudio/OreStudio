@@ -368,6 +368,18 @@ std::uint32_t country_service::count_countries_for_party(const boost::uuids::uui
 ORES_REFDATA_API_EXPORT std::vector<domain::country>
 generate_fictional_countries(std::size_t n, utility::generation::generation_context& ctx);
 
+/**
+ * @brief Generates the ISO 3166-1 "ZZ" user-assigned sentinel country.
+ *
+ * Represents "supranational / not country-specific" — used by calendar
+ * rows (e.g. TARGET) with no single owning country. ZZ is one of ISO
+ * 3166-1's own reserved user-assigned code elements (AA, QM-QZ, XA-XZ,
+ * ZZ), never allocated to a real country, so this is real reference
+ * data rather than fictional test data.
+ */
+ORES_REFDATA_API_EXPORT domain::country
+generate_country_sentinel(utility::generation::generation_context& ctx);
+
 #+end_src
 
 ** Custom generator implementations
@@ -586,6 +598,18 @@ generate_fictional_countries(std::size_t n, utility::generation::generation_cont
         return all;
 
     return std::vector<domain::country>(all.begin(), all.begin() + n);
+}
+
+domain::country generate_country_sentinel(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto now = ctx.past_timepoint();
+
+    return domain::country{.alpha2_code = "ZZ", .alpha3_code = "ZZZ", .numeric_code = "999",
+                           .name = "Supranational / Not Country-Specific",
+                           .official_name = "Supranational / Not Country-Specific",
+                           .modified_by = modified_by, .change_reason_code = "system.reference",
+                           .change_commentary = "ISO 3166-1 user-assigned sentinel for "
+                                                 "supranational calendars", .recorded_at = now};
 }
 #+end_src
 

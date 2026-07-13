@@ -1,0 +1,279 @@
+:PROPERTIES:
+:ID: C09DF2B2-0E14-4742-8BAC-5D5842069580
+:END:
+#+title: ores.refdata.calendar
+#+description: ORE/QuantLib calendar reference data: a validated enumeration of business-day/holiday calendars, central-bank meeting calendars, and other named date collections.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: ORE/QuantLib calendar reference data.
+#+entity_singular: calendar
+#+entity_plural: calendars
+#+entity_title: Calendar
+#+has_tenant_id: true
+#+coding_scheme: nullable
+#+image_id: false
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+Validated enumeration of named date collections consumed by ORE and
+QuantLib: business-day/holiday calendars (=TARGET=, =UnitedStates=,
+=UnitedStates.GovernmentBond=, ...), central-bank meeting calendars,
+and other calendar-shaped reference data. Each row is one concrete
+QuantLib/ORE calendar token — sub-market variants (e.g.
+=UnitedStates.NYSE= vs =UnitedStates.GovernmentBond=) are separate
+rows, not a joined variant field, so the =code= column always matches
+ORE's XML =<Calendar>= vocabulary verbatim. Classified by
+[[id:1A454661-81B5-4F8F-93A6-06547412DD84][calendar_type]] and
+associated with the [[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][country]]
+whose calendar it is — supranational calendars (=TARGET=) use the
+=ZZ= sentinel (ISO 3166-1's own reserved user-assigned code) rather
+than a nullable country reference, since no single country owns them.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+QuantLib/ORE calendar token, verbatim (e.g. "TARGET", "UnitedStates",
+"UnitedStates.GovernmentBond", "UnitedKingdom", "Japan").
+
+#+begin_src cpp :name generator
+std::string("X")
+#+end_src
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable, unique display name (e.g. "TARGET (Euro area)",
+"United States (Government Bond)").
+
+#+begin_src cpp :name generator
+"Test Calendar " + std::to_string(faker::number::integer(1000, 9999))
+#+end_src
+
+* Columns
+
+** calendar_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  public_holiday
+:END:
+
+Classification of the calendar's purpose; soft FK to
+=ores_refdata_calendar_types_tbl= (e.g. "public_holiday",
+"central_bank_meeting", "financial_centre", "data_release", "other").
+
+#+begin_src cpp :name generator
+std::string("public_holiday")
+#+end_src
+
+** country_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ZZ
+:END:
+
+ISO 3166-1 alpha-2 country code of the calendar's owning country; soft
+FK to =ores_refdata_countries_tbl=. Supranational or non-country-
+specific calendars (e.g. "TARGET") use the reserved =ZZ=
+user-assigned code rather than a nullable reference.
+
+#+begin_src cpp :name generator
+std::string("ZZ")
+#+end_src
+
+#+begin_src sql :name country_code_validation :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- Paste block: doesn't fit soft_fk_validations (joins on id, not
+    -- an alpha-2 code column) or the Validations table
+    -- (ores_refdata_validate_country_fn only checks non-null/empty,
+    -- not existence).
+    if not exists (
+        select 1 from ores_refdata_countries_tbl
+        where tenant_id = NEW.tenant_id
+          and alpha2_code = NEW.country_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid country_code: %. Must be a valid ISO 3166-1 alpha-2 code (or the ZZ sentinel).',
+            NEW.country_code;
+    end if;
+#+end_src
+
+** image_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional reference to a flag or logo image in the images table —
+overrides the country-flag icon derived from =country_code= (e.g. for
+a central bank's own logo, or a currency-union flag for a supranational
+calendar).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_calendars_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_calendar_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     code
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function                    |
+|--------------------+-----------------------------------------|
+| calendar_type       | ores_refdata_validate_calendar_type_fn |
+| change_reason_code | ores_dq_validate_change_reason_fn      |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: calendar
+:entity_plural_short:   calendars
+:entity_singular_words: calendar
+:entity_plural_words:   calendars
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cal
+:END:
+
+** Table display
+
+| column        | header       |
+|---------------+--------------|
+| code          | Code         |
+| name          | Name         |
+| calendar_type | Type         |
+| country_code  | Country      |
+| modified_by   | Modified By  |
+| version       | Version      |
+
+** Qt
+:PROPERTIES:
+:domain_include:              ores.refdata.api/domain/calendar.hpp
+:domain_class:                refdata::domain::calendar
+:protocol_include:            ores.refdata.api/messaging/calendar_protocol.hpp
+:collection_name:             calendars
+:item_var:                    calendar
+:key_field:                   code
+:has_uuid_primary_key:        false
+:has_change_reason_cache:     true
+:get_request_class:           refdata::messaging::get_calendars_request
+:get_response_class:          refdata::messaging::get_calendars_response
+:get_message_type:            get_calendars_request
+:save_request_class:          refdata::messaging::save_calendar_request
+:save_response_class:         refdata::messaging::save_calendar_response
+:save_message_type:           save_calendar_request
+:delete_request_class:        refdata::messaging::delete_calendar_request
+:delete_response_class:       refdata::messaging::delete_calendar_response
+:delete_message_type:         delete_calendar_request
+:delete_request_id_field:     codes
+:history_request_class:       refdata::messaging::get_calendar_history_request
+:history_response_class:      refdata::messaging::get_calendar_history_response
+:history_message_type:        get_calendar_history_request
+:history_request_id_field:    code
+:history_response_data_field: history
+:flag_icon_column:            CountryCode
+:flag_inline_widget:          countryCodeEdit
+:flag_accessor:                getCalendarFlagIcon
+:settings_group:              CalendarListWindow
+:qt_settings_version:         1
+:window_title:                Calendars
+:icon:                        Calendar
+:has_csv_xml_io:              true
+:csv_export_include:          ores.refdata.api/csv/exporter.hpp
+:csv_export_class:            refdata::csv::exporter
+:csv_export_method:           export_calendar_config
+:has_version_navigation:      true
+:changed_event_class:         refdata::eventing::calendar_changed_event
+:changed_event_include:       ores.refdata.api/eventing/calendar_changed_event.hpp
+:END:
+
+*** Detail fields
+
+| field         | label         | widget              | type          | is_key | is_required | placeholder                     | combo_domain_type                 | combo_fetch_include        | combo_fetch_fn        | combo_watcher_name  | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label      | combo_setter_pascal | view_group |
+|---------------+---------------+----------------------+---------------+--------+-------------+----------------------------------+------------------------------------+-----------------------------+------------------------+----------------------+-------------------+----------------------+-------------------+-------------------+-----------------------+-------------|
+| code          | Code          | codeEdit             | line_edit     | true   | true        | Enter QuantLib calendar code     |                                     |                              |                         |                      |                   |                      |                   |                   |                       | General     |
+| name          | Name          | nameEdit             | line_edit     |        | true        | Enter calendar name              |                                     |                              |                         |                      |                   |                      |                   |                   |                       | General     |
+| calendar_type | Type          | calendarTypeCombo    | dynamic_combo |        |             |                                  | refdata::domain::calendar_type     | ores.qt/LookupFetcher.hpp    | fetch_calendar_types    | calendarTypeWatcher  | code              | description          | display_order     | calendar types    | CalendarTypeCombo     | General     |
+| country_code  | Country       | countryCodeCombo     | dynamic_combo |        |             |                                  | refdata::domain::country           | ores.qt/LookupFetcher.hpp    | fetch_countries         | countryCodeWatcher   | alpha2_code       | name                 | name              | countries         | CountryCodeCombo      | General     |
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header    | type   | width | import_preview | is_badge | badge_key     | hidden_by_default |
+|--------------+---------------+-----------+--------+-------+----------------+----------+---------------+--------------------|
+| Code         | code          | Code      | string | auto  | true           |          |               |                    |
+| CalendarName | name          | Name      | string | auto  | true           |          |               |                    |
+| CalendarType | calendar_type | Type      | string | auto  |                | true     | calendar_type |                    |
+| CountryCode  | country_code  | Country   | string | 80    |                |          |               |                    |
+| Version      | version       | Version   | int    | 70    |                |          |               |                    |
+| ModifiedBy   | modified_by   | Modified By | string | auto |               |          |               |                    |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:1A454661-81B5-4F8F-93A6-06547412DD84][ores.refdata.calendar_type]] — the aux-type table classifying =calendar_type=.
+- [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] — parent story.
+- [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]] — the knowledge cluster grounding this entity's design.

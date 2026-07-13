@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_REPOSITORY_COUNTRY_REPOSITORY_HPP
-#define ORES_REFDATA_CORE_REPOSITORY_COUNTRY_REPOSITORY_HPP
+#ifndef ORES_REFDATA_CORE_REPOSITORY_CALENDAR_TYPE_REPOSITORY_HPP
+#define ORES_REFDATA_CORE_REPOSITORY_CALENDAR_TYPE_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/country.hpp"
+#include "ores.refdata.api/domain/calendar_type.hpp"
 #include "ores.refdata.core/export.hpp"
 #include <chrono>
 #include <cstdint>
@@ -34,11 +34,11 @@
 namespace ores::refdata::repository {
 
 /**
- * @brief Reads and writes countries to data storage.
+ * @brief Reads and writes calendar types to data storage.
  */
-class ORES_REFDATA_CORE_EXPORT country_repository {
+class ORES_REFDATA_CORE_EXPORT calendar_type_repository {
 private:
-    inline static std::string_view logger_name = "ores.refdata.repository.country_repository";
+    inline static std::string_view logger_name = "ores.refdata.repository.calendar_type_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -55,79 +55,64 @@ public:
     std::string sql();
 
     /**
-     * @brief Writes countries to database.
+     * @brief Writes calendar types to database.
      */
     /**@{*/
-    void write(context ctx, const domain::country& v);
-    void write(context ctx, const std::vector<domain::country>& v);
+    void write(context ctx, const domain::calendar_type& v);
+    void write(context ctx, const std::vector<domain::calendar_type>& v);
     /**@}*/
 
     /**
-     * @brief Reads latest countries, possibly filtered by alpha2_code.
+     * @brief Reads latest calendar types, possibly filtered by code.
      */
     /**@{*/
-    std::vector<domain::country> read_latest(context ctx);
-    std::vector<domain::country> read_latest(context ctx, const std::string& alpha2_code);
+    std::vector<domain::calendar_type> read_latest(context ctx);
+    std::vector<domain::calendar_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
     /**
-     * @brief Reads all countries, possibly filtered by alpha2_code.
+     * @brief Reads all calendar types, possibly filtered by code.
      */
-    std::vector<domain::country> read_all(context ctx, const std::string& alpha2_code);
+    std::vector<domain::calendar_type> read_all(context ctx, const std::string& code);
 
     /**
-     * @brief Reads a single country as it stood at a specific
+     * @brief Reads a single calendar type as it stood at a specific
      * version — the version's own [valid_from, valid_to) window is returned
      * verbatim, so the caller can compose child entities "as of" the same
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param alpha2_code The alpha2_code to look up
+     * @param code The code to look up
      * @param version The version to fetch
      */
-    std::optional<domain::country>
-    read_at_version(context ctx, const std::string& alpha2_code, std::uint32_t version);
+    std::optional<domain::calendar_type>
+    read_at_version(context ctx, const std::string& code, std::uint32_t version);
 
     /**
-     * @brief Reads latest countries with pagination support.
+     * @brief Reads latest calendar types with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      */
-    std::vector<domain::country>
+    std::vector<domain::calendar_type>
     read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Gets the total count of active countries.
+     * @brief Gets the total count of active calendar types.
      * @param ctx Repository context with database connection
-     * @return Total number of active countries
+     * @return Total number of active calendar types
      */
-    std::uint32_t get_total_country_count(context ctx);
+    std::uint32_t get_total_type_count(context ctx);
 
     /**
-     * @brief Deletes a country by closing its temporal validity.
+     * @brief Deletes a calendar type by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& alpha2_code);
+    void remove(context ctx, const std::string& code);
 
     /**
-     * @brief Deletes countries by closing their temporal validity.
+     * @brief Deletes calendar types by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& alpha2_codes);
-
-    /**
-     * @brief Reads countries at the supplied time point, possibly filtered by
-     * alpha-2 code.
-     */
-    /**@{*/
-    std::vector<domain::country> read_at_timepoint(context ctx, const std::string& as_of);
-    std::vector<domain::country>
-    read_at_timepoint(context ctx, const std::string& as_of, const std::string& alpha2_code);
-    /**@}*/
-
-    /**
-     * @brief Reads all versions of all countries (no key filter), newest first.
-     */
-    std::vector<domain::country> read_all(context ctx);
+    void remove(context ctx, const std::vector<std::string>& codes);
 };
 
 }

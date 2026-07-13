@@ -121,6 +121,13 @@ std::string(faker::lorem::sentence())
 :icon:                   Clock
 :END:
 
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder                  |
+|-------------+-------------+-----------------+-----------+--------+-------------+-------------------------------|
+| code        | Code        | codeEdit        | line_edit | true   | true        | Enter anchor code (e.g. SPOT) |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description          |
+
 *** Columns (Qt model)
 
 | enum_name   | field       | header      | type      | width |

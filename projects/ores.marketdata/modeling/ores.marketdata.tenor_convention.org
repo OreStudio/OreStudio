@@ -140,8 +140,16 @@ std::string("SPOT")
 :history_message_type:   get_tenor_convention_history_request
 :settings_group:         TenorConventionListWindow
 :window_title:           Tenor Conventions
-:icon:                   Grid
+:icon:                   Table
 :END:
+
+*** Detail fields
+
+| field         | label         | widget            | type      | is_key | is_required | placeholder                            |
+|---------------+---------------+-------------------+-----------+--------+-------------+------------------------------------------|
+| code          | Code          | codeEdit          | line_edit | true   | true        | Enter convention code                   |
+| description   | Description   | descriptionEdit   | text_edit |        |             | Enter a description                     |
+| measured_from | Measured From | measuredFromEdit  | line_edit |        | true        | Anchor code (e.g. SPOT, TODAY, NEAR_LEG) |
 
 *** Columns (Qt model)
 

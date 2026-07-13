@@ -90,7 +90,7 @@ labels with no natural lexicographic order relative to periods (e.g.
 =SPOT= among =O/N=/=T/N=/=S/N=) sort correctly.
 
 #+begin_src cpp :name generator
-ctx.next_int(0, 1000)
+ctx.random_int(0, 1000)
 #+end_src
 
 ** kind
@@ -126,7 +126,7 @@ std::string("MONTH")
 ** multiplier
 :PROPERTIES:
 :type:     integer
-:cpp_type: int
+:cpp_type: std::optional<int>
 :nullable: true
 :END:
 
@@ -134,7 +134,7 @@ Period count for =PERIOD= tenors (the =n= in =nD=/=nW=/=nM=/=nY=). Null
 for =SPECIAL= tenors.
 
 #+begin_src cpp :name generator
-ctx.next_int(1, 30)
+ctx.random_int(1, 30)
 #+end_src
 
 * SQL
@@ -204,6 +204,18 @@ ctx.next_int(1, 30)
 :icon:                   Clock
 :END:
 
+*** Detail fields
+
+| field        | label        | widget           | type      | is_key | is_required | placeholder                |
+|--------------+--------------+------------------+-----------+--------+-------------+-----------------------------|
+| code         | Code         | codeEdit         | line_edit | true   | true        | Enter tenor code (e.g. 1M) |
+| display_name | Display Name | displayNameEdit  | line_edit |        | true        | Enter display name         |
+| description  | Description  | descriptionEdit  | text_edit |        |             | Enter a description        |
+| sort_order   | Sort Order   | sortOrderEdit    | spin_box  |        | true        |                             |
+| kind         | Kind         | kindEdit         | line_edit |        | true        | SPECIAL or PERIOD          |
+| unit         | Unit         | unitEdit         | line_edit |        |             | DAY, WEEK, MONTH, or YEAR  |
+| multiplier   | Multiplier   | multiplierEdit   | spin_box  |        |             |                             |
+
 *** Columns (Qt model)
 
 | enum_name   | field        | header       | type      | width |
@@ -214,7 +226,6 @@ ctx.next_int(1, 30)
 | SortOrder   | sort_order   | Sort Order   | int       | 90    |
 | Kind        | kind         | Kind         | string    | 90    |
 | Unit        | unit         | Unit         | string    | 90    |
-| Multiplier  | multiplier   | Multiplier   | int       | 90    |
 | Version     | version      | Version      | int       | 80    |
 | ModifiedBy  | modified_by  | Modified By  | string    | 120   |
 | RecordedAt  | recorded_at  | Recorded At  | timestamp | 150   |

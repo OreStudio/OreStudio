@@ -24,6 +24,14 @@ Model flags consumed by this template:
   Set on entities whose service has no =get_<entity>_history= method.
 - =list_only= (bool, Flags) — wire only the list subject.
   Set on read-only lookup entities.
+- =read_for_cache= (bool, Flags) — wire the generated
+  =read_<entity_plural>_for_cache= subject to the handler's
+  =read_for_cache= method. Requires =has_tenant_id=. This is the
+  standard archetype for the bulk cache-warming read; =party= still
+  wires its own hand-written =read_parties_for_cache= via the
+  custom-subscription paste point below pending a fix to its
+  codegen drift, and is the template's motivating example, not this
+  flag's.
 
 Custom-includes paste point: the marker
 =<<paste:068323E2-D722-46F1-8B86-46BD32426003>>= is emitted after the standard
@@ -103,6 +111,11 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
             h->hierarchy(std::move(msg));
         }));
 {{/has_parent_id}}
+{{#read_for_cache}}
+    subs.push_back(nats.queue_subscribe(
+        read_{{entity_plural}}_for_cache_request::nats_subject, queue_group,
+        [h](ores::nats::message msg) { h->read_for_cache(std::move(msg)); }));
+{{/read_for_cache}}
 <<paste:FB267332-79AB-4873-AFDA-CEEE68A0F398>>
     return subs;
 }

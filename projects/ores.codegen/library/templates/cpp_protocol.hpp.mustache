@@ -121,6 +121,25 @@ struct get_{{entity_singular}}_hierarchy_response {
 };
 
 {{/has_parent_id}}
+{{#read_for_cache}}
+/**
+ * @brief Reads all active {{entity_plural}} for a tenant — used by
+ * client-side caches to warm up without multiple round-trips.
+ */
+struct read_{{entity_plural}}_for_cache_request {
+    using response_type = struct read_{{entity_plural}}_for_cache_response;
+    static constexpr std::string_view nats_subject =
+        "{{component}}.v1.{{entity_plural}}.read";
+    std::string tenant_id;
+};
+
+struct read_{{entity_plural}}_for_cache_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
+};
+
+{{/read_for_cache}}
 }
 
 #endif

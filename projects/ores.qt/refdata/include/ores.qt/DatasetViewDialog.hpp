@@ -38,6 +38,7 @@
 namespace ores::qt {
 class ClientManager;
 class BadgeCache;
+class LineageGraphView;
 }
 
 namespace ores::qt {
@@ -59,7 +60,8 @@ namespace ores::qt {
  * - Provenance & Methodology: methodology/business-context/commentary prose
  *   and implementation-details text (left); source, lineage, methodology
  *   identity, audit (right)
- * - Dependencies: interactive lineage diagram (unchanged)
+ * - Dependencies: interactive lineage diagram (mouse-wheel zoom,
+ *   click-and-drag pan, and a "Reset View" button back to fitInView)
  */
 class DatasetViewDialog : public QWidget {
     Q_OBJECT
@@ -214,7 +216,7 @@ private:
     QLabel* pmRecordedAtLabel_;
 
     // Lineage tab
-    QGraphicsView* lineageView_;
+    LineageGraphView* lineageView_;
 
     // Data
     ClientManager* clientManager_;

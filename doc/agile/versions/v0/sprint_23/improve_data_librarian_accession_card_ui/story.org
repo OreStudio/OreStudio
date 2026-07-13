@@ -30,11 +30,11 @@ only cosmetic tab-count changes touch it, if any.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Both phases DONE and verified in-client; original story scope complete. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Pick up the follow-up task (Dependencies zoom/pan) when convenient, or close the story. |
+| Next          | Nothing. |
 | Last touched  | 2026-07-13                               |
 
 * Acceptance
@@ -60,7 +60,7 @@ only cosmetic tab-count changes touch it, if any.
 |------+-------+-------+-----+-------------|
 | [[id:6FF3D889-123F-4C5D-BB28-0F38BA32C9E9][Rework DatasetViewDialog into a persistent-header, two-column layout]] | DONE | 2026-07-12 | 2026-07-13 | Implement the phased redesign: persistent header banner + UUID copy, status pills, merged Provenance/Methodology tab, asymmetric two-column layout — librarian-only, DetailDialogBase untouched. |
 | [[id:9D115861-58B9-488F-A639-146666CA1059][Phase 2: asymmetric two-column card layout]] | DONE | 2026-07-13 | 2026-07-13 | Rework Overview and Provenance & Methodology tabs into an asymmetric two-column split (QSplitter, ~65/35) with QGroupBox/QFormLayout metadata cards, matching the Gemini review's mockup as closely as possible. |
-| [[id:A7A78BD8-604F-4951-8AD8-8FEE6C6B7757][Add zoom/pan controls to the Dependencies lineage graph]] | BACKLOG | | | The Dependencies tab's interactive QGraphicsView lineage graph has no way to zoom in/out or scroll around beyond the initial fitInView; add mouse-wheel zoom and drag-to-pan. |
+| [[id:A7A78BD8-604F-4951-8AD8-8FEE6C6B7757][Add zoom/pan controls to the Dependencies lineage graph]] | DONE | 2026-07-13 | 2026-07-13 | The Dependencies tab's interactive QGraphicsView lineage graph has no way to zoom in/out or scroll around beyond the initial fitInView; add mouse-wheel zoom and drag-to-pan. |
 
 * Decisions
 

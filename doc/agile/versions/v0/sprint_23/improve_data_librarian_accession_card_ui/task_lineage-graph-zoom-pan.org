@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :improve_data_librarian_accession_card_ui:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/lineage-graph-zoom-pan
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,11 +31,11 @@ the Phase 2 two-column layout.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -63,7 +63,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:0CA33DE9-2DA4-47C9-84BD-F1A58A8831CB][Zoom/pan controls on the Dependencies lineage graph]] | PASSED | All 5 steps green |
 
 * PRs
 
@@ -78,3 +78,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added a =LineageGraphView= (=QGraphicsView= subclass) driving the
+Dependencies tab's lineage graph: mouse-wheel zoom anchored under the
+cursor, click-and-drag pan via =ScrollHandDrag=, and a "Reset View"
+button that restores the original =fitInView= framing captured in
+=updateLineageView=. All three acceptance criteria met and manually
+verified via the [[id:0CA33DE9-2DA4-47C9-84BD-F1A58A8831CB][Zoom/pan controls on the Dependencies lineage graph]]
+test scenario — all 5 steps PASSED.

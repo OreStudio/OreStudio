@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 0FCD3745-61CD-4644-BAE2-CBCD994448FE
+:END:
+#+title: Task: Regenerate business_centre from its codegen model and reconcile diffs
+#+description: Run compass codegen generate against the business_centre model authored in the previous task, across every enabled profile. Diff each generated file against the current hand-written one and reconcile (zero-diff, fix-template, fix-code, or accept) per file -- this is where the SQL security-definer/bootstrap-guard fix and the Qt CRUD's move to ores.qt/refdata come from, as a byproduct of correct codegen output rather than hand edits.
+#+type: task
+#+level: s1
+#+filetags: :commission_business_centre:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every codegen profile for business_centre produces a zero-diff or explicitly signed-off delta against the repo, per the entity commissioning reference's codegen sync acceptance criteria. In particular: the SQL insert/validate functions carry security definer + set search_path (from the already-fixed sql_schema_create.mustache template) and the bootstrap guard filters active rows; the Qt CRUD (controller, MDI window, detail/history dialogs, client model) lands under ores.qt/refdata (from the model's component=refdata) instead of ores.qt/party, with RefdataPlugin wired to construct/menu it instead of PartyPlugin -- no cross-component leakage, achieved via regeneration rather than hand-moving files.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- Output-location check done first for every profile (per the entity commissioning reference): each generated file lands under the correct split-project root (ores.refdata.api / ores.refdata.core / ores.qt/refdata), never the monolith.
+- Every generated file is either a zero-diff against the corresponding hand-written file, or has its delta classified and a fix-template / fix-code / accept decision recorded.
+- grep for BusinessCentreController in PartyPlugin.cpp returns no construction/menu-wiring hits after reconciliation; RefdataPlugin.cpp constructs the controller and contributes its menu entry.
+- Full build (api/core/service/qt.refdata/qt.party/qt.exe) is clean; ores.refdata.core.tests pass; a full compass db recreate applies the regenerated SQL cleanly.
+- No generated files for other entities are left modified.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

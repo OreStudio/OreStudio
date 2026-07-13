@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 9563A7CC-856F-49CD-A39C-4E9BD9C23156
+:END:
+#+title: Test Scenario: Verify business_centre windows and menu after RefdataPlugin relocation
+#+description: Consolidated manual Qt client check confirming business_centre's list, detail, and history windows still open, edit, save, and show history correctly after its controller moved from PartyPlugin to RefdataPlugin, and that it now appears in the Reference Data menu instead of the Party/Organisation area.
+#+type: test_scenario
+#+level: s1
+#+filetags: :commission_business_centre:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:15F0D21E-EDE0-4834-9963-D32953CCF9A1][Verify business_centre Qt UI end-to-end post-NATS]] in [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:15F0D21E-EDE0-4834-9963-D32953CCF9A1][Verify business_centre Qt UI end-to-end post-NATS]] |
+| Parent story  | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]]   |
+| Target dialog | RefdataPlugin (Reference Data menu: Business Centres), PartyPlugin (Reference Data menu: Parties, Counterparties, Business Units) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A fresh, Barclays-provisioned database:
+  #+begin_src sh :results verbatim
+  compass db recreate -y -k
+  compass services start
+  compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+  #+end_src
+- A running Qt client, not yet logged in.
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Log in and select Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
+=BARCLAYS PLC=. Confirm all menus enable with no errors.
+
+** Business Centres opens from the Reference Data menu and behaves normally
+
+Open Reference Data > Business Centres (top level, alongside
+Currencies, Countries, Currency Pairs, Books). Confirm the list window
+opens, shows seeded rows (e.g. USNY, GBLO), and that add/edit/save/
+history all work exactly as before. Confirm Reference Data > Parties
+(Organisation area) no longer has a Business Centres entry — only
+Parties, Counterparties, and Business Units remain there.
+
+** Business Centre appears on the toolbar
+
+Confirm the Business Centres toolbar icon is present and opens the
+same list window as the menu action.
+
+** Business Unit's business-centre dropdown still works
+
+Open Reference Data > Business Units > add/edit. Confirm the business
+centre combo box still populates correctly and flag icons render —
+this dropdown reads the same =business_centre= service data, just via
+a controller now owned by a different plugin.
+
+** Logout and re-login works cleanly
+
+Log out, then log back in (same or different party). Confirm no
+crash and the Business Centres menu action and window still work
+after re-login.
+
+** No error toast or log error during the whole flow
+
+Check the client's log tail
+(=build/output/<preset>/publish/log/ores.qt.<colour>.log=) for any
+ERROR-level line.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

@@ -28,8 +28,8 @@ source.
 
 | File | Description |
 |------|--------------|
-| `pages.zip` | Raw Fed H.10 historical HTML pages (one per currency, each holding the full multi-year daily series), plus `manifest.json`. |
-| `pages.zip:manifest.json` | Per-page `code`, `pair`, `source_url`, `sha256`, `size_bytes`, and the archive's `retrieved_at` timestamp -- lets anyone verify the archived bytes match what the Fed actually published, independent of the Fed's site staying up or serving the same content later. |
+| `pages.zip` | Raw Fed H.10 historical HTML pages, one per currency, each holding the full multi-year daily series. |
+| `manifest.json` | The single manifest describing `pages.zip`'s provenance: retrieval timestamp, the exact command that produced the archive, and per-page `code`/`pair`/`source_url`/`sha256`/`size_bytes` -- lets anyone verify the archived bytes match what the Fed actually published, independent of the Fed's site staying up or serving the same content later. |
 
 ## Currencies
 

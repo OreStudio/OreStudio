@@ -1,37 +1,96 @@
 {
-    "name": "Federal Reserve H.10 FX Rates",
-    "description": "Real, individually-quoted foreign exchange rates from the U.S. Federal Reserve Board's H.10 Foreign Exchange Rates release, sourced for the marketdata.fx_driver_rates dataset (Cross-Rates Matrix driver input).",
-    "downloaded_at": "2026-07-13",
-    "methodology_file": "methodology.txt",
-    "fetch_script": "tools/fetch_fed_h10_rates.py",
-    "archive": "pages.zip",
-    "sources": [
-        {
-            "name": "Federal Reserve Board H.10 Foreign Exchange Rates",
-            "description": "Historical daily FX rate release pages, one per currency, each covering the full multi-year series.",
-            "url": "https://www.federalreserve.gov/releases/h10/hist/",
-            "license": "U.S. Government Work (public domain)"
-        }
-    ],
-    "datasets": [
-        {
-            "name": "FX Driver Rates 2016",
-            "code": "marketdata.fx_driver_rates",
-            "catalog": "FX Driver Rates",
-            "subject_area": "FX Spot",
-            "domain": "Market Data",
-            "coding_scheme": "NONE",
-            "methodology": "Federal Reserve H.10 Historical Rates",
-            "description": "25 real Fed H.10 FX spot vintages across 2016 (start/end of each month, plus 2016-02-05 -- ORE's own bundled reference vintage date), a minimal USD-hub spanning tree over EUR/USD/GBP/CHF/JPY/SEK/AUD/CAD/NZD/ZAR/MXN/INR.",
-            "source_system": "federalreserve.gov/releases/h10",
-            "business_context": "Cross-Rates Matrix driver input and synthetic FX market data seeding",
-            "as_of_date": "2016-12-31",
-            "license": "Internal Use Only",
-            "artefact_type": "market_data_observations",
-            "currencies": {
-                "majors": ["EUR/USD", "GBP/USD", "USD/CHF", "USD/JPY", "USD/SEK", "AUD/USD", "USD/CAD", "NZD/USD"],
-                "exotics": ["USD/ZAR", "USD/MXN", "USD/INR"]
-            }
-        }
-    ]
+  "retrieved_at": "2026-07-13T12:31:47Z",
+  "source": "https://www.federalreserve.gov/releases/h10/hist/",
+  "command": "./tools/fetch_fed_h10_rates.py --currency eu,uk,sz,ja,sd,al,ca,nz,sf,mx,in --dates 2016-02-05 --format table --archive-zip external/fed_h10/pages.zip --force",
+  "archive": "pages.zip",
+  "pages": [
+    {
+      "code": "al",
+      "pair": "AUD/USD",
+      "file": "dat00_al.htm",
+      "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_al.htm",
+      "sha256": "84ab5f986c841b66ca1fe6851c88197df031f9b6f37bcc2692b8accd7c5369ef",
+      "size_bytes": 1119855
+    },
+    {
+      "code": "ca",
+      "pair": "USD/CAD",
+      "file": "dat00_ca.htm",
+      "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_ca.htm",
+      "sha256": "7bfdbb1459b16c9f6ef2778a2a80fe47fe2298b3c991962eda6d7207821f5ed3",
+      "size_bytes": 1119855
+    },
+    {
+      "code": "eu",
+      "pair": "EUR/USD",
+      "file": "dat00_eu.htm",
+      "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_eu.htm",
+      "sha256": "0a20e4f82737db62220361bdc81ca7b17d1e3bbcfb365a5bdd0de532704558fb",
+      "size_bytes": 1119855
+    },
+    {
+      "code": "in",
+      "pair": "USD/INR",
+      "file": "dat00_in.htm",
+      "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_in.htm",
+      "sha256": "278528650a4421fcf105bc73da41180ae4390815fa785664cbb638f57399acd9",
+      "size_bytes": 1119855
+    },
+    {
+      "code": "ja",
+      "pair": "USD/JPY",
+      "file": "dat00_ja.htm",
+      "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_ja.htm",
+      "sha256": "e80d46a346ed94189fbde8481a51d1def87436536d87e76051be0b3b16f6325a",
+      "size_bytes": 1119855
+    },
+    {
+      "code": "mx",
+      "pair": "USD/MXN",
+      "file": "dat00_mx.htm",
+      "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_mx.htm",
+      "sha256": "18b49d2d11e2e793db12d06a05b014376c1979371fc6d2861d77d5d948c59982",
+      "size_bytes": 1119855
+    },
+    {
+      "code": "nz",
+      "pair": "NZD/USD",
+      "file": "dat00_nz.htm",
+      "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_nz.htm",
+      "sha256": "e9e6d3190c938f736e3c236cea4dfe609e70f53b015cd3f62ee4654be7152730",
+      "size_bytes": 1119855
+    },
+    {
+      "code": "sd",
+      "pair": "USD/SEK",
+      "file": "dat00_sd.htm",
+      "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_sd.htm",
+      "sha256": "9d5aa8590241d463100d361bfd9c0cc13b57f0afb45238f6ffd6597b85098d9c",
+      "size_bytes": 1119855
+    },
+    {
+      "code": "sf",
+      "pair": "USD/ZAR",
+      "file": "dat00_sf.htm",
+      "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_sf.htm",
+      "sha256": "61ea095d63b948534efacb5cef8e9071cb54aa09f50d2dbc0f7ecfbb3f247692",
+      "size_bytes": 1119855
+    },
+    {
+      "code": "sz",
+      "pair": "USD/CHF",
+      "file": "dat00_sz.htm",
+      "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_sz.htm",
+      "sha256": "d8471f013631a186ad3f1e7bdc9118b340557896c8f83f993afc6cfdd1fecc3d",
+      "size_bytes": 1119855
+    },
+    {
+      "code": "uk",
+      "pair": "GBP/USD",
+      "file": "dat00_uk.htm",
+      "source_url": "https://www.federalreserve.gov/releases/h10/hist/dat00_uk.htm",
+      "sha256": "b5d4d0ee99fdb8e1547e9beaa635740b4398dad327279264a9601f446da9f309",
+      "size_bytes": 1119855
+    }
+  ]
 }

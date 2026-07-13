@@ -70,8 +70,9 @@ std::string subject_to_fn(std::string_view subject) {
  * subscription; the allow-list keeps that safe by construction).
  */
 bool is_known_fn(std::string_view fn_name) {
-    static constexpr std::array<std::string_view, 1> known = {
-        "ores_marketdata_publish_market_data_observations_from_dq_fn"};
+    static constexpr std::array<std::string_view, 2> known = {
+        "ores_marketdata_publish_market_data_observations_from_dq_fn",
+        "ores_marketdata_publish_crm_topology_bundles_from_dq_fn"};
     return std::find(known.begin(), known.end(), fn_name) != known.end();
 }
 

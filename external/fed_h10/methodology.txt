@@ -11,7 +11,9 @@ Data Sourcing and Generation Steps:
      ./tools/fetch_fed_h10_rates.py --currency eu,uk,sz,ja,sd,al,ca,nz,sf,mx,in \
          --dates 2016-02-05 --format table \
          --archive-zip external/fed_h10/pages.zip --force
-   Target: external/fed_h10/pages.zip (raw HTML pages + manifest.json)
+   Target: external/fed_h10/pages.zip (raw HTML pages) +
+     external/fed_h10/manifest.json (archive provenance, written alongside
+     the zip, not inside it)
 
 2. PARSE
    The same script parses each page's fixed-format rows
@@ -32,8 +34,8 @@ Data Sourcing and Generation Steps:
 4. VERIFY
    Every row is independently verifiable two ways: (a) re-run step 1-3
    and diff -- the Fed's historical pages don't change once published, so
-   the output is deterministic; (b) check pages.zip's manifest.json sha256
-   for each page against a fresh download.
+   the output is deterministic; (b) check manifest.json's sha256 for each
+   page against a fresh download.
 
 5. COMMIT
    git add external/fed_h10/ tools/fetch_fed_h10_rates.py \
@@ -44,8 +46,12 @@ DATASET STRUCTURE
 ------------------
 external/fed_h10/pages.zip
   - dat00_<code>.htm (one per currency, raw Fed H.10 page)
-  - manifest.json (code, pair, source_url, sha256, size_bytes per page;
-    archive-level retrieved_at timestamp)
+
+external/fed_h10/manifest.json
+  - retrieved_at, the exact command that produced pages.zip, and one
+    entry per page (code, pair, source_url, sha256, size_bytes) -- the
+    single manifest describing the archive, kept beside it, not inside
+    it.
 
 projects/ores.sql/populate/marketdata/marketdata_fx_driver_rates_populate.sql
   - Registers the marketdata.fx_driver_rates DQ dataset, methodology,

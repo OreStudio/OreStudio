@@ -149,7 +149,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | New crm-topology-bundles publish-from-dq NATS subject never subscribed to; is_known_fn() allow-list missing the new SQL function -- bundle publish would hang/fail on the new dataset (found independently by all 4 review passes) | registrar.cpp, publish_from_dq_handler.cpp | Fixed | Added queue_subscribe for the new subject reusing the existing pdq handler instance; added the new function name to is_known_fn()'s allow-list (array bumped to size 2). Also raised a sprint story ([[id:BA6A0922-74FA-4B17-A424-0E3D26C75F0F][codegen NATS subject constants]]) since this class of bug (raw string literals with no compiler-checked single source of truth) is systemic, not specific to this PR. |
+| 2 | Stale bundle description still says "all 8 major driver pairs" after this PR extended both bundles to 11 pairs | dq_dataset_bundle_populate.sql | Fixed | Updated both synthetic_basic/synthetic_realistic bundle descriptions to "8 major + 3 EM/exotic driver pairs". |
+| 3 | Two files both named manifest.json (one static top-level, one inside pages.zip) is confusing | external/fed_h10/ | Fixed differently | Per direct feedback: there should be exactly one manifest, living beside the zip (not inside it), describing the archive's provenance (retrieval timestamp, exact command, per-page sha256). Removed the in-zip manifest entirely; the tool now writes a single external/fed_h10/manifest.json next to pages.zip, replacing the old hand-written dataset-metadata version of that file. |
+| 4 | No automated test coverage for the new SQL function/artefact table | n/a | Not changed | Matches existing convention for every publish-from-dq function in this codebase, including the pre-existing market_data_observations one -- none have dedicated ctest coverage today; not a regression this PR introduces. |
 
 * Result
 

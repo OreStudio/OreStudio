@@ -67,13 +67,13 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'synthetic_basic',
         'Synthetic Data: Basic',
-        'Basic-archetype synthetic FX spot generation for all 8 major driver pairs: single-component geometric process, deliberately exaggerated uniform volatility, easy to eyeball and exercises every UI feature.'
+        'Basic-archetype synthetic FX spot generation for all 8 major + 3 EM/exotic driver pairs: single-component geometric process, deliberately exaggerated uniform volatility, easy to eyeball and exercises every UI feature.'
     );
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'synthetic_realistic',
         'Synthetic Data: Realistic',
-        'Realistic-archetype synthetic FX spot generation for all 8 major driver pairs: 2-component geometric Gaussian mixture per pair, calibrated to plausible 2016 realised FX volatility.'
+        'Realistic-archetype synthetic FX spot generation for all 8 major + 3 EM/exotic driver pairs: 2-component geometric Gaussian mixture per pair, calibrated to plausible 2016 realised FX volatility.'
     );
 END $$;
 

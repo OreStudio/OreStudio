@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/github-style-history-diff-view
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
 #+updated: 2026-07-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -45,24 +45,84 @@ backgrounds and spans show; size the cells to the content.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                    |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-11                               |
+| Now          | Nothing.                                |
+| Waiting on   | Nothing.                                |
+| Next         | Nothing.                                |
+| Last touched | 2026-07-14                              |
 
 * Acceptance
 
--
+- [X] Changes tab renders old value on a red background, new value on green, in every history dialog (not just the generic one) via a single central change in =HistoryDialogBase::displayChangesTab=.
+- [X] Intra-value changed characters/tokens highlighted in a darker shade of the same colour, using the GitHub dark-theme palette given in the Goal.
+- [X] Multiline fields (e.g. change commentary) render a real diff, not whole-string highlighting — reuses =ores.diff::engine::compute='s existing line-LCS + per-line token diff (already implemented and tested for task DD614A9F), not a new algorithm.
+- [X] No per-entity code, no templates, no codegen regen: every entity's history view (generic =HistoryDialog= and every remaining legacy per-entity dialog) upgrades from the one =displayChangesTab= change, since it recomputes spans from the flat =DiffResult= centrally rather than depending on entities that already carry server-side spans.
+- [X] =changeCellWidget()= override precedence preserved (entity-specific custom cell widgets, e.g. flag icons, still win over the new default diff rendering).
+- [X] Multiline rows size correctly: fixed a stale-sizeHint issue where a freshly-inserted diff =QLabel='s wrapped height wasn't available in the same event-loop turn as =resizeRowsToContents()=, clipping multiline diffs.
+- [X] Manually verified via test scenario [[id:500304C7-2B57-4C2F-A95B-2CF5450EDD73][Verify the GitHub-style diff view]] against a live currency: single-line field change shows a tight intra-line highlight; a multiline Change Commentary change shows a proper per-line diff with all lines visible; legacy per-entity dialogs (Countries) also upgraded, confirming the change is centralised.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =HistoryDialogBase::displayChangesTab= already produces a flat
+  =[field | old | new]= =DiffResult= from =calculateDiffAt()=,
+  identical in shape whether that override is the generic
+  =HistoryDialog= (server-computed diff, spans discarded when
+  flattened to =DiffResult=) or one of the ~30 remaining legacy
+  per-entity dialogs (client-side =checkString=/=checkInt= helpers,
+  never had spans at all). Rather than threading span data through
+  every per-entity override, recompute it centrally: for each diff
+  row, call =ores::diff::engine::compute()= (already
+  exhaustively tested, entity-agnostic, cheap for one field) with a
+  single-field =field_value= on each side to get that field's
+  =diff_entry= — same algorithm the server already uses, just run
+  again client-side for legacy dialogs.
+- Render each side as a =QLabel= (rich text, word-wrapped) instead of
+  a plain =QTableWidgetItem=: an outer =<div>= carries the line-level
+  background (faint red/green tint), spans inside are wrapped in
+  =<span>= with the darker highlight shade. Byte-offset spans are
+  sliced directly on the =std::string= before converting to
+  =QString= (never on the UTF-16 string), since spans are
+  byte-offsets into UTF-8 and are guaranteed not to split a
+  multi-byte code point — converting slice-by-slice sidesteps any
+  UTF-8-byte-offset-to-UTF-16-code-unit-index math entirely.
+  Newlines become =<br/>= so multiline diffs render as real line
+  breaks, not one long wrapped line.
+- =changeCellWidget()= keeps first refusal: an entity-specific custom
+  widget (e.g. a flag icon) still wins; the new rendering is only the
+  default fallback, previously a plain =QTableWidgetItem=.
+- =ores.diff.lib= is already transitively available in =ores.qt.api=
+  via =ores.history.api.lib='s =INTERFACE= link (confirmed during
+  PR #1553 review, where an explicit redundant link was removed) — no
+  CMake change needed.
+- Manual verification surfaced a row-sizing bug: a fresh =QLabel= cell
+  widget's =sizeHint()= isn't based on its actual wrapped-at-final-
+  width content until Qt lays it out, so calling
+  =resizeRowsToContents()= in the same call as =setCellWidget()=
+  under-sizes multiline rows (visible as truncated commentary diffs).
+  Fixed with the standard idiom for this: defer a second
+  =resizeRowsToContents()= call via =QTimer::singleShot(0, ...)= so it
+  runs after Qt has laid the widgets out and can query their real
+  height.
 
 * Notes
+
+Side-loaded (unrelated to this task, found during its manual
+verification) two fixes and one capture:
+- Fixed =CurrencyDetailDialog::validateInput()=: it required Fraction
+  Symbol and Format non-empty to enable Save, even though neither is
+  actually required by the backend (the shell's =currencies add=
+  doesn't take a Format argument) or marked required in the UI —
+  blocked creating any new currency with no visible reason why. Not a
+  model/template drift risk: the =cpp_qt_detail_dialog.cpp.mustache=
+  facet's =required_fields= data-driven validation exists, but no
+  entity's =.org= model (currency's or any other's) currently
+  populates it, so this file isn't kept in sync with that facet today
+  — a direct, ordinary application-code fix.
+- Filed capture
+  =doc/agile/product_backlog/inbox/currencies_paging_not_working.org=:
+  the currencies list window's pagination doesn't appear to work,
+  unrelated to this task and not investigated further here.
 
 * Test Scenarios
 
@@ -73,7 +133,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:500304C7-2B57-4C2F-A95B-2CF5450EDD73][Verify the GitHub-style diff view]] | PASSED | First run surfaced the multiline row-height bug (fixed); re-verified after the fix, confirmed good. |
 
 * PRs
 
@@ -88,6 +148,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Rendered the history Changes tab like GitHub: old value on a faint
+red background, new value on faint green, with the actually-changed
+characters/tokens in a darker shade of the same colour, computed
+centrally in =HistoryDialogBase::displayChangesTab= by re-running
+=ores::diff::engine::compute()= per field over the flat =DiffResult=
+— no per-entity code, no codegen, every history dialog (generic and
+legacy) upgraded from the one change. Multiline fields (e.g. change
+commentary) get a real per-line diff via the same engine, rendered as
+a word-wrapped rich-text =QLabel= with newlines preserved.
+
+Manual verification surfaced and fixed a genuine row-sizing bug (a
+freshly-inserted =QLabel='s wrapped height isn't available until
+after Qt lays it out, so multiline rows were clipped) via a deferred
+=resizeRowsToContents()=. Also side-loaded, unrelated to this task:
+fixed a currency-add Save-button bug (Fraction Symbol/Format
+incorrectly required) and filed a capture for a currencies-list
+paging issue.
 
 * Promoted from capture
 

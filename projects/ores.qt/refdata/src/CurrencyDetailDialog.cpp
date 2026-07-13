@@ -459,15 +459,18 @@ void CurrencyDetailDialog::updateSaveButtonState() {
 }
 
 bool CurrencyDetailDialog::validateInput() {
+    // Fraction Symbol and Format are optional: neither is required by
+    // the backend (the shell's "currencies add" command doesn't even
+    // take a Format argument), and neither field is marked required in
+    // the UI, so requiring them here silently blocked Save with no
+    // indication why.
     const QString iso_code_val = ui_->isoCodeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
     const QString numeric_code_val = ui_->numericCodeEdit->text().trimmed();
     const QString symbol_val = ui_->symbolEdit->text().trimmed();
-    const QString fraction_symbol_val = ui_->fractionSymbolEdit->text().trimmed();
-    const QString format_val = ui_->formatEdit->text().trimmed();
 
-    return true && !iso_code_val.isEmpty() && !name_val.isEmpty() && !numeric_code_val.isEmpty() &&
-           !symbol_val.isEmpty() && !fraction_symbol_val.isEmpty() && !format_val.isEmpty();
+    return !iso_code_val.isEmpty() && !name_val.isEmpty() && !numeric_code_val.isEmpty() &&
+           !symbol_val.isEmpty();
 }
 
 void CurrencyDetailDialog::onSaveClicked() {

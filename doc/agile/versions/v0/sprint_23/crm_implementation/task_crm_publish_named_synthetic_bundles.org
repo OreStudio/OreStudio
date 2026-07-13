@@ -8,7 +8,7 @@
 #+filetags: :market_data:crm:fx:sprint_23:v0:crm_implementation:dq:synthetic:
 #+owner: marco
 #+branch: feature/crm-publish-named-synthetic-bundles
-#+pr:
+#+pr: 1543
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -143,7 +143,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1543][#1543]] | [marketdata,sql] Publish named CRM topology bundles atomically |
 
 * Review
 

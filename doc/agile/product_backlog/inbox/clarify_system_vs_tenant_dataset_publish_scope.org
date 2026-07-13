@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: A8DF818F-6CC3-40A0-9D1D-B5B2839D8EFD
+:END:
+#+title: Clarify and enforce system-tenant vs per-tenant dataset publish scope
+#+description: Some DQ datasets are published once to the system tenant, others per-tenant during provisioning, with no documented rule or enforcement for which is correct -- already caused one duplication bug.
+#+type: capture
+#+level: cross
+#+filetags: :dq:provisioning:tenant:data-model:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every DQ dataset that gets published from a =*_artefact_tbl= into a
+production table currently has an implicit, undocumented publish
+scope: some (e.g. =iso.coding_schemes=, =fpml.coding_schemes=) are
+published once, unconditionally, to the *system tenant* at DB build
+time and are meant to be shared read-only to every tenant via the
+RLS =tenant_id = own OR tenant_id = system= pattern; others (e.g.
+=iso.countries=, =iso.currencies=, =fpml.business_center=,
+GLEIF/LEI party data) are published *per-tenant*, during
+=provision tenant=/=provision party=, and never touch the system
+tenant at all. Nothing enforces or even records which scope a given
+dataset is supposed to have -- it is inferred, per dataset, from
+which populate/provisioning script happens to reference it. We
+should introduce an explicit, checked scope classification (e.g. a
+=publish_scope= column on =ores_dq_datasets_tbl= or
+=ores_dq_artefact_types_tbl=: ='system'= vs ='tenant'=) and have the
+bundle-publish and build-time-populate code paths both consult and
+enforce it, so a dataset can't accidentally end up wired into both
+paths the way coding schemes were.
+
+* Why
+
+Found while regenerating =business_centre=: the coding-scheme combo
+in its detail dialog showed every scheme code twice. Root cause --
+=iso.coding_schemes=/=fpml.coding_schemes= are published to the
+system tenant unconditionally at DB build time
+(=iso_populate.sql=/=fpml_populate.sql=), *and* were also listed as
+members of the ='base'=/='crypto'= dataset bundles, which get
+published again into every newly-provisioned tenant's own
+=tenant_id= (=dq_dataset_bundle_member_populate.sql=). Every
+coding-scheme validator in the codebase
+(=ores_refdata_validate_business_centre_coding_scheme_fn=,
+=ores_refdata_validate_party_id_scheme_coding_scheme_fn=) only ever
+checks the system tenant's rows, so the per-tenant copy was pure,
+silently-accumulating dead weight -- and RLS's system-or-own-tenant
+read policy surfaced both copies to any combo/list querying the
+table. Removed the two dataset-bundle-member entries as an immediate
+fix (see
+=doc/agile/versions/v0/sprint_23/commission_business_centre/task_regenerate-business-centre-reconcile-diffs.org=),
+but that only fixes this one instance -- there is no mechanism
+stopping a future dataset from being wired into both a build-time
+system-tenant populate script and a tenant-provisioning bundle again,
+and no easy way to audit today which of the many existing datasets
+already has this problem elsewhere (party role types, business
+process types, and other FpML-sourced coding-scheme-validated
+lookups follow the identical shape and were not individually
+checked).
+
+* References
+
+- =projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql=
+  (the two removed =base=/=crypto= bundle members)
+- =projects/ores.sql/populate/iso/iso_populate.sql=,
+  =projects/ores.sql/populate/fpml/fpml_populate.sql= (unconditional
+  system-tenant publish of the same datasets)
+- =projects/ores.sql/create/refdata/refdata_business_centre_functions_create.sql=,
+  =projects/ores.sql/create/refdata/refdata_party_id_scheme_functions_create.sql=
+  (system-tenant-only validators)
+- =projects/ores.sql/create/dq/dq_bundle_publication_create.sql=
+  (=ores_dq_bundle_datasets_list_fn= -- where a =publish_scope= check
+  would need to be enforced)
+
+* See also
+
+- [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]]
+- [[id:0FCD3745-61CD-4644-BAE2-CBCD994448FE][Regenerate business_centre from its codegen model and reconcile diffs]]

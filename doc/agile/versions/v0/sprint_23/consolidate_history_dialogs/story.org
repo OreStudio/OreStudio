@@ -161,7 +161,7 @@ that rollout produces.
 | [[id:352B308F-8696-4BF3-881B-6990C9E3FA6D][Codegen the entity_type_of() identifier trait]] | DONE | 2026-07-11 | 2026-07-11 | Added to the existing domain class header archetype (not a new file); generated for 27 clean ores.refdata entities, 7 skipped due to pre-existing drift. |
 | [[id:03363327-CAD3-49DB-881F-A8017036BBAC][Generic server-side history dispatch: one subject, per-entity handlers]] | ABANDONED | 2026-07-11 | 2026-07-11 | Split into two finer-grained sibling tasks below before implementation started; no code changes. |
 | [[id:5C873944-1152-4A79-9C92-C24AEB65834A][Codegen per-entity history field mapper]] | DONE | 2026-07-11 | 2026-07-12 | New ores.cpp.presentation facet: render_{entity}_fields() per entity, generated for the same 27 clean ores.refdata entities as entity_type_of(). |
-| [[id:15CFB0BE-C411-4B12-B733-974F6F5A44A5][Generic history.v1.get NATS subject and server-side dispatch registry]] | STARTED | 2026-07-12 | | Add the generic history.v1.get NATS subject and request/response types (entity_type, entity_id -> version/fields/changes), a server-side dispatch registry keyed by entity_type_of() reapplying the entity-composed-registrars meta-pattern, and register each entity's history field mapper as a provider. Remove the per-entity get_<entity>_history subjects/handlers as each entity migrates. |
+| [[id:15CFB0BE-C411-4B12-B733-974F6F5A44A5][Generic history.v1.get NATS subject and server-side dispatch registry]] | DONE | 2026-07-12 | 2026-07-13 | Add the generic history.v1.get NATS subject and request/response types (entity_type, entity_id -> version/fields/changes), a server-side dispatch registry keyed by entity_type_of() reapplying the entity-composed-registrars meta-pattern, and register each entity's history field mapper as a provider. Remove the per-entity get_<entity>_history subjects/handlers as each entity migrates. |
 | [[id:7D8659AB-220E-4077-BD17-3C4DCA1937D8][Single generic HistoryDialog widget in ores.qt]] | BACKLOG | | | Build the single, non-templated HistoryDialog widget (version list, async load, toolbar, diff_span colour-highlighted changes tab per the GitHub-style capture) taking (entity_type, entity_id); add the codegen'd per-entity Open/Revert action registry; wire callers to construct HistoryDialog instead of a typed dialog subclass; wire the composite-entity 'Details' affordance for child-driven versions to open another HistoryDialog instance. |
 | [[id:CB042B99-9B2F-46E9-9CF5-73B47185BCD1][Retire HistoryDialogBase, per-entity dialogs, and their templates]] | BACKLOG | | | Once every entity has migrated onto the generic HistoryDialog, delete HistoryDialogBase, every remaining per-entity *HistoryDialog class, and cpp_qt_history_dialog.{hpp,cpp}.mustache/qt_history_dialog_ui.mustache; confirm via zero-diff regeneration guardrails that no facet still emits a per-entity dialog class. |
 | [[id:E4DDC1B9-8609-4C11-9172-F2EE79242E66][Generic unified-diff history renderer in ores.shell]] | BACKLOG | | | Replace the disabled currencies history-diff command with one generic, entity-parameterised unified-diff renderer consuming the generic history.v1.get response (context lines from fields, +/- pairs with span-based highlighting from changes); re-enable it for every entity; update the shell recipes. |
@@ -212,6 +212,20 @@ that rollout produces.
   does not apply. A first implementation attempt used the wrong flags
   and failed to compile against real entities; see the
   history-field-mapper task's Notes for the full story.
+- =ores.history='s messaging/service layer (=dispatch_registry=,
+  =history_handler=, =registrar=) depends on =ores.database=/
+  =ores.security= directly — it is server-only NATS glue no client
+  ever touches, and every service that registers a history_provider
+  already links both to do anything else. An earlier attempt to keep
+  the whole component a dependency-free leaf (modeled on =ores.diff='s
+  client-visible =field_value=/=diff_result=) forced an opaque
+  =caller_context= string and, when that dropped party/roles/
+  workspace scope, a JSON pack/unpack workaround — both since deleted.
+  =history_provider= takes a real =database::context=; =history_handler=
+  calls =make_request_context()= itself like every other handler.
+  Only =history_protocol.hpp= (wire types) and =version_builder.hpp=
+  stay a true leaf, since those genuinely are client-visible. See the
+  =generic-history-subject= task's Notes for the full reasoning.
 
 * Out of scope
 

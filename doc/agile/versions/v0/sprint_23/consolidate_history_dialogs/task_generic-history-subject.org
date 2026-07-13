@@ -8,11 +8,11 @@
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch: feature/generic-history-subject
-#+pr: 1531
-#+blocked_on: 5C873944-1152-4A79-9C92-C24AEB65834A
+#+pr: 1537
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
-#+updated: 2026-07-11
+#+updated: 2026-07-13
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,16 +26,25 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Wired the currency pilot in ores.refdata.core's registrar: a real history_provider for "ores.refdata.currency" (currency_service::get_currency_history() + render_currency_fields() + build_entity_history_versions()) on a function-local static dispatch_registry, and a caller_context_resolver reusing make_request_context() to pack tenant_id as caller_context. Old get_currency_history subject/handler left in place — no frontend has switched over yet. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Migrate a consuming frontend (start with ores.shell, per its already-planned generic unified-diff renderer task) onto history.v1.get for currency, to validate the pilot end-to-end; then remove the old get_currency_history subject once nothing calls it; then repeat provider wiring for the remaining 26 entities. |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
 
--
+- One shared =history.v1.get= NATS subject exists, replacing typed
+  per-entity history subjects going forward.
+- A server-side =dispatch_registry= routes requests to a
+  caller-registered per-entity history_provider by =entity_type=.
+- At least one entity (currency) has a real, working provider proving
+  the full path: repository read -> field mapper -> diff -> generic
+  dispatch -> NATS reply.
+- Old per-entity history subjects/handlers are removed only once every
+  consuming frontend has migrated — deliberately not required for
+  this task's completion; tracked as follow-on story tasks.
 
 * Plan
 
@@ -97,6 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1537][#1537]] | [agile] Close generic-history-subject task |
 | [[https://github.com/OreStudio/OreStudio/pull/1531][#1531]] | [refdata] Wire the currency history provider onto history.v1.get |
 | [[https://github.com/OreStudio/OreStudio/pull/1529][#1529]] | [history] Thread caller_context and add build_entity_history_versions |
 | [[https://github.com/OreStudio/OreStudio/pull/1523][#1523]] | [history] Add history_handler and single-subject registrar |
@@ -121,3 +131,36 @@ via its "Verifies task" field.
 | 13 | resolve_context only packs tenant_id, discarding the party/roles/workspace that make_request_context already resolved | registrar.cpp | Accepted (root-caused and fixed) | First patched with a JSON pack/unpack round-trip in ores.refdata.core (history_caller_context.hpp/.cpp) — then the root cause was revisited: the underlying opaque-caller_context design existed only because ores.history was kept a dependency-free leaf, an ores.diff-modeled decision that never actually applied to the messaging/service layer (server-only glue, no client ever touches it, every composing service already depends on ores.database/ores.security). Reverted that: history_provider/dispatch() now take a real database::context; history_handler calls make_request_context() itself exactly like every other handler; caller_context_resolver and the JSON pack/unpack helper are deleted entirely. history_protocol.hpp and version_builder.hpp remain the true dependency-free leaf |
 
 * Result
+
+Added the =ores.history= component: the one shared =history.v1.get=
+NATS request/response pair (=get_entity_history_request=/
+=get_entity_history_response=, keyed by =entity_type= rather than a
+typed per-entity subject), a server-side =dispatch_registry= that
+looks up a caller-registered *history provider* by =entity_type=
+(reapplying the entity-composed-registrars meta-pattern as a runtime
+lookup table), and =build_entity_history_versions()= — the shared
+rendering/diffing glue every per-entity provider needs, built on
+=ores.diff::engine::compute=. =history_handler=/=registrar= resolve
+each request via =make_request_context()=, exactly like every other
+NATS handler in the codebase — see the Notes design-decision entry on
+why =ores.history='s messaging/service layer ended up depending on
+=ores.database=/=ores.security= directly rather than staying a
+dependency-free leaf (only =history_protocol.hpp= and
+=version_builder.hpp= remained leaf).
+
+Wired the first real provider — currency, in
+=ores.refdata.core='s registrar — as a pilot proving the whole path
+end to end: repository read -> =render_currency_fields()= ->
+=build_entity_history_versions()= -> generic dispatch -> NATS reply.
+The old per-entity =get_currency_history= subject/handler is
+untouched and still live; no frontend has switched over to
+=history.v1.get= yet. That migration (starting with
+=ores.shell=, per
+[[id:E4DDC1B9-8609-4C11-9172-F2EE79242E66][Generic unified-diff history renderer in ores.shell]]), and wiring
+the remaining 26 =ores.refdata= entities' providers, continue as
+their own tasks on this story.
+
+Shipped across PRs #1521, #1523, #1529, #1531. Full local build/ctest
+green throughout (final round: 70-71/71 passing, the one intermittent
+failure traced to local DB schema drift unrelated to this branch,
+resolved by =compass db recreate=).

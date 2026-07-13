@@ -99,6 +99,28 @@ more generally to express a path to a book or portfolio node.
   restricting which deals may be booked into them; portfolios can
   carry similar rules. A book may also carry a set of *allowed* assets
   as well as the set of *actual* assets currently traded in it.
+
+*Implementation analysis (not yet built)*: an allowed-currency set and
+an allowed-product-type set are the two concrete instances of this
+trading-rule idea currently known. Recommended data shape for both,
+once implemented, is a many-to-many *junction table* — following the
+existing =currency_currency_group= and =party_currency= junction
+precedent (a first-class codegen facet: junction row per
+book/currency or book/product-type pair) — rather than a multi-value
+column, since it gives referential integrity and is directly
+queryable/joinable. For currency the FK is straightforward
+(=currencies.iso_code=); for product type, =ores.trading='s existing
+=product_type= C++/Postgres enum (8 fixed families) is the right
+reference, not a new lookup entity. Two questions remain genuinely
+open and need a product decision before implementation: (1) how an
+*'All'* wildcard state (no restriction) is distinguished from a
+deliberately empty set (nothing allowed) — no existing junction in the
+codebase has needed this distinction yet, so there's no established
+precedent to follow; and (2) the Qt multi-select widget shape (transfer
+list vs checkbox list) — no junction-membership editing UI exists yet
+in the Qt layer to follow as precedent either. Investigated as part of
+the "Book data model cleanup" story; implementation deferred to a
+follow-up task once those two questions are resolved.
 - Each book has exactly one EOD Cut, determining which end-of-day run
   produces its revaluation (REVAL) reports, and one functional
   currency designated by the ledger.

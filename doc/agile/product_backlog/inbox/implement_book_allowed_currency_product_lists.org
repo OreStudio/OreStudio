@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 71723C7B-9533-40A4-BBE8-344C04B58A9D
+:END:
+#+title: Implement allowed-currency/allowed-product-type lists for book
+#+description: Add junction tables restricting which currencies/product types may be booked into a book, once the 'All' wildcard semantics and Qt multi-select widget shape are decided.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:book:junction:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add two many-to-many junction tables restricting which deals may be
+booked into a book: =book_allowed_currency= (book ↔
+=currencies.iso_code=) and =book_allowed_product_type= (book ↔
+=ores.trading='s =product_type= enum), following the existing
+=currency_currency_group_junction=/=party_currency_junction= codegen
+pattern. Before implementing, resolve two open design questions with
+no existing codebase precedent: (1) how an 'All' wildcard (no
+restriction) is distinguished from a deliberately empty set, and (2)
+the Qt widget shape for editing junction membership (transfer list vs
+checkbox list) — no junction-membership editing UI exists anywhere in
+the Qt layer yet.
+
+* Why
+
+The domain notes describe books carrying trading rules — an
+allowed-currency set (only instruments whose currency intersects the
+set may be booked) and, likely, an allowed-product-type set. This is
+currently undocumented/unimplemented in the ORE Studio domain model.
+
+* References
+
+- Analysis from "Analyse allowed-currency and allowed-product lists
+  for book" task, recorded in =books_and_portfolios.org= under
+  "System checks and permissions".
+
+* See also
+
+- [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] — parent story of the analysis task.

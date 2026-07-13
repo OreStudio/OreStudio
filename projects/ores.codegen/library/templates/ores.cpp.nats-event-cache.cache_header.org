@@ -44,6 +44,7 @@ The full template source. Edit here and re-tangle with
 {{#primary_key.is_uuid}}
 #include <boost/container_hash/hash.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <variant>
 {{/primary_key.is_uuid}}
 #include <optional>
 #include <rfl/json.hpp>

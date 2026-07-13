@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class TenorConventionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing tenor convention windows and operations.
@@ -55,6 +56,7 @@ public:
     TenorConventionController(QMainWindow* mainWindow,
                               QMdiArea* mdiArea,
                               ClientManager* clientManager,
+                              ChangeReasonCache* changeReasonCache,
                               const QString& username,
                               QObject* parent = nullptr);
 
@@ -66,6 +68,13 @@ public:
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
+
+    /**
+     * @brief Relayed from TenorConventionMdiWindow; wired to
+     * the target's own controller in the plugin's composition root.
+     */
+    void showAnchorsRequested();
+    void showResolutionAlgorithmsRequested();
 
 protected:
     EntityListMdiWindow* listWindow() const override;
@@ -83,6 +92,7 @@ private:
     void showDetailWindow(const refdata::domain::tenor_convention& convention);
     void showHistoryWindow(const QString& code);
 
+    ChangeReasonCache* changeReasonCache_;
     TenorConventionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

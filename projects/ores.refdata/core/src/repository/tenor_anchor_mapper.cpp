@@ -34,6 +34,7 @@ domain::tenor_anchor tenor_anchor_mapper::map(const tenor_anchor_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
     r.description = v.description.value_or("");
+    r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -52,6 +53,7 @@ tenor_anchor_entity tenor_anchor_mapper::map(const domain::tenor_anchor& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

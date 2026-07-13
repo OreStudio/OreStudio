@@ -21,4 +21,5 @@
 drop rule if exists ores_refdata_tenor_anchors_delete_rule on "ores_refdata_tenor_anchors_tbl";
 drop trigger if exists ores_refdata_tenor_anchors_insert_trg on "ores_refdata_tenor_anchors_tbl";
 drop function if exists ores_refdata_tenor_anchors_insert_fn;
+drop function if exists ores_refdata_validate_tenor_anchor_fn;
 drop table if exists "ores_refdata_tenor_anchors_tbl";

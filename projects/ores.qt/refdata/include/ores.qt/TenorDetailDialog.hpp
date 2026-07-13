@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.refdata.api/domain/tenor.hpp"
 #include <vector>
 
@@ -94,10 +95,15 @@ protected:
 private:
     void setupUi();
     void setupConnections();
+    void setupCombos();
     void updateUiFromTenor();
     void updateTenorFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
+    void populateKindCombo();
+
+    void populateUnitCombo();
 
 
     Ui::TenorDetailDialog* ui_;

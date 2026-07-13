@@ -102,6 +102,7 @@ HistoryDialogBase::DiffResult TenorAnchorHistoryDialog::calculateDiffAt(int ci, 
 
     checkString(diffs, tr("Code"), curr.code, prev.code);
     checkString(diffs, tr("Description"), curr.description, prev.description);
+    checkInt(diffs, tr("Display Order"), curr.display_order, prev.display_order);
     return diffs;
 }
 
@@ -113,6 +114,7 @@ void TenorAnchorHistoryDialog::displayFullDetails(int index) {
 
     ui_->codeValue->setText(QString::fromStdString(version.code));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
+    ui_->displayOrderValue->setText(QString::number(version.display_order));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

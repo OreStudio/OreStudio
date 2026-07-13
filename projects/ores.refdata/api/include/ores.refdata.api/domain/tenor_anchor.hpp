@@ -62,6 +62,11 @@ struct tenor_anchor final {
     std::string description;
 
     /**
+     * @brief Order for UI display purposes.
+     */
+    int display_order = 0;
+
+    /**
      * @brief Username of the person who last modified this tenor anchor.
      */
     std::string modified_by;

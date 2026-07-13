@@ -40,13 +40,13 @@ insert into ores_refdata_tenors_tbl (
 )
 values
     (ores_utility_system_tenant_id_fn(), 'O/N', 0, 'Overnight',
-     'Today to next business day. Earliest possible tenor.', 10, 'SPECIAL', null, null,
+     'Today to next business day. Earliest possible tenor.', 10, 'SPECIAL', 'NONE', null,
      current_user, current_user, 'system.initial_load', 'Initial population of tenors'),
     (ores_utility_system_tenant_id_fn(), 'T/N', 0, 'Tom/Next',
-     'Next business day to spot.', 20, 'SPECIAL', null, null,
+     'Next business day to spot.', 20, 'SPECIAL', 'NONE', null,
      current_user, current_user, 'system.initial_load', 'Initial population of tenors'),
     (ores_utility_system_tenant_id_fn(), 'S/N', 0, 'Spot/Next',
-     'Spot to spot + 1 business day.', 30, 'SPECIAL', null, null,
+     'Spot to spot + 1 business day.', 30, 'SPECIAL', 'NONE', null,
      current_user, current_user, 'system.initial_load', 'Initial population of tenors'),
     (ores_utility_system_tenant_id_fn(), 'S/W', 0, 'Spot/Week',
      'Spot to spot + 1 week; also written WK1 or 1W.', 40, 'PERIOD', 'WEEK', 1,

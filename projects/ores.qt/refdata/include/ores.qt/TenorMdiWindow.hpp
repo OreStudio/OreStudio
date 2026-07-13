@@ -32,6 +32,7 @@
 
 namespace ores::qt {
 
+class BadgeCache;
 
 /**
  * @brief MDI window for displaying and managing tenors.
@@ -54,6 +55,7 @@ private:
 public:
     explicit TenorMdiWindow(ClientManager* clientManager,
                             const QString& username,
+                            BadgeCache* badgeCache,
                             QWidget* parent = nullptr);
     ~TenorMdiWindow() override = default;
 
@@ -64,6 +66,15 @@ signals:
     void addNewRequested();
     void tenorDeleted(const QString& code);
     void showTenorHistory(const refdata::domain::tenor& tenor);
+
+    /**
+     * @brief Emitted to request opening a related entity's own list window
+     * (e.g. a lookup entity backing one of this entity's combo fields).
+     * Relayed by the controller and wired to the target's controller in the
+     * plugin's composition root.
+     */
+    void showConventionsRequested();
+    void showAnchorsRequested();
     // Extra signal declarations seam: a future
     // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
     // to declare any entity-specific signals (e.g. a cross-navigation
@@ -100,6 +111,7 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
+    BadgeCache* badgeCache_;
 
     QToolBar* toolbar_;
     QTableView* tableView_;

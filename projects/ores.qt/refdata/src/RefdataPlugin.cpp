@@ -62,8 +62,11 @@
 #include "ores.qt/SubjectAreaController.hpp"
 #include "ores.qt/SwapConventionController.hpp"
 #include "ores.qt/TenorAnchorController.hpp"
-#include "ores.qt/TenorConventionController.hpp"
 #include "ores.qt/TenorController.hpp"
+#include "ores.qt/TenorConventionController.hpp"
+#include "ores.qt/TenorKindController.hpp"
+#include "ores.qt/TenorResolutionAlgorithmController.hpp"
+#include "ores.qt/TenorUnitController.hpp"
 #include "ores.qt/TreatmentDimensionController.hpp"
 #include "ores.qt/ZeroConventionController.hpp"
 #include <QAction>
@@ -442,17 +445,78 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                        this);
     connectControllerSignals(treatmentDimensionController_.get());
 
-    tenorController_ = std::make_unique<TenorController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    tenorController_ = std::make_unique<TenorController>(ctx_.main_window,
+                                                          ctx_.mdi_area,
+                                                          ctx_.client_manager,
+                                                          ctx_.change_reason_cache,
+                                                          ctx_.username,
+                                                          ctx_.badge_cache,
+                                                          this);
     connectControllerSignals(tenorController_.get());
+    connect(tenorController_.get(), &TenorController::showConventionsRequested, this, [this]() {
+        if (tenorConventionController_)
+            tenorConventionController_->showListWindow();
+    });
+    connect(tenorController_.get(), &TenorController::showAnchorsRequested, this, [this]() {
+        if (tenorAnchorController_)
+            tenorAnchorController_->showListWindow();
+    });
 
-    tenorConventionController_ = std::make_unique<TenorConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    tenorConventionController_ =
+        std::make_unique<TenorConventionController>(ctx_.main_window,
+                                                     ctx_.mdi_area,
+                                                     ctx_.client_manager,
+                                                     ctx_.change_reason_cache,
+                                                     ctx_.username,
+                                                     this);
     connectControllerSignals(tenorConventionController_.get());
+    connect(tenorConventionController_.get(),
+            &TenorConventionController::showAnchorsRequested,
+            this,
+            [this]() {
+                if (tenorAnchorController_)
+                    tenorAnchorController_->showListWindow();
+            });
+    connect(tenorConventionController_.get(),
+            &TenorConventionController::showResolutionAlgorithmsRequested,
+            this,
+            [this]() {
+                if (tenorResolutionAlgorithmController_)
+                    tenorResolutionAlgorithmController_->showListWindow();
+            });
 
-    tenorAnchorController_ = std::make_unique<TenorAnchorController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    tenorAnchorController_ = std::make_unique<TenorAnchorController>(ctx_.main_window,
+                                                                     ctx_.mdi_area,
+                                                                     ctx_.client_manager,
+                                                                     ctx_.change_reason_cache,
+                                                                     ctx_.username,
+                                                                     this);
     connectControllerSignals(tenorAnchorController_.get());
+
+    tenorKindController_ = std::make_unique<TenorKindController>(ctx_.main_window,
+                                                                  ctx_.mdi_area,
+                                                                  ctx_.client_manager,
+                                                                  ctx_.change_reason_cache,
+                                                                  ctx_.username,
+                                                                  this);
+    connectControllerSignals(tenorKindController_.get());
+
+    tenorUnitController_ = std::make_unique<TenorUnitController>(ctx_.main_window,
+                                                                  ctx_.mdi_area,
+                                                                  ctx_.client_manager,
+                                                                  ctx_.change_reason_cache,
+                                                                  ctx_.username,
+                                                                  this);
+    connectControllerSignals(tenorUnitController_.get());
+
+    tenorResolutionAlgorithmController_ =
+        std::make_unique<TenorResolutionAlgorithmController>(ctx_.main_window,
+                                                              ctx_.mdi_area,
+                                                              ctx_.client_manager,
+                                                              ctx_.change_reason_cache,
+                                                              ctx_.username,
+                                                              this);
+    connectControllerSignals(tenorResolutionAlgorithmController_.get());
 }
 
 void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
@@ -581,7 +645,9 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
                 cdsConventionController_->showListWindow();
         });
 
-        // Tenors submenu (tenor reference data: tenors, conventions, anchors)
+        // Tenors submenu: primary entities (Tenors, Tenor Conventions) at the
+        // top; auxiliary code lookups (Anchors, Kinds, Units, Resolution
+        // Algorithms) directly below a separator, not nested in a submenu.
         auto* menuTenors = ref->addMenu(tr("&Tenors"));
         auto* actTenors = menuTenors->addAction(ico(Icon::Tag), tr("&Tenors"));
         connect(actTenors, &QAction::triggered, this, [this]() {
@@ -594,10 +660,29 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (tenorConventionController_)
                 tenorConventionController_->showListWindow();
         });
+
+        menuTenors->addSeparator();
+
         auto* actTenorAnchors = menuTenors->addAction(ico(Icon::Tag), tr("Tenor &Anchors"));
         connect(actTenorAnchors, &QAction::triggered, this, [this]() {
             if (tenorAnchorController_)
                 tenorAnchorController_->showListWindow();
+        });
+        auto* actTenorKinds = menuTenors->addAction(ico(Icon::Tag), tr("Tenor &Kinds"));
+        connect(actTenorKinds, &QAction::triggered, this, [this]() {
+            if (tenorKindController_)
+                tenorKindController_->showListWindow();
+        });
+        auto* actTenorUnits = menuTenors->addAction(ico(Icon::Tag), tr("Tenor &Units"));
+        connect(actTenorUnits, &QAction::triggered, this, [this]() {
+            if (tenorUnitController_)
+                tenorUnitController_->showListWindow();
+        });
+        auto* actTenorResolutionAlgorithms =
+            menuTenors->addAction(ico(Icon::Tag), tr("Tenor &Resolution Algorithms"));
+        connect(actTenorResolutionAlgorithms, &QAction::triggered, this, [this]() {
+            if (tenorResolutionAlgorithmController_)
+                tenorResolutionAlgorithmController_->showListWindow();
         });
 
         ref->addSeparator();
@@ -853,6 +938,9 @@ void RefdataPlugin::on_logout() {
         data_librarian_window_ = nullptr;
     }
 
+    tenorResolutionAlgorithmController_.reset();
+    tenorUnitController_.reset();
+    tenorKindController_.reset();
     tenorAnchorController_.reset();
     tenorConventionController_.reset();
     tenorController_.reset();

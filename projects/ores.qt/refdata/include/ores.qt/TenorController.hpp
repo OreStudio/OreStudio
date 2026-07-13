@@ -32,6 +32,8 @@ namespace ores::qt {
 
 class TenorMdiWindow;
 class DetachableMdiSubWindow;
+class BadgeCache;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing tenor windows and operations.
@@ -55,7 +57,9 @@ public:
     TenorController(QMainWindow* mainWindow,
                     QMdiArea* mdiArea,
                     ClientManager* clientManager,
+                    ChangeReasonCache* changeReasonCache,
                     const QString& username,
+                    BadgeCache* badgeCache,
                     QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -66,6 +70,13 @@ public:
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
+
+    /**
+     * @brief Relayed from TenorMdiWindow; wired to
+     * the target's own controller in the plugin's composition root.
+     */
+    void showConventionsRequested();
+    void showAnchorsRequested();
 
 protected:
     EntityListMdiWindow* listWindow() const override;
@@ -83,6 +94,8 @@ private:
     void showDetailWindow(const refdata::domain::tenor& tenor);
     void showHistoryWindow(const QString& code);
 
+    ChangeReasonCache* changeReasonCache_;
+    BadgeCache* badgeCache_;
     TenorMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

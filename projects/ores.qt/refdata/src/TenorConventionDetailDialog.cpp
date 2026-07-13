@@ -19,10 +19,14 @@
  */
 #include "ores.qt/TenorConventionDetailDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/tenor_convention_protocol.hpp"
 #include "ui_TenorConventionDetailDialog.h"
+#include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QPlainTextEdit>
@@ -38,7 +42,9 @@ TenorConventionDetailDialog::TenorConventionDetailDialog(QWidget* parent)
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
+    setupCombos();
     setupConnections();
     // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
     // block is expected to construct a HierarchyModelBuilder-derived model
@@ -79,6 +85,8 @@ void TenorConventionDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
+void TenorConventionDetailDialog::setupCombos() {}
+
 void TenorConventionDetailDialog::setupConnections() {
     connect(
         ui_->saveButton, &QPushButton::clicked, this, &TenorConventionDetailDialog::onSaveClicked);
@@ -97,18 +105,20 @@ void TenorConventionDetailDialog::setupConnections() {
             &QPlainTextEdit::textChanged,
             this,
             &TenorConventionDetailDialog::onFieldChanged);
-    connect(ui_->measuredFromEdit,
-            &QLineEdit::textChanged,
+    connect(ui_->measuredFromCombo,
+            &QComboBox::currentIndexChanged,
             this,
             &TenorConventionDetailDialog::onFieldChanged);
-    connect(ui_->resolutionAlgorithmEdit,
-            &QLineEdit::textChanged,
+    connect(ui_->resolutionAlgorithmCombo,
+            &QComboBox::currentIndexChanged,
             this,
             &TenorConventionDetailDialog::onFieldChanged);
 }
 
 void TenorConventionDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateMeasuredFromCombo();
+    populateResolutionAlgorithmCombo();
 }
 
 void TenorConventionDetailDialog::setUsername(const std::string& username) {
@@ -139,17 +149,50 @@ void TenorConventionDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->descriptionEdit->setReadOnly(readOnly);
-    ui_->measuredFromEdit->setReadOnly(readOnly);
-    ui_->resolutionAlgorithmEdit->setReadOnly(readOnly);
+    ui_->measuredFromCombo->setEnabled(!readOnly);
+    ui_->resolutionAlgorithmCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
+void TenorConventionDetailDialog::populateMeasuredFromCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating measured_from combo";
+    populateDynamicCombo<refdata::domain::tenor_anchor>(
+        ui_->measuredFromCombo,
+        this,
+        clientManager_,
+        &fetch_tenor_anchors,
+        "measuredFromWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        [this]() { return QString::fromStdString(convention_.measured_from); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load tenor anchors: %1").arg(error));
+        });
+}
+void TenorConventionDetailDialog::populateResolutionAlgorithmCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating resolution_algorithm combo";
+    populateDynamicCombo<refdata::domain::tenor_resolution_algorithm>(
+        ui_->resolutionAlgorithmCombo,
+        this,
+        clientManager_,
+        &fetch_tenor_resolution_algorithms,
+        "resolutionAlgorithmWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        [this]() { return QString::fromStdString(convention_.resolution_algorithm); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load tenor resolution algorithms: %1").arg(error));
+        });
+}
 void TenorConventionDetailDialog::updateUiFromConvention() {
     ui_->codeEdit->setText(QString::fromStdString(convention_.code));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(convention_.description));
-    ui_->measuredFromEdit->setText(QString::fromStdString(convention_.measured_from));
-    ui_->resolutionAlgorithmEdit->setText(QString::fromStdString(convention_.resolution_algorithm));
+    ui_->measuredFromCombo->setCurrentText(QString::fromStdString(convention_.measured_from));
+    ui_->resolutionAlgorithmCombo->setCurrentText(
+        QString::fromStdString(convention_.resolution_algorithm));
 
     populateProvenance(convention_.version,
                        convention_.modified_by,
@@ -167,8 +210,8 @@ void TenorConventionDetailDialog::updateConventionFromUi() {
         convention_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
     convention_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    convention_.measured_from = ui_->measuredFromEdit->text().trimmed().toStdString();
-    convention_.resolution_algorithm = ui_->resolutionAlgorithmEdit->text().trimmed().toStdString();
+    convention_.measured_from = ui_->measuredFromCombo->currentText().toStdString();
+    convention_.resolution_algorithm = ui_->resolutionAlgorithmCombo->currentText().toStdString();
     convention_.modified_by = username_;
 }
 
@@ -189,9 +232,10 @@ void TenorConventionDetailDialog::updateSaveButtonState() {
 
 bool TenorConventionDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
-    const QString resolution_algorithm_val = ui_->resolutionAlgorithmEdit->text().trimmed();
+    const bool measured_from_selected = ui_->measuredFromCombo->currentIndex() >= 0;
+    const bool resolution_algorithm_selected = ui_->resolutionAlgorithmCombo->currentIndex() >= 0;
 
-    return true && !code_val.isEmpty() && !resolution_algorithm_val.isEmpty();
+    return true && !code_val.isEmpty() && measured_from_selected && resolution_algorithm_selected;
 }
 
 void TenorConventionDetailDialog::onSaveClicked() {

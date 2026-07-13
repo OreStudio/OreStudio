@@ -113,11 +113,12 @@ std::string("PERIOD")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
 :END:
 
-Period unit for =PERIOD= tenors: =DAY=, =WEEK=, =MONTH=, or =YEAR=. Null
-for =SPECIAL= tenors.
+Period unit for =PERIOD= tenors: =DAY=, =WEEK=, =MONTH=, or =YEAR=.
+=NONE= for =SPECIAL= tenors, which have no fixed unit/multiplier of
+their own.
 
 #+begin_src cpp :name generator
 std::string("MONTH")
@@ -144,12 +145,14 @@ ctx.random_int(1, 30)
 :tablename: ores_refdata_tenors_tbl
 :END:
 
-** Checks
+* Insert trigger
+** Validations
 
-| expression                                          |
-|------------------------------------------------------|
-| "kind" IN ('SPECIAL', 'PERIOD')                      |
-| "unit" IS NULL OR "unit" IN ('DAY', 'WEEK', 'MONTH', 'YEAR') |
+| column              | validation_function                       |
+|---------------------+---------------------------------------------|
+| kind                | ores_refdata_validate_tenor_kind_fn        |
+| unit                | ores_refdata_validate_tenor_unit_fn        |
+| change_reason_code  | ores_dq_validate_change_reason_fn          |
 
 * C++
 
@@ -187,6 +190,7 @@ ctx.random_int(1, 30)
 :item_var:               tenor
 :key_field:              code
 :has_uuid_primary_key:   false
+:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_tenors_request
 :get_response_class:     refdata::messaging::get_tenors_response
 :get_message_type:       get_tenors_request
@@ -206,29 +210,36 @@ ctx.random_int(1, 30)
 
 *** Detail fields
 
-| field        | label        | widget           | type      | is_key | is_required | placeholder                |
-|--------------+--------------+------------------+-----------+--------+-------------+-----------------------------|
-| code         | Code         | codeEdit         | line_edit | true   | true        | Enter tenor code (e.g. 1M) |
-| display_name | Display Name | displayNameEdit  | line_edit |        | true        | Enter display name         |
-| description  | Description  | descriptionEdit  | text_edit |        |             | Enter a description        |
-| sort_order   | Sort Order   | sortOrderEdit    | spin_box  |        | true        |                             |
-| kind         | Kind         | kindEdit         | line_edit |        | true        | SPECIAL or PERIOD          |
-| unit         | Unit         | unitEdit         | line_edit |        |             | DAY, WEEK, MONTH, or YEAR  |
-| multiplier   | Multiplier   | multiplierEdit   | spin_box  |        |             |                             |
+| field        | label        | widget           | type          | is_key | is_required | placeholder                | flag_source | combo_domain_type                    | combo_fetch_include        | combo_fetch_fn        | combo_watcher_name  | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label   | combo_setter_pascal | badge_key |
+|--------------+--------------+------------------+---------------+--------+-------------+-----------------------------+--------------+---------------------------------------+-----------------------------+------------------------+----------------------+-------------------+----------------------+-------------------+----------------+-----------------------+-----------|
+| code         | Code         | codeEdit         | line_edit     | true   | true        | Enter tenor code (e.g. 1M) |              |                                       |                             |                        |                      |                    |                      |                   |                |                       |           |
+| display_name | Display Name | displayNameEdit  | line_edit     |        | true        | Enter display name         |              |                                       |                             |                        |                      |                    |                      |                   |                |                       |           |
+| description  | Description  | descriptionEdit  | text_edit     |        |             | Enter a description        |              |                                       |                             |                        |                      |                    |                      |                   |                |                       |           |
+| sort_order   | Sort Order   | sortOrderEdit    | spin_box      |        | true        |                             |              |                                       |                             |                        |                      |                    |                      |                   |                |                       |           |
+| kind         | Kind         | kindCombo        | dynamic_combo |        | true        |                             |              | refdata::domain::tenor_kind          | ores.qt/LookupFetcher.hpp  | fetch_tenor_kinds     | tenorKindWatcher    | code               | description          | display_order     | tenor kinds    | KindCombo             | tenor_kind |
+| unit         | Unit         | unitCombo        | dynamic_combo |        | true        |                             |              | refdata::domain::tenor_unit          | ores.qt/LookupFetcher.hpp  | fetch_tenor_units     | tenorUnitWatcher    | code               | description          | display_order     | tenor units    | UnitCombo             | tenor_unit |
+| multiplier   | Multiplier   | multiplierEdit   | spin_box      |        |             |                             |              |                                       |                             |                        |                      |                    |                      |                   |                |                       |           |
 
 *** Columns (Qt model)
 
-| enum_name   | field        | header       | type      | width |
-|-------------+--------------+--------------+-----------+-------|
-| Code        | code         | Code         | string    | 100   |
-| DisplayName | display_name | Display Name | string    | 160   |
-| Description | description  | Description  | string    | 300   |
-| SortOrder   | sort_order   | Sort Order   | int       | 90    |
-| Kind        | kind         | Kind         | string    | 90    |
-| Unit        | unit         | Unit         | string    | 90    |
-| Version     | version      | Version      | int       | 80    |
-| ModifiedBy  | modified_by  | Modified By  | string    | 120   |
-| RecordedAt  | recorded_at  | Recorded At  | timestamp | 150   |
+| enum_name   | field        | header       | type      | width | is_badge | badge_key  | formatter | formatter_include |
+|-------------+--------------+--------------+-----------+-------+----------+------------+-----------+--------------------|
+| Code        | code         | Code         | string    | 100   |          |            |           |                    |
+| DisplayName | display_name | Display Name | string    | 160   |          |            |           |                    |
+| Description | description  | Description  | string    | 300   |          |            |           |                    |
+| SortOrder   | sort_order   | Sort Order   | int       | 90    |          |            |           |                    |
+| Kind        | kind         | Kind         | string    | 90    | true     | tenor_kind |           |                    |
+| Unit        | unit         | Unit         | string    | 90    | true     | tenor_unit |           |                    |
+| Version     | version      | Version      | int       | 80    |          |            |           |                    |
+| ModifiedBy  | modified_by  | Modified By  | string    | 120   |          |            |           |                    |
+| RecordedAt  | recorded_at  | Recorded At  | timestamp | 150   |          |            |           |                    |
+
+*** Related entity shortcuts
+
+| signal      | icon  | label       | tooltip                      |
+|-------------+-------+-------------+-------------------------------|
+| Conventions | Table | Conventions | Open Tenor Conventions list  |
+| Anchors     | Clock | Anchors     | Open Tenor Anchors list      |
 
 ** Custom repository methods
 

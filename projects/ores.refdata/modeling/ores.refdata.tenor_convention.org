@@ -79,12 +79,12 @@ std::string(faker::lorem::sentence())
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: true
+:nullable: false
 :END:
 
 Default [[id:3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90][tenor anchor]] code
 (references =tenor_anchor.code=) this convention's regular =PERIOD=
-tenors resolve from. Empty whenever every tenor under this convention
+tenors resolve from. =NONE= whenever every tenor under this convention
 carries its own =anchor_override= (as =FX_SWAP_NEAR_LEG= does — it has
 no =PERIOD= tenors to fall back to a default for) or whenever
 =resolution_algorithm= does not use a fixed anchor at all (=IMM_ROLL=) —
@@ -117,11 +117,14 @@ std::string("ANCHOR_OFFSET")
 :tablename: ores_refdata_tenor_conventions_tbl
 :END:
 
-** Checks
+* Insert trigger
+** Validations
 
-| expression                                                |
-|------------------------------------------------------------|
-| "resolution_algorithm" IN ('ANCHOR_OFFSET', 'IMM_ROLL')   |
+| column                | validation_function                                  |
+|------------------------+--------------------------------------------------------|
+| measured_from          | ores_refdata_validate_tenor_anchor_fn                |
+| resolution_algorithm   | ores_refdata_validate_tenor_resolution_algorithm_fn  |
+| change_reason_code     | ores_dq_validate_change_reason_fn                    |
 
 * C++
 
@@ -159,6 +162,7 @@ std::string("ANCHOR_OFFSET")
 :item_var:               convention
 :key_field:              code
 :has_uuid_primary_key:   false
+:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_tenor_conventions_request
 :get_response_class:     refdata::messaging::get_tenor_conventions_response
 :get_message_type:       get_tenor_conventions_request
@@ -178,12 +182,12 @@ std::string("ANCHOR_OFFSET")
 
 *** Detail fields
 
-| field                | label                | widget                   | type      | is_key | is_required | placeholder                              |
-|----------------------+----------------------+--------------------------+-----------+--------+-------------+--------------------------------------------|
-| code                 | Code                 | codeEdit                 | line_edit | true   | true        | Enter convention code                     |
-| description          | Description          | descriptionEdit          | text_edit |        |             | Enter a description                       |
-| measured_from        | Measured From        | measuredFromEdit         | line_edit |        |             | Anchor code (e.g. SPOT, TODAY, NEAR_LEG)  |
-| resolution_algorithm | Resolution Algorithm | resolutionAlgorithmEdit  | line_edit |        | true        | ANCHOR_OFFSET or IMM_ROLL                 |
+| field                 | label                 | widget                  | type          | is_key | is_required | placeholder             | flag_source | combo_domain_type                              | combo_fetch_include        | combo_fetch_fn                     | combo_watcher_name             | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label                | combo_setter_pascal          |
+|-----------------------+-----------------------+--------------------------+---------------+--------+-------------+---------------------------+--------------+---------------------------------------------------+-----------------------------+---------------------------------------+-----------------------------------+--------------------+----------------------+--------------------+------------------------------+---------------------------------|
+| code                  | Code                  | codeEdit                | line_edit     | true   | true        | Enter convention code   |              |                                                 |                             |                                     |                                 |                    |                      |                    |                              |                                 |
+| description           | Description           | descriptionEdit         | text_edit     |        |             | Enter a description      |              |                                                 |                             |                                     |                                 |                    |                      |                    |                              |                                 |
+| measured_from         | Measured From         | measuredFromCombo       | dynamic_combo |        | true        |                          |              | refdata::domain::tenor_anchor                  | ores.qt/LookupFetcher.hpp  | fetch_tenor_anchors                | measuredFromWatcher            | code               | description          | display_order       | tenor anchors                | MeasuredFromCombo              |
+| resolution_algorithm  | Resolution Algorithm  | resolutionAlgorithmCombo | dynamic_combo |        | true        |                          |              | refdata::domain::tenor_resolution_algorithm    | ores.qt/LookupFetcher.hpp  | fetch_tenor_resolution_algorithms  | resolutionAlgorithmWatcher     | code               | description          | display_order      | tenor resolution algorithms  | ResolutionAlgorithmCombo       |
 
 *** Columns (Qt model)
 
@@ -196,6 +200,13 @@ std::string("ANCHOR_OFFSET")
 | Version      | version               | Version                | int       | 80    |
 | ModifiedBy   | modified_by           | Modified By            | string    | 120   |
 | RecordedAt   | recorded_at           | Recorded At            | timestamp | 150   |
+
+*** Related entity shortcuts
+
+| signal               | icon | label                | tooltip                            |
+|----------------------+------+----------------------+--------------------------------------|
+| Anchors              | Clock | Anchors             | Open Tenor Anchors list             |
+| ResolutionAlgorithms | Tag  | Resolution Algorithms | Open Tenor Resolution Algorithms list |
 
 ** Custom repository methods
 

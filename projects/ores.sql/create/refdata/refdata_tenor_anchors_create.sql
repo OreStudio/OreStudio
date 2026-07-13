@@ -38,6 +38,7 @@ create table if not exists "ores_refdata_tenor_anchors_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "description" text null,
+    "display_order" integer not null default 0,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -130,3 +131,48 @@ on delete to "ores_refdata_tenor_anchors_tbl" do instead (
       and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Validation function for tenor_anchor
+-- Validates that a code exists in the tenor_anchors table.
+-- Returns the validated value, or default if null/empty.
+-- Uses system tenant data (shared reference data).
+-- =============================================================================
+create or replace function ores_refdata_validate_tenor_anchor_fn(
+    p_tenant_id uuid,
+    p_value text
+) returns text as $$
+begin
+    -- Return default if null or empty
+    if p_value is null or p_value = '' then
+        raise exception 'Invalid tenor_anchor: value cannot be null or empty'
+            using errcode = '23502';
+    end if;
+
+    -- Allow pass-through during bootstrap (no active rows for system tenant).
+    if not exists (
+        select 1 from ores_refdata_tenor_anchors_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against reference data
+    if not exists (
+        select 1 from ores_refdata_tenor_anchors_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid tenor_anchor: %. Must be one of: %', p_value, (
+            select string_agg(code::text, ', ' order by display_order)
+            from ores_refdata_tenor_anchors_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+
+    return p_value;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;

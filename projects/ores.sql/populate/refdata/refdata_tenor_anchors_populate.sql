@@ -30,29 +30,33 @@
 \echo '--- Tenor Anchors ---'
 
 insert into ores_refdata_tenor_anchors_tbl (
-    tenant_id, code, version, description,
+    tenant_id, code, version, description, display_order,
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
     (ores_utility_system_tenant_id_fn(), 'SPOT', 0,
-     'Horizon date plus spot days (currency-pair specific).',
+     'Horizon date plus spot days (currency-pair specific).', 10,
      current_user, current_user, 'system.initial_load', 'Initial population of tenor anchors'),
     (ores_utility_system_tenant_id_fn(), 'TODAY', 0,
-     'The horizon date itself.',
+     'The horizon date itself.', 20,
      current_user, current_user, 'system.initial_load', 'Initial population of tenor anchors'),
     (ores_utility_system_tenant_id_fn(), 'TOMORROW', 0,
-     'Horizon date plus one calendar day.',
+     'Horizon date plus one calendar day.', 30,
      current_user, current_user, 'system.initial_load', 'Initial population of tenor anchors'),
     (ores_utility_system_tenant_id_fn(), 'NEAR_LEG', 0,
-     'The near-leg date of a short-dated FX swap; not a fixed offset from the horizon date.',
+     'The near-leg date of a short-dated FX swap; not a fixed offset from the horizon date.', 40,
      current_user, current_user, 'system.initial_load', 'Initial population of tenor anchors'),
     (ores_utility_system_tenant_id_fn(), 'IMM_ROLL', 0,
-     'The nearest IMM quarterly roll date; used by the IMM_ROLL resolution algorithm, not a fixed-offset anchor.',
+     'The nearest IMM quarterly roll date; used by the IMM_ROLL resolution algorithm, not a fixed-offset anchor.', 50,
+     current_user, current_user, 'system.initial_load', 'Initial population of tenor anchors'),
+    (ores_utility_system_tenant_id_fn(), 'NONE', 0,
+     'Sentinel for a tenor convention with no default anchor (every tenor under it carries its own anchor_override, or its resolution_algorithm does not use a fixed anchor at all).', 60,
      current_user, current_user, 'system.initial_load', 'Initial population of tenor anchors')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do update set
     description = excluded.description,
+    display_order = excluded.display_order,
     modified_by = current_user,
     performed_by = current_user,
     change_reason_code = 'system.initial_load',

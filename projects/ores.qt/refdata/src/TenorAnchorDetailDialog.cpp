@@ -131,6 +131,7 @@ void TenorAnchorDetailDialog::setReadOnly(bool readOnly) {
 void TenorAnchorDetailDialog::updateUiFromAnchor() {
     ui_->codeEdit->setText(QString::fromStdString(anchor_.code));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(anchor_.description));
+    ui_->displayOrderEdit->setValue(anchor_.display_order);
 
     populateProvenance(anchor_.version,
                        anchor_.modified_by,
@@ -148,6 +149,7 @@ void TenorAnchorDetailDialog::updateAnchorFromUi() {
         anchor_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
     anchor_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    anchor_.display_order = ui_->displayOrderEdit->value();
     anchor_.modified_by = username_;
 }
 

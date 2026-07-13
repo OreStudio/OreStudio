@@ -64,6 +64,15 @@ signals:
     void addNewRequested();
     void conventionDeleted(const QString& code);
     void showConventionHistory(const refdata::domain::tenor_convention& convention);
+
+    /**
+     * @brief Emitted to request opening a related entity's own list window
+     * (e.g. a lookup entity backing one of this entity's combo fields).
+     * Relayed by the controller and wired to the target's controller in the
+     * plugin's composition root.
+     */
+    void showAnchorsRequested();
+    void showResolutionAlgorithmsRequested();
     // Extra signal declarations seam: a future
     // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
     // to declare any entity-specific signals (e.g. a cross-navigation

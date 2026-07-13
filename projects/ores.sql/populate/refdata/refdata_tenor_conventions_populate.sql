@@ -43,11 +43,11 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of tenor conventions'),
     (ores_utility_system_tenant_id_fn(), 'FX_SWAP_NEAR_LEG', 0,
      'Short-dated FX swap quotation, in terms of the near leg. Tenor set typically runs up to S/N.',
-     null, 'ANCHOR_OFFSET',
+     'NONE', 'ANCHOR_OFFSET',
      current_user, current_user, 'system.initial_load', 'Initial population of tenor conventions'),
     (ores_utility_system_tenant_id_fn(), 'CREDIT_CDS_IMM', 0,
      'Credit/CDS curves: tenors resolve to the first business day following the appropriate IMM roll date, not a fixed offset from an anchor.',
-     null, 'IMM_ROLL',
+     'NONE', 'IMM_ROLL',
      current_user, current_user, 'system.initial_load', 'Initial population of tenor conventions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

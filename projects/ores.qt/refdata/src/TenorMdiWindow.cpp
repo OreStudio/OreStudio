@@ -18,7 +18,9 @@
  *
  */
 #include "ores.qt/TenorMdiWindow.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
@@ -34,10 +36,12 @@ using namespace ores::logging;
 
 TenorMdiWindow::TenorMdiWindow(ClientManager* clientManager,
                                const QString& username,
+                               BadgeCache* badgeCache,
                                QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
     , username_(username)
+    , badgeCache_(badgeCache)
     , toolbar_(nullptr)
     , tableView_(nullptr)
     , model_(nullptr)
@@ -105,6 +109,25 @@ void TenorMdiWindow::setupToolbar() {
     historyAction_->setToolTip(tr("View tenor history"));
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this, &TenorMdiWindow::viewHistorySelected);
+
+
+    toolbar_->addSeparator();
+
+    {
+        auto* action = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::Table, IconUtils::DefaultIconColor),
+            tr("Conventions"));
+        action->setToolTip(tr("Open Tenor Conventions list"));
+        connect(action, &QAction::triggered, this, [this]() { emit showConventionsRequested(); });
+    }
+
+    {
+        auto* action = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor),
+            tr("Anchors"));
+        action->setToolTip(tr("Open Tenor Anchors list"));
+        connect(action, &QAction::triggered, this, [this]() { emit showAnchorsRequested(); });
+    }
 }
 
 void TenorMdiWindow::setupTable() {
@@ -121,6 +144,52 @@ void TenorMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+    using cs = column_style;
+    auto* delegate = new EntityItemDelegate(
+        {
+            cs::text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::mono_center,
+            cs::badge_centered,
+            cs::badge_centered,
+            cs::mono_center,
+            cs::text_left,
+            cs::text_left,
+        },
+        tableView_);
+    delegate->set_badge_color_resolver(
+        4, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
+            if (!cache)
+                return fallback;
+            auto* def = cache->resolve("tenor_kind", value.toStdString());
+            if (!def)
+                return fallback;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    delegate->set_badge_color_resolver(
+        5, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
+            if (!cache)
+                return fallback;
+            auto* def = cache->resolve("tenor_unit", value.toStdString());
+            if (!def)
+                return fallback;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    tableView_->setItemDelegate(delegate);
+    if (badgeCache_) {
+        if (badgeCache_->isLoaded())
+            tableView_->viewport()->update();
+        connect(badgeCache_, &BadgeCache::loaded, tableView_->viewport(), [this]() {
+            tableView_->viewport()->update();
+        });
+    }
 
     initializeTableSettings(tableView_,
                             model_,

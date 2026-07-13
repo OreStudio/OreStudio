@@ -57,7 +57,10 @@
 #include "ores.refdata.core/messaging/swap_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_anchor_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/tenor_kind_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_registrar.hpp"
+#include "ores.refdata.core/messaging/tenor_resolution_algorithm_registrar.hpp"
+#include "ores.refdata.core/messaging/tenor_unit_registrar.hpp"
 #include "ores.refdata.core/messaging/zero_convention_registrar.hpp"
 
 // tenor_convention_resolution is a junction: codegen doesn't generate a
@@ -166,6 +169,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_tenor_handlers(nats, ctx, verifier));
     append(register_tenor_anchor_handlers(nats, ctx, verifier));
     append(register_tenor_convention_handlers(nats, ctx, verifier));
+    append(register_tenor_kind_handlers(nats, ctx, verifier));
+    append(register_tenor_unit_handlers(nats, ctx, verifier));
+    append(register_tenor_resolution_algorithm_handlers(nats, ctx, verifier));
     append(register_zero_convention_handlers(nats, ctx, verifier));
 
     // ----------------------------------------------------------------

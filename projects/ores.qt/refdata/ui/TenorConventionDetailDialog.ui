@@ -89,9 +89,9 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="measuredFromEdit">
-            <property name="placeholderText">
-             <string>Anchor code (e.g. SPOT, TODAY, NEAR_LEG)</string>
+           <widget class="QComboBox" name="measuredFromCombo">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>
@@ -103,9 +103,9 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="resolutionAlgorithmEdit">
-            <property name="placeholderText">
-             <string>ANCHOR_OFFSET or IMM_ROLL</string>
+           <widget class="QComboBox" name="resolutionAlgorithmCombo">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>

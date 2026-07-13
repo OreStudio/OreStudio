@@ -45,7 +45,7 @@ create table if not exists "ores_refdata_tenors_tbl" (
     "description" text null,
     "sort_order" integer not null,
     "kind" text not null,
-    "unit" text null,
+    "unit" text not null,
     "multiplier" integer null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -60,9 +60,7 @@ create table if not exists "ores_refdata_tenors_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("code" <> ''),
-    check ("kind" IN ('SPECIAL', 'PERIOD')),
-    check ("unit" IS NULL OR "unit" IN ('DAY', 'WEEK', 'MONTH', 'YEAR'))
+    check ("code" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -85,6 +83,12 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate kind
+    NEW.kind := ores_refdata_validate_tenor_kind_fn(NEW.tenant_id, NEW.kind);
+
+    -- Validate unit
+    NEW.unit := ores_refdata_validate_tenor_unit_fn(NEW.tenant_id, NEW.unit);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

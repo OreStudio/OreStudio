@@ -19,6 +19,7 @@
  */
 #include "ores.qt/TenorConventionController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/TenorConventionDetailDialog.hpp"
@@ -42,9 +43,11 @@ constexpr std::string_view convention_event_name =
 TenorConventionController::TenorConventionController(QMainWindow* mainWindow,
                                                      QMdiArea* mdiArea,
                                                      ClientManager* clientManager,
+                                                     ChangeReasonCache* changeReasonCache,
                                                      const QString& username,
                                                      QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, convention_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -84,6 +87,14 @@ void TenorConventionController::showListWindow() {
             &TenorConventionMdiWindow::showConventionHistory,
             this,
             &TenorConventionController::onShowHistory);
+    connect(listWindow_,
+            &TenorConventionMdiWindow::showAnchorsRequested,
+            this,
+            &TenorConventionController::showAnchorsRequested);
+    connect(listWindow_,
+            &TenorConventionMdiWindow::showResolutionAlgorithmsRequested,
+            this,
+            &TenorConventionController::showResolutionAlgorithmsRequested);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
@@ -160,6 +171,8 @@ void TenorConventionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenor convention";
 
     auto* detailDialog = new TenorConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -209,6 +222,8 @@ void TenorConventionController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << convention.code;
 
     auto* detailDialog = new TenorConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -347,6 +362,8 @@ void TenorConventionController::onOpenVersion(const refdata::domain::tenor_conve
     }
 
     auto* detailDialog = new TenorConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setConvention(convention);
@@ -397,6 +414,8 @@ void TenorConventionController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TenorConventionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_convention = convention;

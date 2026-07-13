@@ -41,6 +41,7 @@ struct tenor_anchor_entity {
     std::string tenant_id;
     int version = 0;
     std::optional<std::string> description;
+    int display_order = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

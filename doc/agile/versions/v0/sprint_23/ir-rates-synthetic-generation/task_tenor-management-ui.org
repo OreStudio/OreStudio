@@ -56,7 +56,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:124C6B4E-57FE-4F9A-BDFA-9E7C73275836][Tenor reference-data screens reachable from Reference Data menu]] | PENDING | |
 
 * PRs
 

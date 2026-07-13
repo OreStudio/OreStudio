@@ -18,11 +18,16 @@
  *
  */
 #include "ores.qt/TenorDetailDialog.hpp"
+#include "ores.qt/BadgeComboHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
 #include "ui_TenorDetailDialog.h"
+#include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QPlainTextEdit>
@@ -38,7 +43,9 @@ TenorDetailDialog::TenorDetailDialog(QWidget* parent)
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
+    setupCombos();
     setupConnections();
     // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
     // block is expected to construct a HierarchyModelBuilder-derived model
@@ -79,6 +86,8 @@ void TenorDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
+void TenorDetailDialog::setupCombos() {}
+
 void TenorDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this, &TenorDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this, &TenorDetailDialog::onDeleteClicked);
@@ -91,12 +100,18 @@ void TenorDetailDialog::setupConnections() {
             &QPlainTextEdit::textChanged,
             this,
             &TenorDetailDialog::onFieldChanged);
-    connect(ui_->kindEdit, &QLineEdit::textChanged, this, &TenorDetailDialog::onFieldChanged);
-    connect(ui_->unitEdit, &QLineEdit::textChanged, this, &TenorDetailDialog::onFieldChanged);
+    connect(
+        ui_->kindCombo, &QComboBox::currentIndexChanged, this, &TenorDetailDialog::onFieldChanged);
+    connect(
+        ui_->unitCombo, &QComboBox::currentIndexChanged, this, &TenorDetailDialog::onFieldChanged);
 }
 
 void TenorDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateKindCombo();
+    setup_badge_combo(this, ui_->kindCombo, badgeCache(), "tenor_kind");
+    populateUnitCombo();
+    setup_badge_combo(this, ui_->unitCombo, badgeCache(), "tenor_unit");
 }
 
 void TenorDetailDialog::setUsername(const std::string& username) {
@@ -127,19 +142,53 @@ void TenorDetailDialog::setReadOnly(bool readOnly) {
     ui_->codeEdit->setReadOnly(true);
     ui_->displayNameEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
-    ui_->kindEdit->setReadOnly(readOnly);
-    ui_->unitEdit->setReadOnly(readOnly);
+    ui_->kindCombo->setEnabled(!readOnly);
+    ui_->unitCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
+void TenorDetailDialog::populateKindCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating kind combo";
+    populateDynamicCombo<refdata::domain::tenor_kind>(
+        ui_->kindCombo,
+        this,
+        clientManager_,
+        &fetch_tenor_kinds,
+        "tenorKindWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        [this]() { return QString::fromStdString(tenor_.kind); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load tenor kinds: %1").arg(error));
+        },
+        [this]() { setup_badge_combo(this, ui_->kindCombo, badgeCache(), "tenor_kind"); });
+}
+void TenorDetailDialog::populateUnitCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating unit combo";
+    populateDynamicCombo<refdata::domain::tenor_unit>(
+        ui_->unitCombo,
+        this,
+        clientManager_,
+        &fetch_tenor_units,
+        "tenorUnitWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.display_order; },
+        [this]() { return QString::fromStdString(tenor_.unit); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load tenor units: %1").arg(error));
+        },
+        [this]() { setup_badge_combo(this, ui_->unitCombo, badgeCache(), "tenor_unit"); });
+}
 void TenorDetailDialog::updateUiFromTenor() {
     ui_->codeEdit->setText(QString::fromStdString(tenor_.code));
     ui_->displayNameEdit->setText(QString::fromStdString(tenor_.display_name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(tenor_.description));
     ui_->sortOrderEdit->setValue(tenor_.sort_order);
-    ui_->kindEdit->setText(QString::fromStdString(tenor_.kind));
-    ui_->unitEdit->setText(QString::fromStdString(tenor_.unit));
+    ui_->kindCombo->setCurrentText(QString::fromStdString(tenor_.kind));
+    ui_->unitCombo->setCurrentText(QString::fromStdString(tenor_.unit));
     ui_->multiplierEdit->setValue(tenor_.multiplier.value_or(ui_->multiplierEdit->minimum()));
 
     populateProvenance(tenor_.version,
@@ -160,8 +209,8 @@ void TenorDetailDialog::updateTenorFromUi() {
     tenor_.display_name = ui_->displayNameEdit->text().trimmed().toStdString();
     tenor_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     tenor_.sort_order = ui_->sortOrderEdit->value();
-    tenor_.kind = ui_->kindEdit->text().trimmed().toStdString();
-    tenor_.unit = ui_->unitEdit->text().trimmed().toStdString();
+    tenor_.kind = ui_->kindCombo->currentText().toStdString();
+    tenor_.unit = ui_->unitCombo->currentText().toStdString();
     if (ui_->multiplierEdit->value() == ui_->multiplierEdit->minimum())
         tenor_.multiplier = std::nullopt;
     else
@@ -187,9 +236,11 @@ void TenorDetailDialog::updateSaveButtonState() {
 bool TenorDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
     const QString display_name_val = ui_->displayNameEdit->text().trimmed();
-    const QString kind_val = ui_->kindEdit->text().trimmed();
+    const bool kind_selected = ui_->kindCombo->currentIndex() >= 0;
+    const bool unit_selected = ui_->unitCombo->currentIndex() >= 0;
 
-    return true && !code_val.isEmpty() && !display_name_val.isEmpty() && !kind_val.isEmpty();
+    return true && !code_val.isEmpty() && !display_name_val.isEmpty() && kind_selected &&
+           unit_selected;
 }
 
 void TenorDetailDialog::onSaveClicked() {

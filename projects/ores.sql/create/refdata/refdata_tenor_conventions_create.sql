@@ -51,7 +51,7 @@ create table if not exists "ores_refdata_tenor_conventions_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "description" text null,
-    "measured_from" text null,
+    "measured_from" text not null,
     "resolution_algorithm" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -66,8 +66,7 @@ create table if not exists "ores_refdata_tenor_conventions_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("code" <> ''),
-    check ("resolution_algorithm" IN ('ANCHOR_OFFSET', 'IMM_ROLL'))
+    check ("code" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -90,6 +89,12 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate measured_from
+    NEW.measured_from := ores_refdata_validate_tenor_anchor_fn(NEW.tenant_id, NEW.measured_from);
+
+    -- Validate resolution_algorithm
+    NEW.resolution_algorithm := ores_refdata_validate_tenor_resolution_algorithm_fn(NEW.tenant_id, NEW.resolution_algorithm);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

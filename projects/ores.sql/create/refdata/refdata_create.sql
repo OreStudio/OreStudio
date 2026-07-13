@@ -158,10 +158,20 @@
 \ir ./refdata_cds_conventions_notify_trigger_create.sql
 \ir ./refdata_publish_from_dq_create.sql
 
--- Tenor reference data: anchors and the tenor catalog before conventions;
--- conventions before the resolution junction that joins them.
+-- Tenor code lookups: kinds/units (referenced by tenors), anchors and
+-- resolution algorithms (referenced by conventions) before the entities
+-- that reference them.
+\ir ./refdata_tenor_kinds_create.sql
+\ir ./refdata_tenor_kinds_notify_trigger_create.sql
+\ir ./refdata_tenor_units_create.sql
+\ir ./refdata_tenor_units_notify_trigger_create.sql
 \ir ./refdata_tenor_anchors_create.sql
 \ir ./refdata_tenor_anchors_notify_trigger_create.sql
+\ir ./refdata_tenor_resolution_algorithms_create.sql
+\ir ./refdata_tenor_resolution_algorithms_notify_trigger_create.sql
+
+-- Tenor reference data: the tenor catalog before conventions;
+-- conventions before the resolution junction that joins them.
 \ir ./refdata_tenors_create.sql
 \ir ./refdata_tenors_notify_trigger_create.sql
 \ir ./refdata_tenor_conventions_create.sql

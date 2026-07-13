@@ -19,14 +19,20 @@
  */
 
 -- Tenor reference data: resolution junction before conventions/tenors it
--- references; tenors and conventions before anchors.
+-- references; tenors and conventions before the code lookups they reference.
 \ir ./refdata_tenor_convention_resolution_drop.sql
 \ir ./refdata_tenor_conventions_notify_trigger_drop.sql
 \ir ./refdata_tenor_conventions_drop.sql
 \ir ./refdata_tenors_notify_trigger_drop.sql
 \ir ./refdata_tenors_drop.sql
+\ir ./refdata_tenor_resolution_algorithms_notify_trigger_drop.sql
+\ir ./refdata_tenor_resolution_algorithms_drop.sql
 \ir ./refdata_tenor_anchors_notify_trigger_drop.sql
 \ir ./refdata_tenor_anchors_drop.sql
+\ir ./refdata_tenor_units_notify_trigger_drop.sql
+\ir ./refdata_tenor_units_drop.sql
+\ir ./refdata_tenor_kinds_notify_trigger_drop.sql
+\ir ./refdata_tenor_kinds_drop.sql
 
 -- ORE conventions (no dependants, drop first)
 \ir ./refdata_cds_conventions_notify_trigger_drop.sql

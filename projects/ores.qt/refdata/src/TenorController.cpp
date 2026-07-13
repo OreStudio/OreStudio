@@ -19,6 +19,7 @@
  */
 #include "ores.qt/TenorController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/TenorDetailDialog.hpp"
@@ -42,9 +43,13 @@ constexpr std::string_view tenor_event_name =
 TenorController::TenorController(QMainWindow* mainWindow,
                                  QMdiArea* mdiArea,
                                  ClientManager* clientManager,
+                                 ChangeReasonCache* changeReasonCache,
                                  const QString& username,
+                                 BadgeCache* badgeCache,
                                  QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, tenor_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -61,7 +66,7 @@ void TenorController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new TenorMdiWindow(clientManager_, username_);
+    listWindow_ = new TenorMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_, &TenorMdiWindow::statusChanged, this, &TenorController::statusMessage);
@@ -70,6 +75,14 @@ void TenorController::showListWindow() {
     connect(
         listWindow_, &TenorMdiWindow::addNewRequested, this, &TenorController::onAddNewRequested);
     connect(listWindow_, &TenorMdiWindow::showTenorHistory, this, &TenorController::onShowHistory);
+    connect(listWindow_,
+            &TenorMdiWindow::showConventionsRequested,
+            this,
+            &TenorController::showConventionsRequested);
+    connect(listWindow_,
+            &TenorMdiWindow::showAnchorsRequested,
+            this,
+            &TenorController::showAnchorsRequested);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
@@ -146,6 +159,9 @@ void TenorController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenor";
 
     auto* detailDialog = new TenorDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -188,6 +204,9 @@ void TenorController::showDetailWindow(const refdata::domain::tenor& tenor) {
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << tenor.code;
 
     auto* detailDialog = new TenorDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -318,6 +337,9 @@ void TenorController::onOpenVersion(const refdata::domain::tenor& tenor, int ver
     }
 
     auto* detailDialog = new TenorDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setTenor(tenor);
@@ -366,6 +388,9 @@ void TenorController::onRevertVersion(const refdata::domain::tenor& tenor) {
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TenorDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_tenor = tenor;

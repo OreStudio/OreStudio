@@ -19,6 +19,7 @@
  */
 #include "ores.qt/TenorAnchorController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/TenorAnchorDetailDialog.hpp"
@@ -42,9 +43,11 @@ constexpr std::string_view anchor_event_name =
 TenorAnchorController::TenorAnchorController(QMainWindow* mainWindow,
                                              QMdiArea* mdiArea,
                                              ClientManager* clientManager,
+                                             ChangeReasonCache* changeReasonCache,
                                              const QString& username,
                                              QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, anchor_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -160,6 +163,8 @@ void TenorAnchorController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenor anchor";
 
     auto* detailDialog = new TenorAnchorDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -208,6 +213,8 @@ void TenorAnchorController::showDetailWindow(const refdata::domain::tenor_anchor
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << anchor.code;
 
     auto* detailDialog = new TenorAnchorDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -345,6 +352,8 @@ void TenorAnchorController::onOpenVersion(const refdata::domain::tenor_anchor& a
     }
 
     auto* detailDialog = new TenorAnchorDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setAnchor(anchor);
@@ -394,6 +403,8 @@ void TenorAnchorController::onRevertVersion(const refdata::domain::tenor_anchor&
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TenorAnchorDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_anchor = anchor;

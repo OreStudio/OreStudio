@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class TenorAnchorMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing tenor anchor windows and operations.
@@ -55,6 +56,7 @@ public:
     TenorAnchorController(QMainWindow* mainWindow,
                           QMdiArea* mdiArea,
                           ClientManager* clientManager,
+                          ChangeReasonCache* changeReasonCache,
                           const QString& username,
                           QObject* parent = nullptr);
 
@@ -83,6 +85,7 @@ private:
     void showDetailWindow(const refdata::domain::tenor_anchor& anchor);
     void showHistoryWindow(const QString& code);
 
+    ChangeReasonCache* changeReasonCache_;
     TenorAnchorMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

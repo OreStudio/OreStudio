@@ -98,7 +98,10 @@
 \echo '--- Reference Data Lookup Tables ---'
 \ir ../refdata/refdata_business_day_convention_types_populate.sql
 \ir ../refdata/refdata_day_count_fraction_types_populate.sql
+\ir ../refdata/refdata_tenor_kinds_populate.sql
+\ir ../refdata/refdata_tenor_units_populate.sql
 \ir ../refdata/refdata_tenor_anchors_populate.sql
+\ir ../refdata/refdata_tenor_resolution_algorithms_populate.sql
 \ir ../refdata/refdata_tenors_populate.sql
 \ir ../refdata/refdata_tenor_conventions_populate.sql
 \ir ../refdata/refdata_tenor_convention_resolutions_populate.sql

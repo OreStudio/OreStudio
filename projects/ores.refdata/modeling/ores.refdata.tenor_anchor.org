@@ -61,12 +61,45 @@ Human-readable description of the reference point.
 std::string(faker::lorem::sentence())
 #+end_src
 
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
 * SQL
 
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_tenor_anchors_tbl
 :END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_tenor_anchor_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
 
 * C++
 
@@ -104,6 +137,7 @@ std::string(faker::lorem::sentence())
 :item_var:               anchor
 :key_field:              code
 :has_uuid_primary_key:   false
+:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_tenor_anchors_request
 :get_response_class:     refdata::messaging::get_tenor_anchors_response
 :get_message_type:       get_tenor_anchors_request
@@ -123,20 +157,22 @@ std::string(faker::lorem::sentence())
 
 *** Detail fields
 
-| field       | label       | widget          | type      | is_key | is_required | placeholder                  |
-|-------------+-------------+-----------------+-----------+--------+-------------+-------------------------------|
-| code        | Code        | codeEdit        | line_edit | true   | true        | Enter anchor code (e.g. SPOT) |
-| description | Description | descriptionEdit | text_edit |        |             | Enter a description          |
+| field         | label         | widget          | type      | is_key | is_required | placeholder                  |
+|---------------+---------------+-----------------+-----------+--------+-------------+-------------------------------|
+| code          | Code          | codeEdit        | line_edit | true   | true        | Enter anchor code (e.g. SPOT) |
+| description   | Description   | descriptionEdit | text_edit |        |             | Enter a description          |
+| display_order | Display Order | displayOrderEdit | spin_box |        | true        |                               |
 
 *** Columns (Qt model)
 
-| enum_name   | field       | header      | type      | width |
-|-------------+-------------+-------------+-----------+-------|
-| Code        | code        | Code        | string    | 160   |
-| Description | description | Description | string    | 350   |
-| Version     | version     | Version     | int       | 80    |
-| ModifiedBy  | modified_by | Modified By | string    | 120   |
-| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | 160   |
+| Description  | description   | Description   | string    | 350   |
+| DisplayOrder | display_order | Display Order | int       | 90    |
+| Version      | version       | Version       | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By   | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At   | timestamp | 150   |
 
 ** Custom repository methods
 

@@ -120,9 +120,9 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QLineEdit" name="kindEdit">
-            <property name="placeholderText">
-             <string>SPECIAL or PERIOD</string>
+           <widget class="ores::qt::OreBadgeComboBox" name="kindCombo">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>
@@ -134,9 +134,9 @@
            </widget>
           </item>
           <item row="5" column="1">
-           <widget class="QLineEdit" name="unitEdit">
-            <property name="placeholderText">
-             <string>DAY, WEEK, MONTH, or YEAR</string>
+           <widget class="ores::qt::OreBadgeComboBox" name="unitCombo">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>
@@ -236,6 +236,11 @@
    <class>ores::qt::ProvenanceWidget</class>
    <extends>QWidget</extends>
    <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>ores::qt::OreBadgeComboBox</class>
+   <extends>QComboBox</extends>
+   <header>ores.qt/OreBadgeComboBox.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

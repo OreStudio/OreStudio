@@ -106,6 +106,27 @@ void TenorConventionMdiWindow::setupToolbar() {
     historyAction_->setEnabled(false);
     connect(
         historyAction_, &QAction::triggered, this, &TenorConventionMdiWindow::viewHistorySelected);
+
+
+    toolbar_->addSeparator();
+
+    {
+        auto* action = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor),
+            tr("Anchors"));
+        action->setToolTip(tr("Open Tenor Anchors list"));
+        connect(action, &QAction::triggered, this, [this]() { emit showAnchorsRequested(); });
+    }
+
+    {
+        auto* action = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor),
+            tr("Resolution Algorithms"));
+        action->setToolTip(tr("Open Tenor Resolution Algorithms list"));
+        connect(action, &QAction::triggered, this, [this]() {
+            emit showResolutionAlgorithmsRequested();
+        });
+    }
 }
 
 void TenorConventionMdiWindow::setupTable() {

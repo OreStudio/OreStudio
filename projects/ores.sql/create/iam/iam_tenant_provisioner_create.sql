@@ -427,13 +427,61 @@ begin
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % currency market tiers', v_copied_count;
 
-    -- Tenor anchors (e.g. SPOT, TODAY, TOMORROW, NEAR_LEG, IMM_ROLL)
-    insert into ores_refdata_tenor_anchors_tbl (
-        code, tenant_id, version, description,
+    -- Tenor kinds (e.g. PERIOD, SPECIAL)
+    insert into ores_refdata_tenor_kinds_tbl (
+        code, tenant_id, version, name, description, display_order,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, v_tenant_id, 0, description,
+        code, v_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_tenor_kinds_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % tenor kinds', v_copied_count;
+
+    -- Tenor units (e.g. DAY, WEEK, MONTH, YEAR, NONE)
+    insert into ores_refdata_tenor_units_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_tenor_units_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % tenor units', v_copied_count;
+
+    -- Tenor resolution algorithms (e.g. ANCHOR_OFFSET, IMM_ROLL)
+    insert into ores_refdata_tenor_resolution_algorithms_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_tenor_resolution_algorithms_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % tenor resolution algorithms', v_copied_count;
+
+    -- Tenor anchors (e.g. SPOT, TODAY, TOMORROW, NEAR_LEG, IMM_ROLL, NONE)
+    insert into ores_refdata_tenor_anchors_tbl (
+        code, tenant_id, version, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_tenor_anchors_tbl t

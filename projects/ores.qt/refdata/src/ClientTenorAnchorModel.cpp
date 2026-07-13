@@ -84,6 +84,8 @@ QVariant ClientTenorAnchorModel::data(const QModelIndex& index, int role) const 
                 return QString::fromStdString(anchor.code);
             case Description:
                 return QString::fromStdString(anchor.description);
+            case DisplayOrder:
+                return static_cast<qlonglong>(anchor.display_order);
             case Version:
                 return static_cast<qlonglong>(anchor.version);
             case ModifiedBy:
@@ -112,6 +114,8 @@ ClientTenorAnchorModel::headerData(int section, Qt::Orientation orientation, int
             return tr("Code");
         case Description:
             return tr("Description");
+        case DisplayOrder:
+            return tr("Display Order");
         case Version:
             return tr("Version");
         case ModifiedBy:

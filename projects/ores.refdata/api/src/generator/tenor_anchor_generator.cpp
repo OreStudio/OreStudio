@@ -43,6 +43,7 @@ domain::tenor_anchor generate_synthetic_tenor_anchor(utility::generation::genera
     r.code = std::string(faker::word::noun()) + "_anchor_" + std::to_string(++counter) + "-" +
              std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
+    r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

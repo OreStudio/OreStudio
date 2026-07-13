@@ -33,13 +33,4 @@
 \ir ./marketdata_feed_bindings_create.sql
 \ir ./marketdata_feed_bindings_notify_trigger_create.sql
 
--- CRM config (Cross-rates matrix story): topology_configs must precede
--- driver_pairs/enabled_derived_pairs (foreign key references it).
-\ir ./marketdata_crm_topology_configs_create.sql
-\ir ./marketdata_crm_topology_configs_notify_trigger_create.sql
-\ir ./marketdata_crm_driver_pairs_create.sql
-\ir ./marketdata_crm_driver_pairs_notify_trigger_create.sql
-\ir ./marketdata_crm_enabled_derived_pairs_create.sql
-\ir ./marketdata_crm_enabled_derived_pairs_notify_trigger_create.sql
-
 \ir ./marketdata_publish_from_dq_create.sql

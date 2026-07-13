@@ -209,6 +209,12 @@ select _ores_grant_dml_fn('ores_workflow_', :'workflow_service_user');
 -- marketdata_service: Market Data domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_marketdata_', :'marketdata_service_user');
+-- crm_ingest_bridge reads crm_topology_config/crm_driver_pair/
+-- crm_enabled_derived_pair, which live in ores.refdata (configuration
+-- data, not marketdata) since the Cross Rates Matrix reclassification;
+-- read-only is sufficient, publishing writes go through
+-- ores.refdata.service's own publish-from-dq function.
+select _ores_grant_select_fn('ores_refdata_', :'marketdata_service_user');
 
 -- ---------------------------------------------------------------------------
 -- controller_service: Service Controller domain service

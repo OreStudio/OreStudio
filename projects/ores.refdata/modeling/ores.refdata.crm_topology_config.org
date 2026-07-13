@@ -2,11 +2,11 @@
 :ID: 3F8C1A2D-6B4E-4A9F-8D2C-1E7A9B5C3F0D
 :ores.cpp.qt.enabled: true
 :END:
-#+title: ores.marketdata.crm_topology_config
-#+description: Codegen entity model for the marketdata crm_topology_config table; a named, party-scoped CRM topology (pivot currency) for ores.analytics.quant.
+#+title: ores.refdata.crm_topology_config
+#+description: Codegen entity model for the refdata crm_topology_config table; a named, party-scoped CRM topology (pivot currency) for ores.analytics.quant.
 #+type: ores.codegen.entity
-#+component: marketdata
-#+filetags: :model:entity:marketdata:crm:
+#+component: refdata
+#+filetags: :model:entity:refdata:crm:
 #+entity_singular: crm_topology_config
 #+entity_plural: crm_topology_configs
 #+entity_title: CRM Topology Config
@@ -31,7 +31,7 @@ topologies and never share an engine.
 :PROPERTIES:
 :schema:        public
 :product:       ores
-:component:     marketdata
+:component:     refdata
 :has_tenant_id: true
 :END:
 
@@ -108,7 +108,7 @@ faker::datatype::boolean()
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_marketdata_crm_topology_configs_tbl
+:tablename: ores_refdata_crm_topology_configs_tbl
 :END:
 
 ** Checks
@@ -190,9 +190,9 @@ crm_topology_config_repository::read_latest_all_tenants(context ctx) {
 
 ** Qt
 :PROPERTIES:
-:domain_include:          ores.marketdata.api/domain/crm_topology_config.hpp
-:domain_class:            marketdata::domain::crm_topology_config
-:protocol_include:        ores.marketdata.api/messaging/crm_topology_config_protocol.hpp
+:domain_include:          ores.refdata.api/domain/crm_topology_config.hpp
+:domain_class:            refdata::domain::crm_topology_config
+:protocol_include:        ores.refdata.api/messaging/crm_topology_config_protocol.hpp
 :collection_name:         crm_topology_configs
 :item_var:                config
 :key_field:                name
@@ -200,18 +200,18 @@ crm_topology_config_repository::read_latest_all_tenants(context ctx) {
 :has_pagination:          true
 :has_change_reason_cache: true
 :has_export_macro:        true
-:get_request_class:       marketdata::messaging::get_crm_topology_configs_request
-:get_response_class:      marketdata::messaging::get_crm_topology_configs_response
+:get_request_class:       refdata::messaging::get_crm_topology_configs_request
+:get_response_class:      refdata::messaging::get_crm_topology_configs_response
 :get_message_type:        get_crm_topology_configs_request
-:save_request_class:      marketdata::messaging::save_crm_topology_config_request
-:save_response_class:     marketdata::messaging::save_crm_topology_config_response
+:save_request_class:      refdata::messaging::save_crm_topology_config_request
+:save_response_class:     refdata::messaging::save_crm_topology_config_response
 :save_message_type:       save_crm_topology_config_request
 :save_request_item_field: data
-:delete_request_class:    marketdata::messaging::delete_crm_topology_config_request
-:delete_response_class:   marketdata::messaging::delete_crm_topology_config_response
+:delete_request_class:    refdata::messaging::delete_crm_topology_config_request
+:delete_response_class:   refdata::messaging::delete_crm_topology_config_response
 :delete_message_type:     delete_crm_topology_config_request
-:history_request_class:   marketdata::messaging::get_crm_topology_config_history_request
-:history_response_class:  marketdata::messaging::get_crm_topology_config_history_response
+:history_request_class:   refdata::messaging::get_crm_topology_config_history_request
+:history_response_class:  refdata::messaging::get_crm_topology_config_history_response
 :history_message_type:    get_crm_topology_config_history_request
 :settings_group:          CrmTopologyConfigListWindow
 :window_title:            CRM Topology Configs

@@ -2,11 +2,11 @@
 :ID: 7A2E4B91-3C5D-4F6A-9B1E-2D8F0A6C4E7B
 :ores.cpp.qt.enabled: true
 :END:
-#+title: ores.marketdata.crm_driver_pair
-#+description: Codegen entity model for the marketdata crm_driver_pair table; a directly-quoted currency pair (topology edge) owned by a crm_topology_config.
+#+title: ores.refdata.crm_driver_pair
+#+description: Codegen entity model for the refdata crm_driver_pair table; a directly-quoted currency pair (topology edge) owned by a crm_topology_config.
 #+type: ores.codegen.entity
-#+component: marketdata
-#+filetags: :model:entity:marketdata:crm:
+#+component: refdata
+#+filetags: :model:entity:refdata:crm:
 #+entity_singular: crm_driver_pair
 #+entity_plural: crm_driver_pairs
 #+entity_title: CRM Driver Pair
@@ -26,7 +26,7 @@ Scoped to a tenant and a party, matching its parent config.
 :PROPERTIES:
 :schema:        public
 :product:       ores
-:component:     marketdata
+:component:     refdata
 :has_tenant_id: true
 :END:
 
@@ -109,7 +109,7 @@ faker::datatype::boolean()
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_marketdata_crm_driver_pairs_tbl
+:tablename: ores_refdata_crm_driver_pairs_tbl
 :END:
 
 ** Checks
@@ -124,7 +124,7 @@ faker::datatype::boolean()
 
 ** config_id
 :PROPERTIES:
-:table:         ores_marketdata_crm_topology_configs_tbl
+:table:         ores_refdata_crm_topology_configs_tbl
 :error_message: Invalid config_id: %. No active crm_topology_config found with this id.
 :nullable:      false
 :END:
@@ -202,9 +202,9 @@ crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
 
 ** Qt
 :PROPERTIES:
-:domain_include:          ores.marketdata.api/domain/crm_driver_pair.hpp
-:domain_class:            marketdata::domain::crm_driver_pair
-:protocol_include:        ores.marketdata.api/messaging/crm_driver_pair_protocol.hpp
+:domain_include:          ores.refdata.api/domain/crm_driver_pair.hpp
+:domain_class:            refdata::domain::crm_driver_pair
+:protocol_include:        ores.refdata.api/messaging/crm_driver_pair_protocol.hpp
 :collection_name:         crm_driver_pairs
 :item_var:                pair
 :key_field:                id
@@ -212,18 +212,18 @@ crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
 :has_pagination:          true
 :has_change_reason_cache: true
 :has_export_macro:        true
-:get_request_class:       marketdata::messaging::get_crm_driver_pairs_request
-:get_response_class:      marketdata::messaging::get_crm_driver_pairs_response
+:get_request_class:       refdata::messaging::get_crm_driver_pairs_request
+:get_response_class:      refdata::messaging::get_crm_driver_pairs_response
 :get_message_type:        get_crm_driver_pairs_request
-:save_request_class:      marketdata::messaging::save_crm_driver_pair_request
-:save_response_class:     marketdata::messaging::save_crm_driver_pair_response
+:save_request_class:      refdata::messaging::save_crm_driver_pair_request
+:save_response_class:     refdata::messaging::save_crm_driver_pair_response
 :save_message_type:       save_crm_driver_pair_request
 :save_request_item_field: data
-:delete_request_class:    marketdata::messaging::delete_crm_driver_pair_request
-:delete_response_class:   marketdata::messaging::delete_crm_driver_pair_response
+:delete_request_class:    refdata::messaging::delete_crm_driver_pair_request
+:delete_response_class:   refdata::messaging::delete_crm_driver_pair_response
 :delete_message_type:     delete_crm_driver_pair_request
-:history_request_class:   marketdata::messaging::get_crm_driver_pair_history_request
-:history_response_class:  marketdata::messaging::get_crm_driver_pair_history_response
+:history_request_class:   refdata::messaging::get_crm_driver_pair_history_request
+:history_response_class:  refdata::messaging::get_crm_driver_pair_history_response
 :history_message_type:    get_crm_driver_pair_history_request
 :settings_group:          CrmDriverPairListWindow
 :window_title:            CRM Driver Pairs

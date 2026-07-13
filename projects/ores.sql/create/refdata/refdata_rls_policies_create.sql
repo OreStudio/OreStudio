@@ -717,6 +717,34 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- CRM topology configs (codegen-generated table)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_crm_topology_configs_tbl enable row level security;
+
+create policy crm_topology_configs_tbl_tenant_isolation_policy
+on ores_refdata_crm_topology_configs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- CRM driver pairs (codegen-generated table)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_crm_driver_pairs_tbl enable row level security;
+
+create policy crm_driver_pairs_tbl_tenant_isolation_policy
+on ores_refdata_crm_driver_pairs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Tenor Anchors (codegen-generated table)
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_tenor_anchors_tbl enable row level security;
@@ -807,6 +835,20 @@ alter table ores_refdata_tenor_convention_resolutions_tbl enable row level secur
 
 create policy tenor_convention_resolutions_tbl_tenant_isolation_policy
 on ores_refdata_tenor_convention_resolutions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- CRM enabled derived pairs (codegen-generated table)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_crm_enabled_derived_pairs_tbl enable row level security;
+
+create policy crm_enabled_derived_pairs_tbl_tenant_isolation_policy
+on ores_refdata_crm_enabled_derived_pairs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

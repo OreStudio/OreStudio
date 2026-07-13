@@ -78,6 +78,9 @@ class TenorAnchorController;
 class TenorKindController;
 class TenorUnitController;
 class TenorResolutionAlgorithmController;
+class CrmTopologyConfigController;
+class CrmDriverPairController;
+class CrmEnabledDerivedPairController;
 
 /**
  * @brief Reference data plugin: currencies, countries, dimensions, coding
@@ -173,6 +176,9 @@ private:
     std::unique_ptr<TenorKindController> tenorKindController_;
     std::unique_ptr<TenorUnitController> tenorUnitController_;
     std::unique_ptr<TenorResolutionAlgorithmController> tenorResolutionAlgorithmController_;
+    std::unique_ptr<CrmTopologyConfigController> crmTopologyConfigController_;
+    std::unique_ptr<CrmDriverPairController> crmDriverPairController_;
+    std::unique_ptr<CrmEnabledDerivedPairController> crmEnabledDerivedPairController_;
 
     // Data Catalogue controllers (owned here, contributed to data_management_menu)
     std::unique_ptr<DataDomainController> dataDomainController_;

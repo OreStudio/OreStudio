@@ -32,6 +32,9 @@
 #include "ores.refdata.core/messaging/counterparty_identifier_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_registrar.hpp"
 #include "ores.refdata.core/messaging/country_registrar.hpp"
+#include "ores.refdata.core/messaging/crm_driver_pair_registrar.hpp"
+#include "ores.refdata.core/messaging/crm_enabled_derived_pair_registrar.hpp"
+#include "ores.refdata.core/messaging/crm_topology_config_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_market_tier_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_pair_classification_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_pair_convention_registrar.hpp"
@@ -143,6 +146,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_counterparty_handlers(nats, ctx, verifier));
     append(register_counterparty_identifier_handlers(nats, ctx, verifier));
     append(register_country_handlers(nats, ctx, verifier));
+    append(register_crm_driver_pair_handlers(nats, ctx, verifier));
+    append(register_crm_enabled_derived_pair_handlers(nats, ctx, verifier));
+    append(register_crm_topology_config_handlers(nats, ctx, verifier));
     append(register_currency_handlers(nats, ctx, verifier));
     append(register_currency_market_tier_handlers(nats, ctx, verifier));
     append(register_currency_pair_classification_handlers(nats, ctx, verifier));
@@ -299,6 +305,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             "refdata.v1.business-units.publish-from-dq",
             "refdata.v1.cashflow-types.publish-from-dq",
             "refdata.v1.countries.publish-from-dq",
+            "refdata.v1.crm-topology-bundles.publish-from-dq",
             "refdata.v1.currencies.publish-from-dq",
             "refdata.v1.currency-pairs.publish-from-dq",
             "refdata.v1.currency-pair-conventions.publish-from-dq",

@@ -2,11 +2,11 @@
 :ID: 5D9A3C6E-1F4B-4A8D-B7C2-6E0D3A9F5B1C
 :ores.cpp.qt.enabled: true
 :END:
-#+title: ores.marketdata.crm_enabled_derived_pair
-#+description: Codegen entity model for the marketdata crm_enabled_derived_pair table; a curated derived (non-edge) currency pair a consumer may request from the CRM.
+#+title: ores.refdata.crm_enabled_derived_pair
+#+description: Codegen entity model for the refdata crm_enabled_derived_pair table; a curated derived (non-edge) currency pair a consumer may request from the CRM.
 #+type: ores.codegen.entity
-#+component: marketdata
-#+filetags: :model:entity:marketdata:crm:
+#+component: refdata
+#+filetags: :model:entity:refdata:crm:
 #+entity_singular: crm_enabled_derived_pair
 #+entity_plural: crm_enabled_derived_pairs
 #+entity_title: CRM Enabled Derived Pair
@@ -26,7 +26,7 @@ Scoped to a tenant and a party, matching its parent config.
 :PROPERTIES:
 :schema:        public
 :product:       ores
-:component:     marketdata
+:component:     refdata
 :has_tenant_id: true
 :END:
 
@@ -108,7 +108,7 @@ faker::datatype::boolean()
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_marketdata_crm_enabled_derived_pairs_tbl
+:tablename: ores_refdata_crm_enabled_derived_pairs_tbl
 :END:
 
 ** Checks
@@ -123,7 +123,7 @@ faker::datatype::boolean()
 
 ** config_id
 :PROPERTIES:
-:table:         ores_marketdata_crm_topology_configs_tbl
+:table:         ores_refdata_crm_topology_configs_tbl
 :error_message: Invalid config_id: %. No active crm_topology_config found with this id.
 :nullable:      false
 :END:
@@ -201,9 +201,9 @@ crm_enabled_derived_pair_repository::read_latest_all_tenants(context ctx) {
 
 ** Qt
 :PROPERTIES:
-:domain_include:          ores.marketdata.api/domain/crm_enabled_derived_pair.hpp
-:domain_class:            marketdata::domain::crm_enabled_derived_pair
-:protocol_include:        ores.marketdata.api/messaging/crm_enabled_derived_pair_protocol.hpp
+:domain_include:          ores.refdata.api/domain/crm_enabled_derived_pair.hpp
+:domain_class:            refdata::domain::crm_enabled_derived_pair
+:protocol_include:        ores.refdata.api/messaging/crm_enabled_derived_pair_protocol.hpp
 :collection_name:         crm_enabled_derived_pairs
 :item_var:                pair
 :key_field:                id
@@ -211,18 +211,18 @@ crm_enabled_derived_pair_repository::read_latest_all_tenants(context ctx) {
 :has_pagination:          true
 :has_change_reason_cache: true
 :has_export_macro:        true
-:get_request_class:       marketdata::messaging::get_crm_enabled_derived_pairs_request
-:get_response_class:      marketdata::messaging::get_crm_enabled_derived_pairs_response
+:get_request_class:       refdata::messaging::get_crm_enabled_derived_pairs_request
+:get_response_class:      refdata::messaging::get_crm_enabled_derived_pairs_response
 :get_message_type:        get_crm_enabled_derived_pairs_request
-:save_request_class:      marketdata::messaging::save_crm_enabled_derived_pair_request
-:save_response_class:     marketdata::messaging::save_crm_enabled_derived_pair_response
+:save_request_class:      refdata::messaging::save_crm_enabled_derived_pair_request
+:save_response_class:     refdata::messaging::save_crm_enabled_derived_pair_response
 :save_message_type:       save_crm_enabled_derived_pair_request
 :save_request_item_field: data
-:delete_request_class:    marketdata::messaging::delete_crm_enabled_derived_pair_request
-:delete_response_class:   marketdata::messaging::delete_crm_enabled_derived_pair_response
+:delete_request_class:    refdata::messaging::delete_crm_enabled_derived_pair_request
+:delete_response_class:   refdata::messaging::delete_crm_enabled_derived_pair_response
 :delete_message_type:     delete_crm_enabled_derived_pair_request
-:history_request_class:   marketdata::messaging::get_crm_enabled_derived_pair_history_request
-:history_response_class:  marketdata::messaging::get_crm_enabled_derived_pair_history_response
+:history_request_class:   refdata::messaging::get_crm_enabled_derived_pair_history_request
+:history_response_class:  refdata::messaging::get_crm_enabled_derived_pair_history_response
 :history_message_type:    get_crm_enabled_derived_pair_history_request
 :settings_group:          CrmEnabledDerivedPairListWindow
 :window_title:            CRM Enabled Derived Pairs

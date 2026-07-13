@@ -21,7 +21,7 @@
 /**
  * CRM Topology Bundles Seed Population Script
  *
- * Registers the marketdata.crm_topology_bundles dataset (a second member
+ * Registers the refdata.crm_topology_bundles dataset (a second member
  * of the marketdata.reference_vintage_2016_02_05 bundle, alongside
  * marketdata.fx_driver_rates -- so a party gets both in the same atomic
  * publish, per the CRM story's own architecture decision that a party's
@@ -84,7 +84,7 @@ END $$;
 DO $$
 BEGIN
     PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'marketdata.crm_topology_bundles',
+        'refdata.crm_topology_bundles',
         'CRM Topology Bundles',
         'FX Spot',
         'Market Data',
@@ -110,13 +110,13 @@ END $$;
 DO $$
 BEGIN
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'marketdata.crm_topology_bundles',
+        'refdata.crm_topology_bundles',
         'marketdata.fx_driver_rates',
         'driver_currencies'
     );
 
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'marketdata.crm_topology_bundles',
+        'refdata.crm_topology_bundles',
         'synthetic.fx_spot_configs.realistic',
         'live_feed'
     );
@@ -135,7 +135,7 @@ DO $$
 BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(),
         'marketdata.reference_vintage_2016_02_05',
-        'marketdata.crm_topology_bundles',
+        'refdata.crm_topology_bundles',
         2,
         false
     );
@@ -154,18 +154,18 @@ begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
     where tenant_id = v_tenant_id
-      and code = 'marketdata.crm_topology_bundles'
+      and code = 'refdata.crm_topology_bundles'
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: marketdata.crm_topology_bundles';
+        raise exception 'Dataset not found: refdata.crm_topology_bundles';
     end if;
 
     -- Clear existing rows for this dataset (idempotency)
     delete from ores_dq_crm_topology_bundles_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise debug 'Populating CRM topology bundles for dataset: marketdata.crm_topology_bundles';
+    raise debug 'Populating CRM topology bundles for dataset: refdata.crm_topology_bundles';
 
     insert into ores_dq_crm_topology_bundles_artefact_tbl (
         dataset_id, tenant_id, crm_name, pivot_currency_code,

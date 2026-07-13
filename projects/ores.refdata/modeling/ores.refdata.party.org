@@ -695,10 +695,12 @@ generated dialog.
 
 #+begin_src cpp :name detail_dialog_header_includes :implements 9C3E6A1D-4B8F-4D2C-8A5E-3F1B7C9D2E6A
 #include "ores.qt/PartyChildEntityTables.hpp"
+#include "ores.qt/PartyHierarchyTab.hpp"
 #+end_src
 
 #+begin_src cpp :name detail_dialog_private_members :implements F55CB64E-165A-4E15-A50A-5723C0320E97
     PartyChildEntityTables* childTables_{nullptr};
+    PartyHierarchyTab* hierarchyTab_{nullptr};
 #+end_src
 
 #+begin_src cpp :name child_tables_setup :implements 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D
@@ -706,8 +708,18 @@ generated dialog.
     childTables_->attachTo(tabWidget());
 #+end_src
 
+#+begin_src cpp :name hierarchy_tab_setup :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    hierarchyTab_ = new PartyHierarchyTab(this);
+    hierarchyTab_->attachTo(tabWidget());
+#+end_src
+
 #+begin_src cpp :name reload_child_tables :implements D5A8E2F1-6C4B-4A9D-8E3F-2B7C1A9D4E6F
     childTables_->reload(party_.id, clientManager_, username_);
+    hierarchyTab_->reload(party_.id, clientManager_);
+#+end_src
+
+#+begin_src cpp :name child_tables_read_only :implements 7A4AE8D5-A22D-4912-B4BF-D58215681CD2
+    childTables_->setReadOnly(readOnly);
 #+end_src
 
 * See also

@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/CounterpartyChildEntityTables.hpp"
+#include "ores.qt/CounterpartyHierarchyTab.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include <vector>
@@ -101,6 +102,7 @@ private:
 
 
     CounterpartyChildEntityTables* childTables_{nullptr};
+    CounterpartyHierarchyTab* hierarchyTab_{nullptr};
 
     Ui::CounterpartyDetailDialog* ui_;
     ClientManager* clientManager_;

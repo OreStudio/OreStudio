@@ -37,11 +37,11 @@ class ClientManager;
 
 /**
  * @brief Owns and drives the "Identifiers" and "Contact Information" tabs
- * embedded in CounterpartyDetailDialog -- counterparty's two composite
- * children under temporal versioning (see the "Temporal composite entity
- * versioning" architecture doc). Not codegen'd: hand-written once here and
- * wired into the generated dialog via a small paste block, rather than
- * duplicated inline in the entity org model.
+ * embedded in CounterpartyDetailDialog -- counterparty's two composite children under
+ * temporal versioning (see the "Temporal composite entity versioning"
+ * architecture doc). Not codegen'd: hand-written once here and wired into
+ * the generated dialog via a small paste block, rather than duplicated
+ * inline in the entity org model.
  *
  * Row add/delete uses a fixed change-reason code rather than prompting via
  * ChangeReasonDialog, matching the pre-codegen dialog's behaviour.
@@ -55,10 +55,13 @@ public:
     /** @brief Add both tabs to the dialog's tab widget. Call once, from the constructor. */
     void attachTo(QTabWidget* tabWidget);
 
-    /** @brief Re-fetch and repopulate both tables. No-op if counterpartyId is nil. */
+    /** @brief Re-fetch and repopulate both tables for the given counterparty. No-op if counterpartyId is nil. */
     void reload(const boost::uuids::uuid& counterpartyId,
                 ClientManager* clientManager,
                 const std::string& username);
+
+    /** @brief Disable add/delete/edit while the parent dialog is read-only (e.g. viewing history). */
+    void setReadOnly(bool readOnly);
 
 private:
     void loadIdentifiers();
@@ -67,6 +70,7 @@ private:
     void onDeleteIdentifier(int row);
     void onAddContact();
     void onDeleteContact(int row);
+    void onEditContact(int row);
 
     QWidget* dialogParent_;
     ChildEntityTableWidget* identifierTable_{nullptr};
@@ -74,6 +78,7 @@ private:
     boost::uuids::uuid counterpartyId_;
     ClientManager* clientManager_{nullptr};
     std::string username_;
+    bool readOnly_{false};
     std::vector<ores::refdata::domain::counterparty_identifier> identifiers_;
     std::vector<ores::refdata::domain::counterparty_contact_information> contacts_;
 };

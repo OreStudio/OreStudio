@@ -20,11 +20,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Restore identifier/contact-information table editing for party and
-counterparty's generated Qt detail dialogs (deleted along with the old
-EntityDetailDialog/Operations classes), without regenerating a whole new
-declarative cross-entity Qt facet. Hierarchy tree binding is out of
-scope here (deferred — see Notes).
+Restore identifier/contact-information table editing (including edit,
+not just add/delete) for party and counterparty's generated Qt detail
+dialogs, and bind the hierarchy tree for both -- full feature parity
+with the deleted EntityDetailDialog/Operations classes, without
+regenerating a whole new declarative cross-entity Qt facet.
 
 * Status
 
@@ -32,17 +32,17 @@ scope here (deferred — see Notes).
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Both entities' Identifiers/Contact Information tabs restored and building clean. |
+| Now          | Both entities at full parity: Identifiers/Contact Information tabs (add/edit/delete) and Hierarchy tree, all building clean. |
 | Waiting on   | Nothing further for this task. |
-| Next         | Hierarchy tree binding (party's parent_party_id tree) remains unaddressed -- was never wired even in the pre-codegen dialog; separate follow-up if wanted. |
+| Next         | Ready for manual QA (Qt UI verification tasks). |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
 
-- Party: Identifiers and Contact Information tabs restored, load/add/delete working. DONE.
-- Counterparty: same. DONE.
-- ores.qt.refdata.lib builds clean (-j1). DONE.
-- Hierarchy tree binding. NOT DONE -- out of scope, see Notes.
+- Party: Identifiers tab (add/delete) and Contact Information tab (add/edit/delete, full field set) restored. DONE.
+- Party: Hierarchy tab (subtree rooted at the displayed party) restored. DONE.
+- Counterparty: same as party for all three. DONE.
+- ores.qt.refdata.lib and ores.qt.party.lib build clean (-j1). DONE.
 
 * Plan
 
@@ -82,16 +82,31 @@ plan itself stays — it is the historical record of what we did.)
    name" compile error that cascaded into confusing "not convertible to
    DetailDialogBase" errors elsewhere. Fixed by adding the
    =9C3E6A1D= header-includes paste point.
+5. User caught a real parity gap after initial "done": contact
+   information only had add/delete, not the old dialog's
+   double-click-to-view/edit with its full 10-field set (street line 2,
+   state, postal code, email, web page). Added =onEditContact= to both
+   hand-written classes, connected to the table's =cellDoubleClicked=,
+   plus a =setReadOnly()= passthrough wired via the existing
+   =7A4AE8D5= (end of =setReadOnly()=) seam so add/edit/delete disable
+   correctly when the parent dialog is read-only (e.g. viewing history).
+6. Bound the hierarchy tree: turned out =HierarchyModelBuilder=
+   (ores.qt.headless) is *already fully generic* -- no
+   =PartyHierarchyModelBuilder=-style subclass needed, despite the
+   =9B165431= seam's doc comment suggesting one. Added
+   =PartyHierarchyTab=/=CounterpartyHierarchyTab= (hand-written, same
+   pattern as the child-entity-tables classes): own one
+   =HierarchyTreeWidget=, fetch the subtree via the existing
+   =get_<entity>_hierarchy_request= NATS call (already generated,
+   unused until now), build the model, display it. Wired via the
+   existing =9B165431= constructor seam (already documented, first real
+   consumer) plus the =D5A8E2F1= reload hook.
 
 * Notes
 
-*Hierarchy tree deferred*: party's =parent_party_id= hierarchy was never
-actually wired into the Qt UI even before this session's changes -- the
-old hand-written =PartyController= never constructed a hierarchy tree
-widget anywhere. The existing =9B165431= seam (hierarchy tree, from the
-"Composite child-entity and hierarchy Qt widgets for codegen" story) is
-still unimplemented by any entity. Left as a standing gap, not a
-regression from this task.
+=HierarchyTreeWidget=/=HierarchyModelBuilder= (ores.qt.headless) predate
+this task, entity-agnostic, and had zero consumers until now -- this
+task is their first real binding.
 
 * Test Scenarios
 

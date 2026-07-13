@@ -29,6 +29,7 @@
 #include <QFutureWatcher>
 #include <QLineEdit>
 #include <QPointer>
+#include <QTableWidget>
 #include <QTabWidget>
 #include <QtConcurrent/QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
@@ -65,6 +66,10 @@ PartyChildEntityTables::PartyChildEntityTables(QWidget* dialogParent)
             &ChildEntityTableWidget::deleteRequested,
             this,
             &PartyChildEntityTables::onDeleteContact);
+    connect(contactTable_->table(),
+            &QTableWidget::cellDoubleClicked,
+            this,
+            [this](int row, int /* column */) { onEditContact(row); });
 }
 
 void PartyChildEntityTables::attachTo(QTabWidget* tabWidget) {
@@ -82,6 +87,10 @@ void PartyChildEntityTables::reload(const boost::uuids::uuid& partyId,
         return;
     loadIdentifiers();
     loadContacts();
+}
+
+void PartyChildEntityTables::setReadOnly(bool readOnly) {
+    readOnly_ = readOnly;
 }
 
 void PartyChildEntityTables::loadIdentifiers() {
@@ -122,7 +131,7 @@ void PartyChildEntityTables::loadIdentifiers() {
 }
 
 void PartyChildEntityTables::onAddIdentifier() {
-    if (!clientManager_ || !clientManager_->isConnected() || partyId_.is_nil())
+    if (!clientManager_ || !clientManager_->isConnected() || partyId_.is_nil() || readOnly_)
         return;
 
     QDialog dialog(dialogParent_);
@@ -180,7 +189,7 @@ void PartyChildEntityTables::onAddIdentifier() {
 }
 
 void PartyChildEntityTables::onDeleteIdentifier(int row) {
-    if (!clientManager_ || !clientManager_->isConnected() || row < 0 ||
+    if (!clientManager_ || !clientManager_->isConnected() || readOnly_ || row < 0 ||
         row >= static_cast<int>(identifiers_.size()))
         return;
 
@@ -242,7 +251,7 @@ void PartyChildEntityTables::loadContacts() {
 }
 
 void PartyChildEntityTables::onAddContact() {
-    if (!clientManager_ || !clientManager_->isConnected() || partyId_.is_nil())
+    if (!clientManager_ || !clientManager_->isConnected() || partyId_.is_nil() || readOnly_)
         return;
 
     QDialog dialog(dialogParent_);
@@ -306,7 +315,7 @@ void PartyChildEntityTables::onAddContact() {
 }
 
 void PartyChildEntityTables::onDeleteContact(int row) {
-    if (!clientManager_ || !clientManager_->isConnected() || row < 0 ||
+    if (!clientManager_ || !clientManager_->isConnected() || readOnly_ || row < 0 ||
         row >= static_cast<int>(contacts_.size()))
         return;
 
@@ -316,6 +325,86 @@ void PartyChildEntityTables::onDeleteContact(int row) {
     auto task = [cm, id]() -> bool {
         refdata::messaging::delete_party_contact_information_request req;
         req.ids.push_back(boost::uuids::to_string(id));
+        auto result = cm->process_authenticated_request(std::move(req));
+        return result && result->success;
+    };
+    auto* watcher = new QFutureWatcher<bool>(this);
+    connect(watcher, &QFutureWatcher<bool>::finished, this, [self, watcher]() {
+        auto ok = watcher->result();
+        watcher->deleteLater();
+        if (self && ok)
+            self->loadContacts();
+    });
+    watcher->setFuture(QtConcurrent::run(task));
+}
+
+void PartyChildEntityTables::onEditContact(int row) {
+    if (row < 0 || row >= static_cast<int>(contacts_.size()))
+        return;
+    const auto contact = contacts_[static_cast<std::size_t>(row)];
+    const bool editable = !readOnly_ && clientManager_ && clientManager_->isConnected();
+
+    QDialog dialog(dialogParent_);
+    dialog.setWindowTitle("Contact Information Details");
+    dialog.setMinimumWidth(500);
+    auto* layout = new QFormLayout(&dialog);
+
+    auto* typeEdit = new QLineEdit(QString::fromStdString(contact.contact_type), &dialog);
+    auto* streetLine1Edit = new QLineEdit(QString::fromStdString(contact.street_line_1), &dialog);
+    auto* streetLine2Edit = new QLineEdit(QString::fromStdString(contact.street_line_2), &dialog);
+    auto* cityEdit = new QLineEdit(QString::fromStdString(contact.city), &dialog);
+    auto* stateEdit = new QLineEdit(QString::fromStdString(contact.state), &dialog);
+    auto* countryEdit = new QLineEdit(QString::fromStdString(contact.country_code), &dialog);
+    auto* postalEdit = new QLineEdit(QString::fromStdString(contact.postal_code), &dialog);
+    auto* phoneEdit = new QLineEdit(QString::fromStdString(contact.phone), &dialog);
+    auto* emailEdit = new QLineEdit(QString::fromStdString(contact.email), &dialog);
+    auto* webEdit = new QLineEdit(QString::fromStdString(contact.web_page), &dialog);
+    for (auto* edit : {typeEdit, streetLine1Edit, streetLine2Edit, cityEdit, stateEdit, countryEdit,
+                       postalEdit, phoneEdit, emailEdit, webEdit})
+        edit->setReadOnly(!editable);
+
+    layout->addRow("Type:", typeEdit);
+    layout->addRow("Street Line 1:", streetLine1Edit);
+    layout->addRow("Street Line 2:", streetLine2Edit);
+    layout->addRow("City:", cityEdit);
+    layout->addRow("State:", stateEdit);
+    layout->addRow("Country Code:", countryEdit);
+    layout->addRow("Postal Code:", postalEdit);
+    layout->addRow("Phone:", phoneEdit);
+    layout->addRow("Email:", emailEdit);
+    layout->addRow("Web Page:", webEdit);
+
+    const auto buttons =
+        editable ? QDialogButtonBox::Save | QDialogButtonBox::Cancel : QDialogButtonBox::Close;
+    auto* buttonBox = new QDialogButtonBox(buttons, &dialog);
+    layout->addRow(buttonBox);
+    connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    if (editable)
+        connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+
+    if (dialog.exec() != QDialog::Accepted || !editable)
+        return;
+
+    auto updated = contact;
+    updated.contact_type = typeEdit->text().trimmed().toStdString();
+    updated.street_line_1 = streetLine1Edit->text().trimmed().toStdString();
+    updated.street_line_2 = streetLine2Edit->text().trimmed().toStdString();
+    updated.city = cityEdit->text().trimmed().toStdString();
+    updated.state = stateEdit->text().trimmed().toStdString();
+    updated.country_code = countryEdit->text().trimmed().toStdString();
+    updated.postal_code = postalEdit->text().trimmed().toStdString();
+    updated.phone = phoneEdit->text().trimmed().toStdString();
+    updated.email = emailEdit->text().trimmed().toStdString();
+    updated.web_page = webEdit->text().trimmed().toStdString();
+    updated.modified_by = username_;
+    updated.performed_by = username_;
+    updated.change_reason_code = default_change_reason;
+
+    QPointer<PartyChildEntityTables> self = this;
+    auto* cm = clientManager_;
+    auto task = [cm, updated]() -> bool {
+        refdata::messaging::save_party_contact_information_request req;
+        req.data = updated;
         auto result = cm->process_authenticated_request(std::move(req));
         return result && result->success;
     };

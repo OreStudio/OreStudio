@@ -22,12 +22,14 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include <atomic>
 #include <chrono>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -59,7 +61,13 @@ private:
     }
 
 public:
-    feed_ingest_loop(ores::nats::service::client& nats, ores::database::context ctx);
+    /// @param crm_bridge Optional; if set, every persisted tick is also
+    /// offered to the bridge as a candidate driver update (a no-op if the
+    /// tick's (tenant, party) has no CRM configured, or the pair isn't
+    /// one of its driver edges) -- see crm_ingest_bridge's own class doc.
+    feed_ingest_loop(ores::nats::service::client& nats,
+                     ores::database::context ctx,
+                     std::shared_ptr<crm_ingest_bridge> crm_bridge = nullptr);
     ~feed_ingest_loop();
 
     void start();
@@ -85,6 +93,7 @@ private:
 
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
+    std::shared_ptr<crm_ingest_bridge> crm_bridge_;
     mutable std::mutex mu_;
     std::map<std::string, ores::nats::service::subscription> subs_;
     std::map<std::string, std::shared_ptr<feed_stats>> stats_;

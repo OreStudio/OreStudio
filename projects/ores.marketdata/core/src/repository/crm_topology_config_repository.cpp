@@ -176,4 +176,18 @@ void crm_topology_config_repository::remove(context ctx, const std::vector<std::
 }
 
 
+std::vector<domain::crm_topology_config>
+crm_topology_config_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<crm_topology_config_entity>> |
+                       where("valid_to"_c == max.value()) | order_by("id"_c);
+
+    return execute_read_query<crm_topology_config_entity, domain::crm_topology_config>(
+        ctx,
+        query,
+        [](const auto& entities) { return crm_topology_config_mapper::map(entities); },
+        lg(),
+        "Reading latest CRM topology configs across all tenants");
+}
+
 }

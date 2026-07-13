@@ -115,6 +115,8 @@ public:
      * @brief Deletes CRM enabled derived pairs by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& ids);
+
+    std::vector<domain::crm_enabled_derived_pair> read_latest_all_tenants(context ctx);
 };
 
 }

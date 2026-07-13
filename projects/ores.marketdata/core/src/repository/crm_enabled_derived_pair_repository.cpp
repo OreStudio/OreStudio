@@ -185,4 +185,18 @@ void crm_enabled_derived_pair_repository::remove(context ctx, const std::vector<
 }
 
 
+std::vector<domain::crm_enabled_derived_pair>
+crm_enabled_derived_pair_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<crm_enabled_derived_pair_entity>> |
+                       where("valid_to"_c == max.value()) | order_by("id"_c);
+
+    return execute_read_query<crm_enabled_derived_pair_entity, domain::crm_enabled_derived_pair>(
+        ctx,
+        query,
+        [](const auto& entities) { return crm_enabled_derived_pair_mapper::map(entities); },
+        lg(),
+        "Reading latest CRM enabled derived pairs across all tenants");
+}
+
 }

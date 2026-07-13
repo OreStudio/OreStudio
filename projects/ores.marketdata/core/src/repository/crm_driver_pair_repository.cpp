@@ -174,4 +174,18 @@ void crm_driver_pair_repository::remove(context ctx, const std::vector<std::stri
 }
 
 
+std::vector<domain::crm_driver_pair>
+crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<crm_driver_pair_entity>> |
+                       where("valid_to"_c == max.value()) | order_by("id"_c);
+
+    return execute_read_query<crm_driver_pair_entity, domain::crm_driver_pair>(
+        ctx,
+        query,
+        [](const auto& entities) { return crm_driver_pair_mapper::map(entities); },
+        lg(),
+        "Reading latest CRM driver pairs across all tenants");
+}
+
 }

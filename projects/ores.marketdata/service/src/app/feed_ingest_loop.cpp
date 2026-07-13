@@ -77,9 +77,12 @@ ore_key_parts parse_ore_key(const std::string& ore_key) {
 
 } // namespace
 
-feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats, ores::database::context ctx)
+feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
+                                   ores::database::context ctx,
+                                   std::shared_ptr<crm_ingest_bridge> crm_bridge)
     : nats_(nats)
-    , ctx_(std::move(ctx)) {}
+    , ctx_(std::move(ctx))
+    , crm_bridge_(std::move(crm_bridge)) {}
 
 feed_ingest_loop::~feed_ingest_loop() {
     stop_flag_.store(true, std::memory_order_relaxed);
@@ -234,6 +237,31 @@ void feed_ingest_loop::subscribe_binding_locked(const std::string& ore_key,
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), error)
                     << "Failed to persist observation for " << ore_key_copy << ": " << e.what();
+            }
+
+            // Offer the tick to the CRM as a candidate driver update. A
+            // no-op if this (tenant, party) has no CRM configured, or the
+            // pair isn't one of its driver edges -- see
+            // crm_ingest_bridge's own class doc for why this never fails
+            // the tick's persist+remap above.
+            if (crm_bridge_) {
+                try {
+                    const auto kp = parse_ore_key(ore_key_copy);
+                    if (kp.series_type == "FX" && kp.metric == "RATE") {
+                        const auto slash = kp.qualifier.find('/');
+                        if (slash != std::string::npos) {
+                            crm_bridge_->update(tenant_ctx.tenant_id().to_string(),
+                                                boost::uuids::to_string(party_uuid),
+                                                kp.qualifier.substr(0, slash),
+                                                kp.qualifier.substr(slash + 1),
+                                                tick->mid,
+                                                tick->datetime);
+                        }
+                    }
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "CRM update failed for " << ore_key_copy << ": " << e.what();
+                }
             }
 
             nats_.js_publish(publish_subject, msg.data);

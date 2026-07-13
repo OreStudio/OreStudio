@@ -138,6 +138,37 @@ faker::datatype::boolean()
 :entity_plural_words:   CRM topology configs
 :END:
 
+*** read_latest_all_tenants
+:PROPERTIES:
+:ID: 8B2E4F71-9C3A-4D6E-B518-2A7F9C0E4D6B
+:END:
+
+Reads the latest CRM topology configs across all tenants. Used by
+=crm_ingest_bridge= at startup/refresh, which must build a
+=rate_engine= for every (tenant, party) regardless of tenant -- there is
+no single tenant context to scope the read to.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::crm_topology_config> read_latest_all_tenants(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::crm_topology_config>
+crm_topology_config_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<crm_topology_config_entity>> |
+                       where("valid_to"_c == max.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<crm_topology_config_entity, domain::crm_topology_config>(
+        ctx,
+        query,
+        [](const auto& entities) { return crm_topology_config_mapper::map(entities); },
+        lg(),
+        "Reading latest CRM topology configs across all tenants");
+}
+#+end_src
+
 ** Domain includes
 
 #+begin_src cpp :name includes

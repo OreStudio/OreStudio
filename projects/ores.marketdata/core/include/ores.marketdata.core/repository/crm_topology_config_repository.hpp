@@ -115,6 +115,8 @@ public:
      * @brief Deletes CRM topology configs by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& ids);
+
+    std::vector<domain::crm_topology_config> read_latest_all_tenants(context ctx);
 };
 
 }

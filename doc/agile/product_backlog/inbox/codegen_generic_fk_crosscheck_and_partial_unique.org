@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 074312A9-854E-414A-875D-66A49A6089B1
+:END:
+#+title: Codegen lacks generic cross-field FK validation and partial unique indexes
+#+description: No declarative way in an entity .org model to (a) validate a child row's own column matches a value denormalized/looked-up from its parent (only the hardcoded, book-specific party_id_from_book_id facet does this), or (b) declare a partial/conditional unique index (e.g. unique WHERE enabled = true) -- both needed by the CRM config entities and surfaced during their service-wiring task.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:sql:gap:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two related, generic codegen facilities, both currently missing:
+
+1. *Cross-field FK validation*: a declarative way in an entity =.org=
+   model to say "this row's column X must equal the value of column Y on
+   the parent row referenced by FK column Z" -- e.g.
+   =crm_driver_pair.party_id= must equal
+   =crm_topology_config.party_id= for the =crm_topology_config= row
+   =crm_driver_pair.config_id= points at. The only precedent is
+   =domain_entity.sql.party_id_from_book_id= in
+   =ores.sql.schema.domain_entity_create.org= (denormalises
+   =party_id= from =book_id='s parent and cross-checks
+   =portfolio_id= against the book's own parent portfolio) -- but it's
+   hardcoded to that one specific trade/book/portfolio relationship, not
+   reusable for any other entity pair.
+2. *Partial/conditional unique index*: a declarative way to say "at most
+   one row may have =enabled = true= per (natural key prefix)" -- e.g.
+   at most one =crm_topology_config= with =enabled = true= per
+   =(tenant_id, party_id)=. Today's generated unique indexes
+   (=ores.sql.schema.domain_entity_create.org:126-170=) are only ever
+   derived from the natural-key/primary-key columns themselves, with no
+   facility for an arbitrary =WHERE= condition on a different column.
+
+* Why
+
+Both gaps surfaced together while wiring the [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]
+into =ores.marketdata=: =crm_driver_pair=/=crm_enabled_derived_pair='s
+=config_id= FK trigger validates the parent =crm_topology_config= exists
+for the same tenant, but nothing stops a driver pair for party B pointing
+at party A's config within the same tenant (gap 1); and nothing stops two
+=crm_topology_config= rows both being =enabled = true= for the same
+(tenant, party), even though the modeling doc documents "at most one
+active rate_engine per (tenant, party)" as the invariant (gap 2). Flagged
+non-blocking in PR #1527's review (task
+=doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org=)
+and carried forward as acceptance items on the service-wiring follow-up
+task, but neither can be fixed by hand-writing SQL without either (a)
+duplicating the book/portfolio hack for a second, unrelated entity pair,
+or (b) reaching for raw SQL codegen doesn't produce anywhere else --
+both of which would just be technical debt in the same shape as the
+=party_id_from_book_id= special-case already is. The generic facility is
+the real fix, and would retroactively make the book/portfolio case a
+regular use of it too, rather than a one-off template branch.
+
+* References
+
+- =projects/ores.codegen/library/templates/ores.sql.schema.domain_entity_create.org=
+  lines ~322-359 (=party_id_from_book_id=, the only precedent) and
+  ~126-191 (unique index generation, natural-key/primary-key only).
+- =projects/ores.marketdata/modeling/ores.marketdata.crm_driver_pair.org=,
+  =ores.marketdata.crm_enabled_derived_pair.org=,
+  =ores.marketdata.crm_topology_config.org= -- the entities that need
+  both facilities.
+
+* See also
+
+- [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Story: Cross-rates matrix (CRM)]] -- where both gaps were hit.
+- [[id:467F77DB-3829-4F15-8E8E-C64FAA369459][Codegen leaves new entities unwired: RLS policies and the create/drop aggregators]]
+  -- a sibling "codegen doesn't validate/generate something structural"
+  gap found in the same story.

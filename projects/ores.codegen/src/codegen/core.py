@@ -1316,26 +1316,30 @@ def _format_description_as_comment(description):
     return '\n'.join(formatted_lines)
 
 
-def _prepare_table_display(cpp_section, uuid_columns=None, optional_columns=None):
+def _prepare_table_display(cpp_section, uuid_columns=None, optional_columns=None, bool_columns=None):
     """
     Prepare table_display items by adding iterator_var and is_uuid to each item.
 
     Mustache can't access parent context variables from within a loop,
     so we add the iterator_var to each table_display item. We also flag
-    UUID columns so the table template can wrap them with to_string(), and
+    UUID columns so the table template can wrap them with to_string(),
     optional columns so the template can unwrap them before streaming to
-    libfort (which has no operator<< for std::optional).
+    libfort (which has no operator<< for std::optional), and non-optional
+    bool columns so the template can render "true"/"false" instead of
+    libfort integer-promoting a raw bool to 0/1.
 
     Args:
         cpp_section (dict): The 'cpp' section of the model
         uuid_columns (set): Set of column names that are UUID type
         optional_columns (set): Set of column names that are std::optional<T>
+        bool_columns (set): Set of column names that are plain bool
     """
     if 'table_display' not in cpp_section:
         return
 
     uuid_columns = uuid_columns or set()
     optional_columns = optional_columns or set()
+    bool_columns = bool_columns or set()
     iter_var = cpp_section.get('iterator_var', 'e')
     has_uuid = False
     has_optional = False
@@ -1343,6 +1347,7 @@ def _prepare_table_display(cpp_section, uuid_columns=None, optional_columns=None
         item['iter_var'] = iter_var
         item['is_uuid'] = item['column'] in uuid_columns
         item['is_optional'] = item['column'] in optional_columns
+        item['is_bool'] = item['column'] in bool_columns and item['column'] not in optional_columns
         if item['is_uuid']:
             has_uuid = True
         if item['is_optional']:
@@ -2036,6 +2041,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Collect UUID column names for table display
             uuid_columns = set()
             optional_columns = set()
+            bool_columns = set()
             if 'primary_key' in domain_entity and domain_entity['primary_key'].get('is_uuid'):
                 uuid_columns.add(domain_entity['primary_key']['column'])
             if 'natural_keys' in domain_entity:
@@ -2048,7 +2054,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                         uuid_columns.add(col['name'])
                     if col.get('nullable', False) and not col.get('is_uuid') and not col.get('is_nullable_string'):
                         optional_columns.add(col['name'])
-            _prepare_table_display(domain_entity['cpp'], uuid_columns, optional_columns)
+                    if (col.get('cpp_type') or '').strip() == 'bool':
+                        bool_columns.add(col['name'])
+            _prepare_table_display(domain_entity['cpp'], uuid_columns, optional_columns, bool_columns)
         # Copy repository section fields to top level for template access
         if 'repository' in domain_entity:
             for key, value in domain_entity['repository'].items():

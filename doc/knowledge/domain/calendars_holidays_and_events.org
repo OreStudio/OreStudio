@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: A960FE8E-56FA-4655-AA51-54C14882179B
+:END:
+#+title: Calendars, Holidays and Events
+#+description: Hub note for calendar reference data: the Diary/Effects architectural split, Template/Instance recurrence, holiday calendar administration, and calendar-anchored events with a time point.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:calendar:refdata:ore:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+* Summary
+
+A holiday calendar is, at bottom, nothing more than a named set of
+excluded dates against which a business-day test can be evaluated; but
+the moment a system needs to *manage* such a calendar as reference
+data — rather than merely consult a hard-coded one, as
+[[https://www.quantlibguide.com/Calendars%20and%20holidays.html][QuantLib]]
+does internally — three further design problems present themselves,
+and this cluster is organised around each in turn.
+
+The first is what the calendar is *for*: whether it is a static
+holiday list, or whether it also needs to carry market events (a
+central bank decision, a public announcement) that are not holidays
+but that nonetheless attach to a specific point in time and a specific
+set of currencies. This cluster addresses it with a *Diary/Effects*
+split — see [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The
+Diary/Effects Model]] — in which the calendar itself stores only bare
+time points, and any downstream *meaning* those time points carry is
+modelled separately.
+
+The second is how a recurring holiday (Christmas Day, the first Friday
+of the month) can be entered once and apply to every future occurrence
+without a fresh data-entry event every year. This cluster addresses it
+with a *Template/Instance* pairing, treated identically for both
+holidays and events, and detailed in
+[[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar
+Administration]].
+
+The third, given the Diary/Effects split, is what it actually means,
+concretely, to enter an *event* — as opposed to a holiday — into a
+calendar, and where real event data (central bank meeting dates, in
+particular) can be sourced to populate it. That is the subject of
+[[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]].
+
+* Detail
+
+** Why a calendar is more than a holiday list
+
+The naive model of a calendar — a currency or country code mapped to a
+set of excluded dates — is sufficient for the narrow purpose of
+computing a business day, and it is essentially what
+[[https://www.quantlibguide.com/Calendars%20and%20holidays.html][QuantLib's
+=Calendar= class]] provides: a name, an algorithmic rule for most
+holidays (fixed dates, nth-weekday-of-month rules, and pre-tabulated
+lunar-calendar holidays for markets such as China, Japan or the Gulf
+states where no closed-form rule exists), and an escape hatch —
+=addHoliday=/=removeHoliday= — for holidays that must be entered ad
+hoc, without recompiling the library, because they were only announced
+recently or apply to a single year. QuantLib further composes several
+such calendars into a =JointCalendar=, under either *join-holidays*
+(union: a day is a holiday if any constituent calendar says so) or
+*join-business-days* (intersection: a day is a holiday only if every
+constituent calendar agrees) semantics — the same union rule a
+comma-joined list of calendar names implicitly expresses wherever
+that free-text convention is used.
+
+What distinguishes a *reference-data* model of calendars from
+QuantLib's purely computational one is that a calendar administration
+screen needs to do considerably more than enumerate excluded dates:
+holidays must be addable, removable and *disable-able* (as distinct
+from deleted, preserving the historical record); they can be historic,
+can span multiple days, and can fall on a weekend without being
+erroneous; they can be sourced from an external feed and require
+authorisation before taking effect, unless the source is marked
+*trusted*, in which case they activate automatically; and the calendar
+should also anchor events, while the actual effect of an event is
+modelled elsewhere. That last point is the entire content of the
+Diary/Effects split, stated in one line: the calendar is the anchor
+for both holidays and events, but it is not where either kind of
+entry's downstream consequences live.
+
+** How the three spokes relate to one another
+
+- The *diary* itself — a validated enumeration of calendar codes and
+  the time points recorded against them — should stay semantics-free,
+  carrying only codes and time points, and should not accrete typed
+  fields for every possible downstream consumer; see
+  [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]]
+  for why.
+- A currency, or any other entity, can need more than one calendar at
+  once (a national public-holiday calendar and a financial-centre
+  calendar, say), and a recurring holiday needs to be entered once via
+  a *template* rather than instance-by-instance every year — both
+  covered in [[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday
+  Calendar Administration]].
+- An *event* — a time point with one or more associated currencies,
+  and, deliberately, no modelled *effect* — is a first-class kind of
+  diary entry distinct from a holiday, covered in
+  [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]], which
+  also surveys where genuine event data (central bank policy-meeting
+  dates) can be sourced.
+
+** How a calendar is consumed downstream
+
+A calendar feeds two distinct downstream layers. Fixing and coupon
+*schedule generation* — the machinery by which an IRS or similar
+structured product turns a compact parameter set (Pay Period, Fix
+Period, Yield Basis, Number of Coupons) into a concrete set of fixing
+and coupon dates, in the spirit of
+[[https://www.quantlibguide.com/Schedules.html][QuantLib's =Schedule=
+and =MakeSchedule=]] — consumes a calendar together with a
+business-day convention, of the kind catalogued in
+[[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and
+Business-Day Calendars]], to produce per-deal pricing-time dates. The
+broader *lifecycle-event taxonomy* of a trade — Confirmable Events,
+System Events, the deal state machine, automatic deal generation off a
+fixing or expiry — treats the calendar as one of several event
+*sources*: a life-cycle event can be triggered by the calendar (a
+fixing, an expiry), exactly as
+[[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]]
+describes.
+
+* Glossary
+
+| Term | Definition |
+|------+------------|
+| Calendar | The reference-data entity: a validated, named enumeration of excluded dates (and, in this cluster, event time points) for a currency, country, or market. The persisted thing; see [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]]. |
+| Diary | The *architectural role* a calendar plays: a bare, semantics-free timeline of time points, with no encoding of what those points mean downstream. Every calendar is a diary; "diary" names the design principle, "calendar" names the entity that implements it. See [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]]. |
+| Effect | A typed, pluggable, downstream impact of a diary entry (a volatility variance weighting, a deliverability restriction, a P&L attribution), modelled separately from the diary and attached by reference. See [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]]. |
+| Holiday | A diary entry marking a date excluded from business-day status for a currency, country, or market. Supports Template/Instance recurrence. See [[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar Administration]]. |
+| Event | A diary entry, distinct from a holiday, anchored to a time interval and one or more currencies or markets, carrying a =diary_entry_type= (holiday, central-bank meeting, data release, other) but deliberately no modelled effect. See [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]]. |
+| Template | The recurrence definition for a holiday or event (e.g. "Always first Friday"); editing it changes every future occurrence generated from it. See [[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar Administration]]. |
+| Instance | A single generated (or manually entered) occurrence of a template; editing an instance changes only that occurrence, leaving the template and all other occurrences untouched. See [[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar Administration]]. |
+| Business Day | A day that is not a holiday for the relevant currency, country, or market calendar(s). See [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]]. |
+| Settlement Day | A business day that additionally excludes USD holidays, since USD holidays are conventionally valid business days but still block settlement. See [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]]. |
+| Joint Calendar | The union (join-holidays) or intersection (join-business-days) of several individual calendars, used wherever more than one calendar applies at once (e.g. a currency pair, or a currency needing more than one calendar). |
+
+* See also
+
+- [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]] — the architectural split underlying this whole cluster.
+- [[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar Administration]] — Template/Instance recurrence, disable vs. remove, trusted sourcing.
+- [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]] — events as calendar entries, and sourcing central bank meeting data for DQ.
+- [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] — the business-day/settlement-day distinction and rolling conventions a calendar's holidays feed into.
+- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — canonical definition of business day vs. settlement day.
+- [[https://www.quantlibguide.com/Calendars%20and%20holidays.html][QuantLib: Calendars and holidays]] — the computational calendar model this reference-data layer sits above.
+- [[https://www.quantlibguide.com/Schedules.html][QuantLib: Schedules]] — schedule generation, the natural downstream consumer of a calendar.

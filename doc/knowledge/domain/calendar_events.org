@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: 41E0E1FB-1D84-47E0-A417-2633F31F0A2A
+:END:
+#+title: Calendar Events
+#+description: Modelling a market event as a calendar entry anchored to a time point, its Template/Instance pairing, and where a source of real event data (central bank meeting calendars) can seed DQ test data.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:calendar:refdata:ore:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+* Summary
+
+A diary is populated with two kinds of entries: holidays for a given
+country or currency, and events, which may affect one or more
+currencies without being holidays themselves. This document covers
+what an *event* entry, specifically, looks like, stopping short of the
+*effects* half of [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The
+Diary/Effects Model]]. An event is modelled as a diary entry anchored to a time point (an
+interval, strictly, though a single instant is the degenerate case),
+carrying a name, the currencies or markets it touches, and a *kind* —
+public holiday, central-bank policy meeting, scheduled data release,
+or an open-ended "other" — that lets the same =calendar= (or a
+companion =calendar_event=) table hold heterogeneous entries without
+collapsing their distinct provenance. It also surveys where genuine,
+citable event data can be sourced to seed data-quality test fixtures:
+the official calendar pages published by the G10 central banks (the
+Federal Reserve, the European Central Bank, the Bank of England, the
+Bank of Japan, the Bank of Canada, the Reserve Bank of Australia, and
+the Swiss National Bank) for their respective policy-setting
+committees.
+
+* Detail
+
+** An event as a diary entry with a time point
+
+An event's time is anchored as an interval — a start and an end,
+recorded in local time because the event is relative to a country or
+market. A captured event therefore needs, at minimum, a time zone, a
+start date/time, an end date/time (equal to the start for a point
+event such as a data release, distinct for something with genuine
+duration such as a public holiday observed as a full trading day), a
+computed UTC start/end pair derived from the two, and a name. The
+shape is deliberately minimal: an event entry records that something
+happens, when, and to which currencies, and stops there — no variance
+weighting, no deliverability-restriction typing, no P&L attribution.
+Those belong to the Effects side, per
+[[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]],
+attached by reference from whichever downstream consumer needs them
+(the FX vol surface, most plausibly).
+
+** Distinguishing kinds of entry: a =diary_entry_type=
+
+The calendar entity needs a *type* discriminator: is a given entry a
+public holiday, a central-bank meeting, or an "event" in some more
+generic sense? A single worked example makes the need for
+classification concrete: a Non-Farm Payrolls release, a central-bank
+policy decision (itself a recurring, dated, well-known fixture — the
+FOMC, the ECB Governing Council and the Bank of England MPC all
+publish their meeting calendars a year or more in advance), and an
+unscheduled, market-moving announcement are all qualitatively
+different kinds of "event." Collapsing all of these into a bare
+"Event" with no further classification would lose information a
+consumer might reasonably want to filter on (a trader wanting only
+central-bank meetings visible on a date picker, say, without every
+scheduled data release cluttering the view).
+
+The natural shape is a small, open-ended =diary_entry_type= code —
+=holiday=, =central_bank_meeting=, =data_release=, =other= as a
+plausible starting enumeration — rather than a hard boolean split
+between "holiday" and "event." This keeps the classification open to
+extension (a future =earnings_release= or =auction= type costs nothing
+to add), and lets a =central_bank_meeting= entry carry the same shape
+as every other event while still being filterable and reportable on
+its own. Whether holidays themselves live alongside events with
+=diary_entry_type = holiday=, or in a separate table as
+[[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar
+Administration]] discusses, both layouts are consistent with the
+Diary/Effects split; the type discriminator matters regardless of
+which physical layout is chosen.
+
+** Recurrence: Template/Instance, not a general recurrence grammar
+
+Events inherit the same Template/Instance pairing as holidays (see
+[[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar
+Administration]]): templates for events are instantiated as the
+events occur, following the same recurring-appointment principle
+described there. A central-bank meeting is, in this respect, the clean textbook case
+for a template: the FOMC holds eight regularly scheduled meetings a
+year, on dates announced well in advance but not reducible to a single
+closed-form recurrence rule (the exact dates shift year to year for
+scheduling reasons), so in practice each year's calendar is entered as
+a short run of instances against a lightweight "FOMC meeting" template,
+rather than computed from a formula. Non-Farm Payrolls, by contrast,
+*is* formulaic (first Friday of the month) and could be templated more
+tightly. Both are accommodated by the same Template/Instance mechanism
+without requiring the system to distinguish "formula-derivable" from
+"externally announced" events at the schema level.
+
+** Sourcing central-bank meeting dates for DQ seed data
+
+Populating the events table with real, citable data — rather than
+purely synthetic fixtures — is straightforward for the major
+central banks, each of which publishes its policy-meeting calendar as
+an official, machine-consultable web page (none currently offers a
+formal iCal/ICS feed directly from the central bank itself, so
+ingestion means scraping or hand-transcribing the published table
+rather than subscribing to a feed):
+
+- The Federal Reserve publishes the FOMC's meeting calendar, including
+  links to the resulting policy statements and minutes, at
+  [[https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm][federalreserve.gov/monetarypolicy/fomccalendars.htm]].
+  The FOMC holds eight regularly scheduled meetings a year, with
+  additional unscheduled meetings held as needed — the latter a
+  reminder that even a "regularly scheduled" central-bank calendar can
+  admit ad hoc, out-of-template instances.
+- The European Central Bank publishes the schedule of Governing
+  Council and General Council meetings, including monetary-policy
+  decision and press-conference timings, at
+  [[https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html][ecb.europa.eu/press/calendars/mgcgc]].
+- The Bank of England publishes upcoming Monetary Policy Committee
+  dates — the announcement of the Bank Rate decision and the
+  publication of MPC minutes — at
+  [[https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates][bankofengland.co.uk/monetary-policy/upcoming-mpc-dates]].
+- The Bank of Japan publishes the scheduled dates of its Monetary
+  Policy Meetings, held eight times a year over two consecutive days
+  each, at
+  [[https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm][boj.or.jp/en/mopo/mpmsche_minu]].
+- The Bank of Canada publishes its full-year schedule of policy
+  interest rate announcements (eight per year, each at a fixed
+  9:45am ET slot) the preceding August, at
+  [[https://www.bankofcanada.ca/press/upcoming-events/][bankofcanada.ca/press/upcoming-events]].
+- The Reserve Bank of Australia publishes its Monetary Policy Board
+  meeting schedule (eight two-day meetings a year, decision announced
+  2:30pm AEDT/AEST on the second day) at
+  [[https://www.rba.gov.au/schedules-events/board-meeting-schedules.html][rba.gov.au/schedules-events/board-meeting-schedules.html]].
+- The Swiss National Bank publishes its quarterly monetary policy
+  assessment dates (March, June, September, December; decision at
+  9:30am CET) at
+  [[https://www.snb.ch/en/the-snb/mandates-goals/monetary-policy/decisions][snb.ch/en/the-snb/mandates-goals/monetary-policy/decisions]].
+
+Together these seven sources cover the G10 policy calendars (Fed,
+ECB, BoE, BoJ, BoC, RBA, SNB); none publishes a formal iCal/ICS feed,
+so populating a table from them means manual or scripted
+transcription rather than an automatable ongoing sync.
+
+* See also
+
+- [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]] — the hub.
+- [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]] — why this document stops at the diary and does not model effects.
+- [[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar Administration]] — the Template/Instance pairing this document reuses for events.
+- [[https://datatracker.ietf.org/doc/html/rfc5545][RFC 5545: Internet Calendaring and Scheduling Core Object Specification (iCalendar)]] — the standardised recurrence/exception mechanism the Template/Instance pairing mirrors.
+- [[https://arxiv.org/abs/2411.16244][Martins & Lopes (2024), "What events matter for exchange rate volatility?"]] — the source of the Non-Farm-Payrolls-style worked example: which macro events carry a measurable FX volatility effect.
+- [[https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm][Federal Reserve: FOMC meeting calendars]]
+- [[https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html][ECB: Governing Council and General Council meeting calendars]]
+- [[https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates][Bank of England: upcoming MPC dates]]
+- [[https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm][Bank of Japan: Monetary Policy Meeting schedule]]
+- [[https://www.bankofcanada.ca/press/upcoming-events/][Bank of Canada: upcoming events]]
+- [[https://www.rba.gov.au/schedules-events/board-meeting-schedules.html][Reserve Bank of Australia: Board Meeting Schedules]]
+- [[https://www.snb.ch/en/the-snb/mandates-goals/monetary-policy/decisions][Swiss National Bank: monetary policy decisions]]

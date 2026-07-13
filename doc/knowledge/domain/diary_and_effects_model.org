@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 27863049-4A86-4949-AFAF-8A6F4A8E7BA8
+:END:
+#+title: The Diary/Effects Model
+#+description: The architectural split between the diary (a bare timeline of time points) and effects (typed, pluggable, per-occurrence impacts instantiated from a template) — the cleanest statement of what a calendar is.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:calendar:refdata:ore:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+* Summary
+
+The cleanest way to state what a calendar is, architecturally, is a
+deliberate separation of two concerns that are easy to conflate: a
+*diary* — a pure, semantics-free timeline recording only that
+something happens at a given point, with no mention of how it affects
+any downstream system — and *effects*, the typed, pluggable,
+per-occurrence impacts (a volatility variance weighting, a
+deliverability restriction, a P&L attribution) that are instantiated
+from a template when a diary entry occurs. This document explains why
+that split matters: a calendar entity should stay a diary, and should
+not grow typed columns for every possible downstream consumer of an
+entry.
+
+* Detail
+
+** Diary: a pure timeline
+
+A diary entry — whether a public holiday or a market event — needs to
+capture only the time point at which something happens: a date (or,
+for an event, an interval; see
+[[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]]) and
+little else. It does not encode *why* the entry matters to any
+particular downstream system, because the same entry can matter to
+several systems in entirely different ways at once — a central bank
+rate decision is simultaneously a volatility event, a possible
+deliverability disruption, and (if it falls on what would otherwise be
+a business day) irrelevant to settlement timing altogether. Baking any
+one of those interpretations into the diary entry itself would
+privilege one consumer over the others and make the entry harder to
+reuse.
+
+** Effects: typed, pluggable, template-instantiated
+
+An *effect* is a downstream, typed impact attached to a diary entry.
+For volatility specifically, the effect would carry a *variance
+increment* — a weighting multiplier applied for the duration of the
+event — and could in principle span multiple currency pairs and
+multiple market data types at once. The premise that scheduled
+announcements measurably drive volatility is well established
+empirically: Ederington and Lee's study of interest rate and FX
+futures markets found that scheduled macroeconomic announcements
+account for most of the observed intraday and day-of-week volatility
+patterns in those markets
+([[https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1993.tb04750.x][Ederington
+& Lee, 1993]]), and more recent work quantifies the same effect
+specifically for FX volatility across a range of macro event types
+([[https://arxiv.org/abs/2411.16244][Martins & Lopes, "What events
+matter for exchange rate volatility?", 2024]]). The general
+methodology for measuring an event's effect on a market variable —
+comparing observed behaviour around the event to a counterfactual
+baseline — is the *event study*, formalised in
+[[https://www.bu.edu/econ/files/2011/01/KothariWarner2.pdf][Kothari &
+Warner, "Econometrics of Event Studies"]]. Critically, effects are
+*decoupled* from one another: the volatility effect of an event is
+modelled independently of its deliverability effect and of any
+delivery-date impact, so one diary entry can drive several
+independent, differently-typed downstream consequences without those
+consequences needing to agree on a shared representation.
+
+Effects, like holidays (see
+[[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar
+Administration]]), would follow a *Template/Instance* pairing:
+templates for events and effects are instantiated as the events occur,
+so editing the template changes every future occurrence, while editing
+a specific instance changes only that one — the same principle as a
+recurring appointment in a calendar application, which is as good a
+mental model as any for a reader unfamiliar with the finance-specific
+vocabulary.
+
+A concrete illustration: a Non-Farm Payrolls release could carry a
+currency-pair weighting matrix (cross-weights across
+USD/GBP/EUR/CAD/AUD, say) as its effect. The diary entry is simply
+"Non-Farm Payrolls, first Friday of the month, 13:30 UTC"; the effect
+— the weighting matrix — would be a separate, typed object referencing
+that entry, not a field on it.
+
+** Why the split matters
+
+Effects are numerous and heterogeneous, and belong to the consuming
+subsystem (a vol surface, a deliverability check, a P&L attribution),
+not to the calendar itself. A calendar entity, and any event table
+layered onto it (see [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar
+Events]]), is therefore best scoped as the *diary* — codes, names,
+dates, and (for events) a time point and the currencies it touches —
+rather than accreting typed columns for every possible effect. An
+effect — a variance increment on the FX vol surface, for instance —
+attaches to a diary entry by reference, keeping the calendar and
+calendar-event schema stable regardless of how many kinds of effect
+are later modelled.
+
+An alternative worth noting is to collapse the Holiday/Event
+distinction entirely into the Effects mechanism, by modelling a
+holiday simply as an event with a −100% effect on trading activity.
+That is an elegant simplification once a system already has a
+fully built-out Effects layer; the pragmatic Holiday/Event split
+retained in [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar
+Events]] instead treats holidays and events as siblings under the same
+diary, each carrying its own minimal shape.
+
+* See also
+
+- [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]] — the hub.
+- [[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar Administration]] — the Template/Instance pairing applied to holidays specifically.
+- [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]] — the diary side of the split.
+- [[https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1993.tb04750.x][Ederington & Lee (1993), "How Markets Process Information: News Releases and Volatility," Journal of Finance 48(4)]] — the empirical basis for treating scheduled announcements as volatility-effect-bearing events.
+- [[https://arxiv.org/abs/2411.16244][Martins & Lopes (2024), "What events matter for exchange rate volatility?"]] — a data-driven identification of which macro events carry a measurable FX volatility effect.
+- [[https://www.bu.edu/econ/files/2011/01/KothariWarner2.pdf][Kothari & Warner, "Econometrics of Event Studies"]] — the event-study methodology for measuring an event's effect against a counterfactual baseline.

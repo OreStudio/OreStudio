@@ -68,6 +68,13 @@ Finance concepts the codebase relies on, grouped by topic.
   concepts: tenor labels, horizon date, date rolling, IMM dates, and
   broken dates/turn points.
 
+** Calendars and reference data
+
+- [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]] — hub note for calendar reference
+  data: the Diary/Effects architectural split, Template/Instance
+  recurrence, holiday calendar administration, and calendar-anchored
+  events with a time point.
+
 ** Risk, valuation and reporting
 
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]] — how ORE Studio configures the

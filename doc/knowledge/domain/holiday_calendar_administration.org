@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: 381A7747-2786-45E1-8C90-B42EC5A81472
+:END:
+#+title: Holiday Calendar Administration
+#+description: How a holiday calendar is managed as reference data: per-currency/country calendars, the Template/Instance recurrence pairing, disable vs remove, localisation, and trusted vs authorised external sourcing.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:calendar:refdata:ore:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+* Summary
+
+Where [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects
+Model]] establishes *what* a calendar entry is, this document covers
+*how a holiday calendar is administered* as reference data: how a
+recurring holiday is entered once and made to apply to every future
+occurrence via a Template/Instance pairing, why disabling a holiday is
+a distinct operation from removing it, how a calendar can be viewed
+under a local convention while remaining Gregorian underneath, and how
+externally sourced holidays are gated by a trusted/authorised
+distinction.
+
+* Detail
+
+** The calendar-as-entity screen
+
+A dedicated administration screen manages calendars per currency (and,
+implicitly, per country, since a
+country and its currency do not always share a single canonical
+calendar — a financial-centre calendar and a national public-holiday
+calendar can differ for the same jurisdiction). Four capabilities
+recur:
+
+- Holidays can be *added* and *removed*, but also *disabled* — a
+  distinct third state from deletion, which matters because a holiday
+  that turns out to have been entered in error, or that a jurisdiction
+  later revokes, should leave an audit trail rather than simply
+  vanish. This maps naturally onto ORE Studio's existing bitemporal
+  versioning convention (every entity already carries a =version=,
+  =valid_from=/=valid_to=, and change-reason metadata) rather than
+  requiring a bespoke disabled-flag mechanism.
+- A holiday can be *historic* (entered after the fact, for record-
+  keeping or backtesting purposes), can *span multiple days*, and can
+  *fall on a weekend* without that being treated as an error — all
+  three are unremarkable in isolation, but worth stating explicitly
+  because a naive implementation might reject a weekend holiday as
+  redundant, when in fact a named holiday landing on a weekend is
+  common (and, per the Business Day / Settlement Day distinction in
+  [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and
+  Business-Day Calendars]], not the same thing as the weekend itself
+  being the reason the day is excluded).
+- Calendars can be *viewed per currency pair* — both currencies'
+  calendars shown together — which is how the union-of-two-calendars
+  business-day definition is actually exercised in the UI, rather than
+  purely as a backend calculation.
+- Externally sourced holidays require *authorisation* before taking
+  effect, unless their source is marked *trusted*, in which case they
+  activate automatically. This is a governance workflow layered on top
+  of the entity: a pending, externally proposed holiday is distinct
+  from a confirmed one.
+
+** Template/Instance: the recurrence mechanism
+
+The Template/Instance pairing introduced in
+[[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]]
+applies to holidays in a specific, concrete form: a *holiday template*
+expressing a recurrence rule as a weekday pattern ("Always first
+Friday") rather than a fixed calendar date. Editing the template
+changes every future occurrence generated from it; editing a generated
+instance changes only that one — precisely the split standardised by
+[[https://datatracker.ietf.org/doc/html/rfc5545][RFC 5545, the
+iCalendar specification]], where a recurring event is a single
+component carrying an =RRULE=, and a modified single occurrence is a
+second component sharing the same =UID= but carrying a
+=RECURRENCE-ID= that overrides just that instance. Two things are
+worth noting about the present design choice, because they explain why
+this cluster does not reach for a full, general-purpose recurrence
+grammar such as =RRULE= itself:
+
+- Most holidays that recur do so on a simple, formulaic basis (a fixed
+  Gregorian date, or an nth-weekday-of-month rule), which a small,
+  purpose-built template vocabulary handles without difficulty — and
+  this is exactly the same territory QuantLib's
+  [[https://www.quantlibguide.com/Calendars%20and%20holidays.html][algorithmic
+  holiday rules]] already cover computationally.
+- A meaningful minority of holidays — Ramadan and Eid are the clearest
+  examples — follow a lunar calendar with *no* fixed Gregorian
+  recurrence rule at all, and are therefore fundamentally unpredictable
+  more than a few years in advance without an external lunar-calendar
+  computation. No formula-based template can generate these; they must
+  be entered as one-off instances (or a short run of pre-computed
+  instances) regardless of how sophisticated the template engine is.
+  This is precisely why this cluster treats Template/Instance as an ad
+  hoc pairing rather than investing in a formal recurrence language:
+  the language would not cover the hard cases anyway, so its added
+  complexity buys comparatively little.
+
+The practical consequence for a =calendar_holiday= (or equivalently
+named) table is that it benefits from an optional
+=recurrence_rule=/=template_id= column distinguishing a generated
+instance from a manually entered one-off. QuantLib already supplies
+algorithmic recurrence for the calendars it knows about; a holiday
+table built on top of that is additive to it rather than a replacement
+for it.
+
+** Localisation
+
+A calendar can also be *viewed* under a local convention (Arab,
+Iranian, and similarly non-Gregorian calendar systems, for instance)
+while remaining Gregorian underneath. This is a presentation-layer
+concern — the stored dates stay Gregorian, and a locale-aware
+formatter handles the display conversion — and has no bearing on the
+=calendar= entity's schema; it is recorded here only so the concept is
+not lost, should a future Qt screen need to support it.
+
+* See also
+
+- [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]] — the hub.
+- [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]] — the architectural split this document's Template/Instance mechanism belongs to.
+- [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]] — the same Template/Instance pairing applied to events rather than holidays.
+- [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] — how a holiday, once recorded, feeds into business-day and settlement-day calculations.
+- [[https://www.quantlibguide.com/Calendars%20and%20holidays.html][QuantLib: Calendars and holidays]] — the algorithmic holiday rules this administration layer sits above.
+- [[https://datatracker.ietf.org/doc/html/rfc5545][RFC 5545: Internet Calendaring and Scheduling Core Object Specification (iCalendar)]] — the standardised =RRULE=/=RECURRENCE-ID= mechanism the Template/Instance pairing mirrors.

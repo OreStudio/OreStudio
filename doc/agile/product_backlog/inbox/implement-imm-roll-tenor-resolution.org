@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 7746D493-C42B-441B-93C9-765A4EC768D6
+:END:
+#+title: Implement IMM_ROLL tenor resolution for credit/CDS conventions
+#+description: The tenor_convention.resolution_algorithm=IMM_ROLL branch and CREDIT_CDS_IMM convention are modeled and seeded, but resolve_end_date() throws std::logic_error for it -- the actual roll-schedule stepping algorithm, and the CDS tenor_convention_resolution rows (roll-quarter counts per nominal tenor), are not implemented.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:tenor:cds:imm:resolver:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Implement the =IMM_ROLL= branch of the tenor resolver
+(=ores.marketdata.api::domain::resolve_end_date()=), which currently
+throws =std::logic_error= whenever
+=tenor_convention.resolution_algorithm= is =IMM_ROLL=. This means
+stepping through [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]]'
+quarterly roll schedule by =offset_multiplier= roll-quarters from the
+horizon's most recent roll, rather than the anchor+offset arithmetic the
+=ANCHOR_OFFSET= branch already implements. Also seed the
+=tenor_convention_resolution= rows for the =CREDIT_CDS_IMM= convention
+(=offset_unit = 'ROLL_QUARTER'=, =offset_multiplier= = the roll-quarter
+count per nominal tenor, e.g. =1Y 1RQ=) — deliberately not done in the
+originating task since the exact roll-quarter-per-tenor mapping was not
+sourced anywhere in the knowledge cluster and fabricating it would have
+been a hack.
+
+* Why
+
+The persisted tenor data model (=tenor=/=tenor_anchor=/
+=tenor_convention=/=tenor_convention_resolution=) was deliberately
+designed so credit/CDS's genuinely different resolution algorithm fits
+without a schema change: =resolution_algorithm= and the
+=offset_unit=/=offset_multiplier= columns already accommodate it. Only
+the resolver code and CDS-specific seed data are outstanding — this
+capture exists so that gap doesn't get silently forgotten once the
+["DQ dataset for tenor reference data"] work closes as apparently
+complete for two conventions.
+
+* References
+
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the "Tenor conventions by curve type" section, including the CDS =1Y 1RQ= disambiguation notation.
+- [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]] — the quarterly roll schedule to step through.
+
+* See also
+
+- [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][ores.marketdata.tenor_convention]] — where =resolution_algorithm= is modeled.
+- [[id:E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48][ores.marketdata.tenor_convention_resolution]] — where the CDS resolution rows would be seeded.

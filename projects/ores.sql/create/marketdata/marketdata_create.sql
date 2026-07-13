@@ -43,3 +43,13 @@
 \ir ./marketdata_crm_enabled_derived_pairs_notify_trigger_create.sql
 
 \ir ./marketdata_publish_from_dq_create.sql
+
+-- Tenor reference data: anchors and the tenor catalog before conventions;
+-- conventions before the resolution junction that joins them.
+\ir ./marketdata_tenor_anchors_create.sql
+\ir ./marketdata_tenor_anchors_notify_trigger_create.sql
+\ir ./marketdata_tenors_create.sql
+\ir ./marketdata_tenors_notify_trigger_create.sql
+\ir ./marketdata_tenor_conventions_create.sql
+\ir ./marketdata_tenor_conventions_notify_trigger_create.sql
+\ir ./marketdata_tenor_convention_resolution_create.sql

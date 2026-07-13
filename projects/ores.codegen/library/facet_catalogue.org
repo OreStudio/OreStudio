@@ -141,6 +141,17 @@ Consumed directly by =generator.py= via =_load_profiles_from_org()=. This file i
 | [[id:5C3821E7-8D62-4DF7-B192-02B79B742DC4][cpp_nats_registrar.hpp.mustache]] | projects/{component_core_dir}/include/ores.{component_core}/messaging/{entity}_registrar.hpp |
 | [[id:5C833D81-AF75-438F-A145-40BE3B93225D][cpp_nats_registrar.cpp.mustache]] | projects/{component_core_dir}/src/messaging/{entity}_registrar.cpp |
 
+** nats-event-cache :facet:
+:PROPERTIES:
+:description: Consumer-side entity-mirror cache (partitioned_cache instantiation) plus its warm-up/subscribe wiring snippet; disabled by default, opt in via cached_by + read_for_cache
+:model_types: domain_entity
+:END:
+
+| Template | Output |
+|----------+--------|
+| [[id:34C228D7-52AD-46AC-AFC1-5EC7FDDF127D][cpp_nats_event_cache.hpp.mustache]] | projects/{cache_component_dir}/core/include/ores.{cache_component}.core/service/cache/{entity}_cache.hpp |
+| [[id:60339A37-DFB7-4E47-B7B3-79261BAC3455][cpp_nats_event_cache_registrar.hpp.mustache]] | projects/{cache_component_dir}/core/include/ores.{cache_component}.core/service/cache/{entity}_cache_registrar.hpp |
+
 ** qt :facet:
 :PROPERTIES:
 :description: Qt UI components (model, window, dialogs, controller)

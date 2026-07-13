@@ -1,0 +1,52 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.nats-event-cache.registrar_wiring.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
+#define ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
+
+#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.{{cache_component}}.core/service/cache/{{entity_singular}}_cache.hpp"
+#include "ores.{{component_include}}/eventing/{{entity_singular}}_changed_event.hpp"
+#include "ores.nats/service/client.hpp"
+#include <memory>
+#include <rfl/json.hpp>
+#include <string>
+#include <thread>
+#include <vector>
+
+namespace ores::{{cache_component}}::service::cache {
+
+/**
+ * @brief Warms {{entity_singular}}_cache for every given tenant, then
+ * subscribes to the {{entity_singular}} changed-event subject so each
+ * affected tenant is reloaded on any mutation. Call once at service
+ * startup and keep the returned subscription alive for the service's
+ * lifetime.
+ */
+inline ores::nats::service::subscription warm_and_subscribe_{{entity_singular}}_cache(
+    ores::nats::service::client& nats,
+    std::shared_ptr<{{entity_singular}}_cache> cache,
+    const std::vector<std::string>& tenant_ids) {
+    for (const auto& tenant_id : tenant_ids)
+        cache->load(tenant_id);
+
+    using ores::eventing::domain::event_traits;
+    using ores::{{component}}::eventing::{{entity_singular}}_changed_event;
+    return nats.subscribe(
+        std::string(event_traits<{{entity_singular}}_changed_event>::name),
+        [cache](ores::nats::message msg) {
+            using ores::eventing::domain::entity_change_event;
+            auto evt = rfl::json::read<entity_change_event>(ores::nats::as_string_view(msg.data));
+            if (evt && !evt->tenant_id.empty()) {
+                // Offload to a detached thread: load() calls request_sync,
+                // which would block the NATS callback thread if called inline.
+                std::thread([cache, tid = evt->tenant_id]() { cache->load(tid); }).detach();
+            }
+        });
+}
+
+} // namespace ores::{{cache_component}}::service::cache
+
+#endif
+{{/domain_entity}}

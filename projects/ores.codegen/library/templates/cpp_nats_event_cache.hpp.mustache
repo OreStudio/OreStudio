@@ -1,0 +1,107 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.nats-event-cache.cache_header.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_HPP
+#define ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_HPP
+
+#include "ores.eventing.core/service/cache/partitioned_cache.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+{{#primary_key.is_uuid}}
+#include <boost/container_hash/hash.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <variant>
+{{/primary_key.is_uuid}}
+#include <optional>
+#include <rfl/json.hpp>
+#include <string>
+
+namespace ores::{{cache_component}}::service::cache {
+
+namespace {
+inline auto& {{entity_singular}}_cache_lg() {
+    static auto instance = ores::logging::make_logger(
+        "ores.{{cache_component}}.service.cache.{{entity_singular}}_cache");
+    return instance;
+}
+} // namespace
+
+/**
+ * @brief In-process per-tenant cache of {{component}} {{entity_plural}} data.
+ *
+ * Populated via NATS request to {{component}}'s read_{{entity_plural}}_for_cache
+ * subject at startup, and reloaded on receipt of a {{entity_singular}}
+ * changed-event notification for the affected tenant (see the
+ * nats-event-cache.registrar_wiring archetype). See the "Generic
+ * entity-mirror cache primitive + codegen facet" story.
+ */
+class {{entity_singular}}_cache {
+{{#primary_key.is_uuid}}
+    using key_hash = boost::hash<{{primary_key.cpp_type}}>;
+    using cache_t = ores::eventing::service::cache::partitioned_cache<std::string,
+        {{primary_key.cpp_type}}, ores::{{component}}::domain::{{entity_singular}}, std::monostate,
+        key_hash>;
+{{/primary_key.is_uuid}}
+{{^primary_key.is_uuid}}
+    using cache_t = ores::eventing::service::cache::partitioned_cache<std::string,
+        {{primary_key.cpp_type}}, ores::{{component}}::domain::{{entity_singular}}>;
+{{/primary_key.is_uuid}}
+
+public:
+    explicit {{entity_singular}}_cache(ores::nats::service::client& nats)
+        : nats_(nats) {}
+
+    {{entity_singular}}_cache(const {{entity_singular}}_cache&) = delete;
+    {{entity_singular}}_cache& operator=(const {{entity_singular}}_cache&) = delete;
+    {{entity_singular}}_cache({{entity_singular}}_cache&&) = delete;
+    {{entity_singular}}_cache& operator=({{entity_singular}}_cache&&) = delete;
+
+    void load(const std::string& tenant_id) {
+        using namespace ores::logging;
+        try {
+            const auto req_json = rfl::json::write(
+                ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_request{
+                    .tenant_id = tenant_id});
+            const auto reply = nats_.request_sync(
+                ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_request::nats_subject,
+                ores::nats::as_bytes(req_json));
+            auto resp =
+                rfl::json::read<ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_response>(
+                    ores::nats::as_string_view(reply.data));
+            if (!resp || !resp->success) {
+                const auto msg = resp ? resp->message : "parse error";
+                BOOST_LOG_SEV({{entity_singular}}_cache_lg(), warn)
+                    << "{{entity_pascal}} cache load failed for tenant " << tenant_id << ": " << msg;
+                return;
+            }
+            auto entries_t = cache_t::entries_map{}.transient();
+            const auto count = resp->{{entity_plural_short}}.size();
+            for (auto& v : resp->{{entity_plural_short}})
+                entries_t.set(v.{{primary_key.column}}, std::move(v));
+            cache_.replace_partition(tenant_id, entries_t.persistent());
+            BOOST_LOG_SEV({{entity_singular}}_cache_lg(), debug)
+                << "Loaded " << count << " {{entity_plural}} for tenant " << tenant_id;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV({{entity_singular}}_cache_lg(), warn)
+                << "{{entity_pascal}} cache load exception for tenant " << tenant_id << ": "
+                << e.what();
+        }
+    }
+
+    std::optional<ores::{{component}}::domain::{{entity_singular}}>
+    lookup(const std::string& tenant_id, const {{primary_key.cpp_type}}& key) const {
+        return cache_.get(tenant_id, key);
+    }
+
+private:
+    ores::nats::service::client& nats_;
+    cache_t cache_;
+};
+
+} // namespace ores::{{cache_component}}::service::cache
+
+#endif
+{{/domain_entity}}

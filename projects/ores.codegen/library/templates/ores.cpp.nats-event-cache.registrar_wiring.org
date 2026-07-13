@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 60339A37-DFB7-4E47-B7B3-79261BAC3455
+:END:
+#+title: ores.cpp.nats-event-cache.registrar_wiring
+#+description: Startup warm-up + change-event-subscription snippet for a consumer-side entity-mirror cache. =nats-event-cache= facet.
+#+type: archetype
+#+output: projects/{cache_component_dir}/core/include/ores.{cache_component}.core/service/cache/{entity}_cache_registrar.hpp
+#+facet: ores.cpp.nats-event-cache
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+A header-only free function, =warm_and_subscribe_{{entity}}_cache=,
+warming the cache_header archetype's cache class for a set of tenants
+at startup, then subscribing to the entity's changed-event subject
+(bound via =event_traits=, no hardcoded subject string) so the
+affected tenant's partition is reloaded on every mutation. Meant to be
+called from a hand-written consumer service registrar (e.g. IAM's
+=registrar.cpp=) alongside its other subscriptions — this archetype
+does not generate or replace that registrar.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_nats_event_cache_registrar.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_nats_event_cache_registrar.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.nats-event-cache.registrar_wiring.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
+#define ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_REGISTRAR_HPP
+
+#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.{{cache_component}}.core/service/cache/{{entity_singular}}_cache.hpp"
+#include "ores.{{component_include}}/eventing/{{entity_singular}}_changed_event.hpp"
+#include "ores.nats/service/client.hpp"
+#include <memory>
+#include <rfl/json.hpp>
+#include <string>
+#include <thread>
+#include <vector>
+
+namespace ores::{{cache_component}}::service::cache {
+
+/**
+ * @brief Warms {{entity_singular}}_cache for every given tenant, then
+ * subscribes to the {{entity_singular}} changed-event subject so each
+ * affected tenant is reloaded on any mutation. Call once at service
+ * startup and keep the returned subscription alive for the service's
+ * lifetime.
+ */
+inline ores::nats::service::subscription warm_and_subscribe_{{entity_singular}}_cache(
+    ores::nats::service::client& nats,
+    std::shared_ptr<{{entity_singular}}_cache> cache,
+    const std::vector<std::string>& tenant_ids) {
+    for (const auto& tenant_id : tenant_ids)
+        cache->load(tenant_id);
+
+    using ores::eventing::domain::event_traits;
+    using ores::{{component}}::eventing::{{entity_singular}}_changed_event;
+    return nats.subscribe(
+        std::string(event_traits<{{entity_singular}}_changed_event>::name),
+        [cache](ores::nats::message msg) {
+            using ores::eventing::domain::entity_change_event;
+            auto evt = rfl::json::read<entity_change_event>(ores::nats::as_string_view(msg.data));
+            if (evt && !evt->tenant_id.empty()) {
+                // Offload to a detached thread: load() calls request_sync,
+                // which would block the NATS callback thread if called inline.
+                std::thread([cache, tid = evt->tenant_id]() { cache->load(tid); }).detach();
+            }
+        });
+}
+
+} // namespace ores::{{cache_component}}::service::cache
+
+#endif
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:D30C3CD0-FFF0-48D8-A7B1-2CBA35207884][ores.cpp.nats-event-cache]]
+- [[id:34C228D7-52AD-46AC-AFC1-5EC7FDDF127D][ores.cpp.nats-event-cache.cache_header]] — the cache class this snippet warms/reloads.
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

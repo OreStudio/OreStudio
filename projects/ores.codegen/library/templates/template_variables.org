@@ -50,6 +50,8 @@ Variables that identify the component being generated into.
 | =component_service=       | Service sub-component name.                                     | =ores.accounts.service=          |
 | =component_service_upper= | Service sub-component uppercased.                                | =ORES_ACCOUNTS_SERVICE=          |
 | =component_service_dir=   | Service sub-component's on-disk directory.                      | =ores.accounts/service=          |
+| =cache_component=         | Consumer component for a =nats-event-cache= archetype (from =cached_by=; defaults to =component=). | =iam= |
+| =cache_component_upper=   | =cache_component= uppercased (underscores, all caps).           | =IAM=                            |
 | =component_name=          | Short component name without the product prefix.                | =accounts=                       |
 | =full_name=               | Full qualified name (component + optional suffix).              | =ores.accounts=                  |
 | =full_name_upper=         | =full_name= uppercased.                                         | =ORES_ACCOUNTS=                  |

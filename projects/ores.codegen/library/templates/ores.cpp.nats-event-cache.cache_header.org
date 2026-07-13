@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 34C228D7-52AD-46AC-AFC1-5EC7FDDF127D
+:END:
+#+title: ores.cpp.nats-event-cache.cache_header
+#+description: Consumer-side entity-mirror cache class: a partitioned_cache instantiation warmed/reloaded via the entity's read_for_cache RPC. =nats-event-cache= facet.
+#+type: archetype
+#+output: projects/{cache_component_dir}/core/include/ores.{cache_component}.core/service/cache/{entity}_cache.hpp
+#+facet: ores.cpp.nats-event-cache
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+Consumer-side entity-mirror cache class. =nats-event-cache= facet: an
+=eventing::service::cache::partitioned_cache= instantiation, keyed by
+tenant id then by the entity's primary key, with a =load(tenant_id)=
+method that calls the entity's =read_for_cache= RPC (see
+[[id:E9A47FBA-7799-4D6B-AD1A-144B2F740F0F][ores.cpp.protocol.protocol_header]]) and replaces that tenant's
+partition.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics, and the facet doc for the =cached_by= /
+=read_for_cache= flags this archetype requires.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_nats_event_cache.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_nats_event_cache.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.nats-event-cache.cache_header.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_HPP
+#define ORES_{{cache_component_upper}}_CORE_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_HPP
+
+#include "ores.eventing.core/service/cache/partitioned_cache.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+{{#primary_key.is_uuid}}
+#include <boost/container_hash/hash.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <variant>
+{{/primary_key.is_uuid}}
+#include <optional>
+#include <rfl/json.hpp>
+#include <string>
+
+namespace ores::{{cache_component}}::service::cache {
+
+namespace {
+inline auto& {{entity_singular}}_cache_lg() {
+    static auto instance = ores::logging::make_logger(
+        "ores.{{cache_component}}.service.cache.{{entity_singular}}_cache");
+    return instance;
+}
+} // namespace
+
+/**
+ * @brief In-process per-tenant cache of {{component}} {{entity_plural}} data.
+ *
+ * Populated via NATS request to {{component}}'s read_{{entity_plural}}_for_cache
+ * subject at startup, and reloaded on receipt of a {{entity_singular}}
+ * changed-event notification for the affected tenant (see the
+ * nats-event-cache.registrar_wiring archetype). See the "Generic
+ * entity-mirror cache primitive + codegen facet" story.
+ */
+class {{entity_singular}}_cache {
+{{#primary_key.is_uuid}}
+    using key_hash = boost::hash<{{primary_key.cpp_type}}>;
+    using cache_t = ores::eventing::service::cache::partitioned_cache<std::string,
+        {{primary_key.cpp_type}}, ores::{{component}}::domain::{{entity_singular}}, std::monostate,
+        key_hash>;
+{{/primary_key.is_uuid}}
+{{^primary_key.is_uuid}}
+    using cache_t = ores::eventing::service::cache::partitioned_cache<std::string,
+        {{primary_key.cpp_type}}, ores::{{component}}::domain::{{entity_singular}}>;
+{{/primary_key.is_uuid}}
+
+public:
+    explicit {{entity_singular}}_cache(ores::nats::service::client& nats)
+        : nats_(nats) {}
+
+    {{entity_singular}}_cache(const {{entity_singular}}_cache&) = delete;
+    {{entity_singular}}_cache& operator=(const {{entity_singular}}_cache&) = delete;
+    {{entity_singular}}_cache({{entity_singular}}_cache&&) = delete;
+    {{entity_singular}}_cache& operator=({{entity_singular}}_cache&&) = delete;
+
+    void load(const std::string& tenant_id) {
+        using namespace ores::logging;
+        try {
+            const auto req_json = rfl::json::write(
+                ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_request{
+                    .tenant_id = tenant_id});
+            const auto reply = nats_.request_sync(
+                ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_request::nats_subject,
+                ores::nats::as_bytes(req_json));
+            auto resp =
+                rfl::json::read<ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_response>(
+                    ores::nats::as_string_view(reply.data));
+            if (!resp || !resp->success) {
+                const auto msg = resp ? resp->message : "parse error";
+                BOOST_LOG_SEV({{entity_singular}}_cache_lg(), warn)
+                    << "{{entity_pascal}} cache load failed for tenant " << tenant_id << ": " << msg;
+                return;
+            }
+            auto entries_t = cache_t::entries_map{}.transient();
+            const auto count = resp->{{entity_plural_short}}.size();
+            for (auto& v : resp->{{entity_plural_short}})
+                entries_t.set(v.{{primary_key.column}}, std::move(v));
+            cache_.replace_partition(tenant_id, entries_t.persistent());
+            BOOST_LOG_SEV({{entity_singular}}_cache_lg(), debug)
+                << "Loaded " << count << " {{entity_plural}} for tenant " << tenant_id;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV({{entity_singular}}_cache_lg(), warn)
+                << "{{entity_pascal}} cache load exception for tenant " << tenant_id << ": "
+                << e.what();
+        }
+    }
+
+    std::optional<ores::{{component}}::domain::{{entity_singular}}>
+    lookup(const std::string& tenant_id, const {{primary_key.cpp_type}}& key) const {
+        return cache_.get(tenant_id, key);
+    }
+
+private:
+    ores::nats::service::client& nats_;
+    cache_t cache_;
+};
+
+} // namespace ores::{{cache_component}}::service::cache
+
+#endif
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:D30C3CD0-FFF0-48D8-A7B1-2CBA35207884][ores.cpp.nats-event-cache]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

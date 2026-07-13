@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 1DCA1F0C-C993-4EE4-9097-6ABAF07D041F
+:END:
+#+title: Test Scenario: Verify Portfolio/Book composite version bump and history
+#+description: Manual Qt client steps confirming that adding/editing/deleting a book bumps its parent portfolio's version, and that Portfolio's history dialog reflects the composite version increments correctly, with no regressions to normal Book/Portfolio CRUD.
+#+type: test_scenario
+#+level: s1
+#+filetags: :book_data_model_cleanup:sprint_23:v0:book_codegen_drift_remediation:
+#+target_dialog:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:01304B6F-C431-4BD3-885A-CE713114B5A4][Migrate Portfolio/Book to composite-entity versioning]] in [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:01304B6F-C431-4BD3-885A-CE713114B5A4][Migrate Portfolio/Book to composite-entity versioning]] |
+| Parent story  | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]]   |
+| Target dialog | BookDetailDialog, PortfolioHistoryDialog (Reference Data > Books, Trading > Portfolios) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A fresh, Barclays-provisioned database:
+  #+begin_src sh :results verbatim
+  compass db recreate -y -k
+  compass services start
+  compass shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+  #+end_src
+- A running Qt client, not yet logged in.
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** Log in and select Barclays Plc
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
+=BARCLAYS PLC=. Confirm all menus enable with no errors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Note a portfolio's current version
+
+Open Trading > Portfolios, pick any portfolio, open its History
+dialog, and note the current (highest) version number.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Add a book under that portfolio and confirm the portfolio's version bumps
+
+Open Reference Data > Books, add a new book with Parent Portfolio set
+to the portfolio from the previous step. Save. Re-open that
+portfolio's History dialog: confirm a new version row appears (one
+higher than before), even though no field on the portfolio itself was
+directly edited.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Edit the book and confirm the portfolio bumps again
+
+Edit the new book (e.g. change its description) and Save. Re-check the
+portfolio's History dialog: confirm another new version row appeared.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Delete the book and confirm the portfolio bumps once more
+
+Delete the book. Re-check the portfolio's History dialog: confirm yet
+another new version row appeared (the delete-side bump).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | Backend confirmed correct via direct SQL against this exact portfolio/tenant (v5->v6 on insert, v6->v7 on delete). The UI not showing the new row was the already-known Portfolio window live-refresh gap (captured separately), not a bump-mechanism defect. |
+
+** Normal Book and Portfolio CRUD still work unaffected
+
+Confirm ordinary Book and Portfolio list/detail/history/save flows
+(unrelated to the parent_portfolio_id FK) behave exactly as before —
+no regressions from the composite wiring.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** No error toast or log error during the whole flow
+
+Check the client's log tail
+(=build/output/<preset>/publish/log/ores.qt.<colour>.log=) for any
+ERROR-level line.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | check logs |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-12T16:21:58Z |
+| Branch        | feature/migrate-book-to-composite-entity-versioning |
+| Commit        | 7e7ae3712 |
+| Worktree      | bright_faraday |
+
+* Notes

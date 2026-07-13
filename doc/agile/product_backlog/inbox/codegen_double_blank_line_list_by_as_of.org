@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: F4258B95-1867-4026-A658-6DC58B7D9DD3
+:END:
+#+title: Codegen: mustache renders a phantom double blank line when both list_by and list_by_as_of are set on one FK
+#+description: In the shared repository/service templates, when an FK has both :list_by: true and :list_by_as_of: true (currently only book.parent_portfolio_id), inserting a blank line between {{/list_by}} and {{#list_by_as_of}} (needed to separate the two generated functions) causes the renderer to also emit a phantom extra blank line at the closing {{/list_by_as_of}}{{/foreign_keys}} boundary before the next method -- confirmed independent of how the closing tags are laid out (same line vs separate lines). Worked around by normalizing the affected generated files with 'cat -s' post-generation (see PR #1526 review round 3), but the root cause in the templating engine isn't understood. Investigate if a second entity ever sets both flags on the same FK.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:book_data_model_cleanup:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -194,23 +194,27 @@ public:
         }
         const auto& req_ctx = *req_ctx_expected;
         service::party_identifier_service svc(req_ctx);
-        get_party_identifiers_by_party_id_response resp;
-        try {
-            if (auto req = decode<get_party_identifiers_by_party_id_request>(msg)) {
+        if (auto req = decode<get_party_identifiers_by_party_id_request>(msg)) {
+            get_party_identifiers_by_party_id_response resp;
+            try {
                 resp.party_identifiers =
                     svc.list_party_identifiers_by_party_id(req->party_id, req->offset, req->limit);
                 resp.total_available_count =
                     static_cast<int>(svc.count_party_identifiers_by_party_id(req->party_id));
                 resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(party_identifier_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
             }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(party_identifier_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
+            BOOST_LOG_SEV(party_identifier_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(party_identifier_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
-        BOOST_LOG_SEV(party_identifier_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
     }
 
 private:

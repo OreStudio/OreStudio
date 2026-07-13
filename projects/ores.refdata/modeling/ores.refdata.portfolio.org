@@ -24,6 +24,7 @@ via self-referencing parent_portfolio_id.
 :component:        refdata
 :has_tenant_id:    true
 :has_workspace_id: true
+:generate_touch_function: true
 :END:
 
 * Primary key
@@ -176,6 +177,26 @@ std::string("Active")
 :PROPERTIES:
 :tablename: ores_refdata_portfolios_tbl
 :END:
+
+* Foreign keys
+
+** parent_portfolio_id
+:PROPERTIES:
+:table:         ores_refdata_portfolios_tbl
+:nullable:      true
+:error_message: Invalid parent_portfolio_id: %. No active portfolio found with this id.
+:bump_parent_version: true
+:prevent_cycle: true
+:END:
+
+Self-referencing: a portfolio's own writes recursively bump its
+parent portfolio's version too (multi-level composite-entity
+versioning), so that a nested tree's top-level "as of version N"
+composition sees every descendant's state as of that same instant --
+not just its immediate children. NULL (root node) safely no-ops: the
+touch function's row lookup finds nothing for a NULL id and returns
+without effect, terminating the recursion. See the "Temporal composite
+entity versioning" architecture doc, "Multi-level composition".
 
 * C++
 

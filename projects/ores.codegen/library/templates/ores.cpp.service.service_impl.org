@@ -67,6 +67,7 @@ std::uint32_t {{entity_singular}}_service::count_{{entity_plural_short}}_by_{{co
     return repo_.get_total_{{entity_singular_short}}_count_by_{{column}}(ctx_, {{column}});
 }
 {{/list_by}}
+
 {{#list_by_as_of}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_service::list_{{entity_plural_short}}_by_{{column}}_as_of(

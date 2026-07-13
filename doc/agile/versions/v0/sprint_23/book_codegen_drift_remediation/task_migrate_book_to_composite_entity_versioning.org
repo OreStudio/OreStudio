@@ -1,37 +1,40 @@
 :PROPERTIES:
 :ID: 01304B6F-C431-4BD3-885A-CE713114B5A4
 :END:
-#+title: Task: Migrate book to composite-entity versioning
-#+description: Codegen's book_repository templates now generate read_at_version and other composite-entity scaffolding (confirmed via compass codegen entity diff book), but book.org does not yet declare its lookup children (book_status, regulatory_book_type, and the new book_purpose_type/ledger_feed_type). Register book as a composite parent per the Temporal Composite Entity Versioning target-state doc (id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A) and align with whatever the party/counterparty pilot implementation lands on, before regenerating book cleanly.
+#+title: Task: Migrate Portfolio/Book to composite-entity versioning
+#+description: Rescoped after design review: book_status/regulatory_book_type are enum-like FK attributes (many books reference one lookup row), not composite children -- applying :bump_parent_version: there would be wrong (editing a status definition would bump every book referencing it). The real 1-to-many composite relationship is Portfolio (parent) -> Book (child, via parent_portfolio_id): a portfolio genuinely has many books, matching the proven party/party_identifier shape. Add :bump_parent_version: true and :list_by_as_of: true to book.org's parent_portfolio_id FK entry, and :generate_touch_function: true to portfolio.org's Flags, per the Temporal Composite Entity Versioning target-state doc (id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A) and the counterparty/counterparty_identifier pilot.
 #+type: task
 #+level: s1
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/migrate-book-to-composite-entity-versioning
+#+pr: 1526
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
 #+updated: 2026-07-11
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results. Runs after book, book_status, and regulatory_book_type are regenerated and end-to-end tested against current templates.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Register Book as a composite child of Portfolio (not of book_status/
+regulatory_book_type) so that adding/editing/deleting a book bumps its
+parent portfolio's version, and "portfolio as of version N" can
+correctly compose the books it contained at that point in time.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Not yet started.                       |
+| State        | DONE                                  |
+| Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-12                               |
 
 * Acceptance
 
@@ -39,9 +42,73 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added =:bump_parent_version: true= and =:list_by_as_of: true= to
+book.org's =parent_portfolio_id= FK entry, and
+=:generate_touch_function: true= to portfolio.org's Flags (the same
+shape as the counterparty/counterparty_identifier pilot).
+Diff-reviewed before generating: portfolio's regen was restricted to
+=--address ores.sql.schema= only (its Qt layer is still fully stale
+and out of scope -- a full regen would have pulled in a 3700+ line
+unrelated diff). book's full regen only touched
+C++/SQL (handler/registrar/protocol/repository/service/SQL) -- its Qt
+files came back byte-identical (already current from the earlier
+regen task).
+
+Built clean, =db recreate= applied both modified SQL files with no
+errors. Verified the mechanism directly via SQL, not just trusting the
+generated code:
+
+- Created a portfolio (v1). Inserted a book referencing it -- portfolio
+  correctly bumped to v2, v1's window closed at the exact insert
+  instant.
+- Deleted the book -- portfolio correctly bumped to v3, symmetric with
+  the insert-side bump.
+- Composed "portfolio as of v2" via the interval-overlap join
+  (=book.valid_from < v2.valid_to and book.valid_to > v2.valid_from=)
+  -- correctly returned exactly the book that existed during that
+  window.
+
+=ores.refdata.api/core/service.tests= 3/3 passed after the change.
+
+** Recursive (multi-level) bump
+
+Manual QA correctly identified a real gap: Portfolio has its own
+self-referencing =parent_portfolio_id= (a portfolio tree), and the
+initial implementation only bumped the *immediate* parent -- a
+grandparent portfolio would never see a grandchild book's change,
+exactly the multi-level composition case the target-state doc flagged
+as a deferred follow-up ("out of scope for the first cut... a natural
+extension").
+
+Fixed by declaring Portfolio as composite parent *and* child of
+itself: added a =* Foreign keys= section to portfolio.org for its own
+=parent_portfolio_id= (previously undeclared -- a pre-existing gap,
+this column had *no* existence validation at all) with
+=:bump_parent_version: true=. Since every portfolio write already
+re-fires Portfolio's own insert trigger (including the touch
+function's re-insert when a *child* bumps it), that trigger now also
+recursively bumps *its own* parent. A root portfolio
+(=parent_portfolio_id IS NULL=) safely terminates the recursion: the
+touch function's row lookup on a NULL id matches nothing and no-ops.
+
+This surfaced a genuine template bug, not just a missing model flag:
+=CREATE RULE= (the soft-delete rule) is parsed eagerly by PostgreSQL,
+unlike a PL/pgSQL function body -- so a self-referencing entity's
+delete rule, which calls its own touch function, failed with
+"function ... does not exist" because the touch function was
+generated *after* the trigger/rule in the same file (fine for
+cross-entity parent/child, since the child's file always runs after
+the *entire* parent file, but broken for self-reference). Fixed the
+shared template (both the tangled =.mustache= and its literate =.org=
+source, re-tangled via =compass build --direct
+tangle_codegen_templates=) to generate the touch function *before* the
+insert trigger/delete rule, not after. Confirmed safe for the existing
+party/counterparty pilot too (diffed both -- content unchanged, only
+relocated).
+
+Verified via SQL with a 3-level tree (grandparent -> parent -> book):
+adding a book to =parent= correctly bumped =parent= (v1->v2) *and*
+=grandparent= (v2->v3) in the same transaction.
 
 * Notes
 
@@ -54,18 +121,49 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:1DCA1F0C-C993-4EE4-9097-6ABAF07D041F][Verify Portfolio/Book composite version bump and history]] | PASSED | UI initially showed a FAIL on the delete-side bump step, but direct SQL cross-check against the exact same real portfolio/tenant confirmed the backend mechanism fired correctly every time (add->v6, delete->v7, matching the earlier insert->edit sequence). Not a backend defect -- Portfolio's own Qt layer is unmigrated/out of scope for this task, so it not reacting to NATS events from a sibling entity's write is expected, not a regression (captured separately as the Portfolio window live-refresh gap). Also surfaced a real gap (see Plan): bumps don't propagate recursively up a nested portfolio tree -- fixed. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1526][#1526]] | [refdata,sql,codegen] Migrate Portfolio/Book to composite-entity versioning |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Minor codegen template gap: no blank line between count_by/list_by and the following as_of function | cpp_domain_type_repository.cpp/hpp.mustache, cpp_service.cpp/hpp.mustache | Accepted | Fixed the four .org sources and re-tangled; regenerated book/book_status/regulatory_book_type. Also collapsed a pre-existing duplicate blank line before remove() surfaced by the same boundary. |
+| 2 | No cycle prevention on parent_portfolio_id -- recursive bump could hit unbounded recursion on a cycle | refdata_portfolios_create.sql / sql_schema_domain_entity_create.org | Accepted | Added a generic =:prevent_cycle: true= FK flag to the shared template: a recursive-CTE ancestor walk raises a clean exception instead of relying on Postgres's stack-depth error. Applied to portfolio.org's self-referencing parent_portfolio_id. |
+| 3 | Template change leaves counterparty generated SQL stale (touch-function still ordered after its trigger/rule) | refdata_counterparties_create.sql | Accepted | Regenerated (=--address ores.sql.schema=); diff confirmed content unchanged, only the touch-function relocated earlier, as previously analysed. |
+| 4 | Missing blank lines between new method definitions in book_repository/book_service | book_repository.cpp, book_service.cpp/.hpp | Accepted | Same root cause as #1 -- fixed by the same template edit. |
+| 5 | Silent decode failure in book_handler.hpp's list_by_parent_portfolio_id -- no else branch on decode failure, unlike every other handler | book_handler.hpp | Accepted | Correction: this IS generated, from cpp_nats_handler.hpp.mustache's =extra_list_requests= section (=ores.cpp.nats-handler.nats_handler_header.org=) -- the first hand-patch missed that and would have been silently reverted by the next regen. Fixed properly at the template source (moved decode's else branch in, matching the sibling =hierarchy= handler right below it) and regenerated. |
+| 6 | Architecture doc still says multi-level cascading is out of scope for v1 | temporal_composite_entity_versioning.org | Accepted | Updated "Multi-level composition" and the summary bullet to describe the proven Portfolio/Book self-referencing case and the new =:prevent_cycle:= flag. |
+| 7 | Generated C++ files weren't run through clang-format | book_repository/service .cpp/.hpp | Declined | clang-format is on PATH in this environment and the codegen pipeline does invoke it; re-checked with =clang-format --dry-run --Werror= after the round-1 template fix -- all four files are already clean, so this was fully resolved as a side effect of fixing finding #1, not a separate gap. |
+| 8 | book's list_by_as_of methods aren't wired to a NATS handler / have no test coverage | book_repository.cpp/.hpp, book_service.cpp/.hpp | Declined | Matches the existing =list_by_as_of= pattern already used by counterparty_identifier/counterparty_contact_information (repository+service only, no protocol template exists for it yet) -- consistent with prior art, not a new gap introduced here. |
+| 9 | No cycle protection on the self-referencing portfolio tree | refdata_portfolios_create.sql | Already fixed | This review pass ran against a stale snapshot predating the round-1 fix (finding #2 above), which already added =:prevent_cycle: true=. Confirmed still present after round 2. |
+| 10 | Double blank line before remove()/get_book_at_version -- round-1's blank-line fix (#1) accidentally left 2 blanks where the rest of the codebase uses 1 | book_repository.cpp/.hpp, book_service.cpp/.hpp | Accepted | Root cause not fully understood -- inserting a blank line between {{/list_by}} and {{#list_by_as_of}} causes the mustache renderer to emit an extra phantom blank line at the closing {{/list_by_as_of}}{{/foreign_keys}} boundary regardless of how those tags are laid out (isolated by testing several variants). Worked around by normalizing the 4 generated files with =cat -s= after generation. Documented as a known codegen-pipeline limitation for the rare case of both =:list_by:= and =:list_by_as_of:= on the same FK (book is currently the only such entity) -- worth a follow-up investigation if a second entity hits it. |
+| 11 | book_handler.hpp's real bug wasn't caught by the first hand-patch since it's actually generated (same underlying issue as #5, found by re-running full regen) | cpp_nats_handler.hpp.mustache | Accepted | See #5 -- fixed at the template. |
+| 12 | The round-3 handler template fix (#5/#11) wasn't propagated to its other two call sites -- party_identifier_handler.hpp and counterparty_identifier_handler.hpp are generated from the same =extra_list_requests= section and still had the pre-fix silent-decode-failure pattern | party_identifier_handler.hpp, counterparty_identifier_handler.hpp | Accepted | Regenerated both (=--address ores.cpp.nats-handler=, scoped to just this facet to avoid pulling in their unrelated Qt-layer staleness). Diff confirmed each picked up exactly the same else-branch fix as book_handler.hpp, nothing else. |
 
 * Result
+
+Book registered as composite child of Portfolio (=:bump_parent_version:
+true=, =:list_by_as_of: true= on book.org's =parent_portfolio_id= FK;
+=:generate_touch_function: true= on portfolio.org). Recursive
+multi-level bump implemented by declaring Portfolio composite parent
+*and* child of itself, uncovering and fixing a real codegen-template
+bug (touch-function generation order vs. eager =CREATE RULE=
+resolution) along the way -- confirmed safe for the existing
+party/counterparty pilot. Mechanism verified directly via SQL (not
+just generated code) at 2 and 3 levels deep, and =ores.refdata.api/core/
+service.tests= pass 3/3.
+
+Manual QA scenario PASSED. Its one reported FAIL (delete-side bump not
+visible in the Portfolio History dialog) was run down to ground: a
+direct SQL reproduction against the exact same real portfolio/tenant
+showed the bump firing correctly (v5->v6 on insert, v6->v7 on delete),
+proving the backend is correct and the UI symptom is the already-known
+Portfolio-window live-refresh gap (Portfolio's Qt layer doesn't react
+to NATS events from a sibling entity's write -- out of scope here,
+captured separately).

@@ -113,6 +113,7 @@ public:
      */
     std::uint32_t count_{{entity_plural_short}}_by_{{column}}(const std::string& {{column}});
 {{/list_by}}
+
 {{#list_by_as_of}}
     /**
      * @brief Lists {{entity_plural_words}} filtered by {{column}} that were live at

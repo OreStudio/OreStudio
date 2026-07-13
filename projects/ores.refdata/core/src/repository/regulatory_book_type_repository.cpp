@@ -124,7 +124,6 @@ std::optional<domain::regulatory_book_type> regulatory_book_type_repository::rea
     return entities.front();
 }
 
-
 void regulatory_book_type_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing regulatory book type: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));

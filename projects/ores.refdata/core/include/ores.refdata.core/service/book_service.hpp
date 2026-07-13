@@ -76,6 +76,40 @@ public:
     std::uint32_t count_books();
 
     /**
+     * @brief Lists books filtered by parent_portfolio_id, with pagination.
+     *
+     * @param parent_portfolio_id The parent_portfolio_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching books for the requested page.
+     */
+    std::vector<domain::book> list_books_by_parent_portfolio_id(
+        const std::string& parent_portfolio_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active books filtered by parent_portfolio_id.
+     *
+     * @param parent_portfolio_id The parent_portfolio_id to filter by.
+     * @return Total number of matching books.
+     */
+    std::uint32_t count_books_by_parent_portfolio_id(const std::string& parent_portfolio_id);
+
+    /**
+     * @brief Lists books filtered by parent_portfolio_id that were live at
+     * any point during a parent version's own [valid_from, valid_to) window.
+     * See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param parent_portfolio_id The parent_portfolio_id to filter by.
+     * @param valid_from_bound The parent version's own valid_from.
+     * @param valid_to_bound The parent version's own valid_to.
+     * @return Vector of matching books.
+     */
+    std::vector<domain::book>
+    list_books_by_parent_portfolio_id_as_of(const std::string& parent_portfolio_id,
+                                            std::chrono::system_clock::time_point valid_from_bound,
+                                            std::chrono::system_clock::time_point valid_to_bound);
+
+    /**
      * @brief Retrieves a single book as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *

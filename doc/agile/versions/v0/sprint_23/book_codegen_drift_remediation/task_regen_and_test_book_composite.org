@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:F0DAFC8D-3C94-4F97-B546-D7AF7469A29E][Book codegen drift remediation]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded.                            |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-11                               |
+| Next         | None.                                  |
+| Last touched | 2026-07-12                               |
 
 * Acceptance
 
@@ -69,3 +69,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Superseded by [[id:01304B6F-C431-4BD3-885A-CE713114B5A4][Migrate Portfolio/Book to composite-entity versioning]],
+which already performed book's full regen after its composite-parent
+registration and re-ran the end-to-end manual scenario (add/edit/delete
+bump, as-of composition) as part of its own Plan/Test Scenarios -- a
+separate identical pass here would be pure duplication, the same
+reasoning as the earlier abandoned [[id:EBEBDC25-7789-4C70-A4D2-E9314E873D85][End-to-end test book after
+regeneration]] task.

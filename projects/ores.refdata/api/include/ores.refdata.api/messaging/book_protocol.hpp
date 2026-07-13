@@ -79,6 +79,21 @@ struct get_book_history_response {
     std::string message;
 };
 
+struct get_books_by_parent_portfolio_id_request {
+    using response_type = struct get_books_by_parent_portfolio_id_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.books.list_by_parent_portfolio_id";
+    std::string parent_portfolio_id;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+};
+
+struct get_books_by_parent_portfolio_id_response {
+    std::vector<ores::refdata::domain::book> books;
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
+};
+
 }
 
 #endif

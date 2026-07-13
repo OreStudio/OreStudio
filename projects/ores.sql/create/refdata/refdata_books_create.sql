@@ -140,6 +140,21 @@ begin
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- Bump ores_refdata_portfolios_tbl's version alongside this write (composite entity
+    -- versioning — see the "Temporal composite entity versioning"
+    -- architecture doc). The touch function re-validates modified_by
+    -- itself; change_reason_code is passed through as-is since it was
+    -- already validated above.
+    perform ores_refdata_portfolios_touch_version_fn(
+        NEW.tenant_id,
+        NEW.parent_portfolio_id,
+        NEW.change_reason_code,
+        NEW.change_commentary,
+        NEW.modified_by,
+        NEW.performed_by,
+        'book'
+    );
+
     -- Version management
     select version into current_version
     from "ores_refdata_books_tbl"
@@ -191,4 +206,15 @@ on delete to "ores_refdata_books_tbl" do instead (
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+    -- Bump ores_refdata_portfolios_tbl's version on delete too (composite entity
+    -- versioning), symmetric with the insert-side call above.
+    select ores_refdata_portfolios_touch_version_fn(
+        OLD.tenant_id,
+        OLD.parent_portfolio_id,
+        OLD.change_reason_code,
+        OLD.change_commentary,
+        OLD.modified_by,
+        OLD.performed_by,
+        'book'
+    );
 );

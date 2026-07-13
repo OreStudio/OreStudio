@@ -88,6 +88,42 @@ public:
     std::optional<domain::book>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+    /**
+     * @brief Reads latest books filtered by parent_portfolio_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param parent_portfolio_id The parent_portfolio_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::book>
+    read_latest_by_parent_portfolio_id(context ctx,
+                                       const std::string& parent_portfolio_id,
+                                       std::uint32_t offset,
+                                       std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active books filtered by parent_portfolio_id.
+     */
+    std::uint32_t
+    get_total_book_count_by_parent_portfolio_id(context ctx,
+                                                const std::string& parent_portfolio_id);
+
+    /**
+     * @brief Reads books filtered by parent_portfolio_id that were live at
+     * any point during [valid_from_bound, valid_to_bound) — i.e. the set of
+     * books that compose a parent entity's state as of one of
+     * its own historical versions. See the "Temporal composite entity
+     * versioning" architecture doc.
+     * @param ctx Repository context with database connection
+     * @param parent_portfolio_id The parent_portfolio_id to filter by
+     * @param valid_from_bound The parent version's own valid_from
+     * @param valid_to_bound The parent version's own valid_to
+     */
+    std::vector<domain::book>
+    read_by_parent_portfolio_id_as_of(context ctx,
+                                      const std::string& parent_portfolio_id,
+                                      std::chrono::system_clock::time_point valid_from_bound,
+                                      std::chrono::system_clock::time_point valid_to_bound);
 
     /**
      * @brief Reads latest books with pagination support.

@@ -48,6 +48,10 @@ register_book_handlers(ores::nats::service::client& nats,
         get_book_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->history(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        get_books_by_parent_portfolio_id_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_by_parent_portfolio_id(std::move(msg)); }));
     return subs;
 }
 

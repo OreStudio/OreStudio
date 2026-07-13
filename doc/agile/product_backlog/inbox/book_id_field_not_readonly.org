@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 76F3C6C7-C988-46C5-B206-45CBC8FAAD12
+:END:
+#+title: Book detail dialog: ID field is editable, should be read-only
+#+description: Manual QA on the Portfolio/Book composite-versioning scenario found the Book detail dialog's ID (GUID) field is editable in edit mode. Book's ID is a surrogate key and should be read-only, matching the is_key/uuid detail-field pattern PR #1449 established for Book's own primary key.
+#+type: capture
+#+level: cross
+#+filetags: :qt:book:bug:dx:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

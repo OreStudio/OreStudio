@@ -20,6 +20,7 @@
 #include "ores.refdata.core/repository/book_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/book_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/book_entity.hpp"
 #include "ores.refdata.core/repository/book_mapper.hpp"
@@ -116,6 +117,83 @@ book_repository::read_at_version(context ctx, const std::string& id, std::uint32
     return entities.front();
 }
 
+std::vector<domain::book>
+book_repository::read_latest_by_parent_portfolio_id(context ctx,
+                                                    const std::string& parent_portfolio_id,
+                                                    std::uint32_t offset,
+                                                    std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest books. parent_portfolio_id: "
+                               << parent_portfolio_id << " offset: " << offset
+                               << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::read<std::vector<book_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+              "parent_portfolio_id"_c == parent_portfolio_id && "valid_to"_c == max.value()) |
+        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<book_entity, domain::book>(
+        ctx,
+        query,
+        [](const auto& entities) { return book_mapper::map(entities); },
+        lg(),
+        "Reading latest books by parent_portfolio_id.");
+}
+
+std::uint32_t book_repository::get_total_book_count_by_parent_portfolio_id(
+    context ctx, const std::string& parent_portfolio_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active books count. parent_portfolio_id: "
+                               << parent_portfolio_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::select_from<book_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+              "parent_portfolio_id"_c == parent_portfolio_id && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active books count by parent_portfolio_id: " << count;
+    return count;
+}
+
+std::vector<domain::book> book_repository::read_by_parent_portfolio_id_as_of(
+    context ctx,
+    const std::string& parent_portfolio_id,
+    std::chrono::system_clock::time_point valid_from_bound,
+    std::chrono::system_clock::time_point valid_to_bound) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading books as of window. parent_portfolio_id: "
+                               << parent_portfolio_id;
+
+    const auto vf(
+        make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
+    const auto vt(
+        make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<book_entity>> |
+        where("tenant_id"_c == tid && "parent_portfolio_id"_c == parent_portfolio_id &&
+              "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+        order_by("id"_c);
+
+    return execute_read_query<book_entity, domain::book>(
+        ctx,
+        query,
+        [](const auto& entities) { return book_mapper::map(entities); },
+        lg(),
+        "Reading books as of window by parent_portfolio_id.");
+}
 
 void book_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book: " << id;
@@ -179,6 +257,5 @@ void book_repository::remove(context ctx, const std::vector<std::string>& ids) {
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing books.");
 }
-
 
 }

@@ -207,6 +207,9 @@ std::string("Trading")
 :table:         ores_refdata_portfolios_tbl
 :nullable:      false
 :error_message: Invalid parent_portfolio_id: %. No active portfolio found with this id.
+:list_by:       true
+:bump_parent_version: true
+:list_by_as_of: true
 :END:
 
 ** party_id

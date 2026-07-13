@@ -29,11 +29,11 @@ under Reference Data > Book Codes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Resuming: book_purpose_type entity model already scaffolded ([[id:F2DD5F1F-759C-44E3-8BBD-EB451494E9A0][ores.refdata.book_purpose_type.org]]). Book codegen drift remediation is DONE (PR #1526 merged), so book is on a clean, composite-entity-versioned baseline. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review the scaffolded model against regulatory_book_type's pattern, fill in values/SQL/Qt, generate.        |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
@@ -168,3 +168,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+book_purpose_type is fully generated (domain/SQL/repository/protocol/
+service/Qt CRUD) following regulatory_book_type's pattern, seeded with
+its 9 mutually-exclusive values (Trading, Reserve, Funding, Wash,
+Write-off, Test, Sales, Sweep target, Remittance target), and exposed
+under Reference Data > Book Codes > Book Purpose Types.
+
+Manual QA found and fixed two real, pre-existing gaps in the
+"add a new lookup entity" workflow -- neither specific to this entity
+-- rather than a code defect in book_purpose_type itself:
+
+- The generated NATS request handlers were never registered in
+  =registrar.cpp= (a hand-maintained dispatch list codegen doesn't
+  touch), so list/detail/save silently failed.
+- =iam_tenant_provisioner_create.sql='s per-entity copy block, which
+  seeds a new tenant's lookup tables from the system tenant at
+  provisioning time, didn't include book_purpose_type.
+
+Both fixed; filed [[id:55FD445F-EA4F-4961-A578-9D9C78B17CF3][a backlog capture]] to codify or document these
+steps so future entities don't hit the same silent gaps. Manual QA
+scenario PASSED (6/6 steps, zero log errors) after the fixes;
+=ores.refdata.*/ores.qt.*= tests 5/5 passed.
+
+book itself does not yet reference book_purpose_type -- that FK wiring
+is separate follow-up scope, not part of this task.

@@ -59,6 +59,7 @@ only cosmetic tab-count changes touch it, if any.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:6FF3D889-123F-4C5D-BB28-0F38BA32C9E9][Rework DatasetViewDialog into a persistent-header, two-column layout]] | DONE | 2026-07-12 | 2026-07-13 | Implement the phased redesign: persistent header banner + UUID copy, status pills, merged Provenance/Methodology tab, asymmetric two-column layout — librarian-only, DetailDialogBase untouched. |
+| [[id:9D115861-58B9-488F-A639-146666CA1059][Phase 2: asymmetric two-column card layout]] | STARTED | 2026-07-13 | | Rework Overview and Provenance & Methodology tabs into an asymmetric two-column split (QSplitter, ~65/35) with QGroupBox/QFormLayout metadata cards, matching the Gemini review's mockup as closely as possible. |
 
 * Decisions
 

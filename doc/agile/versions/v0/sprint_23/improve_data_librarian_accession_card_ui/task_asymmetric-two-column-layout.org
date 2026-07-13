@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 9D115861-58B9-488F-A639-146666CA1059
+:END:
+#+title: Task: Phase 2: asymmetric two-column card layout
+#+description: Rework Overview and Provenance & Methodology tabs into an asymmetric two-column split (QSplitter, ~65/35) with QGroupBox/QFormLayout metadata cards, matching the Gemini review's mockup as closely as possible.
+#+type: task
+#+level: s1
+#+filetags: :improve_data_librarian_accession_card_ui:sprint_23:v0:
+#+owner: marco
+#+branch: feature/asymmetric-two-column-layout
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the Overview and Provenance & Methodology tabs' flat
+QTreeWidget property grids with the asymmetric two-column "Card &
+Canvas" layout from [[id:211CB159-F633-4897-A899-56CD91625396][OreStudio Data Librarian UI/UX Review]]: a
+QSplitter (~65/35) with prose on the left and QGroupBox/QFormLayout
+metadata cards on the right, matching the review's mockup as closely
+as possible.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- Overview tab: QSplitter (primary ~65% / sidebar ~35%). Primary side:
+  Description and Commentary prose cards. Sidebar: Classification,
+  Data Governance (badges), Audit cards.
+- Provenance & Methodology tab: same split. Primary side: Methodology,
+  Business Context, Commentary prose cards, Lifecycle Timeline card,
+  Implementation Details text browser. Sidebar: Source, Lineage
+  Metrics, Methodology Info, Audit cards.
+- Cards are QGroupBox + QFormLayout — the same grouping widget
+  ProvenanceWidget's "Record Provenance" box already uses elsewhere,
+  not a new bespoke "card" widget.
+- Governance badges use =BadgeLabelUtils::apply= on a plain QLabel
+  (the AccountDetailDialog precedent for form-based badges), not a
+  QTreeWidget delegate — that machinery is removed along with the
+  QTreeWidgets.
+- Dependencies tab (interactive lineage graph) untouched.
+- Manually verified in the running Qt client against a real dataset.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

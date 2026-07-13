@@ -24,12 +24,13 @@
 #include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <QBoxLayout>
+#include <QFormLayout>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QLabel>
 #include <QTabWidget>
 #include <QTextBrowser>
-#include <QTreeWidget>
 #include <QWidget>
 #include <map>
 #include <vector>
@@ -49,10 +50,16 @@ namespace ores::qt {
  * as a floating QDialog.
  *
  * Displays dataset information organized into a persistent header
- * (name, code, version, ID) followed by tabs:
- * - Overview: classification, data governance dimensions, audit info
- * - Provenance & Methodology: source, dates, license, lineage, methodology
- * - Dependencies: interactive lineage diagram
+ * (name, code, version, ID) followed by tabs, each an asymmetric two-column
+ * split (QSplitter: ~65% primary content, ~35% metadata sidebar of
+ * QGroupBox/QFormLayout "cards" — the same grouping widget ProvenanceWidget
+ * already uses elsewhere):
+ * - Overview: description/commentary prose (left); classification,
+ *   governance badges, audit (right)
+ * - Provenance & Methodology: methodology/business-context/commentary prose
+ *   and implementation-details text (left); source, lineage, methodology
+ *   identity, audit (right)
+ * - Dependencies: interactive lineage diagram (unchanged)
  */
 class DatasetViewDialog : public QWidget {
     Q_OBJECT
@@ -112,23 +119,23 @@ private:
 
     void updateHeaderBanner();
     void updateOverviewTab();
-    void updateProvenanceTab();
-    void updateMethodologyTab();
+    void updateProvenanceAndMethodologyTab();
     void updateLineageView();
     void onCopyIdClicked();
 
-    // Helper to add property to tree widget
-    void addProperty(QTreeWidget* tree,
+    // Card helpers — a card is a QGroupBox (same grouping widget
+    // ProvenanceWidget's "Record Provenance" box already uses) holding
+    // either a QFormLayout of name/value rows or a single word-wrapped
+    // prose QLabel.
+    QFormLayout* addPropertyCard(QBoxLayout* parentLayout, const QString& title);
+    QLabel* addProseCard(QBoxLayout* parentLayout, const QString& title);
+    void addFormRow(QFormLayout* form, const QString& name, const QString& value);
+    // Render a value as a coloured badge — BadgeLabelUtils::apply on a plain
+    // QLabel, the same pattern AccountDetailDialog uses for its badges.
+    void addBadgeRow(QFormLayout* form,
                      const QString& name,
-                     const QString& value,
-                     const QString& tooltip = {});
-    void addSectionHeader(QTreeWidget* tree, const QString& title);
-    // Render a value as a coloured badge (BadgeLabelUtils, same system as
-    // every other badge in the app) instead of plain text.
-    void addBadgeProperty(QTreeWidget* tree,
-                          const QString& name,
-                          const std::string& badgeDomain,
-                          const std::string& value);
+                     const std::string& badgeDomain,
+                     const std::string& value);
 
     QString findMethodologyName(const std::optional<boost::uuids::uuid>& methodologyId) const;
     const dq::domain::methodology*
@@ -175,15 +182,37 @@ private:
     // Tab widget
     QTabWidget* tabWidget_;
 
-    // Overview tab (Classification + Data Governance + Audit)
-    QTreeWidget* overviewTree_;
+    // Overview tab: left (prose) + right (metadata cards)
+    QLabel* overviewDescriptionLabel_;
+    QLabel* overviewCommentaryLabel_;
+    QLabel* overviewDomainLabel_;
+    QLabel* overviewSubjectAreaLabel_;
+    QLabel* overviewCatalogLabel_;
+    QLabel* overviewOriginBadge_;
+    QLabel* overviewNatureBadge_;
+    QLabel* overviewTreatmentBadge_;
+    QLabel* overviewModifiedByLabel_;
+    QLabel* overviewRecordedAtLabel_;
 
-    // Provenance tab
-    QTreeWidget* provenanceTree_;
-
-    // Methodology tab
-    QTreeWidget* methodologyTree_;
+    // Provenance & Methodology tab: left (prose + implementation details)
+    // + right (source, lineage, methodology identity, audit cards)
+    QLabel* methodologyDescriptionLabel_;
+    QLabel* businessContextLabel_;
+    QLabel* commentaryLabel_;
+    QLabel* asOfDateLabel_;
+    QLabel* ingestionLabel_;
     QTextBrowser* stepsText_;
+    QLabel* sourceSystemLabel_;
+    QLabel* licenseLabel_;
+    QLabel* codingSchemeLabel_;
+    QLabel* upstreamDerivationLabel_;
+    QLabel* lineageDepthLabel_;
+    QLabel* methodologyNameLabel_;
+    QLabel* methodologyVersionLabel_;
+    QLabel* methodologyIdLabel_;
+    QLabel* logicReferenceLabel_;
+    QLabel* pmModifiedByLabel_;
+    QLabel* pmRecordedAtLabel_;
 
     // Lineage tab
     QGraphicsView* lineageView_;

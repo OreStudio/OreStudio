@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/regen-party-under-codegen
 #+pr:
 #+blocked_on:
 #+blocked_since:

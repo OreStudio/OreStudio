@@ -31,7 +31,7 @@ TEST_CASE("process_factory builds a geometric engine by default", "[process_fact
 }
 
 TEST_CASE("process_factory falls back to geometric for an unrecognised process_type",
-    "[process_factory]") {
+          "[process_factory]") {
     auto p = process_factory::make_process("bogus", {0.0}, {0.01}, {1.0}, 100.0, 7);
     REQUIRE(p != nullptr);
     CHECK(p->current() == 100.0);
@@ -45,7 +45,7 @@ TEST_CASE("process_factory builds an arithmetic engine", "[process_factory]") {
 }
 
 TEST_CASE("process_factory builds an ou engine from repurposed mixing channels",
-    "[process_factory]") {
+          "[process_factory]") {
     // weights.front() = kappa, stdevs.front() = sigma, initial_price doubles as theta.
     auto p = process_factory::make_process("ou", {}, {0.0}, {0.5}, 100.0, 7);
     REQUIRE(p != nullptr);
@@ -61,12 +61,11 @@ TEST_CASE("process_factory is deterministic for a fixed seed", "[process_factory
 }
 
 TEST_CASE("process_factory rejects invalid parameters before constructing a process",
-    "[process_factory]") {
-    CHECK_THROWS_AS(
-        process_factory::make_process("geometric", {}, {}, {}, 100.0), std::invalid_argument);
-    CHECK_THROWS_AS(
-        process_factory::make_process("geometric", {0.0}, {0.01}, {1.0}, -5.0),
-        std::invalid_argument);
-    CHECK_THROWS_AS(
-        process_factory::make_process("ou", {}, {-1.0}, {0.3}, 100.0), std::invalid_argument);
+          "[process_factory]") {
+    CHECK_THROWS_AS(process_factory::make_process("geometric", {}, {}, {}, 100.0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(process_factory::make_process("geometric", {0.0}, {0.01}, {1.0}, -5.0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(process_factory::make_process("ou", {}, {-1.0}, {0.3}, 100.0),
+                    std::invalid_argument);
 }

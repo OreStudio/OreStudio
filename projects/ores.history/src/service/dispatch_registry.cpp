@@ -22,7 +22,8 @@
 
 namespace ores::history::service {
 
-void dispatch_registry::register_history_provider(std::string entity_type, history_provider provider) {
+void dispatch_registry::register_history_provider(std::string entity_type,
+                                                  history_provider provider) {
     providers_[std::move(entity_type)] = std::move(provider);
 }
 
@@ -40,18 +41,20 @@ dispatch_registry::dispatch(const messaging::get_entity_history_request& request
     const auto it = providers_.find(request.entity_type);
     if (it == providers_.end()) {
         return {.versions = {},
-               .success = false,
-               .message = "No history provider registered for entity_type: " + request.entity_type};
+                .success = false,
+                .message =
+                    "No history provider registered for entity_type: " + request.entity_type};
     }
 
     try {
         return {.versions = it->second(caller_context, request.entity_id),
-               .success = true,
-               .message = {}};
+                .success = true,
+                .message = {}};
     } catch (const std::exception& e) {
         return {.versions = {},
-               .success = false,
-               .message = "History provider for entity_type '" + request.entity_type + "' failed: " + e.what()};
+                .success = false,
+                .message = "History provider for entity_type '" + request.entity_type +
+                           "' failed: " + e.what()};
     }
 }
 

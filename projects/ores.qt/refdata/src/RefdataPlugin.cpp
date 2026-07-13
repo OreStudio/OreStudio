@@ -160,11 +160,11 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
 
     dayCountFractionTypeController_ =
         std::make_unique<DayCountFractionTypeController>(ctx_.main_window,
-                                                          ctx_.mdi_area,
-                                                          ctx_.client_manager,
-                                                          ctx_.change_reason_cache,
-                                                          ctx_.username,
-                                                          this);
+                                                         ctx_.mdi_area,
+                                                         ctx_.client_manager,
+                                                         ctx_.change_reason_cache,
+                                                         ctx_.username,
+                                                         this);
     connectControllerSignals(dayCountFractionTypeController_.get());
 
     businessDayConventionTypeController_ =
@@ -248,30 +248,30 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     // via a non-owning pointer for its composite trading-workflow views
     // (Portfolio/Org Explorer) and its "&Books" menu action.
     bookController_ = std::make_unique<BookController>(ctx_.main_window,
-                                                        ctx_.mdi_area,
-                                                        ctx_.client_manager,
-                                                        ctx_.image_cache,
-                                                        ctx_.change_reason_cache,
-                                                        ctx_.username,
-                                                        ctx_.badge_cache,
-                                                        this);
+                                                       ctx_.mdi_area,
+                                                       ctx_.client_manager,
+                                                       ctx_.image_cache,
+                                                       ctx_.change_reason_cache,
+                                                       ctx_.username,
+                                                       ctx_.badge_cache,
+                                                       this);
     connectControllerSignals(bookController_.get());
 
     bookStatusController_ = std::make_unique<BookStatusController>(ctx_.main_window,
-                                                                    ctx_.mdi_area,
-                                                                    ctx_.client_manager,
-                                                                    ctx_.change_reason_cache,
-                                                                    ctx_.username,
-                                                                    this);
+                                                                   ctx_.mdi_area,
+                                                                   ctx_.client_manager,
+                                                                   ctx_.change_reason_cache,
+                                                                   ctx_.username,
+                                                                   this);
     connectControllerSignals(bookStatusController_.get());
 
-    regulatoryBookTypeController_ = std::make_unique<RegulatoryBookTypeController>(
-        ctx_.main_window,
-        ctx_.mdi_area,
-        ctx_.client_manager,
-        ctx_.change_reason_cache,
-        ctx_.username,
-        this);
+    regulatoryBookTypeController_ =
+        std::make_unique<RegulatoryBookTypeController>(ctx_.main_window,
+                                                       ctx_.mdi_area,
+                                                       ctx_.client_manager,
+                                                       ctx_.change_reason_cache,
+                                                       ctx_.username,
+                                                       this);
     connectControllerSignals(regulatoryBookTypeController_.get());
 
     partyTypeController_ = std::make_unique<PartyTypeController>(ctx_.main_window,
@@ -588,8 +588,7 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         // as they land). Reference-data lookups belong here, not in the
         // Trading menu's Trading Codes submenu.
         auto* menuBookCodes = ref->addMenu(tr("Book &Codes"));
-        auto* actBookStatuses =
-            menuBookCodes->addAction(ico(Icon::Flag), tr("Book &Statuses"));
+        auto* actBookStatuses = menuBookCodes->addAction(ico(Icon::Flag), tr("Book &Statuses"));
         connect(actBookStatuses, &QAction::triggered, this, [this]() {
             if (bookStatusController_)
                 bookStatusController_->showListWindow();

@@ -85,7 +85,7 @@ public:
      */
     [[nodiscard]] messaging::get_entity_history_response
     dispatch(const messaging::get_entity_history_request& request,
-            const std::string& caller_context) const;
+             const std::string& caller_context) const;
 
 private:
     std::unordered_map<std::string, history_provider> providers_;

@@ -29,8 +29,8 @@ TEST_CASE("valid geometric parameters pass", "[process_parameter_validation]") {
 }
 
 TEST_CASE("valid arithmetic parameters pass", "[process_parameter_validation]") {
-    const auto r = validate_process_parameters(
-        "arithmetic", {0.1, -0.2}, {0.5, 1.0}, {0.5, 0.5}, 100.0);
+    const auto r =
+        validate_process_parameters("arithmetic", {0.1, -0.2}, {0.5, 1.0}, {0.5, 0.5}, 100.0);
     CHECK(r.valid);
 }
 
@@ -39,12 +39,14 @@ TEST_CASE("valid ou parameters pass", "[process_parameter_validation]") {
     CHECK(r.valid);
 }
 
-TEST_CASE("unrecognised process_type falls back to the mixing rule", "[process_parameter_validation]") {
+TEST_CASE("unrecognised process_type falls back to the mixing rule",
+          "[process_parameter_validation]") {
     const auto r = validate_process_parameters("bogus", {0.0}, {0.01}, {1.0}, 100.0);
     CHECK(r.valid);
 }
 
-TEST_CASE("non-positive initial price is rejected for every engine", "[process_parameter_validation]") {
+TEST_CASE("non-positive initial price is rejected for every engine",
+          "[process_parameter_validation]") {
     CHECK_FALSE(validate_process_parameters("geometric", {0.0}, {0.01}, {1.0}, 0.0).valid);
     CHECK_FALSE(validate_process_parameters("arithmetic", {0.0}, {0.01}, {1.0}, -1.0).valid);
     CHECK_FALSE(validate_process_parameters("ou", {}, {1.0}, {0.3}, 0.0).valid);
@@ -57,12 +59,9 @@ TEST_CASE("mixing engines reject empty component vectors", "[process_parameter_v
 }
 
 TEST_CASE("mixing engines reject mismatched component counts", "[process_parameter_validation]") {
-    CHECK_FALSE(
-        validate_process_parameters("geometric", {0.0, 0.0}, {0.01}, {1.0}, 100.0).valid);
-    CHECK_FALSE(
-        validate_process_parameters("arithmetic", {0.0}, {0.01, 0.02}, {1.0}, 100.0).valid);
-    CHECK_FALSE(
-        validate_process_parameters("geometric", {0.0}, {0.01}, {1.0, 0.0}, 100.0).valid);
+    CHECK_FALSE(validate_process_parameters("geometric", {0.0, 0.0}, {0.01}, {1.0}, 100.0).valid);
+    CHECK_FALSE(validate_process_parameters("arithmetic", {0.0}, {0.01, 0.02}, {1.0}, 100.0).valid);
+    CHECK_FALSE(validate_process_parameters("geometric", {0.0}, {0.01}, {1.0, 0.0}, 100.0).valid);
 }
 
 TEST_CASE("mixing engines reject a negative stdev", "[process_parameter_validation]") {
@@ -77,7 +76,7 @@ TEST_CASE("mixing engines reject all-zero weights", "[process_parameter_validati
 }
 
 TEST_CASE("mixing engines accept a single negative weight as long as the sum is positive",
-    "[process_parameter_validation]") {
+          "[process_parameter_validation]") {
     // Only the *sum* is checked (matches std::discrete_distribution's own
     // requirement) — an individual negative weight is not itself an error.
     const auto r =
@@ -96,7 +95,7 @@ TEST_CASE("ou rejects a negative sigma", "[process_parameter_validation]") {
 }
 
 TEST_CASE("ou accepts a non-positive kappa (degenerate driftless walk is valid)",
-    "[process_parameter_validation]") {
+          "[process_parameter_validation]") {
     CHECK(validate_process_parameters("ou", {}, {1.0}, {0.0}, 100.0).valid);
     CHECK(validate_process_parameters("ou", {}, {1.0}, {-0.5}, 100.0).valid);
 }

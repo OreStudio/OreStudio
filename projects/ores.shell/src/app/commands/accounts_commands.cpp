@@ -796,7 +796,10 @@ void accounts_commands::process_set_default_party(std::ostream& out,
     req.party_id = boost::uuids::to_string(party->id);
 
     auto result = do_auth_request<iam::messaging::set_my_default_party_response>(
-        out, session, iam::messaging::set_my_default_party_request::nats_subject, rfl::json::write(req));
+        out,
+        session,
+        iam::messaging::set_my_default_party_request::nats_subject,
+        rfl::json::write(req));
     if (!result)
         return;
 

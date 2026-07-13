@@ -75,7 +75,9 @@ public:
     history_handler(ores::nats::service::client& nats,
                     const service::dispatch_registry& registry,
                     caller_context_resolver resolve_context)
-        : nats_(nats), registry_(registry), resolve_context_(std::move(resolve_context)) {}
+        : nats_(nats)
+        , registry_(registry)
+        , resolve_context_(std::move(resolve_context)) {}
 
     void history(ores::nats::message msg) const {
         using ores::service::messaging::decode;

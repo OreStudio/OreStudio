@@ -39,20 +39,22 @@ and independent of -- the still-blocked cross-rates matrix UI panel.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
 
 - Full-stack entities exist for =crm_topology_config=,
   =crm_driver_pair=, and =crm_enabled_derived_pair=: domain type with
-  JSON/table I/O, repository, service, HTTP CRUD endpoints, shell
-  list/history commands, Qt list window + detail/history dialogs --
-  following the same codegen conventions as other refdata entities.
+  JSON/table I/O, repository, service, messaging, Qt list window +
+  detail/history dialogs -- following the same codegen conventions as
+  other refdata entities. (HTTP CRUD endpoints and shell list/history
+  commands deferred to a backlog capture, matching the =contact_type=
+  precedent -- see Result.)
 - The =crm_topology_config= list view (and its driver/derived pair
   detail) is reachable from the reference-data menu in the Qt client,
   not just creatable via raw SQL or DQ publish.
@@ -64,9 +66,49 @@ and independent of -- the still-blocked cross-rates matrix UI panel.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Generated Qt UI (list/detail/history/controller) via the =ores.cpp.qt=
+codegen address for all three entities, initially under
+=ores.marketdata= (matching where their domain/repository/service
+layers already lived from the earlier, separately-merged CRM DQ
+publishing task). Manual QA then surfaced a classification question:
+by the project's own definition of refdata ("configuration data that
+changes infrequently"), these three entities -- created once per
+party, edited rarely -- belong in =ores.refdata= alongside
+=book=/=portfolio=, not in =ores.marketdata= (genuinely live/streamed
+data). Reclassified across every layer: moved the codegen models,
+regenerated domain/repository/service/protocol/generator/eventing/
+messaging/presentation/Qt under =ores.refdata= /
+=ores.qt.refdata=, renamed the SQL tables, the publish-from-dq
+function, the NATS subject, and the DQ dataset code from
+=marketdata.*= to =refdata.*=, and repointed =crm_ingest_bridge=
+(which legitimately stays in =ores.marketdata.service= as a
+cross-service consumer of the rate-engine data) at the new
+tables/channels.
+
+Follow-on manual-QA fixes: moved the Qt menu entry from Market Data to
+a new Reference Data > "Cross Rates Matrix" submenu (documenting the
+placement as a considered decision, not an improvisation); removed
+=party_id= from the UI entirely (it's implicit from the active-party
+session context everywhere else in the codebase -- =book= and
+=party_identifier= both hide it, this broke that convention);
+kept =config_id= list-only (hidden by default, not in the editable
+Detail form, since there's no Explorer/parent-relationship wiring yet
+to make it fully implicit); made
+=base_currency_code=/=quote_currency_code=/=pivot_currency_code=
+flagged combo boxes with per-row flag icons (matching
+=CurrencyPair=/=Book='s pattern) instead of plain text entry; and
+expanded the DQ-seeded "majors" derived-pair sample from 3 rows to the
+complete C(8,2)=28 combinatorial set of crosses among the 8 majors
+driver currencies, a genuinely representative sample.
+
+Also fixed, as a byproduct of investigating a missing Qt menu entry: a
+codegen bug where Qt Detail-field UUID detection
+(=is_uuid=/=is_optional_uuid=, driving
+=boost::uuids::to_string()=/conversion code generation) only looked at
+an entity's =columns=, never its =natural_keys= -- any UUID-typed
+natural key (not the primary key, which had its own knob) silently
+fell through as a plain =std::string= field and produced
+non-compiling generated code.
 
 * Notes
 
@@ -77,9 +119,9 @@ through the QA Validation Runner panel) that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
 via its "Verifies task" field.
 
-| Scenario | State | Notes |
-|----------+-------+-------|
-|          |       |       |
+| Scenario                                                          | State  | Notes                          |
+|--------------------------------------------------------------------+--------+---------------------------------|
+| [[id:5211BA12-1820-4025-8D99-82D7D8748FA9][Verify CRM topology config/driver pair/derived pair refdata UI]] | PASSED | All 6 steps passed on final run. |
 
 * PRs
 
@@ -94,3 +136,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered domain/repository/service/protocol/generator/eventing/
+messaging/presentation/Qt (list, detail, history, controller) for
+=crm_topology_config=, =crm_driver_pair=, and
+=crm_enabled_derived_pair= under =ores.refdata= / =ores.qt.refdata=
+(reclassified from an initial =ores.marketdata= placement -- see
+Plan). Wired into a new Reference Data > "Cross Rates Matrix" submenu
+(Topology / Driver Pairs / Enabled Derived Pairs). HTTP/CLI/shell/Wt
+layers deferred to a backlog capture (matching the =contact_type=
+precedent), not part of this task's acceptance.
+
+Fixed along the way: a genuine codegen bug in Qt UUID detail-field
+detection (natural keys weren't checked, only columns); a missing DB
+grant blocking =ores.marketdata.service= from reading the relocated
+tables; and expanded the DQ-seeded "majors" derived-pair sample from 3
+rows to the complete 28-row combinatorial set.
+
+Verified: full local build clean (=ores.qt.exe=,
+=ores.marketdata.service=, =ores.refdata.service=);
+=ores.marketdata.service.tests= (7/7, including
+=app_crm_ingest_bridge_tests= confirming the rate_engine still builds
+correctly from the relocated tables), =ores.refdata.core.tests=
+(113/113), =ores.refdata.service.tests= (10/10) all green; =db
+recreate -y -k= clean; Barclays Plc re-provisioning publishes
+=refdata.crm_topology_bundles= successfully end-to-end via NATS (majors:
+8 driver + 28 derived pairs; exotics: 3 driver + 0 derived pairs, no
+duplicates, all currency codes resolve for flag icons); manual QA
+scenario passed all 6 steps in the Qt client.

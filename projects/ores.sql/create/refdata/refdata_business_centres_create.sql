@@ -141,7 +141,7 @@ begin
 
     return new;
 end;
-$$ language plpgsql security definer set search_path = public, pg_temp;
+$$ language plpgsql;
 
 create or replace trigger ores_refdata_business_centres_insert_trg
 before insert on "ores_refdata_business_centres_tbl"
@@ -175,11 +175,8 @@ begin
             using errcode = '23502';
     end if;
 
-    -- Allow pass-through during bootstrap (no active rows yet)
-    if not exists (
-        select 1 from ores_refdata_business_centres_tbl
-        where valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
+    -- Allow pass-through during bootstrap (empty table)
+    if not exists (select 1 from ores_refdata_business_centres_tbl limit 1) then
         return p_value;
     end if;
 
@@ -200,4 +197,4 @@ begin
 
     return p_value;
 end;
-$$ language plpgsql security definer set search_path = public, pg_temp;
+$$ language plpgsql;

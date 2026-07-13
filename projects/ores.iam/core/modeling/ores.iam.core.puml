@@ -36,7 +36,7 @@ namespace ores #F2F2F2 {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -signer_ : ores::security::jwt::jwt_authenticator
-                -party_cache_ : shared_ptr<service::party_cache>
+                -party_cache_ : shared_ptr<service::cache::party_cache>
                 -token_settings_ : domain::token_settings
             }
             class account_party_handler {
@@ -48,14 +48,14 @@ namespace ores #F2F2F2 {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -signer_ : ores::security::jwt::jwt_authenticator
-                -party_cache_ : shared_ptr<service::party_cache>
+                -party_cache_ : shared_ptr<service::cache::party_cache>
                 -token_settings_ : domain::token_settings
             }
             class bootstrap_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -signer_ : ores::security::jwt::jwt_authenticator
-                -party_cache_ : shared_ptr<service::party_cache>
+                -party_cache_ : shared_ptr<service::cache::party_cache>
             }
             class registrar {
             }

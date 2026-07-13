@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: A4797CFE-FC29-4209-B7C2-7505247EC29C
+:END:
+#+title: Task: Implement generic partitioned_cache<PartitionKey,Key,Value> primitive
+#+description: Layer A of the generic entity-mirror cache: an immer::atom<immer::map<PartitionKey,immer::map<Key,Value>>>-backed template, following the rate_engine/rate_snapshot idiom already in ores.analytics.quant. Wait-free reads, CAS-safe partition replacement, optional aux-index policy for entity-specific derived structure (e.g. party's parent/child tree).
+#+type: task
+#+level: s1
+#+filetags: :iam_party_cache_invalidation:sprint_23:v0:
+#+owner: marco
+#+branch: feature/subscribe-party-cache-to-changed-event
+#+pr: 1540
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reusable, entity-agnostic =partitioned_cache<PartitionKey, Key,
+Value>= template exists (e.g. in =ores.eventing.core=) that any
+future consumer-side cache can be built on without hand-writing
+concurrency code again. Storage is
+=immer::atom<immer::map<PartitionKey, immer::map<Key, Value>>>=:
+readers take a wait-free atomic =load()= of the whole structure and
+are never blocked by a concurrent reload; a partition replace goes
+through the atom's compare-and-swap =update()=, not a blind
+=store()=, so concurrently reloading two different partitions never
+races into a lost update. An optional aux-index policy (a callable
+applied when a partition is replaced) lets entity-specific derived
+structure — e.g. party's parent/child hierarchy — stay generic
+rather than hardcoded into the primitive.
+
+The hand-written =party_cache.hpp= prototype produced during this
+story's investigation (already on =immer::atom=, already correctly
+subject-bound) becomes the reference this template is extracted
+from — not a shipped deliverable itself.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-12                               |
+
+* Acceptance
+
+- =partitioned_cache<PartitionKey, Key, Value>= implemented with
+  wait-free =get(partition, key)=/=snapshot(partition)= reads and a
+  CAS-safe =replace_partition(partition, entries)= write.
+- Aux-index policy hook supports building a derived structure (e.g.
+  a parent→children map) alongside the primary key→value map,
+  without the primitive itself knowing about hierarchy.
+- Unit tests: concurrent =replace_partition= calls for different
+  partitions never lose an update; a reader's =snapshot()= never
+  observes a torn mix of old/new entries within one call; a
+  concurrent reader is never blocked by a writer or vice versa.
+
+* Plan
+
+Added =partitioned_cache<PartitionKey, Key, Value, AuxIndex>= to
+=ores.eventing.core/service/cache/partitioned_cache.hpp=:
+=immer::atom<immer::map<PartitionKey, partition>>= storage, wait-free
+=get=/=snapshot=, and a =replace_partition= write going through the
+atom's compare-and-swap =update()=. Scaffolded a new
+=ores.eventing.core= tests target (none existed before) mirroring
+=ores.analytics.quant='s no-DB test pattern, and wrote a test suite
+covering lookup, replacement, partition isolation, aux-index
+defaults/usage, and two concurrency properties: no lost updates
+across concurrently-replaced partitions, and no torn reads.
+
+The concurrency test caught a real bug on first run: =immer::atom::
+update()='s callback can be invoked more than once when the CAS
+loses a race and retries, but the callback was consuming its
+=partition= payload by =std::move=, so a retry moved from an
+already-moved-from value and silently produced an empty partition.
+Fixed by capturing the payload as a =const= value and copying it into
+each attempt (cheap — immer's structural sharing means it's not a
+deep copy). Applied the identical fix to the hand-written
+=party_cache.hpp= prototype, which had the same bug.
+
+Also discovered =find_package(Immer CONFIG REQUIRED)= was missing
+everywhere the =immer= CMake target is linked, including in the
+existing =ores.analytics.quant= convention this work follows and in
+=ores.iam.core= (whose =party_cache.hpp= already used =immer::atom=
+without it — would have failed to link the moment anyone tried to
+build it). Added it to all three CMakeLists that link =immer=.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1540][#1540]] | [eventing] Add generic partitioned_cache primitive |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Misleading comment: says "capture by value" but data is captured by reference, .set() copies per attempt | partitioned_cache.hpp | Accepted | Reworded to describe reference-capture + per-attempt copy accurately |
+| 2 | Task doc describes aux-index as a "policy (callable)"; shipped code takes a pre-built value parameter instead | task_subscribe_party_cache_to_changed_event.org | Declined | Simpler than described and not worse; doc already corrected in this same task's Goal/Acceptance during implementation |
+| 3 | party_cache.hpp intentionally not migrated onto the new primitive yet | party_cache.hpp | Declined | Confirmed deliberate — tracked as separate task "Migrate party to the generated cache" |
+| 4 | CI: site build failed -- "Unable to resolve link: 79D1413C-8EF5-445C-80EA-40A6C3B635FC" | sprint-23-planning-session/task_bucket-rescoring.org | Accepted | Not a reviewer comment, a CI failure: an unrelated sprint doc still linked the promoted capture by its old ID. Retargeted the link to the story it became. |
+
+* Result
+
+Added =partitioned_cache<PartitionKey, Key, Value, AuxIndex>= to
+=ores.eventing.core/service/cache/partitioned_cache.hpp=, with a new
+test target for =ores.eventing.core= (none existed) covering lookup,
+replacement, partition isolation, aux-index, and two concurrency
+properties (no lost updates, no torn reads) — 8 test cases, 8062
+assertions, all green. Fixed a real bug the concurrency test caught:
+=immer::atom::update='s retry-on-CAS-contention callback was
+consuming its payload by move, corrupting data on retry; applied the
+same fix to the =party_cache= prototype, which had the identical bug.
+Added the missing =find_package(Immer CONFIG REQUIRED)= wherever
+=immer= is linked (=ores.eventing.core=, =ores.iam.core=) — a latent
+gap in the existing convention this work follows.
+
+=party_cache.hpp= itself is *not yet* migrated onto the new
+primitive — it still hand-rolls the same atom/map/CAS machinery the
+primitive now provides generically. That migration is task
+"Migrate party to the generated cache", later in this story, after
+the read-for-cache archetype and the =nats-event-cache= facet exist.
+
+All acceptance criteria met. Verified with =ores.eventing.core.lib=,
+=ores.eventing.core.tests= (green), and =ores.iam.core.lib= (builds
+clean with the CAS fix applied to the prototype).

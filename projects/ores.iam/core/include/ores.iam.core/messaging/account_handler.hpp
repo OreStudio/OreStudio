@@ -71,13 +71,13 @@ inline std::string acct_extract_bearer_token(const ores::nats::message& msg) {
 }
 
 inline std::vector<boost::uuids::uuid>
-acct_compute_visible_party_ids(const service::party_cache& cache,
+acct_compute_visible_party_ids(const service::cache::party_cache& cache,
                                const std::string& tenant_id,
                                const boost::uuids::uuid& party_id) {
     return cache.compute_visible_party_ids(tenant_id, party_id);
 }
 
-inline std::optional<refdata::domain::party> acct_lookup_party(const service::party_cache& cache,
+inline std::optional<refdata::domain::party> acct_lookup_party(const service::cache::party_cache& cache,
                                                                const std::string& tenant_id,
                                                                const boost::uuids::uuid& party_id) {
     return cache.lookup_party(tenant_id, party_id);
@@ -134,7 +134,7 @@ public:
     account_handler(ores::nats::service::client& nats,
                     ores::database::context ctx,
                     ores::security::jwt::jwt_authenticator signer,
-                    std::shared_ptr<service::party_cache> party_cache)
+                    std::shared_ptr<service::cache::party_cache> party_cache)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , signer_(std::move(signer))
@@ -927,7 +927,7 @@ private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;
-    std::shared_ptr<service::party_cache> party_cache_;
+    std::shared_ptr<service::cache::party_cache> party_cache_;
     domain::token_settings token_settings_;
 };
 

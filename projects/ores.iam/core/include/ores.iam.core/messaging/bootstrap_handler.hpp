@@ -64,7 +64,7 @@ public:
     bootstrap_handler(ores::nats::service::client& nats,
                       ores::database::context ctx,
                       ores::security::jwt::jwt_authenticator signer,
-                      std::shared_ptr<service::party_cache> party_cache)
+                      std::shared_ptr<service::cache::party_cache> party_cache)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , signer_(std::move(signer))
@@ -249,7 +249,7 @@ private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;
-    std::shared_ptr<service::party_cache> party_cache_;
+    std::shared_ptr<service::cache::party_cache> party_cache_;
 };
 
 } // namespace ores::iam::messaging

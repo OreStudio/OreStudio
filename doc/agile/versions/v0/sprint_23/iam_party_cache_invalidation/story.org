@@ -1,0 +1,175 @@
+:PROPERTIES:
+:ID: AA4A5326-FA02-42D7-ACE2-9B27B20B19C7
+:END:
+#+title: Story: Generic entity-mirror cache primitive + codegen facet (party as first consumer)
+#+description: Build a reusable, thread-safe entity-mirror cache: an immer-based partitioned_cache<PartitionKey,Key,Value> primitive plus a nats-event-cache codegen facet that generates the subscribe/reload wiring for any entity, declared where the entity is defined. Migrate ores.iam.core's party_cache to be its first real consumer, fixing the original subject-mismatch bug as a byproduct.
+#+type: story
+#+level: s2
+#+filetags: :iam:refdata:caching:codegen:masd:sprint_23:v0:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Any entity that a consuming service needs to mirror in-process gets
+a thread-safe cache with almost no hand-written code, kept fresh via
+NATS eventing, with the subject binding checked at compile time (no
+hardcoded subject-name string that can drift from the publisher).
+
+This story was originally scoped as a one-off fix to
+=ores.iam.core='s =party_cache= (see Decisions for the investigation
+that got us here: refdata's outbox eventing for party works fine —
+=ores.refdata.party_changed= is published on every save — but
+=party_cache= subscribed to a different, nonexistent subject string,
+=refdata.v1.parties.changed=, that only ever existed in its own
+docstring). That class of bug — bespoke subscribe-and-reload glue,
+hand-typed subject strings, ad hoc concurrency — is worth solving
+generically rather than patching once, so the story is now: build
+the generic mechanism, with party as its first real consumer.
+
+Two layers:
+
+- *Layer A — generic primitive (hand-written once, no codegen)*: a
+  =partitioned_cache<PartitionKey, Key, Value>= template (e.g. in
+  =ores.eventing.core=) backed by
+  =immer::atom<immer::map<PartitionKey, immer::map<Key, Value>>>=,
+  following the =immer::atom=-based idiom already established by
+  =ores.analytics.quant='s =rate_engine=/=rate_snapshot=. Reads are
+  wait-free (=load()= on the atom, never blocked by a writer);
+  partition replacement is a compare-and-swap loop (=update()=, not
+  a blind =store()=), so concurrent reloads of different partitions
+  never race each other into a lost update. Supports an optional
+  aux-index policy so entity-specific derived structure (e.g.
+  party's parent/child hierarchy) stays generic rather than
+  hardcoded into the primitive.
+
+- *Layer B — a =nats-event-cache= facet*: given an entity that
+  already has a changed-event + =event_traits= binding and a
+  read-for-cache RPC (today hand-written only for party as
+  =read_parties_for_cache=; should become a standard generated
+  archetype, like =list=/=save=/=remove= already are), generates the
+  thin per-entity cache class (a =partitioned_cache= instantiation)
+  and the registrar subscribe/warm-up wiring. Per the MASD facet
+  model, *the declaration lives with the entity, where it is
+  defined* — e.g. a =cached_by: ores.iam= annotation on party's own
+  model entry in =ores.refdata=, not a second, competing declaration
+  authored inside =ores.iam=. The facet's output path is the only
+  thing that differs from every other existing facet: it resolves
+  its =\{component\}= token from the named consumer in =cached_by=,
+  not from the entity's own component, because the generated cache
+  is a translation unit that must physically compile into the
+  consumer's binary.
+
+Party becomes the first consumer: =ores.refdata='s party model gains
+=cached_by: ores.iam=, the facet generates
+=ores.iam.core='s cache class and registrar wiring, and the
+hand-written prototype (already rewritten once during
+investigation, on immer, correctly subject-bound) is retired in
+favour of the generated version.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-12                               |
+
+* Acceptance
+
+- =partitioned_cache<PartitionKey, Key, Value>= exists (Layer A),
+  =immer::atom=-backed, with wait-free reads and CAS-safe partition
+  replacement; unit-tested for concurrent-writer correctness (no
+  lost updates across concurrently-reloaded partitions) and for
+  readers never blocking on a concurrent write.
+- The read-for-cache RPC is generated as a standard archetype rather
+  than hand-written per entity.
+- A =nats-event-cache= facet exists in =facet_catalogue.org=,
+  declared via a =cached_by= annotation on the entity's own model,
+  generating the consumer-side cache class and registrar wiring with
+  the subject bound via =event_traits= (no hardcoded subject
+  strings anywhere in generated or hand-written code).
+- Party is migrated to the generated cache: =ores.refdata='s party
+  model declares =cached_by: ores.iam=; the hand-written prototype
+  in =ores.iam.core/service/party_cache.hpp= is retired in favour of
+  the generated version.
+- Reproduction from the original capture no longer occurs: activating
+  a party via =save_party_request= (e.g. through
+  =barclays_system_provision.ores=) is visible to a subsequent IAM
+  login without restarting the IAM service.
+- Regression/unit test coverage for cache reload-on-notification
+  using the generated party cache.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A4797CFE-FC29-4209-B7C2-7505247EC29C][Implement generic partitioned_cache<PartitionKey,Key,Value> primitive]] | DONE | 2026-07-12 | 2026-07-13 | Layer A: an immer::atom<immer::map<PartitionKey,immer::map<Key,Value>>>-backed template, following the rate_engine/rate_snapshot idiom already in ores.analytics.quant. Wait-free reads, CAS-safe partition replacement, optional aux-index policy. |
+| [[id:3814875F-2CD5-4909-BBDE-3661485941F6][Generalize read-for-cache RPC into a standard archetype]] | BACKLOG | | | Today read_parties_for_cache is hand-written, only for party (see nats_registrar_implementation doc, which documents it as a manual escape hatch). Turn it into a standard generated archetype, like list/save/remove already are, so any cacheable entity gets a read-for-cache RPC generated on its producer side without hand-written code. |
+| [[id:884DDE80-7C59-4825-80BB-474F839F1C6B][Add nats-event-cache facet: cache class + registrar wiring archetypes]] | BACKLOG | | | Add a nats-event-cache facet to facet_catalogue.org generating two archetypes: the consumer-side {entity}_cache.hpp (a partitioned_cache instantiation) and the registrar subscribe/warm-up wiring snippet, subject-bound via event_traits (no hardcoded strings). Declared via a cached_by annotation on the entity's own model (where the entity is defined); the facet's output component token resolves from cached_by, not the entity's own component, since the generated cache must compile into the consumer's binary. |
+| [[id:763C5969-19EA-4990-A662-BE2623740325][Migrate party to the generated cache: first real nats-event-cache consumer]] | BACKLOG | | | Add cached_by: ores.iam to party's model in ores.refdata; regenerate ores.iam.core's party cache via the new facet; retire the hand-written prototype (task: Implement generic partitioned_cache primitive) in favour of the generated version. Confirms the facet design end-to-end on a real entity. |
+| [[id:70C81DFD-E94E-4F3B-A35B-CE14A4F6A82B][Test party_cache reload-on-notification]] | BACKLOG | | | Add regression/unit test coverage in ores.iam.core for the generated cache: publishing ores.refdata.party_changed for a tenant causes the cache to reload that tenant's partition, and lookups reflect the change without a restart. |
+| [[id:5D32B9C6-7D16-4472-9DDB-619607F34529][Verify activation reproduction is fixed end-to-end]] | BACKLOG | | | Re-run the capture's original reproduction: activate a party via save_party_request (e.g. barclays_system_provision.ores) against a running environment and confirm a subsequent IAM login reflects Active status without restarting the IAM service. |
+
+* Decisions
+
+- 2026-07-12: Original capture hypothesised the bug was on
+  =ores.refdata='s producer side (missing publish). Reading the code
+  showed refdata's outbox eventing for party already works correctly
+  and publishes =ores.refdata.party_changed= on every save.
+- 2026-07-12: Second read of =registrar.cpp= found a subscription
+  already existed, just bound to the wrong, hardcoded subject string
+  (=refdata.v1.parties.changed=, which appears nowhere except
+  =party_cache='s own docstring) instead of the real one
+  (=ores.refdata.party_changed=, via =event_traits=). Root cause is
+  a subject-name mismatch, not a missing subscription.
+- 2026-07-12: Decided to generalise rather than patch once, since
+  this class of bug (hand-typed subject strings, bespoke
+  subscribe-and-reload glue, ad hoc concurrency) will recur for any
+  future cross-service cache. Story rescoped from a one-off
+  =party_cache= fix to building a generic
+  =partitioned_cache<PartitionKey,Key,Value>= primitive
+  (=immer::atom=-backed, following the =rate_engine=/=rate_snapshot=
+  idiom already in =ores.analytics.quant=) plus a =nats-event-cache=
+  codegen facet, with party migrated to be its first consumer.
+- 2026-07-13: Corrected two design points before committing to the
+  facet shape: (1) terminology — the generated unit is a *facet*
+  (grouping archetypes), not an "archetype" as first stated; (2)
+  placement — every existing facet's output path is anchored to the
+  *entity's own* component (never a third party's), so the
+  =nats-event-cache= facet's declaration must live on the entity's
+  own model (=cached_by: ores.iam= on party's model in
+  =ores.refdata=), not in a separate, competing model authored
+  inside =ores.iam=. Only the facet's output *path* resolves against
+  the named consumer; the single source of truth for "who caches
+  this entity" stays with the entity, like every other fact about
+  it.
+- 2026-07-13: Layer A (=partitioned_cache=) implemented and merged
+  ahead of Layers B/C so it can be reviewed as a self-contained,
+  tested unit before the larger codegen-touching work starts. Its
+  concurrency tests caught a genuine bug (retry-callback consuming
+  its payload by move under CAS contention) present in both the new
+  primitive and the =party_cache= prototype it was extracted from —
+  confirms the value of writing the concurrency tests before, not
+  after, generalising.
+
+* Out of scope
+
+- General TTL/reload-on-miss fallback strategy for
+  =partitioned_cache=, unless the eventing approach proves
+  unreliable during implementation.
+- Migrating any other existing ad hoc in-process cache in the
+  codebase onto =partitioned_cache= — this story only dogfoods it on
+  party. Follow-up entities adopt it opportunistically.
+- Broader ores.iam/ores.refdata service-boundary cleanup (tracked
+  separately as "IAM/Refdata service boundary cleanup").
+- A runtime variability flag to disable cross-service cache eventing
+  and fall back to on-demand reads — a plausible future need, but
+  not required by any known failure mode yet.

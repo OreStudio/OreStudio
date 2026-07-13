@@ -43,6 +43,8 @@ class QToolBar;
 
 namespace ores::qt {
 
+class RecencyPulseManager;
+
 /**
  * @brief Base class for all history dialogs.
  *
@@ -57,7 +59,8 @@ namespace ores::qt {
  * - checkString / checkInt / checkBool field-diff helpers so all
  *   dialogs format values identically in the interim.
  * - Async request plumbing (runHistoryRequest) and watcher cleanup.
- * - markAsStale() — reloads by default; code() identifies the entity.
+ * - markAsStale() — pulses the Reload action (does not auto-reload;
+ *   the user decides when to fetch); code() identifies the entity.
  *
  * Derived dialogs call initializeHistoryUi() once their Ui is set up,
  * and override the protected hooks for what is genuinely
@@ -77,8 +80,10 @@ public:
     ~HistoryDialogBase() override;
 
     /**
-     * @brief Reloads the history; called when a server-side change
-     * event arrives for this entity.
+     * @brief Called when a server-side change event arrives for this
+     * entity while the dialog is open. Does not auto-reload — pulses
+     * the Reload toolbar action (gold, per color_constants::stale_indicator)
+     * so the user notices new versions exist and reloads on demand.
      */
     virtual void markAsStale();
 
@@ -283,6 +288,7 @@ private slots:
     void onReloadClicked();
     void onOpenClicked();
     void onRevertClicked();
+    void onReloadPulseStateChanged(bool is_on);
 
 private:
     void setupToolbar();
@@ -295,6 +301,7 @@ private:
     QAction* reloadAction_{};
     QAction* openAction_{};
     QAction* revertAction_{};
+    RecencyPulseManager* reloadPulse_{};
 };
 
 }

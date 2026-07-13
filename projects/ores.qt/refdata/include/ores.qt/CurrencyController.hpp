@@ -27,6 +27,9 @@
 #include "ores.refdata.api/domain/currency.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -90,12 +93,33 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const refdata::domain::currency& currency);
     void onRevertVersion(const refdata::domain::currency& currency);
-    void onOpenVersion(const refdata::domain::currency& currency, int versionNumber);
+    void onOpenVersion(const refdata::domain::currency& currency,
+                       int versionNumber,
+                       const std::vector<refdata::domain::currency>& fullHistory = {});
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::currency& currency);
     void showHistoryWindow(const QString& code);
+
+    /**
+     * @brief Fetches the full typed currency history (the existing
+     * per-entity get_currency_history_request/response, unrelated to
+     * the generic history.v1.get subject) and hands it to @p callback
+     * on the UI thread. Used to resolve HistoryDialog's generic
+     * (entity_id, version) signals back to a typed currency, since
+     * the generic dialog holds no typed domain data. The callback
+     * receives an error message (not connected, request failed, or
+     * the server-reported failure) rather than an empty vector, so
+     * callers can distinguish a genuine fetch failure from "version
+     * not found in an otherwise-successful fetch".
+     */
+    void fetchCurrencyHistory(
+        const QString& isoCode,
+        std::function<void(std::expected<std::vector<refdata::domain::currency>, QString>)>
+            callback);
 
     ChangeReasonCache* changeReasonCache_;
     BadgeCache* badgeCache_;

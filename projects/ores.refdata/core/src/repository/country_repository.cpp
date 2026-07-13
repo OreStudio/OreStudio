@@ -85,7 +85,7 @@ std::vector<domain::country> country_repository::read_all(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<country_entity>> |
                        where("tenant_id"_c == tid && "alpha2_code"_c == alpha2_code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<country_entity, domain::country>(
         ctx,

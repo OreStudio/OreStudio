@@ -17,31 +17,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_CURRENCY_HISTORY_DIALOG_HPP
-#define ORES_QT_CURRENCY_HISTORY_DIALOG_HPP
+#ifndef ORES_QT_HISTORY_DIALOG_HPP
+#define ORES_QT_HISTORY_DIALOG_HPP
 
+#include "ores.history.api/messaging/history_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
-#include "ores.refdata.api/domain/currency.hpp"
+#include <vector>
 
 namespace Ui {
-class CurrencyHistoryDialog;
+class HistoryDialog;
 }
 
 namespace ores::qt {
 
 /**
- * @brief Dialog for viewing the version history of a currency.
+ * @brief The single, non-templated history dialog shared by every
+ * entity, per doc/knowledge/architecture/history_diff_architecture.org.
  *
- * Shows all historical versions of a currency with ability
- * to view details or revert to a previous version.
+ * Parameterised at construction by (entity_type, entity_id) rather
+ * than subclassed per entity. Issues the generic history.v1.get
+ * request and renders entity_history_version::fields (Full Details
+ * tab) and ::changes (Changes tab) as plain Field/Value and
+ * Field/Old/New tables — no typed domain knowledge, no per-entity Qt
+ * class. Diff-span colour highlighting is a follow-on task; Open and
+ * Revert emit generic (entity_type, entity_id, version) signals for
+ * the caller to resolve against that entity's own typed request.
  */
-class CurrencyHistoryDialog final : public HistoryDialogBase {
+class HistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.currency_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -50,25 +58,18 @@ private:
     }
 
 public:
-    explicit CurrencyHistoryDialog(const QString& code,
-                                   ClientManager* clientManager,
-                                   QWidget* parent = nullptr);
-    ~CurrencyHistoryDialog() override;
+    explicit HistoryDialog(std::string entityType,
+                           std::string entityId,
+                           ClientManager* clientManager,
+                           QWidget* parent = nullptr);
+    ~HistoryDialog() override;
 
     void loadHistory() override;
     [[nodiscard]] QString code() const override;
 
-    /**
-     * @brief The full loaded version list (newest first), for wiring a
-     * just-opened version DetailDialog's first/prev/next/last navigation.
-     */
-    [[nodiscard]] const std::vector<refdata::domain::currency>& getHistory() const {
-        return versions_;
-    }
-
 signals:
-    void openVersionRequested(const refdata::domain::currency& currency, int versionNumber);
-    void revertVersionRequested(const refdata::domain::currency& currency);
+    void openVersionRequested(const QString& entityType, const QString& entityId, int version);
+    void revertVersionRequested(const QString& entityType, const QString& entityId, int version);
 
 protected:
     [[nodiscard]] int historySize() const override;
@@ -80,10 +81,11 @@ protected:
     void revertToVersionAt(int index) override;
 
 private:
-    Ui::CurrencyHistoryDialog* ui_;
-    QString code_;
+    Ui::HistoryDialog* ui_;
+    std::string entityType_;
+    std::string entityId_;
     ClientManager* clientManager_;
-    std::vector<refdata::domain::currency> versions_;
+    std::vector<ores::history::messaging::entity_history_version> versions_;
 };
 
 }

@@ -20,22 +20,23 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Regenerate party's SQL/C++/messaging/Qt against current codegen templates and
+diff against the repo; fix templates or repo to eliminate drift.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Parked in favour of counterparty (much closer to zero-diff); see Notes for the real blocker. |
+| Waiting on   | New codegen template capability (paste-block hook in the CREATE TABLE section) plus org_loader.py verification for the extra_checks/indexes facets. |
+| Next         | Confirm org_loader.py wiring for extra_checks/indexes, add a top-level paste-block kind for party's codename sequence, migrate codename generation + queue provisioning onto it, add :generate_touch_function: true. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
 
--
+- Zero-diff regen for party across SQL/C++/messaging/Qt profiles.
 
 * Plan
 
@@ -44,6 +45,36 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+=./compass.sh codegen entity generate party --diff= produces a ~4900-line
+diff, most of it destructive if applied as-is:
+
+- Codename auto-generation (whimsical name + sequence suffix), the backing
+  sequence, its unique partial index, and its uniqueness/regex/length
+  validation have no codegen facet coverage. The template's =default=,
+  =indexes=, and =extra_checks= facets could plausibly cover the index and
+  check-constraint parts, but I could not confirm =org_loader.py= actually
+  wires those two facets from entity =.org= models (same class of gap as
+  the counterparty Validations-facet bug found in sprint 22) — needs
+  verification before relying on them.
+- The per-party report-event queue provisioning (=ores_mq_queues_create_fn=
+  call in the insert trigger) is party-only hand-written logic with no
+  facet; would need a paste block (existing =d4e8e136-...= trigger-body
+  marker, same one counterparty used for its =country_code= validation).
+- The sequence declaration itself (=create sequence ... party_codename_seq=)
+  has *no* injection point anywhere in the template — it's top-level DDL,
+  not something that fits inside the trigger-body paste marker. This is
+  genuinely missing codegen-template capability, not just an unfilled
+  facet; landing it needs a new paste-block kind documented in
+  [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta model]], analogous to the existing "SQL: extra drop
+  statements" kind but for the =CREATE TABLE= section.
+- =:generate_touch_function: true= is simply missing from party.org's
+  Flags — party_identifier already declares =:bump_parent_version: true=
+  on the child side, but party never declared the parent-side flag. This
+  part is a one-line, low-risk fix, independent of the above.
+- The rest of the diff (repository =context ctx= parameter modernization,
+  =search_path= hardening, faker-generator improvements) is expected,
+  wanted drift-correction — safe to apply once the above is resolved.
 
 * Test Scenarios
 

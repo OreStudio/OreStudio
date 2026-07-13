@@ -47,6 +47,12 @@ recreated since provisioning, re-run:
 ./compass.sh shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
 #+end_src
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Open the Contact Types list
 
 Menu: *Reference Data > Organisation Codes > Contact Types*. Confirm
@@ -54,17 +60,36 @@ the list loads with the seeded rows (Legal, Operations, Settlement,
 Billing), and that all columns (including Modified By / Recorded At)
 render values, not just headers.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Create
 
 Click *Add*. Enter code =TestContact=, name =Test Contact Type=,
 description =Scenario test row=, display order =99=. Save. Confirm
 the new row appears in the list with the values just entered.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | no eventing, check registrar. saving worked fine though. |
+
 *** Read
 
 Double-click the =TestContact= row to reopen its detail dialog. Confirm
 every field round-trips exactly as saved (code, name, description,
 display order).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 *** Update
 
@@ -73,10 +98,22 @@ Edit the =TestContact= row's description to =Scenario test row
 description without a manual reload, and that a change-reason prompt
 was shown and recorded.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Delete
 
 Select the =TestContact= row and click *Delete*, confirming the
 prompt. Confirm the row disappears from the list.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 *** History
 
@@ -84,6 +121,12 @@ Reopen the =TestContact= row via History (not the main list, since its
 current version is deleted) and open the History dialog. Confirm all
 three prior operations — create, update, delete — are listed in order
 with the change reasons entered above.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** red
 
@@ -94,11 +137,24 @@ Log in with the same credentials as the =blue= instance
 Contact Types list here too, *before* the =blue= instance performs its
 Create step above.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Confirm the create event arrives
 
 After =blue='s Create step, confirm the =TestContact= row appears in
 this =red= instance's list *without a manual reload* — this exercises
 the Postgres LISTEN/NOTIFY-to-NATS relay end to end.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | Event did not arrive but on reload i could see it. |
 
 *** Confirm the update and delete events arrive
 
@@ -106,14 +162,20 @@ After =blue='s Update step, confirm the description change lands here
 automatically. After =blue='s Delete step, confirm the row disappears
 here automatically too.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-13T00:49:25Z |
+| Branch        | feature/verify-contact-type-qt-ui-post-nats |
+| Commit        | 69ea5f7be |
+| Worktree      | prime_origin |
 
 * Notes

@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: BD717BF3-DFD6-41C6-9A88-90B0470A37A7
+:END:
+#+title: Task: Update contact_type codegen model and regenerate all layers
+#+description: Bring ores.refdata.contact_type.org up to the latest meta-model (checklist review, variability knobs), regenerate every facet via compass codegen entity generate, and review every diff before accepting.
+#+type: task
+#+level: s1
+#+filetags: :commission-contact-type:sprint_23:v0:
+#+owner: marco
+#+branch: feature/verify-contact-type-qt-ui-post-nats
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bring =ores.refdata.contact_type.org= up to the latest codegen
+meta-model — checked against the [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]]
+and a currently-correct sibling aux-type model (e.g.
+=business_day_convention_type= or =day_count_fraction_type=) — then
+regenerate every facet it drives and review each diff before
+accepting it. This replaces drifted, hand-adjusted committed C++
+(confirmed via =--address ores.cpp.qt --diff= showing the entire Qt
+layer as unrecognized against current templates) with a faithful,
+current regeneration. No generated file gets hand-patched as part of
+this task; any real deviation from generated behaviour is expressed
+as a model property or paste-block instead.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] |
+| Now          | Reviewing the model against the checklist and a correct sibling. |
+| Waiting on   | Nothing.                               |
+| Next         | Update the model, then regenerate and review diffs facet by facet. |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- [ ] =ores.refdata.contact_type.org= reviewed section-by-section against the Domain entity evaluation checklist.
+- [ ] Every variability knob the model's facets read (=has_uuid_primary_key=, =has_change_reason_cache=, =has_history=, =has_pagination=, =delete_request_id_is_plural=, =icon=, and any others the current meta-model defines) is explicitly set and deliberately chosen, not left implicit.
+- [ ] All facets (SQL, domain, repository, service, protocol, NATS handler/registrar/eventing, generator, Qt) regenerated via =compass codegen entity generate=.
+- [ ] Diff reviewed for every changed/new file before accepting; any genuinely custom behaviour ported forward via model properties, not silently dropped.
+- [ ] Regenerated output builds clean (affected targets).
+- [ ] No hand-patch to any codegen-owned file.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/verify-contact-type-qt-ui-post-nats
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: Update contact_type codegen model and regenerate all layers (BD717BF3-DFD6-41C6-9A88-90B0470A37A7)
+#+blocked_since: 2026-07-13
 #+created: 2026-07-13
 #+updated: 2026-07-13
 #+environment: prime_origin
@@ -29,11 +29,11 @@ captures for anything out of scope.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Deferred: manual QA ran against un-regenerated, drifted C++; a hand-patch attempted mid-run was reverted. Restarting after the model is fixed and everything is regenerated. |
+| Waiting on   | [[id:BD717BF3-DFD6-41C6-9A88-90B0470A37A7][Update contact_type codegen model and regenerate all layers]]. |
+| Next         | Re-run this scenario once regenerated output builds clean.  |
 | Last touched | 2026-07-13                               |
 
 * Acceptance

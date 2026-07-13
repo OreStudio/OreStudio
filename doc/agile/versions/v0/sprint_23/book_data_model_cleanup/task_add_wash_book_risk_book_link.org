@@ -7,41 +7,51 @@
 #+level: s1
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/document-no-book-hierarchy
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
 #+updated: 2026-07-11
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Design-validate and size the paired risk-book link before it's pulled
+into a sprint as its own implementation task — this task's deliverable
+is the design + sizing, not the field itself.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-13                               |
 
 * Acceptance
 
--
+- Field shape confirmed against existing self-referencing-FK
+  precedent (business_unit, portfolio).
+- Conditional-validation and Qt-UI gaps identified and sized, with
+  precedent (or lack thereof) cited for each.
+- Sizing recorded in a Book domain knowledge doc.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Checked =business_unit.parent_business_unit_id= and
+=portfolio.parent_portfolio_id= as precedent for a nullable
+self-referencing FK. Searched for existing cross-field conditional
+validation (field only valid when a sibling field equals X) and
+existing conditionally-enabled Qt form fields — neither pattern exists
+anywhere in the codebase yet, which is the real sizing signal for this
+task.
 
 * Notes
 
@@ -69,3 +79,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+*Field shape*: nullable self-referencing =book.paired_risk_book_id=
+FK to =books.id= — directly follows the existing
+=business_unit.parent_business_unit_id=/=portfolio.parent_portfolio_id=
+precedent, so the field addition itself is small and well-trodden.
+
+*Two things push this past a trivial field-add*, both sized as small
+but real, and both are why this needed its own sizing pass rather than
+folding straight into a sprint:
+
+1. *Conditional validation* — must be set iff
+   =book_purpose_type = Wash=, plus a self-loop guard. The
+   trigger/=validate_*_fn= plumbing already exists for single-field
+   validation (e.g. =regulatory_book_type=); extending it to a
+   cross-field condition is straightforward but genuinely new — no
+   existing validation function in the codebase checks one field
+   against another's value yet.
+2. *Qt UI* — the field should only be enabled when
+   =book_purpose_type= is Wash. No existing generated detail dialog
+   conditionally enables a sibling form field based on another field's
+   live value (existing =setEnabled= calls only gate toolbar
+   actions/save buttons); needs either a codegen extension or a
+   hand-written override.
+
+Recorded this sizing in =wash_books_and_risk_routing.org=. No code
+changes; implementation is follow-up work, tracked as a separate
+capture.

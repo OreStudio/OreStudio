@@ -98,10 +98,10 @@
 \echo '--- Reference Data Lookup Tables ---'
 \ir ../refdata/refdata_business_day_convention_types_populate.sql
 \ir ../refdata/refdata_day_count_fraction_types_populate.sql
-\ir ../marketdata/marketdata_tenor_anchors_populate.sql
-\ir ../marketdata/marketdata_tenors_populate.sql
-\ir ../marketdata/marketdata_tenor_conventions_populate.sql
-\ir ../marketdata/marketdata_tenor_convention_resolutions_populate.sql
+\ir ../refdata/refdata_tenor_anchors_populate.sql
+\ir ../refdata/refdata_tenors_populate.sql
+\ir ../refdata/refdata_tenor_conventions_populate.sql
+\ir ../refdata/refdata_tenor_convention_resolutions_populate.sql
 \ir ../refdata/refdata_rounding_types_populate.sql
 \ir ../refdata/refdata_monetary_natures_populate.sql
 \ir ../refdata/refdata_currency_market_tiers_populate.sql

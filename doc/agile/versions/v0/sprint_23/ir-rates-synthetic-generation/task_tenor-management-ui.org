@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 5970B7FF-503D-477B-88DC-04F7147593C3
 :END:
-#+title: Task: Tenor management UI: tenant provisioner copy fix + hand-crafted management screen
-#+description: Fix: tenant provisioner did not copy tenor/tenor_anchor/tenor_convention/tenor_convention_resolution from the system tenant into new tenants (RLS would have hidden them). UI: hand-crafted Qt screen joining tenor x tenor_convention x tenor_convention_resolution so a user can inspect the full resolved data in one view, since codegen does not generate UI for junction models.
+#+title: Task: Migrate tenor entities to ores.refdata, add tenant provisioner copy fix and Tenor Management UI
+#+description: Relocate tenor/tenor_anchor/tenor_convention/tenor_convention_resolution from ores.marketdata into ores.refdata (full codegen regeneration across domain, messaging, generator, repository, and Qt layers). Fix: tenant provisioner did not copy these tables from the system tenant into new tenants (RLS would have hidden them). UI: hand-crafted Qt screen joining tenor x tenor_convention x tenor_convention_resolution so a user can inspect the full resolved data in one view, since codegen does not generate UI for junction models.
 #+type: task
 #+level: s1
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Fix the tenant provisioner to copy the four tenor reference tables into new tenants (verified: provisioning a test tenant copies 5/37/3/39 rows correctly). Then build a hand-authored Tenor Management Qt screen showing, per convention, every tenor's resolved anchor/offset (from tenor_convention_resolution overrides or tenor_convention/tenor defaults), so the combined data model can actually be inspected and validated end-to-end.
+Migrate tenor/tenor_anchor/tenor_convention/tenor_convention_resolution out of ores.marketdata into ores.refdata, regenerating the full codegen stack (domain, eventing, messaging, generator, repository, Qt) in the new location. Fix the tenant provisioner to copy the four tenor reference tables into new tenants (verified: provisioning a test tenant copies 5/37/3/39 rows correctly). Then build a hand-authored Tenor Management Qt screen showing, per convention, every tenor's resolved anchor/offset (from tenor_convention_resolution overrides or tenor_convention/tenor defaults), so the combined data model can actually be inspected and validated end-to-end.
 
 * Status
 

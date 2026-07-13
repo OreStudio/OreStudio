@@ -1,0 +1,252 @@
+:PROPERTIES:
+:ID: 9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87
+:END:
+#+title: ores.refdata.tenor
+#+description: Codegen entity model for the refdata tenor table; the persisted, orderable catalog of standard tenor labels replacing the hand-authored value type.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:tenor:
+#+entity_singular: tenor
+#+entity_plural: tenors
+#+entity_title: Tenor
+#+brief: Catalog of standard tenor labels (O/N, 1W, 1Y, SPOT, ...), independent of any curve-type resolution convention.
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+Persisted catalog of the standard [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+labels, so a user can see, manage, and order the set of tenors the system
+knows about rather than relying on labels implied by parsing logic alone.
+This table carries convention-independent identity only — how a given
+tenor resolves under a particular curve type is
+[[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][Tenor Convention]]'s concern,
+recorded via [[id:E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48][Tenor Convention
+Resolution]]. [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken dates]]
+are deliberately out of scope — they are per-instance ladder data, not
+master data, and reference a row here only when they happen to coincide
+with a standard label.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique tenor code.
+
+Examples: 'O/N', 'T/N', 'S/N', 'S/W', '1W', '1M', '1Y', 'SPOT'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_tenor_" + std::to_string(++counter)
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** display_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable common name (e.g. 'Overnight', 'One Month', 'Spot').
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::word())
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Longer-form description of the tenor and where it typically appears.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** sort_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Explicit display/ladder ordering. Not derived from parsing the code, so
+labels with no natural lexicographic order relative to periods (e.g.
+=SPOT= among =O/N=/=T/N=/=S/N=) sort correctly.
+
+#+begin_src cpp :name generator
+ctx.random_int(0, 1000)
+#+end_src
+
+** kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Either =SPECIAL= (=O/N=, =T/N=, =S/N=, =SPOT=, =TODAY=, =TOMORROW= — no
+fixed offset; resolved by rule per convention) or =PERIOD= (regular
+=nD=/=nW=/=nM=/=nY= labels with a fixed offset from the convention's
+anchor).
+
+#+begin_src cpp :name generator
+std::string("PERIOD")
+#+end_src
+
+** unit
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Period unit for =PERIOD= tenors: =DAY=, =WEEK=, =MONTH=, or =YEAR=. Null
+for =SPECIAL= tenors.
+
+#+begin_src cpp :name generator
+std::string("MONTH")
+#+end_src
+
+** multiplier
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Period count for =PERIOD= tenors (the =n= in =nD=/=nW=/=nM=/=nY=). Null
+for =SPECIAL= tenors.
+
+#+begin_src cpp :name generator
+ctx.random_int(1, 30)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_tenors_tbl
+:END:
+
+** Checks
+
+| expression                                          |
+|------------------------------------------------------|
+| "kind" IN ('SPECIAL', 'PERIOD')                      |
+| "unit" IS NULL OR "unit" IN ('DAY', 'WEEK', 'MONTH', 'YEAR') |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:generator_facet_name: generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: tenor
+:entity_plural_short:   tenors
+:entity_singular_words: tenor
+:entity_plural_words:   tenors
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: t
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/tenor.hpp
+:domain_class:           refdata::domain::tenor
+:protocol_include:       ores.refdata.api/messaging/tenor_protocol.hpp
+:collection_name:        tenors
+:item_var:               tenor
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      refdata::messaging::get_tenors_request
+:get_response_class:     refdata::messaging::get_tenors_response
+:get_message_type:       get_tenors_request
+:save_request_class:     refdata::messaging::save_tenor_request
+:save_response_class:    refdata::messaging::save_tenor_response
+:save_message_type:      save_tenor_request
+:delete_request_class:   refdata::messaging::delete_tenor_request
+:delete_response_class:  refdata::messaging::delete_tenor_response
+:delete_message_type:    delete_tenor_request
+:history_request_class:  refdata::messaging::get_tenor_history_request
+:history_response_class: refdata::messaging::get_tenor_history_response
+:history_message_type:   get_tenor_history_request
+:settings_group:         TenorListWindow
+:window_title:           Tenors
+:icon:                   Clock
+:END:
+
+*** Detail fields
+
+| field        | label        | widget           | type      | is_key | is_required | placeholder                |
+|--------------+--------------+------------------+-----------+--------+-------------+-----------------------------|
+| code         | Code         | codeEdit         | line_edit | true   | true        | Enter tenor code (e.g. 1M) |
+| display_name | Display Name | displayNameEdit  | line_edit |        | true        | Enter display name         |
+| description  | Description  | descriptionEdit  | text_edit |        |             | Enter a description        |
+| sort_order   | Sort Order   | sortOrderEdit    | spin_box  |        | true        |                             |
+| kind         | Kind         | kindEdit         | line_edit |        | true        | SPECIAL or PERIOD          |
+| unit         | Unit         | unitEdit         | line_edit |        |             | DAY, WEEK, MONTH, or YEAR  |
+| multiplier   | Multiplier   | multiplierEdit   | spin_box  |        |             |                             |
+
+*** Columns (Qt model)
+
+| enum_name   | field        | header       | type      | width |
+|-------------+--------------+--------------+-----------+-------|
+| Code        | code         | Code         | string    | 100   |
+| DisplayName | display_name | Display Name | string    | 160   |
+| Description | description  | Description  | string    | 300   |
+| SortOrder   | sort_order   | Sort Order   | int       | 90    |
+| Kind        | kind         | Kind         | string    | 90    |
+| Unit        | unit         | Unit         | string    | 90    |
+| Version     | version      | Version      | int       | 80    |
+| ModifiedBy  | modified_by  | Modified By  | string    | 120   |
+| RecordedAt  | recorded_at  | Recorded At  | timestamp | 150   |
+
+** Custom repository methods
+
+*** read_all_ordered
+:PROPERTIES:
+:ID: 6C3E8A1D-4B7F-4A2C-9D5E-1F8A3C6B2E90
+:END:
+
+Reads every tenor for the tenant ordered by =sort_order=, for populating
+a ladder or a tenor picker in display order.
+
+#+begin_src cpp :name declaration :implements 2D5F9A3C-7B1E-4C8A-A6D3-9F2E5B8C1A47
+std::vector<domain::tenor> read_all_ordered(context ctx);
+#+end_src
+
+* See also
+
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — domain concept.
+- [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]] — the subset of tenors actually quoted as live inputs to a given curve.
+- [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][Tenor Convention]] — the per-asset-class resolution rules for these labels.
+- [[id:E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48][Tenor Convention Resolution]] — which tenors belong to which convention, and any anchor override.

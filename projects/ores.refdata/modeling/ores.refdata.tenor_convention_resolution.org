@@ -1,0 +1,158 @@
+:PROPERTIES:
+:ID: E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48
+:END:
+#+title: ores.refdata.tenor_convention_resolution
+#+description: Codegen junction model joining tenor_convention to tenor; presence of a row is set membership (which tenors belong to a convention), with an optional per-row anchor override and, for SPECIAL tenors, the convention-specific offset that gives the tenor a duration.
+#+type: ores.codegen.junction
+#+component: refdata
+#+name: tenor_convention_resolutions
+#+name_singular: tenor_convention_resolution
+#+name_title: Tenor Convention Resolution
+#+name_singular_words: tenor convention resolution
+#+brief: Joins a tenor convention to the tenors valid under it, with an optional per-tenor anchor override.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+filetags: :model:junction:refdata:tenor:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+A [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] does not resolve the
+same way under every [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][tenor
+convention]] — =O/N= resolves from horizon to tomorrow under the
+spot/forward convention, but means "today" (zero offset) under the FX
+swap convention — and not every tenor belongs to every convention's set
+at all (the swap convention's tenor set stops at =S/N=; the credit/CDS
+convention only uses IMM-quarter labels). This junction records all of
+that as one row per valid =(convention, tenor)= pair: the row's mere
+presence is set membership; its optional =anchor_override= column carries
+the per-row exception to the convention's own default anchor; and its
+optional =offset_unit=/=offset_multiplier= columns carry the
+convention-specific duration for a =SPECIAL= tenor, which — unlike a
+=PERIOD= tenor — has no =unit=/=multiplier= of its own to fall back on
+(see [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][Tenor]]'s =kind= column).
+A =PERIOD= tenor's resolution never needs an offset override — its
+duration is fixed by its own =unit=/=multiplier= regardless of
+convention, so only the anchor itself (the convention's =measured_from=,
+or this row's =anchor_override=) can vary for those rows. For a
+convention whose =resolution_algorithm= is =IMM_ROLL= rather than
+=ANCHOR_OFFSET=, =offset_unit= is =ROLL_QUARTER= and =offset_multiplier=
+is the roll-quarter count (e.g. =1Y 1RQ=, per
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s CDS disambiguation
+convention) — the same two columns, reused rather than requiring a
+separate schema for the different algorithm. The runtime resolver for
+=IMM_ROLL= rows is not implemented yet; see the capture referenced below.
+
+* Left
+:PROPERTIES:
+:column:        convention_code
+:column_short:  convention
+:column_title:  Convention
+:type:          text
+:cpp_type:      std::string
+:index_comment: Tenor convention this resolution row belongs to.
+:END:
+
+References [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][tenor_convention.code]].
+
+* Right
+:PROPERTIES:
+:column:        tenor_code
+:column_short:  tenor
+:column_title:  Tenor
+:type:          text
+:cpp_type:      std::string
+:index_comment: Tenor valid under this convention.
+:END:
+
+References [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][tenor.code]].
+
+* Columns
+
+** anchor_override
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+References [[id:3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90][tenor_anchor.code]].
+Null for the common case (the tenor resolves from the convention's own
+=measured_from=); set only when this specific tenor resolves from a
+different anchor under this specific convention.
+
+** offset_unit
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+One of =DAY=, =WEEK=, =MONTH=, =YEAR=, or =ROLL_QUARTER=. Null when the
+referenced tenor is =PERIOD= (its own =unit= applies instead); required
+when the referenced tenor is =SPECIAL=, since a =SPECIAL= tenor has no
+duration outside a convention's say-so.
+
+** offset_multiplier
+:PROPERTIES:
+:type:          integer
+:cpp_type:      std::optional<int>
+:nullable: true
+:END:
+
+The count paired with =offset_unit= (e.g. =1= day for =O/N= under
+spot/forward, =0= days for =O/N= under FX swap, =1= roll-quarter for a
+CDS =1Y 1RQ= tenor). Same nullability rule as =offset_unit=.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_tenor_convention_resolutions_tbl
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short: resolution
+:name_short:          resolutions
+:name_singular_words: tenor convention resolution
+:name_words:          tenor convention resolutions
+:order_column:        convention_code
+:END:
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: r
+:END:
+
+** Table display
+
+| column            | header            |
+|-------------------+-------------------|
+| convention_code   | Convention        |
+| tenor_code        | Tenor             |
+| anchor_override   | Anchor Override   |
+| offset_unit       | Offset Unit       |
+| offset_multiplier | Offset Multiplier |
+
+* See also
+
+- [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][Tenor Convention]] — the left side; the convention's own default anchor and resolution algorithm this row can override or supply values for.
+- [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][Tenor]] (entity model) — the right side.
+- [[id:3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90][Tenor Anchor]] — the lookup =anchor_override= references.
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the "Tenor conventions by curve type" domain concept this junction operationalises.
+- [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]] — the roll schedule =ROLL_QUARTER= offsets are counted against.

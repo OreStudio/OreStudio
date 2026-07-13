@@ -18,6 +18,16 @@
  *
  */
 
+-- Tenor reference data: resolution junction before conventions/tenors it
+-- references; tenors and conventions before anchors.
+\ir ./refdata_tenor_convention_resolution_drop.sql
+\ir ./refdata_tenor_conventions_notify_trigger_drop.sql
+\ir ./refdata_tenor_conventions_drop.sql
+\ir ./refdata_tenors_notify_trigger_drop.sql
+\ir ./refdata_tenors_drop.sql
+\ir ./refdata_tenor_anchors_notify_trigger_drop.sql
+\ir ./refdata_tenor_anchors_drop.sql
+
 -- ORE conventions (no dependants, drop first)
 \ir ./refdata_cds_conventions_notify_trigger_drop.sql
 \ir ./refdata_cds_conventions_drop.sql

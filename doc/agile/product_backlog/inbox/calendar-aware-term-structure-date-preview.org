@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: F8100292-2CFF-4989-B8C2-9DD576928C2F
+:END:
+#+title: Calendar-aware term structure date preview in Tenor Management
+#+description: Extend the Tenor Management screen's approximate ~Date column into a real, business-day-calendar-aware term structure preview once holiday calendars exist in the codebase.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:tenor:calendar:ui:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The Tenor Management screen ([[id:5970B7FF-503D-477B-88DC-04F7147593C3][Tenor
+management UI task]]) ships with an approximate =~Date= column and Reval
+Date picker, computed via
+=ores.marketdata.api::domain::tenor_resolution::resolve_end_date()= —
+pure =std::chrono= calendar arithmetic, explicitly documented as having
+no business-day/holiday adjustment. This capture is that column's
+follow-on: once business-day calendars exist in the codebase (see
+[[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day
+Calendars]], which today is purely conceptual — no such type exists yet,
+same gap the original tenor-type task found for tenor parsing before it
+was built), extend the resolver and this screen's date column to apply
+real holiday-adjusted rolling, replacing the "approximate" caveat with
+an actual, trustworthy term-structure preview: given a reval date,
+show the concrete rolled date every configured tenor resolves to under a
+chosen convention.
+
+* Why
+
+A trader or implementer inspecting the tenor/convention/resolution data
+model needs to trust the dates it produces before relying on it for real
+curve construction — an approximation labelled as such is honest and
+useful for now, but the whole point of the underlying data model (tenor
+conventions, anchors, per-tenor overrides) is to eventually drive
+correct, calendar-adjusted date resolution. This capture keeps that
+real goal from being lost once the approximate version ships and looks
+"done enough" at a glance.
+
+* References
+
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] and [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] — the domain docs this depends on.
+- =ores.marketdata.api::domain::tenor_resolution::resolve_end_date()= — the naive resolver this would extend or wrap.
+
+* See also
+
+- [[id:5970B7FF-503D-477B-88DC-04F7147593C3][Tenor management UI task]] — where the approximate version ships first.

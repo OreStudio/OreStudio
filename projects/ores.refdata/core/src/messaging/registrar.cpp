@@ -55,7 +55,17 @@
 #include "ores.refdata.core/messaging/regulatory_book_type_registrar.hpp"
 #include "ores.refdata.core/messaging/rounding_type_registrar.hpp"
 #include "ores.refdata.core/messaging/swap_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/tenor_anchor_registrar.hpp"
+#include "ores.refdata.core/messaging/tenor_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/tenor_registrar.hpp"
 #include "ores.refdata.core/messaging/zero_convention_registrar.hpp"
+
+// tenor_convention_resolution is a junction: codegen doesn't generate a
+// service/protocol/handler/sub-registrar for it (see the story on adding
+// junction C++ support). Hand-authored, read-only (list only), wired
+// inline below alongside the other no-sub-registrar entities.
+#include "ores.refdata.api/messaging/tenor_convention_resolution_protocol.hpp"
+#include "ores.refdata.core/messaging/tenor_convention_resolution_handler.hpp"
 
 // Entities without a per-entity sub-registrar: asset_class, business_centre
 // and business_unit_type have no codegen model; party_contact /
@@ -153,7 +163,22 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_regulatory_book_type_handlers(nats, ctx, verifier));
     append(register_rounding_type_handlers(nats, ctx, verifier));
     append(register_swap_convention_handlers(nats, ctx, verifier));
+    append(register_tenor_handlers(nats, ctx, verifier));
+    append(register_tenor_anchor_handlers(nats, ctx, verifier));
+    append(register_tenor_convention_handlers(nats, ctx, verifier));
     append(register_zero_convention_handlers(nats, ctx, verifier));
+
+    // ----------------------------------------------------------------
+    // Tenor convention resolutions (junction — no codegen-generated
+    // service/protocol/handler/sub-registrar; hand-authored, read-only).
+    // ----------------------------------------------------------------
+    {
+        auto h = std::make_shared<tenor_convention_resolution_handler>(nats, ctx, verifier);
+        subs.push_back(
+            nats.queue_subscribe(get_tenor_convention_resolutions_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+    }
 
     // ----------------------------------------------------------------
     // Party contacts (party_contact_handler serves the

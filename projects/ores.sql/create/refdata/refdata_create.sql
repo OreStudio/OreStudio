@@ -157,3 +157,13 @@
 \ir ./refdata_cds_conventions_create.sql
 \ir ./refdata_cds_conventions_notify_trigger_create.sql
 \ir ./refdata_publish_from_dq_create.sql
+
+-- Tenor reference data: anchors and the tenor catalog before conventions;
+-- conventions before the resolution junction that joins them.
+\ir ./refdata_tenor_anchors_create.sql
+\ir ./refdata_tenor_anchors_notify_trigger_create.sql
+\ir ./refdata_tenors_create.sql
+\ir ./refdata_tenors_notify_trigger_create.sql
+\ir ./refdata_tenor_conventions_create.sql
+\ir ./refdata_tenor_conventions_notify_trigger_create.sql
+\ir ./refdata_tenor_convention_resolution_create.sql

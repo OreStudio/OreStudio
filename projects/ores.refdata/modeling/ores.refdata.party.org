@@ -26,6 +26,7 @@ organisation itself.
 :has_parent_id:         true
 :parent_id_column:      parent_party_id
 :hierarchy_name_field:  full_name
+:read_for_cache:        true
 :END:
 
 Cross-cutting properties. Consumed by *both* C++ and SQL codegen.
@@ -435,12 +436,14 @@ party_repository::read_descendants(context ctx, const boost::uuids::uuid& root_i
 
 ** Custom NATS protocol messages
 
-=party= exposes two hand-crafted NATS message pairs beyond the standard CRUD
-surface: =read_parties_for_cache= (a bulk read used to warm client-side
-caches) and =composite_as_of= (reads a party as it stood at a specific
-version, together with its identifiers and contact information as they
-stood during that same version's window — see the "Temporal composite
-entity versioning" architecture doc).
+=party= exposes one hand-crafted NATS message pair beyond the standard CRUD
+surface and generic facets: =composite_as_of= (reads a party as it stood at
+a specific version, together with its identifiers and contact information
+as they stood during that same version's window — see the "Temporal
+composite entity versioning" architecture doc). The bulk cache-warming
+read that used to be hand-written here (=read_parties_for_cache=) is now
+covered by the generic =:read_for_cache: true= facet (see Flags) — party
+was the archetype's original motivating precedent, now migrated onto it.
 
 #+begin_src cpp :name protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
 #include "ores.refdata.api/domain/party_contact_information.hpp"
@@ -448,24 +451,6 @@ entity versioning" architecture doc).
 #+end_src
 
 #+begin_src cpp :name composite_as_of_messages :implements 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
-/**
- * @brief Reads all active parties for a tenant — used by IAM party cache.
- *
- * Returns the full, unpaginated party set for the given tenant so that
- * consumers can build an in-process cache without multiple round-trips.
- */
-struct read_parties_for_cache_request {
-    using response_type = struct read_parties_for_cache_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.parties.read";
-    std::string tenant_id;
-};
-
-struct read_parties_for_cache_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::refdata::domain::party> parties;
-};
-
 /**
  * @brief Reads a party as it stood at a specific version, together with its
  * identifiers and contact information as they stood during that same
@@ -490,7 +475,7 @@ struct get_party_composite_as_of_response {
 
 ** Custom NATS handler methods
 
-Hand-written handler methods for the two message pairs above, dispatching to
+Hand-written handler method for =composite_as_of=, dispatching to
 =party_service=/=party_identifier_service=/=party_contact_information_service=.
 
 #+begin_src cpp :name handler_includes :implements F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
@@ -499,7 +484,6 @@ Hand-written handler methods for the two message pairs above, dispatching to
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include <chrono>
-#include <limits>
 #+end_src
 
 =save='s workflow-step-command branch (below) special-cases orchestration
@@ -573,35 +557,6 @@ the workflow engine rather than replying to the caller directly.
 #+end_src
 
 #+begin_src cpp :name custom_handler_methods :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
-    void read_for_cache(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<read_parties_for_cache_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(nats_,
-                  msg,
-                  read_parties_for_cache_response{.success = false,
-                                                  .message = "Failed to decode request"});
-            return;
-        }
-        try {
-            using ores::database::service::tenant_context;
-            auto tctx = tenant_context::with_tenant(ctx_, req->tenant_id);
-            service::party_service svc(tctx);
-            auto parties = svc.list_parties(0, std::numeric_limits<std::uint32_t>::max());
-            BOOST_LOG_SEV(party_handler_lg(), debug)
-                << "Completed " << msg.subject << " (tenant=" << req->tenant_id
-                << ", count=" << parties.size() << ")";
-            reply(nats_,
-                  msg,
-                  read_parties_for_cache_response{.success = true, .parties = std::move(parties)});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(
-                nats_, msg, read_parties_for_cache_response{.success = false, .message = e.what()});
-        }
-    }
-
     void composite_as_of(ores::nats::message msg) {
         BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -676,9 +631,6 @@ Hand-crafted subjects wired into the generated =party_registrar.cpp= via the
 =nats-sub-registrar= facet's custom-subscription paste point.
 
 #+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
-    subs.push_back(nats.queue_subscribe(
-        read_parties_for_cache_request::nats_subject, queue_group,
-        [h](ores::nats::message msg) { h->read_for_cache(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_party_composite_as_of_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->composite_as_of(std::move(msg));

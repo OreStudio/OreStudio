@@ -100,10 +100,8 @@ struct get_party_hierarchy_response {
 };
 
 /**
- * @brief Reads all active parties for a tenant — used by IAM party cache.
- *
- * Returns the full, unpaginated party set for the given tenant so that
- * consumers can build an in-process cache without multiple round-trips.
+ * @brief Reads all active parties for a tenant — used by
+ * client-side caches to warm up without multiple round-trips.
  */
 struct read_parties_for_cache_request {
     using response_type = struct read_parties_for_cache_response;

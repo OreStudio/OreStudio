@@ -20,6 +20,7 @@
 #include "ores.qt/ClientCrmEnabledDerivedPairModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/crm_enabled_derived_pair_protocol.hpp"
 #include <QtConcurrent>
@@ -83,8 +84,6 @@ QVariant ClientCrmEnabledDerivedPairModel::data(const QModelIndex& index, int ro
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-            case PartyId:
-                return QString::fromStdString(boost::uuids::to_string(pair.party_id));
             case ConfigId:
                 return QString::fromStdString(boost::uuids::to_string(pair.config_id));
             case BaseCurrencyCode:
@@ -104,6 +103,13 @@ QVariant ClientCrmEnabledDerivedPairModel::data(const QModelIndex& index, int ro
         }
     }
 
+    if (role == Qt::DecorationRole && imageCache_) {
+        if (index.column() == Column::BaseCurrencyCode)
+            return currency_flag_icon(*imageCache_, pair.base_currency_code);
+        if (index.column() == Column::QuoteCurrencyCode)
+            return currency_flag_icon(*imageCache_, pair.quote_currency_code);
+    }
+
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color(boost::uuids::to_string(pair.id));
     }
@@ -118,8 +124,6 @@ QVariant ClientCrmEnabledDerivedPairModel::headerData(int section,
         return {};
 
     switch (section) {
-        case PartyId:
-            return tr("Party Id");
         case ConfigId:
             return tr("Config Id");
         case BaseCurrencyCode:

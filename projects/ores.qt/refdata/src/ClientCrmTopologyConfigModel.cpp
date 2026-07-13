@@ -20,6 +20,7 @@
 #include "ores.qt/ClientCrmTopologyConfigModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/crm_topology_config_protocol.hpp"
 #include <QtConcurrent>
@@ -82,8 +83,6 @@ QVariant ClientCrmTopologyConfigModel::data(const QModelIndex& index, int role) 
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-            case PartyId:
-                return QString::fromStdString(boost::uuids::to_string(config.party_id));
             case Name:
                 return QString::fromStdString(config.name);
             case PivotCurrencyCode:
@@ -101,6 +100,11 @@ QVariant ClientCrmTopologyConfigModel::data(const QModelIndex& index, int role) 
         }
     }
 
+    if (role == Qt::DecorationRole && imageCache_) {
+        if (index.column() == Column::PivotCurrencyCode)
+            return currency_flag_icon(*imageCache_, config.pivot_currency_code);
+    }
+
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color(config.name);
     }
@@ -114,8 +118,6 @@ ClientCrmTopologyConfigModel::headerData(int section, Qt::Orientation orientatio
         return {};
 
     switch (section) {
-        case PartyId:
-            return tr("Party Id");
         case Name:
             return tr("Name");
         case PivotCurrencyCode:

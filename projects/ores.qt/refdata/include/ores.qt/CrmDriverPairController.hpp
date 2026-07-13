@@ -35,6 +35,7 @@ class CrmDriverPairMdiWindow;
 class DetachableMdiSubWindow;
 class BadgeCache;
 class ChangeReasonCache;
+class ImageCache;
 
 /**
  * @brief Controller for managing CRM driver pair windows and operations.
@@ -58,6 +59,7 @@ public:
     CrmDriverPairController(QMainWindow* mainWindow,
                             QMdiArea* mdiArea,
                             ClientManager* clientManager,
+                            ImageCache* imageCache,
                             ChangeReasonCache* changeReasonCache,
                             const QString& username,
                             BadgeCache* badgeCache,

@@ -23,9 +23,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.refdata.api/domain/crm_driver_pair.hpp"
 #include <vector>
-
 
 namespace Ui {
 class CrmDriverPairDetailDialog;
@@ -94,10 +95,16 @@ protected:
 private:
     void setupUi();
     void setupConnections();
+    void setupCombos();
     void updateUiFromPair();
     void updatePairFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
+
+    void populateBaseCurrencyCodeCombo();
+
+    void populateQuoteCurrencyCodeCombo();
 
 
     Ui::CrmDriverPairDetailDialog* ui_;

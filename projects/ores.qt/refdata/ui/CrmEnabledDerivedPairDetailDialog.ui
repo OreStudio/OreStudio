@@ -56,69 +56,41 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="labelPartyId">
-            <property name="text">
-             <string>Party Id:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="partyIdEdit">
-            <property name="placeholderText">
-             <string>Owning party id</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="labelConfigId">
-            <property name="text">
-             <string>Config Id:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="configIdEdit">
-            <property name="placeholderText">
-             <string>Owning CRM topology id</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
            <widget class="QLabel" name="labelBaseCurrencyCode">
             <property name="text">
              <string>Base:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="baseCcyEdit">
-            <property name="placeholderText">
-             <string>e.g. EUR</string>
+          <item row="1" column="1">
+           <widget class="ores::qt::OreCurrencyComboBox" name="baseCcyCombo">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="2" column="0">
            <widget class="QLabel" name="labelQuoteCurrencyCode">
             <property name="text">
              <string>Quote:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="quoteCcyEdit">
-            <property name="placeholderText">
-             <string>e.g. JPY</string>
+          <item row="2" column="1">
+           <widget class="ores::qt::OreCurrencyComboBox" name="quoteCcyCombo">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="labelEnabled">
             <property name="text">
              <string>Enabled:</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="3" column="1">
            <widget class="QCheckBox" name="enabledCheckBox">
             <property name="text">
              <string/>
@@ -201,6 +173,11 @@
    <class>ores::qt::ProvenanceWidget</class>
    <extends>QWidget</extends>
    <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>ores::qt::OreCurrencyComboBox</class>
+   <extends>QComboBox</extends>
+   <header>ores.qt/OreCurrencyComboBox.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

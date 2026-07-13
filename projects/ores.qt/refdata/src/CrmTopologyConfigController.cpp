@@ -43,6 +43,7 @@ constexpr std::string_view config_event_name =
 CrmTopologyConfigController::CrmTopologyConfigController(QMainWindow* mainWindow,
                                                          QMdiArea* mdiArea,
                                                          ClientManager* clientManager,
+                                                         ImageCache* imageCache,
                                                          ChangeReasonCache* changeReasonCache,
                                                          const QString& username,
                                                          BadgeCache* badgeCache,
@@ -52,6 +53,7 @@ CrmTopologyConfigController::CrmTopologyConfigController(QMainWindow* mainWindow
     , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
+    setImageCache(imageCache);
 
     BOOST_LOG_SEV(lg(), debug) << "CrmTopologyConfigController created";
 }
@@ -66,7 +68,8 @@ void CrmTopologyConfigController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new CrmTopologyConfigMdiWindow(clientManager_, username_, badgeCache_);
+    listWindow_ =
+        new CrmTopologyConfigMdiWindow(clientManager_, username_, badgeCache_, imageCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -169,6 +172,7 @@ void CrmTopologyConfigController::showAddWindow() {
     auto* detailDialog = new CrmTopologyConfigDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -220,6 +224,7 @@ void CrmTopologyConfigController::showDetailWindow(
     auto* detailDialog = new CrmTopologyConfigDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -362,6 +367,7 @@ void CrmTopologyConfigController::onOpenVersion(const refdata::domain::crm_topol
     auto* detailDialog = new CrmTopologyConfigDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setConfig(config);
@@ -414,6 +420,7 @@ void CrmTopologyConfigController::onRevertVersion(
     auto* detailDialog = new CrmTopologyConfigDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_config = config;

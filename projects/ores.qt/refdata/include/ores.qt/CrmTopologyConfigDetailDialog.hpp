@@ -23,9 +23,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.refdata.api/domain/crm_topology_config.hpp"
 #include <vector>
-
 
 namespace Ui {
 class CrmTopologyConfigDetailDialog;
@@ -94,10 +95,14 @@ protected:
 private:
     void setupUi();
     void setupConnections();
+    void setupCombos();
     void updateUiFromConfig();
     void updateConfigFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
+
+    void populatePivotCurrencyCodeCombo();
 
 
     Ui::CrmTopologyConfigDetailDialog* ui_;

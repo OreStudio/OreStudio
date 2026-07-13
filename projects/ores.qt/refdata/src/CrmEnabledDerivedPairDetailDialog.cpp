@@ -19,15 +19,19 @@
  */
 #include "ores.qt/CrmEnabledDerivedPairDetailDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/crm_enabled_derived_pair_protocol.hpp"
 #include "ui_CrmEnabledDerivedPairDetailDialog.h"
+#include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -39,7 +43,9 @@ CrmEnabledDerivedPairDetailDialog::CrmEnabledDerivedPairDetailDialog(QWidget* pa
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
+    setupCombos();
     setupConnections();
     // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
     // block is expected to construct a HierarchyModelBuilder-derived model
@@ -80,6 +86,8 @@ void CrmEnabledDerivedPairDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
+void CrmEnabledDerivedPairDetailDialog::setupCombos() {}
+
 void CrmEnabledDerivedPairDetailDialog::setupConnections() {
     connect(ui_->saveButton,
             &QPushButton::clicked,
@@ -98,20 +106,12 @@ void CrmEnabledDerivedPairDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &CrmEnabledDerivedPairDetailDialog::onCodeChanged);
-    connect(ui_->partyIdEdit,
-            &QLineEdit::textChanged,
+    connect(ui_->baseCcyCombo,
+            &QComboBox::currentIndexChanged,
             this,
             &CrmEnabledDerivedPairDetailDialog::onFieldChanged);
-    connect(ui_->configIdEdit,
-            &QLineEdit::textChanged,
-            this,
-            &CrmEnabledDerivedPairDetailDialog::onFieldChanged);
-    connect(ui_->baseCcyEdit,
-            &QLineEdit::textChanged,
-            this,
-            &CrmEnabledDerivedPairDetailDialog::onFieldChanged);
-    connect(ui_->quoteCcyEdit,
-            &QLineEdit::textChanged,
+    connect(ui_->quoteCcyCombo,
+            &QComboBox::currentIndexChanged,
             this,
             &CrmEnabledDerivedPairDetailDialog::onFieldChanged);
     connect(ui_->enabledCheckBox,
@@ -122,6 +122,20 @@ void CrmEnabledDerivedPairDetailDialog::setupConnections() {
 
 void CrmEnabledDerivedPairDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateBaseCurrencyCodeCombo();
+    populateQuoteCurrencyCodeCombo();
+}
+
+void CrmEnabledDerivedPairDetailDialog::populateBaseCurrencyCodeCombo() {
+    setup_currency_combo(ui_->baseCcyCombo, this, clientManager_, imageCache(), [this]() {
+        return QString::fromStdString(pair_.base_currency_code);
+    });
+}
+
+void CrmEnabledDerivedPairDetailDialog::populateQuoteCurrencyCodeCombo() {
+    setup_currency_combo(ui_->quoteCcyCombo, this, clientManager_, imageCache(), [this]() {
+        return QString::fromStdString(pair_.quote_currency_code);
+    });
 }
 
 void CrmEnabledDerivedPairDetailDialog::setUsername(const std::string& username) {
@@ -154,20 +168,24 @@ void CrmEnabledDerivedPairDetailDialog::markDirty() {
 void CrmEnabledDerivedPairDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->idEdit->setReadOnly(true);
-    ui_->partyIdEdit->setReadOnly(readOnly);
-    ui_->configIdEdit->setReadOnly(readOnly);
-    ui_->baseCcyEdit->setReadOnly(readOnly);
-    ui_->quoteCcyEdit->setReadOnly(readOnly);
+    ui_->baseCcyCombo->setEnabled(!readOnly);
+    ui_->quoteCcyCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void CrmEnabledDerivedPairDetailDialog::updateUiFromPair() {
     ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(pair_.id)));
-    ui_->partyIdEdit->setText(QString::fromStdString(boost::uuids::to_string(pair_.party_id)));
-    ui_->configIdEdit->setText(QString::fromStdString(boost::uuids::to_string(pair_.config_id)));
-    ui_->baseCcyEdit->setText(QString::fromStdString(pair_.base_currency_code));
-    ui_->quoteCcyEdit->setText(QString::fromStdString(pair_.quote_currency_code));
+    {
+        const auto val = QString::fromStdString(pair_.base_currency_code);
+        const int idx = ui_->baseCcyCombo->findText(val);
+        ui_->baseCcyCombo->setCurrentIndex(idx);
+    }
+    {
+        const auto val = QString::fromStdString(pair_.quote_currency_code);
+        const int idx = ui_->quoteCcyCombo->findText(val);
+        ui_->quoteCcyCombo->setCurrentIndex(idx);
+    }
     ui_->enabledCheckBox->setChecked(pair_.enabled);
 
     populateProvenance(pair_.version,
@@ -182,8 +200,8 @@ void CrmEnabledDerivedPairDetailDialog::updateUiFromPair() {
 }
 
 void CrmEnabledDerivedPairDetailDialog::updatePairFromUi() {
-    pair_.base_currency_code = ui_->baseCcyEdit->text().trimmed().toStdString();
-    pair_.quote_currency_code = ui_->quoteCcyEdit->text().trimmed().toStdString();
+    pair_.base_currency_code = ui_->baseCcyCombo->currentText().toStdString();
+    pair_.quote_currency_code = ui_->quoteCcyCombo->currentText().toStdString();
     pair_.enabled = ui_->enabledCheckBox->isChecked();
     pair_.modified_by = username_;
 }
@@ -205,13 +223,10 @@ void CrmEnabledDerivedPairDetailDialog::updateSaveButtonState() {
 
 bool CrmEnabledDerivedPairDetailDialog::validateInput() {
     const QString id_val = ui_->idEdit->text().trimmed();
-    const QString party_id_val = ui_->partyIdEdit->text().trimmed();
-    const QString config_id_val = ui_->configIdEdit->text().trimmed();
-    const QString base_currency_code_val = ui_->baseCcyEdit->text().trimmed();
-    const QString quote_currency_code_val = ui_->quoteCcyEdit->text().trimmed();
+    const bool base_currency_code_selected = ui_->baseCcyCombo->currentIndex() >= 0;
+    const bool quote_currency_code_selected = ui_->quoteCcyCombo->currentIndex() >= 0;
 
-    return true && !id_val.isEmpty() && !party_id_val.isEmpty() && !config_id_val.isEmpty() &&
-           !base_currency_code_val.isEmpty() && !quote_currency_code_val.isEmpty();
+    return true && !id_val.isEmpty() && base_currency_code_selected && quote_currency_code_selected;
 }
 
 void CrmEnabledDerivedPairDetailDialog::onSaveClicked() {

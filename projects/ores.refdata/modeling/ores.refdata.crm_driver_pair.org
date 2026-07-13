@@ -232,20 +232,17 @@ crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
 
 *** Detail fields
 
-| field                | label     | widget            | type      | is_key | is_required | placeholder             |
-|----------------------+-----------+-------------------+-----------+--------+-------------+--------------------------|
-| id                   | Id        | idEdit            | line_edit | true   | true        | CRM driver pair id      |
-| party_id             | Party Id  | partyIdEdit       | line_edit |        | true        | Owning party id         |
-| config_id            | Config Id | configIdEdit      | line_edit |        | true        | Owning CRM topology id  |
-| base_currency_code   | Base      | baseCcyEdit       | line_edit |        | true        | e.g. EUR                |
-| quote_currency_code  | Quote     | quoteCcyEdit      | line_edit |        | true        | e.g. USD                |
-| enabled              | Enabled   | enabledCheckBox   | check_box |        |             |                          |
+| field                | label   | widget          | type      | is_key | is_required | placeholder        | flag_source | combo_fetch          | combo_fetch_include        | combo_allow_blank |
+|----------------------+---------+-----------------+-----------+--------+-------------+---------------------+-------------+----------------------+-----------------------------+--------------------|
+| id                   | Id      | idEdit          | line_edit | true   | true        | CRM driver pair id |             |                      |                             |                    |
+| base_currency_code   | Base    | baseCcyCombo    | flagged_combo |    | true        |                     | currency    | fetch_currency_codes | ores.qt/LookupFetcher.hpp   | false              |
+| quote_currency_code  | Quote   | quoteCcyCombo   | flagged_combo |    | true        |                     | currency    | fetch_currency_codes | ores.qt/LookupFetcher.hpp   | false              |
+| enabled              | Enabled | enabledCheckBox | check_box |        |             |                     |             |                      |                             |                    |
 
 *** Columns (Qt model)
 
 | enum_name          | field                | header       | type      | width | is_badge | badge_key   |
 |--------------------+----------------------+--------------+-----------+-------+----------+-------------|
-| PartyId            | party_id             | Party Id     | uuid      | auto  |          |             |
 | ConfigId           | config_id            | Config Id    | uuid      | auto  |          |             |
 | BaseCurrencyCode   | base_currency_code   | Base         | string    | 80    |          |             |
 | QuoteCurrencyCode  | quote_currency_code  | Quote        | string    | 80    |          |             |
@@ -253,3 +250,14 @@ crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
 | Version             | version              | Version      | int       | 70    |          |             |
 | ModifiedBy          | modified_by          | Modified By  | string    | auto  |          |             |
 | RecordedAt          | recorded_at          | Recorded At  | timestamp | auto  |          |             |
+
+*** Icon columns (Qt model)
+
+Base/quote currencies each get their own flag icon, matching
+CurrencyPair's per-column (not composited) treatment when the pair
+isn't itself the primary key.
+
+| column             | accessor           | field1              | field2 |
+|--------------------+---------------------+----------------------+--------|
+| BaseCurrencyCode   | currency_flag_icon | base_currency_code  |        |
+| QuoteCurrencyCode  | currency_flag_icon | quote_currency_code |        |

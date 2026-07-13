@@ -44,6 +44,7 @@ CrmEnabledDerivedPairController::CrmEnabledDerivedPairController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ImageCache* imageCache,
     ChangeReasonCache* changeReasonCache,
     const QString& username,
     BadgeCache* badgeCache,
@@ -53,6 +54,7 @@ CrmEnabledDerivedPairController::CrmEnabledDerivedPairController(
     , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
+    setImageCache(imageCache);
 
     BOOST_LOG_SEV(lg(), debug) << "CrmEnabledDerivedPairController created";
 }
@@ -67,7 +69,8 @@ void CrmEnabledDerivedPairController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new CrmEnabledDerivedPairMdiWindow(clientManager_, username_, badgeCache_);
+    listWindow_ =
+        new CrmEnabledDerivedPairMdiWindow(clientManager_, username_, badgeCache_, imageCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -171,6 +174,7 @@ void CrmEnabledDerivedPairController::showAddWindow() {
     auto* detailDialog = new CrmEnabledDerivedPairDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -224,6 +228,7 @@ void CrmEnabledDerivedPairController::showDetailWindow(
     auto* detailDialog = new CrmEnabledDerivedPairDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -372,6 +377,7 @@ void CrmEnabledDerivedPairController::onOpenVersion(
     auto* detailDialog = new CrmEnabledDerivedPairDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setPair(pair);
@@ -424,6 +430,7 @@ void CrmEnabledDerivedPairController::onRevertVersion(
     auto* detailDialog = new CrmEnabledDerivedPairDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_pair = pair;

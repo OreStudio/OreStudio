@@ -21,7 +21,9 @@
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/crm_topology_config_protocol.hpp"
 #include <QFutureWatcher>
@@ -38,11 +40,13 @@ using namespace ores::logging;
 CrmTopologyConfigMdiWindow::CrmTopologyConfigMdiWindow(ClientManager* clientManager,
                                                        const QString& username,
                                                        BadgeCache* badgeCache,
+                                                       ImageCache* imageCache,
                                                        QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
     , username_(username)
     , badgeCache_(badgeCache)
+    , imageCache_(imageCache)
     , toolbar_(nullptr)
     , tableView_(nullptr)
     , model_(nullptr)
@@ -117,6 +121,7 @@ void CrmTopologyConfigMdiWindow::setupToolbar() {
 
 void CrmTopologyConfigMdiWindow::setupTable() {
     model_ = new ClientCrmTopologyConfigModel(clientManager_, this);
+    model_->setImageCache(imageCache_);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -128,13 +133,13 @@ void CrmTopologyConfigMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
+    tableView_->setIconSize(single_flag_icon_size());
 
     using cs = column_style;
     auto* delegate = new EntityItemDelegate(
         {
             cs::text_left,
-            cs::text_left,
-            cs::text_left,
+            cs::icon_text_left,
             cs::badge_centered,
             cs::mono_center,
             cs::text_left,
@@ -142,7 +147,7 @@ void CrmTopologyConfigMdiWindow::setupTable() {
         },
         tableView_);
     delegate->set_badge_color_resolver(
-        3, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+        2, [cache = badgeCache_](const QString& value) -> badge_color_pair {
             static const badge_color_pair fallback{color_constants::badge_fallback,
                                                    color_constants::badge_fallback_text};
             if (!cache)

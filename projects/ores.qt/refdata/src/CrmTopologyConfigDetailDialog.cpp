@@ -19,15 +19,19 @@
  */
 #include "ores.qt/CrmTopologyConfigDetailDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/crm_topology_config_protocol.hpp"
 #include "ui_CrmTopologyConfigDetailDialog.h"
+#include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -39,7 +43,9 @@ CrmTopologyConfigDetailDialog::CrmTopologyConfigDetailDialog(QWidget* parent)
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
+    setupCombos();
     setupConnections();
     // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
     // block is expected to construct a HierarchyModelBuilder-derived model
@@ -80,6 +86,8 @@ void CrmTopologyConfigDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
+void CrmTopologyConfigDetailDialog::setupCombos() {}
+
 void CrmTopologyConfigDetailDialog::setupConnections() {
     connect(ui_->saveButton,
             &QPushButton::clicked,
@@ -96,16 +104,12 @@ void CrmTopologyConfigDetailDialog::setupConnections() {
 
     connect(
         ui_->idEdit, &QLineEdit::textChanged, this, &CrmTopologyConfigDetailDialog::onCodeChanged);
-    connect(ui_->partyIdEdit,
-            &QLineEdit::textChanged,
-            this,
-            &CrmTopologyConfigDetailDialog::onFieldChanged);
     connect(ui_->nameEdit,
             &QLineEdit::textChanged,
             this,
             &CrmTopologyConfigDetailDialog::onFieldChanged);
-    connect(ui_->pivotCcyEdit,
-            &QLineEdit::textChanged,
+    connect(ui_->pivotCcyCombo,
+            &QComboBox::currentIndexChanged,
             this,
             &CrmTopologyConfigDetailDialog::onFieldChanged);
     connect(ui_->enabledCheckBox,
@@ -116,6 +120,13 @@ void CrmTopologyConfigDetailDialog::setupConnections() {
 
 void CrmTopologyConfigDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populatePivotCurrencyCodeCombo();
+}
+
+void CrmTopologyConfigDetailDialog::populatePivotCurrencyCodeCombo() {
+    setup_currency_combo(ui_->pivotCcyCombo, this, clientManager_, imageCache(), [this]() {
+        return QString::fromStdString(config_.pivot_currency_code);
+    });
 }
 
 void CrmTopologyConfigDetailDialog::setUsername(const std::string& username) {
@@ -147,18 +158,20 @@ void CrmTopologyConfigDetailDialog::markDirty() {
 void CrmTopologyConfigDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->idEdit->setReadOnly(true);
-    ui_->partyIdEdit->setReadOnly(readOnly);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->pivotCcyEdit->setReadOnly(readOnly);
+    ui_->pivotCcyCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void CrmTopologyConfigDetailDialog::updateUiFromConfig() {
     ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(config_.id)));
-    ui_->partyIdEdit->setText(QString::fromStdString(boost::uuids::to_string(config_.party_id)));
     ui_->nameEdit->setText(QString::fromStdString(config_.name));
-    ui_->pivotCcyEdit->setText(QString::fromStdString(config_.pivot_currency_code));
+    {
+        const auto val = QString::fromStdString(config_.pivot_currency_code);
+        const int idx = ui_->pivotCcyCombo->findText(val);
+        ui_->pivotCcyCombo->setCurrentIndex(idx);
+    }
     ui_->enabledCheckBox->setChecked(config_.enabled);
 
     populateProvenance(config_.version,
@@ -174,7 +187,7 @@ void CrmTopologyConfigDetailDialog::updateUiFromConfig() {
 
 void CrmTopologyConfigDetailDialog::updateConfigFromUi() {
     config_.name = ui_->nameEdit->text().trimmed().toStdString();
-    config_.pivot_currency_code = ui_->pivotCcyEdit->text().trimmed().toStdString();
+    config_.pivot_currency_code = ui_->pivotCcyCombo->currentText().toStdString();
     config_.enabled = ui_->enabledCheckBox->isChecked();
     config_.modified_by = username_;
 }
@@ -196,12 +209,10 @@ void CrmTopologyConfigDetailDialog::updateSaveButtonState() {
 
 bool CrmTopologyConfigDetailDialog::validateInput() {
     const QString id_val = ui_->idEdit->text().trimmed();
-    const QString party_id_val = ui_->partyIdEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
-    const QString pivot_currency_code_val = ui_->pivotCcyEdit->text().trimmed();
+    const bool pivot_currency_code_selected = ui_->pivotCcyCombo->currentIndex() >= 0;
 
-    return true && !id_val.isEmpty() && !party_id_val.isEmpty() && !name_val.isEmpty() &&
-           !pivot_currency_code_val.isEmpty();
+    return true && !id_val.isEmpty() && !name_val.isEmpty() && pivot_currency_code_selected;
 }
 
 void CrmTopologyConfigDetailDialog::onSaveClicked() {

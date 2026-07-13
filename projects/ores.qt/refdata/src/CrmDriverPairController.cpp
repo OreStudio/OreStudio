@@ -43,6 +43,7 @@ constexpr std::string_view pair_event_name =
 CrmDriverPairController::CrmDriverPairController(QMainWindow* mainWindow,
                                                  QMdiArea* mdiArea,
                                                  ClientManager* clientManager,
+                                                 ImageCache* imageCache,
                                                  ChangeReasonCache* changeReasonCache,
                                                  const QString& username,
                                                  BadgeCache* badgeCache,
@@ -52,6 +53,7 @@ CrmDriverPairController::CrmDriverPairController(QMainWindow* mainWindow,
     , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
+    setImageCache(imageCache);
 
     BOOST_LOG_SEV(lg(), debug) << "CrmDriverPairController created";
 }
@@ -66,7 +68,7 @@ void CrmDriverPairController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new CrmDriverPairMdiWindow(clientManager_, username_, badgeCache_);
+    listWindow_ = new CrmDriverPairMdiWindow(clientManager_, username_, badgeCache_, imageCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -168,6 +170,7 @@ void CrmDriverPairController::showAddWindow() {
     auto* detailDialog = new CrmDriverPairDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -219,6 +222,7 @@ void CrmDriverPairController::showDetailWindow(const refdata::domain::crm_driver
     auto* detailDialog = new CrmDriverPairDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -363,6 +367,7 @@ void CrmDriverPairController::onOpenVersion(const refdata::domain::crm_driver_pa
     auto* detailDialog = new CrmDriverPairDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setPair(pair);
@@ -414,6 +419,7 @@ void CrmDriverPairController::onRevertVersion(const refdata::domain::crm_driver_
     auto* detailDialog = new CrmDriverPairDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     auto reverted_pair = pair;

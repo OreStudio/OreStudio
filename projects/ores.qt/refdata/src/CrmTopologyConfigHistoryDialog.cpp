@@ -110,10 +110,6 @@ HistoryDialogBase::DiffResult CrmTopologyConfigHistoryDialog::calculateDiffAt(in
         diffs.append({tr("Id"),
                       {QString::fromStdString(boost::uuids::to_string(prev.id)),
                        QString::fromStdString(boost::uuids::to_string(curr.id))}});
-    if (curr.party_id != prev.party_id)
-        diffs.append({tr("Party Id"),
-                      {QString::fromStdString(boost::uuids::to_string(prev.party_id)),
-                       QString::fromStdString(boost::uuids::to_string(curr.party_id))}});
     checkString(diffs, tr("Name"), curr.name, prev.name);
     checkString(diffs, tr("Pivot Currency"), curr.pivot_currency_code, prev.pivot_currency_code);
     checkBool(diffs, tr("Enabled"), curr.enabled, prev.enabled);
@@ -127,7 +123,6 @@ void CrmTopologyConfigHistoryDialog::displayFullDetails(int index) {
     const auto& version = versions_[index];
 
     ui_->idValue->setText(QString::fromStdString(boost::uuids::to_string(version.id)));
-    ui_->partyIdValue->setText(QString::fromStdString(boost::uuids::to_string(version.party_id)));
     ui_->nameValue->setText(QString::fromStdString(version.name));
     ui_->pivotCcyValue->setText(QString::fromStdString(version.pivot_currency_code));
     ui_->enabledCheckBox->setText(version.enabled ? tr("true") : tr("false"));

@@ -33,6 +33,7 @@
 namespace ores::qt {
 
 class BadgeCache;
+class ImageCache;
 
 /**
  * @brief MDI window for displaying and managing CRM topology configs.
@@ -56,6 +57,7 @@ public:
     explicit CrmTopologyConfigMdiWindow(ClientManager* clientManager,
                                         const QString& username,
                                         BadgeCache* badgeCache,
+                                        ImageCache* imageCache,
                                         QWidget* parent = nullptr);
     ~CrmTopologyConfigMdiWindow() override = default;
 
@@ -103,6 +105,7 @@ private:
     ClientManager* clientManager_;
     QString username_;
     BadgeCache* badgeCache_;
+    ImageCache* imageCache_;
 
     QToolBar* toolbar_;
     QTableView* tableView_;

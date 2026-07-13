@@ -53,16 +53,7 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column {
-        PartyId,
-        Name,
-        PivotCurrencyCode,
-        Enabled,
-        Version,
-        ModifiedBy,
-        RecordedAt,
-        ColumnCount
-    };
+    enum Column { Name, PivotCurrencyCode, Enabled, Version, ModifiedBy, RecordedAt, ColumnCount };
 
     explicit ClientCrmTopologyConfigModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientCrmTopologyConfigModel() override = default;
@@ -74,6 +65,15 @@ public:
     QVariant
     headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
+protected:
+    /** @brief Columns whose Qt::DecorationRole shows an icon (flag, etc.). */
+    std::vector<int> iconColumns() const override {
+        return {
+            Column::PivotCurrencyCode,
+        };
+    }
+
+public:
     /**
      * @brief Refresh CRM topology config data from server asynchronously.
      */

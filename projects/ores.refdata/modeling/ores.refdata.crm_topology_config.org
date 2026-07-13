@@ -220,22 +220,30 @@ crm_topology_config_repository::read_latest_all_tenants(context ctx) {
 
 *** Detail fields
 
-| field                | label           | widget        | type      | is_key | is_required | placeholder            |
-|----------------------+-----------------+---------------+-----------+--------+-------------+-------------------------|
-| id                   | Id              | idEdit        | line_edit | true   | true        | CRM topology config id |
-| party_id             | Party Id        | partyIdEdit   | line_edit |        | true        | Owning party id         |
-| name                 | Name            | nameEdit      | line_edit |        | true        | e.g. primary            |
-| pivot_currency_code  | Pivot Currency  | pivotCcyEdit  | line_edit |        | true        | e.g. USD                |
-| enabled              | Enabled         | enabledCheckBox | check_box |      |             |                         |
+| field                | label           | widget          | type      | is_key | is_required | placeholder  | flag_source | combo_fetch          | combo_fetch_include        | combo_allow_blank |
+|----------------------+-----------------+-----------------+-----------+--------+-------------+--------------+-------------+----------------------+-----------------------------+--------------------|
+| id                   | Id              | idEdit          | line_edit | true   | true        | CRM topology config id |  |                      |                             |                    |
+| name                 | Name            | nameEdit        | line_edit |        | true        | e.g. primary |             |                      |                             |                    |
+| pivot_currency_code  | Pivot Currency  | pivotCcyCombo   | flagged_combo |    | true        |              | currency    | fetch_currency_codes | ores.qt/LookupFetcher.hpp   | false              |
+| enabled              | Enabled         | enabledCheckBox | check_box |        |             |              |             |                      |                             |                    |
 
 *** Columns (Qt model)
 
 | enum_name          | field                | header          | type      | width | is_badge | badge_key   |
 |--------------------+----------------------+-----------------+-----------+-------+----------+-------------|
-| PartyId            | party_id             | Party Id        | uuid      | auto  |          |             |
 | Name                | name                 | Name            | string    | auto  |          |             |
 | PivotCurrencyCode  | pivot_currency_code  | Pivot Currency  | string    | 100   |          |             |
 | Enabled             | enabled              | Enabled         | bool      | 80    | true     | crm_enabled |
 | Version             | version              | Version         | int       | 70    |          |             |
 | ModifiedBy          | modified_by          | Modified By     | string    | auto  |          |             |
 | RecordedAt          | recorded_at          | Recorded At     | timestamp | auto  |          |             |
+
+*** Icon columns (Qt model)
+
+Pivot currency gets its own flag icon, same as any other
+single-currency cell (e.g. Book's LedgerCcy) -- no compositing
+needed since it's a single column.
+
+| column             | accessor           | field1               | field2 |
+|--------------------+---------------------+-----------------------+--------|
+| PivotCurrencyCode  | currency_flag_icon | pivot_currency_code  |        |

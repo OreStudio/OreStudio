@@ -125,7 +125,11 @@ void render_history_diff(std::ostream& out,
             if (entry == target->changes.entries.end()) {
                 out << " " << f.name << ": " << f.value << "\n";
             } else {
-                out << "-" << entry->field_name << ": " << entry->old_value << "\n";
+                const auto in_predecessor =
+                    std::any_of(prev_it->fields.begin(), prev_it->fields.end(),
+                               [&](const auto& pf) { return pf.name == f.name; });
+                if (in_predecessor)
+                    out << "-" << entry->field_name << ": " << entry->old_value << "\n";
                 out << "+" << entry->field_name << ": " << entry->new_value << "\n";
             }
         }

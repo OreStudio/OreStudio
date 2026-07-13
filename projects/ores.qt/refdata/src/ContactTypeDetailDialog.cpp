@@ -25,7 +25,6 @@
 #include "ui_ContactTypeDetailDialog.h"
 #include <QFutureWatcher>
 #include <QMessageBox>
-#include <QPlainTextEdit>
 #include <QtConcurrent>
 
 namespace ores::qt {
@@ -40,6 +39,11 @@ ContactTypeDetailDialog::ContactTypeDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 ContactTypeDetailDialog::~ContactTypeDetailDialog() {
@@ -56,6 +60,10 @@ QWidget* ContactTypeDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* ContactTypeDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString ContactTypeDetailDialog::code() const {
+    return QString::fromStdString(type_.code);
 }
 
 void ContactTypeDetailDialog::setupUi() {
@@ -80,7 +88,7 @@ void ContactTypeDetailDialog::setupConnections() {
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &ContactTypeDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &ContactTypeDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit,
-            &QPlainTextEdit::textChanged,
+            &QLineEdit::textChanged,
             this,
             &ContactTypeDetailDialog::onFieldChanged);
 }
@@ -107,6 +115,11 @@ void ContactTypeDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
+void ContactTypeDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void ContactTypeDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
@@ -119,7 +132,8 @@ void ContactTypeDetailDialog::setReadOnly(bool readOnly) {
 void ContactTypeDetailDialog::updateUiFromType() {
     ui_->codeEdit->setText(QString::fromStdString(type_.code));
     ui_->nameEdit->setText(QString::fromStdString(type_.name));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(type_.description));
+    ui_->descriptionEdit->setText(QString::fromStdString(type_.description));
+    ui_->displayOrderEdit->setValue(type_.display_order);
 
     populateProvenance(type_.version,
                        type_.modified_by,
@@ -127,6 +141,7 @@ void ContactTypeDetailDialog::updateUiFromType() {
                        type_.recorded_at,
                        type_.change_reason_code,
                        type_.change_commentary);
+
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -136,9 +151,9 @@ void ContactTypeDetailDialog::updateTypeFromUi() {
         type_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
     type_.name = ui_->nameEdit->text().trimmed().toStdString();
-    type_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    type_.description = ui_->descriptionEdit->text().trimmed().toStdString();
+    type_.display_order = ui_->displayOrderEdit->value();
     type_.modified_by = username_;
-    type_.performed_by = username_;
 }
 
 void ContactTypeDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -160,7 +175,7 @@ bool ContactTypeDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return !code_val.isEmpty() && !name_val.isEmpty();
+    return true && !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void ContactTypeDetailDialog::onSaveClicked() {
@@ -175,7 +190,6 @@ void ContactTypeDetailDialog::onSaveClicked() {
         return;
     }
 
-    updateTypeFromUi();
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -184,6 +198,8 @@ void ContactTypeDetailDialog::onSaveClicked() {
         return;
     type_.change_reason_code = crSel->reason_code;
     type_.change_commentary = crSel->commentary;
+
+    updateTypeFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving contact type: " << type_.code;
 
@@ -207,7 +223,6 @@ void ContactTypeDetailDialog::onSaveClicked() {
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
-
 
         return {response_result->success, response_result->message};
     };
@@ -255,7 +270,7 @@ void ContactTypeDetailDialog::onDeleteClicked() {
     }
 
     const auto crSel =
-        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -274,14 +289,13 @@ void ContactTypeDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_contact_type_request request;
-        request.type = code;
+        request.codes = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
-
 
         return {response_result->success, response_result->message};
     };
@@ -307,5 +321,6 @@ void ContactTypeDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

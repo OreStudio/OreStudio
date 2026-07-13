@@ -18,12 +18,15 @@
  *
  */
 #include "ores.qt/ContactTypeController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ContactTypeDetailDialog.hpp"
 #include "ores.qt/ContactTypeHistoryDialog.hpp"
 #include "ores.qt/ContactTypeMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/eventing/contact_type_changed_event.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -32,13 +35,18 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view type_event_name =
+    eventing::domain::event_traits<refdata::eventing::contact_type_changed_event>::name;
+}
+
 ContactTypeController::ContactTypeController(QMainWindow* mainWindow,
                                              QMdiArea* mdiArea,
                                              ClientManager* clientManager,
                                              ChangeReasonCache* changeReasonCache,
                                              const QString& username,
                                              QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
     , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
@@ -95,6 +103,8 @@ void ContactTypeController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -142,6 +152,7 @@ void ContactTypeController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new contact type requested";
     showAddWindow();
 }
+
 
 void ContactTypeController::onShowHistory(const refdata::domain::contact_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
@@ -246,6 +257,7 @@ void ContactTypeController::showDetailWindow(const refdata::domain::contact_type
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<ContactTypeController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -307,10 +319,12 @@ void ContactTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Contact Type History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<ContactTypeController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -393,8 +407,11 @@ void ContactTypeController::onRevertVersion(const refdata::domain::contact_type&
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setType(type);
+    auto reverted_type = type;
+    reverted_type.version = 0;
+    detailDialog->setType(reverted_type);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog,
             &ContactTypeDetailDialog::statusMessage,
@@ -432,6 +449,28 @@ void ContactTypeController::onRevertVersion(const refdata::domain::contact_type&
 
 EntityListMdiWindow* ContactTypeController::listWindow() const {
     return listWindow_;
+}
+
+void ContactTypeController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

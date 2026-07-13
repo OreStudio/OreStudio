@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: EC281267-A651-4995-B2F8-AF0023E1923A
+:END:
+#+title: Document Contact/Contact Information with contact_type as a subsection
+#+description: Write the Contact/Contact Information manual chapter with contact_type folded in as its valid-values subsection, per the aux-type documentation convention.
+#+type: capture
+#+level: cross
+#+filetags: :manual:refdata:contact_type:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Write the user-manual chapter for Contact / Contact Information (party
+and counterparty contact records), following the thesis structure used
+by other entity chapters. Fold =contact_type= in as that chapter's
+"valid values" subsection — code/name/description/display_order,
+listed and screenshotted from Reference Data > Organisation Codes >
+Contact Types — rather than giving =contact_type= a standalone
+chapter of its own.
+
+* Why
+
+Discovered while commissioning [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][contact_type]]:
+=contact_type= is an auxiliary/lookup type, and the
+[[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] is explicit that aux types don't
+get their own manual chapter — they get a subsection in the manual
+chapter of the primary entity that consumes them. That consuming
+entity is Contact / Contact Information, which has no manual chapter
+of its own yet. Writing a standalone =contact_type= chapter would have
+documented the lookup without the thing it looks up into.
+
+* References
+
+-
+
+* See also
+
+- [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] — the story where this was found.
+- [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] — the convention this follows.

@@ -333,6 +333,84 @@ def _terminate(name, pid_file, grace) -> str:
     return "stopped"
 
 
+def _find_orphans(ctx):
+    """Scan the OS process table for anything belonging to this environment
+    that outlived `cmd_stop` — e.g. a domain service the controller failed
+    to cascade-kill (controller died before reaching stop_all(), or a
+    prior session's process was never tracked by a PID file at all).
+
+    Matches conservatively, scoped to *this* environment only, so a
+    sibling worktree's fleet (different --nats-subject-prefix / NATS
+    config) is never touched:
+      - nats-server: command line contains this environment's NATS config
+        path (ctx.nats_config).
+      - every other service: carries this environment's
+        --nats-subject-prefix (unique per checkout by construction — it
+        embeds ORES_CHECKOUT_LABEL). Matched on the prefix alone, not on
+        bin_dir: `ps` reports processes by the relative argv0 they were
+        launched with (`./ores.foo.service`, since _launch() sets
+        cwd=bin_dir), so bin_dir never actually appears in the command
+        line — matching on it silently matches nothing. The Qt client is
+        excluded — its lifecycle is managed by `compass client stop`,
+        not `services stop`.
+
+    Returns a list of (pid, cmdline) tuples.
+    """
+    try:
+        out = subprocess.run(["ps", "-eo", "pid,args"],
+                             capture_output=True, text=True, check=True)
+    except (OSError, subprocess.CalledProcessError):
+        return []
+
+    nats_marker = str(ctx.nats_config)
+    prefix_marker = f"--nats-subject-prefix {ctx.nats_prefix}"
+    orphans = []
+    for line in out.stdout.splitlines()[1:]:
+        line = line.strip()
+        if not line:
+            continue
+        pid_str, _, cmd = line.partition(" ")
+        try:
+            pid = int(pid_str)
+        except ValueError:
+            continue
+        if not _pid_alive(pid):
+            continue
+        is_nats = "nats-server" in cmd and nats_marker in cmd
+        is_service = prefix_marker in cmd and "ores.qt" not in cmd.split()[0]
+        if is_nats or is_service:
+            orphans.append((pid, cmd))
+    return orphans
+
+
+def _verify_no_orphans(ctx):
+    """Run after cmd_stop's own termination sequence: catch anything that
+    outlived it (controller-cascade failures, or processes that were never
+    tracked by a PID file). SIGKILLs whatever it finds and reports it —
+    there is no graceful path left to offer something `cmd_stop` already
+    gave two SIGTERM rounds to reach."""
+    orphans = _find_orphans(ctx)
+    if not orphans:
+        return 0
+    print(f"\n⚠ WARNING: {len(orphans)} stray process(es) survived stop — "
+          f"this means the controller failed to cascade-stop one or more "
+          f"children (or a process from an earlier session was never "
+          f"tracked by a PID file at all). Killing them now, but this is a "
+          f"symptom worth investigating, not a routine cleanup:")
+    for pid, cmd in orphans:
+        binary = cmd.split()[0].split("/")[-1]
+        try:
+            os.kill(pid, signal.SIGKILL)
+            print(f"  ⚠ killed  {binary:<38} PID {pid} (orphaned — untracked, "
+                  f"or the controller failed to stop it)")
+        except OSError as e:
+            print(f"  ⚠ warn    {binary:<38} PID {pid}: could not kill ({e})")
+    print("⚠ If this recurs, check ores.controller.service's own logs from "
+          "the prior session for why stop_all() did not run or did not "
+          "finish.")
+    return len(orphans)
+
+
 def cmd_stop(ctx, args):
     print(f"Stopping ORE Studio services ({ctx.preset})\n")
     stopped = gone = 0
@@ -359,10 +437,13 @@ def cmd_stop(ctx, args):
     print("[NATS server]")
     _term("nats-server", ctx.nats_pid_file, 10)
 
-    if stopped + gone == 0:
+    orphan_count = _verify_no_orphans(ctx)
+
+    if stopped + gone == 0 and orphan_count == 0:
         print(f"No services found for preset '{ctx.preset}'.")
         return 0
-    print(f"Stopped  : {stopped} service(s), {gone} already gone.")
+    print(f"Stopped  : {stopped} service(s), {gone} already gone"
+          f"{f', {orphan_count} orphan(s) killed' if orphan_count else ''}.")
     return 0
 
 

@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: E1F9C83E-645D-4CFC-B1C9-656651C55BCD
+:END:
+#+title: Story: Commission: contact_type
+#+description: Bring contact_type's codegen model up to the latest meta-model and regenerate every layer from it (never hand-patch generated output), then verify the regenerated Qt UI end-to-end post-NATS and add the manual chapter.
+#+type: story
+#+level: s2
+#+filetags: :product:refdata:commissioning:contact_type:sprint_23:v0:
+#+created: 2026-05-29
+#+updated: 2026-07-13
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=ores.refdata.contact_type.org= (the codegen model) predates several
+conventions the current templates assume — confirmed by
+=compass codegen entity generate <id> --address ores.cpp.qt --diff=
+showing every Qt output file as entirely new relative to what's
+committed, and by the committed =ContactTypeController.cpp= passing
+an empty event name where current-template output passes
+=eventing::domain::event_traits<...changed_event>::name=. The
+committed C++ is drifted, hand-adjusted output, not a faithful
+regeneration of the current model.
+
+The objective of this story is to fix that at the source, not patch
+the symptom:
+
+1. Update =ores.refdata.contact_type.org= against the
+   [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] and the
+   [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] — bring every section and
+   property in line with a currently-correct sibling model (e.g.
+   =business_day_convention_type= or =day_count_fraction_type=),
+   including the variability knobs each facet reads (=has_uuid_primary_key=,
+   =has_change_reason_cache=, =has_history=, =has_pagination=,
+   =delete_request_id_is_plural=, =icon=, and any others the current
+   meta-model defines) — enable the ones that should be on, not just
+   the ones already set.
+2. Regenerate every facet the model drives (SQL, domain, repository,
+   service, protocol, NATS handler/registrar/eventing, generator, Qt)
+   via =compass codegen entity generate=.
+3. Review the diff for every changed file before accepting it — this
+   is where drift like the stale event name gets caught and where any
+   genuinely custom behaviour (if any exists) would need to be ported
+   forward, not silently dropped.
+4. Only once the regenerated output builds clean, do a full manual Qt
+   UI test end-to-end post-NATS (list, detail, history, delete,
+   eventing with a second client) and fix anything the test still
+   finds. File backlog captures for shell, CLI, Wt, and HTTP support.
+
+*Manual documentation is deferred, not done here*: =contact_type= is
+an auxiliary/lookup type (code/name/description/display_order), and
+the [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] is explicit that aux types
+don't get their own manual chapter — they get a subsection in the
+manual chapter of the primary entity that consumes them. That
+consuming entity (Contact / Contact Information) has no manual chapter
+of its own yet, so writing a standalone =contact_type= chapter here
+would have documented the lookup without the thing it looks up into.
+Deferred to a backlog capture instead of written out of order.
+
+*Hand-patching generated C++ is not an acceptable substitute for any
+of the above.* Earlier in this story's own work, =ContactTypeController.cpp='s
+constructor was patched directly to fix its missing event-name wiring
+instead of fixing the model and regenerating — that patch has since
+been reverted; this Goal exists precisely to prevent a repeat.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                               |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-07-13                               |
+
+* Acceptance
+
+- =ores.refdata.contact_type.org= reviewed against the Domain entity
+  evaluation checklist and a currently-correct sibling model; every
+  variability knob its facets read is explicitly set (not left to an
+  implicit/absent default) and each choice is deliberate.
+- Every facet the model drives (SQL, domain, repository, service,
+  protocol, NATS handler/registrar/eventing, generator, Qt) has been
+  regenerated via =compass codegen entity generate=, and the diff for
+  every changed file has been reviewed — no unreviewed regeneration.
+- No hand-patch to any file =compass codegen entity generate=
+  produces; if a genuine deviation from generated behaviour is
+  needed, it's expressed as a model property/paste-block, not a
+  post-generation edit.
+- Regenerated output builds clean.
+- Qt list window (MDI): loads and displays records correctly.
+- Qt detail window: edit and save round-trips without error.
+- Qt history window: shows change history for the entity.
+- Qt delete command: removes the record; history is preserved.
+- Qt eventing: a change made in one connected session appears in a second session without manual refresh.
+- Manual: deferred — contact_type is an aux type and documents as a
+  subsection of the (not-yet-written) Contact / Contact Information
+  chapter, per the Domain entity evaluation checklist; tracked via a
+  backlog capture rather than written here.
+- Backlog captures filed for shell, CLI, Wt, and HTTP support.
+- All regressions found are fixed by correcting the model and regenerating, not by hand-patching output.
+- Site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BD717BF3-DFD6-41C6-9A88-90B0470A37A7][Update contact_type codegen model and regenerate all layers]] | DONE | 2026-07-13 | 2026-07-13 | Bring ores.refdata.contact_type.org up to the latest meta-model (checklist review, variability knobs), regenerate every facet via compass codegen entity generate, and review every diff before accepting. |
+| [[id:3EDC9F9F-65AF-4B2E-B09D-BA63769C30DE][Verify contact_type Qt UI end-to-end post-NATS]] | DONE | 2026-07-13 | 2026-07-13 | List window, detail dialog, history dialog, delete, and eventing against live services, using the regenerated output from the model-update task; fix anything still found by correcting the model and regenerating. |
+| [[id:D3BEE5AE-2F56-43AC-A36D-03C5B7919D26][Write contact_type manual chapter and file shell/CLI/Wt/HTTP backlog captures]] | ABANDONED | 2026-07-13 | 2026-07-13 | Manual-chapter half abandoned: contact_type is an aux type and doesn't get a standalone chapter per the Domain entity evaluation checklist. See split-off tasks below. |
+| [[id:2AFB3102-B9AB-452C-AEF5-7EFECA039BA0][File shell/CLI/Wt/HTTP backlog captures for contact_type]] | DONE | 2026-07-13 | 2026-07-13 | Split off from the task above; files backlog captures for the missing shell, CLI, Wt, and HTTP layers. |

@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 3EDC9F9F-65AF-4B2E-B09D-BA63769C30DE
+:END:
+#+title: Task: Verify contact_type Qt UI end-to-end post-NATS
+#+description: List window, detail dialog, history dialog, delete, and eventing against live services; fix any regressions found.
+#+type: task
+#+level: s1
+#+filetags: :commission-contact-type:sprint_23:v0:
+#+owner: marco
+#+branch: feature/verify-contact-type-qt-ui-post-nats
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Verify contact_type's Qt UI end-to-end against live services (post-NATS
+migration): list window, detail dialog, history dialog, delete, and
+cross-client eventing. Fix any regressions found inline; file backlog
+captures for anything out of scope.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:E6E785F9-B8C9-4E51-9AC7-F7C9D3C570EA][Verify contact_type CRUD and eventing]] | PASSED | Two-client (blue/red) CRUD + eventing scenario; all 11 steps passed on the third run, against the regenerated entity and a deduplicated service fleet. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All 11 scenario steps passed on the third manual QA run — list, create,
+read, update, delete, history, and cross-client eventing (create/
+update/delete all landing live in a second instance without a manual
+reload).
+
+The first two runs surfaced real infrastructure bugs, not code
+defects in the regenerated entity: (1) a stale build/link — the
+=ContactTypeController= constructor never ran because the running
+=ores.qt.refdata.so= was linked before the source changes were in
+place; a clean rebuild fixed it — and (2), found while re-diagnosing
+after the clean rebuild, every service in the =prime_origin= fleet had
+an orphaned duplicate process left over from an earlier
+=compass services stop= that killed only the top-level controller and
+not the child services it had spawned. Old and new instances of every
+service were bound to the same NATS queue groups, so requests
+routed unpredictably between them — explaining both the missing menu
+action/constructor log and a third symptom found along the way: a
+=refdata.v1.countries.publish-from-dq= provisioning request that
+completed its DB work but never replied, hanging the GLEIF tenant
+workflow at the same step on every attempt. Killed all orphaned PIDs,
+verified 1:1 process-to-service parity via =pgrep=, recreated the DB,
+reprovisioned Barclays Plc cleanly, and the retest passed.
+
+Filed a capture for the orphaned-process bug in =compass services
+stop= — see backlog.

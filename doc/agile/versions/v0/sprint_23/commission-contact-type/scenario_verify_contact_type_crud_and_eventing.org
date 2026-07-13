@@ -1,0 +1,237 @@
+:PROPERTIES:
+:ID: E6E785F9-B8C9-4E51-9AC7-F7C9D3C570EA
+:END:
+#+title: Test Scenario: Verify contact_type CRUD and eventing
+#+description: Manual verification of contact_type's Qt UI post-NATS: create/read/update/delete/history in the Qt UI, and cross-client eventing via the LISTEN/NOTIFY-to-NATS relay.
+#+type: test_scenario
+#+level: s1
+#+filetags: :commission-contact-type:sprint_23:v0:
+#+target_dialog: ContactTypeDetailDialog / ContactTypeHistoryDialog — Menu: *Reference Data > Organisation Codes > Contact Types*
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment: prime_origin
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:3EDC9F9F-65AF-4B2E-B09D-BA63769C30DE][Verify contact_type Qt UI end-to-end post-NATS]] in [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:3EDC9F9F-65AF-4B2E-B09D-BA63769C30DE][Verify contact_type Qt UI end-to-end post-NATS]] |
+| Parent story  | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]]   |
+| Target dialog | =ContactTypeDetailDialog= / =ContactTypeHistoryDialog= — Menu: *Reference Data > Organisation Codes > Contact Types* |
+| Clients       | blue, red                               |
+| State         | PENDING                                 |
+
+* Steps
+
+Each step is its own heading — the title should be short (it's shown
+as a single list entry in the QA Validation Runner); put any longer
+instructions in the body below the title. The panel writes each
+step's PASS/FAIL/PENDING outcome and notes back as a =*** Result=
+child heading directly under it.
+
+** blue
+
+*** Connect and log in
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= (from
+=projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
+— the exact credentials this scenario's provisioning step used). Select
+the *Barclays Plc* / *BARCLAYS PLC* party. If the database has been
+recreated since provisioning, re-run:
+
+#+begin_src sh
+./compass.sh shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+#+end_src
+
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Open the Contact Types list
+
+Menu: *Reference Data > Organisation Codes > Contact Types*. Confirm
+the list loads with the seeded rows (Legal, Operations, Settlement,
+Billing), and that all columns (including Modified By / Recorded At)
+render values, not just headers.
+
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Create
+
+Click *Add*. Enter code =TestContact=, name =Test Contact Type=,
+description =Scenario test row=, display order =99=. Save. Confirm
+the new row appears in the list with the values just entered.
+
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Read
+
+Double-click the =TestContact= row to reopen its detail dialog. Confirm
+every field round-trips exactly as saved (code, name, description,
+display order).
+
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Update
+
+Edit the =TestContact= row's description to =Scenario test row
+(updated)= and save. Confirm the list refreshes with the new
+description without a manual reload, and that a change-reason prompt
+was shown and recorded.
+
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Delete
+
+Select the =TestContact= row and click *Delete*, confirming the
+prompt. Confirm the row disappears from the list.
+
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** History
+
+Reopen the =TestContact= row via History (not the main list, since its
+current version is deleted) and open the History dialog. Confirm all
+three prior operations — create, update, delete — are listed in order
+with the change reasons entered above.
+
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** red
+
+*** Connect as a second instance
+
+Log in with the same credentials as the =blue= instance
+(=tenant_admin@barclays_plc= / =Secure-Password-123=) and open the
+Contact Types list here too, *before* the =blue= instance performs its
+Create step above.
+
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Confirm the create event arrives
+
+After =blue='s Create step, confirm the =TestContact= row appears in
+this =red= instance's list *without a manual reload* — this exercises
+the Postgres LISTEN/NOTIFY-to-NATS relay end to end.
+
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Confirm the update and delete events arrive
+
+After =blue='s Update step, confirm the description change lands here
+automatically. After =blue='s Delete step, confirm the row disappears
+here automatically too.
+
+
+
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-13T10:50:40Z |
+| Branch        | feature/verify-contact-type-qt-ui-post-nats |
+| Commit        | 456b512df |
+| Worktree      | prime_origin |
+
+* Notes
+
+Earlier run (2026-07-13, commit 69ea5f7be) found no eventing on Create
+and stale reads on the list until reload. Root cause: the committed
+=ContactTypeController.cpp= and other Qt files were drifted, hand-adjusted
+output that predated the current codegen templates (never regenerated),
+and the entity had no NATS event registrar wired at all. Rather than
+hand-patch the symptom, =ores.refdata.contact_type.org= was brought up
+to the latest meta-model and every facet regenerated (including moving
+contact_type's Qt ownership from =ores.qt.party= to =ores.qt.refdata=,
+matching its domain component) — see [[id:BD717BF3-DFD6-41C6-9A88-90B0470A37A7][Update contact_type codegen model
+and regenerate all layers]]. Second run (commit 456b512df) still found
+=ContactTypeController= missing from the "Organisation Codes" menu and
+its "created" log line entirely absent. Root cause turned out to be
+deeper than a stale link: every single service in the =prime_origin=
+fleet had an orphaned duplicate process left over from an earlier
+=compass services stop= that only killed the top-level controller,
+not the child services it had spawned — including a stale
+=ores.refdata.service= and stale =ores.compute.wrapper= processes
+predating the clean rebuild. Both the old and new processes were
+bound to the same NATS queue groups, so requests routed
+unpredictably to whichever answered first: this explains the missing
+menu action, the missing constructor log line, and a third symptom
+found along the way (a =refdata.v1.countries.publish-from-dq=
+provisioning request that completed its DB work but never sent a
+reply, hanging the GLEIF tenant-provisioning workflow at the same
+step on every attempt). Killed all orphaned PIDs, verified 1:1
+process-to-service parity via =pgrep=, recreated the DB, and
+reprovisioned — this third run passed cleanly end to end.

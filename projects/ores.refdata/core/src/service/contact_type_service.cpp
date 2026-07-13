@@ -19,6 +19,7 @@
  */
 #include "ores.refdata.core/service/contact_type_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -30,50 +31,60 @@ using namespace ores::logging;
 contact_type_service::contact_type_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::contact_type> contact_type_service::list_types() {
+std::vector<domain::contact_type> contact_type_service::list_types(std::uint32_t offset,
+                                                                   std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all contact types";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::optional<domain::contact_type> contact_type_service::find_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding contact type: " << code;
+std::uint32_t contact_type_service::count_types() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total contact types count";
+    return repo_.get_total_type_count(ctx_);
+}
+
+std::optional<domain::contact_type>
+contact_type_service::get_type_at_version(const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting contact type at version: " << code
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, code, version);
+}
+
+std::optional<domain::contact_type> contact_type_service::get_type(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting contact type: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) {
+    if (results.empty())
         return std::nullopt;
-    }
     return results.front();
 }
 
-void contact_type_service::save_type(const domain::contact_type& type) {
-    if (type.code.empty()) {
-        throw std::invalid_argument("Contact type code cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving contact type: " << type.code;
-    auto t = type;
+void contact_type_service::save_type(const domain::contact_type& v) {
+    if (v.code.empty())
+        throw std::invalid_argument("Contact Type code cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving contact type: " << v.code;
+    auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved contact type: " << type.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved contact type: " << v.code;
 }
 
 void contact_type_service::save_types(const std::vector<domain::contact_type>& types) {
-    for (const auto& t : types) {
-        if (t.code.empty())
-            throw std::invalid_argument("Contact type code cannot be empty.");
-    }
+    for (const auto& e : types)
+        if (e.code.empty())
+            throw std::invalid_argument("Contact Type code cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " contact types";
-    auto stamped = types;
-    for (auto& t : stamped)
-        stamp(t, ctx_);
-    repo_.write(ctx_, stamped);
+    auto ts = types;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
-void contact_type_service::remove_type(const std::string& code) {
+void contact_type_service::delete_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing contact type: " << code;
     repo_.remove(ctx_, code);
     BOOST_LOG_SEV(lg(), info) << "Removed contact type: " << code;
 }
 
-void contact_type_service::remove_types(const std::vector<std::string>& codes) {
+void contact_type_service::delete_types(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 

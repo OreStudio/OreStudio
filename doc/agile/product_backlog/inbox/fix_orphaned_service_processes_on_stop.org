@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 970F6D6C-703E-4E4D-9231-3E5A2EAAE5CF
+:END:
+#+title: Fix orphaned child service processes after compass services stop
+#+description: compass services stop only reliably kills the top-level controller and nats-server; child services it spawned can survive as orphans, competing with freshly-started replacements on the same NATS queue groups.
+#+type: capture
+#+level: cross
+#+filetags: :compass:devops:reliability:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+*Partially resolved (2026-07-13)*: =compass services stop= now calls
+=_verify_no_orphans()= after its own SIGTERM/SIGKILL sequence, scanning
+=ps -eo pid,args= for any process still carrying this environment's
+=--nats-subject-prefix= (or, for =nats-server=, its NATS config path)
+that survived — killing it and printing a =⚠ WARNING= naming the PIDs
+and prompting the user to check the controller's prior-session logs.
+Validated live: a hard =kill -9= on just the controller (bypassing its
+graceful child-cascade) left 23 orphaned children; a subsequent
+=compass services stop= detected and killed all 23, with zero false
+positives against the running Qt client (excluded by design — its
+lifecycle is =compass client stop=, not =services stop=) or a sibling
+worktree's fleet (scoped by the per-checkout NATS subject prefix). The
+=compass services status= half of the ask — detecting and warning
+about duplicate PIDs for a running service, not just after a =stop= —
+is *not yet done*; status still reports whichever PID happens to be in
+the tracked PID file, so a duplication that occurs without an
+intervening =stop= (e.g. two =start= races) would still go unnoticed
+until the next stop.
+
+* What
+
+=compass services stop= only kills the top-level =ores.controller.service=
+and =nats-server=; it does not reliably kill the individual child
+services (=ores.refdata.service=, =ores.compute.wrapper.{0..4}=, and
+every other fleet member) that the controller spawns. Fix: =compass
+services stop= should track and kill every child PID it spawned (or
+query the OS for all processes matching the service's binary path +
+environment before declaring stop complete, not just the controller's
+own PID file), and =compass services status= should detect and warn
+when more than one process matches a given service for the current
+environment, rather than only reporting whichever PID happens to be
+in the tracked PID file.
+
+* Why
+
+Discovered while diagnosing an intermittent, hard-to-reproduce failure
+during [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]]'s manual QA: every service in the
+=prime_origin= fleet had an orphaned duplicate process left over from
+an earlier =compass services stop=, still bound to the same NATS
+queue groups as the freshly-started replacements. Requests routed
+unpredictably between the old and new instances — symptoms included a
+stale Qt controller that silently never constructed (menu action
+present but its handler was a no-op) and a provisioning workflow
+request that completed its DB write but never sent a NATS reply,
+hanging the caller for a full 300s timeout on every retry. The root
+cause was invisible from =compass services status=, which only ever
+reported one PID per service (the newest), masking the duplication
+entirely — the only way to find it was manually cross-checking
+=pgrep -af prime_origin= process counts against the reported service
+list.
+
+* References
+
+-
+
+* See also
+
+- [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] — the story where this was found.

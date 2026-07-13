@@ -29,7 +29,6 @@ namespace ores::qt {
 
 class PartyStatusController;
 class PartyIdSchemeController;
-class ContactTypeController;
 class PartyController;
 class CounterpartyController;
 class BusinessCentreController;
@@ -75,7 +74,6 @@ private:
 
     std::unique_ptr<PartyStatusController> partyStatusController_;
     std::unique_ptr<PartyIdSchemeController> partyIdSchemeController_;
-    std::unique_ptr<ContactTypeController> contactTypeController_;
     std::unique_ptr<PartyController> partyController_;
     std::unique_ptr<CounterpartyController> counterpartyController_;
     std::unique_ptr<BusinessCentreController> businessCentreController_;

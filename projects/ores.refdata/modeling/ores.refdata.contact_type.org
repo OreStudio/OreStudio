@@ -14,7 +14,7 @@
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-07-13
 
 Reference data table defining valid contact type classifications.
 Examples: 'Legal', 'Operations', 'Settlement', 'Billing'.
@@ -42,10 +42,13 @@ Examples: 'Legal', 'Operations', 'Settlement'.
 
 * Natural keys
 
+* Columns
+
 ** name
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:nullable: false
 :END:
 
 Human-readable name for the contact type.
@@ -53,8 +56,6 @@ Human-readable name for the contact type.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Contact"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -135,7 +136,6 @@ drop function if exists ores_refdata_validate_contact_type_fn;
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions
@@ -156,29 +156,43 @@ drop function if exists ores_refdata_validate_contact_type_fn;
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.refdata/domain/contact_type.hpp
-:domain_class:           refdata::domain::contact_type
-:protocol_include:       ores.refdata/messaging/contact_type_protocol.hpp
-:collection_name:        types
-:item_var:               type
-:key_field:              code
-:has_uuid_primary_key:   false
-:get_request_class:      refdata::messaging::get_contact_types_request
-:get_response_class:     refdata::messaging::get_contact_types_response
-:get_message_type:       get_contact_types_request
-:save_request_class:     refdata::messaging::save_contact_type_request
-:save_response_class:    refdata::messaging::save_contact_type_response
-:save_message_type:      save_contact_type_request
-:delete_request_class:   refdata::messaging::delete_contact_type_request
-:delete_response_class:  refdata::messaging::delete_contact_type_response
-:delete_message_type:    delete_contact_type_request
-:history_request_class:  refdata::messaging::get_contact_type_history_request
-:history_response_class: refdata::messaging::get_contact_type_history_response
-:history_message_type:   get_contact_type_history_request
-:settings_group:         ContactTypeListWindow
-:window_title:           Contact Types
-:icon:                   PersonAccounts
+:domain_include:              ores.refdata.api/domain/contact_type.hpp
+:domain_class:                refdata::domain::contact_type
+:protocol_include:            ores.refdata.api/messaging/contact_type_protocol.hpp
+:collection_name:             types
+:item_var:                    type
+:key_field:                   code
+:has_uuid_primary_key:        false
+:has_change_reason_cache:     true
+:get_request_class:           refdata::messaging::get_contact_types_request
+:get_response_class:          refdata::messaging::get_contact_types_response
+:get_message_type:            get_contact_types_request
+:save_request_class:          refdata::messaging::save_contact_type_request
+:save_response_class:         refdata::messaging::save_contact_type_response
+:save_message_type:           save_contact_type_request
+:delete_request_class:        refdata::messaging::delete_contact_type_request
+:delete_response_class:       refdata::messaging::delete_contact_type_response
+:delete_message_type:         delete_contact_type_request
+:delete_request_id_field:     codes
+:delete_request_id_is_plural: true
+:history_request_class:       refdata::messaging::get_contact_type_history_request
+:history_response_class:      refdata::messaging::get_contact_type_history_response
+:history_message_type:        get_contact_type_history_request
+:history_request_id_field:    code
+:history_response_data_field: history
+:settings_group:              ContactTypeListWindow
+:window_title:                Contact Types
+:icon:                        PersonAccounts
 :END:
+
+*** Detail fields
+
+| field         | label         | widget            | type      | is_key | is_required | placeholder                 |
+|---------------+---------------+-------------------+-----------+--------+-------------+------------------------------|
+| code          | Code          | codeEdit          | line_edit | true   | true        | e.g. Legal                  |
+| name          | Name          | nameEdit          | line_edit |        | true        | e.g. Legal Contact            |
+| description   | Description   | descriptionEdit   | line_edit |        |             | Short description            |
+| display_order | Display Order | displayOrderEdit  | spin_box  |        |             |                              |
 
 *** Columns (Qt model)
 

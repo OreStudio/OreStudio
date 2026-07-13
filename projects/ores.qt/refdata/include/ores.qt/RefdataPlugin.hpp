@@ -45,6 +45,7 @@ class ChangeReasonController;
 class CodingSchemeAuthorityTypeController;
 class CodeDomainController;
 class CodingSchemeController;
+class ContactTypeController;
 class DatasetController;
 class DayCountFractionTypeController;
 class BusinessDayConventionTypeController;
@@ -133,6 +134,7 @@ private:
     std::unique_ptr<CodingSchemeAuthorityTypeController> codingSchemeAuthorityTypeController_;
     std::unique_ptr<CodeDomainController> codeDomainController_;
     std::unique_ptr<CodingSchemeController> codingSchemeController_;
+    std::unique_ptr<ContactTypeController> contactTypeController_;
     std::unique_ptr<DatasetController> datasetController_;
     std::unique_ptr<DayCountFractionTypeController> dayCountFractionTypeController_;
     std::unique_ptr<BusinessDayConventionTypeController> businessDayConventionTypeController_;

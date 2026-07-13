@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 42D6D197-573C-4E5C-87C7-2DA38EB3D18B
+:END:
+#+title: Add CLI commands for contact_type
+#+description: contact_type has no CLI commands; add them once the CLI-entity codegen gap is resolved.
+#+type: capture
+#+level: cross
+#+filetags: :cli:refdata:contact_type:codegen-gap:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add CLI commands for =contact_type= (list, get, create, update,
+delete, history) once the CLI-entity codegen profile
+([[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]]'s gap protocol, "❌ GAP" row
+for the CLI layer) exists. Do not hand-code the layer ahead of the
+profile — raise/complete the codegen-profile story first, then
+regenerate.
+
+* Why
+
+=contact_type= was fully commissioned end-to-end for SQL, domain,
+repository, service, protocol, NATS, and Qt during
+[[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]], but CLI support remains a codegen gap
+shared by every entity, not specific to =contact_type= — tracked here
+so the entity isn't forgotten once the CLI-entity profile lands.
+
+* References
+
+-
+
+* See also
+
+- [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] — the story where this gap was noted.
+- [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — the gap protocol this follows.

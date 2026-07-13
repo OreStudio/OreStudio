@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 2AFB3102-B9AB-452C-AEF5-7EFECA039BA0
+:END:
+#+title: Task: File shell/CLI/Wt/HTTP backlog captures for contact_type
+#+description: File backlog captures for the missing shell, CLI, Wt, and HTTP layers for contact_type.
+#+type: task
+#+level: s1
+#+filetags: :commission-contact-type:sprint_23:v0:
+#+owner: marco
+#+branch: feature/verify-contact-type-qt-ui-post-nats
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Split off from [[id:D3BEE5AE-2F56-43AC-A36D-03C5B7919D26][Write contact_type manual chapter and file shell/CLI/Wt/HTTP backlog captures]]
+once that task's manual-chapter half was abandoned. File backlog
+captures for the layers =contact_type= does not have yet: shell REPL
+commands, CLI commands, Wt web UI, and HTTP REST endpoints — matching
+the gap protocol in [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] (these are
+codegen gaps, not per-entity hand-coding, so the captures request the
+codegen profile, not a one-off implementation).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- Backlog captures filed for shell, CLI, Wt, and HTTP support for =contact_type=.
+- Each capture id-links back to this task and to the [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Filed four backlog captures, one per missing layer, each id-linking
+back to this task and to the [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] story:
+
+- [[id:9ACB4713-5F34-4246-802A-ED2237203082][Add shell REPL commands for contact_type]]
+- [[id:42D6D197-573C-4E5C-87C7-2DA38EB3D18B][Add CLI commands for contact_type]]
+- [[id:1F93E675-79F8-47C5-B9B7-40F7F0994F29][Add Wt web UI support for contact_type]]
+- [[id:0E639C17-61C9-49C8-BE79-EE1A66E56EED][Add HTTP REST endpoints for contact_type]]
+
+All four are codegen gaps per the
+[[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]]'s gap protocol — they wait
+on their respective layer's codegen profile, not on any
+=contact_type=-specific work.

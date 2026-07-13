@@ -17,34 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_CLIENT_PARTY_MODEL_HPP
-#define ORES_QT_CLIENT_PARTY_MODEL_HPP
+#ifndef ORES_QT_CLIENT_BUSINESS_CENTRE_MODEL_HPP
+#define ORES_QT_CLIENT_BUSINESS_CENTRE_MODEL_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.refdata.api/domain/party.hpp"
-#include <QAbstractTableModel>
+#include "ores.refdata.api/domain/business_centre.hpp"
 #include <QFutureWatcher>
-#include <unordered_map>
 #include <vector>
 
 namespace ores::qt {
 
 /**
- * @brief Model for displaying parties fetched from the server.
+ * @brief Model for displaying business centres fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches party
+ * This model extends AbstractClientModel and fetches business centre
  * data asynchronously using the ores.comms client.
  */
-class ClientPartyModel final : public AbstractClientModel {
+class ClientBusinessCentreModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.client_party_model";
+    inline static std::string_view logger_name = "ores.qt.client_business_centre_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -57,24 +54,20 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
-        BusinessCenterCode,
-        ShortCode,
-        Codename,
-        FullName,
-        TransliteratedName,
-        PartyCategory,
-        PartyType,
-        Status,
+        Code,
+        Source,
+        Description,
+        CityName,
+        CodingSchemeCode,
+        CountryAlpha2Code,
         Version,
         ModifiedBy,
         RecordedAt,
         ColumnCount
     };
 
-    explicit ClientPartyModel(ClientManager* clientManager,
-                              ImageCache* imageCache,
-                              QObject* parent = nullptr);
-    ~ClientPartyModel() override = default;
+    explicit ClientBusinessCentreModel(ClientManager* clientManager, QObject* parent = nullptr);
+    ~ClientBusinessCentreModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -84,27 +77,23 @@ public:
     headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
-     * @brief Refresh party data from server asynchronously.
-     *
-     * @param replace If true, replace existing data; if false, append.
+     * @brief Refresh business centre data from server asynchronously.
      */
-    void refresh(bool replace = true);
+    void refresh();
 
     /**
-     * @brief Load a specific page of party data.
-     *
-     * @param offset Number of records to skip
-     * @param limit Number of records to fetch
-     */
-    void load_page(std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Get party at the specified row.
+     * @brief Get business centre at the specified row.
      *
      * @param row The row index.
-     * @return The party, or nullptr if row is invalid.
+     * @return The business centre, or nullptr if row is invalid.
      */
-    const refdata::domain::party* getParty(int row) const;
+    const refdata::domain::business_centre* getCentre(int row) const;
+
+
+    /**
+     * @brief Load a specific page of data.
+     */
+    void load_page(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Get the page size used for pagination.
@@ -115,8 +104,6 @@ public:
 
     /**
      * @brief Set the page size for pagination.
-     *
-     * @param size The number of records to fetch per page (1-1000).
      */
     void set_page_size(std::uint32_t size);
 
@@ -127,17 +114,8 @@ public:
         return total_available_count_;
     }
 
-signals:
-    /**
-     * @brief Emitted when data has been successfully loaded.
-     */
-
-    /**
-     * @brief Emitted when an error occurs during data loading.
-     */
-
 private slots:
-    void onPartysLoaded();
+    void onCentresLoaded();
     void onPulseStateChanged(bool isOn);
     void onPulsingComplete();
 
@@ -146,28 +124,24 @@ private:
 
     struct FetchResult {
         bool success;
-        std::vector<refdata::domain::party> parties;
+        std::vector<refdata::domain::business_centre> business_centres;
         std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
     };
 
-    void fetch_parties(std::uint32_t offset, std::uint32_t limit);
-    void fetch_business_centres();
+    void fetch_business_centres(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
-    std::vector<refdata::domain::party> parties_;
+    std::vector<refdata::domain::business_centre> business_centres_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    using PartyKeyExtractor = std::string (*)(const refdata::domain::party&);
-    RecencyTracker<refdata::domain::party, PartyKeyExtractor> recencyTracker_;
+    using BusinessCentreKeyExtractor = std::string (*)(const refdata::domain::business_centre&);
+    RecencyTracker<refdata::domain::business_centre, BusinessCentreKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
-
-    std::unordered_map<std::string, std::string> bc_code_to_country_alpha2_;
 };
 
 }

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_GENERATORS_BUSINESS_CENTRE_GENERATOR_HPP
-#define ORES_REFDATA_CORE_GENERATORS_BUSINESS_CENTRE_GENERATOR_HPP
+#ifndef ORES_REFDATA_API_GENERATORS_BUSINESS_CENTRE_GENERATOR_HPP
+#define ORES_REFDATA_API_GENERATORS_BUSINESS_CENTRE_GENERATOR_HPP
 
 #include "ores.refdata.api/domain/business_centre.hpp"
 #include "ores.refdata.api/export.hpp"
@@ -28,17 +28,16 @@
 namespace ores::refdata::generators {
 
 /**
- * @brief Generates a set of fictional business centres.
- *
- * These are intentionally fictional business centres with made-up FpML-style
- * codes that do not correspond to any real financial centres. Useful for
- * testing and demo purposes where real business centre data should not be used.
- *
- * @param n Number of business centres to generate. If n is 0 or greater than
- *          the available set (20), returns all available fictional centres.
+ * @brief Generates a synthetic business_centre.
+ */
+ORES_REFDATA_API_EXPORT domain::business_centre
+generate_synthetic_business_centre(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic business_centres.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::business_centre>
-generate_fictional_business_centres(std::size_t n, utility::generation::generation_context& ctx);
+generate_synthetic_business_centres(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

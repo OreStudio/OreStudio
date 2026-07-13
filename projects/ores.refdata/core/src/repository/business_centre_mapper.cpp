@@ -20,8 +20,6 @@
 #include "ores.refdata.core/repository/business_centre_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/business_centre_json_io.hpp" // IWYU pragma: keep.
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
@@ -34,17 +32,12 @@ domain::business_centre business_centre_mapper::map(const business_centre_entity
     domain::business_centre r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    BOOST_LOG_SEV(lg(), trace) << "Mapped version: entity.version=" << v.version
-                               << " -> domain.version=" << r.version;
     r.code = v.code.value();
     r.source = v.source.value_or("");
     r.description = v.description.value_or("");
     r.city_name = v.city_name.value_or("");
-    r.coding_scheme_code = v.coding_scheme_code;
     r.country_alpha2_code = v.country_alpha2_code.value_or("");
-    if (v.image_id) {
-        r.image_id = boost::lexical_cast<boost::uuids::uuid>(*v.image_id);
-    }
+    r.coding_scheme_code = v.coding_scheme_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -62,27 +55,16 @@ business_centre_entity business_centre_mapper::map(const domain::business_centre
     r.code = v.code;
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    if (!v.source.empty()) {
-        r.source = v.source;
-    }
-    if (!v.description.empty()) {
-        r.description = v.description;
-    }
-    if (!v.city_name.empty()) {
-        r.city_name = v.city_name;
-    }
+    r.source = v.source.empty() ? std::nullopt : std::optional(v.source);
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.city_name = v.city_name.empty() ? std::nullopt : std::optional(v.city_name);
+    r.country_alpha2_code =
+        v.country_alpha2_code.empty() ? std::nullopt : std::optional(v.country_alpha2_code);
     r.coding_scheme_code = v.coding_scheme_code;
-    if (!v.country_alpha2_code.empty()) {
-        r.country_alpha2_code = v.country_alpha2_code;
-    }
-    if (v.image_id) {
-        r.image_id = boost::uuids::to_string(*v.image_id);
-    }
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

@@ -25,14 +25,19 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::refdata::domain {
 
 /**
- * @brief Represents a business centre using FpML-style codes.
+ * @brief Financial trading location used for holiday calendar determination (FpML-style code).
  *
  * Business centres identify financial trading locations used for holiday
- * calendar determination (e.g., "USNY" for New York, "GBLO" for London).
+ * calendar determination (e.g. "USNY" for New York, "GBLO" for London),
+ * using FpML-style codes. Coding-scheme scoped (a code is only unique
+ * within its scheme, e.g. FpML vs ISDA) and optionally linked to a country
+ * for flag-icon display in the Qt UI. Referenced by business_unit as a
+ * soft FK.
  */
 struct business_centre final {
     /**
@@ -46,12 +51,14 @@ struct business_centre final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief FpML-style business centre code (e.g., "USNY", "GBLO").
+     * @brief FpML-style business centre code.
+     *
+     * Examples: 'USNY' (New York), 'GBLO' (London).
      */
     std::string code;
 
     /**
-     * @brief Data source identifier (e.g., "FpML", "ISDA").
+     * @brief Data source identifier (e.g. "FpML", "ISDA").
      */
     std::string source;
 
@@ -66,24 +73,26 @@ struct business_centre final {
     std::string city_name;
 
     /**
-     * @brief Code of the coding scheme this business centre belongs to.
-     */
-    std::string coding_scheme_code;
-
-    /**
-     * @brief ISO 3166-1 alpha-2 code of the country (e.g., "US", "GB").
+     * @brief ISO 3166-1 alpha-2 code of the country. Soft FK to country.alpha2_code.
      */
     std::string country_alpha2_code;
 
     /**
-     * @brief Optional reference to an image in the images table.
+     * @brief Code of the coding scheme this business centre belongs to (e.g. FpML vs ISDA). Soft FK
+     * to ores_dq_coding_schemes_tbl, validated by
+     * ores_refdata_validate_business_centre_coding_scheme_fn.
      */
-    std::optional<boost::uuids::uuid> image_id;
+    std::string coding_scheme_code;
 
     /**
-     * @brief Username of the person who recorded this version in the system.
+     * @brief Username of the person who last modified this business centre.
      */
     std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
 
     /**
      * @brief Code identifying the reason for the change.
@@ -98,15 +107,20 @@ struct business_centre final {
     std::string change_commentary;
 
     /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded in the system.
+     * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for business_centre, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const business_centre&) {
+    return "ores.refdata.business_centre";
+}
 
 }
 

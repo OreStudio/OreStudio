@@ -31,13 +31,12 @@ class PartyStatusController;
 class PartyIdSchemeController;
 class PartyController;
 class CounterpartyController;
-class BusinessCentreController;
 class BusinessUnitController;
 class BusinessUnitTypeController;
 
 /**
  * @brief Party/organisation plugin: parties, counterparties, business
- *        centres, business units, and related type tables.
+ *        units, and related type tables.
  *
  * Loaded as a shared library by QPluginLoader at application startup.
  * Contributes to the shared Reference Data menu; no standalone menu.
@@ -67,7 +66,6 @@ public:
 private:
     plugin_context ctx_;
 
-    QAction* act_business_centres_{nullptr};
     QAction* act_parties_{nullptr};
     QAction* act_counterparties_{nullptr};
     QAction* act_business_units_{nullptr};
@@ -76,7 +74,6 @@ private:
     std::unique_ptr<PartyIdSchemeController> partyIdSchemeController_;
     std::unique_ptr<PartyController> partyController_;
     std::unique_ptr<CounterpartyController> counterpartyController_;
-    std::unique_ptr<BusinessCentreController> businessCentreController_;
     std::unique_ptr<BusinessUnitController> businessUnitController_;
     std::unique_ptr<BusinessUnitTypeController> businessUnitTypeController_;
 };

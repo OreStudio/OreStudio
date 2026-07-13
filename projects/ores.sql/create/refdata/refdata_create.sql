@@ -53,6 +53,7 @@
 \ir ./refdata_asset_measures_notify_trigger_create.sql
 \ir ./refdata_benchmark_rates_create.sql
 \ir ./refdata_benchmark_rates_notify_trigger_create.sql
+\ir ./refdata_business_centre_functions_create.sql
 \ir ./refdata_business_centres_create.sql
 \ir ./refdata_business_centres_notify_trigger_create.sql
 \ir ./refdata_business_processes_create.sql

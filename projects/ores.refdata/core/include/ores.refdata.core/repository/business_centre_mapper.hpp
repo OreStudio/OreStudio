@@ -28,13 +28,13 @@
 namespace ores::refdata::repository {
 
 /**
- * @brief Maps domain model entities to data storage layer and vice-versa.
+ * @brief Maps business_centre domain entities to data storage layer and vice-versa.
  */
 class ORES_REFDATA_CORE_EXPORT business_centre_mapper {
 private:
     inline static std::string_view logger_name = "ores.refdata.repository.business_centre_mapper";
 
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;

@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,4 +21,5 @@
 drop rule if exists ores_refdata_business_centres_delete_rule on "ores_refdata_business_centres_tbl";
 drop trigger if exists ores_refdata_business_centres_insert_trg on "ores_refdata_business_centres_tbl";
 drop function if exists ores_refdata_business_centres_insert_fn;
+drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 drop table if exists "ores_refdata_business_centres_tbl";

@@ -21,6 +21,7 @@
 #define ORES_REFDATA_API_MESSAGING_BUSINESS_CENTRE_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/business_centre.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -28,20 +29,26 @@ namespace ores::refdata::messaging {
 
 struct get_business_centres_request {
     using response_type = struct get_business_centres_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.business-centres.list";
-    int offset = 0;
-    int limit = 100;
+    static constexpr std::string_view nats_subject = "refdata.v1.business_centres.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_business_centres_response {
-    std::vector<ores::refdata::domain::business_centre> business_centres;
+    std::vector<ores::refdata::domain::business_centre> centres;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_business_centre_request {
     using response_type = struct save_business_centre_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.business-centres.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.business_centres.save";
     ores::refdata::domain::business_centre data;
+
+    static save_business_centre_request from(ores::refdata::domain::business_centre v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_business_centre_response {
@@ -51,7 +58,7 @@ struct save_business_centre_response {
 
 struct delete_business_centre_request {
     using response_type = struct delete_business_centre_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.business-centres.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.business_centres.delete";
     std::vector<std::string> codes;
 };
 
@@ -62,14 +69,14 @@ struct delete_business_centre_response {
 
 struct get_business_centre_history_request {
     using response_type = struct get_business_centre_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.business-centres.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.business_centres.history";
     std::string code;
 };
 
 struct get_business_centre_history_response {
+    std::vector<ores::refdata::domain::business_centre> history;
     bool success = false;
     std::string message;
-    std::vector<ores::refdata::domain::business_centre> history;
 };
 
 }

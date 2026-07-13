@@ -24,11 +24,12 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
-#include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ui_BusinessCentreDetailDialog.h"
+#include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -42,7 +43,13 @@ BusinessCentreDetailDialog::BusinessCentreDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
     setupUi();
+    setupCombos();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
 }
 
 BusinessCentreDetailDialog::~BusinessCentreDetailDialog() {
@@ -52,11 +59,17 @@ BusinessCentreDetailDialog::~BusinessCentreDetailDialog() {
 QTabWidget* BusinessCentreDetailDialog::tabWidget() const {
     return ui_->tabWidget;
 }
+
 QWidget* BusinessCentreDetailDialog::provenanceTab() const {
     return ui_->provenanceTab;
 }
+
 ProvenanceWidget* BusinessCentreDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString BusinessCentreDetailDialog::code() const {
+    return QString::fromStdString(business_centre_.code);
 }
 
 void BusinessCentreDetailDialog::setupUi() {
@@ -70,6 +83,8 @@ void BusinessCentreDetailDialog::setupUi() {
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
+
+void BusinessCentreDetailDialog::setupCombos() {}
 
 void BusinessCentreDetailDialog::setupConnections() {
     connect(
@@ -88,7 +103,11 @@ void BusinessCentreDetailDialog::setupConnections() {
             this,
             &BusinessCentreDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit,
-            &QPlainTextEdit::textChanged,
+            &QLineEdit::textChanged,
+            this,
+            &BusinessCentreDetailDialog::onFieldChanged);
+    connect(ui_->cityNameEdit,
+            &QLineEdit::textChanged,
             this,
             &BusinessCentreDetailDialog::onFieldChanged);
     connect(ui_->codingSchemeEdit,
@@ -96,117 +115,106 @@ void BusinessCentreDetailDialog::setupConnections() {
             this,
             &BusinessCentreDetailDialog::onFieldChanged);
     connect(ui_->countryAlpha2Combo,
-            &QComboBox::currentTextChanged,
+            &QComboBox::currentIndexChanged,
             this,
             &BusinessCentreDetailDialog::onFieldChanged);
 }
 
 void BusinessCentreDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
-    populateCountries();
+    populateCountryAlpha2CodeCombo();
 }
 
-void BusinessCentreDetailDialog::populateCountries() {
+void BusinessCentreDetailDialog::populateCountryAlpha2CodeCombo() {
     if (!clientManager_ || !clientManager_->isConnected())
         return;
 
     QPointer<BusinessCentreDetailDialog> self = this;
-    auto* cm = clientManager_;
-
-    auto task = [cm]() -> std::vector<std::string> {
-        refdata::messaging::get_countries_request request;
-        request.limit = 1000;
-        auto response = cm->process_authenticated_request(std::move(request));
-        if (!response)
-            return {};
-
-        std::vector<std::string> codes;
-        codes.reserve(response->countries.size());
-        for (const auto& country : response->countries) {
-            codes.push_back(country.alpha2_code);
-        }
-        return codes;
-    };
-
     auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
-    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
-        auto codes = watcher->result();
-        watcher->deleteLater();
+    QObject::connect(
+        watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
+            auto codes = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
 
-        if (!self)
-            return;
+            auto* combo = self->ui_->countryAlpha2Combo;
+            const QString previous = combo->currentText();
+            combo->blockSignals(true);
+            combo->clear();
+            combo->addItem(QString());
+            for (const auto& c : codes)
+                combo->addItem(QString::fromStdString(c));
+            // fallback_selection is evaluated here (fetch-completion time), not
+            // at populate-call time, since setCentre() may run before or
+            // after setClientManager() triggers this fetch.
+            const QString fallback =
+                QString::fromStdString(self->business_centre_.country_alpha2_code);
+            const QString to_select = !previous.isEmpty() ? previous : fallback;
+            if (!to_select.isEmpty()) {
+                const int idx = combo->findText(to_select);
+                if (idx >= 0)
+                    combo->setCurrentIndex(idx);
+            }
+            combo->blockSignals(false);
 
-        self->ui_->countryAlpha2Combo->blockSignals(true);
-        self->ui_->countryAlpha2Combo->clear();
-        self->ui_->countryAlpha2Combo->addItem(QString());
-        for (const auto& code : codes) {
-            self->ui_->countryAlpha2Combo->addItem(QString::fromStdString(code));
-        }
-        self->ui_->countryAlpha2Combo->blockSignals(false);
+            if (self->imageCache())
+                apply_flag_icons(
+                    combo, self->imageCache(), FlagSource::Country, single_flag_icon_size());
+        });
 
-        apply_flag_icons(self->ui_->countryAlpha2Combo, self->imageCache_, FlagSource::Country);
-        self->updateUiFromBusinessCentre();
-
-        // Apply the pending country selection now that the combo is populated.
-        if (!self->pending_country_.empty()) {
-            self->ui_->countryAlpha2Combo->setCurrentText(
-                QString::fromStdString(self->pending_country_));
-        }
-    });
-
-    QFuture<std::vector<std::string>> future = QtConcurrent::run(task);
-    watcher->setFuture(future);
-}
-
-void BusinessCentreDetailDialog::setImageCache(ImageCache* imageCache) {
-    imageCache_ = imageCache;
-    setup_flag_combo(this, ui_->countryAlpha2Combo, imageCache_, FlagSource::Country);
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm]() { return fetch_country_codes(cm); }));
 }
 
 void BusinessCentreDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void BusinessCentreDetailDialog::setBusinessCentre(
+void BusinessCentreDetailDialog::setCentre(
     const refdata::domain::business_centre& business_centre) {
     business_centre_ = business_centre;
-    pending_country_ = business_centre.country_alpha2_code;
-    updateUiFromBusinessCentre();
-    // If the combo already has items (populated before this call), apply now.
-    if (ui_->countryAlpha2Combo->count() > 0) {
-        ui_->countryAlpha2Combo->setCurrentText(QString::fromStdString(pending_country_));
-    }
+    updateUiFromCentre();
 }
 
 void BusinessCentreDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
+    ui_->cityNameEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
-
     setProvenanceEnabled(!createMode);
-
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void BusinessCentreDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
 void BusinessCentreDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
-    ui_->cityNameEdit->setReadOnly(true);
     ui_->sourceEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->cityNameEdit->setReadOnly(true);
     ui_->codingSchemeEdit->setReadOnly(readOnly);
     ui_->countryAlpha2Combo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
-void BusinessCentreDetailDialog::updateUiFromBusinessCentre() {
+void BusinessCentreDetailDialog::updateUiFromCentre() {
     ui_->codeEdit->setText(QString::fromStdString(business_centre_.code));
-    ui_->cityNameEdit->setText(QString::fromStdString(business_centre_.city_name));
     ui_->sourceEdit->setText(QString::fromStdString(business_centre_.source));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(business_centre_.description));
+    ui_->descriptionEdit->setText(QString::fromStdString(business_centre_.description));
+    ui_->cityNameEdit->setText(QString::fromStdString(business_centre_.city_name));
     ui_->codingSchemeEdit->setText(QString::fromStdString(business_centre_.coding_scheme_code));
+    {
+        const auto val = QString::fromStdString(business_centre_.country_alpha2_code);
+        const int idx = ui_->countryAlpha2Combo->findText(val);
+        ui_->countryAlpha2Combo->setCurrentIndex(idx);
+    }
 
     populateProvenance(business_centre_.version,
                        business_centre_.modified_by,
@@ -214,21 +222,23 @@ void BusinessCentreDetailDialog::updateUiFromBusinessCentre() {
                        business_centre_.recorded_at,
                        business_centre_.change_reason_code,
                        business_centre_.change_commentary);
+
     hasChanges_ = false;
     updateSaveButtonState();
 }
 
-void BusinessCentreDetailDialog::updateBusinessCentreFromUi() {
+void BusinessCentreDetailDialog::updateCentreFromUi() {
     if (createMode_) {
         business_centre_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
     business_centre_.source = ui_->sourceEdit->text().trimmed().toStdString();
-    business_centre_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    business_centre_.description = ui_->descriptionEdit->text().trimmed().toStdString();
+    if (createMode_) {
+        business_centre_.city_name = ui_->cityNameEdit->text().trimmed().toStdString();
+    }
     business_centre_.coding_scheme_code = ui_->codingSchemeEdit->text().trimmed().toStdString();
-    business_centre_.country_alpha2_code =
-        ui_->countryAlpha2Combo->currentText().trimmed().toStdString();
+    business_centre_.country_alpha2_code = ui_->countryAlpha2Combo->currentText().toStdString();
     business_centre_.modified_by = username_;
-    business_centre_.performed_by = username_;
 }
 
 void BusinessCentreDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -248,7 +258,9 @@ void BusinessCentreDetailDialog::updateSaveButtonState() {
 
 bool BusinessCentreDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
-    return !code_val.isEmpty();
+    const QString coding_scheme_code_val = ui_->codingSchemeEdit->text().trimmed();
+
+    return true && !code_val.isEmpty() && !coding_scheme_code_val.isEmpty();
 }
 
 void BusinessCentreDetailDialog::onSaveClicked() {
@@ -263,7 +275,6 @@ void BusinessCentreDetailDialog::onSaveClicked() {
         return;
     }
 
-    updateBusinessCentreFromUi();
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -272,6 +283,8 @@ void BusinessCentreDetailDialog::onSaveClicked() {
         return;
     business_centre_.change_reason_code = crSel->reason_code;
     business_centre_.change_commentary = crSel->commentary;
+
+    updateCentreFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving business centre: " << business_centre_.code;
 
@@ -282,14 +295,15 @@ void BusinessCentreDetailDialog::onSaveClicked() {
         std::string message;
     };
 
-    auto task = [cm = clientManager_, business_centre = business_centre_]() -> SaveResult {
-        if (!cm) {
+    auto task = [self, business_centre = business_centre_]() -> SaveResult {
+        if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         refdata::messaging::save_business_centre_request request;
         request.data = business_centre;
-        auto response_result = cm->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -304,12 +318,12 @@ void BusinessCentreDetailDialog::onSaveClicked() {
         watcher->deleteLater();
 
         if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Business centre saved successfully";
+            BOOST_LOG_SEV(lg(), info) << "Business Centre saved successfully";
             QString code = QString::fromStdString(self->business_centre_.code);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
-            emit self->businessCentreSaved(code);
-            self->notifySaveSuccess(tr("Business centre '%1' saved").arg(code));
+            emit self->business_centreSaved(code);
+            self->notifySaveSuccess(tr("Business Centre '%1' saved").arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);
@@ -341,7 +355,7 @@ void BusinessCentreDetailDialog::onDeleteClicked() {
     }
 
     const auto crSel =
-        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -354,14 +368,15 @@ void BusinessCentreDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [cm = clientManager_, code_str = business_centre_.code]() -> DeleteResult {
-        if (!cm) {
+    auto task = [self, code = business_centre_.code]() -> DeleteResult {
+        if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         refdata::messaging::delete_business_centre_request request;
-        request.codes.push_back({code_str});
-        auto response_result = cm->process_authenticated_request(std::move(request));
+        request.codes = {code};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -376,9 +391,9 @@ void BusinessCentreDetailDialog::onDeleteClicked() {
         watcher->deleteLater();
 
         if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Business centre deleted successfully";
-            emit self->statusMessage(QString("Business centre '%1' deleted").arg(code));
-            emit self->businessCentreDeleted(code);
+            BOOST_LOG_SEV(lg(), info) << "Business Centre deleted successfully";
+            emit self->statusMessage(QString("Business Centre '%1' deleted").arg(code));
+            emit self->business_centreDeleted(code);
             self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
@@ -391,5 +406,6 @@ void BusinessCentreDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

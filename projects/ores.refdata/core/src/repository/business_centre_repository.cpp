@@ -23,9 +23,7 @@
 #include "ores.refdata.api/domain/business_centre_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/business_centre_entity.hpp"
 #include "ores.refdata.core/repository/business_centre_mapper.hpp"
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -38,29 +36,24 @@ std::string business_centre_repository::sql() {
     return generate_create_table_sql<business_centre_entity>(lg());
 }
 
-void business_centre_repository::write(context ctx, const domain::business_centre& bc) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing business centre to database: " << bc;
-
+void business_centre_repository::write(context ctx, const domain::business_centre& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing business centre: " << v.code;
     execute_write_query(
-        ctx, business_centre_mapper::map(bc), lg(), "Writing business centre to database.");
+        ctx, business_centre_mapper::map(v), lg(), "Writing business centre to database.");
 }
 
-void business_centre_repository::write(context ctx,
-                                       const std::vector<domain::business_centre>& bcs) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing business centres to database. Count: " << bcs.size();
-
+void business_centre_repository::write(context ctx, const std::vector<domain::business_centre>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing business centres. Count: " << v.size();
     execute_write_query(
-        ctx, business_centre_mapper::map(bcs), lg(), "Writing business centres to database.");
+        ctx, business_centre_mapper::map(v), lg(), "Writing business centres to database.");
 }
-
 
 std::vector<domain::business_centre> business_centre_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<business_centre_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc());
-
-    const auto sql = postgres::to_sql(query);
-    BOOST_LOG_SEV(lg(), debug) << "Query: " << sql;
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c);
 
     return execute_read_query<business_centre_entity, domain::business_centre>(
         ctx,
@@ -72,30 +65,78 @@ std::vector<domain::business_centre> business_centre_repository::read_latest(con
 
 std::vector<domain::business_centre>
 business_centre_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest business centres. Code: " << code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<business_centre_entity>> |
-                       where("code"_c == code && "valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest business centre. code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<business_centre_entity>> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<business_centre_entity, domain::business_centre>(
         ctx,
         query,
         [](const auto& entities) { return business_centre_mapper::map(entities); },
         lg(),
-        "Reading latest business centres by code.");
+        "Reading latest business centre by code.");
+}
+
+std::vector<domain::business_centre> business_centre_repository::read_all(context ctx,
+                                                                          const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all business centre versions. code: " << code;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<business_centre_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code) |
+                       order_by("version"_c.desc());
+
+    return execute_read_query<business_centre_entity, domain::business_centre>(
+        ctx,
+        query,
+        [](const auto& entities) { return business_centre_mapper::map(entities); },
+        lg(),
+        "Reading all business centre versions by code.");
+}
+
+std::optional<domain::business_centre> business_centre_repository::read_at_version(
+    context ctx, const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading business centre at version. code: " << code
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<business_centre_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<business_centre_entity, domain::business_centre>(
+        ctx,
+        query,
+        [](const auto& entities) { return business_centre_mapper::map(entities); },
+        lg(),
+        "Reading business centre at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+void business_centre_repository::remove(context ctx, const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing business centre: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<business_centre_entity> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
+
+    execute_delete_query(ctx, query, lg(), "Removing business centre from database.");
 }
 
 std::vector<domain::business_centre>
 business_centre_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business centres with offset: " << offset
                                << " and limit: " << limit;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<business_centre_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<business_centre_entity, domain::business_centre>(
         ctx,
@@ -105,17 +146,18 @@ business_centre_repository::read_latest(context ctx, std::uint32_t offset, std::
         "Reading latest business centres with pagination.");
 }
 
-std::uint32_t business_centre_repository::get_total_business_centre_count(context ctx) {
+std::uint32_t business_centre_repository::get_total_centre_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active business centre count";
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
     };
 
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::select_from<business_centre_entity>(sqlgen::count().as<"count">()) |
-                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -125,76 +167,14 @@ std::uint32_t business_centre_repository::get_total_business_centre_count(contex
     return count;
 }
 
-std::vector<domain::business_centre>
-business_centre_repository::read_at_timepoint(context ctx, const std::string& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading business centres at timepoint: " << as_of;
-
-    const auto ts = make_timestamp(as_of, lg());
-    const auto query = sqlgen::read<std::vector<business_centre_entity>> |
-                       where("valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
-
-    return execute_read_query<business_centre_entity, domain::business_centre>(
-        ctx,
-        query,
-        [](const auto& entities) { return business_centre_mapper::map(entities); },
-        lg(),
-        "Reading business centres at timepoint.");
-}
-
-std::vector<domain::business_centre> business_centre_repository::read_at_timepoint(
-    context ctx, const std::string& as_of, const std::string& code) {
-
-    const auto ts = make_timestamp(as_of, lg());
-    const auto query =
-        sqlgen::read<std::vector<business_centre_entity>> |
-        where("code"_c == code && "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
-
-    return execute_read_query<business_centre_entity, domain::business_centre>(
-        ctx,
-        query,
-        [](const auto& entities) { return business_centre_mapper::map(entities); },
-        lg(),
-        "Reading business centres at timepoint by code.");
-}
-
-std::vector<domain::business_centre> business_centre_repository::read_all(context ctx) {
-    const auto query =
-        sqlgen::read<std::vector<business_centre_entity>> | order_by("valid_from"_c.desc());
-
-    return execute_read_query<business_centre_entity, domain::business_centre>(
-        ctx,
-        query,
-        [](const auto& entities) { return business_centre_mapper::map(entities); },
-        lg(),
-        "Reading all business centres.");
-}
-
-std::vector<domain::business_centre> business_centre_repository::read_all(context ctx,
-                                                                          const std::string& code) {
-    const auto query = sqlgen::read<std::vector<business_centre_entity>> | where("code"_c == code) |
-                       order_by("valid_from"_c.desc());
-
-    return execute_read_query<business_centre_entity, domain::business_centre>(
-        ctx,
-        query,
-        [](const auto& entities) { return business_centre_mapper::map(entities); },
-        lg(),
-        "Reading all business centres by code");
-}
-
-void business_centre_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing business centre from database: " << code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::delete_from<business_centre_entity> |
-                       where("code"_c == code && "valid_to"_c == max.value());
-
-    execute_delete_query(ctx, query, lg(), "Removing business centre from database.");
-}
-
 void business_centre_repository::remove(context ctx, const std::vector<std::string>& codes) {
-    const auto query = sqlgen::delete_from<business_centre_entity> | where("code"_c.in(codes));
-    execute_delete_query(ctx, query, lg(), "batch removing business_centres");
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<business_centre_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing business centres.");
 }
+
 
 }

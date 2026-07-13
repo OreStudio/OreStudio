@@ -23,6 +23,7 @@
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
@@ -42,9 +43,8 @@ struct business_centre_entity {
     std::optional<std::string> source;
     std::optional<std::string> description;
     std::optional<std::string> city_name;
-    std::string coding_scheme_code;
     std::optional<std::string> country_alpha2_code;
-    std::optional<std::string> image_id; // UUID stored as string, converted in mapper
+    std::string coding_scheme_code;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

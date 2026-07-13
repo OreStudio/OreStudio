@@ -18,12 +18,15 @@
  *
  */
 #include "ores.qt/BusinessCentreController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/BusinessCentreDetailDialog.hpp"
 #include "ores.qt/BusinessCentreHistoryDialog.hpp"
 #include "ores.qt/BusinessCentreMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/eventing/business_centre_changed_event.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -32,6 +35,11 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view business_centre_event_name =
+    eventing::domain::event_traits<refdata::eventing::business_centre_changed_event>::name;
+}
+
 BusinessCentreController::BusinessCentreController(QMainWindow* mainWindow,
                                                    QMdiArea* mdiArea,
                                                    ClientManager* clientManager,
@@ -39,11 +47,12 @@ BusinessCentreController::BusinessCentreController(QMainWindow* mainWindow,
                                                    ChangeReasonCache* changeReasonCache,
                                                    const QString& username,
                                                    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
-    , imageCache_(imageCache)
+    : EntityController(
+          mainWindow, mdiArea, clientManager, username, business_centre_event_name, parent)
     , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
+    setImageCache(imageCache);
 
     BOOST_LOG_SEV(lg(), debug) << "BusinessCentreController created";
 }
@@ -58,7 +67,7 @@ void BusinessCentreController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new BusinessCentreMdiWindow(clientManager_, imageCache_, username_);
+    listWindow_ = new BusinessCentreMdiWindow(clientManager_, username_, imageCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -70,7 +79,7 @@ void BusinessCentreController::showListWindow() {
             this,
             &BusinessCentreController::errorMessage);
     connect(listWindow_,
-            &BusinessCentreMdiWindow::showBusinessCentreDetails,
+            &BusinessCentreMdiWindow::showCentreDetails,
             this,
             &BusinessCentreController::onShowDetails);
     connect(listWindow_,
@@ -78,7 +87,7 @@ void BusinessCentreController::showListWindow() {
             this,
             &BusinessCentreController::onAddNewRequested);
     connect(listWindow_,
-            &BusinessCentreMdiWindow::showBusinessCentreHistory,
+            &BusinessCentreMdiWindow::showCentreHistory,
             this,
             &BusinessCentreController::onShowHistory);
 
@@ -97,6 +106,8 @@ void BusinessCentreController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -110,7 +121,7 @@ void BusinessCentreController::showListWindow() {
                 self->listMdiSubWindow_ = nullptr;
             });
 
-    BOOST_LOG_SEV(lg(), debug) << "Business centre list window created";
+    BOOST_LOG_SEV(lg(), debug) << "Business Centre list window created";
 }
 
 void BusinessCentreController::closeAllWindows() {
@@ -146,10 +157,11 @@ void BusinessCentreController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void BusinessCentreController::onShowHistory(
     const refdata::domain::business_centre& business_centre) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << business_centre.code;
-    showHistoryWindow(business_centre);
+    showHistoryWindow(QString::fromStdString(business_centre.code));
 }
 
 void BusinessCentreController::showAddWindow() {
@@ -158,8 +170,8 @@ void BusinessCentreController::showAddWindow() {
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -172,12 +184,12 @@ void BusinessCentreController::showAddWindow() {
             this,
             &BusinessCentreController::errorMessage);
     connect(detailDialog,
-            &BusinessCentreDetailDialog::businessCentreSaved,
+            &BusinessCentreDetailDialog::business_centreSaved,
             this,
             [self = QPointer<BusinessCentreController>(this)](const QString& code) {
                 if (!self)
                     return;
-                BOOST_LOG_SEV(lg(), info) << "Business centre saved: " << code.toStdString();
+                BOOST_LOG_SEV(lg(), info) << "Business Centre saved: " << code.toStdString();
                 self->handleEntitySaved();
             });
 
@@ -210,11 +222,11 @@ void BusinessCentreController::showDetailWindow(
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
-    detailDialog->setBusinessCentre(business_centre);
+    detailDialog->setCentre(business_centre);
 
     connect(detailDialog,
             &BusinessCentreDetailDialog::statusMessage,
@@ -225,21 +237,21 @@ void BusinessCentreController::showDetailWindow(
             this,
             &BusinessCentreController::errorMessage);
     connect(detailDialog,
-            &BusinessCentreDetailDialog::businessCentreSaved,
+            &BusinessCentreDetailDialog::business_centreSaved,
             this,
             [self = QPointer<BusinessCentreController>(this)](const QString& code) {
                 if (!self)
                     return;
-                BOOST_LOG_SEV(lg(), info) << "Business centre saved: " << code.toStdString();
+                BOOST_LOG_SEV(lg(), info) << "Business Centre saved: " << code.toStdString();
                 self->handleEntitySaved();
             });
     connect(detailDialog,
-            &BusinessCentreDetailDialog::businessCentreDeleted,
+            &BusinessCentreDetailDialog::business_centreDeleted,
             this,
             [self = QPointer<BusinessCentreController>(this), key](const QString& code) {
                 if (!self)
                     return;
-                BOOST_LOG_SEV(lg(), info) << "Business centre deleted: " << code.toStdString();
+                BOOST_LOG_SEV(lg(), info) << "Business Centre deleted: " << code.toStdString();
                 self->handleEntityDeleted();
             });
 
@@ -253,6 +265,7 @@ void BusinessCentreController::showDetailWindow(
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<BusinessCentreController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -265,22 +278,19 @@ void BusinessCentreController::showDetailWindow(
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void BusinessCentreController::showHistoryWindow(
-    const refdata::domain::business_centre& business_centre) {
-    const QString code = QString::fromStdString(business_centre.code);
+void BusinessCentreController::showHistoryWindow(const QString& code) {
     BOOST_LOG_SEV(lg(), info) << "Opening history window for business centre: "
-                              << business_centre.code;
+                              << code.toStdString();
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << business_centre.code;
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << business_centre.code;
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new BusinessCentreHistoryDialog(code, clientManager_, mainWindow_);
 
@@ -318,10 +328,12 @@ void BusinessCentreController::showHistoryWindow(
     historyWindow->setWindowTitle(QString("Business Centre History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<BusinessCentreController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -351,10 +363,10 @@ void BusinessCentreController::onOpenVersion(
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setBusinessCentre(business_centre);
+    detailDialog->setCentre(business_centre);
     detailDialog->setReadOnly(true);
 
     connect(detailDialog,
@@ -405,11 +417,14 @@ void BusinessCentreController::onRevertVersion(
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
+    detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setBusinessCentre(business_centre);
+    auto reverted_business_centre = business_centre;
+    reverted_business_centre.version = 0;
+    detailDialog->setCentre(reverted_business_centre);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog,
             &BusinessCentreDetailDialog::statusMessage,
@@ -420,14 +435,14 @@ void BusinessCentreController::onRevertVersion(
             this,
             &BusinessCentreController::errorMessage);
     connect(detailDialog,
-            &BusinessCentreDetailDialog::businessCentreSaved,
+            &BusinessCentreDetailDialog::business_centreSaved,
             this,
             [self = QPointer<BusinessCentreController>(this)](const QString& code) {
                 if (!self)
                     return;
-                BOOST_LOG_SEV(lg(), info) << "Business centre reverted: " << code.toStdString();
+                BOOST_LOG_SEV(lg(), info) << "Business Centre reverted: " << code.toStdString();
                 emit self->statusMessage(
-                    QString("Business centre '%1' reverted successfully").arg(code));
+                    QString("Business Centre '%1' reverted successfully").arg(code));
                 self->handleEntitySaved();
             });
 
@@ -447,6 +462,28 @@ void BusinessCentreController::onRevertVersion(
 
 EntityListMdiWindow* BusinessCentreController::listWindow() const {
     return listWindow_;
+}
+
+void BusinessCentreController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

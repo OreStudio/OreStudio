@@ -24,9 +24,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
-#include <QString>
-#include <memory>
-#include <vector>
 
 namespace Ui {
 class BusinessCentreHistoryDialog;
@@ -59,13 +56,7 @@ public:
     ~BusinessCentreHistoryDialog() override;
 
     void loadHistory() override;
-
-    /**
-     * @brief Returns the identifier of the business centre.
-     */
-    [[nodiscard]] QString code() const override {
-        return code_;
-    }
+    [[nodiscard]] QString code() const override;
 
 signals:
     void openVersionRequested(const refdata::domain::business_centre& business_centre,
@@ -76,13 +67,13 @@ protected:
     [[nodiscard]] int historySize() const override;
     [[nodiscard]] VersionRow versionRow(int index) const override;
     [[nodiscard]] QString historyTitle() const override;
-    [[nodiscard]] DiffResult calculateDiffAt(int current_index, int previous_index) const override;
+    [[nodiscard]] DiffResult calculateDiffAt(int ci, int pi) const override;
     void displayFullDetails(int index) override;
     void openVersionAt(int index) override;
     void revertToVersionAt(int index) override;
 
 private:
-    std::unique_ptr<Ui::BusinessCentreHistoryDialog> ui_;
+    Ui::BusinessCentreHistoryDialog* ui_;
     QString code_;
     ClientManager* clientManager_;
     std::vector<refdata::domain::business_centre> versions_;

@@ -157,7 +157,7 @@ private:
     RecencyTracker<refdata::domain::counterparty, CounterpartyKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 
-    std::unordered_map<std::string, std::string> bc_code_to_image_id_;
+    std::unordered_map<std::string, std::string> bc_code_to_country_alpha2_;
 };
 
 }

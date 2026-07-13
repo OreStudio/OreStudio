@@ -24,7 +24,6 @@
 #include "ores.qt/ClientBusinessCentreModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
 #include <QSortFilterProxyModel>
@@ -32,6 +31,8 @@
 #include <QToolBar>
 
 namespace ores::qt {
+
+class ImageCache;
 
 /**
  * @brief MDI window for displaying and managing business centres.
@@ -53,27 +54,33 @@ private:
 
 public:
     explicit BusinessCentreMdiWindow(ClientManager* clientManager,
-                                     ImageCache* imageCache,
                                      const QString& username,
+                                     ImageCache* imageCache,
                                      QWidget* parent = nullptr);
     ~BusinessCentreMdiWindow() override = default;
-
-public slots:
-    void doReload() override;
 
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showBusinessCentreDetails(const refdata::domain::business_centre& business_centre);
+    void showCentreDetails(const refdata::domain::business_centre& business_centre);
     void addNewRequested();
-    void businessCentreDeleted(const QString& code);
-    void showBusinessCentreHistory(const refdata::domain::business_centre& business_centre);
+    void business_centreDeleted(const QString& code);
+    void showCentreHistory(const refdata::domain::business_centre& business_centre);
+    // Extra signal declarations seam: a future
+    // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
+    // to declare any entity-specific signals (e.g. a cross-navigation
+    // request to a related entity's list window) — see
+    // paste_blocks_in_codegen.org. Left empty when no entity implements
+    // this kind.
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();
@@ -94,14 +101,14 @@ private:
     void updateActionStates();
 
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
     QString username_;
+    ImageCache* imageCache_;
 
     QToolBar* toolbar_;
     QTableView* tableView_;
-    PaginationWidget* pagination_widget_;
     ClientBusinessCentreModel* model_;
     QSortFilterProxyModel* proxyModel_;
+    PaginationWidget* paginationWidget_;
 
     // Toolbar actions
     QAction* reloadAction_;

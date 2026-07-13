@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 32700602-1610-4F40-9914-E704469FDA30
+:ID: B9755647-D29D-4A9A-9FBE-F5DBBB33EDA0
 :END:
-#+title: Task: Verify party Qt UI end-to-end post-NATS
-#+description: Re-verify the party Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that the hierarchy widget blocker is resolved; fix regressions found.
+#+title: Task: Regenerate counterparty under codegen; verify zero-diff regen
+#+description: Regenerate counterparty's SQL/C++/messaging/Qt against the current codegen templates (which have drifted significantly since counterparty was last touched) and diff against the repo; fix templates or repo to eliminate drift before Qt re-verification.
 #+type: task
 #+level: s1
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment: prime_origin
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,9 +28,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Not yet started — waiting on party's codegen regen task landing first. |
-| Waiting on   | [[id:2E46351B-9787-48D1-B4D2-ED407B220904][Bring party under codegen; verify zero-diff regen]]. |
-| Next         | Begin once party is regenerated with zero diff.  |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
 | Last touched | 2026-07-13                               |
 
 * Acceptance

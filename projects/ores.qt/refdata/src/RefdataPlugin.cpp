@@ -663,7 +663,7 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
 
         menuTenors->addSeparator();
 
-        auto* actTenorAnchors = menuTenors->addAction(ico(Icon::Tag), tr("Tenor &Anchors"));
+        auto* actTenorAnchors = menuTenors->addAction(ico(Icon::Anchor), tr("Tenor &Anchors"));
         connect(actTenorAnchors, &QAction::triggered, this, [this]() {
             if (tenorAnchorController_)
                 tenorAnchorController_->showListWindow();

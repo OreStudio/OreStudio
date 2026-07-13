@@ -112,7 +112,7 @@ void TenorConventionMdiWindow::setupToolbar() {
 
     {
         auto* action = toolbar_->addAction(
-            IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor),
+            IconUtils::createRecoloredIcon(Icon::Anchor, IconUtils::DefaultIconColor),
             tr("Anchors"));
         action->setToolTip(tr("Open Tenor Anchors list"));
         connect(action, &QAction::triggered, this, [this]() { emit showAnchorsRequested(); });

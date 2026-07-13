@@ -152,7 +152,7 @@ drop function if exists ores_refdata_validate_tenor_anchor_fn;
 :history_message_type:   get_tenor_anchor_history_request
 :settings_group:         TenorAnchorListWindow
 :window_title:           Tenor Anchors
-:icon:                   Clock
+:icon:                   Anchor
 :END:
 
 *** Detail fields

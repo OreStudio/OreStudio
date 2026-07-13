@@ -93,7 +93,7 @@ void TenorAnchorController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Tenor Anchors");
     listMdiSubWindow_->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::Anchor, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -192,7 +192,7 @@ void TenorAnchorController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Tenor Anchor");
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::Anchor, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -252,7 +252,7 @@ void TenorAnchorController::showDetailWindow(const refdata::domain::tenor_anchor
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Tenor Anchor: %1").arg(identifier));
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::Anchor, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);

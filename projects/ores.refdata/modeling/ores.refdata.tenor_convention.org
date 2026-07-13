@@ -205,7 +205,7 @@ std::string("ANCHOR_OFFSET")
 
 | signal               | icon | label                | tooltip                            |
 |----------------------+------+----------------------+--------------------------------------|
-| Anchors              | Clock | Anchors             | Open Tenor Anchors list             |
+| Anchors              | Anchor | Anchors             | Open Tenor Anchors list             |
 | ResolutionAlgorithms | Tag  | Resolution Algorithms | Open Tenor Resolution Algorithms list |
 
 ** Custom repository methods

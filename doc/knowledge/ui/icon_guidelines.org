@@ -377,6 +377,19 @@ Multiple users, team, user management.
 
 *Usage*: Team views, user management, multi-user contexts.
 
+*** Anchor
+Fixed reference point a value is measured from.
+
+- Fluent Regular: ic_fluent_pin_20_regular.svg
+- Fluent Filled: ic_fluent_pin_20_filled.svg
+- Solar Linear: pin.svg
+- Solar Bold: pin.svg
+
+*Usage*: Tenor Anchor reference data (SPOT, TODAY, TOMORROW, NEAR_LEG,
+IMM_ROLL) and its window/menu/toolbar icon wherever referenced. Neither
+Fluent UI nor Solar has a literal nautical-anchor glyph; Pin conveys the
+same "fixed reference location" concept.
+
 ** Security & Access
 
 Icons for authentication and authorization concepts.
@@ -767,6 +780,7 @@ Text validation, spell check, language processing.
 | User                 | person_20                        | Default | Active |
 | Add User             | person_add_20                    | Default | Active |
 | Team                 | person_accounts_20               | Default | Active |
+| Anchor/Reference Pt  | pin_20                           | Default | Active |
 | Locked               | lock_closed_20                   | Default | Active |
 | Unlocked             | lock_open_20                     | Default | Active |
 | Change Password      | key_multiple_20                  | Default | Active |

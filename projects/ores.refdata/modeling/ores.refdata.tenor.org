@@ -239,7 +239,7 @@ ctx.random_int(1, 30)
 | signal      | icon  | label       | tooltip                      |
 |-------------+-------+-------------+-------------------------------|
 | Conventions | Table | Conventions | Open Tenor Conventions list  |
-| Anchors     | Clock | Anchors     | Open Tenor Anchors list      |
+| Anchors     | Anchor | Anchors     | Open Tenor Anchors list      |
 
 ** Custom repository methods
 

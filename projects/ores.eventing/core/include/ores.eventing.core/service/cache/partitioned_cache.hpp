@@ -94,9 +94,9 @@ public:
         // update()'s callback may be invoked more than once if the
         // compare-and-swap loses a race and retries -- so it must not
         // consume `data` by move (a second invocation would then move
-        // from an already-moved-from value). Capture it by value and
-        // copy into each attempt; immer types make that cheap
-        // (structural sharing), not a deep copy.
+        // from an already-moved-from value). `data` is captured by
+        // reference and .set() copies it fresh on every attempt; immer
+        // types make that cheap (structural sharing), not a deep copy.
         const partition data{std::move(entries), std::move(aux)};
         cache_.update([&](partition_map m) {
             return std::move(m).set(partition_key, data);

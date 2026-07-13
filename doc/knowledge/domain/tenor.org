@@ -152,6 +152,8 @@ curve. A common disambiguation convention appends the roll quarter: e.g.
 - [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — odd tenors and fixed-calendar-time discontinuities.
 - [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]] — the quarterly roll dates behind the CDS tenor convention.
 - [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — how far a curve built from these labels actually extends, by curve type.
+- [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][ores.marketdata.tenor]] — the codegen entity model persisting this document's standard tenor labels.
+- [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][ores.marketdata.tenor_convention]] — the codegen entity model persisting this document's "Tenor conventions by curve type" section.
 
 ** Further reading: external references
 

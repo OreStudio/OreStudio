@@ -69,3 +69,4 @@ Points]]'s entry and display conventions.
 - [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][Horizon Date]] — the anchor every basis (spot, tomorrow, today) is itself a reference point relative to.
 - [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — where non-standard-basis visual flagging also applies, to broken dates specifically.
 - [[id:CE15D83D-6400-4596-8878-3A78D8298A85][Forward Ladder]] — the presentation surface a quoting basis applies to.
+- [[id:3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90][ores.marketdata.tenor_anchor]] — the codegen entity model persisting the =SPOT=/=TODAY=/=TOMORROW= anchors this document's three bases resolve to.

@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90
+:END:
+#+title: ores.marketdata.tenor_anchor
+#+description: Codegen entity model for the marketdata tenor_anchor table; the reference point (spot, today, tomorrow, near leg, IMM roll) a tenor convention resolves its tenors from.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:tenor:
+#+entity_singular: tenor_anchor
+#+entity_plural: tenor_anchors
+#+entity_title: Tenor Anchor
+#+brief: Reference point (spot, today, tomorrow, near leg, IMM roll) a tenor convention resolves tenors from.
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+Small, mostly-static lookup of the reference points a
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] can be resolved from.
+Referenced by =tenor_convention.measured_from= as a convention's default
+anchor, and — for spot/forward-style conventions specifically — by a
+curve or ladder's own quoting-basis override (see
+[[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]]), which is
+out of scope for this model and lives on the curve/ladder entity instead.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique anchor code.
+
+Examples: 'SPOT', 'TODAY', 'TOMORROW', 'NEAR_LEG', 'IMM_ROLL'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_anchor_" + std::to_string(++counter)
+#+end_src
+
+* Natural keys
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Human-readable description of the reference point.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_marketdata_tenor_anchors_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:generator_facet_name: generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: anchor
+:entity_plural_short:   anchors
+:entity_singular_words: tenor anchor
+:entity_plural_words:   tenor anchors
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: a
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.marketdata.api/domain/tenor_anchor.hpp
+:domain_class:           marketdata::domain::tenor_anchor
+:protocol_include:       ores.marketdata.api/messaging/tenor_anchor_protocol.hpp
+:collection_name:        anchors
+:item_var:               anchor
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      marketdata::messaging::get_tenor_anchors_request
+:get_response_class:     marketdata::messaging::get_tenor_anchors_response
+:get_message_type:       get_tenor_anchors_request
+:save_request_class:     marketdata::messaging::save_tenor_anchor_request
+:save_response_class:    marketdata::messaging::save_tenor_anchor_response
+:save_message_type:      save_tenor_anchor_request
+:delete_request_class:   marketdata::messaging::delete_tenor_anchor_request
+:delete_response_class:  marketdata::messaging::delete_tenor_anchor_response
+:delete_message_type:    delete_tenor_anchor_request
+:history_request_class:  marketdata::messaging::get_tenor_anchor_history_request
+:history_response_class: marketdata::messaging::get_tenor_anchor_history_response
+:history_message_type:   get_tenor_anchor_history_request
+:settings_group:         TenorAnchorListWindow
+:window_title:           Tenor Anchors
+:icon:                   Clock
+:END:
+
+*** Columns (Qt model)
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| Code        | code        | Code        | string    | 160   |
+| Description | description | Description | string    | 350   |
+| Version     | version     | Version     | int       | 80    |
+| ModifiedBy  | modified_by | Modified By | string    | 120   |
+| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — domain concept.
+- [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]] — the curve/ladder-level anchor override this table's =SPOT=/=TODAY=/=TOMORROW= rows also serve.

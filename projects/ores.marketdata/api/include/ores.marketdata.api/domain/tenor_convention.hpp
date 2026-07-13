@@ -33,14 +33,21 @@ namespace ores::marketdata::domain {
  * Persisted catalog of the resolution schemes described in
  * [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s "Tenor conventions by
  * curve type" section — spot/forward curves, FX swap curves (near-leg
- * quoting), credit/CDS curves (IMM-anchored), and volatility surfaces
- * (measured from today rather than spot). Each row names the *default*
- * [[id:3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90][tenor anchor]] a convention's
- * regular PERIOD tenors resolve from; which [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
- * labels actually belong to a given convention, and any per-tenor anchor
- * override (needed for SPECIAL tenors such as O/N, which resolve
+ * quoting), and credit/CDS curves (IMM-anchored). Each row names the
+ * *default* [[id:3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90][tenor anchor]] a
+ * convention's regular PERIOD tenors resolve from, and which *algorithm*
+ * governs resolution for the convention at all: ANCHOR_OFFSET (anchor
+ * date plus a fixed offset — spot/forward and FX swap conventions) or
+ * IMM_ROLL (stepping through [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM
+ * Dates]]' quarterly roll schedule — credit/CDS convention; the resolver
+ * for this algorithm is not yet implemented, see the capture referenced in
+ * [[id:E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48][Tenor Convention
+ * Resolution]]). Which [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+ * labels actually belong to a given convention, and any per-tenor anchor or
+ * offset override (needed for SPECIAL tenors such as O/N, which resolve
  * differently under the spot/forward convention than under the swap
- * convention), is recorded in
+ * convention, and for every IMM_ROLL tenor, which has no intrinsic
+ * duration at all), is recorded in
  * [[id:E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48][Tenor Convention Resolution]],
  * not here.
  */
@@ -69,9 +76,17 @@ struct tenor_convention final {
 
     /**
      * @brief Default [[id:3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90][tenor anchor]] code (references
-     * tenor_anchor.code) this convention's regular PERIOD tenors resolve from.
+     * tenor_anchor.code) this convention's regular PERIOD tenors resolve from. Empty for a
+     * convention whose resolution_algorithm does not use a fixed anchor (IMM_ROLL).
      */
     std::string measured_from;
+
+    /**
+     * @brief Which algorithm resolves a tenor under this convention: ANCHOR_OFFSET (anchor date
+     * plus a fixed day/week/month/year offset) or IMM_ROLL (steps through the IMM quarterly roll
+     * schedule instead — see [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]]).
+     */
+    std::string resolution_algorithm;
 
     /**
      * @brief Username of the person who last modified this tenor convention.

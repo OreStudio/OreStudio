@@ -101,6 +101,10 @@ void TenorConventionDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &TenorConventionDetailDialog::onFieldChanged);
+    connect(ui_->resolutionAlgorithmEdit,
+            &QLineEdit::textChanged,
+            this,
+            &TenorConventionDetailDialog::onFieldChanged);
 }
 
 void TenorConventionDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -136,6 +140,7 @@ void TenorConventionDetailDialog::setReadOnly(bool readOnly) {
     ui_->codeEdit->setReadOnly(true);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->measuredFromEdit->setReadOnly(readOnly);
+    ui_->resolutionAlgorithmEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -144,6 +149,7 @@ void TenorConventionDetailDialog::updateUiFromConvention() {
     ui_->codeEdit->setText(QString::fromStdString(convention_.code));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(convention_.description));
     ui_->measuredFromEdit->setText(QString::fromStdString(convention_.measured_from));
+    ui_->resolutionAlgorithmEdit->setText(QString::fromStdString(convention_.resolution_algorithm));
 
     populateProvenance(convention_.version,
                        convention_.modified_by,
@@ -162,6 +168,7 @@ void TenorConventionDetailDialog::updateConventionFromUi() {
     }
     convention_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     convention_.measured_from = ui_->measuredFromEdit->text().trimmed().toStdString();
+    convention_.resolution_algorithm = ui_->resolutionAlgorithmEdit->text().trimmed().toStdString();
     convention_.modified_by = username_;
 }
 
@@ -182,9 +189,9 @@ void TenorConventionDetailDialog::updateSaveButtonState() {
 
 bool TenorConventionDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
-    const QString measured_from_val = ui_->measuredFromEdit->text().trimmed();
+    const QString resolution_algorithm_val = ui_->resolutionAlgorithmEdit->text().trimmed();
 
-    return true && !code_val.isEmpty() && !measured_from_val.isEmpty();
+    return true && !code_val.isEmpty() && !resolution_algorithm_val.isEmpty();
 }
 
 void TenorConventionDetailDialog::onSaveClicked() {

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 4D928BD7-DFEA-4DB2-9B3B-DCA3644DDA98
 :END:
-#+title: Task: DQ dataset for tenor reference data (tenor/tenor_anchor/tenor_convention)
-#+description: Populate script and DQ dataset registration seeding the standard tenor catalog, tenor anchors, and tenor conventions/resolutions, following the sql_dataset_refdata/sql_populate_refdata populate-script skeleton.
+#+title: Task: Foundation-layer population for tenor reference data (tenor/tenor_anchor/tenor_convention)
+#+description: Idempotent populate scripts seeding the standard tenor catalog, tenor anchors, and tenor conventions/resolutions into the Foundation layer (not a DQ Librarian dataset -- see Notes), plus the runtime resolver that reads them.
 #+type: task
 #+level: s1
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
@@ -20,25 +20,26 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Ship idempotent populate scripts seeding ores_marketdata_tenors_tbl, ores_marketdata_tenor_anchors_tbl, ores_marketdata_tenor_conventions_tbl, and ores_marketdata_tenor_convention_resolutions_tbl with the standard tenor set (O/N through 30Y, SPOT, and the special short-end labels) and the spot/forward, FX swap, and credit/CDS conventions, registered as a DQ dataset via ores_dq_datasets_upsert_fn and wired into the appropriate bundle so it is selectable/publishable from the Librarian.
+Ship idempotent populate scripts seeding =ores_marketdata_tenors_tbl=, =ores_marketdata_tenor_anchors_tbl=, =ores_marketdata_tenor_conventions_tbl=, and =ores_marketdata_tenor_convention_resolutions_tbl= with the standard tenor set (O/N through 30Y, SPOT, and the special short-end labels) and the spot/forward and FX swap conventions (credit/CDS seeded as a convention row only, its resolution deferred — see the capture in Notes), plus the runtime resolver (=resolve_end_date=/=resolve_window=/=windows_overlap=) that reads these persisted rows instead of hardcoding tenor knowledge in code.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | Not yet started.                       |
+| Now          | Complete.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                                |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
 
 - Standard tenor rows (per tenor.org's table) and SPOT/TODAY/TOMORROW/NEAR_LEG/IMM_ROLL anchors are seeded
-- Tenor convention rows (spot/forward, FX swap near-leg, credit/CDS IMM) and their tenor_convention_resolution membership/override rows are seeded
-- Dataset registered via ores_dq_datasets_upsert_fn and added to the appropriate existing bundle, not a new standalone one, unless investigation shows otherwise
+- Tenor convention rows (spot/forward, FX swap near-leg, credit/CDS IMM) and the documented tenor_convention_resolution membership/override rows are seeded
+- Seeded via the Foundation layer (universal, always-present reference data — see Notes for why this is not a DQ Librarian dataset), not a new standalone bundle
 - Populate scripts are idempotent and validate_schemas.sh passes
+- A runtime resolver reads the persisted tenor/tenor_convention/tenor_convention_resolution rows to resolve a tenor to a date — no per-label knowledge hardcoded in code
 
 * Plan
 
@@ -46,7 +47,41 @@ Ship idempotent populate scripts seeding ores_marketdata_tenors_tbl, ores_market
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Originally scoped as a DQ Librarian dataset (catalog + dataset +
+artefact table + bundle membership, per the =synthetic.fx_spot_configs=/
+=refdata.currency_pairs= pattern). Investigation of
+=refdata_day_count_fraction_types_populate.sql= showed that pattern is
+for *optional*, party-selectable seed data a user chooses to Apply — not
+what standard tenor labels are. Tenors are universal, always-needed
+reference data, same category as day-count conventions, so this task
+instead seeds directly into the Foundation layer
+(=foundation_populate.sql=), which every new environment gets
+unconditionally with no separate Librarian step.
+
 * Notes
+
+This task also closes the loop flagged while reviewing the salvaged
+=tenor_period= value type (from PR #1522, briefly raised as PR #1535 and
+then closed/folded in here): a standalone runtime type that hardcodes
+tenor-resolution knowledge (e.g. "O/N = 1 day") duplicates, and can
+silently diverge from, what the persisted model is meant to be the
+single source of truth for. The fix was schema, not code: adding
+=tenor_convention.resolution_algorithm= and
+=tenor_convention_resolution.offset_unit=/=offset_multiplier= so a
+=SPECIAL= tenor's convention-specific duration is *data*, not a
+hardcoded switch statement. The runtime resolver
+(=ores.marketdata.api::domain::tenor_resolution.hpp=) is now a pure
+function over those persisted rows, proven by a test that resolves the
+same tenor (=O/N=) to two different dates under two different
+conventions purely because the input rows differ.
+
+=tenor_convention.resolution_algorithm= also anticipates credit/CDS's
+genuinely different IMM-roll-based resolution (=IMM_ROLL=, vs. the
+=ANCHOR_OFFSET= algorithm implemented here) without needing a schema
+change later — see the capture
+[[id:7746D493-C42B-441B-93C9-765A4EC768D6][Implement IMM_ROLL tenor
+resolution for credit/CDS conventions]] for the deferred resolver
+implementation and CDS-specific seed data.
 
 * Test Scenarios
 
@@ -72,3 +107,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped: four Foundation-layer populate scripts (tenor anchors, tenors,
+tenor conventions, tenor convention resolutions) seeding 5 anchors, 37
+tenors, 3 conventions, and 39 resolution rows, verified idempotent
+against a freshly recreated dev DB (re-running produces identical row
+counts). Added the SQL create/drop/RLS-policy wiring codegen doesn't
+generate for a junction entity. Added the runtime resolver
+(=resolve_end_date=/=resolve_window=/=windows_overlap=) as a pure
+function over the persisted rows — 9 test cases / 11 assertions,
+including a test proving the same tenor resolves differently under
+different conventions. Credit/CDS is modeled and its convention row
+seeded, but its =IMM_ROLL= resolution is deferred to a capture, not
+implemented or fabricated here.

@@ -195,55 +195,69 @@
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="versionNumberLabel">
+                <widget class="QLabel" name="resolution_algorithmLabel">
                  <property name="text">
-                  <string>Version:</string>
+                  <string>Resolution Algorithm:</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="QLabel" name="versionNumberValue">
+                <widget class="QLabel" name="resolutionAlgorithmValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="modifiedByLabel">
+                <widget class="QLabel" name="versionNumberLabel">
                  <property name="text">
-                  <string>Modified By:</string>
+                  <string>Version:</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="QLabel" name="modifiedByValue">
+                <widget class="QLabel" name="versionNumberValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="5" column="0">
-                <widget class="QLabel" name="recordedAtLabel">
+                <widget class="QLabel" name="modifiedByLabel">
                  <property name="text">
-                  <string>Recorded At:</string>
+                  <string>Modified By:</string>
                  </property>
                 </widget>
                </item>
                <item row="5" column="1">
-                <widget class="QLabel" name="recordedAtValue">
+                <widget class="QLabel" name="modifiedByValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="6" column="0">
+                <widget class="QLabel" name="recordedAtLabel">
+                 <property name="text">
+                  <string>Recorded At:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="QLabel" name="recordedAtValue">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0">
                 <widget class="QLabel" name="changeCommentaryLabel">
                  <property name="text">
                   <string>Change Commentary:</string>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="1">
+               <item row="7" column="1">
                 <widget class="QLabel" name="changeCommentaryValue">
                  <property name="text">
                   <string/>

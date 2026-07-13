@@ -40,10 +40,10 @@ vol surfaces).
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | First task (tenor type) started; domain-knowledge groundwork done, C++ implementation not yet begun. See task Notes and the * Analysis section below. |
+| Now           | Tenor entity model, runtime resolver, and Foundation-layer seed data shipped; short-rate process and Curve Template config still BACKLOG. See task Notes and the * Analysis section below. |
 | Waiting on    | Nothing — [[https://github.com/OreStudio/OreStudio/pull/1409][PR #1409]] ([[id:F4604E72-EF59-4894-A6D4-A68971C793EB][GMM improvements: tidy up synthetic data generation loose ends]], which added =ou_process= and =ores.synthetic.api::domain::validate_process_parameters()=) merged via =4be33f2b4= prior to this branch's rebase. |
-| Next          | Implement the tenor type in =ores.marketdata= against the new [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] knowledge cluster. |
-| Last touched  | 2026-07-12                               |
+| Next          | Wire the short-rate stochastic process into a Curve Template config, then the tenor-collision validator using the new resolver. |
+| Last touched  | 2026-07-13                               |
 
 * Acceptance
 
@@ -137,7 +137,7 @@ which now require the process to expose =P(t,T)=, not just a path of
 | [[id:E6B7DEF3-F35F-454A-8ECF-CCD9E8E07A83][Tenor-collision/gap validation on the Curve Template]] | BACKLOG | | | Pure, engine-side validator (ores.synthetic.api) rejecting instrument grids where tenors overlap or collide with an active delivery window, using the new tenor type. |
 | [[id:615FD100-BCD9-4CF5-B9DF-197447769AA9][Tick-batch publishing and persistence for curve instruments]] | BACKLOG | | | Each generation step publishes N individual ticks (one per tenor), each its own market_observation row sharing one observation_datetime, point_id set to the tenor label. |
 | [[id:38449685-430E-4AF3-802E-5E02606BF2DA][Term structure/tenor knowledge docs: Pillar, provenance/ladder cleanup]] | DONE | 2026-07-12 | 2026-07-12 | Add a Pillar knowledge doc and rework Curve Point Provenance/Multicurve Management to link rather than duplicate definitions, following Zettelkasten conventions. |
-| [[id:4D928BD7-DFEA-4DB2-9B3B-DCA3644DDA98][DQ dataset for tenor reference data (tenor/tenor_anchor/tenor_convention)]] | BACKLOG | | | Populate script and DQ dataset registration seeding the standard tenor catalog, tenor anchors, and tenor conventions/resolutions, following the sql_dataset_refdata/sql_populate_refdata populate-script skeleton. |
+| [[id:4D928BD7-DFEA-4DB2-9B3B-DCA3644DDA98][Foundation-layer population for tenor reference data (tenor/tenor_anchor/tenor_convention)]] | DONE | 2026-07-13 | 2026-07-13 | Idempotent Foundation-layer populate scripts seeding the standard tenor catalog, tenor anchors, and tenor conventions/resolutions, plus the runtime resolver reading them. |
 
 * Decisions
 
@@ -189,6 +189,31 @@ which now require the process to expose =P(t,T)=, not just a path of
   bootstrapping]] for the reference case study this was checked
   against. Reflected in the short-rate-process and
   curve-template-config tasks' Acceptance.
+- *Resolved (2026-07-13): tenor is a persisted, orderable reference-data
+  entity, not just an in-process value type.* The original tenor-type
+  task's hand-authored value type (=ores.marketdata::domain::tenor=,
+  PR #1522) modeled a tenor as pure parsing logic with no persisted
+  identity — but users need to see, manage, and order the standard tenor
+  set, the same way =day_count_fraction_type= is already a full codegen
+  entity rather than a hardcoded enum. Redesigned as four codegen
+  entities: =tenor= (the label catalog), =tenor_anchor= (SPOT/TODAY/
+  TOMORROW/NEAR_LEG/IMM_ROLL reference points), =tenor_convention= (one
+  row per asset-class resolution scheme, carrying a
+  =resolution_algorithm= so credit/CDS's genuinely different IMM-roll
+  algorithm fits without a future schema change), and
+  =tenor_convention_resolution= (junction recording which tenors belong
+  to which convention, with a per-tenor anchor/offset override for
+  =SPECIAL= tenors like =O/N= whose duration itself varies by
+  convention). A first runtime companion (=tenor_period=, PR #1535)
+  hardcoded that per-label resolution knowledge independently of this
+  model and was closed/folded in once caught — the final runtime
+  resolver is a pure function over the persisted rows instead, proven by
+  a test that resolves the same tenor to different dates under different
+  conventions. Seeded via the Foundation layer (universal reference
+  data, same category as day-count conventions), not the DQ
+  Librarian/bundle pattern (which is for optional, party-selectable seed
+  data). See [[id:4D928BD7-DFEA-4DB2-9B3B-DCA3644DDA98][Foundation-layer
+  population for tenor reference data]] for what shipped.
 
 * Out of scope
 

@@ -165,3 +165,59 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Tenor Anchors (codegen-generated table)
+-- -----------------------------------------------------------------------------
+alter table ores_marketdata_tenor_anchors_tbl enable row level security;
+
+create policy tenor_anchors_tbl_tenant_isolation_policy
+on ores_marketdata_tenor_anchors_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Tenors (codegen-generated table)
+-- -----------------------------------------------------------------------------
+alter table ores_marketdata_tenors_tbl enable row level security;
+
+create policy tenors_tbl_tenant_isolation_policy
+on ores_marketdata_tenors_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Tenor Conventions (codegen-generated table)
+-- -----------------------------------------------------------------------------
+alter table ores_marketdata_tenor_conventions_tbl enable row level security;
+
+create policy tenor_conventions_tbl_tenant_isolation_policy
+on ores_marketdata_tenor_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Tenor Convention Resolutions (codegen-generated junction table)
+-- -----------------------------------------------------------------------------
+alter table ores_marketdata_tenor_convention_resolutions_tbl enable row level security;
+
+create policy tenor_convention_resolutions_tbl_tenant_isolation_policy
+on ores_marketdata_tenor_convention_resolutions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

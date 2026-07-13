@@ -38,3 +38,13 @@
 \ir ./marketdata_fixings_drop.sql
 \ir ./marketdata_observations_drop.sql
 \ir ./marketdata_series_drop.sql
+
+-- Tenor reference data: resolution junction before conventions/tenors it
+-- references; tenors and conventions before anchors.
+\ir ./marketdata_tenor_convention_resolution_drop.sql
+\ir ./marketdata_tenor_conventions_notify_trigger_drop.sql
+\ir ./marketdata_tenor_conventions_drop.sql
+\ir ./marketdata_tenors_notify_trigger_drop.sql
+\ir ./marketdata_tenors_drop.sql
+\ir ./marketdata_tenor_anchors_notify_trigger_drop.sql
+\ir ./marketdata_tenor_anchors_drop.sql

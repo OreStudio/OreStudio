@@ -34,7 +34,8 @@ domain::tenor_convention tenor_convention_mapper::map(const tenor_convention_ent
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
     r.description = v.description.value_or("");
-    r.measured_from = v.measured_from;
+    r.measured_from = v.measured_from.value_or("");
+    r.resolution_algorithm = v.resolution_algorithm;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -53,7 +54,8 @@ tenor_convention_entity tenor_convention_mapper::map(const domain::tenor_convent
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
-    r.measured_from = v.measured_from;
+    r.measured_from = v.measured_from.empty() ? std::nullopt : std::optional(v.measured_from);
+    r.resolution_algorithm = v.resolution_algorithm;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

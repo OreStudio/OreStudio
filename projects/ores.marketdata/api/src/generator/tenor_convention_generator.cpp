@@ -45,6 +45,7 @@ generate_synthetic_tenor_convention(utility::generation::generation_context& ctx
              std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.measured_from = std::string("SPOT");
+    r.resolution_algorithm = std::string("ANCHOR_OFFSET");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

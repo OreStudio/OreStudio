@@ -27,17 +27,28 @@
  * A [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] does not resolve the
  * same way under every [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][tenor
  * convention]] — O/N resolves from horizon to tomorrow under the
- * spot/forward convention, but means "today" under the FX swap convention —
- * and not every tenor belongs to every convention's set at all (the swap
- * convention's tenor set stops at S/N; the credit/CDS convention only uses
- * IMM-quarter labels). This junction records both facts as one row per valid
- * (convention, tenor) pair: the row's mere presence is set membership, and
- * its optional anchor_override column carries the per-row exception to the
- * convention's own default anchor, needed only for the SPECIAL tenors
- * whose resolution genuinely varies by convention. A PERIOD tenor's
- * resolution never needs an override — its offset from the anchor is fixed
- * by its own unit/multiplier, so only the anchor itself (the
- * convention's measured_from, or this row's override) changes.
+ * spot/forward convention, but means "today" (zero offset) under the FX
+ * swap convention — and not every tenor belongs to every convention's set
+ * at all (the swap convention's tenor set stops at S/N; the credit/CDS
+ * convention only uses IMM-quarter labels). This junction records all of
+ * that as one row per valid (convention, tenor) pair: the row's mere
+ * presence is set membership; its optional anchor_override column carries
+ * the per-row exception to the convention's own default anchor; and its
+ * optional offset_unit/offset_multiplier columns carry the
+ * convention-specific duration for a SPECIAL tenor, which — unlike a
+ * PERIOD tenor — has no unit/multiplier of its own to fall back on
+ * (see [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][Tenor]]'s kind column).
+ * A PERIOD tenor's resolution never needs an offset override — its
+ * duration is fixed by its own unit/multiplier regardless of
+ * convention, so only the anchor itself (the convention's measured_from,
+ * or this row's anchor_override) can vary for those rows. For a
+ * convention whose resolution_algorithm is IMM_ROLL rather than
+ * ANCHOR_OFFSET, offset_unit is ROLL_QUARTER and offset_multiplier
+ * is the roll-quarter count (e.g. 1Y 1RQ, per
+ * [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s CDS disambiguation
+ * convention) — the same two columns, reused rather than requiring a
+ * separate schema for the different algorithm. The runtime resolver for
+ * IMM_ROLL rows is not implemented yet; see the capture referenced below.
  */
 
 create table if not exists "ores_marketdata_tenor_convention_resolutions_tbl" (
@@ -46,6 +57,8 @@ create table if not exists "ores_marketdata_tenor_convention_resolutions_tbl" (
     "tenor_code" text not null,
     "version" integer not null,
     "anchor_override" text null,
+    "offset_unit" text null,
+    "offset_multiplier" integer null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

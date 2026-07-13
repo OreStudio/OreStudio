@@ -30,6 +30,7 @@ render_tenor_convention_fields(const domain::tenor_convention& v) {
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Measured From", .value = v.measured_from});
+    fields.push_back({.name = "Resolution Algorithm", .value = v.resolution_algorithm});
     fields.push_back({.name = "Modified By", .value = v.modified_by});
     fields.push_back({.name = "Performed By", .value = v.performed_by});
     fields.push_back({.name = "Change Reason Code", .value = v.change_reason_code});

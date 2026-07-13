@@ -118,7 +118,6 @@ std::optional<domain::tenor_convention> tenor_convention_repository::read_at_ver
     return entities.front();
 }
 
-
 void tenor_convention_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenor convention: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));

@@ -87,6 +87,8 @@ QVariant ClientTenorConventionModel::data(const QModelIndex& index, int role) co
                 return QString::fromStdString(convention.description);
             case MeasuredFrom:
                 return QString::fromStdString(convention.measured_from);
+            case Algorithm:
+                return QString::fromStdString(convention.resolution_algorithm);
             case Version:
                 return static_cast<qlonglong>(convention.version);
             case ModifiedBy:
@@ -117,6 +119,8 @@ ClientTenorConventionModel::headerData(int section, Qt::Orientation orientation,
             return tr("Description");
         case MeasuredFrom:
             return tr("Measured From");
+        case Algorithm:
+            return tr("Resolution Algorithm");
         case Version:
             return tr("Version");
         case ModifiedBy:

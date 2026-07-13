@@ -41,7 +41,8 @@ struct tenor_convention_entity {
     std::string tenant_id;
     int version = 0;
     std::optional<std::string> description;
-    std::string measured_from;
+    std::optional<std::string> measured_from;
+    std::string resolution_algorithm;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

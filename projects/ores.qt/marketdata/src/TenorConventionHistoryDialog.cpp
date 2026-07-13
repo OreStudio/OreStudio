@@ -104,6 +104,8 @@ HistoryDialogBase::DiffResult TenorConventionHistoryDialog::calculateDiffAt(int 
     checkString(diffs, tr("Code"), curr.code, prev.code);
     checkString(diffs, tr("Description"), curr.description, prev.description);
     checkString(diffs, tr("Measured From"), curr.measured_from, prev.measured_from);
+    checkString(
+        diffs, tr("Resolution Algorithm"), curr.resolution_algorithm, prev.resolution_algorithm);
     return diffs;
 }
 
@@ -116,6 +118,7 @@ void TenorConventionHistoryDialog::displayFullDetails(int index) {
     ui_->codeValue->setText(QString::fromStdString(version.code));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->measuredFromValue->setText(QString::fromStdString(version.measured_from));
+    ui_->resolutionAlgorithmValue->setText(QString::fromStdString(version.resolution_algorithm));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

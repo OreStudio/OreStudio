@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :ir-rates-synthetic-generation:sprint_23:v0:
 #+owner: marco
-#+branch: feature/tenor-type
-#+pr: 1517
+#+branch: feature/tenor-dq-dataset
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-03
@@ -34,12 +34,12 @@ tenor-collision validator task.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]] |
-| Now          | Domain-knowledge groundwork done; C++ implementation not yet started. |
+| Now          | Complete.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Implement the tenor type in =ores.marketdata= (not =ores.utility= — see Notes) per the =Tenor= knowledge doc. |
-| Last touched | 2026-07-12                               |
+| Next         | Nothing.                                |
+| Last touched | 2026-07-13                               |
 
 * Acceptance
 
@@ -101,12 +101,38 @@ implementation should now be written against:
   restated in =pricing_configuration.org=) was replaced with links to
   the new atomic docs.
 
+A follow-up modeling review concluded a tenor also needs to be a
+persisted, orderable reference-data entity (users manage the standard
+tenor set and its per-convention resolution rules), not only an
+in-process value type. That entity model
+(=ores.marketdata.tenor=/=tenor_anchor=/=tenor_convention=/
+=tenor_convention_resolution=) was built, and a hand-authored runtime
+type (=tenor_period=, salvaged from PR #1522) was drafted on top of it —
+but review caught that =tenor_period= hardcoded per-label resolution
+knowledge (e.g. "O/N = 1 day") entirely independently of the persisted
+model, duplicating and risking silent divergence from exactly what
+=tenor_convention=/=tenor_convention_resolution= exist to capture. PR
+#1535 (which shipped that first version of =tenor_period=) was closed
+and folded into a single combined implementation instead: the schema was
+extended (=tenor_convention.resolution_algorithm=,
+=tenor_convention_resolution.offset_unit=/=offset_multiplier=) so a
+=SPECIAL= tenor's convention-specific duration is data, not code, and
+the runtime resolver became a pure function reading those persisted
+rows. That combined implementation — entity model, resolver, and
+Foundation-layer seed data — is tracked and shipped under
+[[id:4D928BD7-DFEA-4DB2-9B3B-DCA3644DDA98][Foundation-layer population
+for tenor reference data]]; this task's own acceptance criteria are
+satisfied there.
+
 * PRs
 
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/1517][#1517]] | [doc] Establish IR curve-family and time-structure/tenor knowledge clusters |
 | [[https://github.com/OreStudio/OreStudio/pull/1411][#1411]] | [agile] Raise IR Rates synthetic data generation story |
+| [[https://github.com/OreStudio/OreStudio/pull/1522][#1522]] | [marketdata] Add QuantLib-free tenor type (closed unmerged; docs superseded by #1528, code salvaged and then superseded again — see Notes) |
+| [[https://github.com/OreStudio/OreStudio/pull/1528][#1528]] | [doc] Term structure/tenor cluster: Pillar, provenance/ladder cleanup |
+| [[https://github.com/OreStudio/OreStudio/pull/1535][#1535]] | [marketdata] Salvage tenor_period runtime value type from PR #1522 (closed; folded into the combined implementation — see Notes) |
 
 * Review
 
@@ -124,3 +150,8 @@ PR #1517 review round (3 automated passes, issue-level comments, no line comment
 | 5 | "Waiting on PR #1409" note stale — PR #1409 merged into main (4be33f2b4) before this branch's rebase, but story.org still said "still open" | story.org | Fixed | Updated to "Nothing" with a note that #1409 merged prior to this branch's rebase |
 
 * Result
+
+Superseded by, and its acceptance criteria satisfied under,
+[[id:4D928BD7-DFEA-4DB2-9B3B-DCA3644DDA98][Foundation-layer population
+for tenor reference data]] — see that task's Result for what actually
+shipped.

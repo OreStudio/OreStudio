@@ -53,7 +53,16 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column { Code, Description, MeasuredFrom, Version, ModifiedBy, RecordedAt, ColumnCount };
+    enum Column {
+        Code,
+        Description,
+        MeasuredFrom,
+        Algorithm,
+        Version,
+        ModifiedBy,
+        RecordedAt,
+        ColumnCount
+    };
 
     explicit ClientTenorConventionModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientTenorConventionModel() override = default;

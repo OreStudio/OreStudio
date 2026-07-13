@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 0CA33DE9-2DA4-47C9-84BD-F1A58A8831CB
+:END:
+#+title: Test Scenario: Zoom/pan controls on the Dependencies lineage graph
+#+description: Manual Qt client steps to verify mouse-wheel zoom, click-and-drag pan, and Reset View on the Dependencies tab's lineage graph.
+#+type: test_scenario
+#+level: s1
+#+filetags: :improve_data_librarian_accession_card_ui:sprint_23:v0:qt:
+#+target_dialog: Data Management > Data Catalogue > Data Librarian > Dataset > View > Dependencies tab
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment: merry_newton
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:A7A78BD8-604F-4951-8AD8-8FEE6C6B7757][Add zoom/pan controls to the Dependencies lineage graph]] in [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:A7A78BD8-604F-4951-8AD8-8FEE6C6B7757][Add zoom/pan controls to the Dependencies lineage graph]] |
+| Parent story  | [[id:E2FCDE38-9EF7-434D-BAB0-CA34DFD3E5CC][Improve Data Librarian accession card UI/UX]]   |
+| Target dialog | DatasetViewDialog — Dependencies tab     |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Prerequisites
+
+- Services running: =compass services start=.
+- A logged-in Qt client, with at least one dataset that has several
+  upstream/downstream dependencies (so the lineage graph is dense
+  enough to be worth zooming/panning, and so it doesn't already fit
+  entirely inside the view at the default framing).
+
+* Steps
+
+** Open a dataset's Dependencies tab
+
+Menu: *Data Management > Data Catalogue > Data Librarian*. Select a
+dataset with several dependencies and open its view dialog (toolbar
+*View Dataset* action, or double-click the row). Switch to the
+*Dependencies* tab. Expected: the lineage graph renders and is
+initially framed to fit the whole graph in the view (unchanged
+baseline behaviour).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Mouse wheel zooms in/out centred on the cursor
+
+Hover the mouse over one node in the graph (not the centre of the
+view) and scroll the wheel up. Expected: the view zooms in, and the
+point under the cursor stays roughly stationary (zoom is anchored
+under the mouse, not the view centre). Scroll down. Expected: the view
+zooms back out.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Click-and-drag pans the view
+
+After zooming in enough that the graph no longer fully fits the
+viewport, press and hold the left mouse button over empty canvas and
+drag. Expected: the view scrolls/pans smoothly following the drag
+(hand-drag scrolling), revealing parts of the graph that were
+previously out of view.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Reset View restores the original framing
+
+With the view zoomed and panned away from the original framing, click
+the *Reset View* button above the graph. Expected: the view returns
+exactly to the initial fit-to-window framing seen when the tab was
+first opened.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Reset View remains correct after switching tabs
+
+Switch to the *Overview* tab and back to *Dependencies*. Zoom/pan
+again, then click *Reset View*. Expected: it still resets correctly
+(the fit rectangle survives navigating away and back).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-13T17:10:22Z |
+| Branch        | feature/lineage-graph-zoom-pan |
+| Commit        | 7895619eb |
+| Worktree      | merry_newton |
+
+* Notes

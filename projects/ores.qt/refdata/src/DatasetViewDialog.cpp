@@ -33,10 +33,54 @@
 #include <QSizePolicy>
 #include <QSplitter>
 #include <QVBoxLayout>
+#include <QWheelEvent>
 #include <boost/uuid/uuid_io.hpp>
 #include <cmath>
 
 namespace ores::qt {
+
+/**
+ * @brief QGraphicsView with mouse-wheel zoom and click-and-drag pan, plus a
+ * way back to the original fitInView framing.
+ */
+class LineageGraphView : public QGraphicsView {
+public:
+    using QGraphicsView::QGraphicsView;
+
+    void setFitRect(const QRectF& rect) {
+        fitRect_ = rect;
+    }
+
+    void resetToFit() {
+        if (!fitRect_.isNull()) {
+            resetTransform();
+            fitInView(fitRect_, Qt::KeepAspectRatio);
+        }
+    }
+
+protected:
+    void wheelEvent(QWheelEvent* event) override {
+        const int deltaY = event->angleDelta().y();
+        if (deltaY == 0) {
+            // Horizontal-only wheel/trackpad input (e.g. shift+scroll) is
+            // not a zoom gesture; let the base class handle it as scrolling.
+            QGraphicsView::wheelEvent(event);
+            return;
+        }
+
+        constexpr double zoomInFactor = 1.15;
+        constexpr double minScale = 0.1;
+        constexpr double maxScale = 10.0;
+        const double factor = deltaY > 0 ? zoomInFactor : 1.0 / zoomInFactor;
+        const double newScale = transform().m11() * factor;
+        if (newScale < minScale || newScale > maxScale)
+            return;
+        scale(factor, factor);
+    }
+
+private:
+    QRectF fitRect_;
+};
 
 DatasetViewDialog::DatasetViewDialog(ClientManager* clientManager, QWidget* parent)
     : QWidget(parent)
@@ -292,12 +336,22 @@ QWidget* DatasetViewDialog::createLineageTab() {
     auto* layout = new QVBoxLayout(widget);
     layout->setContentsMargins(8, 8, 8, 8);
 
-    lineageView_ = new QGraphicsView();
+    lineageView_ = new LineageGraphView();
     lineageView_->setScene(new QGraphicsScene(lineageView_));
     lineageView_->setRenderHint(QPainter::Antialiasing);
     lineageView_->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     lineageView_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    lineageView_->setDragMode(QGraphicsView::ScrollHandDrag);
+    lineageView_->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+    lineageView_->setResizeAnchor(QGraphicsView::AnchorUnderMouse);
 
+    auto* toolbar = new QHBoxLayout();
+    toolbar->addStretch();
+    auto* resetButton = new QPushButton(tr("Reset View"));
+    connect(resetButton, &QPushButton::clicked, lineageView_, &LineageGraphView::resetToFit);
+    toolbar->addWidget(resetButton);
+
+    layout->addLayout(toolbar);
     layout->addWidget(lineageView_);
     return widget;
 }
@@ -540,7 +594,8 @@ void DatasetViewDialog::updateLineageView() {
     // Fit view with some margin
     QRectF sceneRect = scene->itemsBoundingRect();
     sceneRect.adjust(-16, -16, 16, 16);
-    lineageView_->fitInView(sceneRect, Qt::KeepAspectRatio);
+    lineageView_->setFitRect(sceneRect);
+    lineageView_->resetToFit();
 }
 
 qreal DatasetViewDialog::createLineageNode(QGraphicsScene* scene,

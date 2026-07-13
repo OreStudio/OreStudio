@@ -22,10 +22,10 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/CounterpartyChildEntityTables.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include <vector>
-
 
 namespace Ui {
 class CounterpartyDetailDialog;
@@ -99,6 +99,8 @@ private:
     void updateSaveButtonState();
     bool validateInput();
 
+
+    CounterpartyChildEntityTables* childTables_{nullptr};
 
     Ui::CounterpartyDetailDialog* ui_;
     ClientManager* clientManager_;

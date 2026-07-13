@@ -28,9 +28,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Counterparty's Qt layer is migrated to ores.qt.refdata and builds clean, but identifier/contact-information editing is temporarily missing (deferred to the child-table facet task). List/detail/history/delete/eventing can be verified now; full parity verification should wait on that task. |
-| Waiting on   | [[id:E930D771-C8DA-4105-A556-69E137C3DB30][Build composite child-entity table Qt facet for party and counterparty]] for full parity (identifier/contact editing). |
-| Next         | Verify list/detail/history/delete/eventing now; re-verify identifier/contact editing once the facet task lands. |
+| Now          | Counterparty's Qt layer is migrated to ores.qt.refdata, builds clean, and Identifiers/Contact Information tabs are restored. Ready for end-to-end verification. |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
 | Last touched | 2026-07-13                               |
 
 * Acceptance

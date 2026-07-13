@@ -140,7 +140,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unused ores.diff.lib link, already transitively available via ores.history.api.lib | ores.qt/api/src/CMakeLists.txt | Fixed | ead565099: dropped the explicit link |
+| 2 | RecencyPulseManager's ~6s flash disappears with no persistent stale marker if the user misses it | HistoryDialogBase.cpp | Declined | Matches how RecencyPulseManager is used everywhere else in the codebase; acceptable for this slice |
+| 3 | Currency's model still declares the per-entity history-dialog facet config; a future codegen run could resurrect the deleted CurrencyHistoryDialog | ores.refdata.currency.org | Declined (documented) | Noted on task CB042B99 rather than fixed here — has_version_navigation also drives CurrencyDetailDialog's still-in-use version-nav logic, so disabling it needs its own investigation |
+| 4 | HistoryDialog's calculateDiffAt/versionRow/openVersionAt/revertToVersionAt don't bounds-check index, unlike displayFullDetails | HistoryDialog.cpp | Declined | Verified safe: all call sites go through HistoryDialogBase methods that already validate against historySize() first |
+| 5 | fetchCurrencyHistory returned an empty vector on both "not connected"/"request failed" and a genuinely-missing version, misreporting the former as "version not found" | CurrencyController.cpp | Fixed | ead565099: fetchCurrencyHistory now returns std::expected<vector, QString> so failure modes report their real cause |
 
 * Result
 

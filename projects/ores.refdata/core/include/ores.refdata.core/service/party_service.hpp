@@ -27,6 +27,7 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.utility/domain/hierarchy.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -37,8 +38,8 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing parties.
  *
- * This service provides functionality for:
- * - Managing parties (CRUD operations)
+ * Provides a higher-level interface for party operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT party_service {
 private:
@@ -54,16 +55,11 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a party_service with required repositories.
+     * @brief Constructs a party_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit party_service(context ctx);
-
-    /**
-     * @brief Lists all parties.
-     */
-    std::vector<domain::party> list_parties();
 
     /**
      * @brief Lists parties with pagination support.
@@ -77,52 +73,65 @@ public:
     /**
      * @brief Gets the total count of active parties.
      *
-     * @return Total number of parties.
+     * @return Total number of active parties.
      */
     std::uint32_t count_parties();
 
     /**
-     * @brief Finds a party by its ID.
+     * @brief Retrieves a single party as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param id The id of the party.
+     * @param version The version to fetch.
+     * @return The party at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::party> find_party(const boost::uuids::uuid& id);
+    std::optional<domain::party> get_party_at_version(const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Finds a party by its code.
+     * @brief Retrieves a single party by its id.
+     *
+     * @param id The id of the party.
+     * @return The party if found, std::nullopt otherwise.
      */
-    std::optional<domain::party> find_party_by_code(const std::string& code);
+    std::optional<domain::party> get_party(const std::string& id);
 
     /**
      * @brief Saves a party (creates or updates).
      *
-     * @param party The party to save
+     * @param party The party to save.
+     * @throws std::exception on failure.
      */
     void save_party(const domain::party& party);
 
     /**
-     * @brief Saves multiple parties (creates or updates).
+     * @brief Saves a batch of parties.
      *
-     * @param parties The parties to save
+     * @param parties The parties to save.
+     * @throws std::exception on failure.
      */
     void save_parties(const std::vector<domain::party>& parties);
 
     /**
-     * @brief Removes a party.
+     * @brief Deletes a party by its id.
      *
-     * @param id The ID of the party to remove
+     * @param id The id of the party to delete.
+     * @throws std::exception on failure.
      */
-    void remove_party(const boost::uuids::uuid& id);
+    void delete_party(const std::string& id);
 
     /**
-     * @brief Gets the version history for a party.
-     *
-     * @param id The party ID
-     * @return Vector of all versions, newest first
+     * @brief Deletes parties by their ids.
      */
-    std::vector<domain::party> get_party_history(const boost::uuids::uuid& id);
+    void delete_parties(const std::vector<std::string>& ids);
 
     /**
-     * @brief Gets the party hierarchy (as a forest of trees) rooted at, or
-     * containing, the given party.
+     * @brief Retrieves all historical versions of a party.
+     */
+    std::vector<domain::party> get_party_history(const std::string& id);
+
+    /**
+     * @brief Gets the party hierarchy (as a forest of trees) rooted
+     * at, or containing, the given party.
      *
      * @param root_id The party to start from.
      * @param from_root If true, returns the whole tree the given node
@@ -131,13 +140,6 @@ public:
      */
     std::vector<ores::utility::domain::hierarchy_node>
     get_hierarchy(const boost::uuids::uuid& root_id, bool from_root);
-
-    /**
-     * @brief Retrieves a single party as it stood at a specific version. See
-     * the "Temporal composite entity versioning" architecture doc.
-     */
-    std::optional<domain::party> get_party_at_version(const boost::uuids::uuid& id,
-                                                      std::uint32_t version);
 
 private:
     context ctx_;

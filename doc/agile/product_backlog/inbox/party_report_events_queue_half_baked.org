@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 9D52619D-33D4-400C-9A62-2B93B871B162
+:END:
+#+title: Party's per-party report_events pgmq queue looks half-baked / unused
+#+description: party's insert trigger provisions a per-party pgmq queue (report_events) on every new party, but no consumer/dequeue code anywhere reads from it.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:party:codegen:pgmq:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=party='s insert trigger (=refdata_parties_create.sql=) provisions a
+per-party pgmq queue named =report_events= via
+=ores_mq_queues_create_fn(tenant_id, party_id, 'party', 'task',
+'report_events', ...)= on every new party insert. A repo-wide search
+found *no* consumer or dequeue code anywhere referencing =report_events=
+— not in =ores.scheduler=, =ores.reporting=, or anywhere else. It looks
+like scaffolding laid down ahead of a reporting feature that was never
+actually built, or was superseded by a different mechanism. Found while
+regenerating party's SQL under current codegen templates (Sprint 23,
+"Commission: party, counterparty, and party_status" story) — dropped
+from that regen's scope rather than building paste-block coverage to
+preserve something that may already be dead.
+
+* Why
+
+Codegen currently can't safely regenerate party's SQL wholesale
+precisely because of hand-written specializations like this one with
+no facet coverage. Before investing in preserving it via a paste
+block, it's worth confirming whether =report_events= is genuinely
+needed — if it's dead, dropping it simplifies party's path onto
+unified codegen; if it's needed, wire a real consumer and give it
+proper facet/paste coverage instead of leaving it silently
+unconsumed.
+
+* References
+
+- =projects/ores.sql/create/refdata/refdata_parties_create.sql= — the queue provisioning call.
+- [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] — the story this was found under.
+
+* See also
+
+-

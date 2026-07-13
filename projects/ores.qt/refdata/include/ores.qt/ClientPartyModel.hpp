@@ -23,11 +23,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.refdata.api/domain/party.hpp"
-#include <QAbstractTableModel>
 #include <QFutureWatcher>
 #include <unordered_map>
 #include <vector>
@@ -37,7 +35,7 @@ namespace ores::qt {
 /**
  * @brief Model for displaying parties fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches party
+ * This model extends AbstractClientModel and fetches party
  * data asynchronously using the ores.comms client.
  */
 class ClientPartyModel final : public AbstractClientModel {
@@ -57,23 +55,18 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
-        BusinessCenterCode,
         ShortCode,
-        Codename,
         FullName,
-        TransliteratedName,
-        PartyCategory,
         PartyType,
         Status,
+        BusinessCenterCode,
         Version,
         ModifiedBy,
         RecordedAt,
         ColumnCount
     };
 
-    explicit ClientPartyModel(ClientManager* clientManager,
-                              ImageCache* imageCache,
-                              QObject* parent = nullptr);
+    explicit ClientPartyModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientPartyModel() override = default;
 
     // QAbstractTableModel interface
@@ -85,18 +78,8 @@ public:
 
     /**
      * @brief Refresh party data from server asynchronously.
-     *
-     * @param replace If true, replace existing data; if false, append.
      */
-    void refresh(bool replace = true);
-
-    /**
-     * @brief Load a specific page of party data.
-     *
-     * @param offset Number of records to skip
-     * @param limit Number of records to fetch
-     */
-    void load_page(std::uint32_t offset, std::uint32_t limit);
+    void refresh();
 
     /**
      * @brief Get party at the specified row.
@@ -105,6 +88,12 @@ public:
      * @return The party, or nullptr if row is invalid.
      */
     const refdata::domain::party* getParty(int row) const;
+
+
+    /**
+     * @brief Load a specific page of data.
+     */
+    void load_page(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Get the page size used for pagination.
@@ -115,8 +104,6 @@ public:
 
     /**
      * @brief Set the page size for pagination.
-     *
-     * @param size The number of records to fetch per page (1-1000).
      */
     void set_page_size(std::uint32_t size);
 
@@ -127,17 +114,8 @@ public:
         return total_available_count_;
     }
 
-signals:
-    /**
-     * @brief Emitted when data has been successfully loaded.
-     */
-
-    /**
-     * @brief Emitted when an error occurs during data loading.
-     */
-
 private slots:
-    void onPartysLoaded();
+    void onPartiesLoaded();
     void onPulseStateChanged(bool isOn);
     void onPulsingComplete();
 
@@ -156,7 +134,6 @@ private:
     void fetch_business_centres();
 
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
     std::vector<refdata::domain::party> parties_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};

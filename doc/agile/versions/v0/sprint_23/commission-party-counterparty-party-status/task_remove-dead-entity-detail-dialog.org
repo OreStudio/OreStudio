@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 32700602-1610-4F40-9914-E704469FDA30
+:ID: 0E16650D-5389-42BC-A8C6-E15D49E3701B
 :END:
-#+title: Task: Verify party Qt UI end-to-end post-NATS
-#+description: Re-verify the party Qt list window, detail dialog, history dialog, delete, and cross-session eventing against a live environment now that the hierarchy widget blocker is resolved; fix regressions found.
+#+title: Task: Remove dead EntityDetailDialog/EntityDetailOperations abstraction
+#+description: Now that party and counterparty have both migrated off the hand-maintained EntityDetailDialog/EntityDetailOperations pattern onto codegen-generated dialogs, no entity implements entity_detail_operations any more -- confirm via repo-wide search, then delete EntityDetailDialog/EntityDetailOperations and their .ui from ores.qt.api.
 #+type: task
 #+level: s1
 #+filetags: :commission-party-counterparty-party-status:sprint_23:v0:
@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment: prime_origin
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,9 +28,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:FE07BF4D-054D-4A69-AF3C-D70D10493370][Commission: party, counterparty, and party_status]] |
-| Now          | Party's Qt layer is migrated to ores.qt.refdata and builds clean, but identifier/contact-information editing is temporarily missing (deferred to the child-table facet task, same gap as counterparty). List/detail/history/delete/eventing can be verified now. |
-| Waiting on   | [[id:E930D771-C8DA-4105-A556-69E137C3DB30][Build composite child-entity table Qt facet for party and counterparty]] for full parity (identifier/contact editing, hierarchy tree). |
-| Next         | Verify list/detail/history/delete/eventing now; re-verify identifier/contact editing and hierarchy tree once the facet task lands. |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
 | Last touched | 2026-07-13                               |
 
 * Acceptance

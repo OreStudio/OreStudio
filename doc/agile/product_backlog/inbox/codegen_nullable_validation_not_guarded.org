@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: AE04428B-1D34-4ABF-9A3D-6ACF43A0D299
+:END:
+#+title: Codegen insert-trigger validations ignore column nullable flag
+#+description: Insert-trigger validation wiring calls the validation function unconditionally, even for nullable columns, causing null-rejection errors.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:sql:bug:refdata:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+In the unified domain-entity org model, the =* Insert trigger= / =*
+Validations= table wires a column straight to a validation function
+(e.g. =country_alpha2_code -> ores_refdata_validate_country_fn=). The
+template (=sql_schema_domain_entity_create.mustache=, around the
+=insert_trigger.validations= loop) already has a =nullable= branch
+that skips the call when the column is null, but =org_loader.py='s
+=_parse_org_table_rows= for the Validations section never
+cross-references each row's column against that field's own
+=:nullable:= property from the model — so every row is rendered as if
+non-nullable, and the guard never fires. Fix: when building
+=de["insert_trigger"]["validations"]= rows in
+=projects/ores.codegen/src/codegen/org_loader.py=, look up each row's
+=column= in the entity's field list and copy its =nullable= flag onto
+the row so the template's existing =nullable= branch actually engages.
+
+* Why
+
+Found while regenerating =business_centre=
+(=doc/agile/versions/v0/sprint_23/commission_business_centre/task_regenerate-business-centre-reconcile-diffs.org=):
+=country_alpha2_code= is =:nullable: true= in the model but its
+generated insert trigger
+(=projects/ores.sql/create/refdata/refdata_business_centres_create.sql=)
+called =ores_refdata_validate_country_fn= unconditionally, which
+raises on null/empty input — breaking the system 'WRLD' business
+centre (no country) and any future nullable+validated field on any
+entity. Worked around by hand-patching the generated SQL for this
+regeneration; the generator itself still has the bug and will
+reintroduce it on the next regenerate.
+
+* References
+
+- =projects/ores.codegen/src/codegen/org_loader.py= (Insert trigger /
+  Validations parsing, ~line 750)
+- =projects/ores.codegen/library/templates/sql_schema_domain_entity_create.mustache=
+  (~line 505, existing =nullable= branch that never gets engaged)
+- =projects/ores.sql/create/refdata/refdata_business_centres_create.sql=
+  (hand-patched instance of the bug)
+- =projects/ores.sql/create/refdata/refdata_counterparty_contact_informations_create.sql=
+  (existing manual workaround pattern for the same problem on
+  =country_code=)
+
+* See also
+
+- [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]]
+- [[id:0FCD3745-61CD-4644-BAE2-CBCD994448FE][Regenerate business_centre from its codegen model and reconcile diffs]]

@@ -33,11 +33,11 @@ shared by every entity's =history-diff= command.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | =ores.history= split into api/core; generic =render_history_diff= added. Currency and country both wired as =history.v1.get= dispatch providers and both have a merged =history [--diff] [--version <n>]= shell command. Both verified end-to-end against a live provisioned tenant. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                |
-| Next         | Roll the same wiring out to the remaining entities that already have a plain =history= shell command (tenants, accounts, change_reasons, change_reason_categories) and, longer-term, the other ~22 entities that don't yet have one. |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                              |
 
 * Acceptance
@@ -100,3 +100,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Restructured =ores.history= into the api/core layout and added a
+generic =ores.shell::app::commands::render_history_diff()= that
+renders any entity's =history.v1.get= response as a unified diff —
+context lines from unchanged fields, -/+ pairs from the
+server-computed changes, or every field as an addition from
+=/dev/null= for the oldest version.
+
+Wired currency and country onto it: both registered as
+=history.v1.get= dispatch providers in =ores.refdata='s registrar, and
+both entities' shell command merged from a separate =history-diff=
+into =history <id> [--diff] [--version <n>]= (=--version= rejected
+without =--diff=). Manually verified end-to-end against a live
+provisioned tenant for both entities: table view, diff view, diff of
+the initial version, and the =--version=-without=--diff= guard.
+
+Also discovered and filed two follow-ups rather than folding into this
+task's scope:
+- A pre-existing bug where an entity's =version= resets after a
+  soft-delete + recreate cycle, so =read_all='s =version DESC=
+  ordering and =version_builder='s position-based renumbering can diff
+  two unrelated "generations"' rows together (task 2A05DA93).
+- The remaining entities with a plain shell =history= command
+  (tenants, accounts, change_reasons, change_reason_categories) lack
+  the codegen'd =*_history_field_mapper=/=get_*_history= that currency
+  and country already had; noted on the "Shell entity commands —
+  top-level commissioning story" capture as the natural place to fold
+  =--diff= rollout into once that story's =history= facet is
+  templatized, rather than hand-wiring the remaining ~26 entities here.

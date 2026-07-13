@@ -119,6 +119,7 @@ via its "Verifies task" field.
 | 1 | Misleading comment: says "capture by value" but data is captured by reference, .set() copies per attempt | partitioned_cache.hpp | Accepted | Reworded to describe reference-capture + per-attempt copy accurately |
 | 2 | Task doc describes aux-index as a "policy (callable)"; shipped code takes a pre-built value parameter instead | task_subscribe_party_cache_to_changed_event.org | Declined | Simpler than described and not worse; doc already corrected in this same task's Goal/Acceptance during implementation |
 | 3 | party_cache.hpp intentionally not migrated onto the new primitive yet | party_cache.hpp | Declined | Confirmed deliberate — tracked as separate task "Migrate party to the generated cache" |
+| 4 | CI: site build failed -- "Unable to resolve link: 79D1413C-8EF5-445C-80EA-40A6C3B635FC" | sprint-23-planning-session/task_bucket-rescoring.org | Accepted | Not a reviewer comment, a CI failure: an unrelated sprint doc still linked the promoted capture by its old ID. Retargeted the link to the story it became. |
 
 * Result
 

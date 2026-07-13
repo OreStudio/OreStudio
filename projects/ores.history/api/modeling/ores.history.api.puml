@@ -1,0 +1,63 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.history.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace diff #F2F2F2 {
+        namespace domain #FEFECE {
+            class field_value <<struct>>
+            class diff_result <<struct>>
+        }
+    }
+    namespace history #F2F2F2 {
+        namespace messaging #FEFECE {
+            class get_entity_history_request <<struct>> {
+                +entity_type : std::string
+                +entity_id : std::string
+            }
+            class get_entity_history_response <<struct>> {
+                +versions : std::vector<entity_history_version>
+                +success : bool
+                +message : std::string
+            }
+            class entity_history_version <<struct>> {
+                +version : int
+                +modified_by : std::string
+                +recorded_at : time_point
+                +fields : std::vector<field_value>
+                +changes : diff_result
+            }
+            get_entity_history_response o-- entity_history_version
+            entity_history_version ..> ores::diff::domain::field_value : renders
+            entity_history_version ..> ores::diff::domain::diff_result : diffs
+        }
+        namespace service #FEFECE {
+            class build_entity_history_versions <<function>> {
+                (versions, render) -> vector<entity_history_version>
+            }
+            build_entity_history_versions ..> messaging::entity_history_version : builds
+            build_entity_history_versions ..> ores::diff::domain::diff_result : via ores.diff::engine::compute
+        }
+    }
+}
+
+@enduml

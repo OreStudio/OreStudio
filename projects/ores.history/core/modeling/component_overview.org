@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 120B6248-6D47-407A-B26A-BE004EB4E33D
+:END:
+#+title: ores.history.core
+#+description: Server-side generic history dispatch: registry, NATS handler and registrar wiring the shared history.v1.get subject to per-entity providers.
+#+type: ores.codegen.component
+#+component_kind: core
+#+level: cross
+#+filetags: :history:core:component:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+name: history.core
+#+full_name: ores.history.core
+#+brief: Internal server-side implementation of the generic history component.
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.history.core component diagram
+#+caption: ores.history.core
+[[file:ores.history.core.png][file:ores.history.core.png]]
+
+* Summary
+
+=ores.history.core= is the server-only half of
+[[id:9562F9CA-DCEB-44C6-8DB1-F3FC56D7703A][ores.history]]: a =dispatch_registry= that looks up a
+caller-registered *history provider* function by =entity_type= — the
+same composed-registrar meta-pattern
+([[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]]) applied as a runtime lookup table
+instead of N separate subject subscriptions — and the NATS
+handler/registrar glue that subscribes the single =history.v1.get=
+subject.
+
+This layer depends on =ores.database=/=ores.security= directly: it is
+server-only glue no client ever touches, and every service that
+registers a history_provider already links both to do anything else.
+=history_handler= resolves each request via =make_request_context()=
+exactly like every other NATS handler in the codebase, so a provider
+receives the same fully-scoped =database::context= (tenant, party,
+roles, workspace) any other subject's handler would get — no bespoke
+auth-context threading.
+
+* Inputs
+
+- Per-entity *history providers* — =std::function<std::vector<entity_history_version>(const database::context& ctx, const std::string& entity_id)>=
+  — registered by each domain service/component at startup, keyed by
+  that entity's =entity_type_of()= string. =ctx= is the same
+  fully-resolved context any other handler in that service would
+  use — a provider calls its own repository/service with it exactly
+  like every other handler does, no unpacking required.
+- A =get_entity_history_request= (=entity_type=, =entity_id=) arriving
+  on the shared =history.v1.get= NATS subject.
+
+* Outputs
+
+- The =get_entity_history_response= from
+  [[id:C7DA61D9-0A21-42BF-A6EF-EBF47BCCF75E][ores.history.api]], published back on the request's reply subject.
+
+* Entry points
+
+- =include/ores.history.core/service/dispatch_registry.hpp= — the
+  server-side registry: =register_history_provider(entity_type, fn)=
+  and =dispatch(request, ctx)=.
+- =include/ores.history.core/messaging/history_handler.hpp= — the NATS
+  auth/decode/dispatch/reply glue shared by every entity, resolving
+  each request via =make_request_context()=.
+- =include/ores.history.core/messaging/registrar.hpp= —
+  =register_history_handlers(nats, registry, queue_group, ctx, verifier)=,
+  subscribing the single =history.v1.get= subject to a =history_handler=
+  backed by a caller-owned =dispatch_registry=. Call once per service
+  process, after registering that service's own entities' providers.
+
+* Dependencies
+
+- [[id:C7DA61D9-0A21-42BF-A6EF-EBF47BCCF75E][ores.history.api]] — the wire types and =build_entity_history_versions()=
+  every provider uses.
+- =ores.database= / =ores.security= — =database::context= and
+  =jwt_authenticator=.
+- =ores.nats= / =ores.service= / =ores.logging= — the NATS
+  subscribe/decode/reply plumbing.
+
+* See also
+
+- [[id:9562F9CA-DCEB-44C6-8DB1-F3FC56D7703A][ores.history]] — the group overview.
+- [[id:C7DA61D9-0A21-42BF-A6EF-EBF47BCCF75E][ores.history.api]] — the wire-type sibling this component depends on.
+- [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] — the design this component implements.
+- [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the meta-pattern this component's
+  dispatch registry reapplies as a runtime lookup table.

@@ -75,9 +75,9 @@
 #include "ores.refdata.core/messaging/publish_from_dq_handler.hpp"
 
 // Generic history.v1.get subject (pilot: currency only).
-#include "ores.history/messaging/registrar.hpp"
-#include "ores.history/service/dispatch_registry.hpp"
-#include "ores.history/service/version_builder.hpp"
+#include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/messaging/registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.core/presentation/currency_history_field_mapper.hpp"
 #include "ores.refdata.core/service/currency_service.hpp"

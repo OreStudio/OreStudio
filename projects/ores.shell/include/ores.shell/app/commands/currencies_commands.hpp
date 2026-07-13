@@ -107,9 +107,12 @@ public:
                                         ores::nats::service::nats_client& session,
                                         std::string iso_code);
 
-    // "history"/"history-diff" removed: depended on currency_version/
-    // currency_version_history (hand-written, non-codegen types). See
-    // "Shell entity commands — top-level commissioning story".
+    // "history" (plain version list) removed: depended on
+    // currency_version/currency_version_history (hand-written,
+    // non-codegen types). See "Shell entity commands — top-level
+    // commissioning story". "history-diff" is re-enabled via the
+    // generic ores.shell::app::commands::render_history_diff()
+    // renderer, consuming ores.history's history.v1.get subject.
 };
 
 }

@@ -21,6 +21,7 @@
 #include "ores.refdata.api/domain/currency_table_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/commands/history_diff_renderer.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <cli/cli.h>
@@ -125,12 +126,20 @@ void currencies_commands::register_commands(cli::Menu& root_menu,
         },
         "Delete a currency by ISO code");
 
-    // "history"/"history-diff" commands disabled: depended on
-    // currency_version/currency_version_history (hand-written, non-codegen
-    // types) removed when the Qt history dialog was migrated onto the
-    // standard flat std::vector<currency> history shape. Reimplement once
-    // shell entity commands are brought under codegen — see "Shell entity
-    // commands — top-level commissioning story".
+    currencies_menu->Insert(
+        "history-diff",
+        [&session](std::ostream& out, std::string iso_code) {
+            render_history_diff(out, session, "ores.refdata.currency", std::move(iso_code));
+        },
+        "Show the latest version of a currency as a unified diff against its predecessor");
+
+    currencies_menu->Insert(
+        "history-diff",
+        [&session](std::ostream& out, std::string iso_code, int version) {
+            render_history_diff(
+                out, session, "ores.refdata.currency", std::move(iso_code), version);
+        },
+        "Show a specific version of a currency as a unified diff against its predecessor");
 
     root_menu.Insert(std::move(currencies_menu));
 }

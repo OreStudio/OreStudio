@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 0FCD3745-61CD-4644-BAE2-CBCD994448FE
+:ID: 34E655ED-E560-4C87-A0D4-524B904B5C26
 :END:
-#+title: Task: Move business_centre Qt CRUD to RefdataPlugin
-#+description: business_centre's Qt CRUD code and plugin wiring live in ores.qt/party under PartyPlugin even though the C++ backend is already in ores.refdata. Relocate to ores.qt/refdata/RefdataPlugin, mirroring the Move book to refdata story.
+#+title: Task: Update business_centre codegen model and enable variability knobs
+#+description: business_centre has no live codegen model despite its SQL carrying an AUTO-GENERATED banner. Author/update the model to match the entity's current hand-written structure, and enable the correct variability knobs (sql, domain, repository, service, generator, protocol, nats-eventing, nats-handler, qt) so regeneration produces the full stack.
 #+type: task
 #+level: s1
 #+filetags: :commission_business_centre:sprint_23:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
-#+updated: 2026-07-12
+#+updated: 2026-07-13
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-No cross-component leakage: business_centre's Qt controller, MDI window, detail dialog, history dialog, and client model move fully out of ores.qt/party/PartyPlugin into ores.qt/refdata/RefdataPlugin.
+business_centre has a codegen entity model (=projects/modeling/business_centre.org= or equivalent =entity_org=) that accurately describes its current DB/domain/repository/service/messaging/Qt structure, with the variability knobs enabled for every profile the entity should have (sql, domain, repository, service, generator, protocol, nats-eventing, nats-handler, qt), so it can be regenerated end-to-end instead of remaining hand-maintained.
 
 * Status
 
@@ -35,7 +35,9 @@ No cross-component leakage: business_centre's Qt controller, MDI window, detail 
 
 * Acceptance
 
-- grep for BusinessCentreController in PartyPlugin.cpp returns no construction/menu-wiring hits; RefdataPlugin.cpp constructs the controller and contributes its menu entry; full build (api/core/service/qt.refdata/qt.party/qt.exe) is clean; manual QA confirms the list/detail/history windows open from the new menu location and behave identically to before the move.
+- A codegen entity model for business_centre exists, modelled on an already-commissioned comparable entity (e.g. currency or country), with every field from the current hand-written domain struct/DB table represented.
+- The model's variability knobs are enabled for sql, domain, repository, service, generator, protocol, nats-eventing, nats-handler, and qt (component = refdata throughout).
+- The model does not itself regenerate anything -- that is the next task's scope. This task ends with a model that `compass codegen generate` can run against.
 
 * Plan
 

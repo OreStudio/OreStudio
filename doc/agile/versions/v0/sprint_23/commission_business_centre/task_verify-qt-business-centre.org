@@ -54,7 +54,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:9563A7CC-856F-49CD-A39C-4E9BD9C23156][Verify business_centre windows and menu after RefdataPlugin relocation]] | PENDING | |
 
 * PRs
 

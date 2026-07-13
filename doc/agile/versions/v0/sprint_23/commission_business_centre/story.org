@@ -2,12 +2,12 @@
 :ID: 2406AA9C-6B67-4B74-954E-2C04AE833FB9
 :END:
 #+title: Story: Commission: business_centre
-#+description: Commission business_centre: verify Qt UI post-NATS, fix regressions, add manual chapter, capture shell/CLI/Wt/HTTP backlog.
+#+description: Commission business_centre through codegen: update its model, enable variability knobs, regenerate, reconcile diffs, verify Qt post-NATS, add manual chapter, capture shell/CLI/Wt/HTTP backlog.
 #+type: story
 #+level: s2
 #+filetags: :product:refdata:commissioning:business_centre:sprint_23:v0:
 #+created: 2026-05-29
-#+updated: 2026-07-12
+#+updated: 2026-07-13
 #+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,11 +15,17 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Commission =business_centre= across all access layers: verify the Qt UI end-to-end post-NATS
-migration, fix any regressions found, and add the entity chapter to the user manual
-(Qt windows only — shell and CLI commands are a horizontal layer handled by the
-top-level Shell entity commands and CLI commands commissioning stories, not per-entity).
-File backlog captures for Wt and HTTP support.
+Commission =business_centre= properly through codegen: author/update its
+codegen entity model to match the entity's current hand-written structure,
+enable the correct variability knobs, regenerate every applicable profile,
+and reconcile the diffs -- this is what fixes the SQL security-definer/
+bootstrap-guard gaps and the wrong-plugin Qt CRUD location (=ores.qt/party=
+instead of =ores.qt/refdata=) found during appraisal, as regeneration output
+rather than hand edits. Then do a full manual Qt test, add the entity
+chapter to the user manual (Qt windows only — shell and CLI commands are a
+horizontal layer handled by the top-level Shell entity commands and CLI
+commands commissioning stories, not per-entity), and file backlog captures
+for Wt and HTTP support.
 
 * Status
 
@@ -34,6 +40,18 @@ File backlog captures for Wt and HTTP support.
 
 * Acceptance
 
+- A codegen entity model exists for business_centre with the correct
+  variability knobs enabled (sql, domain, repository, service, generator,
+  protocol, nats-eventing, nats-handler, qt).
+- Every regenerated profile is a zero-diff or explicitly signed-off delta
+  against the repo; output lands in the correct split-project location.
+- No cross-component leakage: business_centre's Qt CRUD code and plugin
+  wiring live entirely in ores.qt/refdata under RefdataPlugin, not
+  ores.qt/party under PartyPlugin -- achieved via regeneration.
+- business_centre's insert and validate SQL functions carry
+  =security definer= + =set search_path = public, pg_temp=, and the
+  validate function's bootstrap guard filters to active rows only --
+  achieved via regeneration.
 - Qt list window (MDI): loads and displays records correctly.
 - Qt detail window: edit and save round-trips without error.
 - Qt history window: shows change history for the entity.
@@ -45,21 +63,14 @@ File backlog captures for Wt and HTTP support.
 - Backlog captures filed for shell, CLI, Wt, and HTTP support.
 - All regressions found are fixed inline or filed as captures.
 - Site builds cleanly.
-- No cross-component leakage: business_centre's Qt CRUD code and plugin
-  wiring live entirely in ores.qt/refdata under RefdataPlugin, not
-  ores.qt/party under PartyPlugin.
-- business_centre's insert and validate SQL functions carry
-  =security definer= + =set search_path = public, pg_temp=, and the
-  validate function's bootstrap guard filters to active rows only.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:183B2813-A7A8-4EC1-A43A-E37CCFF83C21][Appraise business_centre against the entity evaluation checklist]] | DONE | 2026-07-12 | 2026-07-12 | Score business_centre across all layers (SQL, domain, repository, service, generator, protocol, NATS eventing/handler, Qt) using the entity evaluation checklist; findings drive the rest of the story's tasks. |
-| [[id:34E655ED-E560-4C87-A0D4-524B904B5C26][Fix business_centre SQL security-definer and bootstrap-guard gaps]] | BACKLOG | | | ores_refdata_business_centres_insert_fn() and ores_refdata_validate_business_centre_fn() are missing security definer + set search_path; the validate function's bootstrap pass-through doesn't filter by valid_to=infinity. Same bug class fixed in Commission: country. |
-| [[id:0FCD3745-61CD-4644-BAE2-CBCD994448FE][Move business_centre Qt CRUD to RefdataPlugin]] | BACKLOG | | | business_centre's Qt CRUD code and plugin wiring live in ores.qt/party under PartyPlugin even though the C++ backend is already in ores.refdata. Relocate to ores.qt/refdata/RefdataPlugin, mirroring the Move book to refdata story. |
-| [[id:49403E16-E495-436D-8EE9-9739F638D534][Sync codegen for business_centre across all profiles]] | BACKLOG | | | No live codegen model exists despite the SQL file's AUTO-GENERATED banner (appraisal finding 3) -- downgraded from "regenerate" to a by-hand drift/consistency check against the checklist criteria; authoring a fresh model is out of scope. |
+| [[id:34E655ED-E560-4C87-A0D4-524B904B5C26][Update business_centre codegen model and enable variability knobs]] | BACKLOG | | | Author/update the codegen model to match business_centre's current structure and enable the correct variability knobs across every profile. |
+| [[id:0FCD3745-61CD-4644-BAE2-CBCD994448FE][Regenerate business_centre from its codegen model and reconcile diffs]] | BACKLOG | | | Run codegen against the updated model, diff every profile's output against the hand-written files, reconcile (zero-diff/fix-template/fix-code/accept). This is where the SQL security fix and Qt-to-RefdataPlugin relocation come from. |
 | [[id:15F0D21E-EDE0-4834-9963-D32953CCF9A1][Verify business_centre Qt UI end-to-end post-NATS]] | BACKLOG | | | Exercise the business_centre Qt UI end-to-end (from its new RefdataPlugin location): MDI list window, detail window (edit/save round-trip), history window, delete command, and cross-session eventing. Fix any regressions found. |
 | [[id:996277E2-DBF4-4FF6-9AB3-E8534F675238][Write the business_centre manual chapter]] | BACKLOG | | | Add the business_centre entity chapter to the user manual, documenting the Qt windows (list, detail, history, delete). |
 | [[id:404A83BE-21BE-4AE5-9A98-A70346D26EFC][File Wt and HTTP backlog captures for business_centre]] | BACKLOG | | | File backlog captures for business_centre's Wt web UI and HTTP REST API support, since both are out of scope for this story (handled by the top-level Wt/HTTP commissioning stories). |
@@ -67,23 +78,26 @@ File backlog captures for Wt and HTTP support.
 * Decisions
 
 - Rescoped after the appraisal task surfaced four findings (SQL
-  security/bootstrap gaps, wrong Qt plugin, no live codegen model): added
-  two new tasks (SQL security fix, Qt-to-RefdataPlugin move) ahead of Qt
-  verification, so verification happens once against the final location
-  rather than twice. Mirrors the sequencing rationale in [[id:0E63013B-3B02-4968-A9EA-ED85C00EC7AF][Move book to
-  refdata]].
-- Authoring a fresh codegen model for business_centre is out of scope --
-  materially bigger than "sync existing drift" and risks destabilising a
-  currently-working entity mid-story. The sync-codegen task is downgraded
-  to a by-hand consistency check instead; a proper model can be authored
-  in a follow-up story if desired.
+  security/bootstrap gaps, wrong Qt plugin, no live codegen model). Initial
+  rescope (2026-07-12) treated the codegen model as out of scope and
+  hand-fixed the SQL and hand-moved the Qt CRUD directly; both were
+  reverted (commit a1018a239 for SQL; working-tree revert for Qt) once it
+  was clarified that authoring a proper codegen model and regenerating is
+  the actual objective of this story -- the SQL security fix and Qt
+  relocation should be a byproduct of correct codegen output, not hand
+  edits, matching this story's own commissioning pattern.
+- Revised task order: appraise -> update/author codegen model -> regenerate
+  and reconcile diffs -> full Qt test -> manual chapter -> Wt/HTTP
+  captures. The old "Fix SQL security" and "Move Qt to RefdataPlugin"
+  tasks were repurposed in place (same Task-IDs) into "Update codegen
+  model" and "Regenerate and reconcile diffs"; the old "Sync codegen"
+  task (duplicate of the repurposed regenerate task) was deleted.
 - business_unit and contact_type show the identical wrong-plugin pattern
   (also under PartyPlugin) but are out of scope here -- their own
   Commission stories should pick this up, or a shared capture filed.
 
 * Out of scope
 
-- Authoring a codegen entity model for business_centre (see Decisions).
 - Relocating business_unit or contact_type's Qt code (separate stories).
 - Portfolio's equivalent Qt-plugin relocation, if it has the same issue
   (not checked as part of this appraisal).

@@ -24,24 +24,29 @@
 #include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <QDialog>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QLabel>
 #include <QTabWidget>
 #include <QTextBrowser>
 #include <QTreeWidget>
+#include <QWidget>
 #include <map>
 #include <vector>
 
 namespace ores::qt {
 class ClientManager;
+class BadgeCache;
 }
 
 namespace ores::qt {
 
 /**
- * @brief Dialog for viewing dataset details with tabbed interface.
+ * @brief Widget for viewing dataset details with tabbed interface.
+ *
+ * Embedded in a DetachableMdiSubWindow by the caller (DataLibrarianWindow)
+ * — same MDI pattern as every other window in the app — rather than shown
+ * as a floating QDialog.
  *
  * Displays dataset information organized into a persistent header
  * (name, code, version, ID) followed by tabs:
@@ -49,7 +54,7 @@ namespace ores::qt {
  * - Provenance & Methodology: source, dates, license, lineage, methodology
  * - Dependencies: interactive lineage diagram
  */
-class DatasetViewDialog : public QDialog {
+class DatasetViewDialog : public QWidget {
     Q_OBJECT
 
     // QSS-styleable properties for lineage diagram
@@ -86,6 +91,13 @@ public:
     explicit DatasetViewDialog(ClientManager* clientManager, QWidget* parent = nullptr);
     ~DatasetViewDialog() override;
 
+    QSize sizeHint() const override {
+        return QSize(950, 700);
+    }
+
+    void setBadgeCache(BadgeCache* badgeCache) {
+        badgeCache_ = badgeCache;
+    }
     void setDataset(const dq::domain::dataset& dataset);
     void setMethodologies(const std::vector<dq::domain::methodology>& methodologies);
     void setDatasetDependencies(const std::vector<dq::domain::dataset_dependency>& dependencies);
@@ -111,8 +123,12 @@ private:
                      const QString& value,
                      const QString& tooltip = {});
     void addSectionHeader(QTreeWidget* tree, const QString& title);
-    // Render a value as a coloured pill instead of plain text.
-    void addPillProperty(QTreeWidget* tree, const QString& name, const QString& value);
+    // Render a value as a coloured badge (BadgeLabelUtils, same system as
+    // every other badge in the app) instead of plain text.
+    void addBadgeProperty(QTreeWidget* tree,
+                          const QString& name,
+                          const std::string& badgeDomain,
+                          const std::string& value);
 
     QString findMethodologyName(const std::optional<boost::uuids::uuid>& methodologyId) const;
     const dq::domain::methodology*
@@ -174,6 +190,7 @@ private:
 
     // Data
     ClientManager* clientManager_;
+    BadgeCache* badgeCache_ = nullptr;
     dq::domain::dataset dataset_;
     std::vector<dq::domain::methodology> methodologies_;
     std::vector<dq::domain::dataset_dependency> datasetDependencies_;

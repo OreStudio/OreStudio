@@ -43,11 +43,24 @@ child heading directly under it.
 Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
 =BARCLAYS PLC=. Confirm all menus enable with no errors.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open the Data Librarian and a dataset's accession card
 
 Open Reference Data > Data Librarian (or System > Data, wherever it
 lives in this build). Pick any seeded dataset (e.g. =ORE Asset
 Class=) and open its detail view (=DatasetViewDialog=).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | we should not have a librarian in system data or reference data.. I can't see it in menus there. it is in the correct place, Data Management, Data Librarian. |
 
 ** Persistent header banner
 
@@ -57,12 +70,24 @@ button is present; click it and paste somewhere to confirm the full
 UUID was copied (the banner itself only shows a truncated ID with a
 tooltip holding the full UUID).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Overview tab: no more Name/Code/Version/ID rows, governance pills
 
 Open the Overview tab. Confirm the General section no longer repeats
 Name/Code/Version/ID (now only in the header banner). Confirm Origin,
 Nature, and Treatment in the Data Governance section render as
 coloured pill badges, not plain text.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Provenance & Methodology tab is merged
 
@@ -71,11 +96,23 @@ separate tabs), showing the Provenance property tree, the Methodology
 property tree, and the implementation-details text browser stacked
 vertically.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Dependencies tab still shows the interactive lineage graph
 
 Confirm the Dependencies tab is unchanged: the interactive node/graph
 lineage view still renders correctly (this tab was intentionally left
 untouched by this task).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** No error toast or log error during the whole flow
 
@@ -83,14 +120,21 @@ Check the client's log tail
 (=build/output/<preset>/publish/log/ores.qt.<colour>.log=) for any
 ERROR-level line during this flow.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | check logs |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-13T08:46:04Z |
+| Branch        | feature/rework-dataset-detail-dialog-layout |
+| Commit        | d37820197 |
+| Worktree      | merry_newton |
 
 * Notes

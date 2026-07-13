@@ -18,7 +18,10 @@
  *
  */
 #include "ores.qt/DatasetViewDialog.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include <QApplication>
@@ -27,17 +30,78 @@
 #include <QGraphicsTextItem>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QPainter>
 #include <QPainterPath>
 #include <QPushButton>
 #include <QSplitter>
+#include <QStyledItemDelegate>
 #include <QVBoxLayout>
 #include <boost/uuid/uuid_io.hpp>
 #include <cmath>
 
 namespace ores::qt {
 
+namespace {
+
+// Paints the Overview tab's Data Governance values (Origin/Nature/Treatment)
+// as badges — the exact DelegatePaintUtils::draw_centered_badge routine
+// every other badge in the app uses (DatasetItemDelegate, EntityItemDelegate,
+// ClientResultItemDelegate), not a QLabel/stylesheet reimplementation.
+// Rows carry their badge domain (e.g. "dq_origin") as Qt::UserRole on
+// column 1; rows without it paint normally.
+class OverviewBadgeDelegate final : public QStyledItemDelegate {
+public:
+    explicit OverviewBadgeDelegate(BadgeCache* const* badgeCache, QObject* parent = nullptr)
+        : QStyledItemDelegate(parent)
+        , badgeCache_(badgeCache) {}
+
+    void paint(QPainter* painter,
+              const QStyleOptionViewItem& option,
+              const QModelIndex& index) const override {
+        const QString domain = index.data(Qt::UserRole).toString();
+        if (domain.isEmpty()) {
+            QStyledItemDelegate::paint(painter, option, index);
+            return;
+        }
+
+        QStyleOptionViewItem opt = option;
+        initStyleOption(&opt, index);
+        opt.text.clear();
+        QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
+
+        const QString text = index.data(Qt::DisplayRole).toString();
+        if (text.isEmpty()) {
+            return;
+        }
+
+        QColor bg = color_constants::badge_fallback;
+        QColor fg = color_constants::badge_fallback_text;
+        if (*badgeCache_) {
+            if (const auto* def =
+                    (*badgeCache_)->resolve(domain.toStdString(), text.toStdString())) {
+                const QColor defBg(QString::fromStdString(def->background_colour));
+                const QColor defFg(QString::fromStdString(def->text_colour));
+                if (defBg.isValid() && defFg.isValid()) {
+                    bg = defBg;
+                    fg = defFg;
+                }
+            }
+        }
+
+        QFont badgeFont = opt.font;
+        badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
+        badgeFont.setBold(true);
+        DelegatePaintUtils::draw_centered_badge(painter, opt.rect, text, bg, fg, badgeFont);
+    }
+
+private:
+    BadgeCache* const* badgeCache_;
+};
+
+}
+
 DatasetViewDialog::DatasetViewDialog(ClientManager* clientManager, QWidget* parent)
-    : QDialog(parent)
+    : QWidget(parent)
     , clientManager_(clientManager) {
     setupUi();
 }
@@ -61,7 +125,7 @@ void DatasetViewDialog::setupUi() {
 
     // Add tabs
     tabWidget_->addTab(createOverviewTab(), tr("Overview"));
-    tabWidget_->addTab(createProvenanceAndMethodologyTab(), tr("Provenance & Methodology"));
+    tabWidget_->addTab(createProvenanceAndMethodologyTab(), tr("Provenance && Methodology"));
     tabWidget_->addTab(createLineageTab(), tr("Dependencies"));
 
     mainLayout->addWidget(tabWidget_);
@@ -71,6 +135,9 @@ QWidget* DatasetViewDialog::createHeaderBanner() {
     auto* frame = new QFrame();
     frame->setFrameShape(QFrame::StyledPanel);
     frame->setObjectName("datasetHeaderBanner");
+    frame->setStyleSheet(
+        "#datasetHeaderBanner { background-color: palette(alternate-base); "
+        "border-bottom: 1px solid palette(mid); }");
 
     auto* layout = new QHBoxLayout(frame);
     layout->setContentsMargins(12, 8, 12, 8);
@@ -78,25 +145,24 @@ QWidget* DatasetViewDialog::createHeaderBanner() {
     auto* textLayout = new QVBoxLayout();
     headerNameLabel_ = new QLabel();
     auto nameFont = headerNameLabel_->font();
-    nameFont.setPointSize(nameFont.pointSize() + 2);
+    nameFont.setPointSize(nameFont.pointSize() + 3);
     nameFont.setBold(true);
     headerNameLabel_->setFont(nameFont);
 
     headerCodeVersionLabel_ = new QLabel();
-    headerCodeVersionLabel_->setStyleSheet("color: palette(mid);");
+
+    headerIdLabel_ = new QLabel();
+    headerIdLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
     textLayout->addWidget(headerNameLabel_);
     textLayout->addWidget(headerCodeVersionLabel_);
+    textLayout->addWidget(headerIdLabel_);
     layout->addLayout(textLayout);
     layout->addStretch();
 
-    headerIdLabel_ = new QLabel();
-    headerIdLabel_->setStyleSheet("color: palette(mid);");
-    layout->addWidget(headerIdLabel_);
-
     auto* copyButton = new QPushButton(tr("Copy ID"));
     connect(copyButton, &QPushButton::clicked, this, &DatasetViewDialog::onCopyIdClicked);
-    layout->addWidget(copyButton);
+    layout->addWidget(copyButton, 0, Qt::AlignTop);
 
     return frame;
 }
@@ -113,9 +179,7 @@ void DatasetViewDialog::updateHeaderBanner() {
             .arg(QString::fromStdString(dataset_.code))
             .arg(dataset_.version));
     const auto idString = boost::uuids::to_string(dataset_.id);
-    headerIdLabel_->setText(
-        tr("ID: %1…").arg(QString::fromStdString(idString.substr(0, 8))));
-    headerIdLabel_->setToolTip(QString::fromStdString(idString));
+    headerIdLabel_->setText(tr("ID: %1").arg(QString::fromStdString(idString)));
 }
 
 QWidget* DatasetViewDialog::createOverviewTab() {
@@ -130,6 +194,8 @@ QWidget* DatasetViewDialog::createOverviewTab() {
     overviewTree_->header()->setStretchLastSection(true);
     overviewTree_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     overviewTree_->setStyleSheet("QTreeWidget::item { padding: 4px 0px; }");
+    overviewTree_->setItemDelegateForColumn(
+        1, new OverviewBadgeDelegate(&badgeCache_, overviewTree_));
 
     layout->addWidget(overviewTree_);
     return widget;
@@ -209,21 +275,21 @@ void DatasetViewDialog::addProperty(QTreeWidget* tree,
     }
 }
 
-void DatasetViewDialog::addPillProperty(QTreeWidget* tree, const QString& name, const QString& value) {
+void DatasetViewDialog::addBadgeProperty(QTreeWidget* tree,
+                                         const QString& name,
+                                         const std::string& badgeDomain,
+                                         const std::string& value) {
     auto* item = new QTreeWidgetItem(tree);
     item->setText(0, name);
+    item->setText(1, QString::fromStdString(value));
+    // Marks this row for OverviewBadgeDelegate, which paints column 1 via
+    // DelegatePaintUtils::draw_centered_badge instead of plain text.
+    item->setData(1, Qt::UserRole, QString::fromStdString(badgeDomain));
     item->setFlags(item->flags() | Qt::ItemNeverHasChildren);
 
     auto nameFont = item->font(0);
     nameFont.setBold(true);
     item->setFont(0, nameFont);
-
-    auto* pill = new QLabel(value, tree);
-    pill->setAlignment(Qt::AlignCenter);
-    pill->setStyleSheet(
-        "QLabel { background-color: palette(highlight); color: palette(highlighted-text); "
-        "border-radius: 8px; padding: 1px 10px; }");
-    tree->setItemWidget(item, 1, pill);
 }
 
 void DatasetViewDialog::addSectionHeader(QTreeWidget* tree, const QString& title) {
@@ -231,14 +297,15 @@ void DatasetViewDialog::addSectionHeader(QTreeWidget* tree, const QString& title
     item->setFlags(item->flags() | Qt::ItemNeverHasChildren);
     item->setFirstColumnSpanned(true);
 
-    // Style section header: centered, bold, larger, distinct gray background
+    // Left-aligned, bold, no full-width background box: a centered grey bar
+    // breaks left-to-right reading gravity (the anti-pattern this dialog
+    // used to have on every section).
     auto font = item->font(0);
     font.setBold(true);
     font.setPointSize(font.pointSize() + 1);
     item->setFont(0, font);
     item->setText(0, title);
-    item->setTextAlignment(0, Qt::AlignCenter);
-    item->setBackground(0, tree->palette().color(QPalette::AlternateBase));
+    item->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
     item->setForeground(0, tree->palette().color(QPalette::Text));
 }
 
@@ -312,12 +379,12 @@ void DatasetViewDialog::updateOverviewTab() {
                 tr("Catalog"),
                 dataset_.catalog_name ? QString::fromStdString(*dataset_.catalog_name) : tr("-"));
 
-    // Data Governance section
+    // Data Governance section — painted by OverviewBadgeDelegate using the
+    // same badge domains as DatasetItemDelegate's list-row rendering.
     addSectionHeader(overviewTree_, tr("Data Governance"));
-    addPillProperty(overviewTree_, tr("Origin"), QString::fromStdString(dataset_.origin_code));
-    addPillProperty(overviewTree_, tr("Nature"), QString::fromStdString(dataset_.nature_code));
-    addPillProperty(
-        overviewTree_, tr("Treatment"), QString::fromStdString(dataset_.treatment_code));
+    addBadgeProperty(overviewTree_, tr("Origin"), "dq_origin", dataset_.origin_code);
+    addBadgeProperty(overviewTree_, tr("Nature"), "dq_nature", dataset_.nature_code);
+    addBadgeProperty(overviewTree_, tr("Treatment"), "dq_treatment", dataset_.treatment_code);
 
     // Audit section
     addSectionHeader(overviewTree_, tr("Audit"));

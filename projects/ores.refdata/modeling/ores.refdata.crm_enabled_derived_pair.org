@@ -240,15 +240,15 @@ crm_enabled_derived_pair_repository::read_latest_all_tenants(context ctx) {
 
 *** Columns (Qt model)
 
-| enum_name          | field                | header       | type      | width | is_badge | badge_key   |
-|--------------------+----------------------+--------------+-----------+-------+----------+-------------|
-| ConfigId           | config_id            | Config Id    | uuid      | auto  |          |             |
-| BaseCurrencyCode   | base_currency_code   | Base         | string    | 80    |          |             |
-| QuoteCurrencyCode  | quote_currency_code  | Quote        | string    | 80    |          |             |
-| Enabled             | enabled              | Enabled      | bool      | 80    | true     | crm_enabled |
-| Version             | version              | Version      | int       | 70    |          |             |
-| ModifiedBy          | modified_by          | Modified By  | string    | auto  |          |             |
-| RecordedAt          | recorded_at          | Recorded At  | timestamp | auto  |          |             |
+| enum_name          | field                | header       | type      | width | is_badge | badge_key   | hidden_by_default |
+|--------------------+----------------------+--------------+-----------+-------+----------+-------------+--------------------|
+| ConfigId           | config_id            | Config Id    | uuid      | auto  |          |             | true               |
+| BaseCurrencyCode   | base_currency_code   | Base         | string    | 80    |          |             |                    |
+| QuoteCurrencyCode  | quote_currency_code  | Quote        | string    | 80    |          |             |                    |
+| Enabled             | enabled              | Enabled      | bool      | 80    | true     | crm_enabled |                    |
+| Version             | version              | Version      | int       | 70    |          |             |                    |
+| ModifiedBy          | modified_by          | Modified By  | string    | auto  |          |             |                    |
+| RecordedAt          | recorded_at          | Recorded At  | timestamp | auto  |          |             |                    |
 
 *** Icon columns (Qt model)
 

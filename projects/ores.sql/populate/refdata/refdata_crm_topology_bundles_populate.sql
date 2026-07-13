@@ -30,8 +30,10 @@
  * desk tiering:
  *
  * - "majors": pivot USD, the 8 major driver pairs as spanning-tree
- *   edges, plus a curated set of enabled derived (non-edge) crosses
- *   commonly requested on demand (EUR/GBP, EUR/JPY, GBP/JPY).
+ *   edges, plus the complete C(8,2)=28 combinatorial set of enabled
+ *   derived (non-edge) crosses among those 8 driver currencies -- a
+ *   representative sample, not just a handful of the most obvious
+ *   pairs (EUR/GBP, EUR/JPY, GBP/JPY, ...).
  * - "exotics": pivot USD, the 3 EM driver pairs (ZAR/MXN/INR) as
  *   spanning-tree edges -- a pure USD-pivot star, no derived pairs
  *   needed since every configured exotic pair already is a driver edge.
@@ -183,11 +185,40 @@ begin
         (v_dataset_id, v_tenant_id, 'majors', 'USD', 'AUD', 'USD', 'driver'),
         (v_dataset_id, v_tenant_id, 'majors', 'USD', 'USD', 'CAD', 'driver'),
         (v_dataset_id, v_tenant_id, 'majors', 'USD', 'NZD', 'USD', 'driver'),
-        -- majors: curated derived (non-edge) crosses commonly requested
-        -- on demand -- all triangulable from the 8 driver edges above.
+        -- majors: curated derived (non-edge) crosses -- the complete
+        -- C(8,2)=28 combinatorial set of crosses among the 8 non-USD
+        -- driver currencies (EUR, GBP, AUD, NZD, CAD, CHF, SEK, JPY),
+        -- each triangulable via the USD-pivot driver edges above.
+        -- Ordered by conventional FX base-currency hierarchy (EUR > GBP
+        -- > AUD > NZD > CAD > CHF > SEK > JPY).
         (v_dataset_id, v_tenant_id, 'majors', 'USD', 'EUR', 'GBP', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'EUR', 'AUD', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'EUR', 'NZD', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'EUR', 'CAD', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'EUR', 'CHF', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'EUR', 'SEK', 'derived'),
         (v_dataset_id, v_tenant_id, 'majors', 'USD', 'EUR', 'JPY', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'GBP', 'AUD', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'GBP', 'NZD', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'GBP', 'CAD', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'GBP', 'CHF', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'GBP', 'SEK', 'derived'),
         (v_dataset_id, v_tenant_id, 'majors', 'USD', 'GBP', 'JPY', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'AUD', 'NZD', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'AUD', 'CAD', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'AUD', 'CHF', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'AUD', 'SEK', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'AUD', 'JPY', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'NZD', 'CAD', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'NZD', 'CHF', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'NZD', 'SEK', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'NZD', 'JPY', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'CAD', 'CHF', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'CAD', 'SEK', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'CAD', 'JPY', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'CHF', 'SEK', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'CHF', 'JPY', 'derived'),
+        (v_dataset_id, v_tenant_id, 'majors', 'USD', 'SEK', 'JPY', 'derived'),
         -- exotics: 3 EM driver pairs, a pure USD-pivot star -- every
         -- configured pair already is a driver edge, no derived pairs.
         (v_dataset_id, v_tenant_id, 'exotics', 'USD', 'USD', 'ZAR', 'driver'),

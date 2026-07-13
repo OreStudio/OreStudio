@@ -65,7 +65,9 @@ Confirm the list window opens and shows two rows for BARCLAYS PLC:
 Confirm 11 rows total for BARCLAYS PLC: 8 majors driver pairs
 (EUR/USD, GBP/USD, USD/CHF, USD/JPY, USD/SEK, AUD/USD, USD/CAD,
 NZD/USD) + 3 exotics driver pairs (USD/ZAR, USD/MXN, USD/INR), each
-linked to its =config_id= and showing the =enabled= badge.
+showing the =enabled= badge. =Config Id= is a hidden-by-default
+column -- enable it via the column picker to confirm each row links
+to the correct config.
 
 *** Result
 
@@ -75,10 +77,10 @@ linked to its =config_id= and showing the =enabled= badge.
 
 ** Open "&Enabled Derived Pairs" from Reference Data > Cross Rates &Matrix
 
-Confirm 3 rows for BARCLAYS PLC's "majors" config (EUR/GBP, EUR/JPY,
-GBP/JPY, or whichever curated crosses the publish task seeded) and
-none for "exotics" (a pure USD-pivot star has no derived pairs by
-design).
+Confirm 28 rows for BARCLAYS PLC's "majors" config -- the complete
+combinatorial set of crosses among the 8 majors driver currencies
+(EUR, GBP, AUD, NZD, CAD, CHF, SEK, JPY) -- and none for "exotics" (a
+pure USD-pivot star has no derived pairs by design).
 
 *** Result
 

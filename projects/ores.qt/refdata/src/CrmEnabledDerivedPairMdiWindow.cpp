@@ -169,8 +169,14 @@ void CrmEnabledDerivedPairMdiWindow::setupTable() {
         });
     }
 
-    initializeTableSettings(
-        tableView_, model_, "CrmEnabledDerivedPairListWindow", {}, {900, 400}, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            "CrmEnabledDerivedPairListWindow",
+                            {
+                                ClientCrmEnabledDerivedPairModel::ConfigId,
+                            },
+                            {900, 400},
+                            1);
 }
 
 void CrmEnabledDerivedPairMdiWindow::setupConnections() {

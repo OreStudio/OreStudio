@@ -166,7 +166,14 @@ void CrmDriverPairMdiWindow::setupTable() {
         });
     }
 
-    initializeTableSettings(tableView_, model_, "CrmDriverPairListWindow", {}, {900, 400}, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            "CrmDriverPairListWindow",
+                            {
+                                ClientCrmDriverPairModel::ConfigId,
+                            },
+                            {900, 400},
+                            1);
 }
 
 void CrmDriverPairMdiWindow::setupConnections() {

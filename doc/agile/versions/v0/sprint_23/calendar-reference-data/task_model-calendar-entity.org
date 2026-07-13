@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :calendar-reference-data:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/model-calendar-entity
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
 #+updated: 2026-07-08
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -23,14 +23,22 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Model a =calendar= domain entity in =ores.refdata= enumerating
 valid ORE/QuantLib calendar codes (e.g. =TARGET=, =UnitedStates=,
 =UnitedKingdom=, =Japan=, ...), with a proper primary key (the
-calendar code itself, text), a display name, and an optional flag
-image reference — ready to drive =ores.codegen.entity=.
+calendar code itself, text), a unique display name, a =calendar_type=
+(soft FK to a small aux-type table: =public_holiday=,
+=central_bank_meeting=, =financial_centre=, =data_release=, =other=),
+a =country_code= (FK to the existing =country= entity, not nullable —
+uses ISO 3166-1's reserved =ZZ= user-assigned code as the
+"supranational / not country-specific" sentinel for calendars like
+=TARGET= that have no single owning country), and an optional flag
+image reference — ready to drive =ores.codegen.entity=. Also seed the
+=country= table with the =ZZ= sentinel row (=alpha3_code = "ZZZ"=,
+=name = "Supranational / Not Country-Specific"=).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -39,16 +47,25 @@ image reference — ready to drive =ores.codegen.entity=.
 
 * Acceptance
 
-- [ ] A =calendar= domain_entity org model exists with primary key,
-  columns (name, optional image_id), following the codebase's
-  established entity-modeling conventions.
+- [ ] A =calendar= domain_entity org model exists with primary key
+  (=code=), a unique =name=, =calendar_type= (soft FK), =country_code=
+  (FK to =country=, not nullable), and optional =image_id=, following
+  the codebase's established entity-modeling conventions.
+- [ ] A =calendar_type= aux-type table exists (=public_holiday=,
+  =central_bank_meeting=, =financial_centre=, =data_release=,
+  =other=), following the same pattern as =monetary_nature=/
+  =market_tier= on =currency=.
+- [ ] The =country= table is seeded with a =ZZ= sentinel row (ISO
+  3166-1's reserved user-assigned code) for calendars with no single
+  owning country.
 - [ ] Generated via =ores.codegen.entity= (domain/SQL/repository/
   service/messaging).
-- [ ] Seeded with the full set of calendar codes already referenced as
-  free text today (TARGET, UnitedStates, UnitedKingdom, Japan,
-  Switzerland, Australia, NewZealand, Canada, Norway, Sweden, Denmark,
-  China, HongKong, Singapore, SouthAfrica, India, SouthKorea, Mexico,
-  Brazil, ...).
+- [ ] Seeded with the full QuantLib calendar set (~60 codes,
+  transcribed from =ql/time/calendars/*.hpp=), including at minimum
+  the codes already referenced as free text today (TARGET,
+  UnitedStates, UnitedKingdom, Japan, Switzerland, Australia,
+  NewZealand, Canada, Norway, Sweden, Denmark, China, HongKong,
+  Singapore, SouthAfrica, India, SouthKorea, Mexico, Brazil, ...).
 
 * Plan
 

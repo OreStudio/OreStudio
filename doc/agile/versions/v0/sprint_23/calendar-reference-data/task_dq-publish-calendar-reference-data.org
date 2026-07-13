@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: E34B34F0-DE82-4CD2-AA7C-A15527ECCA59
+:END:
+#+title: Task: DQ-publish the calendar reference data
+#+description: Wire calendar, calendar_type, currency_country, currency_calendar, and currency_pair_convention_calendar into the DQ bundle publication pipeline (artefact tables + publish-from-dq functions + NATS handlers), following the existing hand-written pattern used for currency_pairs.
+#+type: task
+#+level: s1
+#+filetags: :calendar-reference-data:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 1F43998E-BD20-4CBC-8C05-509F1ABF0E0C, C6107A93-1639-4EEB-B00F-FF01CDA321FB
+#+blocked_since: 2026-07-13
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Wire the new calendar reference-data tables — =calendar=,
+=calendar_type=, =currency_country=, =currency_calendar=, and
+=currency_pair_convention_calendar= — into the DQ bundle publication
+pipeline (see [[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle
+Publication Pipeline]]), so this data reaches target services as
+dataset bundle publications, the same way =currency_pairs= is
+published today. Since the =publish_from_dq= codegen facet described
+in [[id:1CAA4761-AF7A-4264-8A41-C514083A4FA9][the open capture]] has
+not been built yet, this follows the existing hand-written pattern:
+artefact table(s), =publish-from-dq= SQL function(s), and NATS
+handler wiring, per entity.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- [ ] Artefact tables and =publish-from-dq= SQL functions exist for
+  =calendar=, =currency_country=, =currency_calendar=, and
+  =currency_pair_convention_calendar= (junction tables published
+  alongside their owning entity where that matches the existing
+  pattern; =calendar_type=, being a small static aux-type table, is
+  evaluated for whether it needs its own artefact or can ship as part
+  of =calendar='s bundle).
+- [ ] NATS handler wiring and workflow orchestration registered for
+  each new artefact type, matching =currency_pairs='s existing wiring.
+- [ ] Published bundles are visible and consumable via the Librarian
+  UI.
+- [ ] Blocked on tasks
+  [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity
+  for codegen]] and
+  [[id:C6107A93-1639-4EEB-B00F-FF01CDA321FB][Model a currency-country
+  junction]] landing first (the tables must exist before they can be
+  published).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

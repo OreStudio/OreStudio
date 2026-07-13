@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 7316C20B-1C0D-4BE3-A994-1957C7595771
+:END:
+#+title: ORE's AdvanceCalendar Convention Field
+#+description: What ORE's FXConvention AdvanceCalendar field is, how it drives spot/maturity date advancing (distinct from business-day or settlement calendars), and why it stays a comma-joined calendar list.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:calendar:refdata:ore:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+* Summary
+
+=AdvanceCalendar= is a field on ORE's =FXConvention= (and, by the
+same pattern, on commodity conventions) used specifically to *advance*
+— roll forward — the dates ORE computes for an FX instrument: the
+spot date from trade date, and the maturity date from spot. It is
+therefore a fundamentally different kind of calendar from
+[[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][=business_day_calendar=
+and =settlement_calendar=]]: those answer "is this day a valid
+business/settlement day," while =AdvanceCalendar= is consumed
+directly by date arithmetic (=Calendar::advance()=), not membership
+tests. Like every other ORE calendar field, its XML value is a
+comma-joined list of calendar names under =JointCalendar= union
+semantics — in practice almost always the pair's own two legs, but
+stored and resolved explicitly rather than derived on the fly.
+
+* Detail
+
+** What it actually does
+
+ORE resolves the spot and maturity dates of an FX instrument by
+advancing directly off the convention's =AdvanceCalendar=, not off any
+generically derived business-day calendar:
+
+#+begin_src cpp
+// OREAnalytics/orea/engine/parsensitivityinstrumentbuilder.cpp
+Date spot = conv->advanceCalendar().advance(today, conv->spotDays() * Days);
+Date maturity = conv->advanceCalendar().advance(spot, term);
+#+end_src
+
+The same field backs FX option pricing and FX vol curve construction
+(=OREData/ored/portfolio/fxoption.cpp=,
+=OREData/ored/marketdata/fxvolcurve.cpp=, both assign
+=spotCalendar_ = fxConv->advanceCalendar()=), and yield-curve
+bootstrapping for FX-forward-implied points
+(=OREData/ored/marketdata/yieldcurve.cpp=). ORE's own User Guide
+documents the fallback behaviour for FX forwards explicitly: "For cash
+settlement and if a FXIndex is specified defaults to the fx convention
+(field 'AdvanceCalendar') if left blank or omitted, otherwise to
+NullCalendar (no holidays)" (=Docs/UserGuide/tradedata/fxforward.tex=).
+
+** XML example
+
+From ORE's own example configuration
+(=Examples/MinimalSetup/Input/conventions.xml=):
+
+#+begin_src xml
+<FXConvention>
+  <Id>EUR-GBP-FX</Id>
+  <SpotDays>2</SpotDays>
+  <SourceCurrency>EUR</SourceCurrency>
+  <TargetCurrency>GBP</TargetCurrency>
+  <PointsFactor>1</PointsFactor>
+  <AdvanceCalendar>TARGET,UK</AdvanceCalendar>
+</FXConvention>
+#+end_src
+
+Other examples in the same repository show the same comma-joined
+shape: =UK,TARGET=, =US,JP=, =UK,US= — in every case, exactly the
+union of the pair's two legs' calendars, joined the same way
+[[id:035402B2-0136-44A5-BDB0-601F6864A9FA][=currency.holiday_calendar=]]
+is joined today.
+
+** Why it is stored explicitly rather than derived
+
+Given that =AdvanceCalendar= almost always equals the union of the
+pair's two legs, it might look redundant with a generically computed
+=business_day_calendar=. ORE keeps it as an explicit, named convention
+field rather than a derived value for two reasons evident from its
+usage:
+
+- It is resolved once at convention-load time and consumed directly
+  by date-arithmetic methods (=advance()=), not membership-tested
+  per-date, so eager resolution avoids recomputing a union on every
+  date calculation.
+- It is overridable per convention independently of the pair's two
+  legs — nothing in ORE's schema constrains it to equal exactly
+  =SourceCurrency= + =TargetCurrency='s calendars, even though every
+  example configuration happens to set it that way.
+
+** Comma-joined, not a single calendar
+
+Because every observed value is a comma-joined list of two or more
+calendar codes, =AdvanceCalendar= carries the same
+[[id:E1196536-38E8-4365-B0E6-A269F7CA3923][many-to-many]] shape as
+=currency.holiday_calendar=: a currency pair convention can need more
+than one calendar, so a reference-data model of this field is a
+junction (convention ↔ calendar), not a single nullable foreign key.
+
+* See also
+
+- [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]] — the hub.
+- [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]] — =business_day_calendar= and =settlement_calendar=, the two derived pair-level calendar concepts =AdvanceCalendar= is distinct from.
+- [[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar Administration]] — the =JointCalendar= union semantics =AdvanceCalendar='s comma-joined values rely on.
+- [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine (ORE) — GitHub]] — source of the code excerpts and XML example above.
+- [[https://www.quantlibguide.com/Calendars%20and%20holidays.html][QuantLib: Calendars and holidays]] — the underlying =Calendar::advance()= mechanism =AdvanceCalendar= is consumed through.

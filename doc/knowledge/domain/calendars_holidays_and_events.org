@@ -43,6 +43,13 @@ calendar, and where real event data (central bank meeting dates, in
 particular) can be sourced to populate it. That is the subject of
 [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]].
 
+A fourth, narrower topic worth a spoke of its own: ORE's own
+=AdvanceCalendar= convention field looks like a calendar in the
+ordinary sense but is consumed as a date-advancing input rather than a
+business-day test, and is documented separately in
+[[id:7316C20B-1C0D-4BE3-A994-1957C7595771][ORE's AdvanceCalendar
+Convention Field]].
+
 * Detail
 
 ** Why a calendar is more than a holiday list
@@ -135,12 +142,14 @@ describes.
 | Business Day | A day that is not a holiday for the relevant currency, country, or market calendar(s). See [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]]. |
 | Settlement Day | A business day that additionally excludes USD holidays, since USD holidays are conventionally valid business days but still block settlement. See [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]]. |
 | Joint Calendar | The union (join-holidays) or intersection (join-business-days) of several individual calendars, used wherever more than one calendar applies at once (e.g. a currency pair, or a currency needing more than one calendar). |
+| AdvanceCalendar | ORE's own =FXConvention= field used to advance (roll forward) spot and maturity dates directly via =Calendar::advance()=, distinct from a business-day/settlement calendar despite looking like one; comma-joined like other ORE calendar fields. See [[id:7316C20B-1C0D-4BE3-A994-1957C7595771][ORE's AdvanceCalendar Convention Field]]. |
 
 * See also
 
 - [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]] — the architectural split underlying this whole cluster.
 - [[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar Administration]] — Template/Instance recurrence, disable vs. remove, trusted sourcing.
 - [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]] — events as calendar entries, and sourcing central bank meeting data for DQ.
+- [[id:7316C20B-1C0D-4BE3-A994-1957C7595771][ORE's AdvanceCalendar Convention Field]] — ORE's date-advancing calendar field, distinct from business-day/settlement calendars.
 - [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] — the business-day/settlement-day distinction and rolling conventions a calendar's holidays feed into.
 - [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — canonical definition of business day vs. settlement day.
 - [[https://www.quantlibguide.com/Calendars%20and%20holidays.html][QuantLib: Calendars and holidays]] — the computational calendar model this reference-data layer sits above.

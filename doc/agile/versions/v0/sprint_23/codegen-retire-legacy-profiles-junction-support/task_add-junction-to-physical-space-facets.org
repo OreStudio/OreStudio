@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: B3F8CC1B-75C4-4AEF-8185-BBC3F11FA1A9
+:END:
+#+title: Task: Add junction to model_types on ores.cpp.domain/generator/repository.org
+#+description: Add junction to #+model_types: on the three physical-space facet node docs, re-tangle, and attempt generation against tenor_convention_resolution to surface what breaks.
+#+type: task
+#+level: s1
+#+filetags: :codegen:tooling:junction:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =junction= to =#+model_types:= on:
+
+- =projects/ores.codegen/library/templates/ores.cpp.domain.org=
+- =projects/ores.codegen/library/templates/ores.cpp.generator.org=
+- =projects/ores.codegen/library/templates/ores.cpp.repository.org=
+
+(currently all three declare =#+model_types: schema domain_entity= —
+add =junction= to each, matching the space-separated list format already
+used elsewhere, e.g. =ores.sql.schema.org='s =domain_entity junction
+schema table=). Deliberately *not* touching =ores.cpp.service.org=,
+=ores.cpp.protocol.org=, or =ores.cpp.qt.org= — see the parent story's
+Decisions for why junction stays out of scope for those.
+
+Each =.org= file states in its own body that the =.mustache= sibling is
+a *tangled artefact* — after editing the =.org=, re-tangle via =compass
+build --direct tangle_codegen_templates= (or
+=projects/ores.lisp/src/ores-build-codegen-templates.el= directly) so
+the actual =.mustache= file used by the generator picks up the change.
+
+Once tangled, attempt =compass codegen entity generate
+tenor_convention_resolution --dry-run= (the junction model at
+=projects/ores.marketdata/modeling/ores.marketdata.tenor_convention_resolution.org=,
+id =E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48=) and record exactly what
+happens: does it attempt to render the templates at all now (proving the
+=model_types= gate was the only blocker), or does it fail immediately
+with a template error (proving the templates themselves need adapting —
+the next task)? Either outcome is useful information for the next task;
+write it into this task's Notes/Result rather than silently fixing
+forward into template changes here — keep this task scoped to "can the
+graph select these facets for a junction at all", the template-content
+fix is the next task's job.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- All three facet =.org= files declare =junction= in =#+model_types:=.
+- Re-tangled =.mustache= files reflect no other change (the tangle
+  itself should be a no-op diff on the template content, since only the
+  =.org= keyword changed, not the mustache source block).
+- =compass codegen entity generate tenor_convention_resolution --dry-run=
+  attempts (successfully or with a specific, recorded error) to render
+  the domain/generator/repository facets, proving the physical-space
+  graph now considers junction eligible for them.
+- Regenerating the same sample of existing =domain_entity= models used
+  in the deletion task still produces zero diff (this task should not
+  change anything about how =domain_entity= models generate).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

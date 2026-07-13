@@ -1,0 +1,225 @@
+:PROPERTIES:
+:ID: 9023BDE0-979F-422F-BC73-985D6A80E7CB
+:END:
+#+title: Story: Retire legacy codegen profile system; add junction support to physical-space codegen
+#+description: Delete the dead legacy profile-resolution path in core.py and facet_catalogue.org (keep existing org models and their already-generated code untouched), then add real junction support (domain/generator/repository, at minimum) to the current ores.cpp.*.org physical-space system so junction entities like tenor_convention_resolution get proper C++ generation instead of hand-authored code.
+#+type: story
+#+level: s2
+#+filetags: :codegen:tooling:junction:tech-debt:sprint_23:v0:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Two parallel codegen systems currently coexist, and one of them is dead
+code that nobody notices is dead because it silently no-ops instead of
+erroring. This story deletes the dead one (forcing anything that
+secretly depended on it to break loudly) and then adds real C++
+generation support for junction models to the live system, so a junction
+entity like =tenor_convention_resolution= gets a generated
+domain/repository layer instead of hand-authored code standing in for a
+codegen gap.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
+| Now           | Not yet started — discovered and scoped while building the tenor management UI ([[id:5970B7FF-503D-477B-88DC-04F7147593C3][Tenor management UI task]]) needed a read path for =tenor_convention_resolution=, a junction, and found codegen can't produce one. |
+| Waiting on    | Nothing.                               |
+| Next          | Confirm the "delete legacy, let things break" scope (below) with the user, then start with the deletion task so its blast radius is known before building anything new on top. |
+| Last touched  | 2026-07-13                               |
+
+* Analysis: two parallel codegen systems
+
+Investigated while trying to get =compass codegen entity generate
+tenor_convention_resolution= to produce a C++ repository (not just SQL)
+for a junction model. Two independent systems exist side by side:
+
+** System 1 (legacy, dead for =entity generate=): =facet_catalogue.org=
+
+- File: =projects/ores.codegen/library/facet_catalogue.org=
+  (id =A8145FD7-0651-40FD-857E-BC37C9320020=). Its own header claims to
+  be "the authoritative source ... consumed directly by generator.py via
+  =_load_profiles_from_org()="=.
+- Parsed by =_load_profiles_from_org()= in
+  =projects/ores.codegen/src/codegen/core.py= (around line 520), used
+  only by the =--profile= flag path (=compass codegen generate --model
+  ... --profile all-cpp=, and the deprecated =--profile= flag on
+  =compass codegen entity generate=).
+- *Confirmed dead for the default/=--address= path*: edited this file's
+  =domain= facet to add =junction= to its =:model_types:=, re-ran
+  =compass codegen entity generate tenor_convention_resolution
+  --dry-run=, and the output was byte-for-byte unchanged (still SQL
+  only). Verified programmatically too — the function that actually
+  drives =entity generate= (=resolve_targets= /
+  =compute_supported_set= in =physical_space.py=, see System 2 below)
+  never reads this file at all. The edit was reverted (no trace left in
+  the tree from this investigation).
+
+** System 2 (current, live): =library/templates/ores.*.org= physical-space nodes
+
+- One small =.org= file per facet/technical-space/archetype under
+  =projects/ores.codegen/library/templates/= (e.g.
+  =ores.cpp.domain.org=, =ores.cpp.repository.org=,
+  =ores.cpp.generator.org=, =ores.cpp.service.org=,
+  =ores.cpp.protocol.org=, =ores.cpp.qt.org=, =ores.sql.schema.org=,
+  ...). Each carries its own =#+model_types:= keyword and a literate
+  =mustache= source block, tangled to the sibling =.mustache= file
+  actually consumed by the generator (=compass build --direct
+  tangle_codegen_templates= re-tangles after editing the =.org=).
+- Parsed by =load_graph()= in
+  =projects/ores.codegen/src/codegen/physical_space.py= (line ~75),
+  which builds a =Graph= of facets/archetypes/model-type-admissibility
+  from these files.
+- Driven by =resolve_targets()= in
+  =projects/ores.codegen/src/codegen/generate.py= (line ~94), calling
+  =compute_supported_set()= (physical_space.py line ~168) —
+  intersecting "facets admissible for this model's type" with "facets
+  requested via =--address="=. This is what =compass codegen entity
+  generate <name> [--address ...]= actually calls.
+- Currently, =ores.cpp.domain.org=, =ores.cpp.generator.org=, and
+  =ores.cpp.repository.org= all declare =#+model_types: schema
+  domain_entity= — *no* =junction=. Only =ores.sql.schema.org= (or
+  wherever the SQL facet's node lives) includes =junction=, which is why
+  =entity generate= on a junction produces SQL only.
+
+** The trap: junction C++ template mapping already exists, untested, in the dead system
+
+=projects/ores.codegen/src/codegen/core.py= has
+=get_cpp_junction_template_mappings()= (line ~1094) mapping junction
+data onto the *same* entity-shaped C++ templates (domain class,
+JSON I/O, table I/O, generator, entity, mapper, repository — explicitly
+*not* service or protocol, per its own docstring: "Junction tables ...
+do not generate service or protocol files (those are only for domain
+entities)"). There is also junction-specific data enrichment in
+=core.py= around line 2615-2660 (normalising =junction.left=/=right=/
+=columns=, adding =is_uuid=/=is_optional_uuid= flags, etc. onto the
+=junction= dict — but *not* rewriting it into a =domain_entity=-shaped
+dict).
+
+This code is reachable only through System 1 (the =--profile= path),
+which strongly suggests it was written and partially wired up, then
+abandoned mid-migration when the physical-space system (System 2)
+superseded profiles for the default path — without anyone porting the
+junction C++ support across. *It has probably never been exercised
+end-to-end*: nothing in the current default code path can reach it, and
+no generated junction C++ file exists anywhere in the tree to prove it
+once worked.
+
+The templates it targets (=cpp_domain_type_class.hpp.mustache= etc.)
+read =domain_entity.entity_singular=, =domain_entity.primary_key=, and
+similar fields that assume a single primary key column — a junction has
+=left=/=right= FK columns instead, no independent primary key of its
+own conceptually (though the generated SQL PK is the composite of both
+FK columns plus =valid_from=). Whether the templates handle this
+correctly for junction data, or need real Mustache-level branching
+(=domain_entity= vs =junction= sections) or a normalisation shim that
+manufactures a synthetic composite-key "domain entity" view over a
+junction, is *unknown and unverified* — this is the actual work, not
+just flipping =model_types=.
+
+* Acceptance
+
+- =facet_catalogue.org= and =core.py='s =_load_profiles_from_org()= /
+  =--profile= code path (System 1) are deleted outright — not
+  deprecated, not left dormant. Anything that turns out to secretly
+  depend on it breaks immediately and loudly (a missing function, a
+  failed import, a CLI error) rather than silently no-op'ing the way the
+  =--profile=-editing experiment above did. This is deliberate: the
+  point is to surface every remaining dependency on the dead system by
+  breaking it, not to guess at them in advance.
+- Every existing =*_domain_entity.org=/=*_junction.org=/etc. model file
+  and every already-generated =.hpp=/=.cpp=/=.sql= file in the tree is
+  left completely untouched by the deletion — this story removes dead
+  *tooling* code, not generated artefacts or their source models. If
+  deleting System 1 causes regeneration of any existing entity to
+  produce a diff, that is a bug in this story's deletion, not an
+  acceptable side effect.
+- =compass codegen entity generate <any-existing-entity>= (a sample of a
+  few, across a few components) is re-run after the deletion and
+  produces byte-identical output to before, proving System 1 truly
+  wasn't load-bearing for anything currently generated.
+- =ores.cpp.domain.org=, =ores.cpp.generator.org=, and
+  =ores.cpp.repository.org= (at minimum — service/protocol/qt
+  deliberately excluded, matching =get_cpp_junction_template_mappings='s
+  own documented scope decision, unless investigation says otherwise)
+  gain =junction= in their =#+model_types:=, are re-tangled, and their
+  templates are fixed/adapted as needed so junction generation actually
+  produces compilable, correct C++.
+- Validated end-to-end against a real junction:
+  =projects/ores.marketdata/modeling/ores.marketdata.tenor_convention_resolution.org=
+  (id =E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48=) regenerates a domain
+  struct + repository (at minimum =read_all=/=read_latest=-style
+  queries; write support if the templates naturally produce it, though
+  this junction's own data is Foundation-layer-managed and doesn't
+  strictly need writes). Diff the generated repository/entity against
+  the hand-authored reference files listed below to sanity-check field
+  names, types, and query shape — then delete the hand-authored files
+  and switch =projects/ores.marketdata/core/src/messaging/registrar.cpp=
+  and the hand-authored service/protocol/handler (added in the Tenor
+  management UI task) to use the generated repository instead.
+- No regression to any of the ~83 existing =domain_entity= models or ~8
+  existing =junction= models' generated output (see Acceptance bullet 3
+  above) — this is a strictly additive change to what junctions can
+  generate, not a reshuffle of what entities already generate.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:386BED71-A76B-43EF-8A72-0D19704C5151][Delete legacy codegen profile system (facet_catalogue.org, core.py profile path)]] | BACKLOG | | | Delete facet_catalogue.org and core.py's _load_profiles_from_org()/--profile code path outright. Keep all existing org models and generated code untouched; regenerate a sample of existing entities to confirm no diff. |
+| [[id:B3F8CC1B-75C4-4AEF-8185-BBC3F11FA1A9][Add junction to model_types on ores.cpp.domain/generator/repository.org]] | BACKLOG | | | Add junction to #+model_types: on the three physical-space facet node docs, re-tangle, and attempt generation against tenor_convention_resolution to surface what breaks. |
+| [[id:987FD4D9-7293-4E27-8688-6466A7FA4211][Fix domain/generator/repository Mustache templates for junction-shaped data]] | BACKLOG | | | Adapt the three facets' templates so junction generation (composite left/right key, no single primary_key) produces compilable, correct C++ -- template branching or a data-normalisation shim in core.py. |
+| [[id:5E74A27E-15BE-47CB-BDF1-B359AC35DB65][Validate junction codegen against tenor_convention_resolution; retire hand-authored code]] | BACKLOG | | | Regenerate tenor_convention_resolution, diff against the hand-authored reference files, build, then delete the hand-authored entity/repository and repoint the hand-authored service/protocol/handler/registrar at the generated repository. |
+| [[id:05C64B72-418A-45E7-BBD2-2E91FD69DE45][Sweep docs/skills/recipes for stale legacy-profile-system references]] | BACKLOG | | | Correct any remaining doc/knowledge/skill/recipe text describing the deleted facet_catalogue.org/--profile system, so documentation matches the physical-space system only. |
+
+* Decisions
+
+- *Delete, don't deprecate.* Explicit user instruction: rather than
+  leaving System 1 in place as unused-but-harmless code, delete it
+  outright so that anything still secretly depending on it breaks
+  immediately and visibly, rather than continuing to silently work by
+  accident (or silently *not* work, as the =facet_catalogue.org=
+  edit-with-no-effect experiment demonstrated) until someone notices
+  much later.
+- *Keep every existing model and generated artefact untouched.* This
+  story is scoped to the codegen *tooling*, not to any entity's
+  generated output. Explicit user instruction: "keep the legacy models
+  and generated code" — only the dead resolution code path and the
+  legacy catalogue doc are in scope for deletion.
+- *Junction gets domain/generator/repository, not service/protocol/qt,
+  as the initial scope* — matching what
+  =get_cpp_junction_template_mappings='s own docstring already
+  documents as the intended design ("do not generate service or
+  protocol files"). A junction's rows are meant to be read through a
+  parent entity's service, not exposed as their own top-level NATS
+  endpoint — the Tenor management UI task's hand-authored service is the
+  concrete counter-example motivating this story, and if that pattern
+  turns out to be needed generally (not just for this one screen), that
+  is a separate, later decision about whether to widen junction codegen
+  scope further, not something to fold into this story's initial pass.
+
+* Out of scope
+
+- Any change to what an existing =domain_entity= or already-supported
+  =junction= (SQL-only) model generates today — covered by the
+  regression-check acceptance bullet.
+- Widening junction generation to service/protocol/qt facets — out of
+  scope unless the domain/generator/repository work reveals it's
+  actually needed sooner than expected (see Decisions).
+- Fixing the =IMM_ROLL= tenor resolution algorithm or seeding
+  credit/CDS resolution rows — unrelated, tracked separately in the
+  capture [[id:7746D493-C42B-441B-93C9-765A4EC768D6][Implement IMM_ROLL
+  tenor resolution for credit/CDS conventions]].
+- Finishing the Tenor management UI itself — tracked in
+  [[id:5970B7FF-503D-477B-88DC-04F7147593C3][Tenor management UI
+  task]], which this story unblocks (that task can proceed now with a
+  hand-authored service/protocol/handler as a stopgap, per the user's
+  explicit "continue your work manually" instruction, and switch to the
+  generated repository once this story lands).

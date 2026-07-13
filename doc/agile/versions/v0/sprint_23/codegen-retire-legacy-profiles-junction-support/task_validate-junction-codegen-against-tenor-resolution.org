@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 5E74A27E-15BE-47CB-BDF1-B359AC35DB65
+:END:
+#+title: Task: Validate junction codegen against tenor_convention_resolution; retire hand-authored code
+#+description: Regenerate tenor_convention_resolution, diff against the hand-authored reference files, build, then delete the hand-authored entity/repository and repoint the hand-authored service/protocol/handler/registrar at the generated repository.
+#+type: task
+#+level: s1
+#+filetags: :codegen:tooling:junction:marketdata:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Retire the hand-authored stopgap code once real junction codegen works,
+so =tenor_convention_resolution= ends up on the same generated-code
+footing as every other entity in the codebase, per this story's whole
+point.
+
+Hand-authored reference files to diff against and then delete (written
+while this story was being scoped, as a temporary stand-in — see the
+[[id:5970B7FF-503D-477B-88DC-04F7147593C3][Tenor management UI task]]
+for the full context of why they exist):
+
+- =projects/ores.marketdata/core/include/ores.marketdata.core/repository/tenor_convention_resolution_entity.hpp=
+- =projects/ores.marketdata/core/include/ores.marketdata.core/repository/tenor_convention_resolution_repository.hpp=
+- =projects/ores.marketdata/core/src/repository/tenor_convention_resolution_repository.cpp=
+
+Also hand-authored, and *not* to be deleted by this task (junction
+codegen deliberately excludes service/protocol — see story Decisions),
+but which need repointing from the hand-authored repository to the
+generated one once it exists:
+
+- Whatever service/protocol/handler the Tenor management UI task ends up
+  writing by hand (files not yet fixed at the time this story was
+  written — check that task's Result for the final file list).
+- =projects/ores.marketdata/core/src/messaging/registrar.cpp= — the
+  hand-added subscription for
+  =get_tenor_convention_resolutions_request= there should keep working
+  unchanged; only the handler's internal repository dependency changes.
+
+Steps: regenerate =tenor_convention_resolution= with the now-working
+junction codegen; diff the generated entity/repository against the
+hand-authored files above field-by-field (naming, types, nullability);
+resolve any discrepancies (prefer the generated shape unless it's
+actually wrong, in which case fix the templates, not this task's diff);
+delete the hand-authored entity/repository files; update the
+hand-authored service to depend on the generated repository class
+instead; rebuild and re-run the marketdata test suite plus the Tenor
+management UI screen manually to confirm nothing regressed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- The three hand-authored entity/repository files listed above are
+  deleted; the generated repository is used instead.
+- The hand-authored service (from the Tenor management UI task) is
+  repointed at the generated repository and still builds.
+- =ores.marketdata.core= (and any other affected component) builds
+  clean; the marketdata test suite passes.
+- The Tenor management UI screen still shows correct, identical data
+  after the swap (manual check).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

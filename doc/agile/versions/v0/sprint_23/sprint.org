@@ -43,6 +43,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------|
 | [[id:32C37202-5194-4B10-8705-DA77A5073D53][Open sprint 23]] | DONE | 2026-07-11 | 2026-07-11 | Scaffold sprint 23, wire version manifest, move postponed stories. |
+| [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] | BACKLOG | 2026-07-13 | | Delete the dead facet_catalogue.org/--profile codegen path; add real junction C++ generation (domain/generator/repository) to the physical-space system, validated against tenor_convention_resolution. |
 | [[id:263C0B6B-D983-44F7-8D57-BB095972445A][DQ/Refdata service boundary cleanup]] | BACKLOG | 2026-07-11 | | Route DQ bundle publication through refdata.v1.* NATS endpoints instead of direct table writes. |
 | [[id:3C8912A0-78C8-4CD5-BA75-EF63D606FEF4][IAM/Refdata service boundary cleanup]] | BACKLOG | 2026-07-11 | | Replace ores.iam.core's direct refdata table access with NATS calls. |
 | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] | BACKLOG | 2026-07-12 | | ores.iam.core's party_cache never subscribes to any change notification (docstring is aspirational); subscribe it to refdata's existing ores.refdata.party_changed outbox event so activation is reflected without an IAM restart. |

@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 386BED71-A76B-43EF-8A72-0D19704C5151
+:END:
+#+title: Task: Delete legacy codegen profile system (facet_catalogue.org, core.py profile path)
+#+description: Delete facet_catalogue.org and core.py's _load_profiles_from_org()/--profile code path outright. Keep all existing org models and generated code untouched; regenerate a sample of existing entities to confirm no diff.
+#+type: task
+#+level: s1
+#+filetags: :codegen:tooling:tech-debt:codegen-retire-legacy-profiles-junction-support:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Delete System 1 as described in the parent story's Analysis section:
+
+- =projects/ores.codegen/library/facet_catalogue.org= (id
+  =A8145FD7-0651-40FD-857E-BC37C9320020=) — the entire file.
+- =_load_profiles_from_org()= in
+  =projects/ores.codegen/src/codegen/core.py= (around line 520-577) and
+  every function/branch reachable only from it or from the =--profile=
+  CLI flag (both the =compass codegen generate --profile= path and the
+  deprecated =--profile= flag on =compass codegen entity generate= —
+  check =projects/ores.compass/src/compass_codegen*.py= for the
+  =--profile= argparse wiring and remove it too, or leave the flag
+  parsing in place but make it a hard error pointing at =--address= if
+  removing the flag entirely is too disruptive for muscle memory; use
+  judgement here, the story's real requirement is deleting the dead
+  *resolution* code, not necessarily the CLI flag string itself).
+- =get_cpp_junction_template_mappings()= in =core.py= (~line 1094) —
+  this is dead code reachable only through System 1 (see story
+  Analysis). *Do not* delete it as part of this task, though — the next
+  task (=Add junction to model_types on
+  ores.cpp.domain/generator/repository.org=) needs to look at it as
+  reference for what fields a junction needs mapped, since it is the
+  only existing (if untested) attempt at junction C++ template mapping
+  in the codebase. Leave it in place for that task to consume/replace,
+  and note in this task's Result whichever way it went so the next task
+  doesn't waste time rediscovering it.
+
+Do this deletion *first*, before starting the junction-support tasks —
+the story's explicit ordering rationale: deleting first, then building
+new junction support on the clean system, means any breakage the
+deletion causes is diagnosed against a system with no new
+in-progress junction changes to confound the diagnosis.
+
+After deleting, regenerate a handful of existing entities across a few
+different components (e.g. one from =ores.refdata=, one from
+=ores.trading=, one from =ores.marketdata=) via =compass codegen entity
+generate <name>= and diff against git HEAD — expect *zero* diff. If
+anything differs, that's this task's own regression, not an acceptable
+side effect (see the parent story's Acceptance).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- =facet_catalogue.org= is deleted.
+- =_load_profiles_from_org()= and its exclusive call chain are deleted
+  from =core.py=.
+- =get_cpp_junction_template_mappings()= is explicitly left in place
+  (noted above) for the follow-on junction-support tasks to consume.
+- Regenerating a sample of existing entities across a few components
+  produces zero diff against HEAD.
+- Any script/doc that referenced =--profile= or =facet_catalogue.org=
+  either still works (if the flag is kept as a hard-error shim) or is
+  updated to use =--address= — full sweep of every such reference is the
+  separate =Sweep docs/skills/recipes= task, but *this* task must not
+  leave the build itself broken (e.g. a CI script invoking =--profile=
+  directly) — grep for =--profile= across =projects/ores.compass=,
+  =.github/workflows=, and any Makefile/shell wrapper before deleting,
+  and fix those specific call sites as part of this task even though the
+  broader doc sweep is separate.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

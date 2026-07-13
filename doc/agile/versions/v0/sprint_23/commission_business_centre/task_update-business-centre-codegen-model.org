@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_business_centre:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/appraise-business-centre
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-13
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ business_centre has a codegen entity model (=projects/modeling/business_centre.o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] |
-| Now          | Not yet started.                       |
+| Now          | In progress, same branch/PR as appraise-business-centre (keeping PR count low). |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-07-12                               |
 
 * Acceptance

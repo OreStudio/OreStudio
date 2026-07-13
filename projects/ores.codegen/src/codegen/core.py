@@ -708,12 +708,21 @@ def resolve_output_path(output_pattern, model_data, model_type):
 
         generator_facet_name = entity.get('generator_facet_name', 'generators')
 
+        # cached_by: the consumer component a nats-event-cache archetype's
+        # output belongs to (e.g. party is defined in refdata but its
+        # generated cache compiles into iam), distinct from the entity's
+        # own component used by every other facet above.
+        cache_component = entity.get('cached_by', component)
+        cache_component_dir = f"ores.{cache_component}"
+
         result = result.replace('{component_dir}', component_dir)
         result = result.replace('{component_core_dir}', component_core_dir)
         result = result.replace('{component_service_dir}', component_service_dir)
         result = result.replace('{component_include}', component_include)
         result = result.replace('{component_core}', component_core)
         result = result.replace('{component_service}', component_service)
+        result = result.replace('{cache_component_dir}', cache_component_dir)
+        result = result.replace('{cache_component}', cache_component)
         result = result.replace('{component}', component)
         result = result.replace('{entity_plural}', entity_plural)
         result = result.replace('{entity}', entity_singular)
@@ -1415,6 +1424,26 @@ def validate_read_for_cache(domain_entity):
     domain_entity.setdefault('read_for_cache', False)
 
 
+def validate_cached_by(domain_entity):
+    """
+    Validate the cached_by messaging flag: the consumer component a
+    generated nats-event-cache lives in (e.g. party is defined in refdata
+    but cached_by: iam moves its generated cache into ores.iam). Requires
+    read_for_cache, since the generated cache warms/reloads itself via
+    that RPC.
+
+    Args:
+        domain_entity (dict): not mutated; cached_by has no default (its
+            absence simply means no nats-event-cache archetype applies).
+
+    Raises:
+        ValueError: if cached_by is set without read_for_cache.
+    """
+    if domain_entity.get('cached_by') and not domain_entity.get('read_for_cache'):
+        raise ValueError(
+            f"{domain_entity.get('entity_singular', '?')}: cached_by requires read_for_cache")
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -2032,6 +2061,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['component_service_upper'] = (
                 domain_entity['component_service'].replace('.', '_').upper()
             )
+            # cached_by: the consumer component a nats-event-cache
+            # archetype's output belongs to (see resolve_output_path);
+            # exposed to templates alongside the entity's own component.
+            domain_entity['cache_component'] = domain_entity.get('cached_by', component)
+            domain_entity['cache_component_upper'] = (
+                domain_entity['cache_component'].replace('.', '_').upper()
+            )
         if 'entity_singular' in domain_entity:
             domain_entity['entity_singular_upper'] = domain_entity['entity_singular'].upper()
             # Human-readable version (last word, e.g., "dataset_bundle" -> "bundle")
@@ -2091,6 +2127,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity.setdefault('history_request_id_field', pk_col)
         domain_entity.setdefault('single_delete', False)
         validate_read_for_cache(domain_entity)
+        validate_cached_by(domain_entity)
         # Derive paged list-by-foreign-key NATS operations (protocol/handler/
         # registrar) from any foreign key opted in via :list_by: true. The
         # repository/service methods themselves are generated directly off

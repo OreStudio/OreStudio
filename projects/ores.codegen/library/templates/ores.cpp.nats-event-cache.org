@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: D30C3CD0-FFF0-48D8-A7B1-2CBA35207884
+:END:
+#+title: ores.cpp.nats-event-cache
+#+description: Consumer-side in-process cache mirroring a producer entity, kept fresh via eventing.
+#+type: facet
+#+model_types: domain_entity
+#+default: disabled
+#+level: cross
+#+facet_group: ores.cpp
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is the literate source for the =ores.cpp.nats-event-cache=
+facet of the codegen template library. Each section documents one
+template and holds its source in a =mustache= block tangled to the
+sibling =.mustache= file consumed by =generator.py=. The =.mustache=
+files are generated artefacts — edit this document, then run the tangle
+(=compass build --direct tangle_codegen_templates=).
+
+* Summary
+
+Two templates generating a consumer-side entity-mirror cache: the cache
+class itself (a =partitioned_cache= instantiation warmed and reloaded via
+the entity's =read_for_cache= RPC), and a registrar-wiring snippet doing
+the startup warm-up and change-event subscription. Unlike every other
+facet, output lands in the *consumer's* component tree, not the entity's
+own — see =cached_by= below.
+
+* The ores.cpp.nats-event-cache facet
+
+Disabled by default (=#+default: disabled=): an entity opts in by
+setting both =read_for_cache: true= (the RPC the cache warms/reloads
+from) and =cached_by: <component>= (the component that consumes the
+cache — e.g. party is defined in =ores.refdata= but sets
+=cached_by: iam= because IAM is the one that needs an in-process mirror
+of party data), then enabling the facet itself via
+=:ores.cpp.nats-event-cache.enabled: true= in its =** Flags= drawer.
+
+* Mustache incantations
+
+Model flags consumed by these templates:
+
+- =cached_by= (string, Flags) — the consumer component. Resolved by
+  =resolve_output_path= into the ={cache_component}= /
+  ={cache_component_dir}= output-path tokens (distinct from
+  ={component}= / ={component_dir}=, which stay the entity's own),
+  and exposed to templates as =cache_component= /
+  =cache_component_upper=. Requires =read_for_cache=; validated by
+  =validate_cached_by= in =core.py=.
+
+The cache class picks a =boost::hash<...>= specialisation for its key
+type when the entity's primary key is a UUID
+(={{#primary_key.is_uuid}}=), since =std::hash= has no UUID
+specialisation; text/other primary keys use the =partitioned_cache=
+default (=std::hash<Key>=).
+
+* Templates
+
+One subheading per template, in the archetype docs below.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:34C228D7-52AD-46AC-AFC1-5EC7FDDF127D][ores.cpp.nats-event-cache.cache_header]] | Consumer-side ={entity}_cache.hpp=: a =partitioned_cache= instantiation with a =load(tenant_id)= method calling the entity's =read_for_cache= RPC. |
+| [[id:60339A37-DFB7-4E47-B7B3-79261BAC3455][ores.cpp.nats-event-cache.registrar_wiring]] | Consumer-side ={entity}_cache_registrar.hpp=: a =warm_and_subscribe_{entity}_cache()= free function doing startup warm-up and change-event-driven reload, for a hand-written consumer registrar to call. |
+
+* See also
+
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.
+- [[id:E9A47FBA-7799-4D6B-AD1A-144B2F740F0F][ores.cpp.protocol.protocol_header]] — generates the =read_for_cache= RPC this facet's cache warms/reloads from.

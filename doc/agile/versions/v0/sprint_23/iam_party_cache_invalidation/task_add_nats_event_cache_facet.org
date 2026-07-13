@@ -7,43 +7,106 @@
 #+level: s1
 #+filetags: :iam_party_cache_invalidation:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-nats-event-cache-facet
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
 #+updated: 2026-07-13
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as first consumer)]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a =nats-event-cache= codegen facet generating two archetypes for
+any tenant-scoped entity that opts in: the consumer-side
+={entity}_cache.hpp= (a =partitioned_cache= instantiation warmed and
+reloaded via the entity's =read_for_cache= RPC) and a
+={entity}_cache_registrar.hpp= snippet (startup warm-up + change-event
+subscription, subject-bound via =event_traits=, no hardcoded strings).
+Declared via =cached_by: <component>= on the entity's own model, whose
+output lands in the *consumer's* component tree — not the entity's own
+— since the generated cache must compile into the consumer's binary
+(e.g. party is defined in =ores.refdata= but its cache would compile
+into =ores.iam=).
+
+This task builds and verifies the facet only; it does not wire party
+onto it (that is the next task, "Migrate party to the generated
+cache").
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                |
 | Parent story | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as first consumer)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-13                               |
 
 * Acceptance
 
--
+- A new =ores.cpp.nats-event-cache= facet exists, disabled by default;
+  an entity opts in via =:ores.cpp.nats-event-cache.enabled: true=
+  (file-level drawer) plus =cached_by: <component>= and
+  =read_for_cache: true= (both in =** Flags=).
+- Opting in generates, with no hand-written code:
+  - ={entity}_cache.hpp= — a =partitioned_cache<std::string, PK, Value>=
+    instantiation with =load(tenant_id)= (calls =read_for_cache=,
+    replaces the tenant's partition) and =lookup(tenant_id, key)=.
+  - ={entity}_cache_registrar.hpp= — =warm_and_subscribe_{entity}_cache()=
+    doing startup warm-up + =event_traits=-bound reload-on-change.
+  - Both land under =projects/ores.<cached_by>/core/...=, not the
+    entity's own component tree.
+- =cached_by= requires =read_for_cache= (validated, raises otherwise);
+  entities that don't opt in are unaffected (regression-checked).
+- Facet/archetype docs describe the new flags and mechanism.
+- party's model/messaging layer is untouched by this task.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add =resolve_output_path= tokens ={cache_component}=/
+   ={cache_component_dir}= resolved from =cached_by=, alongside the
+   existing entity-own-component tokens.
+2. Add =cache_component=/=cache_component_upper= to the per-entity
+   template context (for namespaces/include guards), plus
+   =validate_cached_by= (requires =read_for_cache=).
+3. Add the =ores.cpp.nats-event-cache= facet doc (=#+default: disabled=)
+   and its two archetype docs/templates, mirroring the hand-written
+   =party_cache.hpp= / IAM registrar wiring this generalizes.
+4. Register the facet in =facet_catalogue.org=.
+5. Verify: temporarily opt party in (=cached_by: iam=,
+   =read_for_cache: true=, facet enabled), regenerate via =--diff=,
+   confirm correct output under =ores.iam=; revert afterwards (party's
+   actual migration is the next task). Confirm unrelated entities are
+   unaffected.
 
 * Notes
+
+Verified with =compass codegen entity generate party --address
+ores.cpp.nats-event-cache --diff/--dry-run=:
+- With the flags unset, the facet generates nothing for party (or any
+  other entity) — confirmed the facet is correctly opt-in-only.
+- Temporarily opting party in (=cached_by: iam=, =read_for_cache: true=,
+  =:ores.cpp.nats-event-cache.enabled: true=) renders correct C++ for
+  both archetypes, with output paths correctly landing under
+  =projects/ores.iam/core/include/ores.iam.core/service/cache/=
+  despite party's model living in =ores.refdata=. Reverted afterwards —
+  no real consumer wired up by this task (that's the next task).
+- =--diff= against =counterparty=/=currency=/=book= (none of which opt
+  in) is byte-identical before/after this change — no regression.
+- Could not run a full C++ build in this environment (vcpkg
+  dependencies are not installed here) — verified the generated code
+  by faithful comparison against the hand-written =party_cache.hpp= /
+  =ores.iam.core/messaging/registrar.cpp= prototype this generalizes,
+  which does compile and run in production.
+- Codegen python test suite: 42/42 passed (unchanged from the prior
+  task; no new unit tests added for this one — see the pattern already
+  established for =read_for_cache= if a follow-up wants
+  =has_tenant_id=/=cached_by= gate coverage).
 
 * Test Scenarios
 
@@ -69,3 +132,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added the =ores.cpp.nats-event-cache= codegen facet, disabled by
+default and opt-in per entity:
+
+- =core.py=: =resolve_output_path= gains ={cache_component}=/
+  ={cache_component_dir}= tokens resolved from a new =cached_by= flag
+  (distinct from the entity's own =\{component}\=/=\{component_dir}\=);
+  =cache_component=/=cache_component_upper= exposed to templates;
+  =validate_cached_by= requires =read_for_cache=.
+- New facet doc =ores.cpp.nats-event-cache.org= (=#+default: disabled=)
+  plus two archetypes:
+  - =ores.cpp.nats-event-cache.cache_header= (→
+    =cpp_nats_event_cache.hpp.mustache=): ={entity}_cache.hpp=, a
+    =partitioned_cache= instantiation with =load(tenant_id)= (calls
+    =read_for_cache=) and =lookup(tenant_id, key)=.
+  - =ores.cpp.nats-event-cache.registrar_wiring= (→
+    =cpp_nats_event_cache_registrar.hpp.mustache=):
+    ={entity}_cache_registrar.hpp=, a
+    =warm_and_subscribe_{entity}_cache()= free function for a
+    hand-written consumer registrar to call.
+- Registered in =facet_catalogue.org=.
+
+Verified via =compass codegen entity generate party --address
+ores.cpp.nats-event-cache --diff/--dry-run=: unopted entities generate
+nothing (confirmed opt-in-only and no regression against
+counterparty/currency/book); party temporarily opted in
+(=cached_by: iam=, =read_for_cache: true=, facet enabled) renders
+correct C++ landing under =ores.iam=, then reverted — party's actual
+migration is the next task. No full C++ build available in this
+environment; verified by comparison against the hand-written
+=party_cache.hpp=/=registrar.cpp= prototype being generalized. Python
+suite 42/42 passed.

@@ -112,7 +112,6 @@ void DatasetViewDialog::setupUi() {
     WidgetUtils::setupComboBoxes(this);
     setWindowTitle(tr("Dataset Details"));
     setMinimumSize(800, 600);
-    resize(950, 700);
 
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);

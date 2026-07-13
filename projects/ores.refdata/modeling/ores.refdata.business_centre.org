@@ -18,9 +18,10 @@
 
 Business centres identify financial trading locations used for holiday
 calendar determination (e.g. "USNY" for New York, "GBLO" for London),
-using FpML-style codes. Coding-scheme scoped (a code is only unique
-within its scheme, e.g. FpML vs ISDA) and optionally linked to a country
-for flag-icon display in the Qt UI. Referenced by =business_unit= as a
+using FpML-style codes. Each code is unique per tenant regardless of
+coding scheme (e.g. FpML vs ISDA) -- matching =party_id_scheme='s
+code-only primary key -- and optionally linked to a country for
+flag-icon display in the Qt UI. Referenced by =business_unit= as a
 soft FK.
 
 * Flags

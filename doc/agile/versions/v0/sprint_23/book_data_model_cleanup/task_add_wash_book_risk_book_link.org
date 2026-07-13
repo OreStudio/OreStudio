@@ -8,7 +8,7 @@
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch: feature/document-no-book-hierarchy
-#+pr:
+#+pr: 1546
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-11
@@ -70,7 +70,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1546][#1546]] | [agile,doc] Batch: hierarchy/legal-entity/allowed-lists/wash docs |
 
 * Review
 

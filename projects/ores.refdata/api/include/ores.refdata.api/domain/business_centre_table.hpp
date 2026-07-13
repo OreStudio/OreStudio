@@ -28,12 +28,7 @@
 namespace ores::refdata::domain {
 
 /**
- * @brief Converts a single business centre to table format string.
- */
-ORES_REFDATA_API_EXPORT std::string convert_to_table(const business_centre& c);
-
-/**
- * @brief Converts a vector of business centres to table format string.
+ * @brief Converts business_centres to the table format.
  */
 ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<business_centre>& v);
 

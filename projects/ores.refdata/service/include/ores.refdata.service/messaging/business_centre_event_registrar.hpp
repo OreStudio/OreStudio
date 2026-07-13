@@ -17,22 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_BUSINESS_CENTRE_TABLE_IO_HPP
-#define ORES_REFDATA_API_DOMAIN_BUSINESS_CENTRE_TABLE_IO_HPP
+#ifndef ORES_REFDATA_SERVICE_MESSAGING_BUSINESS_CENTRE_EVENT_REGISTRAR_HPP
+#define ORES_REFDATA_SERVICE_MESSAGING_BUSINESS_CENTRE_EVENT_REGISTRAR_HPP
 
-#include "ores.refdata.api/domain/business_centre.hpp"
-#include "ores.refdata.api/export.hpp"
-#include <iosfwd>
-#include <vector>
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace ores::refdata::domain {
+namespace ores::refdata::service::messaging {
 
-/**
- * @brief Dumps the business_centre objects to a stream in table format.
- */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const std::vector<business_centre>& v);
+[[nodiscard]] ores::eventing::service::subscription
+register_business_centre_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                       ores::eventing::service::event_bus& event_bus,
+                                       ores::nats::service::client& nats);
 
-}
+} // namespace ores::refdata::service::messaging
 
 #endif

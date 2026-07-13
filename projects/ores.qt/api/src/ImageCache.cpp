@@ -359,7 +359,7 @@ void ImageCache::loadBusinessCentreMapping() {
             }
 
             std::unordered_map<std::string, std::string> bc_to_country;
-            for (const auto& bc : response->business_centres) {
+            for (const auto& bc : response->centres) {
                 if (!bc.country_alpha2_code.empty()) {
                     bc_to_country.emplace(bc.code, bc.country_alpha2_code);
                 }

@@ -17,21 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_BUSINESS_CENTRE_TABLE_IO_HPP
-#define ORES_REFDATA_API_DOMAIN_BUSINESS_CENTRE_TABLE_IO_HPP
+#ifndef ORES_REFDATA_CORE_PRESENTATION_BUSINESS_CENTRE_HISTORY_FIELD_MAPPER_HPP
+#define ORES_REFDATA_CORE_PRESENTATION_BUSINESS_CENTRE_HISTORY_FIELD_MAPPER_HPP
 
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
-#include "ores.refdata.api/export.hpp"
-#include <iosfwd>
+#include "ores.refdata.core/export.hpp"
 #include <vector>
 
-namespace ores::refdata::domain {
+namespace ores::refdata::presentation {
 
 /**
- * @brief Dumps the business_centre objects to a stream in table format.
+ * @brief Renders a business_centre to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const std::vector<business_centre>& v);
+[[nodiscard]] ORES_REFDATA_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_business_centre_fields(const domain::business_centre& v);
 
 }
 

@@ -103,12 +103,33 @@ ISO 3166-1 alpha-2 code of the country. Soft FK to =country.alpha2_code=.
 std::string("US")
 #+end_src
 
+** coding_scheme_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Code of the coding scheme this business centre belongs to (e.g. FpML vs
+ISDA). Soft FK to =ores_dq_coding_schemes_tbl=, validated by
+=ores_refdata_validate_business_centre_coding_scheme_fn=.
+
+#+begin_src cpp :name generator
+std::string("FPML_BUSINESS_CENTRE")
+#+end_src
+
 * SQL
 
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_business_centres_tbl
 :END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
+#+end_src
 
 * Validation function
 :PROPERTIES:
@@ -119,10 +140,11 @@ std::string("US")
 * Insert trigger
 ** Validations
 
-| column              | validation_function                |
-|---------------------+-------------------------------------|
-| country_alpha2_code | ores_refdata_validate_country_fn    |
-| change_reason_code  | ores_dq_validate_change_reason_fn   |
+| column              | validation_function                                       |
+|---------------------+-------------------------------------------------------------|
+| country_alpha2_code | ores_refdata_validate_country_fn                           |
+| coding_scheme_code  | ores_refdata_validate_business_centre_coding_scheme_fn      |
+| change_reason_code  | ores_dq_validate_change_reason_fn                           |
 
 * C++
 

@@ -19,10 +19,9 @@
  */
 #include "ores.qt/BusinessCentreMdiWindow.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
@@ -35,18 +34,18 @@ namespace ores::qt {
 using namespace ores::logging;
 
 BusinessCentreMdiWindow::BusinessCentreMdiWindow(ClientManager* clientManager,
-                                                 ImageCache* imageCache,
                                                  const QString& username,
+                                                 ImageCache* imageCache,
                                                  QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
-    , imageCache_(imageCache)
     , username_(username)
+    , imageCache_(imageCache)
     , toolbar_(nullptr)
     , tableView_(nullptr)
-    , pagination_widget_(nullptr)
     , model_(nullptr)
     , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
     , reloadAction_(nullptr)
     , addAction_(nullptr)
     , editAction_(nullptr)
@@ -55,13 +54,10 @@ BusinessCentreMdiWindow::BusinessCentreMdiWindow(ClientManager* clientManager,
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
 void BusinessCentreMdiWindow::setupUi() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();
@@ -71,8 +67,8 @@ void BusinessCentreMdiWindow::setupUi() {
     setupTable();
     layout->addWidget(tableView_);
 
-    pagination_widget_ = new PaginationWidget(this);
-    layout->addWidget(pagination_widget_);
+    paginationWidget_ = new PaginationWidget(this);
+    layout->addWidget(paginationWidget_);
 }
 
 void BusinessCentreMdiWindow::setupToolbar() {
@@ -116,7 +112,8 @@ void BusinessCentreMdiWindow::setupToolbar() {
 }
 
 void BusinessCentreMdiWindow::setupTable() {
-    model_ = new ClientBusinessCentreModel(clientManager_, imageCache_, this);
+    model_ = new ClientBusinessCentreModel(clientManager_, this);
+    model_->setImageCache(imageCache_);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -127,18 +124,17 @@ void BusinessCentreMdiWindow::setupTable() {
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
-
-    tableView_->setItemDelegate(
-        new EntityItemDelegate(ClientBusinessCentreModel::columnStyles(), tableView_));
-
     tableView_->verticalHeader()->setVisible(false);
+
 
     initializeTableSettings(tableView_,
                             model_,
-                            ClientBusinessCentreModel::kSettingsGroup,
-                            ClientBusinessCentreModel::defaultHiddenColumns(),
-                            ClientBusinessCentreModel::kDefaultWindowSize,
-                            3);
+                            "BusinessCentreListWindow",
+                            {
+                                ClientBusinessCentreModel::Description,
+                            },
+                            {900, 400},
+                            1);
 }
 
 void BusinessCentreMdiWindow::setupConnections() {
@@ -148,7 +144,6 @@ void BusinessCentreMdiWindow::setupConnections() {
             &BusinessCentreMdiWindow::onDataLoaded);
     connect(
         model_, &ClientBusinessCentreModel::loadError, this, &BusinessCentreMdiWindow::onLoadError);
-    connectModel(model_);
 
     connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
@@ -157,41 +152,32 @@ void BusinessCentreMdiWindow::setupConnections() {
     connect(
         tableView_, &QTableView::doubleClicked, this, &BusinessCentreMdiWindow::onDoubleClicked);
 
-    // Connect pagination widget signals
     connect(
-        pagination_widget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
-            BOOST_LOG_SEV(lg(), debug) << "Page size changed to: " << size;
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
             model_->set_page_size(size);
-            model_->refresh(true);
+            model_->refresh();
         });
 
-    connect(pagination_widget_, &PaginationWidget::load_all_requested, this, [this]() {
-        BOOST_LOG_SEV(lg(), debug) << "Load all requested from pagination widget";
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
-            emit statusChanged("Loading all business centres...");
             model_->set_page_size(total);
-            model_->refresh(true);
-        } else if (total > 1000) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Total count " << total << " exceeds maximum page size of 1000";
-            emit statusChanged("Cannot load all - too many records (max 1000)");
+            model_->refresh();
         }
     });
 
-    connect(pagination_widget_,
-            &PaginationWidget::page_requested,
-            this,
-            [this](std::uint32_t offset, std::uint32_t limit) {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Page requested: offset=" << offset << ", limit=" << limit;
-                emit statusChanged("Loading business centres...");
-                model_->load_page(offset, limit);
-            });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
+
+    connectModel(model_);
 }
 
 void BusinessCentreMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading business centres";
+    clearStaleIndicator();
     emit statusChanged(tr("Loading business centres..."));
     model_->refresh();
 }
@@ -199,14 +185,11 @@ void BusinessCentreMdiWindow::doReload() {
 void BusinessCentreMdiWindow::onDataLoaded() {
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
+    emit statusChanged(tr("Loaded %1 of %2 business centres").arg(loaded).arg(total));
 
-    pagination_widget_->update_state(loaded, total);
-
-    const bool has_more = loaded < total && total > 0 && total <= 1000;
-    pagination_widget_->set_load_all_enabled(has_more);
-
-    const QString message = QString("Loaded %1 of %2 business centres").arg(loaded).arg(total);
-    emit statusChanged(message);
+    paginationWidget_->update_state(loaded, total);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
 }
 
 void BusinessCentreMdiWindow::onLoadError(const QString& error_message, const QString& details) {
@@ -224,8 +207,8 @@ void BusinessCentreMdiWindow::onDoubleClicked(const QModelIndex& index) {
         return;
 
     auto sourceIndex = proxyModel_->mapToSource(index);
-    if (auto* bc = model_->getBusinessCentre(sourceIndex.row())) {
-        emit showBusinessCentreDetails(*bc);
+    if (auto* business_centre = model_->getCentre(sourceIndex.row())) {
+        emit showCentreDetails(*business_centre);
     }
 }
 
@@ -249,8 +232,8 @@ void BusinessCentreMdiWindow::editSelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* bc = model_->getBusinessCentre(sourceIndex.row())) {
-        emit showBusinessCentreDetails(*bc);
+    if (auto* business_centre = model_->getCentre(sourceIndex.row())) {
+        emit showCentreDetails(*business_centre);
     }
 }
 
@@ -262,9 +245,10 @@ void BusinessCentreMdiWindow::viewHistorySelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* bc = model_->getBusinessCentre(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showBusinessCentreHistory for code: " << bc->code;
-        emit showBusinessCentreHistory(*bc);
+    if (auto* business_centre = model_->getCentre(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Emitting showCentreHistory for code: " << business_centre->code;
+        emit showCentreHistory(*business_centre);
     }
 }
 
@@ -284,8 +268,8 @@ void BusinessCentreMdiWindow::deleteSelected() {
     std::vector<std::string> codes;
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
-        if (auto* bc = model_->getBusinessCentre(sourceIndex.row())) {
-            codes.push_back(bc->code);
+        if (auto* business_centre = model_->getCentre(sourceIndex.row())) {
+            codes.push_back(business_centre->code);
         }
     }
 
@@ -314,30 +298,31 @@ void BusinessCentreMdiWindow::deleteSelected() {
     }
 
     QPointer<BusinessCentreMdiWindow> self = this;
-    using DeleteResult = std::vector<std::tuple<std::string, bool, std::string>>;
+    using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
 
-    auto task = [cm = clientManager_, codes]() -> DeleteResult {
+    auto task = [self, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!cm)
+        if (!self)
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << codes.size() << " business centres";
+            << "Making delete request for " << codes.size() << " business centres";
 
         refdata::messaging::delete_business_centre_request request;
         request.codes = codes;
-        auto response_result = cm->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
             for (const auto& code : codes) {
-                results.push_back({code, false, "Failed to communicate with server"});
+                results.push_back({code, {false, "Failed to communicate with server"}});
             }
             return results;
         }
 
         for (const auto& code : codes) {
-            results.push_back({code, response_result->success, response_result->message});
+            results.push_back({code, {response_result->success, response_result->message}});
         }
 
         return results;
@@ -352,17 +337,17 @@ void BusinessCentreMdiWindow::deleteSelected() {
         int failure_count = 0;
         QString first_error;
 
-        for (const auto& [code, success, message] : results) {
-            if (success) {
-                BOOST_LOG_SEV(lg(), debug) << "Business centre deleted: " << code;
+        for (const auto& [code, result] : results) {
+            if (result.first) {
+                BOOST_LOG_SEV(lg(), debug) << "Business Centre deleted: " << code;
                 success_count++;
-                emit self->businessCentreDeleted(QString::fromStdString(code));
+                emit self->business_centreDeleted(QString::fromStdString(code));
             } else {
                 BOOST_LOG_SEV(lg(), error)
-                    << "Business centre deletion failed: " << code << " - " << message;
+                    << "Business Centre deletion failed: " << code << " - " << result.second;
                 failure_count++;
                 if (first_error.isEmpty()) {
-                    first_error = QString::fromStdString(message);
+                    first_error = QString::fromStdString(result.second);
                 }
             }
         }
@@ -393,5 +378,6 @@ void BusinessCentreMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

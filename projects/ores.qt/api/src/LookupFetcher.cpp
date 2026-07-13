@@ -27,6 +27,7 @@
 #include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata.api/messaging/party_status_protocol.hpp"
 #include "ores.refdata.api/messaging/party_type_protocol.hpp"
@@ -71,7 +72,7 @@ lookup_result fetch_party_lookups(ClientManager* cm) {
         request.limit = lookup_fetch_limit;
         auto response = cm->process_authenticated_request(std::move(request));
         if (response) {
-            for (const auto& bc : response->business_centres) {
+            for (const auto& bc : response->centres) {
                 result.business_centre_codes.push_back(bc.code);
             }
         }
@@ -156,7 +157,23 @@ std::unordered_map<std::string, std::string> fetch_currency_names(ClientManager*
     return names;
 }
 
-std::unordered_map<std::string, std::string> fetch_business_centre_image_map(ClientManager* cm) {
+std::vector<std::string> fetch_country_codes(ClientManager* cm) {
+    std::vector<std::string> codes;
+    if (!cm)
+        return codes;
+
+    refdata::messaging::get_countries_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& country : response->countries) {
+            codes.push_back(country.alpha2_code);
+        }
+    }
+    return codes;
+}
+
+std::unordered_map<std::string, std::string> fetch_business_centre_country_map(ClientManager* cm) {
     std::unordered_map<std::string, std::string> mapping;
     if (!cm)
         return mapping;
@@ -165,11 +182,8 @@ std::unordered_map<std::string, std::string> fetch_business_centre_image_map(Cli
     request.limit = lookup_fetch_limit;
     auto response = cm->process_authenticated_request(std::move(request));
     if (response) {
-        for (const auto& bc : response->business_centres) {
-            std::string image_id_str;
-            if (bc.image_id)
-                image_id_str = boost::uuids::to_string(*bc.image_id);
-            mapping.emplace(bc.code, std::move(image_id_str));
+        for (const auto& bc : response->centres) {
+            mapping.emplace(bc.code, bc.country_alpha2_code);
         }
     }
     return mapping;

@@ -2,7 +2,7 @@
 :ID: 5211BA12-1820-4025-8D99-82D7D8748FA9
 :END:
 #+title: Test Scenario: Verify CRM topology config/driver pair/derived pair refdata UI
-#+description: Manual QA: after Barclays Plc provisioning, confirm the new CRM Topology Configs, CRM Driver Pairs, and CRM Enabled Derived Pairs list windows show correct majors/exotics data via the Market Data menu.
+#+description: Manual QA: after Barclays Plc provisioning, confirm the new CRM Topology Configs, CRM Driver Pairs, and CRM Enabled Derived Pairs list windows show correct majors/exotics data via the Reference Data > Cross Rates Matrix menu.
 #+type: test_scenario
 #+level: s1
 #+filetags: :crm_implementation:sprint_23:v0:
@@ -48,7 +48,7 @@ projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores=
 |--------+-------|
 | Status | PASS |
 
-** Open "CRM Topology &Configs" from the Market Data menu
+** Open "&Topology" from Reference Data > Cross Rates &Matrix
 
 Confirm the list window opens and shows two rows for BARCLAYS PLC:
 "majors" and "exotics", both with =pivot_currency_code = USD= and
@@ -58,10 +58,9 @@ Confirm the list window opens and shows two rows for BARCLAYS PLC:
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | no market data menu entry. also, this data is ref data |
+| Status | PENDING |
 
-** Open "CRM &Driver Pairs" from the Market Data menu
+** Open "&Driver Pairs" from Reference Data > Cross Rates &Matrix
 
 Confirm 11 rows total for BARCLAYS PLC: 8 majors driver pairs
 (EUR/USD, GBP/USD, USD/CHF, USD/JPY, USD/SEK, AUD/USD, USD/CAD,
@@ -74,7 +73,7 @@ linked to its =config_id= and showing the =enabled= badge.
 |--------+-------|
 | Status | PENDING |
 
-** Open "CRM &Enabled Derived Pairs" from the Market Data menu
+** Open "&Enabled Derived Pairs" from Reference Data > Cross Rates &Matrix
 
 Confirm 3 rows for BARCLAYS PLC's "majors" config (EUR/GBP, EUR/JPY,
 GBP/JPY, or whichever curated crosses the publish task seeded) and

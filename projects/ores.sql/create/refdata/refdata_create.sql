@@ -96,6 +96,8 @@
 \ir ./refdata_regulatory_book_types_notify_trigger_create.sql
 \ir ./refdata_book_purpose_types_create.sql
 \ir ./refdata_book_purpose_types_notify_trigger_create.sql
+\ir ./refdata_ledger_feed_types_create.sql
+\ir ./refdata_ledger_feed_types_notify_trigger_create.sql
 
 -- Party and counterparty tables
 \ir ./refdata_parties_create.sql

@@ -111,6 +111,7 @@ via its "Verifies task" field.
 | 2 | "Provenance & Methodology" tab title bugged ("_Methodology"); ID truncated with no full-line display; badges don't match main-window colours; dialog not an MDI window | DatasetViewDialog.cpp/.hpp, DataLibrarianWindow.cpp | Accepted | Escaped mnemonic (&&); full UUID on its own selectable line; converted QDialog to QWidget embedded via DetachableMdiSubWindow |
 | 3 | Badges use hand-rolled QLabel/stylesheet pill, not the app's actual badge rendering | DatasetViewDialog.cpp | Accepted | Replaced with OverviewBadgeDelegate calling DelegatePaintUtils::draw_centered_badge (same as DatasetItemDelegate/EntityItemDelegate), resolved via BadgeCache |
 | 4 | PR #1536 round 1 (3 Claude reviewers): dead resize(950,700) call left over from the QDialog era, now redundant with sizeHint()+subWindow->resize(); class name "DatasetViewDialog" no longer accurate; construction-order/tooltip-param style nits | DatasetViewDialog.cpp | Accepted #1, declined rest | Removed the dead resize() call. Renaming and other nits are cosmetic/non-blocking — left for a future pass, not worth a second CI cycle |
+| 5 | CI: site build failed — dangling org-roam link to 59759BDE-... (the deferred capture deleted when promoted to this story earlier on this branch) | doc/agile/versions/v0/sprint_23/sprint-23-planning-session/task_bucket-rescoring.org | Accepted | Repointed the historical bucket-rescoring entry to the story ID (E2FCDE38-...) that superseded the deleted capture |
 
 * Result
 

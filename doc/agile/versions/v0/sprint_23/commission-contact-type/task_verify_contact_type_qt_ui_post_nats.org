@@ -57,7 +57,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:E6E785F9-B8C9-4E51-9AC7-F7C9D3C570EA][Verify contact_type CRUD and eventing]] | PENDING | Two-client (blue/red) CRUD + eventing scenario; loaded in blue's Scenario Runner. |
 
 * PRs
 

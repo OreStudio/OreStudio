@@ -60,6 +60,7 @@ public:
         CostCenter,
         RegulatoryBookType,
         IsSweepable,
+        RatesCentreCode,
         Version,
         ModifiedBy,
         RecordedAt,
@@ -81,6 +82,7 @@ protected:
     std::vector<int> iconColumns() const override {
         return {
             Column::LedgerCcy,
+            Column::RatesCentreCode,
         };
     }
 

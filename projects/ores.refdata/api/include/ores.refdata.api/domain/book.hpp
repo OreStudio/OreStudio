@@ -141,6 +141,16 @@ struct book final {
     bool is_sweepable = false;
 
     /**
+     * @brief Rates centre determining which revaluation market data snapshot this book uses at
+     * end-of-day; see [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]].
+     *
+     * Optional soft FK to business_centres by code (e.g. "GBLO", "USNY"), reusing the same location
+     * reference already used by counterparty/party/business_unit rather than modeling a dedicated
+     * rates-centre entity.
+     */
+    std::string rates_centre_code;
+
+    /**
      * @brief Username of the person who last modified this book.
      */
     std::string modified_by;

@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 3A49A0B0-9FCF-466C-B097-ECF9A60C0F3D
+:END:
+#+title: Adding a flagged combo field to a codegen entity
+#+description: What is codegen-driven vs hand-written library code when adding a flagged combo field (e.g. book.rates_centre_code), and why.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:qt:combo:flag:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+* Summary
+
+A =flagged_combo= detail-field (e.g. book's =rates_centre_code=) is
+mostly codegen-driven: the modeling org row declares =flag_source=,
+=combo_fetch=, =combo_fetch_include=, and =combo_allow_blank=, and the
+detail-dialog/Qt-model templates generate all of the wiring
+(population, selection, dirty-tracking, list-view icon rendering).
+What is *not* generated, and must be hand-written once per
+=flag_source= the first time it is used, is two small library
+functions: a =fetch_<source>_codes()= in
+=ores.qt/LookupFetcher.hpp/.cpp= and a =<source>_flag_icon()= free
+function in =ores.qt/FlagIconHelper.hpp/.cpp=. This is a deliberate,
+narrow gap (only =currency= has a ready-made shared combo helper;
+=country= and =business_centre= "keep the generic inline path" per
+=core.py='s own comment), not a broken facet — but it means a
+first-time =flag_source= silently requires two hand-written library
+additions that codegen gives no signal are missing until the build
+fails with an undeclared-identifier error.
+
+* Detail
+
+** What the modeling org row needs
+
+Under =*** Detail fields= in the entity's =.org= model:
+
+| column | meaning |
+|--------+---------|
+| =widget= | e.g. =ratesCentreCodeCombo= |
+| =type= | =flagged_combo= |
+| =flag_source= | e.g. =business_centre= (PascalCased internally to a =FlagSource= enum value) |
+| =combo_fetch= | the fetch function name, e.g. =fetch_business_centre_codes= |
+| =combo_fetch_include= | the header declaring it, e.g. =ores.qt/LookupFetcher.hpp= |
+| =combo_allow_blank= | =true= for an optional/nullable field (adds a blank first item) |
+
+The *Icon columns (Qt model)* table (also under =** Qt=) additionally
+needs a row mapping the list-view column to a flag-icon accessor, e.g.
+=| RatesCentreCode | business_centre_flag_icon | rates_centre_code | |=
+— this is what makes the flag render in the list view, not just the
+detail-dialog combo.
+
+** The two code paths
+
+- =flag_source: currency= has a ready-made shared implementation
+  (=setup_currency_combo()=, promoted widget class
+  =OreCurrencyComboBox=) — =combo_fetch=/=combo_fetch_include= are
+  ignored in this path.
+- Every other =flag_source= (=country=, =business_centre=, and any
+  future one) falls back to a *generic inline path*: the generated
+  detail dialog builds its own =QFutureWatcher=-based fetch/populate
+  function using whatever =combo_fetch= names, then calls
+  =apply_flag_icons(combo, imageCache, FlagSource::<Source>, ...)= to
+  paint icons once the fetch completes. This generic path is
+  intentional, documented in =core.py= (search "no such helper yet and
+  keep the generic inline path"), not a workaround.
+
+** What must be hand-written the first time a =flag_source= is used
+
+1. A =fetch_<source>_codes(ClientManager*)= function in
+   =ores.qt/LookupFetcher.hpp=/=.cpp= — the plain code-list fetch the
+   generic inline path's =combo_fetch= name resolves to. Mirror
+   =fetch_currency_codes()=.
+2. A =<source>_flag_icon(ImageCache&, code)= free function in
+   =ores.qt/FlagIconHelper.hpp=/=.cpp=, delegating to the matching
+   =ImageCache::get<Source>FlagIcon()= method — needed by the Icon
+   columns accessor (list-view rendering), which expects a free
+   function with the same call shape as =currency_flag_icon()=, not a
+   direct =ImageCache= method call. Mirror =currency_flag_icon()='s
+   single-code overload.
+
+Both are small (a dozen lines each), reuse an already-working
+=ImageCache= getter, and once written are reusable by every future
+entity that uses the same =flag_source= — =business_centre='s two
+additions, for instance, now cover any future book/party/counterparty-
+style field that needs a business-centre-flagged combo.
+
+** Why this gap exists, and its real cost
+
+=FlagSource::BusinessCentre= and
+=ImageCache::getBusinessCentreFlagIcon()= already existed (used by a
+hand-written dialog, =EntityDetailDialog=), so the *rendering*
+machinery was never missing — only the two thin adapter functions a
+codegen-generated dialog needs to reach it. The actual cost isn't the
+size of the fix; it's that nothing signals the gap exists until a
+plain C++ compile error ("use of undeclared identifier") — codegen
+happily emits a call to a function name that doesn't exist yet, and
+the missing-function's name (derived from =flag_source=) isn't
+validated against the library at generation time. A backlog capture
+tracks giving this a build-time-or-earlier signal instead.
+
+** Regenerating: use the entity-scoped tool, not component-wide
+
+=./compass.sh codegen entity generate <entity> [--address <addr>]=
+targets exactly one entity. =./compass.sh codegen regenerate
+--component <c> --profile <p>= regenerates *every* entity in the
+component — on a component with accumulated template drift against
+stale entities (common in this codebase), that diff can span dozens
+of unrelated files needing manual discard. See
+[[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]].
+
+* See also
+
+- [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — the
+  entity-scoped regeneration recipe.
+- [[id:758EE33B-3944-4875-813A-302BFF9EECD0][Extend dynamic combo codegen with optional per-item flag icons]] —
+  the capture that introduced =flagged_combo= itself.
+- [[id:A083FE26-521D-4046-9E58-AFB901B28809][Story: Codegen developer experience improvements]] — related codegen
+  friction; its "no entity-level filter" item is stale now that
+  =compass codegen entity generate= exists.

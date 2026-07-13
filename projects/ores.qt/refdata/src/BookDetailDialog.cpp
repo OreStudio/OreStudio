@@ -114,6 +114,10 @@ void BookDetailDialog::setupConnections() {
             this,
             &BookDetailDialog::onFieldChanged);
     connect(ui_->isSweepableCheckBox, &QCheckBox::toggled, this, &BookDetailDialog::onFieldChanged);
+    connect(ui_->ratesCentreCodeCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &BookDetailDialog::onFieldChanged);
 }
 
 void BookDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -123,12 +127,54 @@ void BookDetailDialog::setClientManager(ClientManager* clientManager) {
     populateRegulatoryBookTypeCombo();
     setup_badge_combo(this, ui_->regulatoryBookTypeCombo, badgeCache(), "regulatory_book_type");
     populateLedgerCcyCombo();
+    populateRatesCentreCodeCombo();
 }
 
 void BookDetailDialog::populateLedgerCcyCombo() {
     setup_currency_combo(ui_->ledgerCcyEdit, this, clientManager_, imageCache(), [this]() {
         return QString::fromStdString(book_.ledger_ccy);
     });
+}
+
+void BookDetailDialog::populateRatesCentreCodeCombo() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<BookDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
+    QObject::connect(
+        watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
+            auto codes = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
+
+            auto* combo = self->ui_->ratesCentreCodeCombo;
+            const QString previous = combo->currentText();
+            combo->blockSignals(true);
+            combo->clear();
+            combo->addItem(QString());
+            for (const auto& c : codes)
+                combo->addItem(QString::fromStdString(c));
+            // fallback_selection is evaluated here (fetch-completion time), not
+            // at populate-call time, since setBook() may run before or
+            // after setClientManager() triggers this fetch.
+            const QString fallback = QString::fromStdString(self->book_.rates_centre_code);
+            const QString to_select = !previous.isEmpty() ? previous : fallback;
+            if (!to_select.isEmpty()) {
+                const int idx = combo->findText(to_select);
+                if (idx >= 0)
+                    combo->setCurrentIndex(idx);
+            }
+            combo->blockSignals(false);
+
+            if (self->imageCache())
+                apply_flag_icons(
+                    combo, self->imageCache(), FlagSource::BusinessCentre, single_flag_icon_size());
+        });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm]() { return fetch_business_centre_codes(cm); }));
 }
 
 void BookDetailDialog::setUsername(const std::string& username) {
@@ -166,6 +212,7 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
     ui_->costCenterEdit->setReadOnly(readOnly);
     ui_->bookStatusCombo->setEnabled(!readOnly);
     ui_->regulatoryBookTypeCombo->setEnabled(!readOnly);
+    ui_->ratesCentreCodeCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -221,6 +268,11 @@ void BookDetailDialog::updateUiFromBook() {
     ui_->regulatoryBookTypeCombo->setCurrentText(
         QString::fromStdString(book_.regulatory_book_type));
     ui_->isSweepableCheckBox->setChecked(book_.is_sweepable);
+    {
+        const auto val = QString::fromStdString(book_.rates_centre_code);
+        const int idx = ui_->ratesCentreCodeCombo->findText(val);
+        ui_->ratesCentreCodeCombo->setCurrentIndex(idx);
+    }
 
     populateProvenance(book_.version,
                        book_.modified_by,
@@ -241,6 +293,7 @@ void BookDetailDialog::updateBookFromUi() {
     book_.book_status = ui_->bookStatusCombo->currentText().toStdString();
     book_.regulatory_book_type = ui_->regulatoryBookTypeCombo->currentText().toStdString();
     book_.is_sweepable = ui_->isSweepableCheckBox->isChecked();
+    book_.rates_centre_code = ui_->ratesCentreCodeCombo->currentText().toStdString();
     book_.modified_by = username_;
 }
 

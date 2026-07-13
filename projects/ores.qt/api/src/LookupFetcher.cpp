@@ -171,6 +171,22 @@ std::unordered_map<std::string, std::string> fetch_business_centre_image_map(Cli
     return mapping;
 }
 
+std::vector<std::string> fetch_business_centre_codes(ClientManager* cm) {
+    std::vector<std::string> codes;
+    if (!cm)
+        return codes;
+
+    refdata::messaging::get_business_centres_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& bc : response->business_centres) {
+            codes.push_back(bc.code);
+        }
+    }
+    return codes;
+}
+
 std::vector<portfolio_entry> fetch_portfolio_entries(ClientManager* cm) {
     std::vector<portfolio_entry> entries;
     if (!cm)

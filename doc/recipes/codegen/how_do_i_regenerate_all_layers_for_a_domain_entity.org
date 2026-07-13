@@ -18,37 +18,39 @@ How do I regenerate all the code for a domain entity?
 
 * Answer
 
-There is no single command that targets one entity across all profiles — the entity filter (=--entity=) does not exist yet (see [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]]). Run component-wide and scope the diff manually.
-
-For a =domain_entity= model (e.g. =rounding_type= in =refdata=):
+Use =compass codegen entity generate <entity>= — it targets exactly one entity across every applicable profile (SQL and all C++ layers, including Qt), so there is no component-wide diff to scope or discard:
 
 #+begin_src sh
-# 1. All C++ layers in one pass
-./compass.sh codegen regenerate --component refdata-cpp --profile all-cpp
-
-# 2. SQL layer (separate component — table models live here)
-./compass.sh codegen regenerate --component refdata --profile sql
-
-# 3. Scope the diff to the target entity
-git diff -- projects/ores.refdata/ projects/ores.qt/refdata/ projects/ores.sql/
-
-# 4. Discard out-of-scope changes written by the component-wide run
-git checkout HEAD -- projects/ores.qt/refdata/
-git status --short -- projects/ores.refdata/ projects/ores.qt/refdata/ projects/ores.sql/ \
-  | grep '^?' | awk '{print $2}' | xargs rm -f
+./compass.sh codegen entity generate rounding_type
 #+end_src
 
-*Before diffing*, verify each generated file landed in the correct split project directory — not the stale monolith paths. See [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] § Codegen sync task acceptance criteria, output location check.
+Pass =--address <address>= to restrict to one layer (e.g. =ores.cpp.qt=, =ores.sql.schema=) when you only touched one facet's inputs:
+
+#+begin_src sh
+./compass.sh codegen entity generate book --address ores.cpp.qt
+#+end_src
+
+Companion commands for the same entity-scoped workflow:
+
+#+begin_src sh
+./compass.sh codegen entity list                # every entity, grouped by metatype
+./compass.sh codegen entity show book            # generated files + staleness, this entity only
+./compass.sh codegen entity diff book             # git diff of this entity's generated files only
+#+end_src
+
+*Do not* use =compass codegen regenerate --component <component> --profile <profile>= for single-entity work — that command regenerates *every* entity in the component, and on a component with template/generator drift accumulated against stale entities (common in this codebase — see [[id:E1B8A9F3-9F5C-4A2E-8C7D-3B9A5F2E1D4C][Component-wide codegen regenerate produces large unrelated drift]]), the resulting diff can span dozens of unrelated files that then have to be manually discarded. =codegen regenerate= is for genuine component-wide work (e.g. rolling out a template change across every entity that uses it), not for adding one field to one entity.
+
+*Before committing*, verify each generated file landed in the correct split project directory — not the stale monolith paths. See [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] § Codegen sync task acceptance criteria, output location check.
 
 For per-layer details and drift notes, see the individual layer recipes in the See also section.
 
 * Script
 
-=./compass.sh codegen regenerate= is the entry point. The =all-cpp= composite profile runs domain, generator, repository, service, protocol, nats-eventing, nats-handler, and qt in one pass. The =sql= profile is a separate invocation on the =refdata= component. See [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile registry.
+=./compass.sh codegen entity generate <entity>= is the entry point (=compass_codegen_entity.py=, lazily loaded when =entity= is codegen's first argument). With no =--address=, it runs every profile applicable to that entity's metatype. See [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile/address registry.
 
 * Tested by
 
-Manual: run both commands, inspect =git diff= scoped to the target entity, verify output paths against the location table in [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
+Manual: run the command for a target entity, inspect the diff (already scoped — no manual filtering needed), verify output paths against the location table in [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
 
 * See also
 

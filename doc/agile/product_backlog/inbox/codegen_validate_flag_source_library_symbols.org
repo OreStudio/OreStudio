@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 0AF759FB-B1E9-48BC-93B7-D5ECED62F489
+:END:
+#+title: Validate flag_source library symbols exist at codegen time
+#+description: A flagged_combo field's flag_source-derived fetch/icon function names aren't checked against the ores.qt library until C++ compile time; codegen should fail fast with a clear message instead.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:qt:combo:flag:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+For a =flagged_combo= detail-field whose =flag_source= has no shared
+combo helper (i.e. anything other than =currency=), codegen emits a
+call to =combo_fetch= (a =fetch_<source>_codes()= function in
+=ores.qt/LookupFetcher.hpp=) and, via the Icon columns table, a call
+to a =<source>_flag_icon()= accessor in =ores.qt/FlagIconHelper.hpp=
+— neither of which codegen checks actually exist. If a =flag_source=
+is used for the first time and the two hand-written library additions
+haven't been made yet, the failure only surfaces as a plain C++
+"use of undeclared identifier" error at compile time, with nothing in
+the codegen output pointing at the missing symbols or what to add.
+Add a lint/generation-time check (e.g. grep the target headers for the
+expected symbol names, similar to how other codegen facets validate
+their inputs) that fails fast with an actionable message instead.
+
+* Why
+
+Surfaced while adding book's =rates_centre_code= flagged_combo field
+(=business_centre= flag source, first-ever non-=currency= flagged_combo
+in the codebase) — see
+[[id:3A49A0B0-9FCF-466C-B097-ECF9A60C0F3D][Adding a flagged combo field to a codegen entity]] for the full
+process and why the two hand-written additions are needed at all.
+
+* References
+
+- [[id:3A49A0B0-9FCF-466C-B097-ECF9A60C0F3D][Adding a flagged combo field to a codegen entity]] — the knowledge
+  doc this capture's context lives in.
+
+* See also
+
+- [[id:758EE33B-3944-4875-813A-302BFF9EECD0][Extend dynamic combo codegen with optional per-item flag icons]] —
+  the capture that introduced =flagged_combo= itself.

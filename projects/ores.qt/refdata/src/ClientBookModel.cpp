@@ -92,6 +92,8 @@ QVariant ClientBookModel::data(const QModelIndex& index, int role) const {
                 return QString::fromStdString(book.regulatory_book_type);
             case IsSweepable:
                 return book.is_sweepable ? tr("true") : tr("false");
+            case RatesCentreCode:
+                return QString::fromStdString(book.rates_centre_code);
             case Version:
                 return static_cast<qlonglong>(book.version);
             case ModifiedBy:
@@ -106,6 +108,8 @@ QVariant ClientBookModel::data(const QModelIndex& index, int role) const {
     if (role == Qt::DecorationRole && imageCache_) {
         if (index.column() == Column::LedgerCcy)
             return currency_flag_icon(*imageCache_, book.ledger_ccy);
+        if (index.column() == Column::RatesCentreCode)
+            return business_centre_flag_icon(*imageCache_, book.rates_centre_code);
     }
 
     if (role == Qt::ForegroundRole) {
@@ -132,6 +136,8 @@ QVariant ClientBookModel::headerData(int section, Qt::Orientation orientation, i
             return tr("Regulatory Book Type");
         case IsSweepable:
             return tr("Sweepable");
+        case RatesCentreCode:
+            return tr("Rates Centre");
         case Version:
             return tr("Version");
         case ModifiedBy:

@@ -108,6 +108,8 @@ private:
 
     void populateLedgerCcyCombo();
 
+    void populateRatesCentreCodeCombo();
+
 
     Ui::BookDetailDialog* ui_;
     ClientManager* clientManager_;

@@ -20,28 +20,66 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a =rates_centre_code= field to =book=, reusing the existing
+=business_centre= entity as its reference rather than modeling a new
+rates-centre entity, and render it as a flagged combo (list badge +
+detail-dialog picker) consistent with how other soft-FK fields on
+=book= are shown.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EA22E78F-E4CB-4E76-B854-F85EB4E6AF48][Book data model cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-08                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-13                               |
 
 * Acceptance
 
--
+- =business_centre= confirmed as the right reference (already the
+  established location-code reference for =party=/=counterparty=/
+  =business_unit=; matches the domain notes' "rates centre" concept
+  where regional trading hubs map onto the same FpML codes).
+- =book.rates_centre_code= added: nullable text, soft FK validated via
+  the existing =ores_refdata_validate_business_centre_fn=.
+- Rendered as a =flagged_combo= (business_centre flag source) in the
+  detail dialog, and as a flag-icon column in the Book list.
+- =ores.refdata.api.lib=, =ores.refdata.core.lib=,
+  =ores.qt.refdata.lib= build clean (linux-clang-debug-make, -j1).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Modeled =rates_centre_code= on =ores.refdata.book.org= as a nullable
+soft-FK text column (mirroring =counterparty=/=party=/=business_unit='s
+existing =business_center(_code)= fields and their shared
+=ores_refdata_validate_business_centre_fn= trigger), then generated
+via =compass codegen entity generate book= (not =codegen regenerate
+--component=, which regenerates every entity in the component and
+produces large unrelated diffs — see below).
+
+Wired the Qt side as a =flagged_combo= detail field
+(=flag_source: business_centre=), which uses codegen's already-built
+generic inline combo path (only =currency= has a bespoke shared
+helper). This surfaced two library functions codegen expects but
+didn't yet exist anywhere in the codebase for the =business_centre=
+flag source -- =fetch_business_centre_codes()=
+(=ores.qt/LookupFetcher.hpp=/=.cpp=) and =business_centre_flag_icon()=
+(=ores.qt/FlagIconHelper.hpp=/=.cpp=) -- added both, mirroring the
+existing =currency= equivalents.
+
+Along the way, used =codegen regenerate --component refdata-cpp
+--profile all-cpp/qt= once by mistake (following a stale recipe) before
+discovering =compass codegen entity generate <entity>= is the correct,
+already-existing entity-scoped tool; that mistake produced a 300+-file
+diff across unrelated entities that had to be discarded (and once
+accidentally reverted this task's own hand-written =LookupFetcher=/
+=FlagIconHelper= changes, since the discard filter matched on filename
+containing "Book"). Documented the whole flagged-combo-field process,
+and filed follow-up captures for the two gaps this surfaced (see
+Result).
 
 * Notes
 
@@ -58,3 +96,24 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Shipped =book.rates_centre_code= as a nullable soft-FK to
+=business_centres=, rendered as a flagged combo with flag icons in
+both the detail dialog and the Book list column. All acceptance items
+met; builds clean.
+
+Two process findings filed as backlog captures rather than fixed here
+(out of scope for this task):
+
+- [[id:0AF759FB-B1E9-48BC-93B7-D5ECED62F489][Validate flag_source library symbols exist at codegen time]] —
+  codegen has no way to catch a missing =fetch_<source>_codes=/
+  =<source>_flag_icon= library function before C++ compile time.
+- [[id:0D85575C-011B-41E3-9DB2-8E6C41779B48][Codegen DX story's entity-filter item is stale; recipe pointed at
+  the wrong command]] — =compass codegen entity generate <entity>=
+  already solves the "no entity-level filter" gap a BACKLOG story
+  still lists as open; a recipe was actively pointing at the noisier
+  component-wide workaround instead (now fixed).
+
+New knowledge doc:
+[[id:3A49A0B0-9FCF-466C-B097-ECF9A60C0F3D][Adding a flagged combo field to a codegen entity]] — the full
+codegen-vs-hand-written-library boundary for =flagged_combo= fields.

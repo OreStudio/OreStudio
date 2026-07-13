@@ -52,6 +52,7 @@ domain::book book_mapper::map(const book_entity& v) {
     r.book_status = v.book_status;
     r.regulatory_book_type = v.regulatory_book_type;
     r.is_sweepable = v.is_sweepable;
+    r.rates_centre_code = v.rates_centre_code.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -86,6 +87,8 @@ book_entity book_mapper::map(const domain::book& v) {
     r.book_status = v.book_status;
     r.regulatory_book_type = v.regulatory_book_type;
     r.is_sweepable = v.is_sweepable;
+    r.rates_centre_code =
+        v.rates_centre_code.empty() ? std::nullopt : std::optional(v.rates_centre_code);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

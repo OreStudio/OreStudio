@@ -64,6 +64,7 @@ std::vector<domain::book> book_service::list_books_by_parent_portfolio_id_as_of(
         ctx_, parent_portfolio_id, valid_from_bound, valid_to_bound);
 }
 
+
 std::optional<domain::book> book_service::get_book_at_version(const std::string& id,
                                                               std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting book at version: " << id << " version: " << version;

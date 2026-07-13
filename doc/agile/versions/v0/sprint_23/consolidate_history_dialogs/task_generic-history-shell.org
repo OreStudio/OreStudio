@@ -101,6 +101,7 @@ via its "Verifies task" field.
 | 2 | -/+ lines gated on old_value/new_value being non-empty, so clearing an optional field to blank looked identical to removal | history_diff_renderer.cpp | Fixed | d310911c5: unconditional -/+ for changed entries |
 | 3 | No unit tests for render_history_diff() | history_diff_renderer.cpp | Declined (for now) | Manual verification only for this PR; noted as a follow-up once more entities roll out |
 | 4 | --diff/--version parsing duplicated across entity command files | currencies_commands.cpp, countries_commands.cpp | Declined | Matches existing per-entity command pattern; tracked on the shell-codegen capture as the natural place to dedupe |
+| 5 | Round 2: unconditional - line also fires for a genuinely added field, printing a spurious blank -field: line ahead of +field: value | history_diff_renderer.cpp | Fixed | 2d2f5db96: only emit - when the field existed in prev_it->fields; unreachable for currency/country's fixed schema today but correct for a future evolving-schema entity |
 
 * Result
 

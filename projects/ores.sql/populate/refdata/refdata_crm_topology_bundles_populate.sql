@@ -26,7 +26,7 @@
  * marketdata.fx_driver_rates -- so a party gets both in the same atomic
  * publish, per the CRM story's own architecture decision that a party's
  * CRM topology and the feed data it depends on must never be published
- * out of step) and seeds two named CRMs per party, matching real FX
+ * out of step) and seeds three named CRMs per party, matching real FX
  * desk tiering:
  *
  * - "majors": pivot USD, the 8 major driver pairs as spanning-tree
@@ -37,6 +37,12 @@
  * - "exotics": pivot USD, the 3 EM driver pairs (ZAR/MXN/INR) as
  *   spanning-tree edges -- a pure USD-pivot star, no derived pairs
  *   needed since every configured exotic pair already is a driver edge.
+ * - "scandies": pivot USD, 4 driver pairs (EUR/USD, USD/SEK, USD/NOK,
+ *   USD/DKK) as spanning-tree edges, plus the complete C(4,2)=6
+ *   combinatorial set of derived crosses among EUR/SEK/NOK/DKK.
+ *   EUR/USD and USD/SEK are shared edges with "majors" (each named CRM
+ *   has its own independent topology, so sharing a currency pair across
+ *   two CRMs means two separate driver-pair rows, not a reused one).
  *
  * Explicit dataset dependencies (ores_dq_dataset_dependencies_upsert_fn)
  * record that this dataset presupposes marketdata.fx_driver_rates (the
@@ -60,7 +66,7 @@ DO $$
 BEGIN
     PERFORM ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'CRM Topology Curation',
-        'Named CRM (Cross-Rates Matrix) topologies curated to mirror real FX desk liquidity tiering: a dense direct-quote "majors" mesh for liquid G10 pairs, and a strict USD-pivot-star "exotics" tier for thin-liquidity EM pairs where no one directly quotes cross rates. Driver pairs are chosen to exactly match currencies with real, live synthetic feed data (see marketdata.fx_driver_rates and synthetic.fx_spot_configs.realistic) -- never a CRM edge with no underlying feed.',
+        'Named CRM (Cross-Rates Matrix) topologies curated to mirror real FX desk liquidity tiering: a dense direct-quote "majors" mesh for liquid G10 pairs, a strict USD-pivot-star "exotics" tier for thin-liquidity EM pairs where no one directly quotes cross rates, and a USD-pivot-star "scandies" tier for the Nordic currencies (SEK/NOK/DKK) plus EUR. Driver pairs are chosen to exactly match currencies with real, live synthetic feed data (see marketdata.fx_driver_rates and synthetic.fx_spot_configs.realistic) -- never a CRM edge with no underlying feed.',
         'ores.analytics.quant CRM design (see doc/agile/versions/v0/sprint_23/crm_implementation/), cross-referenced against marketdata.fx_driver_rates and synthetic.fx_spot_configs.realistic for feed coverage.',
         'Every driver pair here has a corresponding row in both marketdata.fx_driver_rates and synthetic.fx_spot_configs.realistic; derived pairs are a curated subset of pairs triangulable from the majors driver set.'
     );
@@ -95,8 +101,8 @@ BEGIN
         'Synthetic',
         'Raw',
         'CRM Topology Curation',
-        'CRM Topology Bundles: Majors + Exotics',
-        'Two named CRM topologies per party: "majors" (8 G10 driver pairs + curated derived crosses) and "exotics" (3 EM driver pairs, USD-pivot star).',
+        'CRM Topology Bundles: Majors + Exotics + Scandies',
+        'Three named CRM topologies per party: "majors" (8 G10 driver pairs + curated derived crosses), "exotics" (3 EM driver pairs, USD-pivot star), and "scandies" (4 Nordic+EUR driver pairs, USD-pivot star, + curated derived crosses).',
         'ORESTUDIO',
         'Seed data for the CRM Topology Bundles Librarian bundle',
         current_date,
@@ -223,7 +229,26 @@ begin
         -- configured pair already is a driver edge, no derived pairs.
         (v_dataset_id, v_tenant_id, 'exotics', 'USD', 'USD', 'ZAR', 'driver'),
         (v_dataset_id, v_tenant_id, 'exotics', 'USD', 'USD', 'MXN', 'driver'),
-        (v_dataset_id, v_tenant_id, 'exotics', 'USD', 'USD', 'INR', 'driver');
+        (v_dataset_id, v_tenant_id, 'exotics', 'USD', 'USD', 'INR', 'driver'),
+        -- scandies: 4 driver pairs (spanning-tree edges), a USD-pivot
+        -- star over the Nordic currencies plus EUR, matching
+        -- marketdata.fx_driver_rates / synthetic.fx_spot_configs.realistic
+        -- exactly (EUR/USD shared with majors; USD/SEK shared with
+        -- majors; USD/NOK, USD/DKK added specifically for this tier).
+        (v_dataset_id, v_tenant_id, 'scandies', 'USD', 'EUR', 'USD', 'driver'),
+        (v_dataset_id, v_tenant_id, 'scandies', 'USD', 'USD', 'SEK', 'driver'),
+        (v_dataset_id, v_tenant_id, 'scandies', 'USD', 'USD', 'NOK', 'driver'),
+        (v_dataset_id, v_tenant_id, 'scandies', 'USD', 'USD', 'DKK', 'driver'),
+        -- scandies: curated derived (non-edge) crosses -- the complete
+        -- C(4,2)=6 combinatorial set of crosses among the 4 non-USD
+        -- driver currencies (EUR, SEK, NOK, DKK), each triangulable via
+        -- the USD-pivot driver edges above.
+        (v_dataset_id, v_tenant_id, 'scandies', 'USD', 'EUR', 'SEK', 'derived'),
+        (v_dataset_id, v_tenant_id, 'scandies', 'USD', 'EUR', 'NOK', 'derived'),
+        (v_dataset_id, v_tenant_id, 'scandies', 'USD', 'EUR', 'DKK', 'derived'),
+        (v_dataset_id, v_tenant_id, 'scandies', 'USD', 'SEK', 'NOK', 'derived'),
+        (v_dataset_id, v_tenant_id, 'scandies', 'USD', 'SEK', 'DKK', 'derived'),
+        (v_dataset_id, v_tenant_id, 'scandies', 'USD', 'NOK', 'DKK', 'derived');
 
     get diagnostics v_count = row_count;
     raise debug 'Populated % CRM topology bundle row(s)', v_count;

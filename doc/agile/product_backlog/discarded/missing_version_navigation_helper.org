@@ -9,7 +9,9 @@
 #+created: 2026-07-14
 #+updated: 2026-07-14
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved* (PR [[https://github.com/OreStudio/OreStudio/pull/1567][#1567]], task [[id:257F85B2-24C6-482D-AB79-0322F23EBC13][Update ores.cpp.qt codegen templates for the generic HistoryDialog]]): the =has_version_navigation= branch's =wireVersionHistory<>=/=VersionNavigationHelper.hpp= reference was replaced entirely with the =fullHistory=-parameter approach =CurrencyController= already proved out (PR #1553/#1563) — the version-nav toolbar's full-history optimisation is now sourced from the same =fetch<Entity>History= wrapper that resolves the generic =HistoryDialog='s signals, not a separate, never-implemented helper. No entity needs the =has_version_navigation: false= workaround anymore.
 
 * What
 

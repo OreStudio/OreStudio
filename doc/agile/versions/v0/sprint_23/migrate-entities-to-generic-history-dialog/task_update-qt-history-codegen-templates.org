@@ -151,7 +151,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Close stale duplicate backlog capture (missing_version_navigation_helper) now resolved by this PR | doc/agile/product_backlog/inbox/missing_version_navigation_helper.org | Accepted | Moved to discarded/ with a Resolved note pointing at this PR/task. |
+| 2 | history_protocol_include duplicates protocol_include for currency (harmless, currently degenerate) | ores.refdata.currency.org / cpp_qt_controller.cpp.mustache | Declined | Confirmed harmless (header-guard-deduped); template path is already correct for an entity with a genuinely distinct history-protocol header. Not changed. |
+| 3 | Continuation-line indentation on designated-initializer blocks is 24 spaces, not clang-format-aligned | cpp_qt_history_dialog.cpp.mustache / 5 dialog files | Declined | Cosmetic only; generated/hand-patched .cpp output isn't currently clang-format-passed in this repo. Not changed. |
 
 * Result
 

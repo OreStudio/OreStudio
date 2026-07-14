@@ -8,7 +8,7 @@
 #+filetags: :book_data_model_cleanup:sprint_23:v0:
 #+owner: marco
 #+branch: feature/rename-ledger-ccy-to-functional-currency
-#+pr:
+#+pr: 1565
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-08
@@ -85,7 +85,7 @@ the full affected-component test suite, not just a compile check.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1565][#1565]] | [refdata,ore,synthetic,sql,qt,doc] Rename book.ledger_ccy to functional_currency |
 
 * Review
 

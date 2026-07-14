@@ -200,7 +200,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =onCellSelected= indexed both row and column into =displayedCurrencies_=, which was only populated from row currencies -- wrong/out-of-bounds column lookup whenever Base Currency filter or Hide Empty made rows and columns diverge (e.g. exotics/scandies USD-pivot-star tiers). | Accepted | Split into =displayedRowCurrencies_=/=displayedColumnCurrencies_=, populated from =rowCurrencies=/=allCurrencies= respectively; =onCellSelected= indexes each into its own list. |
+| 2 | =CrmCrossRatesMatrixController= never emitted =detachableWindowDestroyed=, so every closed CRM matrix window left a stale entry in =MainWindow::allDetachableWindows_= for the rest of the session (=EntityController=-derived controllers get this for free; this one manages its own windows directly). | Accepted | Added the =emit= in the =QObject::destroyed= handler, alongside the existing =matrixSubWindows_= cleanup. |
+| 3 | PR description overclaimed "fixed on every UUID-primary-keyed entity's Add dialog" -- =BookDetailDialog= (not regenerated in this PR) still has the bug. | Declined (as a code change) | Confirmed and already tracked separately: [[file:../../../product_backlog/inbox/book_id_field_not_readonly.org][book_id_field_not_readonly.org]], filed 2026-07-12 before this PR. Not a gap this PR introduced or missed silently -- out of scope for this PR's diff (no CRM entity involved); acknowledged via reply rather than expanding this PR to cover Book. |
+| 4 | Inverted-cell sparkline always showed "No data": =rateHistory_= was populated from a separate pass over =result.rates= (server's own base/quote direction), but =updateOverviewPanel()= looks it up by the *displayed* (row, col) key -- which is inverted for a Show-Inverted cell. | Accepted | Moved history recording into the per-cell rendering loop, keyed by the same =display_key=/=display_rate= already computed there (inverts when =inverted= is true). |
+| 5 | =external/fed_h10/manifest.json= mislabels the NOK/DKK pairs as their raw Fed codes ("no"/"dn") instead of "USD/NOK"/"USD/DKK", because =tools/fetch_fed_h10_rates.py='s =CURRENCY_NAMES= map was never updated for the two new currencies. | Accepted | Added the two entries to =CURRENCY_NAMES= and regenerated =pages.zip=/=manifest.json= via the documented command. |
 
 * Result
 

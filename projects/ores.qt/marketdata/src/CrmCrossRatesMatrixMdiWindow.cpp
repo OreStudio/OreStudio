@@ -294,13 +294,16 @@ void CrmCrossRatesMatrixMdiWindow::onShowInvertedToggled(bool checked) {
 }
 
 void CrmCrossRatesMatrixMdiWindow::onCellSelected(int row, int column) {
-    if (row < 0 || column < 0 || row == column)
+    // Dash cells (diagonal or no data) are plain QTableWidgetItems with no
+    // click signal wired up -- only a real CrmRateCellWidget ever reaches
+    // this slot -- so no same-currency/diagonal guard is needed here.
+    if (row < 0 || column < 0)
         return;
-    if (row >= static_cast<int>(displayedCurrencies_.size())
-        || column >= static_cast<int>(displayedCurrencies_.size()))
+    if (row >= static_cast<int>(displayedRowCurrencies_.size())
+        || column >= static_cast<int>(displayedColumnCurrencies_.size()))
         return;
 
-    updateOverviewPanel(displayedCurrencies_[row], displayedCurrencies_[column]);
+    updateOverviewPanel(displayedRowCurrencies_[row], displayedColumnCurrencies_[column]);
 }
 
 void CrmCrossRatesMatrixMdiWindow::updateOverviewPanel(const std::string& base,
@@ -444,9 +447,12 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
         self->table_->setRowCount(rowCurrencies.size());
         self->table_->setColumnCount(allCurrencies.size());
 
-        self->displayedCurrencies_.clear();
+        self->displayedRowCurrencies_.clear();
         for (const auto& code : rowCurrencies)
-            self->displayedCurrencies_.push_back(code.toStdString());
+            self->displayedRowCurrencies_.push_back(code.toStdString());
+        self->displayedColumnCurrencies_.clear();
+        for (const auto& code : allCurrencies)
+            self->displayedColumnCurrencies_.push_back(code.toStdString());
 
         for (int i = 0; i < allCurrencies.size(); ++i) {
             const auto code = allCurrencies[i].toStdString();
@@ -554,18 +560,21 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                     self->onCellSelected(row, col);
                 });
                 self->table_->setCellWidget(row, col, cellWidget);
+
+                // Recorded under the same display_key/display_rate as
+                // above (not a separate pass over result.rates), so an
+                // inverted cell's sparkline tracks the value actually
+                // shown (1/rate), not the server's own pair direction --
+                // otherwise the overview panel's history lookup (keyed by
+                // displayed row/col) always misses for inverted cells.
+                auto& history = self->rateHistory_[display_key];
+                history.push_back(display_rate);
+                while (history.size() > max_history_points)
+                    history.pop_front();
             }
         }
 
         self->previousRates_ = std::move(currentRates);
-
-        for (const auto& rate : result.rates) {
-            const auto key = std::make_pair(rate.base_currency_code, rate.quote_currency_code);
-            auto& history = self->rateHistory_[key];
-            history.push_back(rate.rate);
-            while (history.size() > max_history_points)
-                history.pop_front();
-        }
 
         self->footerLabel_->setText(
             tr("CONNECTED | %1 Currencies").arg(allCurrencies.size()));

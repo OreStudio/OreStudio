@@ -189,10 +189,17 @@ void CrmCrossRatesMatrixController::openMatrix(const QString& crmName) {
     connect(matrixSubWindow,
             &QObject::destroyed,
             this,
-            [self = QPointer<CrmCrossRatesMatrixController>(this), crmName]() {
+            [self = QPointer<CrmCrossRatesMatrixController>(this), crmName, matrixSubWindow]() {
                 if (!self)
                     return;
                 self->matrixSubWindows_.remove(crmName);
+                // MainWindow's Window menu (allDetachableWindows_) relies
+                // on this to prune closed windows -- without it, every
+                // closed CRM matrix window leaves a stale entry there for
+                // the rest of the session (EntityController-derived
+                // controllers get this for free; this one manages its own
+                // windows directly, so it must emit it itself).
+                emit self->detachableWindowDestroyed(matrixSubWindow);
             });
 
     emit detachableWindowCreated(matrixSubWindow);

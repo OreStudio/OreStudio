@@ -64,6 +64,8 @@ CURRENCY_NAMES = {
     "sf": "USD/ZAR",
     "mx": "USD/MXN",
     "in": "USD/INR",
+    "no": "USD/NOK",
+    "dn": "USD/DKK",
 }
 
 BASE_URL = "https://www.federalreserve.gov/releases/h10/hist/dat00_{code}.htm"

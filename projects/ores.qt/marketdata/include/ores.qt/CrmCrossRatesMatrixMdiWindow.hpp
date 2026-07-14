@@ -129,10 +129,16 @@ private:
     QLabel* overviewRateLabel_;
     CrmRateSparklineWidget* overviewSparkline_;
 
-    /// Currencies currently shown as row/column headers, indexed by the
-    /// grid's row/column position -- lets cell-selection map back to a
-    /// (base, quote) pair without re-deriving it from response data.
-    std::vector<std::string> displayedCurrencies_;
+    /// Currencies currently shown as row headers, indexed by the grid's
+    /// row position. Kept separate from the column headers below: they
+    /// diverge whenever the Base Currency filter narrows rows to a
+    /// single entry, or Hide Empty removes different currencies from
+    /// each axis (e.g. a USD-pivot-star tier like exotics/scandies).
+    std::vector<std::string> displayedRowCurrencies_;
+
+    /// Currencies currently shown as column headers, indexed by the
+    /// grid's column position -- see displayedRowCurrencies_.
+    std::vector<std::string> displayedColumnCurrencies_;
 
     /// Previous reload's rate per (base, quote) -- used to colour cells
     /// up/down relative to their last known value. Client-side only, no

@@ -48,6 +48,9 @@
 \ir ./refdata_calendars_create.sql
 \ir ./refdata_calendars_notify_trigger_create.sql
 
+-- Currency-country issuing junction
+\ir ./refdata_currency_country_create.sql
+
 -- FPML Reference data tables
 \ir ./refdata_account_types_create.sql
 \ir ./refdata_account_types_notify_trigger_create.sql

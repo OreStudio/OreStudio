@@ -143,6 +143,12 @@
 \ir ./refdata_monetary_natures_drop.sql
 \ir ./refdata_rounding_types_drop.sql
 
+-- Calendars (depends on calendar_types and countries; drop before both)
+\ir ./refdata_calendars_notify_trigger_drop.sql
+\ir ./refdata_calendars_drop.sql
+\ir ./refdata_calendar_types_notify_trigger_drop.sql
+\ir ./refdata_calendar_types_drop.sql
+
 -- Countries
 \ir ./refdata_countries_notify_trigger_drop.sql
 \ir ./refdata_countries_drop.sql

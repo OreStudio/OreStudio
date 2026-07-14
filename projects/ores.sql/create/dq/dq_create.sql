@@ -73,6 +73,8 @@
 \ir ./dq_datasets_notify_trigger_create.sql
 
 -- Core artefact tables
+\ir ./dq_calendar_types_artefact_create.sql
+\ir ./dq_calendars_artefact_create.sql
 \ir ./dq_countries_artefact_create.sql
 \ir ./dq_currencies_artefact_create.sql
 \ir ./dq_currency_pairs_artefact_create.sql

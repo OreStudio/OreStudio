@@ -28,6 +28,8 @@
 \ir ./refdata_monetary_natures_notify_trigger_create.sql
 \ir ./refdata_currency_market_tiers_create.sql
 \ir ./refdata_currency_market_tiers_notify_trigger_create.sql
+\ir ./refdata_calendar_types_create.sql
+\ir ./refdata_calendar_types_notify_trigger_create.sql
 
 -- Core reference data tables
 \ir ./refdata_currencies_create.sql
@@ -43,6 +45,8 @@
 \ir ./refdata_currency_pair_conventions_notify_trigger_create.sql
 \ir ./refdata_countries_create.sql
 \ir ./refdata_countries_notify_trigger_create.sql
+\ir ./refdata_calendars_create.sql
+\ir ./refdata_calendars_notify_trigger_create.sql
 
 -- FPML Reference data tables
 \ir ./refdata_account_types_create.sql

@@ -163,7 +163,10 @@ void TenorDetailDialog::populateKindCombo() {
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load tenor kinds: %1").arg(error));
         },
-        [this]() { setup_badge_combo(this, ui_->kindCombo, badgeCache(), "tenor_kind"); });
+        [this]() { setup_badge_combo(this, ui_->kindCombo, badgeCache(), "tenor_kind"); },
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
 }
 void TenorDetailDialog::populateUnitCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating unit combo";
@@ -180,15 +183,28 @@ void TenorDetailDialog::populateUnitCombo() {
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load tenor units: %1").arg(error));
         },
-        [this]() { setup_badge_combo(this, ui_->unitCombo, badgeCache(), "tenor_unit"); });
+        [this]() { setup_badge_combo(this, ui_->unitCombo, badgeCache(), "tenor_unit"); },
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
 }
 void TenorDetailDialog::updateUiFromTenor() {
     ui_->codeEdit->setText(QString::fromStdString(tenor_.code));
     ui_->displayNameEdit->setText(QString::fromStdString(tenor_.display_name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(tenor_.description));
     ui_->sortOrderEdit->setValue(tenor_.sort_order);
-    ui_->kindCombo->setCurrentText(QString::fromStdString(tenor_.kind));
-    ui_->unitCombo->setCurrentText(QString::fromStdString(tenor_.unit));
+    {
+        const auto val = QString::fromStdString(tenor_.kind);
+        const int idx = ui_->kindCombo->findData(val);
+        if (idx >= 0)
+            ui_->kindCombo->setCurrentIndex(idx);
+    }
+    {
+        const auto val = QString::fromStdString(tenor_.unit);
+        const int idx = ui_->unitCombo->findData(val);
+        if (idx >= 0)
+            ui_->unitCombo->setCurrentIndex(idx);
+    }
     ui_->multiplierEdit->setValue(tenor_.multiplier.value_or(ui_->multiplierEdit->minimum()));
 
     populateProvenance(tenor_.version,

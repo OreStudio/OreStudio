@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: BE3DEB46-1022-4A68-A1CD-7575CF6CDC33
+:END:
+#+title: Reconcile dynamic_combo detail-dialog codegen drift
+#+description: Several entities' detail dialogs (e.g. currency) have drifted from the current async-lookup-combo template: setCurrentText() vs findData()/setCurrentIndex(), missing loading/error placeholder text.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:qt:drift:tech-debt:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=CurrencyDetailDialog.cpp= (and likely other entities' detail
+dialogs using =dynamic_combo= fields) has drifted from
+=ores.codegen/library/templates/ores.cpp.qt.detail_dialog_impl.org='s
+current async-lookup-combo template: the template now passes
+=Loading…=/=Failed to load= placeholder text and a code-extractor
+lambda to the combo-population helper, and reads back the current
+value via =findData()=/=setCurrentIndex()= (storing the code as
+itemData) instead of =setCurrentText()=. Needs a review pass across
+all =dynamic_combo= entities to bring them in line with the current
+template, verifying each diff is additive/correct before applying
+(not a blind regenerate) since this changes combo value-matching
+semantics.
+
+* Why
+
+Found while regenerating currency's controller for the
+generic-=HistoryDialog= codegen task
+([[id:257F85B2-24C6-482D-AB79-0322F23EBC13][Update ores.cpp.qt codegen templates for the generic HistoryDialog]]):
+=compass codegen entity generate currency --address ores.cpp.qt
+--diff= surfaced this as unrelated drift alongside the intended
+=HistoryDialog= wiring change. Left untouched in that task to keep
+its diff scoped; captured here so the drift gets a deliberate,
+reviewed fix rather than being silently pulled in by an unrelated
+regeneration.
+
+* References
+
+- =projects/ores.qt/refdata/src/CurrencyDetailDialog.cpp= — the
+  drifted file found first.
+- =projects/ores.codegen/library/templates/ores.cpp.qt.detail_dialog_impl.org=
+  — the current template.
+
+* See also
+
+- [[id:257F85B2-24C6-482D-AB79-0322F23EBC13][Update ores.cpp.qt codegen templates for the generic HistoryDialog]]

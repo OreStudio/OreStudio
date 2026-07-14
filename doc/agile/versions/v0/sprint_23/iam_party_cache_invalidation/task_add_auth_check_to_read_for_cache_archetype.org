@@ -8,7 +8,7 @@
 #+filetags: :iam_party_cache_invalidation:sprint_23:v0:
 #+owner: marco
 #+branch: feature/verify-activation-repro-fixed
-#+pr:
+#+pr: 1566
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-13
@@ -142,7 +142,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1566][#1566]] | [iam,refdata,codegen] Close entity-mirror cache story: auth check + bootstrap phases |
 
 * Review
 

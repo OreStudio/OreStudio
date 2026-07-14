@@ -468,7 +468,12 @@ void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode)
     createMode_ = createMode;
 {{#domain_entity.qt.locked_fields}}
 {{#is_line_edit}}
+{{#is_auto_generated_key}}
+    ui_->{{widget}}->setReadOnly(true);
+{{/is_auto_generated_key}}
+{{^is_auto_generated_key}}
     ui_->{{widget}}->setReadOnly(!createMode);
+{{/is_auto_generated_key}}
 {{/is_line_edit}}
 {{#is_text_edit}}
     ui_->{{widget}}->setReadOnly(!createMode);

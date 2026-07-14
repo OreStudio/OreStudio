@@ -30,6 +30,7 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 
@@ -140,7 +141,7 @@ void CrmTopologyConfigDetailDialog::setConfig(const refdata::domain::crm_topolog
 
 void CrmTopologyConfigDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->idEdit->setReadOnly(!createMode);
+    ui_->idEdit->setReadOnly(true);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {

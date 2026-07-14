@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 731A99D8-73BF-4F82-B7B9-22A9EB5FD4C3
+:END:
+#+title: Split LookupFetcher into per-entity codegen'd fetchers
+#+description: LookupFetcher.hpp/.cpp is a hand-maintained grab-bag of fetch_<entity> functions that should be generated per-entity from the model, like the rest of the dynamic_combo plumbing.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:qt:refactor:dynamic-combo:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+`ores.qt/api/include/ores.qt/LookupFetcher.hpp` and its `.cpp` (see
+`projects/ores.qt/api/src/LookupFetcher.cpp`) have grown into a
+hand-maintained grab-bag of `fetch_<entity>(ClientManager*)` free
+functions, one per lookup used by some entity's `dynamic_combo`
+Detail field (e.g. `fetch_currency_codes`, `fetch_crm_topology_configs`).
+Every new `dynamic_combo` field added to an entity model currently
+requires a manual addition here: a new include, a new
+`std::expected<std::vector<T>, QString> fetch_X(ClientManager*)`
+function that builds the request, calls
+`cm->process_authenticated_request`, and unwraps the response. This
+is entirely mechanical and derivable from the same model data already
+driving `combo_fetch_fn`/`combo_domain_type`/`get_request_class`/
+`get_response_class` knobs used elsewhere in the Qt codegen profile
+(see `ores.cpp.qt.detail_dialog_impl.org` and
+`DynamicComboSetup.hpp`). This should be split into one generated
+function per entity (or a generated header/source pair per owning
+component), rendered by the same `ores.cpp.qt` codegen address,
+instead of requiring a hand-edit of a shared file for every new
+lookup-backed combo.
+
+While doing this, also review `DynamicComboSetup.hpp`'s
+`populateDynamicCombo<Entity>` helper (recently extended with a
+`value_of` display/value-split parameter — see PR #1556) for further
+cleanup opportunities: the function has accumulated several optional
+trailing parameters (`code_of`, `on_success`, `loading_placeholder`,
+`error_placeholder`, `value_of`) across multiple rounds of extension,
+and it may be worth revisiting the parameter list (e.g. an options
+struct) now that both display-text and stored-value derivation are
+independently configurable, plus checking for any remaining entities
+still relying on the old text-based (`setCurrentText`) selection
+semantics that could be simplified now that `Qt::UserRole` itemData
+is populated uniformly.
+
+* Why
+
+Hand-maintaining `LookupFetcher` breaks the project's own codegen
+convention: every other layer touched by a `dynamic_combo` field
+(model, populate lambda, `updateUiFromX`, `update...FromUi`) is
+generated from the entity `.org` model, but the fetch function itself
+is not, so adding a new lookup-backed combo silently requires editing
+a shared, un-generated file by hand — an easy step to miss and a
+growing merge-conflict surface as more entities adopt dynamic combos
+(3 CRM entities alone added `fetch_crm_topology_configs` this
+sprint). Generating it removes that manual step and keeps
+`LookupFetcher` in sync with the model as the single source of
+truth. The `DynamicComboSetup.hpp` review is bundled in because its
+parameter list grew organically while fixing PR #1556's config_id
+combo bug, and is worth a deliberate look rather than further ad hoc
+extension next time.
+
+* References
+
+- `projects/ores.qt/api/include/ores.qt/LookupFetcher.hpp`
+- `projects/ores.qt/api/src/LookupFetcher.cpp`
+- `projects/ores.qt/api/include/ores.qt/DynamicComboSetup.hpp`
+- `projects/ores.codegen/library/templates/ores.cpp.qt.detail_dialog_impl.org`
+- PR #1556 (CRM topology/driver-pair/enabled-derived-pair codegen,
+  introduced `fetch_crm_topology_configs` and the `value_of` split)
+
+* See also
+
+-

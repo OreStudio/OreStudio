@@ -259,7 +259,7 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 
 Country gets its own flag icon in the list, keyed by
 =country_alpha2_code= via the generic country-code accessor (same
-mechanism as Book's =LedgerCcy= currency flag) -- business_centre has
+mechanism as Book's =FunctionalCurrency= currency flag) -- business_centre has
 no =image_id= of its own (dropped in favour of this country-derived
 flag), so it uses =icon_columns= rather than the single
 =flag_icon_column= mechanism.

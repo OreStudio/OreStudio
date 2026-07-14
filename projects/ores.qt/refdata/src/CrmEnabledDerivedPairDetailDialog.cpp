@@ -19,8 +19,10 @@
  */
 #include "ores.qt/CrmEnabledDerivedPairDetailDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/crm_enabled_derived_pair_protocol.hpp"
@@ -30,6 +32,7 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 
@@ -106,6 +109,10 @@ void CrmEnabledDerivedPairDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &CrmEnabledDerivedPairDetailDialog::onCodeChanged);
+    connect(ui_->configCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &CrmEnabledDerivedPairDetailDialog::onFieldChanged);
     connect(ui_->baseCcyCombo,
             &QComboBox::currentIndexChanged,
             this,
@@ -122,6 +129,7 @@ void CrmEnabledDerivedPairDetailDialog::setupConnections() {
 
 void CrmEnabledDerivedPairDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateConfigId();
     populateBaseCurrencyCodeCombo();
     populateQuoteCurrencyCodeCombo();
 }
@@ -151,10 +159,13 @@ void CrmEnabledDerivedPairDetailDialog::setPair(
 void CrmEnabledDerivedPairDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->idEdit->setReadOnly(!createMode);
+    ui_->configCombo->setEnabled(createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {
         pair_.id = boost::uuids::random_generator()();
+        if (clientManager_)
+            pair_.party_id = clientManager_->currentPartyId();
     }
     hasChanges_ = false;
     updateSaveButtonState();
@@ -168,14 +179,41 @@ void CrmEnabledDerivedPairDetailDialog::markDirty() {
 void CrmEnabledDerivedPairDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->idEdit->setReadOnly(true);
+    ui_->configCombo->setEnabled(false);
     ui_->baseCcyCombo->setEnabled(!readOnly);
     ui_->quoteCcyCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
+void CrmEnabledDerivedPairDetailDialog::populateConfigId() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating config_id combo";
+    populateDynamicCombo<refdata::domain::crm_topology_config>(
+        ui_->configCombo,
+        this,
+        clientManager_,
+        &fetch_crm_topology_configs,
+        "crmEnabledDerivedPairConfigWatcher",
+        [](const auto& t) { return QString::fromStdString(t.name); },
+        [](const auto& t) { return QString::fromStdString(t.pivot_currency_code); },
+        [](const auto& t) { return t.version; },
+        [this]() { return QString::fromStdString(boost::uuids::to_string(pair_.config_id)); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load CRM topology configs: %1").arg(error));
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.id)); });
+}
 void CrmEnabledDerivedPairDetailDialog::updateUiFromPair() {
     ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(pair_.id)));
+    {
+        const auto val = QString::fromStdString(boost::uuids::to_string(pair_.config_id));
+        const int idx = ui_->configCombo->findData(val);
+        if (idx >= 0)
+            ui_->configCombo->setCurrentIndex(idx);
+    }
     {
         const auto val = QString::fromStdString(pair_.base_currency_code);
         const int idx = ui_->baseCcyCombo->findText(val);
@@ -200,6 +238,18 @@ void CrmEnabledDerivedPairDetailDialog::updateUiFromPair() {
 }
 
 void CrmEnabledDerivedPairDetailDialog::updatePairFromUi() {
+    if (createMode_) {
+        const auto config_id_str =
+            ui_->configCombo->currentData().toString().trimmed().toStdString();
+        if (!config_id_str.empty()) {
+            try {
+                pair_.config_id = boost::uuids::string_generator()(config_id_str);
+            } catch (const std::exception&) {
+                // Leave the field unchanged; validation catches the empty/nil
+                // selection at save time (no combo choice made yet).
+            }
+        }
+    }
     pair_.base_currency_code = ui_->baseCcyCombo->currentText().toStdString();
     pair_.quote_currency_code = ui_->quoteCcyCombo->currentText().toStdString();
     pair_.enabled = ui_->enabledCheckBox->isChecked();
@@ -223,10 +273,12 @@ void CrmEnabledDerivedPairDetailDialog::updateSaveButtonState() {
 
 bool CrmEnabledDerivedPairDetailDialog::validateInput() {
     const QString id_val = ui_->idEdit->text().trimmed();
+    const bool config_id_selected = ui_->configCombo->currentIndex() >= 0;
     const bool base_currency_code_selected = ui_->baseCcyCombo->currentIndex() >= 0;
     const bool quote_currency_code_selected = ui_->quoteCcyCombo->currentIndex() >= 0;
 
-    return true && !id_val.isEmpty() && base_currency_code_selected && quote_currency_code_selected;
+    return true && !id_val.isEmpty() && config_id_selected && base_currency_code_selected &&
+           quote_currency_code_selected;
 }
 
 void CrmEnabledDerivedPairDetailDialog::onSaveClicked() {

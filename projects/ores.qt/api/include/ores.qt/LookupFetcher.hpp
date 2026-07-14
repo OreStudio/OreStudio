@@ -22,6 +22,7 @@
 
 #include "ores.qt/export.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
+#include "ores.refdata.api/domain/crm_topology_config.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"
@@ -212,6 +213,20 @@ fetch_currency_market_tiers(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::book_status>, QString>
 fetch_book_statuses(ClientManager* cm);
+
+/**
+ * @brief Fetches all CRM topology configs from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by CRM Driver Pair's and CRM Enabled Derived Pair's config_id
+ * combo (the parent config a pair belongs to, otherwise unreachable
+ * from either dialog since party_id/config_id are session/parent-
+ * implicit and there is no Explorer/parent-relationship wiring for
+ * CRM yet). Returns an error message on failure, distinguishing it
+ * from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::crm_topology_config>, QString>
+fetch_crm_topology_configs(ClientManager* cm);
 
 /**
  * @brief Fetches all regulatory book types from the server.

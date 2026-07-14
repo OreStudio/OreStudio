@@ -91,6 +91,9 @@ The full template source. Edit here and re-tangle with
 #include <boost/uuid/uuid_io.hpp>
 {{/domain_entity.qt.has_uuid_detail_fields}}
 {{/domain_entity.qt.has_uuid_primary_key}}
+{{#domain_entity.qt.has_uuid_detail_fields}}
+#include <boost/uuid/string_generator.hpp>
+{{/domain_entity.qt.has_uuid_detail_fields}}
 #include "ui_{{domain_entity.entity_pascal}}DetailDialog.h"
 #include "ores.qt/ChangeReasonDialog.hpp"
 {{#domain_entity.qt.has_flag_icon}}
@@ -550,6 +553,10 @@ void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode)
 {{#domain_entity.qt.has_uuid_primary_key}}
     if (createMode) {
         {{domain_entity.qt.item_var}}_.{{#domain_entity.qt.id_access}}{{domain_entity.qt.id_access}}{{/domain_entity.qt.id_access}}{{^domain_entity.qt.id_access}}id{{/domain_entity.qt.id_access}} = boost::uuids::random_generator()();
+{{#domain_entity.qt.hidden_party_id_on_create}}
+        if (clientManager_)
+            {{domain_entity.qt.item_var}}_.party_id = clientManager_->currentPartyId();
+{{/domain_entity.qt.hidden_party_id_on_create}}
     }
 {{/domain_entity.qt.has_uuid_primary_key}}
     hasChanges_ = false;
@@ -737,14 +744,37 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}
         clientManager_,
         &{{combo_fetch_fn}},
         "{{combo_watcher_name}}",
+{{#combo_display_field}}
+        [](const auto& t) { return QString::fromStdString(t.{{combo_display_field}}); },
+{{/combo_display_field}}
+{{^combo_display_field}}
         [](const auto& t) { return QString::fromStdString(t.{{combo_code_field}}); },
+{{/combo_display_field}}
         [](const auto& t) { return QString::fromStdString(t.{{combo_tooltip_field}}); },
         [](const auto& t) { return t.{{combo_sort_field}}; },
+{{#is_uuid}}
+        [this]() { return QString::fromStdString(boost::uuids::to_string({{domain_entity.qt.item_var}}_.{{field}})); },
+{{/is_uuid}}
+{{^is_uuid}}
         [this]() { return QString::fromStdString({{domain_entity.qt.item_var}}_.{{field}}); },
+{{/is_uuid}}
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load {{combo_label}}: %1").arg(error));
-        }{{#badge_key}},
-        [this]() { setup_badge_combo(this, ui_->{{widget}}, badgeCache(), "{{badge_key}}"); }{{/badge_key}});
+        },
+{{#badge_key}}
+        [this]() { setup_badge_combo(this, ui_->{{widget}}, badgeCache(), "{{badge_key}}"); },
+{{/badge_key}}
+{{^badge_key}}
+        []() {},
+{{/badge_key}}
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+{{#is_uuid}}
+        [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.{{combo_code_field}})); });
+{{/is_uuid}}
+{{^is_uuid}}
+        [](const auto& t) { return QString::fromStdString(t.{{combo_code_field}}); });
+{{/is_uuid}}
 }
 {{/combo_domain_type}}
 {{^combo_domain_type}}
@@ -903,8 +933,18 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
 {{/is_static_combo}}
 {{#is_dynamic_combo}}
 {{#combo_fetch_fn}}
-    ui_->{{widget}}->setCurrentText(QString::fromStdString(
-        {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
+    {
+{{#is_uuid}}
+        const auto val = QString::fromStdString(boost::uuids::to_string(
+            {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
+{{/is_uuid}}
+{{^is_uuid}}
+        const auto val = QString::fromStdString(
+            {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
+{{/is_uuid}}
+        const int idx = ui_->{{widget}}->findData(val);
+        if (idx >= 0) ui_->{{widget}}->setCurrentIndex(idx);
+    }
 {{/combo_fetch_fn}}
 {{^combo_fetch_fn}}
     {
@@ -959,6 +999,22 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
         {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->currentText().trimmed().toStdString();
 {{/is_flagged_combo}}
     }
+{{/is_uuid}}
+{{#is_uuid}}
+{{#is_dynamic_combo}}
+    if (createMode_) {
+        const auto {{field}}_str = ui_->{{widget}}->currentData().toString().trimmed().toStdString();
+        if (!{{field}}_str.empty()) {
+            try {
+                {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
+                    boost::uuids::string_generator()({{field}}_str);
+            } catch (const std::exception&) {
+                // Leave the field unchanged; validation catches the empty/nil
+                // selection at save time (no combo choice made yet).
+            }
+        }
+    }
+{{/is_dynamic_combo}}
 {{/is_uuid}}
 {{/is_locked_after_create}}
 {{^is_locked_after_create}}

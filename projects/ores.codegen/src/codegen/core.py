@@ -2617,6 +2617,24 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['has_uuid_detail_fields'] = any(
                 f.get('is_uuid') or f.get('is_optional_uuid') for f in detail_fields
             )
+            # A `party_id` natural key that is *not* exposed as a Detail
+            # field is implicit-from-session by convention (see book/
+            # portfolio) -- setCreateMode must still populate it from the
+            # active party, or every row created via this dialog gets a
+            # nil party_id silently accepted by the (equally nil-tolerant)
+            # domain type. Only fires for a genuine UUID party_id; a
+            # party_id shown in the Detail form is user-editable instead
+            # and handled by the normal field-binding code, not here.
+            party_id_field = next(
+                (nk for nk in domain_entity.get('natural_keys', [])
+                 if nk.get('column') == 'party_id'
+                 and 'boost::uuids::uuid' in nk.get('cpp_type', '')),
+                None
+            )
+            detail_field_names = {f.get('field') for f in detail_fields}
+            qt['hidden_party_id_on_create'] = bool(
+                party_id_field and 'party_id' not in detail_field_names
+            )
             # Delete request id field: protocol generates 'ids' for UUID PK and
             # '{pk_column}s' for text PK (matching cpp_protocol.hpp.mustache line 53).
             if qt.get('has_uuid_primary_key', False):

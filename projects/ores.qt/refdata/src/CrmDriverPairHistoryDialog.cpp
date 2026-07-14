@@ -107,6 +107,10 @@ HistoryDialogBase::DiffResult CrmDriverPairHistoryDialog::calculateDiffAt(int ci
         diffs.append({tr("Id"),
                       {QString::fromStdString(boost::uuids::to_string(prev.id)),
                        QString::fromStdString(boost::uuids::to_string(curr.id))}});
+    if (curr.config_id != prev.config_id)
+        diffs.append({tr("Config"),
+                      {QString::fromStdString(boost::uuids::to_string(prev.config_id)),
+                       QString::fromStdString(boost::uuids::to_string(curr.config_id))}});
     checkString(diffs, tr("Base"), curr.base_currency_code, prev.base_currency_code);
     checkString(diffs, tr("Quote"), curr.quote_currency_code, prev.quote_currency_code);
     checkBool(diffs, tr("Enabled"), curr.enabled, prev.enabled);
@@ -120,6 +124,7 @@ void CrmDriverPairHistoryDialog::displayFullDetails(int index) {
     const auto& version = versions_[index];
 
     ui_->idValue->setText(QString::fromStdString(boost::uuids::to_string(version.id)));
+    ui_->configValue->setText(QString::fromStdString(boost::uuids::to_string(version.config_id)));
     ui_->baseCcyValue->setText(QString::fromStdString(version.base_currency_code));
     ui_->quoteCcyValue->setText(QString::fromStdString(version.quote_currency_code));
     ui_->enabledCheckBox->setText(version.enabled ? tr("true") : tr("false"));

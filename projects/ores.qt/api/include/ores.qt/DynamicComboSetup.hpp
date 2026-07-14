@@ -67,13 +67,17 @@ namespace detail {
  * fetch error instead of silently rendering an empty combo.
  * @param watcher_name Unique object name for the QFutureWatcher,
  * used both for re-entrancy guarding and lookup.
- * @param code_of Extracts the value stored as combo item data and
- * shown as item text.
+ * @param code_of Extracts the text shown as each combo item's label.
+ * For most callers this also doubles as the stored/matched value (a
+ * lookup entity's code IS its display text, e.g. book_status "Active")
+ * — pass @p value_of only when the two genuinely differ (e.g. a
+ * UUID-keyed parent picker: display the parent's name, store its id).
  * @param tooltip_of Extracts the per-item tooltip text.
  * @param sort_key_of Extracts the sort key (ascending) items are
  * ordered by before insertion.
  * @param fallback_selection Evaluated at fetch-completion time (not at
- * call time) to get the selection to restore if there was no prior
+ * call time) to get the *value* (matched against @p value_of, or @p
+ * code_of when @p value_of is unset) to restore if there was no prior
  * selection on the combo — e.g. the current entity's stored value for
  * this field, which may not be set yet when populateDynamicCombo is
  * called (setClientManager runs before setCurrency).
@@ -88,6 +92,11 @@ namespace detail {
  * fetch completes would have nothing to colour yet.
  * @param loading_placeholder Text shown while the fetch is in flight.
  * @param error_placeholder Text shown in the combo when the fetch fails.
+ * @param value_of Extracts the value stored as combo item data (@c
+ * Qt::UserRole) and used to match/restore selection — distinct from
+ * the displayed text when set (e.g. a UUID id backing a name-labelled
+ * combo). Defaults to @p code_of when unset, preserving the original
+ * text-is-the-value behaviour for every existing caller.
  */
 template <typename Entity>
 void populateDynamicCombo(
@@ -103,7 +112,10 @@ void populateDynamicCombo(
     std::function<void(const QString&)> on_error = [](const QString&) {},
     std::function<void()> on_success = []() {},
     const QString& loading_placeholder = QObject::tr("Loading…"),
-    const QString& error_placeholder = QObject::tr("Failed to load")) {
+    const QString& error_placeholder = QObject::tr("Failed to load"),
+    std::function<QString(const Entity&)> value_of = nullptr) {
+    if (!value_of)
+        value_of = code_of;
     if (!combo || !owner || !client_manager || !client_manager->isConnected()) {
         BOOST_LOG_SEV(detail::dynamic_combo_setup_lg(), ores::logging::debug)
             << watcher_name.toStdString() << ": early return, combo=" << (combo != nullptr)
@@ -120,7 +132,7 @@ void populateDynamicCombo(
     BOOST_LOG_SEV(detail::dynamic_combo_setup_lg(), ores::logging::debug)
         << watcher_name.toStdString() << ": starting fetch";
 
-    const QString previous_selection = combo->currentText();
+    const QString previous_selection = combo->currentData().toString();
 
     combo->blockSignals(true);
     combo->clear();
@@ -147,6 +159,7 @@ void populateDynamicCombo(
          previous_selection,
          fallback_selection,
          code_of,
+         value_of,
          tooltip_of,
          sort_key_of,
          on_error,
@@ -182,13 +195,17 @@ void populateDynamicCombo(
             combo->clear();
             for (const auto& item : items) {
                 combo->addItem(code_of(item));
+                combo->setItemData(combo->count() - 1, value_of(item), Qt::UserRole);
                 combo->setItemData(combo->count() - 1, tooltip_of(item), Qt::ToolTipRole);
             }
 
             const QString to_select =
                 !previous_selection.isEmpty() ? previous_selection : fallback_selection();
-            if (!to_select.isEmpty())
-                combo->setCurrentText(to_select);
+            if (!to_select.isEmpty()) {
+                const int idx = combo->findData(to_select);
+                if (idx >= 0)
+                    combo->setCurrentIndex(idx);
+            }
             combo->blockSignals(false);
 
             const int current = combo->currentIndex();

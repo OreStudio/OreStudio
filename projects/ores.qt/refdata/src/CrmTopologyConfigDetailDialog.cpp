@@ -145,6 +145,8 @@ void CrmTopologyConfigDetailDialog::setCreateMode(bool createMode) {
     setProvenanceEnabled(!createMode);
     if (createMode) {
         config_.id = boost::uuids::random_generator()();
+        if (clientManager_)
+            config_.party_id = clientManager_->currentPartyId();
     }
     hasChanges_ = false;
     updateSaveButtonState();

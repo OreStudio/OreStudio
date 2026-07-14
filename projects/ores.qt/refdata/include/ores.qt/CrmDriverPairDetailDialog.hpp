@@ -101,6 +101,8 @@ private:
     void updateSaveButtonState();
     bool validateInput();
 
+    void populateConfigId();
+
 
     void populateBaseCurrencyCodeCombo();
 

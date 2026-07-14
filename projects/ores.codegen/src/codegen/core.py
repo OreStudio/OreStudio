@@ -1051,10 +1051,6 @@ def get_qt_domain_entity_template_mappings():
         ("cpp_qt_detail_dialog.hpp.mustache", "include/ores.qt", "DetailDialog.hpp"),
         ("cpp_qt_detail_dialog.cpp.mustache", "src", "DetailDialog.cpp"),
         ("qt_detail_dialog_ui.mustache", "ui", "DetailDialog.ui"),
-        # History dialog facet
-        ("cpp_qt_history_dialog.hpp.mustache", "include/ores.qt", "HistoryDialog.hpp"),
-        ("cpp_qt_history_dialog.cpp.mustache", "src", "HistoryDialog.cpp"),
-        ("qt_history_dialog_ui.mustache", "ui", "HistoryDialog.ui"),
         # Controller facet
         ("cpp_qt_controller.hpp.mustache", "include/ores.qt", "Controller.hpp"),
         ("cpp_qt_controller.cpp.mustache", "src", "Controller.cpp"),

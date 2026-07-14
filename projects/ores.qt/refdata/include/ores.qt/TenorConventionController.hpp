@@ -27,6 +27,9 @@
 #include "ores.refdata.api/domain/tenor_convention.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -86,11 +89,27 @@ private slots:
     void onShowHistory(const refdata::domain::tenor_convention& convention);
     void onRevertVersion(const refdata::domain::tenor_convention& convention);
     void onOpenVersion(const refdata::domain::tenor_convention& convention, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::tenor_convention& convention);
     void showHistoryWindow(const QString& code);
+
+    /**
+     * @brief Fetches the full typed tenor convention history (the
+     * existing per-entity refdata::messaging::get_tenor_convention_history_request/
+     * refdata::messaging::get_tenor_convention_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed tenor convention, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchTenorConventionHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<refdata::domain::tenor_convention>, QString>)>
+            callback);
 
     ChangeReasonCache* changeReasonCache_;
     TenorConventionMdiWindow* listWindow_;

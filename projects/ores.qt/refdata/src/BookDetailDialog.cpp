@@ -33,6 +33,7 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 
@@ -187,11 +188,13 @@ void BookDetailDialog::setBook(const refdata::domain::book& book) {
 
 void BookDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->idEdit->setReadOnly(!createMode);
+    ui_->idEdit->setReadOnly(true);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {
         book_.id = boost::uuids::random_generator()();
+        if (clientManager_)
+            book_.party_id = clientManager_->currentPartyId();
     }
     hasChanges_ = false;
     updateSaveButtonState();
@@ -231,7 +234,10 @@ void BookDetailDialog::populateBookStatusCombo() {
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load book statuses: %1").arg(error));
         },
-        [this]() { setup_badge_combo(this, ui_->bookStatusCombo, badgeCache(), "book_status"); });
+        [this]() { setup_badge_combo(this, ui_->bookStatusCombo, badgeCache(), "book_status"); },
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
 }
 void BookDetailDialog::populateRegulatoryBookTypeCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating regulatory_book_type combo";
@@ -251,7 +257,10 @@ void BookDetailDialog::populateRegulatoryBookTypeCombo() {
         [this]() {
             setup_badge_combo(
                 this, ui_->regulatoryBookTypeCombo, badgeCache(), "regulatory_book_type");
-        });
+        },
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
 }
 void BookDetailDialog::updateUiFromBook() {
     ui_->idEdit->setText(QString::fromStdString(boost::uuids::to_string(book_.id)));
@@ -263,9 +272,18 @@ void BookDetailDialog::updateUiFromBook() {
     }
     ui_->glAccountRefEdit->setText(QString::fromStdString(book_.gl_account_ref));
     ui_->costCenterEdit->setText(QString::fromStdString(book_.cost_center));
-    ui_->bookStatusCombo->setCurrentText(QString::fromStdString(book_.book_status));
-    ui_->regulatoryBookTypeCombo->setCurrentText(
-        QString::fromStdString(book_.regulatory_book_type));
+    {
+        const auto val = QString::fromStdString(book_.book_status);
+        const int idx = ui_->bookStatusCombo->findData(val);
+        if (idx >= 0)
+            ui_->bookStatusCombo->setCurrentIndex(idx);
+    }
+    {
+        const auto val = QString::fromStdString(book_.regulatory_book_type);
+        const int idx = ui_->regulatoryBookTypeCombo->findData(val);
+        if (idx >= 0)
+            ui_->regulatoryBookTypeCombo->setCurrentIndex(idx);
+    }
     ui_->isSweepableCheckBox->setChecked(book_.is_sweepable);
     {
         const auto val = QString::fromStdString(book_.rates_centre_code);

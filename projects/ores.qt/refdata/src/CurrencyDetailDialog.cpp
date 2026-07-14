@@ -365,7 +365,10 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
         },
         [this]() {
             setup_badge_combo(this, ui_->monetaryNatureCombo, badgeCache(), "monetary_nature");
-        });
+        },
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
 }
 void CurrencyDetailDialog::populateMarketTierCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating market_tier combo";
@@ -384,7 +387,10 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
         },
         [this]() {
             setup_badge_combo(this, ui_->marketTierCombo, badgeCache(), "currency_market_tier");
-        });
+        },
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
 }
 void CurrencyDetailDialog::populateRoundingTypeCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating rounding_type combo";
@@ -400,19 +406,38 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
         [this]() { return QString::fromStdString(currency_.rounding_type); },
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load rounding types: %1").arg(error));
-        });
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
 }
 void CurrencyDetailDialog::updateUiFromCurrency() {
     ui_->isoCodeEdit->setText(QString::fromStdString(currency_.iso_code));
     ui_->nameEdit->setText(QString::fromStdString(currency_.name));
     ui_->numericCodeEdit->setText(QString::fromStdString(currency_.numeric_code));
-    ui_->monetaryNatureCombo->setCurrentText(QString::fromStdString(currency_.monetary_nature));
-    ui_->marketTierCombo->setCurrentText(QString::fromStdString(currency_.market_tier));
+    {
+        const auto val = QString::fromStdString(currency_.monetary_nature);
+        const int idx = ui_->monetaryNatureCombo->findData(val);
+        if (idx >= 0)
+            ui_->monetaryNatureCombo->setCurrentIndex(idx);
+    }
+    {
+        const auto val = QString::fromStdString(currency_.market_tier);
+        const int idx = ui_->marketTierCombo->findData(val);
+        if (idx >= 0)
+            ui_->marketTierCombo->setCurrentIndex(idx);
+    }
     ui_->symbolEdit->setText(QString::fromStdString(currency_.symbol));
     ui_->fractionSymbolEdit->setText(QString::fromStdString(currency_.fraction_symbol));
     ui_->fractionsPerUnitSpinBox->setValue(currency_.fractions_per_unit);
     ui_->formatEdit->setText(QString::fromStdString(currency_.format));
-    ui_->roundingTypeCombo->setCurrentText(QString::fromStdString(currency_.rounding_type));
+    {
+        const auto val = QString::fromStdString(currency_.rounding_type);
+        const int idx = ui_->roundingTypeCombo->findData(val);
+        if (idx >= 0)
+            ui_->roundingTypeCombo->setCurrentIndex(idx);
+    }
     ui_->roundingPrecisionSpinBox->setValue(currency_.rounding_precision);
 
     populateProvenance(currency_.version,
@@ -459,17 +484,12 @@ void CurrencyDetailDialog::updateSaveButtonState() {
 }
 
 bool CurrencyDetailDialog::validateInput() {
-    // Fraction Symbol and Format are optional: neither is required by
-    // the backend (the shell's "currencies add" command doesn't even
-    // take a Format argument), and neither field is marked required in
-    // the UI, so requiring them here silently blocked Save with no
-    // indication why.
     const QString iso_code_val = ui_->isoCodeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
     const QString numeric_code_val = ui_->numericCodeEdit->text().trimmed();
     const QString symbol_val = ui_->symbolEdit->text().trimmed();
 
-    return !iso_code_val.isEmpty() && !name_val.isEmpty() && !numeric_code_val.isEmpty() &&
+    return true && !iso_code_val.isEmpty() && !name_val.isEmpty() && !numeric_code_val.isEmpty() &&
            !symbol_val.isEmpty();
 }
 
@@ -484,6 +504,7 @@ void CurrencyDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;

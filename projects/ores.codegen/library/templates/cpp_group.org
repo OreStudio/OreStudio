@@ -34,7 +34,7 @@ adding or changing facet docs; do not edit it by hand.
 
 | Facet | Templates | Description |
 |-------+-----------+-------------|
-| [[id:0D776415-7381-4E64-A368-1FE4DC55153C][C++ Qt templates]] | 0 | Qt UI classes per entity: client model, controller, detail and history dialogs, and MDI window (hpp/cpp pairs). |
+| [[id:0D776415-7381-4E64-A368-1FE4DC55153C][C++ Qt templates]] | 0 | Qt UI classes per entity: client model, controller, detail dialog, and MDI window (hpp/cpp pairs). |
 | [[id:99585443-E343-4B88-8A3B-6091482861E3][C++ component templates]] | 0 | Component skeleton: component header, export macros, the stub header/impl/test trio and the Catch2 test main. |
 | [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][C++ domain templates]] | 0 | The entity's value type and its immediate companions: domain class, reflect-cpp JSON IO, and the faker test-data generator. |
 | [[id:69676E91-4F64-459D-83DB-A58D3FF02010][C++ messaging templates]] | 0 | The entity's NATS surface end-to-end: protocol message types, changed-event, subject handler, and the per-entity service that backs them. |

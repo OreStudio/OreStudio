@@ -221,15 +221,23 @@ void BusinessCentreDetailDialog::populateCodingSchemeCombo() {
         [this]() { return QString::fromStdString(business_centre_.coding_scheme_code); },
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load coding schemes: %1").arg(error));
-        });
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
 }
 void BusinessCentreDetailDialog::updateUiFromCentre() {
     ui_->codeEdit->setText(QString::fromStdString(business_centre_.code));
     ui_->sourceEdit->setText(QString::fromStdString(business_centre_.source));
     ui_->descriptionEdit->setText(QString::fromStdString(business_centre_.description));
     ui_->cityNameEdit->setText(QString::fromStdString(business_centre_.city_name));
-    ui_->codingSchemeCombo->setCurrentText(
-        QString::fromStdString(business_centre_.coding_scheme_code));
+    {
+        const auto val = QString::fromStdString(business_centre_.coding_scheme_code);
+        const int idx = ui_->codingSchemeCombo->findData(val);
+        if (idx >= 0)
+            ui_->codingSchemeCombo->setCurrentIndex(idx);
+    }
     {
         const auto val = QString::fromStdString(business_centre_.country_alpha2_code);
         const int idx = ui_->countryAlpha2Combo->findText(val);

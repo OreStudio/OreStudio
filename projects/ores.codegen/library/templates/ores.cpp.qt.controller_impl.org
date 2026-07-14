@@ -62,6 +62,9 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity.qt.history_protocol_include}}
 #include "{{domain_entity.qt.history_protocol_include}}"
 {{/domain_entity.qt.history_protocol_include}}
+{{#domain_entity.qt.has_uuid_primary_key}}
+#include <boost/uuid/uuid_io.hpp>
+{{/domain_entity.qt.has_uuid_primary_key}}
 
 namespace ores::qt {
 
@@ -383,8 +386,8 @@ void {{domain_entity.entity_pascal}}Controller::showHistoryWindow(
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << {{domain_entity.qt.key_to_string_prefix}}{{domain_entity.qt.item_var}}.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}};
 
-    const QString entityId = QString::fromStdString(
-        {{domain_entity.qt.item_var}}.{{#domain_entity.qt.id_access}}{{domain_entity.qt.id_access}}{{/domain_entity.qt.id_access}}{{^domain_entity.qt.id_access}}id{{/domain_entity.qt.id_access}});
+    const QString entityId = QString::fromStdString(boost::uuids::to_string(
+        {{domain_entity.qt.item_var}}.{{#domain_entity.qt.id_access}}{{domain_entity.qt.id_access}}{{/domain_entity.qt.id_access}}{{^domain_entity.qt.id_access}}id{{/domain_entity.qt.id_access}}));
     auto* historyDialog = new HistoryDialog(
         std::string(entity_type_of({{domain_entity.qt.domain_class}}{})),
         entityId.toStdString(), clientManager_, mainWindow_);

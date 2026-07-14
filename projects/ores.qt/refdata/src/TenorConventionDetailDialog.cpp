@@ -169,7 +169,11 @@ void TenorConventionDetailDialog::populateMeasuredFromCombo() {
         [this]() { return QString::fromStdString(convention_.measured_from); },
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load tenor anchors: %1").arg(error));
-        });
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
 }
 void TenorConventionDetailDialog::populateResolutionAlgorithmCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating resolution_algorithm combo";
@@ -185,14 +189,27 @@ void TenorConventionDetailDialog::populateResolutionAlgorithmCombo() {
         [this]() { return QString::fromStdString(convention_.resolution_algorithm); },
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load tenor resolution algorithms: %1").arg(error));
-        });
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
 }
 void TenorConventionDetailDialog::updateUiFromConvention() {
     ui_->codeEdit->setText(QString::fromStdString(convention_.code));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(convention_.description));
-    ui_->measuredFromCombo->setCurrentText(QString::fromStdString(convention_.measured_from));
-    ui_->resolutionAlgorithmCombo->setCurrentText(
-        QString::fromStdString(convention_.resolution_algorithm));
+    {
+        const auto val = QString::fromStdString(convention_.measured_from);
+        const int idx = ui_->measuredFromCombo->findData(val);
+        if (idx >= 0)
+            ui_->measuredFromCombo->setCurrentIndex(idx);
+    }
+    {
+        const auto val = QString::fromStdString(convention_.resolution_algorithm);
+        const int idx = ui_->resolutionAlgorithmCombo->findData(val);
+        if (idx >= 0)
+            ui_->resolutionAlgorithmCombo->setCurrentIndex(idx);
+    }
 
     populateProvenance(convention_.version,
                        convention_.modified_by,

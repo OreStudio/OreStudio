@@ -163,13 +163,22 @@ void InstrumentCodeDetailDialog::populateAssetClassCombo() {
         [this]() { return QString::fromStdString(code__.asset_class); },
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load asset class codes: %1").arg(error));
-        });
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
 }
 void InstrumentCodeDetailDialog::updateUiFromCode() {
     ui_->codeEdit->setText(QString::fromStdString(code__.code));
     ui_->nameEdit->setText(QString::fromStdString(code__.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(code__.description));
-    ui_->assetClassCombo->setCurrentText(QString::fromStdString(code__.asset_class));
+    {
+        const auto val = QString::fromStdString(code__.asset_class);
+        const int idx = ui_->assetClassCombo->findData(val);
+        if (idx >= 0)
+            ui_->assetClassCombo->setCurrentIndex(idx);
+    }
     ui_->displayOrderEdit->setValue(code__.display_order);
 
     populateProvenance(code__.version,

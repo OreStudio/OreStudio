@@ -38,29 +38,29 @@ image reference — ready to drive =ores.codegen.entity=. Also seed the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-08                               |
 
 * Acceptance
 
-- [ ] A =calendar= domain_entity org model exists with primary key
+- [X] A =calendar= domain_entity org model exists with primary key
   (=code=), a unique =name=, =calendar_type= (soft FK), =country_code=
   (FK to =country=, not nullable), and optional =image_id=, following
   the codebase's established entity-modeling conventions.
-- [ ] A =calendar_type= aux-type table exists (=public_holiday=,
+- [X] A =calendar_type= aux-type table exists (=public_holiday=,
   =central_bank_meeting=, =financial_centre=, =data_release=,
   =other=), following the same pattern as =monetary_nature=/
   =market_tier= on =currency=.
-- [ ] The =country= table is seeded with a =ZZ= sentinel row (ISO
+- [X] The =country= table is seeded with a =ZZ= sentinel row (ISO
   3166-1's reserved user-assigned code) for calendars with no single
   owning country.
-- [ ] Generated via =ores.codegen.entity= (domain/SQL/repository/
+- [X] Generated via =ores.codegen.entity= (domain/SQL/repository/
   service/messaging).
-- [ ] Seeded with the full QuantLib calendar set (~60 codes,
+- [X] Seeded with the full QuantLib calendar set (~60 codes,
   transcribed from =ql/time/calendars/*.hpp=), including at minimum
   the codes already referenced as free text today (TARGET,
   UnitedStates, UnitedKingdom, Japan, Switzerland, Australia,
@@ -88,3 +88,58 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Modelled and generated the =calendar= and =calendar_type= entities in
+=ores.refdata= via =ores.codegen.entity= (domain, JSON/table I/O,
+generator, protocol, repository, mapper, service, SQL schema, Qt
+list/detail/history windows, eventing/messaging wiring).
+
+Key decisions, distilled into the parent story's =* Decisions=:
+=calendar.country_code= is a non-nullable FK to the existing
+=country= entity, using ISO 3166-1's reserved =ZZ= user-assigned code
+as the sentinel for supranational calendars (=TARGET=) rather than a
+nullable column; =calendar_type= is its own aux-type table (not a
+bare text enum), following the =monetary_nature=/=market_tier=
+pattern; sub-market variants (e.g. =UnitedStates.NYSE=) are separate
+=calendar= rows sharing the dotted QuantLib token verbatim, not a
+joined variant field.
+
+Seeded with the full QuantLib calendar set (60 rows, transcribed from
+a local QuantLib checkout's =ql/time/calendars/*.hpp= headers,
+including =Market= enum sub-variants for United States, United
+Kingdom, China, Germany, Canada, South Korea, Indonesia, and Israel)
+via a new =generate_quantlib_calendars()= custom generator — real
+reference data, not fictional test data. =country= was regenerated
+with a matching =generate_country_sentinel()= for the =ZZ= row, and
+both are also seeded via new SQL populate scripts
+(=refdata_calendar_types_populate.sql=,
+=refdata_countries_populate.sql=) so =compass db recreate= seeds them
+without requiring the C++ generators to run.
+
+Wiring gaps found and fixed along the way: the generated
+=calendar=/=calendar_type= SQL create/drop scripts weren't referenced
+by the =refdata_create.sql=/=refdata_drop.sql= manifests (silently
+skipped on database recreation); =LookupFetcher.hpp=/=.cpp= is a
+hand-maintained registry of Qt combo-fetch functions, not
+auto-generated per entity, so =fetch_calendar_types=/=fetch_countries=
+had to be added by hand; the shared Qt =Icon= enum had no generic
+calendar icon (switched to the existing =CalendarClock= value rather
+than inventing one); =flag_icon_column=/=flag_inline_widget=/
+=flag_accessor= were dropped from the Qt model since they'd need new
+=ImageCache= plumbing not yet built.
+
+Also delivered DQ bundle publication support for =calendar= and
+=calendar_type= (artefact tables, publish-from-dq SQL functions,
+artefact-type registration, NATS subject wiring) ahead of the
+dedicated DQ-publish task, since the =calendar=/=calendar_type= slice
+of that work was a natural extension of getting the entities landed
+cleanly; the remaining junction tables (=currency_country=,
+=currency_calendar=, =currency_pair_convention_calendar=) are still
+pending their own tasks.
+
+Verified end-to-end: all affected libraries
+(=ores.refdata.api/core/service=, =ores.qt.api=, =ores.qt.refdata=)
+build clean; =compass db recreate= runs clean; manually verified both
+a valid insert (=TARGET= / =public_holiday= / =ZZ=) and a rejected
+invalid insert (bad =calendar_type= and =country_code=) against the
+live schema.

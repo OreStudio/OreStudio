@@ -77,7 +77,7 @@ placeholder text field.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] | STARTED | 2026-07-13 | | Model a calendar domain entity enumerating valid ORE/QuantLib calendar codes (name, optional flag image, etc.) ready to drive ores.codegen.entity. |
+| [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] | DONE | 2026-07-13 | 2026-07-14 | Model a calendar domain entity enumerating valid ORE/QuantLib calendar codes (name, optional flag image, etc.) ready to drive ores.codegen.entity. |
 | [[id:30563983-1E0E-44D2-8D9D-9BBE7086BF68][Migrate currency.holiday_calendar to a real FK relationship]] | BACKLOG | | | Replace currency.holiday_calendar's free-text value with a proper (soft or hard) FK relationship to the new calendar entity, supporting a currency needing more than one calendar via a junction table. |
 | [[id:F348285C-7ECE-4D59-9CD1-13931D2C90DE][Migrate currency_pair_convention.advance_calendar onto the calendar model]] | BACKLOG | | | Replace advance_calendar's comma-joined free-text value with a junction table validated against the calendar entity. Resolve the naming question along the way: is 'advance_calendar' idiomatic, or should it just be 'holiday_calendar'/'calendar'? |
 | [[id:24FCC62F-D1AB-4872-8337-E806675EBF7C][Qt screens for calendars: list/add/edit, combo picker, flag display]] | BACKLOG | | | Build the usual entity CRUD Qt screens for calendar (list/add/edit/history), a reusable combo picker widget for other screens to select a calendar (showing the calendar's flag if it has one), and a toolbar button in Currency Pair Conventions' main window into Calendars. |
@@ -87,6 +87,27 @@ placeholder text field.
 | [[id:E34B34F0-DE82-4CD2-AA7C-A15527ECCA59][DQ-publish the calendar reference data]] | BACKLOG | | | Wire calendar, calendar_type, currency_country, currency_calendar, and currency_pair_convention_calendar into the DQ bundle publication pipeline (artefact tables + publish-from-dq functions + NATS handlers), following the existing hand-written pattern used for currency_pairs. |
 
 * Decisions
+
+- =calendar.country_code= is a non-nullable FK to the existing
+  =country= entity, using ISO 3166-1's reserved =ZZ= user-assigned
+  code as the sentinel for supranational calendars (=TARGET=) rather
+  than a nullable column.
+- =calendar_type= is its own aux-type table (=public_holiday=,
+  =central_bank_meeting=, =financial_centre=, =data_release=,
+  =other=), following the =monetary_nature=/=market_tier= pattern —
+  not a bare text enum on =calendar=.
+- Sub-market calendar variants (e.g. =UnitedStates.NYSE= vs
+  =UnitedStates.GovernmentBond=) are separate =calendar= rows sharing
+  the dotted QuantLib token verbatim as =code=, not a joined variant
+  field — matches ORE's own XML =<Calendar>= vocabulary exactly.
+- Seeded with the full QuantLib calendar set (~60 codes) rather than
+  just the story's illustrative list, transcribed from a local
+  QuantLib checkout's =ql/time/calendars/*.hpp= headers.
+- DQ bundle publication for =calendar=/=calendar_type= was delivered
+  as part of the entity task rather than waiting for the dedicated
+  DQ-publish task, since it was a natural extension of landing the
+  entities cleanly; the junction tables' publish support is still
+  pending their own tasks.
 
 * Out of scope
 

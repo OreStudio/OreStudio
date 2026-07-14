@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 28340507-B5F5-4C5F-9AA3-1A3F5D515104
+:END:
+#+title: Test Scenario: Verify party activation is reflected in IAM login without restarting the service
+#+description: Provision Barclays, log in as tenant_admin, toggle the root party's status (deactivate then reactivate) via the normal save flow, and confirm each login response reflects the current status -- no party_setup_warning when Active, and the warning present when Inactive -- all without restarting ores.iam.service.
+#+type: test_scenario
+#+level: s1
+#+filetags: :iam_party_cache_invalidation:sprint_23:v0:
+#+target_dialog:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:70C81DFD-E94E-4F3B-A35B-CE14A4F6A82B][Test party_cache reload-on-notification]] in [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as first consumer)]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:70C81DFD-E94E-4F3B-A35B-CE14A4F6A82B][Test party_cache reload-on-notification]] |
+| Parent story  | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as first consumer)]]   |
+| Target dialog | LoginDialog / PartyProvisioningWizard   |
+| Clients       | (single client)                         |
+| State         | PENDING                               |
+
+* Steps
+
+Preconditions: environment provisioned with a fresh DB, Barclays
+tenant/party provisioned (=barclays_system_provision.ores=), all
+services running, =ores.iam.service= left running throughout — do not
+restart it at any point during this scenario.
+
+** Log in as tenant_admin and confirm no stale-cache warning
+
+Log in as =tenant_admin@barclays_plc= / =Secure-Password-123= via the
+Qt client's =LoginDialog=. Confirm login succeeds with no "Party setup
+completed, but the party is still marked Inactive" warning — the root
+party (BARCLAYS PLC) was activated during provisioning while
+=ores.iam.service= was already up, so this checks the cache picked up
+that activation via the =ores.refdata.party_changed= notification
+(not a restart).
+
+** Deactivate the party and confirm the login warning appears
+
+Using an admin path that sets the party's =status= back to =Inactive=
+(e.g. re-running the relevant provisioning step, or a DB-level status
+change through the normal save path — not a raw SQL edit bypassing
+the app), then log out and log back in as =tenant_admin@barclays_plc=.
+Confirm the login response now surfaces the "still marked Inactive"
+warning, without restarting =ores.iam.service= — this confirms the
+cache reloads on *every* change, not just the initial activation.
+
+** Reactivate the party and confirm the warning clears
+
+Reactivate the party via the same admin path. Log out and log back in
+again. Confirm the warning is gone once more, still without
+restarting =ores.iam.service= at any point across all three logins.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

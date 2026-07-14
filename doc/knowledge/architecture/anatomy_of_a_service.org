@@ -117,6 +117,11 @@ The validated token also carries the tenant, and =make_request_context= applies
 
 *** Calling another service: mint or delegate
 
+/When/ in the startup sequence it is safe to mint a token — including a
+service calling *itself* — is its own concern; see [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap
+Phases]]. Briefly: register every subject the service owns first, /then/
+mint tokens or warm caches — never the other way around.
+
 A service that calls another service must present a token. Two mechanisms (see
 [[id:4B02695C-7C59-487A-8450-4240EC836685][Service-to-Service JWT Delegation]] and the IAM client, [[id:28A7AF22-1EB1-4989-B4BD-A383D09605F3][ores.iam.client]]):
 
@@ -205,3 +210,5 @@ missing):
 - [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]] — service registry, instances, and lifecycle events.
 - [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — tenant and workspace scoping of requests.
 - [[id:2B812EF1-A52B-41F5-AA41-F12C0DD25C45][Automate new service registration]] — the backlog to close the manual gaps above.
+- [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] — when in the startup sequence it is safe
+  to mint tokens or warm caches, worked through IAM's party_cache.

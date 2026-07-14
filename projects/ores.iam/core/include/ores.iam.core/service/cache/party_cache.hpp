@@ -22,17 +22,21 @@
 
 #include "ores.eventing.core/service/cache/partitioned_cache.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/domain/party.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include <boost/container_hash/hash.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <functional>
 #include <immer/map.hpp>
 #include <immer/map_transient.hpp>
 #include <optional>
 #include <rfl/json.hpp>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace ores::iam::service::cache {
@@ -52,6 +56,12 @@ inline auto& party_cache_lg() {
  * changed-event notification for the affected tenant (see the
  * nats-event-cache.registrar_wiring archetype). See the "Generic
  * entity-mirror cache primitive + codegen facet" story.
+ *
+ * read_parties_for_cache requires a valid signed JWT (see the
+ * nats-handler archetype); pass a @c token_provider — typically
+ * ores::iam::client::make_service_token_provider's return value — so
+ * every load() attaches a fresh service-account Bearer token. Omit it
+ * only against a producer that has not opted into the auth check.
  */
 class party_cache {
     using key_hash = boost::hash<boost::uuids::uuid>;
@@ -63,22 +73,41 @@ class party_cache {
                                                                       key_hash>;
 
 public:
-    explicit party_cache(ores::nats::service::client& nats)
-        : nats_(nats) {}
+    explicit party_cache(ores::nats::service::client& nats,
+                         std::function<std::string(bool)> token_provider = nullptr)
+        : nats_(nats)
+        , token_provider_(std::move(token_provider)) {}
 
     party_cache(const party_cache&) = delete;
     party_cache& operator=(const party_cache&) = delete;
     party_cache(party_cache&&) = delete;
     party_cache& operator=(party_cache&&) = delete;
 
+    /**
+     * @brief Arms (or replaces) the token provider after construction. For a
+     * consumer that must construct this cache during its own Phase 1
+     * (wiring/readiness) but can only mint a token during Phase 2
+     * (post-readiness) — e.g. a self-referential consumer authenticating
+     * against its own just-registered subjects. See "Service Bootstrap
+     * Phases" in the architecture docs.
+     */
+    void set_token_provider(std::function<std::string(bool)> token_provider) {
+        token_provider_ = std::move(token_provider);
+    }
+
     void load(const std::string& tenant_id) {
         using namespace ores::logging;
         try {
             const auto req_json = rfl::json::write(
                 ores::refdata::messaging::read_parties_for_cache_request{.tenant_id = tenant_id});
+            std::unordered_map<std::string, std::string> headers;
+            if (token_provider_)
+                headers[std::string(ores::nats::headers::authorization)] =
+                    std::string(ores::nats::headers::bearer_prefix) + token_provider_(false);
             const auto reply = nats_.request_sync(
                 ores::refdata::messaging::read_parties_for_cache_request::nats_subject,
-                ores::nats::as_bytes(req_json));
+                ores::nats::as_bytes(req_json),
+                std::move(headers));
             auto resp = rfl::json::read<ores::refdata::messaging::read_parties_for_cache_response>(
                 ores::nats::as_string_view(reply.data));
             if (!resp || !resp->success) {
@@ -138,6 +167,7 @@ public:
 
 private:
     ores::nats::service::client& nats_;
+    std::function<std::string(bool)> token_provider_;
     cache_t cache_;
 };
 

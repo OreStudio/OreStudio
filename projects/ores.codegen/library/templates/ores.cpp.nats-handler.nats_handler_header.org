@@ -20,16 +20,16 @@ Model flags consumed by this template:
   paginated =list_<entity_plural_short>= service method with an
   unbounded limit. Requires =has_tenant_id=.
 
-  *Known gap, inherited from party's hand-written precedent*: unlike
-  every other handler method, =read_for_cache= does not call
-  =make_request_context= / =has_permission= — it trusts the
-  caller-supplied =tenant_id= outright. This mirrors party's existing
-  =read_parties_for_cache=, which is meant for trusted internal
-  service-to-service NATS calls (e.g. IAM's party-cache warm-up), not
-  end-user-facing traffic. If a future consumer exposes this subject to
-  less-trusted callers, add the same auth/permission check the other
-  methods use before relying on it. See the "Generic entity-mirror
-  cache primitive + codegen facet" story for the follow-up task.
+  Requires a valid signed JWT (=make_request_context=), like =list=/
+  =history=, but no specific permission check (=has_permission=) —
+  the caller (e.g. a =nats-event-cache= consumer warming its own
+  cache) legitimately reads across tenants under one service-account
+  identity, so a per-tenant permission would not model the real
+  access pattern. A caller wanting to invoke this subject must
+  therefore hold a valid service-account JWT — see the
+  =nats-event-cache.cache_header= archetype's optional
+  =token_provider= constructor parameter, which attaches one to every
+  =load()= call.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -351,6 +351,12 @@ public:
     void read_for_cache(ores::nats::message msg) {
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
             << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
         if (auto req = decode<read_{{entity_plural}}_for_cache_request>(msg)) {
             try {
                 using ores::database::service::tenant_context;

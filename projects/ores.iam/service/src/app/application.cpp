@@ -71,9 +71,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         make_context(cfg.database),
         service_name,
         cfg.jwt_private_key,
-        [](auto& n, auto c, auto s) {
+        [password = cfg.database.password()](auto& n, auto c, auto s) {
             return ores::iam::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(s));
+                n, std::move(c), std::move(s), password);
         },
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

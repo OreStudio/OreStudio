@@ -40,7 +40,10 @@ they carry the right connotations:
   end-user permissions — it *is* the service. Correct for: startup
   bootstrap, a background feed/job the service runs autonomously, or any
   read of data that is genuinely global/service-owned rather than
-  caller-owned.
+  caller-owned. Minting at *startup* specifically has an ordering
+  constraint — see [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]]: the target subject (which,
+  for a service authenticating against *itself*, is one of the
+  service's own subjects) must already be subscribed.
 - *On-Behalf-Of (OBO) delegation* — the service forwards the *original
   caller's* token (extracted from the inbound request) to the downstream
   call, so the downstream service resolves tenant/party/permissions as if
@@ -152,3 +155,6 @@ around the service boundary.
 - [[id:F3CB17FB-6472-4DEB-BC5B-EC764C1368F8][Detect and correct reversed FX spot quotes during market data import]] —
   worked OBO example: =ores.marketdata= reading party-scoped
   =currency_pair= data from =ores.refdata=.
+- [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] — when during startup it is safe to mint a
+  client-credentials token, including the self-referential case (a
+  service minting a token against its own subjects).

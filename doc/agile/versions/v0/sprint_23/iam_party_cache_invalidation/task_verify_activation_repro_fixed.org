@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :iam_party_cache_invalidation:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/verify-activation-repro-fixed
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,12 +31,12 @@ closing the story.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                |
 | Parent story | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-12                               |
+| Now          | Nothing. |
+| Waiting on   | User to run the companion UI test scenario. |
+| Next         | Nothing. |
+| Last touched | 2026-07-14                               |
 
 * Acceptance
 
@@ -50,11 +50,47 @@ closing the story.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Recreate the DB (=compass db recreate -y -k=) and start the full
+   service fleet.
+2. Run =barclays_system_provision.ores= via =compass shell -f= — its
+   last step activates the root party (=BARCLAYS PLC=) via the real
+   messaging path while =ores.iam.service= is already running.
+3. Confirm via SQL that the party's =status = 'Active'= in the DB.
+4. Log in as =tenant_admin@barclays_plc= via =compass shell= and
+   confirm the login succeeds with no stale-cache warning.
+5. Cross-check =ores.iam.service.0.log= for =party_cache= reload
+   activity around the activation step, and confirm no "still marked
+   Inactive" warning around the login.
 
 * Notes
+
+Ran against a freshly recreated DB with the full service fleet up
+(services never restarted across the session):
+
+- =barclays_system_provision.ores= completed all 10 commands; its
+  final step logged =✓ Party 'BARCLAYS PLC' provisioned and active.=
+- SQL directly confirms: =BARCLAYS PLC= (id
+  =1965b8e9-49c3-41f4-8080-10a70b5fff60=) has =status = 'Active'= in
+  =ores_refdata_parties_tbl= (current version, =valid_to =
+  9999-12-31 23:59:59=).
+- =ores.iam.service.0.log= shows a burst of =party_cache= "Loaded 82
+  parties for tenant daecbe07-...=" entries during provisioning
+  (the reload-on-notification path firing repeatedly as the tenant's
+  parties/counterparties were imported and the root party activated),
+  followed later by a =tenant_admin@barclays_plc= login that
+  completed (=auth_handler= "Completed ... auth.login") with **no**
+  "still marked Inactive" warning logged anywhere in the file.
+- =ores.iam.service= was never restarted at any point in this
+  session — the DB recreate, provisioning, and login all happened
+  against the one continuously-running instance.
+
+This reproduces the original capture's scenario and confirms the fix:
+activation via the normal message path is picked up by IAM's cache
+without a restart. Companion manual scenario
+([[id:28340507-B5F5-4C5F-9AA3-1A3F5D515104][Verify party activation is reflected in IAM login without restarting the service]])
+scaffolded for the user to confirm visually via the Qt client,
+including the deactivate/reactivate cycle this shell-only pass didn't
+exercise.
 
 * Test Scenarios
 
@@ -65,7 +101,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:28340507-B5F5-4C5F-9AA3-1A3F5D515104][Verify party activation is reflected in IAM login without restarting the service]] | PENDING | Filed against the companion task; shared scenario covers both. |
 
 * PRs
 
@@ -80,3 +116,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Confirmed fixed: activating BARCLAYS PLC via the real
+=save_party_request= path, with =ores.iam.service= continuously
+running throughout, is picked up by IAM's cache and reflected on the
+next login with no restart and no stale-cache warning. Full evidence
+trail (SQL, service log excerpts) in Notes.

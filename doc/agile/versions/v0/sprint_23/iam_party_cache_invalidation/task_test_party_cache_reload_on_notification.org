@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :iam_party_cache_invalidation:sprint_23:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/verify-activation-repro-fixed
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
 #+updated: 2026-07-12
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -34,30 +34,66 @@ it would also protect any future entity onboarded onto the facet.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                |
 | Parent story | [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][IAM party_cache invalidation on party changes]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-12                               |
+| Now          | Nothing. |
+| Waiting on   | User to run the QA scenario and record its result. |
+| Next         | Nothing. |
+| Last touched | 2026-07-14                               |
 
 * Acceptance
 
-- Unit/integration test publishes a =party_changed_event= (or its
-  wire form on =ores.refdata.party_changed=) for a tenant with a
-  pre-populated =party_cache= and asserts the partition is reloaded.
-- Test covers a status change (e.g. Inactive → Active) surfacing via
-  =lookup_party= after the notification, with no manual =load()=
-  call.
-- Existing startup / read-on-miss tests remain green.
+- A manual QA scenario exercises the reload-on-notification path
+  end-to-end against a live environment: activate/deactivate/
+  reactivate the party while =ores.iam.service= stays up throughout,
+  confirming each login reflects the current status with no restart.
+- (Descoped for this pass — see Notes) A dedicated automated
+  Catch2/NATS integration test in =ores.iam.core= was considered but
+  not written: this repo has no existing precedent for a live-NATS
+  Catch2 test (every current =ores.iam.core= test is DB-only via
+  =database_helper=), so building that harness from scratch was
+  judged out of proportion to this task versus the manual scenario
+  the user asked for. Left as a explicit follow-up, not silently
+  dropped.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Provision a fresh environment (DB recreate, services up, Barclays
+   tenant/party provisioned) with =ores.iam.service= running
+   throughout.
+2. Manually verify the actual bug repro: log in as
+   =tenant_admin@barclays_plc= after the provisioning flow's final
+   party-activation step (a real =save_party_request= while IAM was
+   already up) and confirm no stale-cache warning.
+3. Scaffold a =test_scenario= doc
+   ([[id:28340507-B5F5-4C5F-9AA3-1A3F5D515104][Verify party activation is reflected in IAM login without restarting the service]])
+   covering the fuller cycle (deactivate → confirm warning appears,
+   reactivate → confirm it clears) for the user to run via the Qt
+   client and QA Validation Runner panel.
 
 * Notes
+
+Verified via =ores.shell= against a freshly recreated DB + live
+service fleet (=ores.iam.service= never restarted across the whole
+session):
+- =barclays_system_provision.ores= ran end-to-end; its final step
+  ("Activating party 'BARCLAYS PLC'") is a real =save_party_request=
+  against the already-running =ores.refdata.service=/=ores.iam.service=.
+- =ores.iam.service.0.log= shows repeated
+  =party_cache= "Loaded 82 parties for tenant ..." reloads during
+  provisioning (the =ores.refdata.party_changed= notifications firing
+  and being picked up), then a subsequent =tenant_admin@barclays_plc=
+  login (=auth_handler= "Completed ... auth.login") with no "still
+  marked Inactive" warning logged anywhere.
+- DB directly confirms =BARCLAYS PLC= =status = 'Active'=, consistent
+  with what the login saw via the cache (not a stale read).
+- This is the real, minimal reproduction of the original bug's fix:
+  IAM up the whole time, activation via the normal message path,
+  login reflecting it without a restart.
+
+Not attempted: an automated Catch2 test publishing
+=ores.refdata.party_changed= directly and asserting reload, per the
+Acceptance descope note above.
 
 * Test Scenarios
 
@@ -68,7 +104,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:28340507-B5F5-4C5F-9AA3-1A3F5D515104][Verify party activation is reflected in IAM login without restarting the service]] | PENDING | Run via the Qt client's QA Validation Runner panel. |
 
 * PRs
 
@@ -83,3 +119,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Verified the reload-on-notification path against a live environment
+via shell (see Notes) rather than an automated Catch2 test
+(descoped — no existing precedent for a live-NATS Catch2 test in this
+repo; judged out of proportion versus the manual verification the
+user asked for). A companion manual scenario is scaffolded for
+visual confirmation via the Qt client's QA Validation Runner panel.

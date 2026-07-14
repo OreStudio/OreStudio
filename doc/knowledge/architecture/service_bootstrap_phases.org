@@ -1,0 +1,158 @@
+:PROPERTIES:
+:ID: 1D02DB5B-1E50-4AA0-9780-A3F1CF237349
+:END:
+#+title: Service Bootstrap Phases: Wiring/Readiness vs. Post-Readiness Activities
+#+description: Every ORE Studio NATS service bootstraps in two phases: Phase 1 wires and subscribes every subject (making the service 'ready' -- NATS dispatch runs on its own thread, independent of io_ctx, so a subject is callable the instant it is subscribed); Phase 2 does everything that needs to CALL a subject, including the service's own (self-referential) ones, such as minting a service token or warming a cache. Getting the phase order wrong is the class of bug behind IAM's party_cache self-login: a service can deadlock-by-ordering (not by thread-blocking) if it tries to call itself before its own handlers are registered.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:services:authentication:iam:nats:bootstrap:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+* Summary
+
+Every ORE Studio NATS service bootstraps in two phases. *Phase 1 —
+Wiring & Readiness*: connect NATS, build the JWT signer, and register
+every subject handler, including the service's own. *Phase 2 —
+Post-Readiness Activities*: do anything that needs to *call* a
+subject — mint a service token, warm a cache, run a startup query
+against another service — including calling the service's *own*
+subjects. The two phases are separated because NATS subscriptions
+dispatch on the NATS client library's own thread, independent of the
+application's =io_ctx=, so a subject is answerable the instant it is
+subscribed, not when the registration function eventually returns.
+Getting the order backwards — calling a subject before it is
+subscribed — doesn't hang the process (the client-credentials
+provider already retries with backoff for exactly this race), but it
+is needless, confusing failure-and-retry noise on every clean start,
+and for a genuinely self-referential call (a service authenticating
+against *itself*) it can look identical to a deadlock in the logs.
+This doc names the two phases so future services get the order right
+the first time, worked through end-to-end via IAM's =party_cache=.
+
+* Detail
+
+** Why two phases, and why ordering is safe to reason about
+
+A NATS subscription's callback runs on the NATS client library's own
+dispatch thread (see the =IMPORTANT= comment in
+=ores.nats/src/service/client.cpp='s =on_msg=), *not* on the
+application's =io_ctx=. =nats.subscribe(...)=/=queue_subscribe(...)=
+makes a subject live the moment it is called — independent of whether
+the surrounding =register_handlers()= function has returned, and
+independent of whether the calling coroutine has yielded control back
+to =io_ctx=. Likewise, =request_sync= is a genuinely blocking call
+into the underlying =cnats= library (=natsConnection_RequestMsg=), not
+an =io_ctx=-scheduled operation — it does not starve =io_ctx= of the
+chance to process anything, because nothing about serving that request
+needs =io_ctx= in the first place.
+
+That means: the only real constraint is *subscribe before you call*.
+There is no deeper thread/executor deadlock lurking here — but getting
+the order backwards still produces avoidable retries (the
+client-credentials provider's =authenticate()= already backs off and
+retries "the startup race where [the target] hasn't subscribed its
+NATS subjects yet") and, for a same-service self-call, reads in the
+logs exactly like a hang until you know this. Put the two kinds of
+work in separate, ordered phases and the question never comes up.
+
+** Phase 1 — Wiring & Readiness
+
+Everything that makes the service able to *answer* a request:
+
+- Connect the NATS client (=nats.connect()=).
+- Build the per-service JWT verifier/signer.
+- Construct every handler and call =subscribe=/=queue_subscribe= for
+  every subject the service owns — via the per-entity
+  =register_<entity>_handlers()= registrars ([[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed
+  registrars]]), or directly for hand-written handlers. This
+  *includes the service's own subjects it might later call itself*
+  (e.g. IAM's =iam.v1.auth.service-login=).
+
+At the end of Phase 1, the service can correctly answer any request on
+any of its subjects — from another service, or from itself.
+
+** Phase 2 — Post-Readiness Activities
+
+Everything that needs to *call* a subject, including the service's
+own:
+
+- Mint a service token via
+  =ores::iam::client::make_service_token_provider= — whether calling
+  another service (the common case; see [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth:
+  Client Credentials vs. On-Behalf-Of Delegation]]) or, for IAM
+  itself, calling *its own* =service-login= subject.
+- Warm any [[id:D30C3CD0-FFF0-48D8-A7B1-2CBA35207884][nats-event-cache]]-generated cache (or a hand-written
+  equivalent) — a bulk read against a subject that, for IAM's
+  =party_cache=, now requires that same freshly-minted token.
+- Any other one-shot startup query against another (or the same)
+  service.
+- Finally, the =on_started= hook (heartbeat publisher, etc.) and the
+  "Service ready" log line — see =run_signing=/=domain_service_runner=
+  in =ores.service=.
+
+** Worked example: IAM's party_cache
+
+IAM is the sharpest case because it is *self-referential*: its
+=party_cache= (see [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen
+facet]]) calls =refdata='s =read_parties_for_cache=, which — since
+that subject started requiring a valid signed JWT — needs a token.
+The obvious-looking implementation, "mint the token and construct
+=party_cache= right where =party_cache= is needed," breaks because
+that point in =registrar::register_handlers= comes *before* IAM's own
+=auth_handler= (owner of =service-login=) is constructed later in the
+same function. Reordering — registering =auth_handler= (Phase 1) before
+minting the token and warming the cache (Phase 2) — is the whole fix:
+
+#+caption: IAM registering every subject (Phase 1) before minting its own service token and warming party_cache (Phase 2). Subscriptions dispatch on the NATS client's own thread, so a Phase-1-subscribed subject is answerable from Phase 2 onward without waiting for the registration function to return.
+[[proj:doc/knowledge/architecture/service_bootstrap_phases_sequence.png]]
+
+Concretely, inside =ores.iam.core='s =registrar::register_handlers=:
+
+1. *Phase 1*: construct and subscribe =auth_handler=,
+   =account_handler=, =tenant_handler=, every other IAM handler — in
+   whatever order, as long as all of them precede Phase 2.
+2. *Phase 2*: =make_service_token_provider(nats, ctx.service_account(),
+   service_password)= (safe now — =service-login= is live);
+   construct =party_cache= with that provider; call
+   =warm_and_subscribe_party_cache(tenant_ids)= to do the initial load
+   and subscribe to =ores.refdata.party_changed= for future reloads.
+
+A non-IAM service calling *another* service (e.g. =ores.reporting=
+minting a token to call into IAM, or =ores.synthetic= the same) has no
+self-reference to worry about — the target service is a separate,
+already-running process, so there is no ordering constraint relative
+to its *own* Phase 1. The two-phase discipline still applies for the
+same reason it always does (don't call out before you're ready to be
+called back, e.g. for a reply-and-retry loop that itself needs a
+subject you haven't subscribed yet), but the sharp, self-referential
+failure mode is IAM-specific among today's services.
+
+** Checklist
+
+- [ ] Every subject the service owns is subscribed in Phase 1, *before*
+  any Phase 2 activity — including subjects the service might call on
+  itself.
+- [ ] Any =make_service_token_provider= call — self-referential or
+  not — happens in Phase 2, after all of Phase 1's =subscribe= calls.
+- [ ] Any cache warm-up (=nats-event-cache=-generated or hand-written)
+  happens in Phase 2, after its producer's subjects (if the same
+  service) are subscribed, and with whatever auth token its subjects
+  now require.
+- [ ] =on_started= (heartbeat, etc.) still runs last, as today.
+
+* See also
+
+- [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — the full per-service checklist this doc's
+  Phase 1/Phase 2 split slots into (registry, certs, IAM
+  accounts/roles, controller definition, runner).
+- [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth: Client Credentials vs. On-Behalf-Of
+  Delegation]] — when to mint vs. delegate; this doc is about *when*
+  in the startup sequence minting is safe.
+- [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache primitive + codegen facet (party as
+  first consumer)]] — the story whose =read_for_cache= auth fix
+  surfaced this ordering question.
+- [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — how Phase 1's per-entity
+  =register_<entity>_handlers()= calls compose into one registrar.
+- [[id:1411D94A-24FA-4164-AD75-F3CE7415903B][Unified Service Hosting]] — the =run=/=run_signing= runners that
+  host both phases.

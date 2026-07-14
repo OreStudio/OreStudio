@@ -211,6 +211,11 @@ public:
 
     void read_for_cache(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(party_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         auto req = decode<read_parties_for_cache_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;

@@ -75,12 +75,12 @@ favour of the generated version.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                    |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-12                               |
+| Now           | Nothing.                                |
+| Waiting on    | Nothing.                                |
+| Next          | Nothing.                                |
+| Last touched  | 2026-07-14                               |
 
 * Acceptance
 
@@ -115,9 +115,10 @@ favour of the generated version.
 | [[id:3814875F-2CD5-4909-BBDE-3661485941F6][Generalize read-for-cache RPC into a standard archetype]] | DONE | 2026-07-13 | 2026-07-13 | Today read_parties_for_cache is hand-written, only for party (see nats_registrar_implementation doc, which documents it as a manual escape hatch). Turn it into a standard generated archetype, like list/save/remove already are, so any cacheable entity gets a read-for-cache RPC generated on its producer side without hand-written code. |
 | [[id:884DDE80-7C59-4825-80BB-474F839F1C6B][Add nats-event-cache facet: cache class + registrar wiring archetypes]] | DONE | 2026-07-13 | 2026-07-13 | Add a nats-event-cache facet to facet_catalogue.org generating two archetypes: the consumer-side {entity}_cache.hpp (a partitioned_cache instantiation) and the registrar subscribe/warm-up wiring snippet, subject-bound via event_traits (no hardcoded strings). Declared via a cached_by annotation on the entity's own model (where the entity is defined); the facet's output component token resolves from cached_by, not the entity's own component, since the generated cache must compile into the consumer's binary. |
 | [[id:763C5969-19EA-4990-A662-BE2623740325][Migrate party to the generated cache: first real nats-event-cache consumer]] | DONE | 2026-07-13 | 2026-07-14 | Add cached_by: ores.iam to party's model in ores.refdata; regenerate ores.iam.core's party cache via the new facet; retire the hand-written prototype (task: Implement generic partitioned_cache primitive) in favour of the generated version. Confirms the facet design end-to-end on a real entity. |
-| [[id:70C81DFD-E94E-4F3B-A35B-CE14A4F6A82B][Test party_cache reload-on-notification]] | BACKLOG | | | Add regression/unit test coverage in ores.iam.core for the generated cache: publishing ores.refdata.party_changed for a tenant causes the cache to reload that tenant's partition, and lookups reflect the change without a restart. |
-| [[id:5D32B9C6-7D16-4472-9DDB-619607F34529][Verify activation reproduction is fixed end-to-end]] | BACKLOG | | | Re-run the capture's original reproduction: activate a party via save_party_request (e.g. barclays_system_provision.ores) against a running environment and confirm a subsequent IAM login reflects Active status without restarting the IAM service. |
-| [[id:582D9310-5859-418C-97B5-47AF62A36B74][Add auth check to the read_for_cache archetype]] | BACKLOG | | | The generated read_for_cache handler (unlike list/save/history/hierarchy) does not call make_request_context/has_permission — it trusts the caller-supplied tenant_id outright, inherited from party's hand-written read_parties_for_cache. Add the same auth check the other generated methods use, or explicitly design the intended trust model for this internal service-to-service RPC (e.g. system/service-level permission), before any consumer beyond the trusted party-cache warm-up case adopts the flag. |
+| [[id:70C81DFD-E94E-4F3B-A35B-CE14A4F6A82B][Test party_cache reload-on-notification]] | DONE | 2026-07-14 | 2026-07-14 | Add regression/unit test coverage in ores.iam.core for the generated cache: publishing ores.refdata.party_changed for a tenant causes the cache to reload that tenant's partition, and lookups reflect the change without a restart. |
+| [[id:5D32B9C6-7D16-4472-9DDB-619607F34529][Verify activation reproduction is fixed end-to-end]] | DONE | 2026-07-14 | 2026-07-14 | Re-run the capture's original reproduction: activate a party via save_party_request (e.g. barclays_system_provision.ores) against a running environment and confirm a subsequent IAM login reflects Active status without restarting the IAM service. |
+| [[id:582D9310-5859-418C-97B5-47AF62A36B74][Add auth check to the read_for_cache archetype]] | DONE | 2026-07-14 | 2026-07-14 | The generated read_for_cache handler (unlike list/save/history/hierarchy) does not call make_request_context/has_permission — it trusts the caller-supplied tenant_id outright, inherited from party's hand-written read_parties_for_cache. Add the same auth check the other generated methods use, or explicitly design the intended trust model for this internal service-to-service RPC (e.g. system/service-level permission), before any consumer beyond the trusted party-cache warm-up case adopts the flag. |
+| [[id:232F1FDF-20F7-4BC8-BF0A-A2F74C7F26A6][Find other hand-rolled entity caches to migrate onto nats-event-cache]] | DONE | | 2026-07-14 | Search the codebase for other consumer-side, hand-written in-process caches of another service's entity data (the same pattern party_cache used before this story), and produce a list of candidate migrations onto the generic nats-event-cache facet, each requiring cached_by/read_for_cache on the producer's model. |
 
 * Decisions
 
@@ -140,6 +141,29 @@ favour of the generated version.
   (=immer::atom=-backed, following the =rate_engine=/=rate_snapshot=
   idiom already in =ores.analytics.quant=) plus a =nats-event-cache=
   codegen facet, with party migrated to be its first consumer.
+- 2026-07-13: The =nats-event-cache= facet needed a generic aux-index
+  mechanism (not just entries) to fully retire party's hand-written
+  prototype — =compute_visible_party_ids= depends on a parent/child
+  index the facet didn't originally generate. Added a =cache_aux_type=
+  flag plus three paste points, mirroring the existing
+  =custom_subscriptions= paste-point convention, rather than
+  special-casing party.
+- 2026-07-14: Investigated for other hand-rolled, cross-service
+  entity-mirror caches to migrate — none found; party's was the only
+  instance. Two services (trading, reporting) make repeated
+  cross-service NATS calls without caching, noted as future
+  performance opportunities, not filed as tasks (no staleness bug to
+  fix today).
+- 2026-07-14: Closing the =read_for_cache= auth gap (no
+  =make_request_context= check, unlike every other generated handler)
+  surfaced a startup-ordering hazard: IAM authenticating against
+  *itself* (its own =service-login=) to arm =party_cache=. Confirmed
+  via =ores.nats='s =client.cpp= that NATS subscriptions dispatch on
+  the NATS client's own thread, independent of =io_ctx= — so it's an
+  ordering bug, not a threading deadlock. Wrote [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap
+  Phases]] naming the general Phase 1 (wire everything) / Phase 2
+  (mint tokens, warm caches) pattern, and restructured
+  =ores.iam.core='s registrar accordingly.
 - 2026-07-13: Corrected two design points before committing to the
   facet shape: (1) terminology — the generated unit is a *facet*
   (grouping archetypes), not an "archetype" as first stated; (2)

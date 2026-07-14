@@ -8,7 +8,7 @@
 #+filetags: :migrate-entities-to-generic-history-dialog:sprint_23:v0:
 #+owner: marco
 #+branch: feature/update-qt-history-codegen-templates
-#+pr:
+#+pr: 1567
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-14
@@ -145,7 +145,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1567][#1567]] | [qt,codegen] Update ores.cpp.qt templates for the generic HistoryDialog |
 
 * Review
 

@@ -48,8 +48,10 @@ IrCurveGenerationConfigHistoryDialog::IrCurveGenerationConfigHistoryDialog(
     ui_->changesTableWidget->setColumnCount(3);
     ui_->changesTableWidget->setHorizontalHeaderLabels(
         {tr("Field"), tr("Old Value"), tr("New Value")});
-    initializeHistoryUi(
-        {ui_->versionListWidget, ui_->changesTableWidget, ui_->titleLabel, ui_->closeButton});
+    initializeHistoryUi({.versionList = ui_->versionListWidget,
+                        .changesTable = ui_->changesTableWidget,
+                        .titleLabel = ui_->titleLabel,
+                        .closeButton = ui_->closeButton});
 }
 
 IrCurveGenerationConfigHistoryDialog::~IrCurveGenerationConfigHistoryDialog() {

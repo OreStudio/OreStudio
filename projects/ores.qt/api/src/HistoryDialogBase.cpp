@@ -18,6 +18,8 @@
  *
  */
 #include "ores.qt/HistoryDialogBase.hpp"
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.diff/engine/compare.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -26,10 +28,13 @@
 #include <QHeaderView>
 #include <QLabel>
 #include <QMessageBox>
+#include <QPointer>
 #include <QPushButton>
 #include <QTableWidget>
+#include <QTimer>
 #include <QToolBar>
 #include <QVBoxLayout>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -51,6 +56,70 @@ const QIcon& reloadStaleIcon() {
     static const QIcon icon =
         IconUtils::createRecoloredIcon(Icon::ArrowClockwise, color_constants::stale_indicator);
     return icon;
+}
+
+QString cssRgba(const QColor& color) {
+    return QString("rgba(%1,%2,%3,%4)")
+        .arg(color.red())
+        .arg(color.green())
+        .arg(color.blue())
+        .arg(color.alphaF());
+}
+
+QString escapeAndWrapNewlines(const QString& text) {
+    QString escaped = text.toHtmlEscaped();
+    escaped.replace(QLatin1String("\n"), QLatin1String("<br/>"));
+    return escaped;
+}
+
+// Renders one side of a diff_entry as HTML: plain text with the
+// changed byte ranges (spans, in the original UTF-8 std::string's
+// byte offsets — sliced before conversion to QString so a multi-byte
+// code point is never split) wrapped in a highlighted <span>.
+QString renderSpannedHtml(const std::string& text,
+                          const std::vector<ores::diff::domain::diff_span>& spans,
+                          const QColor& span_bg) {
+    if (spans.empty())
+        return escapeAndWrapNewlines(QString::fromStdString(text));
+
+    auto sorted_spans = spans;
+    std::sort(sorted_spans.begin(), sorted_spans.end(),
+              [](const auto& a, const auto& b) { return a.offset < b.offset; });
+
+    const QString span_bg_css = cssRgba(span_bg);
+    QString html;
+    std::size_t pos = 0;
+    for (const auto& span : sorted_spans) {
+        if (span.offset > pos)
+            html += escapeAndWrapNewlines(
+                QString::fromStdString(text.substr(pos, span.offset - pos)));
+        const auto highlighted = text.substr(span.offset, span.length);
+        html += QString("<span style=\"background-color:%1;\">%2</span>")
+                    .arg(span_bg_css, escapeAndWrapNewlines(QString::fromStdString(highlighted)));
+        pos = span.offset + span.length;
+    }
+    if (pos < text.size())
+        html += escapeAndWrapNewlines(QString::fromStdString(text.substr(pos)));
+    return html;
+}
+
+// Wraps one side's spanned HTML in the line-level background.
+QString renderDiffCell(const std::string& text,
+                       const std::vector<ores::diff::domain::diff_span>& spans,
+                       const QColor& line_bg,
+                       const QColor& span_bg) {
+    const QString inner =
+        text.empty() ? QString() : renderSpannedHtml(text, spans, span_bg);
+    return QString("<div style=\"background-color:%1; white-space:pre-wrap; padding:2px;\">%2</div>")
+        .arg(cssRgba(line_bg), inner);
+}
+
+QLabel* makeDiffLabel(QWidget* parent, const QString& html) {
+    auto* label = new QLabel(parent);
+    label->setTextFormat(Qt::RichText);
+    label->setWordWrap(true);
+    label->setText(html);
+    return label;
 }
 
 }
@@ -266,16 +335,55 @@ void HistoryDialogBase::displayChangesTab(int version_index) {
 
         widgets_.changesTable->setItem(i, 0, new QTableWidgetItem(field));
 
-        if (QWidget* old_widget = changeCellWidget(field, old_val))
-            widgets_.changesTable->setCellWidget(i, 1, old_widget);
-        else
-            widgets_.changesTable->setItem(i, 1, new QTableWidgetItem(old_val));
+        // Compute the intra-value spans centrally (the same
+        // entity-agnostic ores.diff::engine algorithm the server uses)
+        // so every dialog gets GitHub-style highlighting from a flat
+        // DiffResult, regardless of whether its calculateDiffAt() came
+        // from the generic HistoryDialog or a legacy per-entity one.
+        using ores::diff::domain::field_value;
+        const auto field_std = field.toStdString();
+        const auto changes = ores::diff::engine::compute({field_value{field_std, old_val.toStdString()}},
+                                                          {field_value{field_std, new_val.toStdString()}});
+        const auto* entry = changes.entries.empty() ? nullptr : &changes.entries.front();
 
-        if (QWidget* new_widget = changeCellWidget(field, new_val))
+        if (QWidget* old_widget = changeCellWidget(field, old_val)) {
+            widgets_.changesTable->setCellWidget(i, 1, old_widget);
+        } else if (entry) {
+            widgets_.changesTable->setCellWidget(
+                i, 1,
+                makeDiffLabel(widgets_.changesTable,
+                             renderDiffCell(entry->old_value, entry->old_spans,
+                                           color_constants::diff_old_line_bg,
+                                           color_constants::diff_old_span_bg)));
+        } else {
+            widgets_.changesTable->setItem(i, 1, new QTableWidgetItem(old_val));
+        }
+
+        if (QWidget* new_widget = changeCellWidget(field, new_val)) {
             widgets_.changesTable->setCellWidget(i, 2, new_widget);
-        else
+        } else if (entry) {
+            widgets_.changesTable->setCellWidget(
+                i, 2,
+                makeDiffLabel(widgets_.changesTable,
+                             renderDiffCell(entry->new_value, entry->new_spans,
+                                           color_constants::diff_new_line_bg,
+                                           color_constants::diff_new_span_bg)));
+        } else {
             widgets_.changesTable->setItem(i, 2, new QTableWidgetItem(new_val));
+        }
     }
+    widgets_.changesTable->resizeRowsToContents();
+
+    // A freshly-inserted QLabel cell widget's sizeHint() isn't yet
+    // based on its actual (wrapped, laid-out) content in this same
+    // event-loop turn, so the resizeRowsToContents() above under-sizes
+    // multiline rows. Defer a second pass to let Qt lay the widgets
+    // out first, then resize again against their now-correct sizeHint.
+    QPointer<QTableWidget> table = widgets_.changesTable;
+    QTimer::singleShot(0, table, [table]() {
+        if (table)
+            table->resizeRowsToContents();
+    });
 }
 
 void HistoryDialogBase::updateActionStates() {

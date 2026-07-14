@@ -27,6 +27,7 @@
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
 #include "ores.refdata.api/messaging/calendar_type_protocol.hpp"
+#include "ores.refdata.api/messaging/contact_type_protocol.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.api/messaging/crm_topology_config_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
@@ -34,6 +35,7 @@
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
 #include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
+#include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
 #include "ores.refdata.api/messaging/party_status_protocol.hpp"
 #include "ores.refdata.api/messaging/party_type_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
@@ -173,6 +175,38 @@ std::vector<std::string> fetch_country_codes(ClientManager* cm) {
     if (response) {
         for (const auto& country : response->countries) {
             codes.push_back(country.alpha2_code);
+        }
+    }
+    return codes;
+}
+
+std::vector<std::string> fetch_contact_type_codes(ClientManager* cm) {
+    std::vector<std::string> codes;
+    if (!cm)
+        return codes;
+
+    refdata::messaging::get_contact_types_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& type : response->types) {
+            codes.push_back(type.code);
+        }
+    }
+    return codes;
+}
+
+std::vector<std::string> fetch_party_id_scheme_codes(ClientManager* cm) {
+    std::vector<std::string> codes;
+    if (!cm)
+        return codes;
+
+    refdata::messaging::get_party_id_schemes_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& scheme : response->party_id_schemes) {
+            codes.push_back(scheme.code);
         }
     }
     return codes;

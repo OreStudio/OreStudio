@@ -20,9 +20,11 @@
 #include "ores.qt/CounterpartyChildEntityTables.hpp"
 #include "ores.qt/ChildEntityTableWidget.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_identifier_protocol.hpp"
+#include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFormLayout>
@@ -40,6 +42,18 @@ namespace ores::qt {
 
 namespace {
 constexpr auto default_change_reason = "system.new_record";
+
+void populate_code_combo(QComboBox* combo, const std::vector<std::string>& codes,
+                         const std::string& current = {}) {
+    combo->clear();
+    for (const auto& code : codes)
+        combo->addItem(QString::fromStdString(code));
+    if (!current.empty()) {
+        const auto idx = combo->findText(QString::fromStdString(current));
+        if (idx >= 0)
+            combo->setCurrentIndex(idx);
+    }
+}
 }
 
 CounterpartyChildEntityTables::CounterpartyChildEntityTables(QWidget* dialogParent)
@@ -71,6 +85,10 @@ CounterpartyChildEntityTables::CounterpartyChildEntityTables(QWidget* dialogPare
             &QTableWidget::cellDoubleClicked,
             this,
             [this](int row, int /* column */) { onEditContact(row); });
+    connect(identifierTable_->table(),
+            &QTableWidget::cellDoubleClicked,
+            this,
+            [this](int row, int /* column */) { onEditIdentifier(row); });
 }
 
 void CounterpartyChildEntityTables::attachTo(QTabWidget* tabWidget) {
@@ -143,8 +161,8 @@ void CounterpartyChildEntityTables::onAddIdentifier() {
     dialog.setMinimumWidth(400);
     auto* layout = new QFormLayout(&dialog);
 
-    auto* schemeEdit = new QLineEdit(&dialog);
-    layout->addRow("Scheme:", schemeEdit);
+    auto* schemeCombo = new QComboBox(&dialog);
+    layout->addRow("Scheme:", schemeCombo);
     auto* valueEdit = new QLineEdit(&dialog);
     layout->addRow("Value:", valueEdit);
     auto* descEdit = new QLineEdit(&dialog);
@@ -156,9 +174,20 @@ void CounterpartyChildEntityTables::onAddIdentifier() {
     connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
+    auto* cm = clientManager_;
+    auto* schemeWatcher = new QFutureWatcher<std::vector<std::string>>(&dialog);
+    connect(schemeWatcher,
+            &QFutureWatcher<std::vector<std::string>>::finished,
+            &dialog,
+            [schemeWatcher, schemeCombo]() {
+                populate_code_combo(schemeCombo, schemeWatcher->result());
+                schemeWatcher->deleteLater();
+            });
+    schemeWatcher->setFuture(QtConcurrent::run([cm]() { return fetch_party_id_scheme_codes(cm); }));
+
     if (dialog.exec() != QDialog::Accepted)
         return;
-    if (schemeEdit->text().trimmed().isEmpty() || valueEdit->text().trimmed().isEmpty()) {
+    if (schemeCombo->currentText().trimmed().isEmpty() || valueEdit->text().trimmed().isEmpty()) {
         MessageBoxHelper::warning(dialogParent_, "Invalid Input", "Scheme and Value are required.");
         return;
     }
@@ -167,7 +196,7 @@ void CounterpartyChildEntityTables::onAddIdentifier() {
     boost::uuids::random_generator uuid_gen;
     newIdent.id = uuid_gen();
     newIdent.counterparty_id = counterpartyId_;
-    newIdent.id_scheme = schemeEdit->text().trimmed().toStdString();
+    newIdent.id_scheme = schemeCombo->currentText().trimmed().toStdString();
     newIdent.id_value = valueEdit->text().trimmed().toStdString();
     newIdent.description = descEdit->text().trimmed().toStdString();
     newIdent.modified_by = username_;
@@ -175,19 +204,24 @@ void CounterpartyChildEntityTables::onAddIdentifier() {
     newIdent.change_reason_code = default_change_reason;
 
     QPointer<CounterpartyChildEntityTables> self = this;
-    auto* cm = clientManager_;
-    auto task = [cm, newIdent]() -> bool {
+    auto task = [cm, newIdent]() -> std::pair<bool, QString> {
         refdata::messaging::save_counterparty_identifier_request req;
         req.data = newIdent;
         auto result = cm->process_authenticated_request(std::move(req));
-        return result && result->success;
+        if (!result)
+            return {false, QString::fromStdString(result.error())};
+        return {result->success, QString::fromStdString(result->message)};
     };
-    auto* watcher = new QFutureWatcher<bool>(this);
-    connect(watcher, &QFutureWatcher<bool>::finished, this, [self, watcher]() {
-        auto ok = watcher->result();
+    auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
+    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, this, [self, watcher]() {
+        const auto [ok, message] = watcher->result();
         watcher->deleteLater();
-        if (self && ok)
+        if (!self)
+            return;
+        if (ok)
             self->loadIdentifiers();
+        else
+            MessageBoxHelper::warning(self->dialogParent_, "Save Failed", message);
     });
     watcher->setFuture(QtConcurrent::run(task));
 }
@@ -200,18 +234,98 @@ void CounterpartyChildEntityTables::onDeleteIdentifier(int row) {
     const auto id = identifiers_[static_cast<std::size_t>(row)].id;
     QPointer<CounterpartyChildEntityTables> self = this;
     auto* cm = clientManager_;
-    auto task = [cm, id]() -> bool {
+    auto task = [cm, id]() -> std::pair<bool, QString> {
         refdata::messaging::delete_counterparty_identifier_request req;
         req.ids.push_back(boost::uuids::to_string(id));
         auto result = cm->process_authenticated_request(std::move(req));
-        return result && result->success;
+        if (!result)
+            return {false, QString::fromStdString(result.error())};
+        return {result->success, QString::fromStdString(result->message)};
     };
-    auto* watcher = new QFutureWatcher<bool>(this);
-    connect(watcher, &QFutureWatcher<bool>::finished, this, [self, watcher]() {
-        auto ok = watcher->result();
+    auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
+    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, this, [self, watcher]() {
+        const auto [ok, message] = watcher->result();
         watcher->deleteLater();
-        if (self && ok)
+        if (!self)
+            return;
+        if (ok)
             self->loadIdentifiers();
+        else
+            MessageBoxHelper::warning(self->dialogParent_, "Delete Failed", message);
+    });
+    watcher->setFuture(QtConcurrent::run(task));
+}
+
+void CounterpartyChildEntityTables::onEditIdentifier(int row) {
+    if (row < 0 || row >= static_cast<int>(identifiers_.size()))
+        return;
+    const auto ident = identifiers_[static_cast<std::size_t>(row)];
+    const bool editable = !readOnly_ && clientManager_ && clientManager_->isConnected();
+
+    QDialog dialog(dialogParent_);
+    dialog.setWindowTitle("Identifier Details");
+    dialog.setMinimumWidth(400);
+    auto* layout = new QFormLayout(&dialog);
+
+    auto* schemeCombo = new QComboBox(&dialog);
+    schemeCombo->setEnabled(editable);
+    layout->addRow("Scheme:", schemeCombo);
+    auto* valueEdit = new QLineEdit(QString::fromStdString(ident.id_value), &dialog);
+    valueEdit->setReadOnly(!editable);
+    layout->addRow("Value:", valueEdit);
+    auto* descEdit = new QLineEdit(QString::fromStdString(ident.description), &dialog);
+    descEdit->setReadOnly(!editable);
+    layout->addRow("Description:", descEdit);
+
+    const auto buttons =
+        editable ? QDialogButtonBox::Save | QDialogButtonBox::Cancel : QDialogButtonBox::Close;
+    auto* buttonBox = new QDialogButtonBox(buttons, &dialog);
+    layout->addRow(buttonBox);
+    connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    if (editable)
+        connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+
+    auto* cm = clientManager_;
+    auto* schemeWatcher = new QFutureWatcher<std::vector<std::string>>(&dialog);
+    connect(schemeWatcher,
+            &QFutureWatcher<std::vector<std::string>>::finished,
+            &dialog,
+            [schemeWatcher, schemeCombo, currentScheme = ident.id_scheme]() {
+                populate_code_combo(schemeCombo, schemeWatcher->result(), currentScheme);
+                schemeWatcher->deleteLater();
+            });
+    schemeWatcher->setFuture(QtConcurrent::run([cm]() { return fetch_party_id_scheme_codes(cm); }));
+
+    if (dialog.exec() != QDialog::Accepted || !editable)
+        return;
+
+    auto updated = ident;
+    updated.id_scheme = schemeCombo->currentText().trimmed().toStdString();
+    updated.id_value = valueEdit->text().trimmed().toStdString();
+    updated.description = descEdit->text().trimmed().toStdString();
+    updated.modified_by = username_;
+    updated.performed_by = username_;
+    updated.change_reason_code = default_change_reason;
+
+    QPointer<CounterpartyChildEntityTables> self = this;
+    auto task = [cm, updated]() -> std::pair<bool, QString> {
+        refdata::messaging::save_counterparty_identifier_request req;
+        req.data = updated;
+        auto result = cm->process_authenticated_request(std::move(req));
+        if (!result)
+            return {false, QString::fromStdString(result.error())};
+        return {result->success, QString::fromStdString(result->message)};
+    };
+    auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
+    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, this, [self, watcher]() {
+        const auto [ok, message] = watcher->result();
+        watcher->deleteLater();
+        if (!self)
+            return;
+        if (ok)
+            self->loadIdentifiers();
+        else
+            MessageBoxHelper::warning(self->dialogParent_, "Save Failed", message);
     });
     watcher->setFuture(QtConcurrent::run(task));
 }
@@ -263,14 +377,14 @@ void CounterpartyChildEntityTables::onAddContact() {
     dialog.setMinimumWidth(400);
     auto* layout = new QFormLayout(&dialog);
 
-    auto* typeEdit = new QLineEdit(&dialog);
-    layout->addRow("Type:", typeEdit);
+    auto* typeCombo = new QComboBox(&dialog);
+    layout->addRow("Type:", typeCombo);
     auto* streetEdit = new QLineEdit(&dialog);
     layout->addRow("Street:", streetEdit);
     auto* cityEdit = new QLineEdit(&dialog);
     layout->addRow("City:", cityEdit);
-    auto* countryEdit = new QLineEdit(&dialog);
-    layout->addRow("Country Code:", countryEdit);
+    auto* countryCombo = new QComboBox(&dialog);
+    layout->addRow("Country Code:", countryCombo);
     auto* phoneEdit = new QLineEdit(&dialog);
     layout->addRow("Phone:", phoneEdit);
 
@@ -280,9 +394,30 @@ void CounterpartyChildEntityTables::onAddContact() {
     connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
+    auto* cm = clientManager_;
+    auto* typeWatcher = new QFutureWatcher<std::vector<std::string>>(&dialog);
+    connect(typeWatcher,
+            &QFutureWatcher<std::vector<std::string>>::finished,
+            &dialog,
+            [typeWatcher, typeCombo]() {
+                populate_code_combo(typeCombo, typeWatcher->result());
+                typeWatcher->deleteLater();
+            });
+    typeWatcher->setFuture(QtConcurrent::run([cm]() { return fetch_contact_type_codes(cm); }));
+
+    auto* countryWatcher = new QFutureWatcher<std::vector<std::string>>(&dialog);
+    connect(countryWatcher,
+            &QFutureWatcher<std::vector<std::string>>::finished,
+            &dialog,
+            [countryWatcher, countryCombo]() {
+                populate_code_combo(countryCombo, countryWatcher->result());
+                countryWatcher->deleteLater();
+            });
+    countryWatcher->setFuture(QtConcurrent::run([cm]() { return fetch_country_codes(cm); }));
+
     if (dialog.exec() != QDialog::Accepted)
         return;
-    if (typeEdit->text().trimmed().isEmpty()) {
+    if (typeCombo->currentText().trimmed().isEmpty()) {
         MessageBoxHelper::warning(dialogParent_, "Invalid Input", "Type is required.");
         return;
     }
@@ -291,29 +426,34 @@ void CounterpartyChildEntityTables::onAddContact() {
     boost::uuids::random_generator uuid_gen;
     newContact.id = uuid_gen();
     newContact.counterparty_id = counterpartyId_;
-    newContact.contact_type = typeEdit->text().trimmed().toStdString();
+    newContact.contact_type = typeCombo->currentText().trimmed().toStdString();
     newContact.street_line_1 = streetEdit->text().trimmed().toStdString();
     newContact.city = cityEdit->text().trimmed().toStdString();
-    newContact.country_code = countryEdit->text().trimmed().toStdString();
+    newContact.country_code = countryCombo->currentText().trimmed().toStdString();
     newContact.phone = phoneEdit->text().trimmed().toStdString();
     newContact.modified_by = username_;
     newContact.performed_by = username_;
     newContact.change_reason_code = default_change_reason;
 
     QPointer<CounterpartyChildEntityTables> self = this;
-    auto* cm = clientManager_;
-    auto task = [cm, newContact]() -> bool {
+    auto task = [cm, newContact]() -> std::pair<bool, QString> {
         refdata::messaging::save_counterparty_contact_information_request req;
         req.data = newContact;
         auto result = cm->process_authenticated_request(std::move(req));
-        return result && result->success;
+        if (!result)
+            return {false, QString::fromStdString(result.error())};
+        return {result->success, QString::fromStdString(result->message)};
     };
-    auto* watcher = new QFutureWatcher<bool>(this);
-    connect(watcher, &QFutureWatcher<bool>::finished, this, [self, watcher]() {
-        auto ok = watcher->result();
+    auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
+    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, this, [self, watcher]() {
+        const auto [ok, message] = watcher->result();
         watcher->deleteLater();
-        if (self && ok)
+        if (!self)
+            return;
+        if (ok)
             self->loadContacts();
+        else
+            MessageBoxHelper::warning(self->dialogParent_, "Save Failed", message);
     });
     watcher->setFuture(QtConcurrent::run(task));
 }
@@ -326,18 +466,24 @@ void CounterpartyChildEntityTables::onDeleteContact(int row) {
     const auto id = contacts_[static_cast<std::size_t>(row)].id;
     QPointer<CounterpartyChildEntityTables> self = this;
     auto* cm = clientManager_;
-    auto task = [cm, id]() -> bool {
+    auto task = [cm, id]() -> std::pair<bool, QString> {
         refdata::messaging::delete_counterparty_contact_information_request req;
         req.ids.push_back(boost::uuids::to_string(id));
         auto result = cm->process_authenticated_request(std::move(req));
-        return result && result->success;
+        if (!result)
+            return {false, QString::fromStdString(result.error())};
+        return {result->success, QString::fromStdString(result->message)};
     };
-    auto* watcher = new QFutureWatcher<bool>(this);
-    connect(watcher, &QFutureWatcher<bool>::finished, this, [self, watcher]() {
-        auto ok = watcher->result();
+    auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
+    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, this, [self, watcher]() {
+        const auto [ok, message] = watcher->result();
         watcher->deleteLater();
-        if (self && ok)
+        if (!self)
+            return;
+        if (ok)
             self->loadContacts();
+        else
+            MessageBoxHelper::warning(self->dialogParent_, "Delete Failed", message);
     });
     watcher->setFuture(QtConcurrent::run(task));
 }
@@ -353,26 +499,28 @@ void CounterpartyChildEntityTables::onEditContact(int row) {
     dialog.setMinimumWidth(500);
     auto* layout = new QFormLayout(&dialog);
 
-    auto* typeEdit = new QLineEdit(QString::fromStdString(contact.contact_type), &dialog);
+    auto* typeCombo = new QComboBox(&dialog);
+    typeCombo->setEnabled(editable);
     auto* streetLine1Edit = new QLineEdit(QString::fromStdString(contact.street_line_1), &dialog);
     auto* streetLine2Edit = new QLineEdit(QString::fromStdString(contact.street_line_2), &dialog);
     auto* cityEdit = new QLineEdit(QString::fromStdString(contact.city), &dialog);
     auto* stateEdit = new QLineEdit(QString::fromStdString(contact.state), &dialog);
-    auto* countryEdit = new QLineEdit(QString::fromStdString(contact.country_code), &dialog);
+    auto* countryCombo = new QComboBox(&dialog);
+    countryCombo->setEnabled(editable);
     auto* postalEdit = new QLineEdit(QString::fromStdString(contact.postal_code), &dialog);
     auto* phoneEdit = new QLineEdit(QString::fromStdString(contact.phone), &dialog);
     auto* emailEdit = new QLineEdit(QString::fromStdString(contact.email), &dialog);
     auto* webEdit = new QLineEdit(QString::fromStdString(contact.web_page), &dialog);
-    for (auto* edit : {typeEdit, streetLine1Edit, streetLine2Edit, cityEdit, stateEdit, countryEdit,
+    for (auto* edit : {streetLine1Edit, streetLine2Edit, cityEdit, stateEdit,
                        postalEdit, phoneEdit, emailEdit, webEdit})
         edit->setReadOnly(!editable);
 
-    layout->addRow("Type:", typeEdit);
+    layout->addRow("Type:", typeCombo);
     layout->addRow("Street Line 1:", streetLine1Edit);
     layout->addRow("Street Line 2:", streetLine2Edit);
     layout->addRow("City:", cityEdit);
     layout->addRow("State:", stateEdit);
-    layout->addRow("Country Code:", countryEdit);
+    layout->addRow("Country Code:", countryCombo);
     layout->addRow("Postal Code:", postalEdit);
     layout->addRow("Phone:", phoneEdit);
     layout->addRow("Email:", emailEdit);
@@ -386,16 +534,37 @@ void CounterpartyChildEntityTables::onEditContact(int row) {
     if (editable)
         connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
 
+    auto* cm = clientManager_;
+    auto* typeWatcher = new QFutureWatcher<std::vector<std::string>>(&dialog);
+    connect(typeWatcher,
+            &QFutureWatcher<std::vector<std::string>>::finished,
+            &dialog,
+            [typeWatcher, typeCombo, currentType = contact.contact_type]() {
+                populate_code_combo(typeCombo, typeWatcher->result(), currentType);
+                typeWatcher->deleteLater();
+            });
+    typeWatcher->setFuture(QtConcurrent::run([cm]() { return fetch_contact_type_codes(cm); }));
+
+    auto* countryWatcher = new QFutureWatcher<std::vector<std::string>>(&dialog);
+    connect(countryWatcher,
+            &QFutureWatcher<std::vector<std::string>>::finished,
+            &dialog,
+            [countryWatcher, countryCombo, currentCountry = contact.country_code]() {
+                populate_code_combo(countryCombo, countryWatcher->result(), currentCountry);
+                countryWatcher->deleteLater();
+            });
+    countryWatcher->setFuture(QtConcurrent::run([cm]() { return fetch_country_codes(cm); }));
+
     if (dialog.exec() != QDialog::Accepted || !editable)
         return;
 
     auto updated = contact;
-    updated.contact_type = typeEdit->text().trimmed().toStdString();
+    updated.contact_type = typeCombo->currentText().trimmed().toStdString();
     updated.street_line_1 = streetLine1Edit->text().trimmed().toStdString();
     updated.street_line_2 = streetLine2Edit->text().trimmed().toStdString();
     updated.city = cityEdit->text().trimmed().toStdString();
     updated.state = stateEdit->text().trimmed().toStdString();
-    updated.country_code = countryEdit->text().trimmed().toStdString();
+    updated.country_code = countryCombo->currentText().trimmed().toStdString();
     updated.postal_code = postalEdit->text().trimmed().toStdString();
     updated.phone = phoneEdit->text().trimmed().toStdString();
     updated.email = emailEdit->text().trimmed().toStdString();
@@ -405,19 +574,24 @@ void CounterpartyChildEntityTables::onEditContact(int row) {
     updated.change_reason_code = default_change_reason;
 
     QPointer<CounterpartyChildEntityTables> self = this;
-    auto* cm = clientManager_;
-    auto task = [cm, updated]() -> bool {
+    auto task = [cm, updated]() -> std::pair<bool, QString> {
         refdata::messaging::save_counterparty_contact_information_request req;
         req.data = updated;
         auto result = cm->process_authenticated_request(std::move(req));
-        return result && result->success;
+        if (!result)
+            return {false, QString::fromStdString(result.error())};
+        return {result->success, QString::fromStdString(result->message)};
     };
-    auto* watcher = new QFutureWatcher<bool>(this);
-    connect(watcher, &QFutureWatcher<bool>::finished, this, [self, watcher]() {
-        auto ok = watcher->result();
+    auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
+    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, this, [self, watcher]() {
+        const auto [ok, message] = watcher->result();
         watcher->deleteLater();
-        if (self && ok)
+        if (!self)
+            return;
+        if (ok)
             self->loadContacts();
+        else
+            MessageBoxHelper::warning(self->dialogParent_, "Save Failed", message);
     });
     watcher->setFuture(QtConcurrent::run(task));
 }

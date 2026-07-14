@@ -33,6 +33,7 @@ namespace ores::qt {
 class CounterpartyMdiWindow;
 class DetachableMdiSubWindow;
 class BadgeCache;
+class ChangeReasonCache;
 class ImageCache;
 
 /**
@@ -58,6 +59,7 @@ public:
                            QMdiArea* mdiArea,
                            ClientManager* clientManager,
                            ImageCache* imageCache,
+                           ChangeReasonCache* changeReasonCache,
                            const QString& username,
                            BadgeCache* badgeCache,
                            QObject* parent = nullptr);
@@ -87,6 +89,7 @@ private:
     void showDetailWindow(const refdata::domain::counterparty& counterparty);
     void showHistoryWindow(const refdata::domain::counterparty& counterparty);
 
+    ChangeReasonCache* changeReasonCache_;
     BadgeCache* badgeCache_;
     CounterpartyMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;

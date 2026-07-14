@@ -68,6 +68,7 @@ private:
     void loadContacts();
     void onAddIdentifier();
     void onDeleteIdentifier(int row);
+    void onEditIdentifier(int row);
     void onAddContact();
     void onDeleteContact(int row);
     void onEditContact(int row);

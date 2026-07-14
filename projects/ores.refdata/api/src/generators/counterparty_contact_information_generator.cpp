@@ -19,8 +19,11 @@
  */
 #include "ores.refdata.api/generators/counterparty_contact_information_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <array>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::refdata::generators {
 
@@ -28,32 +31,31 @@ using ores::utility::generation::generation_keys;
 
 domain::counterparty_contact_information
 generate_synthetic_counterparty_contact_information(utility::generation::generation_context& ctx) {
-    static constexpr std::array<const char*, 4> contact_types = {
-        "Legal", "Operations", "Settlement", "Billing"};
     static std::atomic<int> counter{0};
-    const auto idx = counter++;
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::counterparty_contact_information r;
-    r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value_or(
-        utility::uuid::tenant_id::system());
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.counterparty_id = ctx.generate_uuid();
-    r.contact_type = std::string(contact_types[idx % contact_types.size()]);
+    r.contact_type = std::string("Legal") + "-" + std::to_string(idx);
     r.street_line_1 = std::string("456 Test Avenue");
     r.street_line_2 = std::string("Floor 10");
     r.city = std::string("New York");
     r.state = std::string("NY");
-    r.country_code = std::string("");
+    r.country_code = std::string("US");
     r.postal_code = std::string("10001");
     r.phone = std::string("+1 212 555 0100");
     r.email = std::string("info@example.com");
     r.web_page = std::string("https://example.com");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

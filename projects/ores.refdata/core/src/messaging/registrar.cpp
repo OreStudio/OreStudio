@@ -31,6 +31,7 @@
 #include "ores.refdata.core/messaging/calendar_registrar.hpp"
 #include "ores.refdata.core/messaging/cds_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
+#include "ores.refdata.core/messaging/counterparty_contact_information_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_identifier_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_registrar.hpp"
 #include "ores.refdata.core/messaging/country_registrar.hpp"
@@ -52,6 +53,7 @@
 #include "ores.refdata.core/messaging/monetary_nature_registrar.hpp"
 #include "ores.refdata.core/messaging/ois_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/overnight_index_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/party_contact_information_registrar.hpp"
 #include "ores.refdata.core/messaging/party_id_scheme_registrar.hpp"
 #include "ores.refdata.core/messaging/party_identifier_registrar.hpp"
 #include "ores.refdata.core/messaging/party_registrar.hpp"
@@ -78,20 +80,14 @@
 #include "ores.refdata.core/messaging/tenor_convention_resolution_handler.hpp"
 
 // Entities without a per-entity sub-registrar: asset_class, business_centre
-// and business_unit_type have no codegen model; party_contact /
-// counterparty_contact use *_contact_handler against *_contact_information
-// protocols (name mismatch); publish_from_dq is a bespoke multi-subject
-// workflow handler. These stay wired inline below.
+// and business_unit_type have no codegen model; publish_from_dq is a
+// bespoke multi-subject workflow handler. These stay wired inline below.
 #include "ores.refdata.api/messaging/asset_class_protocol.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_type_protocol.hpp"
-#include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
-#include "ores.refdata.api/messaging/party_contact_information_protocol.hpp"
 #include "ores.refdata.core/messaging/asset_class_handler.hpp"
 #include "ores.refdata.core/messaging/business_centre_handler.hpp"
 #include "ores.refdata.core/messaging/business_unit_type_handler.hpp"
-#include "ores.refdata.core/messaging/counterparty_contact_handler.hpp"
-#include "ores.refdata.core/messaging/party_contact_handler.hpp"
 #include "ores.refdata.core/messaging/publish_from_dq_handler.hpp"
 
 // Generic history.v1.get subject.
@@ -218,6 +214,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_cds_convention_handlers(nats, ctx, verifier));
     append(register_contact_type_handlers(nats, ctx, verifier));
     append(register_counterparty_handlers(nats, ctx, verifier));
+    append(register_counterparty_contact_information_handlers(nats, ctx, verifier));
     append(register_counterparty_identifier_handlers(nats, ctx, verifier));
     append(register_country_handlers(nats, ctx, verifier));
     append(register_crm_driver_pair_handlers(nats, ctx, verifier));
@@ -239,6 +236,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_ois_convention_handlers(nats, ctx, verifier));
     append(register_overnight_index_convention_handlers(nats, ctx, verifier));
     append(register_party_handlers(nats, ctx, verifier));
+    append(register_party_contact_information_handlers(nats, ctx, verifier));
     append(register_party_id_scheme_handlers(nats, ctx, verifier));
     append(register_party_identifier_handlers(nats, ctx, verifier));
     append(register_party_status_handlers(nats, ctx, verifier));
@@ -266,46 +264,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
             nats.queue_subscribe(get_tenor_convention_resolutions_request::nats_subject,
                                  queue_group,
                                  [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-    }
-
-    // ----------------------------------------------------------------
-    // Party contacts (party_contact_handler serves the
-    // party_contact_information protocol — no matching sub-registrar).
-    // ----------------------------------------------------------------
-    {
-        auto h = std::make_shared<party_contact_handler>(nats, ctx, verifier);
-        subs.push_back(
-            nats.queue_subscribe(get_party_contact_informations_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe(save_party_contact_information_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe(delete_party_contact_information_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-    }
-
-    // ----------------------------------------------------------------
-    // Counterparty contacts (counterparty_contact_handler serves the
-    // counterparty_contact_information protocol — no matching sub-registrar).
-    // ----------------------------------------------------------------
-    {
-        auto h = std::make_shared<counterparty_contact_handler>(nats, ctx, verifier);
-        subs.push_back(
-            nats.queue_subscribe(get_counterparty_contact_informations_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe(save_counterparty_contact_information_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe(delete_counterparty_contact_information_request::nats_subject,
-                                 queue_group,
-                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------

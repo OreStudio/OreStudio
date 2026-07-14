@@ -35,6 +35,7 @@ namespace ores::qt {
 class ChildEntityTableWidget;
 class ClientManager;
 class ImageCache;
+class ChangeReasonCache;
 
 /**
  * @brief Owns and drives the "Identifiers" and "Contact Information" tabs
@@ -44,8 +45,13 @@ class ImageCache;
  * the generated dialog via a small paste block, rather than duplicated
  * inline in the entity org model.
  *
- * Row add/delete uses a fixed change-reason code rather than prompting via
- * ChangeReasonDialog, matching the pre-codegen dialog's behaviour.
+ * Add/edit open the codegen-generated CounterpartyIdentifierDetailDialog /
+ * CounterpartyContactInformationDetailDialog (real Save button, validation,
+ * change-reason prompting, combos) rather than a hand-rolled form; this
+ * class's job is just fetching each table's rows and opening the right
+ * generated dialog. Row delete goes straight to the server (no dialog,
+ * no change-reason prompt), matching every other list-row delete in the
+ * app.
  */
 class CounterpartyChildEntityTables final : public QObject {
     Q_OBJECT
@@ -60,7 +66,8 @@ public:
     void reload(const boost::uuids::uuid& counterpartyId,
                 ClientManager* clientManager,
                 const std::string& username,
-                ImageCache* imageCache = nullptr);
+                ImageCache* imageCache = nullptr,
+                ChangeReasonCache* changeReasonCache = nullptr);
 
     /** @brief Disable add/delete/edit while the parent dialog is read-only (e.g. viewing history). */
     void setReadOnly(bool readOnly);
@@ -81,6 +88,7 @@ private:
     boost::uuids::uuid counterpartyId_;
     ClientManager* clientManager_{nullptr};
     ImageCache* imageCache_{nullptr};
+    ChangeReasonCache* changeReasonCache_{nullptr};
     std::string username_;
     bool readOnly_{false};
     std::vector<ores::refdata::domain::counterparty_identifier> identifiers_;

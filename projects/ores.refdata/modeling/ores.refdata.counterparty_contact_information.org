@@ -236,6 +236,7 @@ std::string("https://example.com")
 :table:         ores_refdata_counterparties_tbl
 :nullable:      false
 :error_message: Invalid counterparty_id: %. No active counterparty found with this id.
+:list_by:       true
 :bump_parent_version: true
 :list_by_as_of: true
 :END:
@@ -298,6 +299,75 @@ std::string("https://example.com")
 | version         | Version      |
 
 ** Custom repository methods
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.refdata.api/domain/counterparty_contact_information.hpp
+:domain_class:            refdata::domain::counterparty_contact_information
+:protocol_include:        ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp
+:collection_name:         counterparty_contact_informations
+:item_var:                counterpartyContactInformation
+:key_field:               contact_type
+:has_uuid_primary_key:    true
+:get_request_class:       refdata::messaging::get_counterparty_contact_informations_request
+:get_response_class:      refdata::messaging::get_counterparty_contact_informations_response
+:get_message_type:        get_counterparty_contact_informations_request
+:save_request_class:      refdata::messaging::save_counterparty_contact_information_request
+:save_response_class:     refdata::messaging::save_counterparty_contact_information_response
+:save_message_type:       save_counterparty_contact_information_request
+:save_request_item_field: data
+:delete_request_class:    refdata::messaging::delete_counterparty_contact_information_request
+:delete_response_class:   refdata::messaging::delete_counterparty_contact_information_response
+:delete_message_type:     delete_counterparty_contact_information_request
+:history_request_class:   refdata::messaging::get_counterparty_contact_information_history_request
+:history_response_class:  refdata::messaging::get_counterparty_contact_information_history_response
+:history_message_type:    get_counterparty_contact_information_history_request
+:has_change_reason_cache: true
+:settings_group:          CounterpartyContactInformationListWindow
+:window_title:            Counterparty Contact Information
+:icon:                    PersonAccounts
+:END:
+
+Note: =counterparty_id= is deliberately not exposed as a Detail field
+-- like Book's =parent_portfolio_id=, it's always known from the
+owning context (the counterparty's own Contact Information tab) and
+set programmatically before the dialog is shown, never user-chosen.
+
+*** Detail fields
+
+| field         | label          | widget            | type          | is_key | is_required | placeholder          | flag_source | combo_allow_blank | combo_fetch          | combo_domain_type              | combo_fetch_include        | combo_fetch_fn      | combo_watcher_name | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label   | combo_setter_pascal | badge_key |
+|---------------+----------------+--------------------+---------------+--------+-------------+-----------------------+--------------+---------------------+------------------------+----------------------------------+-----------------------------+------------------------+----------------------+--------------------+------------------------+--------------------+-----------------+------------------------+------------|
+| id            | Id             | idEdit            | line_edit     | true   | true        | Contact id           |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| contact_type  | Type           | contactTypeCombo  | dynamic_combo | false  | true        |                       |             |                     |                        | refdata::domain::contact_type   | ores.qt/LookupFetcher.hpp   | fetch_contact_types    | contactTypeWatcher   | code               | description            | display_order      | contact types   | ContactTypeCombo       |            |
+| street_line_1 | Street Line 1  | streetLine1Edit   | line_edit     | false  | false       | Enter street line 1  |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| street_line_2 | Street Line 2  | streetLine2Edit   | line_edit     | false  | false       | Enter street line 2  |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| city          | City           | cityEdit          | line_edit     | false  | false       | Enter city           |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| state         | State          | stateEdit         | line_edit     | false  | false       | Enter state          |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| country_code  | Country Code   | countryCodeCombo  | flagged_combo | false  | false       |                       | country     | true                | fetch_country_codes    |                                 | ores.qt/LookupFetcher.hpp   |                        |                      |                    |                        |                    |                 |                        |            |
+| postal_code   | Postal Code    | postalCodeEdit    | line_edit     | false  | false       | Enter postal code    |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| phone         | Phone          | phoneEdit         | line_edit     | false  | false       | Enter phone          |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| email         | Email          | emailEdit         | line_edit     | false  | false       | Enter email          |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+| web_page      | Web Page       | webPageEdit       | line_edit     | false  | false       | Enter web page       |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header         | type      | width |
+|--------------+---------------+----------------+-----------+-------|
+| ContactType  | contact_type  | Type           | string    |   120 |
+| StreetLine1  | street_line_1 | Street         | string    |   180 |
+| City         | city          | City           | string    |   120 |
+| CountryCode  | country_code  | Country        | string    |   100 |
+| Phone        | phone         | Phone          | string    |   140 |
+| Email        | email         | Email          | string    |   180 |
+| Version      | version       | Version        | int       |    80 |
+| ModifiedBy   | modified_by   | Modified By    | string    |   120 |
+| RecordedAt   | recorded_at   | Recorded At    | timestamp |   150 |
+
+*** Icon columns (Qt model)
+
+| column      | accessor          | field1       | field2 |
+|-------------+--------------------+--------------+--------|
+| CountryCode | country_flag_icon  | country_code |        |
 
 * See also
 

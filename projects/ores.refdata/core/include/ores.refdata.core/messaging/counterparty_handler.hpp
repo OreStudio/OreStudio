@@ -250,7 +250,6 @@ public:
                 next ? next->recorded_at :
                        std::chrono::system_clock::now() + std::chrono::hours(24 * 365 * 100);
 
-            boost::uuids::string_generator gen;
             service::counterparty_identifier_service identifier_svc(req_ctx);
             auto identifiers =
                 identifier_svc.list_counterparty_identifiers_by_counterparty_id_as_of(
@@ -258,8 +257,8 @@ public:
 
             service::counterparty_contact_information_service contact_svc(req_ctx);
             auto contacts =
-                contact_svc.list_counterparty_contact_informations_by_counterparty_as_of(
-                    gen(req->id), current->recorded_at, window_end);
+                contact_svc.list_counterparty_contact_informations_by_counterparty_id_as_of(
+                    req->id, current->recorded_at, window_end);
 
             BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,

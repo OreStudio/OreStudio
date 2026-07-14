@@ -57,6 +57,7 @@ std::uint32_t counterparty_identifier_service::count_counterparty_identifiers_by
         << "Getting total counterparty identifiers count by counterparty_id: " << counterparty_id;
     return repo_.get_total_counterparty_identifier_count_by_counterparty_id(ctx_, counterparty_id);
 }
+
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_service::list_counterparty_identifiers_by_counterparty_id_as_of(
     const std::string& counterparty_id,

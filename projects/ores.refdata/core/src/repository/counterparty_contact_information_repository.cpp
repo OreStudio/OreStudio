@@ -24,7 +24,6 @@
 #include "ores.refdata.api/domain/counterparty_contact_information_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/counterparty_contact_information_entity.hpp"
 #include "ores.refdata.core/repository/counterparty_contact_information_mapper.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
@@ -38,42 +37,35 @@ std::string counterparty_contact_information_repository::sql() {
     return generate_create_table_sql<counterparty_contact_information_entity>(lg());
 }
 
-counterparty_contact_information_repository::counterparty_contact_information_repository(
-    context ctx)
-    : ctx_(std::move(ctx)) {}
-
 void counterparty_contact_information_repository::write(
-    const domain::counterparty_contact_information& counterparty_contact_information) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty contact information to database: "
-                               << counterparty_contact_information.id;
-    execute_write_query(
-        ctx_,
-        counterparty_contact_information_mapper::map(counterparty_contact_information),
-        lg(),
-        "writing counterparty contact information to database");
+    context ctx, const domain::counterparty_contact_information& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty contact information: " << v.id;
+    execute_write_query(ctx,
+                        counterparty_contact_information_mapper::map(v),
+                        lg(),
+                        "Writing counterparty contact information to database.");
 }
 
 void counterparty_contact_information_repository::write(
-    const std::vector<domain::counterparty_contact_information>&
-        counterparty_contact_informations) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty contact informations to database. Count: "
-                               << counterparty_contact_informations.size();
-    execute_write_query(
-        ctx_,
-        counterparty_contact_information_mapper::map(counterparty_contact_informations),
-        lg(),
-        "writing counterparty contact informations to database");
+    context ctx, const std::vector<domain::counterparty_contact_information>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty contact informations. Count: " << v.size();
+    execute_write_query(ctx,
+                        counterparty_contact_information_mapper::map(v),
+                        lg(),
+                        "Writing counterparty contact informations to database.");
 }
 
 std::vector<domain::counterparty_contact_information>
-counterparty_contact_information_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+counterparty_contact_information_repository::read_latest(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("contact_type"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<counterparty_contact_information_entity,
                               domain::counterparty_contact_information>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
         lg(),
@@ -81,17 +73,16 @@ counterparty_contact_information_repository::read_latest() {
 }
 
 std::vector<domain::counterparty_contact_information>
-counterparty_contact_information_repository::read_latest(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty contact information. Id: " << id;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto id_str = boost::uuids::to_string(id);
+counterparty_contact_information_repository::read_latest(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty contact information. id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
-                       where("id"_c == id_str && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<counterparty_contact_information_entity,
                               domain::counterparty_contact_information>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
         lg(),
@@ -99,55 +90,17 @@ counterparty_contact_information_repository::read_latest(const boost::uuids::uui
 }
 
 std::vector<domain::counterparty_contact_information>
-counterparty_contact_information_repository::read_latest_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty contact information. Code: " << code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
-                       where("contact_type"_c == code && "valid_to"_c == max.value());
-
-    return execute_read_query<counterparty_contact_information_entity,
-                              domain::counterparty_contact_information>(
-        ctx_,
-        query,
-        [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
-        lg(),
-        "Reading latest counterparty contact information by code.");
-}
-
-std::vector<domain::counterparty_contact_information>
-counterparty_contact_information_repository::read_latest_by_counterparty_id(
-    const boost::uuids::uuid& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Reading latest counterparty contact informations. Counterparty ID: " << counterparty_id;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto cpty_id_str = boost::uuids::to_string(counterparty_id);
-    const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
-                       where("counterparty_id"_c == cpty_id_str && "valid_to"_c == max.value()) |
-                       order_by("contact_type"_c);
-
-    return execute_read_query<counterparty_contact_information_entity,
-                              domain::counterparty_contact_information>(
-        ctx_,
-        query,
-        [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
-        lg(),
-        "Reading latest counterparty contact informations by counterparty id.");
-}
-
-std::vector<domain::counterparty_contact_information>
-counterparty_contact_information_repository::read_all(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all counterparty contact information versions. Id: "
+counterparty_contact_information_repository::read_all(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all counterparty contact information versions. id: "
                                << id;
-
-    const auto id_str = boost::uuids::to_string(id);
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
-                       where("id"_c == id_str) | order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<counterparty_contact_information_entity,
                               domain::counterparty_contact_information>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
         lg(),
@@ -155,18 +108,19 @@ counterparty_contact_information_repository::read_all(const boost::uuids::uuid& 
 }
 
 std::optional<domain::counterparty_contact_information>
-counterparty_contact_information_repository::read_at_version(const boost::uuids::uuid& id,
+counterparty_contact_information_repository::read_at_version(context ctx,
+                                                             const std::string& id,
                                                              std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading counterparty contact information at version. Id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading counterparty contact information at version. id: " << id
                                << " version: " << version;
-
-    const auto id_str = boost::uuids::to_string(id);
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
-                       where("id"_c == id_str && "version"_c == version) | sqlgen::limit(1);
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
 
     const auto entities = execute_read_query<counterparty_contact_information_entity,
                                              domain::counterparty_contact_information>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
         lg(),
@@ -178,42 +132,147 @@ counterparty_contact_information_repository::read_at_version(const boost::uuids:
 }
 
 std::vector<domain::counterparty_contact_information>
+counterparty_contact_information_repository::read_latest_by_counterparty_id(
+    context ctx, const std::string& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading latest counterparty contact informations. counterparty_id: " << counterparty_id
+        << " offset: " << offset << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
+                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
+                             "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<counterparty_contact_information_entity,
+                              domain::counterparty_contact_information>(
+        ctx,
+        query,
+        [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
+        lg(),
+        "Reading latest counterparty contact informations by counterparty_id.");
+}
+
+std::uint32_t counterparty_contact_information_repository::
+    get_total_counterparty_contact_information_count_by_counterparty_id(
+        context ctx, const std::string& counterparty_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Retrieving total active counterparty contact informations count. counterparty_id: "
+        << counterparty_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::select_from<counterparty_contact_information_entity>(
+                           sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
+                             "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug)
+        << "Total active counterparty contact informations count by counterparty_id: " << count;
+    return count;
+}
+
+std::vector<domain::counterparty_contact_information>
 counterparty_contact_information_repository::read_by_counterparty_id_as_of(
-    const boost::uuids::uuid& counterparty_id,
+    context ctx,
+    const std::string& counterparty_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
     BOOST_LOG_SEV(lg(), debug)
-        << "Reading counterparty contact informations as of window. Counterparty ID: "
+        << "Reading counterparty contact informations as of window. counterparty_id: "
         << counterparty_id;
 
-    const auto cpty_id_str = boost::uuids::to_string(counterparty_id);
     const auto vf(
         make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
     const auto vt(
         make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
-                       where("counterparty_id"_c == cpty_id_str && "valid_from"_c < vt.value() &&
-                             "valid_to"_c > vf.value()) |
-                       order_by("contact_type"_c);
+                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
+                             "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<counterparty_contact_information_entity,
                               domain::counterparty_contact_information>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
         lg(),
-        "Reading counterparty contact informations as of window by counterparty id.");
+        "Reading counterparty contact informations as of window by counterparty_id.");
 }
-
-void counterparty_contact_information_repository::remove(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty contact information from database: " << id;
-
-    const auto id_str = boost::uuids::to_string(id);
-    const auto query =
-        sqlgen::delete_from<counterparty_contact_information_entity> | where("id"_c == id_str);
+void counterparty_contact_information_repository::remove(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty contact information: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<counterparty_contact_information_entity> |
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(
-        ctx_, query, lg(), "removing counterparty contact information from database");
+        ctx, query, lg(), "Removing counterparty contact information from database.");
 }
+
+std::vector<domain::counterparty_contact_information>
+counterparty_contact_information_repository::read_latest(context ctx,
+                                                         std::uint32_t offset,
+                                                         std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty contact informations with offset: "
+                               << offset << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<counterparty_contact_information_entity,
+                              domain::counterparty_contact_information>(
+        ctx,
+        query,
+        [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
+        lg(),
+        "Reading latest counterparty contact informations with pagination.");
+}
+
+std::uint32_t
+counterparty_contact_information_repository::get_total_counterparty_contact_information_count(
+    context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty contact information count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::select_from<counterparty_contact_information_entity>(
+                           sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active counterparty contact information count: " << count;
+    return count;
+}
+
+void counterparty_contact_information_repository::remove(context ctx,
+                                                         const std::vector<std::string>& ids) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<counterparty_contact_information_entity> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing counterparty contact informations.");
+}
+
 
 }

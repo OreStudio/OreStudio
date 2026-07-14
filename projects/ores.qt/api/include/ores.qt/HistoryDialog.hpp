@@ -42,8 +42,8 @@ namespace ores::qt {
  * doc/analysis/gemini_review_history_dialog.org: a compact version
  * timeline on the left, a live diff pane on the right with GitHub
  * colour highlighting (intra-line spans down to the token) and an
- * "All Fields"/"Only Changes" toggle. Selecting two versions in the
- * timeline (ctrl/shift-click) compares them directly, not just
+ * "All Fields"/"Only Changes" toggle. Two explicit Compare-From/
+ * Compare-To selectors diff any two versions directly, not just
  * adjacent ones. No typed domain knowledge, no per-entity Qt class.
  * Open and Revert emit generic (entity_type, entity_id, version)
  * signals for the caller to resolve against that entity's own typed

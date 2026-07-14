@@ -49,10 +49,10 @@ HistoryDialog"):
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate all entities onto the generic HistoryDialog]] |
-| Now          | Not yet started.                       |
+| Now          | Item 1 (archetype deletion) done. Item 2 (dynamic_combo drift) partially done: country, currency, tenor_convention, instrument_code, tenor, business_centre, book only. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-14                               |
+| Next         | Continue the dynamic_combo review across the remaining refdata entities and every other component (party, admin, compute, analytics, marketdata, synthetic, trading, workspace). |
+| Last touched | 2026-07-15                               |
 
 * Acceptance
 
@@ -81,7 +81,46 @@ HistoryDialog"):
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Item 1 (archetype deletion): deleted
+=ores.cpp.qt.history_dialog_impl/header/ui.org= and their tangled
+=.mustache= outputs; removed every reference from
+=facet_catalogue.org=, =cpp_qt.org=, =ores.cpp.qt.org=, =assets.org=,
+and the now-dead static template-mapping entries in
+=codegen/core.py=. Verified via re-tangle (facet doc count dropped by
+3) and =compass codegen entity generate <entity> --diff= producing no
+history-dialog output/error for any entity.
+
+Item 2 (dynamic_combo drift): per the story owner's direction, no
+selective/hand-patched regeneration — for each entity, ran the full
+=compass codegen entity generate <entity> --address ores.cpp.qt= and
+took the complete output (including the HistoryDialog controller
+migration that comes with it, not just the DetailDialog combo fix),
+reviewing the diff before applying; anything genuinely unexpected
+gets flagged rather than silently forced through. Caught and fixed
+one real template bug this surfaced: UUID-keyed entities'
+=showHistoryWindow= passed the raw =boost::uuids::uuid= straight to
+=QString::fromStdString=, which needs a =std::string= — only visible
+once an actual UUID-keyed entity (=book=) was regenerated through
+this path; fixed with =boost::uuids::to_string()=.
+
+Completed for: country, currency, tenor_convention, instrument_code,
+tenor, business_centre, book (7 of the many =dynamic_combo=/
+history-eligible entities across the codebase). Rebasing onto latest
+main surfaced one further trivial drift line on =book=
+(=idEdit->setReadOnly=), reconciled the same way.
+
 * Notes
+
+*Scope note*: this PR/commit set covers only the 7 entities listed
+above, deliberately kept small to avoid conflicting with other
+environments' in-flight work on other entities. The remaining
+=dynamic_combo= entities (most of =ores.refdata=, plus =party=,
+=admin=, =compute=, =analytics=, =marketdata=, =synthetic=,
+=trading=, =workspace=) still need the same treatment — continue
+picking entities and regenerating one at a time, same process, in a
+follow-up pass. Do not close this task or the
+[[id:BE3DEB46-1022-4A68-A1CD-7575CF6CDC33][Reconcile dynamic_combo detail-dialog codegen drift]] capture until
+that's done.
 
 * Test Scenarios
 

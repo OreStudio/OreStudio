@@ -1,0 +1,251 @@
+:PROPERTIES:
+:ID: 4A02B9BB-B4B5-45DE-9036-C81EAEE3E921
+:END:
+#+title: ores.refdata.instrument_code
+#+description: Codegen entity model for the refdata instrument_code table: the full ORE product/trade-type catalogue (oreTradeType), each tagged with its asset class.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: instrument_code
+#+entity_plural: instrument_codes
+#+entity_title: Instrument Code
+#+brief: Full ORE product/trade-type catalogue (oreTradeType), each tagged with its asset class.
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+General-purpose product catalogue: one row per instrument/product code
+the system knows about, sourced from ORE's own authoritative
+=oreTradeType= enumeration
+(=external/ore/xsd/instruments.xsd=) — =Swap=, =ForwardRateAgreement=,
+=FxOption=, =Bond=, =CreditDefaultSwap=, and every other trade type ORE
+supports (114 at the time of writing) — each tagged with the
+=asset_class_code= it belongs to, plus one ORE Studio-specific
+addition: =Deposit= (ORE has no distinct money-market-deposit trade
+type — it models a deposit as a single-period =Swap= — so =Deposit= is
+added purely to give the IR Curve Template a distinct short-end label;
+its pricing still derives from the same par-rate formula a
+single-period =Swap= would use). Not scoped to any single consumer: the
+IR Curve Template (which consumes the =Deposit=/=ForwardRateAgreement=/
+=Swap= rates entries for its tenor roles) is the first consumer, but
+this catalogue exists independently for any future feature needing to
+classify or enumerate the instrument types the system supports.
+Managed by the system tenant, like other shared code tables.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique short code for the instrument type -- the literal ORE
+=oreTradeType= value (e.g. 'Swap', 'ForwardRateAgreement', 'FxOption',
+'Bond', 'CreditDefaultSwap').
+
+Examples: 'Swap', 'ForwardRateAgreement', 'FxOption', 'Bond',
+'CreditDefaultSwap'.
+
+#+begin_src cpp :name generator
+std::string("InstrumentCode")
+#+end_src
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable full name for the instrument code (e.g. "Forward Rate
+Agreement" for =FRA=).
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Instrument"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the instrument code.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** asset_class
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Asset class this instrument code belongs to (references
+=asset_class_code.code=; column named =asset_class=, not
+=asset_class_code=, to avoid a C++ name lookup collision between the
+member and the =asset_class_code= domain type itself in generated Qt
+code).
+
+#+begin_src cpp :name generator
+std::string("rates")
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_instrument_codes_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_instrument_code_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function                |
+|--------------------+--------------------------------------|
+| asset_class         | ores_refdata_validate_asset_class_code_fn |
+| change_reason_code  | ores_dq_validate_change_reason_fn     |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: instrument
+:entity_plural_short:   instruments
+:entity_singular_words: instrument code
+:entity_plural_words:   instrument codes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ic
+:END:
+
+** Table display
+
+| column           | header        |
+|------------------+---------------|
+| code             | Code          |
+| name             | Name          |
+| description      | Description   |
+| asset_class      | Asset Class   |
+| display_order    | Display Order |
+| modified_by      | Modified By   |
+| version          | Version       |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/instrument_code.hpp
+:domain_class:           refdata::domain::instrument_code
+:protocol_include:       ores.refdata.api/messaging/instrument_code_protocol.hpp
+:collection_name:        codes
+:item_var:               code_
+:key_field:              code
+:has_uuid_primary_key:   false
+:has_pagination:         true
+:has_change_reason_cache: true
+:get_request_class:      refdata::messaging::get_instrument_codes_request
+:get_response_class:     refdata::messaging::get_instrument_codes_response
+:get_message_type:       get_instrument_codes_request
+:save_request_class:     refdata::messaging::save_instrument_code_request
+:save_response_class:    refdata::messaging::save_instrument_code_response
+:save_message_type:      save_instrument_code_request
+:delete_request_class:   refdata::messaging::delete_instrument_code_request
+:delete_response_class:  refdata::messaging::delete_instrument_code_response
+:delete_message_type:    delete_instrument_code_request
+:history_request_class:  refdata::messaging::get_instrument_code_history_request
+:history_response_class: refdata::messaging::get_instrument_code_history_response
+:history_message_type:   get_instrument_code_history_request
+:settings_group:         InstrumentCodeListWindow
+:window_title:           Instrument Codes
+:icon:                   Tag
+:has_export_macro:       true
+:END:
+
+*** Detail fields
+
+| field            | label         | widget          | type          | is_key | is_required | placeholder                          | flag_source | combo_domain_type                     | combo_fetch_include        | combo_fetch_fn         | combo_watcher_name   | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label       | combo_setter_pascal |
+|------------------+---------------+-----------------+---------------+--------+-------------+----------------------------------------+--------------+----------------------------------------+-----------------------------+--------------------------+-----------------------+--------------------+----------------------+--------------------+--------------------+------------------------|
+| code             | Code          | codeEdit        | line_edit     | true   | true        | Enter ORE trade type (e.g. Swap)      |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |
+| name             | Name          | nameEdit        | line_edit     |        | true        | Enter full name                       |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |
+| description      | Description   | descriptionEdit | text_edit     |        | true        | Enter a description                   |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |
+| asset_class      | Asset Class   | assetClassCombo | dynamic_combo |        | true        |                                        |              | refdata::domain::asset_class_code    | ores.qt/LookupFetcher.hpp  | fetch_asset_class_codes | assetClassWatcher    | code               | description          | display_order      | asset class codes  | AssetClassCombo        |
+| display_order    | Display Order | displayOrderEdit | spin_box     |        | true        |                                        |              |                                        |                             |                          |                       |                    |                      |                    |                    |                        |
+
+*** Columns (Qt model)
+
+| enum_name    | field            | header        | type      | width |
+|--------------+------------------+---------------+-----------+-------|
+| Code         | code             | Code          | string    | auto  |
+| Name         | name             | Name          | string    | auto  |
+| Description  | description      | Description   | string    | auto  |
+| AssetClass   | asset_class      | Asset Class   | string    | auto  |
+| DisplayOrder | display_order    | Display Order | int       | 70    |
+| Version      | version          | Version       | int       | 70    |
+| ModifiedBy   | modified_by      | Modified By   | string    | auto  |
+| RecordedAt   | recorded_at      | Recorded At   | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

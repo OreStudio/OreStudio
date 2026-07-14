@@ -22,10 +22,12 @@
 
 #include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.qt/export.hpp"
+#include "ores.refdata.api/domain/asset_class_code.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.api/domain/calendar_type.hpp"
 #include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/domain/crm_topology_config.hpp"
+#include "ores.refdata.api/domain/instrument_code.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"
@@ -325,6 +327,26 @@ fetch_tenor_anchors(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<dq::domain::coding_scheme>, QString>
 fetch_coding_schemes(ClientManager* cm);
+
+/**
+ * @brief Fetches all asset class codes from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by InstrumentCode's asset_class combo. Returns an error message
+ * on failure, distinguishing it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::asset_class_code>, QString>
+fetch_asset_class_codes(ClientManager* cm);
+
+/**
+ * @brief Fetches all instrument codes from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Returns an error message on failure, distinguishing it from a
+ * legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::instrument_code>, QString>
+fetch_instrument_codes(ClientManager* cm);
 
 }
 

@@ -1,0 +1,333 @@
+:PROPERTIES:
+:ID: 8B840E8D-2763-4A1F-8BC2-6C9E354DB673
+:END:
+#+title: ores.synthetic.ir_curve_generation_config
+#+description: Codegen entity model for the synthetic ir_curve_generation_config table; configuration for generating a synthetic IR curve from a short-rate process.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: ir_curve_generation_config
+#+entity_plural: ir_curve_generation_configs
+#+entity_title: IR Curve Generation Config
+#+brief: Configuration for generating a synthetic IR curve from a short-rate process.
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+A typed sub-configuration owned by a =market_data_generation_config=. Describes
+how to synthesise a single currency+index interest-rate curve: which
+short-rate process drives it (=vasicek=/=cir=/=hull_white=, per
+=ores.analytics.quant='s =IYieldCurveProcess= engines) and that process's
+parameters. The actual instrument grid (which tenors to publish at which
+role) is held separately as ordered =ir_curve_template_entry= rows, the
+same one-config-many-children shape =fx_spot_generation_config= uses for
+its =gmm_component= rows. Scoped to a tenant and a party.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this configuration.
+
+* Natural keys
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Owning party (legal entity) this configuration belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Parent =market_data_generation_config= this sub-config belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Currency this curve is denominated in (soft FK to currencies).
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** index_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Floating-rate index this curve represents (e.g. "SOFR", "ESTR", "SONIA").
+Free text: the universe of index names is currency/convention-specific
+and not yet its own refdata catalogue.
+
+#+begin_src cpp :name generator
+std::string("SOFR")
+#+end_src
+
+* Columns
+
+** process_type
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "vasicek"
+:END:
+
+Short-rate process engine driving this curve: "vasicek", "cir", or
+"hull_white" -- selects among =ores.analytics.quant='s
+=IYieldCurveProcess= engines via =process_factory::
+make_yield_curve_process()=.
+
+#+begin_src cpp :name generator
+std::string("vasicek")
+#+end_src
+
+** kappa
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Mean-reversion speed parameter.
+
+#+begin_src cpp :name generator
+faker::number::decimal(0.01, 2.0)
+#+end_src
+
+** theta
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Constant mean-reversion target level. Persisted as a single scalar, not
+a full time-varying =theta_path=: fitting =theta(t)= to reproduce an
+observed market curve exactly is out of scope (needs curve
+bootstrapping, a separate future story) -- a constant =theta= still
+drives a real, internally-consistent latent curve via each engine's
+=discount_factor()=, just not one fitted to today's market.
+
+#+begin_src cpp :name generator
+faker::number::decimal(0.0, 0.1)
+#+end_src
+
+** sigma
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Volatility parameter.
+
+#+begin_src cpp :name generator
+faker::number::decimal(0.0, 0.05)
+#+end_src
+
+** initial_rate
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Starting short rate the process simulates from.
+
+#+begin_src cpp :name generator
+faker::number::decimal(-0.01, 0.1)
+#+end_src
+
+** ticks_per_hour
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Number of synthetic ticks (curve publications) produced per hour.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 3600)
+#+end_src
+
+** enabled
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the configuration is active and eligible for generation.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_ir_curve_generation_configs_tbl
+:END:
+
+** Checks
+
+| expression                                              |
+|----------------------------------------------------------|
+| "currency_code" <> ''                                    |
+| "index_name" <> ''                                        |
+| "process_type" in ('vasicek', 'cir', 'hull_white')       |
+| "sigma" >= 0                                              |
+| "ticks_per_hour" > 0                                       |
+| "process_type" <> 'cir' or "initial_rate" >= 0             |
+
+* Foreign keys
+
+** config_id
+:PROPERTIES:
+:table:         ores_synthetic_market_data_generation_configs_tbl
+:error_message: Invalid config_id: %. No active market_data_generation_config found with this id.
+:nullable:      false
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: ir_curve_generation_config
+:entity_plural_short:   ir_curve_generation_configs
+:entity_singular_words: IR curve generation config
+:entity_plural_words:   IR curve generation configs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.synthetic.api/domain/ir_curve_generation_config.hpp
+:domain_class:            synthetic::domain::ir_curve_generation_config
+:protocol_include:        ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp
+:collection_name:         ir_curve_generation_configs
+:item_var:                ir_curve_generation_config
+:key_field:               id
+:has_uuid_primary_key:    true
+:has_pagination:          true
+:has_change_reason_cache: true
+:get_request_class:       synthetic::messaging::get_ir_curve_generation_configs_request
+:get_response_class:      synthetic::messaging::get_ir_curve_generation_configs_response
+:get_message_type:        get_ir_curve_generation_configs_request
+:save_request_class:      synthetic::messaging::save_ir_curve_generation_config_request
+:save_response_class:     synthetic::messaging::save_ir_curve_generation_config_response
+:save_message_type:       save_ir_curve_generation_config_request
+:save_request_item_field: data
+:delete_request_class:    synthetic::messaging::delete_ir_curve_generation_config_request
+:delete_response_class:   synthetic::messaging::delete_ir_curve_generation_config_response
+:delete_message_type:     delete_ir_curve_generation_config_request
+:history_request_class:   synthetic::messaging::get_ir_curve_generation_config_history_request
+:history_response_class:  synthetic::messaging::get_ir_curve_generation_config_history_response
+:history_message_type:    get_ir_curve_generation_config_history_request
+:settings_group:          IrCurveGenerationConfigListWindow
+:window_title:            IR Curve Generation Configs
+:icon:                    Chart
+:changed_event_class:     synthetic::eventing::ir_curve_generation_config_changed_event
+:changed_event_include:   ores.synthetic.api/eventing/ir_curve_generation_config_changed_event.hpp
+:END:
+
+*** Detail fields
+
+| field          | label          | widget            | type      | is_key | is_required | placeholder                          |
+|----------------+----------------+-------------------+-----------+--------+-------------+----------------------------------------|
+| currency_code  | Currency       | currencyEdit      | line_edit |        | true        | Enter currency code                  |
+| index_name     | Index          | indexNameEdit     | line_edit |        | true        | Enter floating-rate index (e.g. SOFR)|
+| process_type   | Process Type   | processTypeEdit   | line_edit |        | true        | vasicek, cir, or hull_white          |
+| kappa          | Kappa          | kappaEdit         | line_edit |        | true        | Mean-reversion speed                 |
+| theta          | Theta          | thetaEdit         | line_edit |        | true        | Mean-reversion target level           |
+| sigma          | Sigma          | sigmaEdit         | line_edit |        | true        | Volatility                            |
+| initial_rate   | Initial Rate   | initialRateEdit   | line_edit |        | true        | Starting short rate                   |
+| ticks_per_hour | Ticks per Hour | ticksPerHourEdit  | spin_box  |        | true        |                                        |
+| enabled        | Enabled        | enabledCheck      | check_box |        |             |                                        |
+
+*** Columns (Qt model)
+
+| enum_name    | field          | header         | type      | width |
+|--------------+----------------+----------------+-----------+-------|
+| CurrencyCode | currency_code  | Currency       | string    | 100   |
+| IndexName    | index_name     | Index          | string    | 100   |
+| ProcessType  | process_type   | Process Type   | string    | 100   |
+| Kappa        | kappa          | Kappa          | double    | 90    |
+| Theta        | theta          | Theta          | double    | 90    |
+| Sigma        | sigma          | Sigma          | double    | 90    |
+| InitialRate  | initial_rate   | Initial Rate   | double    | 100   |
+| TicksPerHour | ticks_per_hour | Ticks/Hr       | int       | 80    |
+| Enabled      | enabled        | Enabled        | bool      | 70    |
+| Version      | version        | Version        | int       | 70    |
+| ModifiedBy   | modified_by    | Modified By    | string    | 120   |
+| RecordedAt   | recorded_at    | Recorded At    | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

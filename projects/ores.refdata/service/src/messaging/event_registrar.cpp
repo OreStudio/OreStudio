@@ -29,6 +29,7 @@
 // regeneration) — pre-existing drift unrelated to this registrar, tracked
 // separately. Those ten stay hand-wired in application.cpp until that drift
 // is resolved; see the migrate-remaining-entities capture.
+#include "ores.refdata.service/messaging/asset_class_code_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_purpose_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_status_event_registrar.hpp"
@@ -42,6 +43,7 @@
 #include "ores.refdata.service/messaging/currency_pair_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_pair_event_registrar.hpp"
 #include "ores.refdata.service/messaging/day_count_fraction_type_event_registrar.hpp"
+#include "ores.refdata.service/messaging/instrument_code_event_registrar.hpp"
 #include "ores.refdata.service/messaging/ledger_feed_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/purpose_type_event_registrar.hpp"
@@ -67,6 +69,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     // event_bus subscription that republishes it to NATS; we take
     // ownership of the subscriptions here so they outlive this call.
     // ----------------------------------------------------------------
+    subs.push_back(register_asset_class_code_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_purpose_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_status_event_mapping(event_source, event_bus, nats));
@@ -81,6 +84,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_currency_pair_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_pair_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_day_count_fraction_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_instrument_code_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ledger_feed_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_purpose_type_event_mapping(event_source, event_bus, nats));

@@ -104,6 +104,12 @@
 \ir ./refdata_ledger_feed_types_create.sql
 \ir ./refdata_ledger_feed_types_notify_trigger_create.sql
 
+-- Product catalogue: asset_class_codes before instrument_codes (FK).
+\ir ./refdata_asset_class_codes_create.sql
+\ir ./refdata_asset_class_codes_notify_trigger_create.sql
+\ir ./refdata_instrument_codes_create.sql
+\ir ./refdata_instrument_codes_notify_trigger_create.sql
+
 -- Party and counterparty tables
 \ir ./refdata_parties_create.sql
 \ir ./refdata_parties_notify_trigger_create.sql

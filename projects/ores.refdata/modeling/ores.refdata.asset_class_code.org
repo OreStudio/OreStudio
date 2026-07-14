@@ -1,0 +1,218 @@
+:PROPERTIES:
+:ID: 8F6EE5AE-8B49-4A4C-97F8-E0517BE53775
+:END:
+#+title: ores.refdata.asset_class_code
+#+description: Codegen entity model for the refdata asset_class_code table: top-level asset class classification codes (fx, rates, credit, equity, commodity, inflation, bond, cross_asset).
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: asset_class_code
+#+entity_plural: asset_class_codes
+#+entity_title: Asset Class Code
+#+brief: Top-level asset class classification (fx, rates, credit, equity, commodity, inflation, bond, cross_asset).
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+General-purpose classification of the top-level asset class a market
+series, instrument, or curve belongs to. Mirrors
+=ores::marketdata::domain::asset_class= (a plain, non-persisted C++
+enum used for market-series filtering) as a managed, persisted
+refdata code table, so other entities (=instrument_code=, and
+anything else needing to classify by asset class) can FK-validate
+against it instead of duplicating a hardcoded string list. Managed by
+the system tenant, like other shared code tables.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique asset class code.
+
+Examples: 'fx', 'rates', 'credit', 'equity', 'commodity', 'inflation',
+'bond', 'cross_asset'.
+
+#+begin_src cpp :name generator
+std::string("AssetClassCode")
+#+end_src
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the asset class.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Class"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the asset class.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_asset_class_codes_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_asset_class_code_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: asset_class
+:entity_plural_short:   asset_classes
+:entity_singular_words: asset class code
+:entity_plural_words:   asset class codes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ac
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/asset_class_code.hpp
+:domain_class:           refdata::domain::asset_class_code
+:protocol_include:       ores.refdata.api/messaging/asset_class_code_protocol.hpp
+:collection_name:        classes
+:item_var:               class_
+:key_field:              code
+:has_uuid_primary_key:   false
+:has_pagination:         true
+:has_change_reason_cache: true
+:get_request_class:      refdata::messaging::get_asset_class_codes_request
+:get_response_class:     refdata::messaging::get_asset_class_codes_response
+:get_message_type:       get_asset_class_codes_request
+:save_request_class:     refdata::messaging::save_asset_class_code_request
+:save_response_class:    refdata::messaging::save_asset_class_code_response
+:save_message_type:      save_asset_class_code_request
+:delete_request_class:   refdata::messaging::delete_asset_class_code_request
+:delete_response_class:  refdata::messaging::delete_asset_class_code_response
+:delete_message_type:    delete_asset_class_code_request
+:history_request_class:  refdata::messaging::get_asset_class_code_history_request
+:history_response_class: refdata::messaging::get_asset_class_code_history_response
+:history_message_type:   get_asset_class_code_history_request
+:settings_group:         AssetClassCodeListWindow
+:window_title:           Asset Class Codes
+:icon:                   Tag
+:has_export_macro:       true
+:END:
+
+*** Detail fields
+
+| field         | label         | widget          | type      | is_key | is_required | placeholder                        |
+|---------------+---------------+-----------------+-----------+--------+-------------+--------------------------------------|
+| code          | Code          | codeEdit        | line_edit | true   | true        | Enter asset class code (e.g. rates) |
+| name          | Name          | nameEdit        | line_edit |        | true        | Enter name                          |
+| description   | Description   | descriptionEdit | text_edit |        | true        | Enter a description                 |
+| display_order | Display Order | displayOrderEdit | spin_box |        | true        |                                      |
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | auto  |
+| Name         | name          | Name          | string    | auto  |
+| Description  | description   | Description   | string    | auto  |
+| DisplayOrder | display_order | Display Order | int       | 70    |
+| Version      | version       | Version       | int       | 70    |
+| ModifiedBy   | modified_by   | Modified By   | string    | auto  |
+| RecordedAt   | recorded_at   | Recorded At   | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

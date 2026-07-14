@@ -25,5 +25,11 @@
 \ir ./synthetic_gmm_components_create.sql
 \ir ./synthetic_gmm_components_notify_trigger_create.sql
 
+-- IR curve generation: config before the template entries that reference it.
+\ir ./synthetic_ir_curve_generation_configs_create.sql
+\ir ./synthetic_ir_curve_generation_configs_notify_trigger_create.sql
+\ir ./synthetic_ir_curve_template_entries_create.sql
+\ir ./synthetic_ir_curve_template_entries_notify_trigger_create.sql
+
 -- Publish-from-DQ
 \ir ./synthetic_publish_from_dq_create.sql

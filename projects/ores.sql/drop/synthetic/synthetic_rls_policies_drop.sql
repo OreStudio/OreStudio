@@ -23,6 +23,12 @@
 -- =============================================================================
 -- Must be dropped before the corresponding tables are dropped.
 
+drop policy if exists ir_curve_template_entries_party_isolation_policy on "ores_synthetic_ir_curve_template_entries_tbl";
+drop policy if exists ir_curve_template_entries_tenant_isolation_policy on "ores_synthetic_ir_curve_template_entries_tbl";
+
+drop policy if exists ir_curve_generation_configs_party_isolation_policy on "ores_synthetic_ir_curve_generation_configs_tbl";
+drop policy if exists ir_curve_generation_configs_tenant_isolation_policy on "ores_synthetic_ir_curve_generation_configs_tbl";
+
 drop policy if exists gmm_components_party_isolation_policy on "ores_synthetic_gmm_components_tbl";
 drop policy if exists gmm_components_tenant_isolation_policy on "ores_synthetic_gmm_components_tbl";
 

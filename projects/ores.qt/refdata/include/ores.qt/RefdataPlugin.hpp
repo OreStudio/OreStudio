@@ -77,6 +77,8 @@ class TenorController;
 class TenorConventionController;
 class TenorAnchorController;
 class TenorKindController;
+class AssetClassCodeController;
+class InstrumentCodeController;
 class TenorUnitController;
 class TenorResolutionAlgorithmController;
 class CrmTopologyConfigController;
@@ -177,6 +179,8 @@ private:
     std::unique_ptr<TenorConventionController> tenorConventionController_;
     std::unique_ptr<TenorAnchorController> tenorAnchorController_;
     std::unique_ptr<TenorKindController> tenorKindController_;
+    std::unique_ptr<AssetClassCodeController> assetClassCodeController_;
+    std::unique_ptr<InstrumentCodeController> instrumentCodeController_;
     std::unique_ptr<TenorUnitController> tenorUnitController_;
     std::unique_ptr<TenorResolutionAlgorithmController> tenorResolutionAlgorithmController_;
     std::unique_ptr<CrmTopologyConfigController> crmTopologyConfigController_;

@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: C6107A93-1639-4EEB-B00F-FF01CDA321FB
+:END:
+#+title: Task: Model a currency-country junction
+#+description: Model a many-to-many currency_country junction linking currency to the existing country entity, since a currency can span multiple countries (e.g. EUR -> DE, FR, IT, ...) and calendar.country_code needs a country to FK against.
+#+type: task
+#+level: s1
+#+filetags: :calendar-reference-data:sprint_23:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Model a =currency_country= many-to-many junction between =currency=
+and the existing =country= entity (=ores.refdata.country=), following
+the same pattern as =party_country_junction=. A currency can be
+issued by multiple countries (e.g. EUR spans DE, FR, IT, ...). This is
+independent reference data in its own right — not a prerequisite for
+[[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][the calendar entity]],
+which carries its own =country_code= (with the =ZZ= sentinel handled
+in that task) rather than deriving a currency's calendars transitively
+through =currency_country=, since supranational calendars like
+=TARGET= have no single owning country to derive through.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-13                               |
+
+* Acceptance
+
+- [ ] A =currency_country= junction table links =currency= to
+  =country=, generated via =ores.codegen.junction=, mirroring
+  =party_country_junction='s shape.
+- [ ] Existing currencies are seeded with their real issuing
+  countries (EUR -> DE, FR, IT, ES, ...; USD -> US; GBP -> GB; etc.)
+  for the currencies already present in synthetic/seed data.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

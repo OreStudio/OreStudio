@@ -529,4 +529,20 @@ generate_fictional_countries(std::size_t n, utility::generation::generation_cont
 
     return std::vector<domain::country>(all.begin(), all.begin() + n);
 }
+
+domain::country generate_country_sentinel(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto now = ctx.past_timepoint();
+
+    return domain::country{.alpha2_code = "ZZ",
+                           .alpha3_code = "ZZZ",
+                           .numeric_code = "999",
+                           .name = "Supranational / Not Country-Specific",
+                           .official_name = "Supranational / Not Country-Specific",
+                           .modified_by = modified_by,
+                           .change_reason_code = "system.initial_load",
+                           .change_commentary = "ISO 3166-1 user-assigned sentinel for "
+                                                "supranational calendars",
+                           .recorded_at = now};
+}
 }

@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 18A20E59-921B-4248-9DDE-EF4257494363
+:END:
+#+title: Only rescan modified files for org-id location updates
+#+description: Site build rescans every .org file for org-id-update-id-locations on every run instead of only files changed since the last build.
+#+type: capture
+#+level: cross
+#+filetags: :devops:site:performance:emacs:
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.lisp/src/ores-build-site.el:52= calls
+=org-id-update-id-locations= against every =.org= file in the repo
+(via =(directory-files-recursively "." "\\.org$")=, filtering only
+worktree paths) on every single site build, regardless of how many
+files actually changed. With ~3972 tracked =.org= files, this full-repo
+ID-location rescan dominates the wall-clock time of =compass build
+--direct site= even when the actual HTML publish step — which
+correctly consults the timestamp cache in
+=org-publish-timestamp-directory= and only republishes changed files
+(logged as "Publishing file ... using 'org-html-publish-to-html'" vs.
+"Skipping unmodified file") — has almost nothing to do. A build that
+touches 4 files still walks and re-scans IDs across the entire corpus.
+The fix is to narrow the file list passed to
+=org-id-update-id-locations= to only files modified since the last
+build (e.g. via =git diff --name-only= against the last built commit,
+or by comparing mtimes against =org-publish-timestamp-directory=)
+rather than a full repository walk every time.
+
+* Why
+
+Observed directly while rebuilding the site after editing four
+knowledge docs under =doc/knowledge/domain/=: the build took several
+minutes, the vast majority of which was the "Finding ID locations"
+pass working through thousands of unrelated files before publishing
+even started. This makes small, iterative doc edits expensive to
+preview locally and slows down any workflow (doc review, PR
+iteration) that rebuilds the site more than once per session.
+
+* References
+
+- =projects/ores.lisp/src/ores-build-site.el:49-54= — the
+  =org-id-locations-file=, =org-publish-timestamp-directory=, and
+  =org-id-update-id-locations= call in question.
+
+* See also
+
+-

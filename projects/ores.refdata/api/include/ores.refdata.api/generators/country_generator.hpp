@@ -51,6 +51,18 @@ generate_synthetic_countries(std::size_t n, utility::generation::generation_cont
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::country>
 generate_fictional_countries(std::size_t n, utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates the ISO 3166-1 "ZZ" user-assigned sentinel country.
+ *
+ * Represents "supranational / not country-specific" — used by calendar
+ * rows (e.g. TARGET) with no single owning country. ZZ is one of ISO
+ * 3166-1's own reserved user-assigned code elements (AA, QM-QZ, XA-XZ,
+ * ZZ), never allocated to a real country, so this is real reference
+ * data rather than fictional test data.
+ */
+ORES_REFDATA_API_EXPORT domain::country
+generate_country_sentinel(utility::generation::generation_context& ctx);
 }
 
 #endif

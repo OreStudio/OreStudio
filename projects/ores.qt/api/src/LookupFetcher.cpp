@@ -25,6 +25,7 @@
 #include "ores.refdata.api/messaging/book_status_protocol.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
+#include "ores.refdata.api/messaging/calendar_type_protocol.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.api/messaging/crm_topology_config_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
@@ -370,6 +371,30 @@ fetch_currency_market_tiers(ClientManager* cm) {
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
     return std::move(response->currency_market_tiers);
+}
+
+std::expected<std::vector<refdata::domain::calendar_type>, QString>
+fetch_calendar_types(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_calendar_types_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->types);
+}
+
+std::expected<std::vector<refdata::domain::country>, QString>
+fetch_countries(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_countries_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->countries);
 }
 
 }

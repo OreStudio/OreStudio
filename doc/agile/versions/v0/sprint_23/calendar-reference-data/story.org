@@ -8,7 +8,7 @@
 #+filetags: :refdata:calendar:market_data:sprint_23:v0:
 #+created: 2026-07-04
 #+updated: 2026-07-11
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -43,7 +43,7 @@ placeholder text field.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -66,19 +66,48 @@ placeholder text field.
   the joined string.
 - [ ] =fx_convention.advance_calendar= (or its =currency_pair=
   successor) is migrated onto the new model.
+- [ ] A =currency_country= junction exists, since calendars are
+  associated with countries (a currency can span several), not with
+  currencies directly.
+- [ ] The new tables (=calendar=, =calendar_type=, =currency_country=,
+  =currency_calendar=, =currency_pair_convention_calendar=) are
+  published through the DQ bundle pipeline.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] | BACKLOG | | | Model a calendar domain entity enumerating valid ORE/QuantLib calendar codes (name, optional flag image, etc.) ready to drive ores.codegen.entity. |
+| [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] | DONE | 2026-07-13 | 2026-07-14 | Model a calendar domain entity enumerating valid ORE/QuantLib calendar codes (name, optional flag image, etc.) ready to drive ores.codegen.entity. |
 | [[id:30563983-1E0E-44D2-8D9D-9BBE7086BF68][Migrate currency.holiday_calendar to a real FK relationship]] | BACKLOG | | | Replace currency.holiday_calendar's free-text value with a proper (soft or hard) FK relationship to the new calendar entity, supporting a currency needing more than one calendar via a junction table. |
 | [[id:F348285C-7ECE-4D59-9CD1-13931D2C90DE][Migrate currency_pair_convention.advance_calendar onto the calendar model]] | BACKLOG | | | Replace advance_calendar's comma-joined free-text value with a junction table validated against the calendar entity. Resolve the naming question along the way: is 'advance_calendar' idiomatic, or should it just be 'holiday_calendar'/'calendar'? |
 | [[id:24FCC62F-D1AB-4872-8337-E806675EBF7C][Qt screens for calendars: list/add/edit, combo picker, flag display]] | BACKLOG | | | Build the usual entity CRUD Qt screens for calendar (list/add/edit/history), a reusable combo picker widget for other screens to select a calendar (showing the calendar's flag if it has one), and a toolbar button in Currency Pair Conventions' main window into Calendars. |
 | [[id:78A340FA-94F0-49F4-B521-89950A32B1F1][Build ORE's comma-joined calendar string only at the XML export boundary]] | BACKLOG | | | ores.ore's conventions_mapper (or successor) should build ORE's comma-joined calendar-name string from the FK relationship(s) only when exporting to XML — the domain model itself never stores the joined string. |
 | [[id:1D064DDB-0C57-43C6-B17C-07003BC644C1][Holiday-aware date picker widget]] | BACKLOG | | | A reusable Qt date-picker widget that takes one or more calendars as input, highlights their holidays (with a tooltip naming the source calendar), and is used everywhere a date sensitive to holidays needs to be picked. |
+| [[id:C6107A93-1639-4EEB-B00F-FF01CDA321FB][Model a currency-country junction]] | BACKLOG | | | Model a many-to-many currency_country junction linking currency to the existing country entity, since a currency can span multiple countries (e.g. EUR -> DE, FR, IT, ...) and calendar.country_code needs a country to FK against. |
+| [[id:E34B34F0-DE82-4CD2-AA7C-A15527ECCA59][DQ-publish the calendar reference data]] | BACKLOG | | | Wire calendar, calendar_type, currency_country, currency_calendar, and currency_pair_convention_calendar into the DQ bundle publication pipeline (artefact tables + publish-from-dq functions + NATS handlers), following the existing hand-written pattern used for currency_pairs. |
 
 * Decisions
+
+- =calendar.country_code= is a non-nullable FK to the existing
+  =country= entity, using ISO 3166-1's reserved =ZZ= user-assigned
+  code as the sentinel for supranational calendars (=TARGET=) rather
+  than a nullable column.
+- =calendar_type= is its own aux-type table (=public_holiday=,
+  =central_bank_meeting=, =financial_centre=, =data_release=,
+  =other=), following the =monetary_nature=/=market_tier= pattern —
+  not a bare text enum on =calendar=.
+- Sub-market calendar variants (e.g. =UnitedStates.NYSE= vs
+  =UnitedStates.GovernmentBond=) are separate =calendar= rows sharing
+  the dotted QuantLib token verbatim as =code=, not a joined variant
+  field — matches ORE's own XML =<Calendar>= vocabulary exactly.
+- Seeded with the full QuantLib calendar set (~60 codes) rather than
+  just the story's illustrative list, transcribed from a local
+  QuantLib checkout's =ql/time/calendars/*.hpp= headers.
+- DQ bundle publication for =calendar=/=calendar_type= was delivered
+  as part of the entity task rather than waiting for the dedicated
+  DQ-publish task, since it was a natural extension of landing the
+  entities cleanly; the junction tables' publish support is still
+  pending their own tasks.
 
 * Out of scope
 

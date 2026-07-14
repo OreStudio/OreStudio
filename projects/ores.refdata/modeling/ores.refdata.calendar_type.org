@@ -1,0 +1,207 @@
+:PROPERTIES:
+:ID: 1A454661-81B5-4F8F-93A6-06547412DD84
+:END:
+#+title: ores.refdata.calendar_type
+#+description: Classification of a calendar's purpose: public holiday, central bank meeting, financial centre, data release, or other.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Classification of a calendar's purpose.
+#+entity_singular: calendar_type
+#+entity_plural: calendar_types
+#+entity_title: Calendar Type
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-07-13
+#+updated: 2026-07-13
+
+Reference data classifying what a calendar represents. Values
+include: public_holiday, central_bank_meeting, financial_centre,
+data_release, other. Lets a single =calendar= table hold
+heterogeneous entries (a national holiday calendar, a central bank's
+meeting schedule, a financial-centre business-day calendar) without
+collapsing their distinct provenance.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique calendar type code.
+
+Examples: 'public_holiday', 'central_bank_meeting', 'financial_centre',
+'data_release', 'other'.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the calendar type.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Calendar Type"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the calendar type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_calendar_types_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_calendar_type_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     display_order
+:default:      public_holiday
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: calendar type
+:entity_plural_words:   calendar types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ct
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| description   | Description |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/calendar_type.hpp
+:domain_class:           refdata::domain::calendar_type
+:protocol_include:       ores.refdata.api/messaging/protocol.hpp
+:collection_name:        types
+:item_var:               type
+:key_field:              code
+:has_uuid_primary_key:         false
+:has_change_reason_cache:      true
+:get_request_class:      refdata::messaging::get_calendar_types_request
+:get_response_class:     refdata::messaging::get_calendar_types_response
+:get_message_type:       get_calendar_types_request
+:save_request_class:     refdata::messaging::save_calendar_type_request
+:save_response_class:    refdata::messaging::save_calendar_type_response
+:save_message_type:      save_calendar_type_request
+:delete_request_class:    refdata::messaging::delete_calendar_type_request
+:delete_response_class:   refdata::messaging::delete_calendar_type_response
+:delete_message_type:     delete_calendar_type_request
+:delete_request_id_field: type
+:history_request_class:       refdata::messaging::get_calendar_type_history_request
+:history_response_class:      refdata::messaging::get_calendar_type_history_response
+:history_message_type:        get_calendar_type_history_request
+:history_request_id_field:    type
+:history_response_data_field: history
+:settings_group:         CalendarTypeListWindow
+:window_title:           Calendar Types
+:icon:                   Classification
+:END:
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Code         | code          | Code        | string    | 150   |
+| Name         | name          | Name        | string    | 200   |
+| Description  | description   | Description | string    | 300   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] — parent story.

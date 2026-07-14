@@ -88,7 +88,6 @@ public:
     std::optional<domain::country>
     read_at_version(context ctx, const std::string& alpha2_code, std::uint32_t version);
 
-
     /**
      * @brief Reads latest countries with pagination support.
      * @param ctx Repository context with database connection

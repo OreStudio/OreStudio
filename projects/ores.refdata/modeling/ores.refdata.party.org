@@ -116,16 +116,21 @@ std::nullopt
 
 ** party_category
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "Operational"
 :END:
 
 Structural classification of this party.
 
 References the party_category lookup table. Values: 'System' (one per tenant,
 auto-created during provisioning) or 'Operational' (business entities created
-during normal system operation).
+during normal system operation). Not user-editable via the Qt UI -- every
+party created through the detail dialog is 'Operational'; 'System' parties
+are exclusively auto-created during tenant provisioning. Defaults here so a
+freshly-constructed party (the Add dialog, with no UI field for this column)
+always carries a value the party_category-validation trigger accepts.
 
 #+begin_src cpp :name generator
 std::string("Operational")
@@ -585,8 +590,6 @@ the workflow engine rather than replying to the caller directly.
             return;
         }
         try {
-            boost::uuids::string_generator gen;
-            const auto id_uuid = gen(req->id);
             service::party_service party_svc(ctx);
             const auto version = static_cast<std::uint32_t>(req->version);
             auto current = party_svc.get_party_at_version(req->id, version);
@@ -616,8 +619,8 @@ the workflow engine rather than replying to the caller directly.
                 req->id, current->recorded_at, window_end);
 
             service::party_contact_information_service contact_svc(ctx);
-            auto contacts = contact_svc.list_party_contact_informations_by_party_as_of(
-                id_uuid, current->recorded_at, window_end);
+            auto contacts = contact_svc.list_party_contact_informations_by_party_id_as_of(
+                req->id, current->recorded_at, window_end);
 
             BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,

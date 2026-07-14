@@ -62,8 +62,7 @@ seeded rows (including BARCLAYS PLC), and every column renders values.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | - all type badges are orange, no colour scheme seems to be in place; - cant save (missing change reasons support?); - in status, suspended partyshould be yellow for warning; - cant add identifiers; - can add contacts but then they dont show up; - identifier screen does not have combo boxes for scheme; - cannot edit lei or contacts; ; ; [[file:scenario_verify_party_qt_ui_post_nats_step2_20260714_142328.png]] |
+| Status | PASS |
 
 *** Create
 
@@ -76,7 +75,7 @@ Save. Confirm the new row appears in the list.
 | Field  | Value |
 |--------+-------|
 | Status | FAIL |
-| Notes  | - provenance tab is not the last tab in details.; - hierarchy no longer shows the full hierarchy with the current party on it; - no combo boxes for party type, status and business centre; ; [[file:scenario_verify_party_qt_ui_post_nats_step3_20260714_110654.png]] |
+| Notes  | - still can't add identifiers or contacts, button does not appear clickable.; - on save, get Repository error: Executing INSERT failed: ERROR:  Invalid party_category: value cannot be null or empty; CONTEXT:  PL/pgSQL function ores_refdata_validate_party_category_fn(uuid,text) line 5 at RAISE; PL/pgSQL function ores_refdata_parties_insert_fn() line 9 at assignment |
 
 *** Read
 
@@ -99,7 +98,8 @@ click *Delete Identifier*; confirm it disappears.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | - can add identifier, added BIC. however, does not show up in the dialog. seems like identifier is immediately saved. on reload, can see new identifier. flow is just a bit confusing. |
 
 *** Contact Information tab: add, edit, delete
 
@@ -115,7 +115,8 @@ disappears.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | - adding seems to corectly show the contact, but again, immediately saves the contact.  |
 
 *** Hierarchy tab
 
@@ -128,7 +129,7 @@ displays the expected parent/child structure.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Update
 
@@ -210,9 +211,9 @@ here automatically too.
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-07-14T13:23:32Z |
+| Completed at  | 2026-07-14T15:40:38Z |
 | Branch        | feature/build-composite-child-table-qt-facet |
-| Commit        | 538fc9881 |
+| Commit        | 22ccf8702 |
 | Worktree      | prime_origin |
 
 * Notes

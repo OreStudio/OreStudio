@@ -96,6 +96,31 @@ public:
     std::uint32_t count_party_identifiers_by_party_id(const std::string& party_id);
 
     /**
+     * @brief Lists party identifiers filtered by party_id that were live at
+     * any point during a parent version's own [valid_from, valid_to) window.
+     * See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param party_id The party_id to filter by.
+     * @param valid_from_bound The parent version's own valid_from.
+     * @param valid_to_bound The parent version's own valid_to.
+     * @return Vector of matching party identifiers.
+     */
+    std::vector<domain::party_identifier>
+    list_party_identifiers_by_party_id_as_of(const std::string& party_id,
+                                             std::chrono::system_clock::time_point valid_from_bound,
+                                             std::chrono::system_clock::time_point valid_to_bound);
+    /**
+     * @brief Retrieves a single party identifier as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param id The id of the party identifier.
+     * @param version The version to fetch.
+     * @return The party identifier at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::party_identifier> get_party_identifier_at_version(const std::string& id,
+                                                                            std::uint32_t version);
+
+    /**
      * @brief Retrieves a single party identifier by its id.
      *
      * @param id The id of the party identifier.
@@ -136,22 +161,6 @@ public:
      * @brief Retrieves all historical versions of a party identifier.
      */
     std::vector<domain::party_identifier> get_party_identifier_history(const std::string& id);
-
-    /**
-     * @brief Retrieves a single party identifier as it stood at a specific
-     * version. See the "Temporal composite entity versioning" architecture doc.
-     */
-    std::optional<domain::party_identifier> get_party_identifier_at_version(const std::string& id,
-                                                                            std::uint32_t version);
-
-    /**
-     * @brief Lists party identifiers for a party that were live during a
-     * parent version's own [valid_from, valid_to) window.
-     */
-    std::vector<domain::party_identifier>
-    list_party_identifiers_by_party_id_as_of(const std::string& party_id,
-                                             std::chrono::system_clock::time_point valid_from_bound,
-                                             std::chrono::system_clock::time_point valid_to_bound);
 
 private:
     context ctx_;

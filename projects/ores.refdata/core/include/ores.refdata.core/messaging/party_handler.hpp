@@ -314,8 +314,6 @@ public:
             return;
         }
         try {
-            boost::uuids::string_generator gen;
-            const auto id_uuid = gen(req->id);
             service::party_service party_svc(ctx);
             const auto version = static_cast<std::uint32_t>(req->version);
             auto current = party_svc.get_party_at_version(req->id, version);
@@ -345,8 +343,8 @@ public:
                 req->id, current->recorded_at, window_end);
 
             service::party_contact_information_service contact_svc(ctx);
-            auto contacts = contact_svc.list_party_contact_informations_by_party_as_of(
-                id_uuid, current->recorded_at, window_end);
+            auto contacts = contact_svc.list_party_contact_informations_by_party_id_as_of(
+                req->id, current->recorded_at, window_end);
 
             BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,

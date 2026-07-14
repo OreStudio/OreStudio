@@ -193,7 +193,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                     ev::domain::entity_change_event{
                         .entity = "ores.refdata.counterparty_contact_information",
                         .timestamp = e.timestamp,
-                        .entity_ids = e.ids,
+                        .entity_ids = e.counterparty_contact_information_ids,
                         .tenant_id = e.tenant_id});
             });
 
@@ -205,7 +205,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                     ev::domain::event_traits<rdev::counterparty_identifier_changed_event>::name),
                 ev::domain::entity_change_event{.entity = "ores.refdata.counterparty_identifier",
                                                 .timestamp = e.timestamp,
-                                                .entity_ids = e.ids,
+                                                .entity_ids = e.counterparty_identifier_ids,
                                                 .tenant_id = e.tenant_id});
         });
 
@@ -251,7 +251,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                     ev::domain::event_traits<rdev::party_contact_information_changed_event>::name),
                 ev::domain::entity_change_event{.entity = "ores.refdata.party_contact_information",
                                                 .timestamp = e.timestamp,
-                                                .entity_ids = e.ids,
+                                                .entity_ids = e.party_contact_information_ids,
                                                 .tenant_id = e.tenant_id});
         });
 
@@ -262,7 +262,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 std::string(ev::domain::event_traits<rdev::party_identifier_changed_event>::name),
                 ev::domain::entity_change_event{.entity = "ores.refdata.party_identifier",
                                                 .timestamp = e.timestamp,
-                                                .entity_ids = e.ids,
+                                                .entity_ids = e.party_identifier_ids,
                                                 .tenant_id = e.tenant_id});
         });
 

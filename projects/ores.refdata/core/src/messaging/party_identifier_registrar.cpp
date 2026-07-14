@@ -44,6 +44,10 @@ register_party_identifier_handlers(ores::nats::service::client& nats,
         delete_party_identifier_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->remove(std::move(msg));
         }));
+    subs.push_back(
+        nats.queue_subscribe(get_party_identifier_history_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_party_identifiers_by_party_id_request::nats_subject,
         queue_group,

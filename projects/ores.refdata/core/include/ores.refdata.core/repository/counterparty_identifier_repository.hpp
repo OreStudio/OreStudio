@@ -105,6 +105,7 @@ public:
     std::uint32_t
     get_total_counterparty_identifier_count_by_counterparty_id(context ctx,
                                                                const std::string& counterparty_id);
+
     /**
      * @brief Reads counterparty identifiers filtered by counterparty_id that were live at
      * any point during [valid_from_bound, valid_to_bound) — i.e. the set of
@@ -121,7 +122,6 @@ public:
                                   const std::string& counterparty_id,
                                   std::chrono::system_clock::time_point valid_from_bound,
                                   std::chrono::system_clock::time_point valid_to_bound);
-
     /**
      * @brief Reads latest counterparty identifiers with pagination support.
      * @param ctx Repository context with database connection

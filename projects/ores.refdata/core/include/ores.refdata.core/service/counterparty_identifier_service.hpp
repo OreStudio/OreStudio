@@ -96,6 +96,7 @@ public:
      */
     std::uint32_t
     count_counterparty_identifiers_by_counterparty_id(const std::string& counterparty_id);
+
     /**
      * @brief Lists counterparty identifiers filtered by counterparty_id that were live at
      * any point during a parent version's own [valid_from, valid_to) window.

@@ -29,10 +29,24 @@ namespace ores::refdata::eventing {
 
 /**
  * @brief Domain event indicating that party identifier data has changed.
+ *
+ * Published when any party identifier entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct party_identifier_changed_event final {
+    /**
+     * @brief The timestamp of when the change occurred (in UTC).
+     */
     std::chrono::system_clock::time_point timestamp;
-    std::vector<std::string> ids;
+
+    /**
+     * @brief Changed party identifier UUIDs (as strings).
+     */
+    std::vector<std::string> party_identifier_ids;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
     std::string tenant_id;
 };
 
@@ -40,6 +54,9 @@ struct party_identifier_changed_event final {
 
 namespace ores::eventing::domain {
 
+/**
+ * @brief Event traits specialization for party_identifier_changed_event.
+ */
 template <>
 struct event_traits<ores::refdata::eventing::party_identifier_changed_event> {
     static constexpr std::string_view name = "ores.refdata.party_identifier_changed";

@@ -25,11 +25,13 @@
 #include "ores.refdata.api/domain/asset_class_code.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.api/domain/calendar_type.hpp"
+#include "ores.refdata.api/domain/contact_type.hpp"
 #include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/domain/crm_topology_config.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.api/domain/instrument_code.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
+#include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include "ores.refdata.api/domain/party_status.hpp"
 #include "ores.refdata.api/domain/party_type.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"
@@ -294,6 +296,28 @@ fetch_party_types(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::party_status>, QString>
 fetch_party_statuses(ClientManager* cm);
+
+/**
+ * @brief Fetches all party id schemes from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by PartyIdentifier's and CounterpartyIdentifier's id_scheme
+ * combo. Returns an error message on failure, distinguishing it from
+ * a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::party_id_scheme>, QString>
+fetch_party_id_schemes(ClientManager* cm);
+
+/**
+ * @brief Fetches all contact types from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by PartyContactInformation's and CounterpartyContactInformation's
+ * contact_type combo. Returns an error message on failure, distinguishing
+ * it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::contact_type>, QString>
+fetch_contact_types(ClientManager* cm);
 
 /**
  * @brief Fetches all CRM topology configs from the server.

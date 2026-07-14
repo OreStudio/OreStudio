@@ -47,7 +47,7 @@ Log in as =tenant_admin@barclays_plc= / =Secure-Password-123=, select
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** Books list shows a Functional Currency column (not Ledger Ccy)
 
@@ -61,7 +61,7 @@ banner.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** Detail dialog shows the Functional Currency combo (not Ledger Currency)
 
@@ -76,7 +76,7 @@ newly-selected flag/code, and Version increments by 1.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** History dialog shows the Functional Currency change
 
@@ -89,7 +89,7 @@ the history dialog only closes the sub-window, not the whole app.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
 
 ** No error toast or log error during the whole flow
 
@@ -101,16 +101,17 @@ ERROR-level line.
 
 | Field  | Value |
 |--------+-------|
-| Status | |
+| Status | PASS |
+| Notes  | check logs |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-07-14T16:30:18Z |
+| Branch        | feature/rename-ledger-ccy-to-functional-currency |
+| Commit        | b4243a811 |
+| Worktree      | bright_faraday |
 
 * Notes

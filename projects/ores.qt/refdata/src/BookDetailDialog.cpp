@@ -188,7 +188,7 @@ void BookDetailDialog::setBook(const refdata::domain::book& book) {
 
 void BookDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->idEdit->setReadOnly(!createMode);
+    ui_->idEdit->setReadOnly(true);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {

@@ -19,6 +19,8 @@
  */
 #include "ores.refdata.api/generators/currency_country_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include <atomic>
+#include <string>
 
 namespace ores::refdata::generators {
 
@@ -29,11 +31,20 @@ generate_synthetic_currency_country(utility::generation::generation_context& ctx
     const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
     const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
+    // The composite key is (currency_iso_code, country_alpha2_code), and
+    // neither field carries any other per-call-unique data (unlike e.g.
+    // party_country's randomly generated party_id) -- an incrementing
+    // suffix on the currency code is the only way to guarantee that
+    // repeated calls (generate_synthetic_currency_countries) don't
+    // collide on the same key.
+    static std::atomic<std::size_t> counter{0};
+    const auto suffix = std::to_string(++counter);
+
     domain::currency_country r;
     r.version = 1;
     r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value_or(
         utility::uuid::tenant_id::system());
-    r.currency_iso_code = "USD";
+    r.currency_iso_code = "X" + suffix;
     r.country_alpha2_code = "US";
     r.modified_by = modified_by;
     r.performed_by = modified_by;

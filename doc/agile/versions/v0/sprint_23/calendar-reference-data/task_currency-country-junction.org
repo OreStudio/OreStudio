@@ -80,7 +80,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Missing drop script for the new table (all 3 review passes) | projects/ores.sql/drop/refdata/refdata_currency_country_drop.sql | Accepted | Added, mirroring refdata_party_countries_drop.sql; wired into refdata_drop.sql before currencies/countries drop |
+| 2 | generate_synthetic_currency_country hardcodes both composite-key fields, so generate_synthetic_currency_countries(n) produces n identical rows | projects/ores.refdata/api/src/generators/currency_country_generator.cpp | Accepted | Vary currency_iso_code per call via an atomic counter suffix, matching the "X" + counter convention currency's own synthetic generator uses |
+| 3 | Missing repository-level tests vs. the cited party_country precedent | projects/ores.refdata/core/tests/repository_currency_country_repository_tests.cpp | Accepted | Added, mirroring repository_party_country_repository_tests.cpp (write single/multiple, read by currency/country, remove, remove_by_currency, read nonexistent) |
+| 4 | ES breaks alphabetical ordering in the countries seed | projects/ores.sql/populate/refdata/refdata_countries_populate.sql | Accepted | Moved after DK |
 
 * Result
 

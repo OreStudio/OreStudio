@@ -132,6 +132,20 @@ market_data_client::list_observations(const std::string& series_id) {
     return std::move(resp->market_observations);
 }
 
+std::expected<std::vector<domain::market_observation>, std::string>
+market_data_client::list_observations_page(const std::string& series_id,
+                                            std::uint32_t offset,
+                                            std::uint32_t limit) {
+    messaging::get_market_observations_request req;
+    req.series_id = series_id;
+    req.offset = offset;
+    req.limit = limit;
+    auto resp = send(nats_, req);
+    if (!resp)
+        return std::unexpected(resp.error());
+    return std::move(resp->market_observations);
+}
+
 std::expected<int, std::string>
 market_data_client::save_observations(const std::vector<domain::market_observation>& observations) {
     int count = 0;

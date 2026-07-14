@@ -87,9 +87,25 @@ public:
 
     /**
      * @brief List observations for a series (limit 10000, first page).
+     *
+     * Prefer list_observations_page() for callers that don't genuinely
+     * need the whole series in one go -- a series with a long tick
+     * history can produce a response larger than NATS's max payload,
+     * which fails silently (the handler completes but the reply never
+     * arrives, so the caller just sees a timeout).
      */
     [[nodiscard]] std::expected<std::vector<domain::market_observation>, std::string>
     list_observations(const std::string& series_id);
+
+    /**
+     * @brief List one bounded page of observations for a series, newest
+     * first (matches the repository's own observation_datetime desc
+     * ordering) -- for callers scanning for a specific observation (e.g.
+     * a vintage date) who only need a handful of rows, not the whole
+     * history.
+     */
+    [[nodiscard]] std::expected<std::vector<domain::market_observation>, std::string>
+    list_observations_page(const std::string& series_id, std::uint32_t offset, std::uint32_t limit);
 
 private:
     ores::nats::service::nats_client& nats_;

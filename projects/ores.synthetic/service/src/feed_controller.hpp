@@ -321,26 +321,42 @@ private:
             return false;
         }
 
-        auto observations = md_client.list_observations(boost::uuids::to_string((*series)->id));
-        if (!observations) {
-            error_detail =
-                "Failed to look up observations for '" + ore_key + "': " + observations.error();
-            return false;
-        }
-        for (const auto& obs : *observations) {
-            if (obs.source == vintage_source && obs.point_id == "SPOT" &&
-                date_part(obs.observation_datetime) == vintage_date) {
-                if (resolved_price) {
-                    try {
-                        *resolved_price = std::stod(obs.value);
-                    } catch (const std::exception& e) {
-                        error_detail = "Vintage observation value '" + obs.value +
-                                       "' is not a valid number: " + e.what();
-                        return false;
-                    }
-                }
-                return true;
+        // Paged scan, not a single unbounded fetch: a series with a long
+        // tick history (this service's own synthetic ticks accumulate
+        // fast) can produce a response larger than NATS's max payload,
+        // which fails silently -- the handler completes server-side but
+        // the reply never arrives, so the caller just sees a timeout.
+        // Observations come back newest-first, so a vintage lookup for a
+        // recent-ish date converges in the first page or two; only a very
+        // old vintage date pays for a full scan.
+        constexpr std::uint32_t page_size = 200;
+        const auto series_id_str = boost::uuids::to_string((*series)->id);
+        std::uint32_t offset = 0;
+        for (;;) {
+            auto observations = md_client.list_observations_page(series_id_str, offset, page_size);
+            if (!observations) {
+                error_detail = "Failed to look up observations for '" + ore_key +
+                               "': " + observations.error();
+                return false;
             }
+            for (const auto& obs : *observations) {
+                if (obs.source == vintage_source && obs.point_id == "SPOT" &&
+                    date_part(obs.observation_datetime) == vintage_date) {
+                    if (resolved_price) {
+                        try {
+                            *resolved_price = std::stod(obs.value);
+                        } catch (const std::exception& e) {
+                            error_detail = "Vintage observation value '" + obs.value +
+                                           "' is not a valid number: " + e.what();
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+            if (observations->size() < page_size)
+                break;
+            offset += page_size;
         }
         error_detail = missing_message();
         return false;

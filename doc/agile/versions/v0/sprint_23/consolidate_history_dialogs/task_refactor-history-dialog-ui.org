@@ -8,7 +8,7 @@
 #+filetags: :consolidate_history_dialogs:sprint_23:v0:
 #+owner: marco
 #+branch: feature/refactor-history-dialog-ui
-#+pr:
+#+pr: 1563
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-12
@@ -127,7 +127,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1563][#1563]] | [qt] Redesign HistoryDialog per Gemini review (currency) |
 
 * Review
 

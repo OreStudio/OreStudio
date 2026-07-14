@@ -148,7 +148,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Narrow, self-healing startup race: a login between Phase 1 (auth_handler subscribed) and Phase 2 (party_cache armed) hits load() with no token, silently degrading that tenant's partition for one request (flagged by 2 of 3 runs) | service_bootstrap_phases.org | Accepted | Documented explicitly as a "Known limitation" section (accepted tradeoff, self-healing, not engineered away) + a Checklist item; no code change (the race itself is by design, not a bug) |
+| 2 | read_for_cache is authentication-only, not tenant-scoped -- any validly-signed token can read any tenant (flagged by all 3 runs) | ores.cpp.nats-handler.nats_handler_header.org, party_handler.hpp | Accepted | Added an explicit code comment on both the archetype and party's hand-written copy warning against copy-pasting this method as a tenant-authorized template |
+| 3 | No test asserts the rendered auth-check/token-provider code actually appears in template output (flagged by all 3 runs) | core.py / templates | Accepted | Added test_read_for_cache_auth_rendering.py rendering both templates against a fixture entity and asserting the auth check, token_provider param, set_token_provider, and Authorization header code all appear |
+| 4 | password captured/passed by value in application.cpp, not moved | application.cpp | No change needed | Reviewer confirmed register_fn is invoked exactly once, so this is correct as-is |
 
 * Result
 

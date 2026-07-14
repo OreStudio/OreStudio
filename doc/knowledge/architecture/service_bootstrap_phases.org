@@ -69,8 +69,14 @@ Everything that makes the service able to *answer* a request:
   *includes the service's own subjects it might later call itself*
   (e.g. IAM's =iam.v1.auth.service-login=).
 
-At the end of Phase 1, the service can correctly answer any request on
-any of its subjects — from another service, or from itself.
+At the end of Phase 1, every subject is subscribed and will *accept* a
+request — from another service, or from itself. That is not quite the
+same as every subject giving its *fully warmed* answer: a handler that
+depends on a Phase-2 activity (e.g. a cache not yet armed/warmed) can
+already be receiving traffic before that activity completes. See
+"Known limitation" below — this is a narrow, self-healing window, not
+a correctness problem, but it is real and worth naming rather than
+implying Phase 1 alone means "fully ready."
 
 ** Phase 2 — Post-Readiness Activities
 
@@ -109,12 +115,14 @@ minting the token and warming the cache (Phase 2) — is the whole fix:
 
 Concretely, inside =ores.iam.core='s =registrar::register_handlers=:
 
-1. *Phase 1*: construct and subscribe =auth_handler=,
-   =account_handler=, =tenant_handler=, every other IAM handler — in
-   whatever order, as long as all of them precede Phase 2.
+1. *Phase 1*: construct =party_cache= (token-less — it's needed by
+   =auth_handler=/=account_handler=/=bootstrap_handler='s
+   constructors), then construct and subscribe every IAM handler
+   (=auth_handler= included) — in whatever order, as long as all of
+   them precede Phase 2.
 2. *Phase 2*: =make_service_token_provider(nats, ctx.service_account(),
-   service_password)= (safe now — =service-login= is live);
-   construct =party_cache= with that provider; call
+   service_password)= (safe now — =service-login= is live); call
+   =party_cache::set_token_provider= to arm it; call
    =warm_and_subscribe_party_cache(tenant_ids)= to do the initial load
    and subscribe to =ores.refdata.party_changed= for future reloads.
 
@@ -128,6 +136,30 @@ called back, e.g. for a reply-and-retry loop that itself needs a
 subject you haven't subscribed yet), but the sharp, self-referential
 failure mode is IAM-specific among today's services.
 
+** Known limitation: a narrow, self-healing startup race
+
+Phase 1 subscribes =auth_handler= (so real login traffic can already
+be arriving) before Phase 2 arms =party_cache= with a token and warms
+it. A login landing in that exact window that triggers a cache miss
+(=auth_ensure_parties_cached=) calls =party_cache::load()= with no
+token provider set yet; since =read_for_cache= now requires a valid
+JWT, that particular load is rejected server-side and
+=party_cache::load()= just logs a warning and returns — leaving that
+one tenant's partition empty for that request. It is self-healing (the
+next cache miss, after Phase 2 completes, succeeds normally) and the
+window is only open for the few subscribe calls between =auth_handler=
+and the end of Phase 2 — but it is a real, if narrow, behavioural
+change from before this pattern existed (previously =read_for_cache=
+had no auth check, so the same race was silently harmless). Accepted
+as-is rather than engineered away, because doing so would mean
+delaying real traffic until Phase 2 completes — a bigger change with
+its own tradeoffs — for a window that is already this narrow and
+self-correcting. If it ever needs to be closed, the options are: gate
+=auth_handler='s subscriptions on Phase 2 completing too (defeats the
+whole point of separating the phases), or have =party_cache::load()=
+distinguish "no token provider yet" from a real auth failure so it is
+diagnosable rather than a generic warning.
+
 ** Checklist
 
 - [ ] Every subject the service owns is subscribed in Phase 1, *before*
@@ -140,6 +172,10 @@ failure mode is IAM-specific among today's services.
   service) are subscribed, and with whatever auth token its subjects
   now require.
 - [ ] =on_started= (heartbeat, etc.) still runs last, as today.
+- [ ] If a Phase-1-subscribed handler depends on a Phase-2 activity
+  (e.g. a cache), confirm the failure mode during that narrow window
+  is self-healing and non-silent-in-a-harmful-way — see "Known
+  limitation" above — not a hard error users would notice.
 
 * See also
 

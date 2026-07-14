@@ -237,7 +237,7 @@ drop function if exists ores_refdata_validate_calendar_fn;
 :qt_settings_version:         1
 :window_title:                Calendars
 :icon:                        CalendarClock
-:has_version_navigation:      true
+:has_version_navigation:      false
 :changed_event_class:         refdata::eventing::calendar_changed_event
 :changed_event_include:       ores.refdata.api/eventing/calendar_changed_event.hpp
 :END:

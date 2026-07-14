@@ -26,7 +26,6 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
-#include "ores.qt/VersionNavigationHelper.hpp"
 #include "ores.refdata.api/eventing/calendar_changed_event.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -351,19 +350,8 @@ void CalendarController::onOpenVersion(const refdata::domain::calendar& calendar
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    // A single version-nav toolbar (first/prev/next/last) only means something
-    // if the dialog has the *full* history to navigate, not just this one
-    // version. When onOpenVersion's sender is the HistoryDialog that
-    // requested it, pull that history across; otherwise fall back to a plain
-    // read-only single-version display.
-    if (!wireVersionHistory<CalendarHistoryDialog>(sender(), detailDialog, versionNumber)) {
-        detailDialog->setCalendar(calendar);
-        detailDialog->setReadOnly(true, versionNumber);
-    }
-    connect(detailDialog,
-            &CalendarDetailDialog::revertRequested,
-            this,
-            &CalendarController::onRevertVersion);
+    detailDialog->setCalendar(calendar);
+    detailDialog->setReadOnly(true);
 
     connect(detailDialog,
             &CalendarDetailDialog::statusMessage,

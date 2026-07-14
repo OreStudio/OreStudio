@@ -82,61 +82,6 @@ void CalendarDetailDialog::setupUi() {
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-
-    toolBar_ = new QToolBar(this);
-    toolBar_->setMovable(false);
-    toolBar_->setFloatable(false);
-
-    revertAction_ = new QAction(tr("Revert"), this);
-    revertAction_->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
-                                                          IconUtils::DefaultIconColor));
-    revertAction_->setToolTip(tr("Revert calendar to this historical version"));
-    connect(revertAction_, &QAction::triggered, this, &CalendarDetailDialog::onRevertClicked);
-    toolBar_->addAction(revertAction_);
-    revertAction_->setVisible(false);
-
-    toolBar_->addSeparator();
-
-    firstVersionAction_ = new QAction(tr("First"), this);
-    firstVersionAction_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::ArrowPrevious, IconUtils::DefaultIconColor));
-    firstVersionAction_->setToolTip(tr("First version"));
-    connect(firstVersionAction_,
-            &QAction::triggered,
-            this,
-            &CalendarDetailDialog::onFirstVersionClicked);
-    toolBar_->addAction(firstVersionAction_);
-    firstVersionAction_->setVisible(false);
-
-    prevVersionAction_ = new QAction(tr("Previous"), this);
-    prevVersionAction_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::ArrowLeft, IconUtils::DefaultIconColor));
-    prevVersionAction_->setToolTip(tr("Previous version"));
-    connect(
-        prevVersionAction_, &QAction::triggered, this, &CalendarDetailDialog::onPrevVersionClicked);
-    toolBar_->addAction(prevVersionAction_);
-    prevVersionAction_->setVisible(false);
-
-    nextVersionAction_ = new QAction(tr("Next"), this);
-    nextVersionAction_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::ArrowRight, IconUtils::DefaultIconColor));
-    nextVersionAction_->setToolTip(tr("Next version"));
-    connect(
-        nextVersionAction_, &QAction::triggered, this, &CalendarDetailDialog::onNextVersionClicked);
-    toolBar_->addAction(nextVersionAction_);
-    nextVersionAction_->setVisible(false);
-
-    lastVersionAction_ = new QAction(tr("Last"), this);
-    lastVersionAction_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::ArrowNext, IconUtils::DefaultIconColor));
-    lastVersionAction_->setToolTip(tr("Last version"));
-    connect(
-        lastVersionAction_, &QAction::triggered, this, &CalendarDetailDialog::onLastVersionClicked);
-    toolBar_->addAction(lastVersionAction_);
-    lastVersionAction_->setVisible(false);
-
-    if (auto* mainLayout = qobject_cast<QVBoxLayout*>(layout()))
-        mainLayout->insertWidget(0, toolBar_);
 }
 
 void CalendarDetailDialog::setupCombos() {}
@@ -187,8 +132,7 @@ void CalendarDetailDialog::markDirty() {
     updateSaveButtonState();
 }
 
-void CalendarDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
-    historicalVersion_ = versionNumber;
+void CalendarDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
@@ -196,115 +140,6 @@ void CalendarDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     ui_->countryCodeCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
-    if (revertAction_)
-        revertAction_->setVisible(readOnly);
-}
-
-void CalendarDetailDialog::setHistory(const std::vector<refdata::domain::calendar>& history,
-                                      int versionNumber) {
-    history_ = history;
-
-    // Find index of the requested version (history is newest-first)
-    currentHistoryIndex_ = 0;
-    for (size_t i = 0; i < history_.size(); ++i) {
-        if (history_[i].version == versionNumber) {
-            currentHistoryIndex_ = static_cast<int>(i);
-            break;
-        }
-    }
-
-    displayCurrentVersion();
-    showVersionNavActions(true);
-}
-
-void CalendarDetailDialog::displayCurrentVersion() {
-    if (history_.empty() || currentHistoryIndex_ < 0 ||
-        currentHistoryIndex_ >= static_cast<int>(history_.size())) {
-        return;
-    }
-
-    const auto& version = history_[currentHistoryIndex_];
-    setCalendar(version);
-    setReadOnly(true, version.version);
-    updateVersionNavButtonStates();
-}
-
-void CalendarDetailDialog::updateVersionNavButtonStates() {
-    if (history_.empty()) {
-        showVersionNavActions(false);
-        return;
-    }
-
-    bool atOldest = (currentHistoryIndex_ == static_cast<int>(history_.size()) - 1);
-    bool atNewest = (currentHistoryIndex_ == 0);
-
-    if (firstVersionAction_)
-        firstVersionAction_->setEnabled(!atOldest); // Go to oldest
-    if (prevVersionAction_)
-        prevVersionAction_->setEnabled(!atOldest); // Go to older
-    if (nextVersionAction_)
-        nextVersionAction_->setEnabled(!atNewest); // Go to newer
-    if (lastVersionAction_)
-        lastVersionAction_->setEnabled(!atNewest); // Go to latest
-}
-
-void CalendarDetailDialog::showVersionNavActions(bool visible) {
-    if (firstVersionAction_)
-        firstVersionAction_->setVisible(visible);
-    if (prevVersionAction_)
-        prevVersionAction_->setVisible(visible);
-    if (nextVersionAction_)
-        nextVersionAction_->setVisible(visible);
-    if (lastVersionAction_)
-        lastVersionAction_->setVisible(visible);
-}
-
-void CalendarDetailDialog::onFirstVersionClicked() {
-    if (history_.empty())
-        return;
-    currentHistoryIndex_ = static_cast<int>(history_.size()) - 1;
-    displayCurrentVersion();
-}
-
-void CalendarDetailDialog::onPrevVersionClicked() {
-    if (history_.empty())
-        return;
-    if (currentHistoryIndex_ < static_cast<int>(history_.size()) - 1) {
-        ++currentHistoryIndex_;
-        displayCurrentVersion();
-    }
-}
-
-void CalendarDetailDialog::onNextVersionClicked() {
-    if (history_.empty())
-        return;
-    if (currentHistoryIndex_ > 0) {
-        --currentHistoryIndex_;
-        displayCurrentVersion();
-    }
-}
-
-void CalendarDetailDialog::onLastVersionClicked() {
-    if (history_.empty())
-        return;
-    currentHistoryIndex_ = 0;
-    displayCurrentVersion();
-}
-
-void CalendarDetailDialog::onRevertClicked() {
-    auto reply = MessageBoxHelper::question(
-        this,
-        tr("Revert Calendar"),
-        tr("Are you sure you want to revert '%1' to version %2?\n\n"
-           "This will create a new version with the data from version %2.")
-            .arg(code())
-            .arg(historicalVersion_),
-        QMessageBox::Yes | QMessageBox::No);
-
-    if (reply != QMessageBox::Yes)
-        return;
-
-    emit revertRequested(calendar_);
 }
 
 void CalendarDetailDialog::populateCalendarTypeCombo() {
@@ -321,7 +156,11 @@ void CalendarDetailDialog::populateCalendarTypeCombo() {
         [this]() { return QString::fromStdString(calendar_.calendar_type); },
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load calendar types: %1").arg(error));
-        });
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); });
 }
 void CalendarDetailDialog::populateCountryCodeCombo() {
     BOOST_LOG_SEV(lg(), debug) << "Populating country_code combo";
@@ -337,13 +176,27 @@ void CalendarDetailDialog::populateCountryCodeCombo() {
         [this]() { return QString::fromStdString(calendar_.country_code); },
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load countries: %1").arg(error));
-        });
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.alpha2_code); });
 }
 void CalendarDetailDialog::updateUiFromCalendar() {
     ui_->codeEdit->setText(QString::fromStdString(calendar_.code));
     ui_->nameEdit->setText(QString::fromStdString(calendar_.name));
-    ui_->calendarTypeCombo->setCurrentText(QString::fromStdString(calendar_.calendar_type));
-    ui_->countryCodeCombo->setCurrentText(QString::fromStdString(calendar_.country_code));
+    {
+        const auto val = QString::fromStdString(calendar_.calendar_type);
+        const int idx = ui_->calendarTypeCombo->findData(val);
+        if (idx >= 0)
+            ui_->calendarTypeCombo->setCurrentIndex(idx);
+    }
+    {
+        const auto val = QString::fromStdString(calendar_.country_code);
+        const int idx = ui_->countryCodeCombo->findData(val);
+        if (idx >= 0)
+            ui_->countryCodeCombo->setCurrentIndex(idx);
+    }
 
     populateProvenance(calendar_.version,
                        calendar_.modified_by,

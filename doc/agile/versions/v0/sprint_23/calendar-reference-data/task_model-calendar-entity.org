@@ -85,7 +85,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | generate_quantlib_calendars() seed data unreachable via any populate path (two independent reviewer passes converged on this) | projects/ores.sql/populate/refdata/refdata_calendars_populate.sql | Accepted | Added SQL populate script mirroring the C++ generator's 60-row seed exactly; also had to expand refdata_countries_populate.sql with real ISO data for the ~39 countries the calendar seed references (only the ZZ sentinel existed before) |
 
 * Result
 

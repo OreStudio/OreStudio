@@ -23,11 +23,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.refdata.api/domain/calendar.hpp"
-#include <QAction>
-#include <QToolBar>
 #include <vector>
 
 
@@ -64,19 +61,7 @@ public:
     void setUsername(const std::string& username);
     void setCalendar(const refdata::domain::calendar& calendar);
     void setCreateMode(bool createMode);
-    void setReadOnly(bool readOnly, int versionNumber = 0);
-
-    /**
-     * @brief Sets the history for version navigation.
-     *
-     * Shows a navigation toolbar allowing the user to navigate between
-     * versions (first/prev/next/last); the flag is grayed out for
-     * non-latest versions.
-     *
-     * @param history All versions ordered newest-first (index 0 is latest)
-     * @param versionNumber The version number to initially display
-     */
-    void setHistory(const std::vector<refdata::domain::calendar>& history, int versionNumber);
+    void setReadOnly(bool readOnly);
 
     /**
      * @brief Force the dialog into the unsaved-changes state.
@@ -92,22 +77,11 @@ signals:
     void calendarSaved(const QString& code);
     void calendarDeleted(const QString& code);
 
-    /**
-     * @brief Emitted when user requests to revert to the displayed historical version.
-     * @param calendar The calendar data to revert to.
-     */
-    void revertRequested(const refdata::domain::calendar& calendar);
-
 private slots:
     void onSaveClicked();
     void onDeleteClicked();
     void onCodeChanged(const QString& text);
     void onFieldChanged();
-    void onRevertClicked();
-    void onFirstVersionClicked();
-    void onPrevVersionClicked();
-    void onNextVersionClicked();
-    void onLastVersionClicked();
 
 protected:
     QTabWidget* tabWidget() const override;
@@ -132,10 +106,6 @@ private:
     void populateCountryCodeCombo();
 
 
-    void displayCurrentVersion();
-    void updateVersionNavButtonStates();
-    void showVersionNavActions(bool visible);
-
     Ui::CalendarDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
@@ -143,16 +113,6 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
-
-    QToolBar* toolBar_{nullptr};
-    QAction* revertAction_{nullptr};
-    QAction* firstVersionAction_{nullptr};
-    QAction* prevVersionAction_{nullptr};
-    QAction* nextVersionAction_{nullptr};
-    QAction* lastVersionAction_{nullptr};
-    std::vector<refdata::domain::calendar> history_;
-    int currentHistoryIndex_{0};
-    int historicalVersion_{0};
 };
 
 }

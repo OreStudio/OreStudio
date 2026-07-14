@@ -83,7 +83,7 @@ std::vector<domain::calendar> calendar_repository::read_all(context ctx, const s
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<calendar_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<calendar_entity, domain::calendar>(
         ctx,

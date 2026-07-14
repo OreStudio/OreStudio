@@ -58,14 +58,6 @@ public:
     void loadHistory() override;
     [[nodiscard]] QString code() const override;
 
-    /**
-     * @brief The full loaded version list (newest first), for wiring a
-     * just-opened version DetailDialog's first/prev/next/last navigation.
-     */
-    [[nodiscard]] const std::vector<refdata::domain::calendar>& getHistory() const {
-        return versions_;
-    }
-
 signals:
     void openVersionRequested(const refdata::domain::calendar& calendar, int versionNumber);
     void revertVersionRequested(const refdata::domain::calendar& calendar);

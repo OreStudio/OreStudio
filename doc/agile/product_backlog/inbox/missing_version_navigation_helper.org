@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 16757C43-FC01-49C5-8183-81BEBA4DD96D
+:END:
+#+title: VersionNavigationHelper.hpp referenced by codegen but never created
+#+description: cpp_qt_controller.cpp.mustache's has_version_navigation feature includes ores.qt/VersionNavigationHelper.hpp and calls wireVersionHistory<>, but that header doesn't exist anywhere in the repo -- any entity regenerated with has_version_navigation:true fails to compile.
+#+type: capture
+#+level: cross
+#+filetags: :qt:codegen:build:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.codegen/library/templates/cpp_qt_controller.cpp.mustache=
+has a =has_version_navigation= feature (a version-nav toolbar with
+first/prev/next/last, wired via a =wireVersionHistory<>= template
+function) that =#include=s =ores.qt/VersionNavigationHelper.hpp= and
+calls =wireVersionHistory<>=, but that header does not exist anywhere
+in the repository. Discovered while regenerating =calendar= with
+=has_version_navigation: true= (matching =currency='s own setting) —
+the build failed with =fatal error: 'ores.qt/VersionNavigationHelper.hpp'
+file not found=. =currency='s own generated =CurrencyController.cpp=
+predates this template feature and was never regenerated since, so
+nobody had hit this until now. Worked around by setting
+=has_version_navigation: false= on =calendar= for the time being.
+
+Either implement =VersionNavigationHelper.hpp= (with the
+=wireVersionHistory<>= template function the mustache template
+expects), or remove the =has_version_navigation= feature from the
+template until it's actually built.
+
+* Why
+
+Any entity regenerated with =has_version_navigation: true= will fail
+to compile until this is fixed — a latent trap for the next
+=ores.codegen.entity= entity or =entity generate= re-run that touches
+this flag.
+
+* References
+
+- =projects/ores.codegen/library/templates/cpp_qt_controller.cpp.mustache= — lines ~21-23 and ~438-451, the two =has_version_navigation= gated blocks.
+- =projects/ores.refdata/modeling/ores.refdata.calendar.org= — worked around here with =has_version_navigation: false=.
+
+* See also
+
+- [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model calendars as proper ORE Studio reference data]] — where this was discovered.

@@ -34,6 +34,14 @@
 \ir ./refdata_tenor_kinds_notify_trigger_drop.sql
 \ir ./refdata_tenor_kinds_drop.sql
 
+-- CRM topology (driver/derived pairs depend on crm_topology_configs; drop first)
+\ir ./refdata_crm_driver_pairs_notify_trigger_drop.sql
+\ir ./refdata_crm_driver_pairs_drop.sql
+\ir ./refdata_crm_enabled_derived_pairs_notify_trigger_drop.sql
+\ir ./refdata_crm_enabled_derived_pairs_drop.sql
+\ir ./refdata_crm_topology_configs_notify_trigger_drop.sql
+\ir ./refdata_crm_topology_configs_drop.sql
+
 -- ORE conventions (no dependants, drop first)
 \ir ./refdata_cds_conventions_notify_trigger_drop.sql
 \ir ./refdata_cds_conventions_drop.sql

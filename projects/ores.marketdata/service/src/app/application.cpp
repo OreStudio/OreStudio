@@ -23,11 +23,11 @@
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
-#include "ores.marketdata.api/eventing/crm_driver_pair_changed_event.hpp"
-#include "ores.marketdata.api/eventing/crm_topology_config_changed_event.hpp"
 #include "ores.marketdata.api/eventing/feed_binding_changed_event.hpp"
 #include "ores.marketdata.api/messaging/crm_protocol.hpp"
 #include "ores.marketdata.core/messaging/registrar.hpp"
+#include "ores.refdata.api/eventing/crm_driver_pair_changed_event.hpp"
+#include "ores.refdata.api/eventing/crm_topology_config_changed_event.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
@@ -105,6 +105,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     namespace ev = ores::eventing;
     namespace mdev = ores::marketdata::eventing;
+    namespace rdev = ores::refdata::eventing;
     ev::service::event_bus event_bus;
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
     ev::service::registrar::register_mapping<mdev::feed_binding_changed_event>(
@@ -115,19 +116,17 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             ingest->refresh();
         });
 
-    ev::service::registrar::register_mapping<mdev::crm_topology_config_changed_event>(
-        event_source,
-        "ores.marketdata.crm_topology_config",
-        "ores_marketdata_crm_topology_configs");
-    ev::service::registrar::register_mapping<mdev::crm_driver_pair_changed_event>(
-        event_source, "ores.marketdata.crm_driver_pair", "ores_marketdata_crm_driver_pairs");
-    auto crm_topology_sub = event_bus.subscribe<mdev::crm_topology_config_changed_event>(
-        [crm_bridge](const mdev::crm_topology_config_changed_event&) {
+    ev::service::registrar::register_mapping<rdev::crm_topology_config_changed_event>(
+        event_source, "ores.refdata.crm_topology_config", "ores_refdata_crm_topology_configs");
+    ev::service::registrar::register_mapping<rdev::crm_driver_pair_changed_event>(
+        event_source, "ores.refdata.crm_driver_pair", "ores_refdata_crm_driver_pairs");
+    auto crm_topology_sub = event_bus.subscribe<rdev::crm_topology_config_changed_event>(
+        [crm_bridge](const rdev::crm_topology_config_changed_event&) {
             BOOST_LOG_SEV(lg(), info) << "CRM topology config changed — refreshing CRM engines.";
             crm_bridge->refresh();
         });
-    auto crm_driver_pair_sub = event_bus.subscribe<mdev::crm_driver_pair_changed_event>(
-        [crm_bridge](const mdev::crm_driver_pair_changed_event&) {
+    auto crm_driver_pair_sub = event_bus.subscribe<rdev::crm_driver_pair_changed_event>(
+        [crm_bridge](const rdev::crm_driver_pair_changed_event&) {
             BOOST_LOG_SEV(lg(), info) << "CRM driver pair changed — refreshing CRM engines.";
             crm_bridge->refresh();
         });

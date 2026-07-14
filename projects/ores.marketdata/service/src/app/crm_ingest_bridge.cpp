@@ -22,12 +22,12 @@
 #include "ores.analytics.quant/domain/driver_quote.hpp"
 #include "ores.analytics.quant/domain/staleness_policy.hpp"
 #include "ores.analytics.quant/service/topology_builder.hpp"
-#include "ores.marketdata.api/domain/crm_driver_pair.hpp"
-#include "ores.marketdata.api/domain/crm_enabled_derived_pair.hpp"
-#include "ores.marketdata.api/domain/crm_topology_config.hpp"
-#include "ores.marketdata.core/repository/crm_driver_pair_repository.hpp"
-#include "ores.marketdata.core/repository/crm_enabled_derived_pair_repository.hpp"
-#include "ores.marketdata.core/repository/crm_topology_config_repository.hpp"
+#include "ores.refdata.api/domain/crm_driver_pair.hpp"
+#include "ores.refdata.api/domain/crm_enabled_derived_pair.hpp"
+#include "ores.refdata.api/domain/crm_topology_config.hpp"
+#include "ores.refdata.core/repository/crm_driver_pair_repository.hpp"
+#include "ores.refdata.core/repository/crm_enabled_derived_pair_repository.hpp"
+#include "ores.refdata.core/repository/crm_topology_config_repository.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -52,15 +52,16 @@ crm_ingest_bridge::crm_ingest_bridge(ores::database::context ctx)
     , engines_(std::make_shared<const engines_map>()) {}
 
 void crm_ingest_bridge::refresh() {
-    repository::crm_topology_config_repository config_repo;
-    repository::crm_driver_pair_repository driver_repo;
-    repository::crm_enabled_derived_pair_repository derived_repo;
+    ores::refdata::repository::crm_topology_config_repository config_repo;
+    ores::refdata::repository::crm_driver_pair_repository driver_repo;
+    ores::refdata::repository::crm_enabled_derived_pair_repository derived_repo;
 
     const auto configs = config_repo.read_latest_all_tenants(ctx_);
     const auto driver_pairs = driver_repo.read_latest_all_tenants(ctx_);
 
     // Group driver pairs by their owning config_id.
-    std::map<boost::uuids::uuid, std::vector<const domain::crm_driver_pair*>> pairs_by_config;
+    std::map<boost::uuids::uuid, std::vector<const ores::refdata::domain::crm_driver_pair*>>
+        pairs_by_config;
     for (const auto& p : driver_pairs)
         if (p.enabled)
             pairs_by_config[p.config_id].push_back(&p);

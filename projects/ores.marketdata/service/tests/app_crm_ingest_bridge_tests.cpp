@@ -18,13 +18,13 @@
  *
  */
 #include "ores.analytics.quant/domain/rate_status.hpp"
-#include "ores.marketdata.api/domain/crm_driver_pair.hpp"
-#include "ores.marketdata.api/domain/crm_enabled_derived_pair.hpp"
-#include "ores.marketdata.api/domain/crm_topology_config.hpp"
-#include "ores.marketdata.core/repository/crm_driver_pair_repository.hpp"
-#include "ores.marketdata.core/repository/crm_enabled_derived_pair_repository.hpp"
-#include "ores.marketdata.core/repository/crm_topology_config_repository.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
+#include "ores.refdata.api/domain/crm_driver_pair.hpp"
+#include "ores.refdata.api/domain/crm_enabled_derived_pair.hpp"
+#include "ores.refdata.api/domain/crm_topology_config.hpp"
+#include "ores.refdata.core/repository/crm_driver_pair_repository.hpp"
+#include "ores.refdata.core/repository/crm_enabled_derived_pair_repository.hpp"
+#include "ores.refdata.core/repository/crm_topology_config_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -36,12 +36,12 @@ namespace {
 
 const std::string tags("[app][crm]");
 
-using ores::marketdata::domain::crm_driver_pair;
-using ores::marketdata::domain::crm_enabled_derived_pair;
-using ores::marketdata::domain::crm_topology_config;
-using ores::marketdata::repository::crm_driver_pair_repository;
-using ores::marketdata::repository::crm_enabled_derived_pair_repository;
-using ores::marketdata::repository::crm_topology_config_repository;
+using ores::refdata::domain::crm_driver_pair;
+using ores::refdata::domain::crm_enabled_derived_pair;
+using ores::refdata::domain::crm_topology_config;
+using ores::refdata::repository::crm_driver_pair_repository;
+using ores::refdata::repository::crm_enabled_derived_pair_repository;
+using ores::refdata::repository::crm_topology_config_repository;
 using ores::marketdata::service::app::crm_ingest_bridge;
 using ores::testing::database_helper;
 

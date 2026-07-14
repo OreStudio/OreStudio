@@ -157,6 +157,12 @@
 \ir ./refdata_overnight_index_conventions_notify_trigger_create.sql
 \ir ./refdata_cds_conventions_create.sql
 \ir ./refdata_cds_conventions_notify_trigger_create.sql
+\ir ./refdata_crm_topology_configs_create.sql
+\ir ./refdata_crm_topology_configs_notify_trigger_create.sql
+\ir ./refdata_crm_driver_pairs_create.sql
+\ir ./refdata_crm_driver_pairs_notify_trigger_create.sql
+\ir ./refdata_crm_enabled_derived_pairs_create.sql
+\ir ./refdata_crm_enabled_derived_pairs_notify_trigger_create.sql
 \ir ./refdata_publish_from_dq_create.sql
 
 -- Tenor code lookups: kinds/units (referenced by tenors), anchors and

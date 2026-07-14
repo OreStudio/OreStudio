@@ -159,10 +159,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
             nats.queue_subscribe("marketdata.v1.market-data-observations.publish-from-dq",
                                  queue,
                                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe("marketdata.v1.crm-topology-bundles.publish-from-dq",
-                                 queue,
-                                 [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
     }
 
     return subs;

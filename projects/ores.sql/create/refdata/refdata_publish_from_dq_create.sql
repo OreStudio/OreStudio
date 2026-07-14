@@ -2870,3 +2870,170 @@ begin
     where v_inserted > 0;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- CRM Topology Bundles: refdata.v1.crm-topology-bundles.publish-from-dq
+-- =============================================================================
+
+/**
+ * CRM Topology Bundles Publish-from-DQ Function
+ *
+ * SECURITY DEFINER function called by the refdata service's NATS
+ * handler for the refdata.v1.crm-topology-bundles.publish-from-dq
+ * subject. Reads ores_dq_crm_topology_bundles_artefact_tbl (system
+ * tenant) and writes crm_topology_config/crm_driver_pair/
+ * crm_enabled_derived_pair rows for the target (tenant, party) --
+ * one config per distinct crm_name in the artefact, its driver
+ * pairs/enabled derived pairs from that crm_name's rows.
+ *
+ * Idempotent by natural key at every level (config: tenant/party/name;
+ * pair: tenant/party/config_id/base/quote) -- re-publishing never
+ * duplicates a config or a pair that already exists; new pairs added to
+ * the artefact for an already-published crm_name are picked up on
+ * re-publish, matching insert_only semantics (this function has no
+ * upsert/replace_all modes: CRM topology is provisioning seed data, not
+ * a live feed, so there is nothing to overwrite once a party has its
+ * own configs).
+ */
+
+create or replace function ores_refdata_publish_crm_topology_bundles_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'insert_only',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_target_party_id uuid;
+    v_dataset_name text;
+    v_inserted bigint := 0;
+    v_skipped bigint := 0;
+    r_crm record;
+    r_pair record;
+    v_config_id uuid;
+    v_actor text;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    v_target_party_id := (p_params ->> 'party_id')::uuid;
+    if v_target_party_id is null then
+        raise exception 'p_params.party_id is required to publish CRM topology bundles';
+    end if;
+
+    v_actor := coalesce(ores_iam_current_service_fn(), current_user);
+
+    for r_crm in
+        select distinct crm_name, pivot_currency_code
+        from ores_dq_crm_topology_bundles_artefact_tbl
+        where dataset_id = p_dataset_id
+          and tenant_id = ores_utility_system_tenant_id_fn()
+        order by crm_name
+    loop
+        select id into v_config_id
+        from ores_refdata_crm_topology_configs_tbl
+        where tenant_id = p_target_tenant_id
+          and party_id = v_target_party_id
+          and name = r_crm.crm_name
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        if v_config_id is null then
+            v_config_id := gen_random_uuid();
+            insert into ores_refdata_crm_topology_configs_tbl (
+                id, tenant_id, version, party_id, name, pivot_currency_code, enabled,
+                modified_by, performed_by, change_reason_code, change_commentary,
+                valid_from, valid_to
+            ) values (
+                v_config_id, p_target_tenant_id, 0, v_target_party_id,
+                r_crm.crm_name, r_crm.pivot_currency_code, true,
+                v_actor, current_user,
+                'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name,
+                current_timestamp, ores_utility_infinity_timestamp_fn()
+            );
+            v_inserted := v_inserted + 1;
+        else
+            v_skipped := v_skipped + 1;
+        end if;
+
+        for r_pair in
+            select base_currency_code, quote_currency_code, row_kind
+            from ores_dq_crm_topology_bundles_artefact_tbl
+            where dataset_id = p_dataset_id
+              and tenant_id = ores_utility_system_tenant_id_fn()
+              and crm_name = r_crm.crm_name
+            order by row_kind, base_currency_code, quote_currency_code
+        loop
+            if r_pair.row_kind = 'driver' then
+                if not exists (
+                    select 1 from ores_refdata_crm_driver_pairs_tbl
+                    where tenant_id = p_target_tenant_id
+                      and party_id = v_target_party_id
+                      and config_id = v_config_id
+                      and base_currency_code = r_pair.base_currency_code
+                      and quote_currency_code = r_pair.quote_currency_code
+                      and valid_to = ores_utility_infinity_timestamp_fn()
+                ) then
+                    insert into ores_refdata_crm_driver_pairs_tbl (
+                        id, tenant_id, version, party_id, config_id,
+                        base_currency_code, quote_currency_code, enabled,
+                        modified_by, performed_by, change_reason_code, change_commentary,
+                        valid_from, valid_to
+                    ) values (
+                        gen_random_uuid(), p_target_tenant_id, 0, v_target_party_id, v_config_id,
+                        r_pair.base_currency_code, r_pair.quote_currency_code, true,
+                        v_actor, current_user,
+                        'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name,
+                        current_timestamp, ores_utility_infinity_timestamp_fn()
+                    );
+                    v_inserted := v_inserted + 1;
+                else
+                    v_skipped := v_skipped + 1;
+                end if;
+            elsif r_pair.row_kind = 'derived' then
+                if not exists (
+                    select 1 from ores_refdata_crm_enabled_derived_pairs_tbl
+                    where tenant_id = p_target_tenant_id
+                      and party_id = v_target_party_id
+                      and config_id = v_config_id
+                      and base_currency_code = r_pair.base_currency_code
+                      and quote_currency_code = r_pair.quote_currency_code
+                      and valid_to = ores_utility_infinity_timestamp_fn()
+                ) then
+                    insert into ores_refdata_crm_enabled_derived_pairs_tbl (
+                        id, tenant_id, version, party_id, config_id,
+                        base_currency_code, quote_currency_code, enabled,
+                        modified_by, performed_by, change_reason_code, change_commentary,
+                        valid_from, valid_to
+                    ) values (
+                        gen_random_uuid(), p_target_tenant_id, 0, v_target_party_id, v_config_id,
+                        r_pair.base_currency_code, r_pair.quote_currency_code, true,
+                        v_actor, current_user,
+                        'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name,
+                        current_timestamp, ores_utility_infinity_timestamp_fn()
+                    );
+                    v_inserted := v_inserted + 1;
+                else
+                    v_skipped := v_skipped + 1;
+                end if;
+            else
+                raise exception 'Unclassified row_kind: % - extend this function', r_pair.row_kind;
+            end if;
+        end loop;
+    end loop;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'skipped'::text, v_skipped
+    where v_skipped > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;

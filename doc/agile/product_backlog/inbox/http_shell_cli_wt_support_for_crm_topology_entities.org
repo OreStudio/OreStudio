@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: AFF9D59A-AFCF-4A11-BDA3-BC5F51947EF0
+:END:
+#+title: HTTP/CLI/shell/Wt support for CRM topology entities
+#+description: crm_topology_config, crm_driver_pair, and crm_enabled_derived_pair got domain/repository/service/messaging/Qt via codegen; HTTP REST endpoints, ores.cli commands, ores.shell REPL commands, and Wt web UI were deferred (matching the contact_type precedent) and still need commissioning.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:crm:http:cli:shell:wt:
+#+created: 2026-07-14
+#+updated: 2026-07-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Commission =ores.http.server= REST endpoints, =ores.cli= commands,
+=ores.shell= REPL commands, and Wt web UI for =crm_topology_config=,
+=crm_driver_pair=, and =crm_enabled_derived_pair= via the respective
+codegen entity-creator skills (=codegen-add-http-entity=,
+=codegen-add-cli-entity=, =codegen-add-shell-entity=,
+=codegen-add-wt-entity=).
+
+* Why
+
+[[id:751DE13E-8851-436B-B0BC-DED1BDC25E5F][The full-stack codegen task]] delivered domain/repository/service/
+messaging/Qt for all three CRM topology entities, but stopped there --
+matching the precedent already captured separately for =contact_type=
+(=http_rest_endpoints_for_contact_type.org=,
+=cli_support_for_contact_type.org=,
+=shell_repl_support_for_contact_type.org=,
+=wt_web_ui_support_for_contact_type.org=). These entities are only
+reachable via the Qt desktop client today; no REST, CLI, shell, or web
+access exists.
+
+* References
+
+- [[id:751DE13E-8851-436B-B0BC-DED1BDC25E5F][Task: Codegen full-stack CRM topology entities (config, driver pair, derived pair) with refdata UI]]
+
+* See also
+
+- [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]]

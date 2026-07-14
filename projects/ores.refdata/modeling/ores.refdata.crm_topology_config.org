@@ -1,0 +1,249 @@
+:PROPERTIES:
+:ID: 3F8C1A2D-6B4E-4A9F-8D2C-1E7A9B5C3F0D
+:ores.cpp.qt.enabled: true
+:END:
+#+title: ores.refdata.crm_topology_config
+#+description: Codegen entity model for the refdata crm_topology_config table; a named, party-scoped CRM topology (pivot currency) for ores.analytics.quant.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:crm:
+#+entity_singular: crm_topology_config
+#+entity_plural: crm_topology_configs
+#+entity_title: CRM Topology Config
+#+brief: A named, party-scoped CRM topology config (pivot currency) driving ores.analytics.quant's rate_engine.
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+A top-level container that owns the [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree topology]]'s pivot currency
+and the set of [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][CRM]] driver pairs (=crm_driver_pair=, a separate,
+=config_id=-referencing entity) that hang off it. =ores.marketdata.service=
+reads the enabled config per (tenant, party) and its enabled driver pairs,
+feeds them through =ores.analytics.quant::topology_builder::build=, and
+keeps one =service::rate_engine= per (tenant, party) up to date -- see
+[[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]]. Qt UI is deferred to a later task
+(=ores.cpp.qt.enabled: false= above), same as =market_series=.
+
+Scoped to a tenant and a party so each party runs its own, independent
+CRM -- two parties in the same tenant may have entirely different
+topologies and never share an engine.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this configuration.
+
+* Natural keys
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Owning party (legal entity) this CRM topology belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Stable name for this configuration, unique per tenant and party (e.g.
+"primary").
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+* Columns
+
+** pivot_currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO code of the pivot (aggregation) currency every driver pair's path
+runs through (soft FK to currencies) -- see [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][CRM graph topology and
+spanning tree]].
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** enabled
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether this is the active CRM topology for this (tenant, party) --
+=ores.marketdata.service= runs at most one active =rate_engine= per
+(tenant, party); a second config may exist disabled (e.g. while being
+edited) without disrupting the running engine.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_crm_topology_configs_tbl
+:END:
+
+** Checks
+
+| expression                    |
+|--------------------------------|
+| "pivot_currency_code" <> ''   |
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: crm_topology_config
+:entity_plural_short:   crm_topology_configs
+:entity_singular_words: CRM topology config
+:entity_plural_words:   CRM topology configs
+:END:
+
+*** read_latest_all_tenants
+:PROPERTIES:
+:ID: 8B2E4F71-9C3A-4D6E-B518-2A7F9C0E4D6B
+:END:
+
+Reads the latest CRM topology configs across all tenants. Used by
+=crm_ingest_bridge= at startup/refresh, which must build a
+=rate_engine= for every (tenant, party) regardless of tenant -- there is
+no single tenant context to scope the read to.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::crm_topology_config> read_latest_all_tenants(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::crm_topology_config>
+crm_topology_config_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<crm_topology_config_entity>> |
+                       where("valid_to"_c == max.value()) |
+                       order_by("id"_c);
+
+    return execute_read_query<crm_topology_config_entity, domain::crm_topology_config>(
+        ctx,
+        query,
+        [](const auto& entities) { return crm_topology_config_mapper::map(entities); },
+        lg(),
+        "Reading latest CRM topology configs across all tenants");
+}
+#+end_src
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.refdata.api/domain/crm_topology_config.hpp
+:domain_class:            refdata::domain::crm_topology_config
+:protocol_include:        ores.refdata.api/messaging/crm_topology_config_protocol.hpp
+:collection_name:         crm_topology_configs
+:item_var:                config
+:key_field:                name
+:has_uuid_primary_key:    true
+:has_pagination:          true
+:has_change_reason_cache: true
+:has_export_macro:        true
+:get_request_class:       refdata::messaging::get_crm_topology_configs_request
+:get_response_class:      refdata::messaging::get_crm_topology_configs_response
+:get_message_type:        get_crm_topology_configs_request
+:save_request_class:      refdata::messaging::save_crm_topology_config_request
+:save_response_class:     refdata::messaging::save_crm_topology_config_response
+:save_message_type:       save_crm_topology_config_request
+:save_request_item_field: data
+:delete_request_class:    refdata::messaging::delete_crm_topology_config_request
+:delete_response_class:   refdata::messaging::delete_crm_topology_config_response
+:delete_message_type:     delete_crm_topology_config_request
+:history_request_class:   refdata::messaging::get_crm_topology_config_history_request
+:history_response_class:  refdata::messaging::get_crm_topology_config_history_response
+:history_message_type:    get_crm_topology_config_history_request
+:settings_group:          CrmTopologyConfigListWindow
+:window_title:            CRM Topology Configs
+:icon:                    Chart
+:END:
+
+*** Detail fields
+
+| field                | label           | widget          | type      | is_key | is_required | placeholder  | flag_source | combo_fetch          | combo_fetch_include        | combo_allow_blank |
+|----------------------+-----------------+-----------------+-----------+--------+-------------+--------------+-------------+----------------------+-----------------------------+--------------------|
+| id                   | Id              | idEdit          | line_edit | true   | true        | CRM topology config id |  |                      |                             |                    |
+| name                 | Name            | nameEdit        | line_edit |        | true        | e.g. primary |             |                      |                             |                    |
+| pivot_currency_code  | Pivot Currency  | pivotCcyCombo   | flagged_combo |    | true        |              | currency    | fetch_currency_codes | ores.qt/LookupFetcher.hpp   | false              |
+| enabled              | Enabled         | enabledCheckBox | check_box |        |             |              |             |                      |                             |                    |
+
+*** Columns (Qt model)
+
+| enum_name          | field                | header          | type      | width | is_badge | badge_key   |
+|--------------------+----------------------+-----------------+-----------+-------+----------+-------------|
+| Name                | name                 | Name            | string    | auto  |          |             |
+| PivotCurrencyCode  | pivot_currency_code  | Pivot Currency  | string    | 100   |          |             |
+| Enabled             | enabled              | Enabled         | bool      | 80    | true     | crm_enabled |
+| Version             | version              | Version         | int       | 70    |          |             |
+| ModifiedBy          | modified_by          | Modified By     | string    | auto  |          |             |
+| RecordedAt          | recorded_at          | Recorded At     | timestamp | auto  |          |             |
+
+*** Icon columns (Qt model)
+
+Pivot currency gets its own flag icon, same as any other
+single-currency cell (e.g. Book's LedgerCcy) -- no compositing
+needed since it's a single column.
+
+| column             | accessor           | field1               | field2 |
+|--------------------+---------------------+-----------------------+--------|
+| PivotCurrencyCode  | currency_flag_icon | pivot_currency_code  |        |

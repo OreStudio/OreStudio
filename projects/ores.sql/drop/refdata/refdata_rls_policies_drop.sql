@@ -158,3 +158,8 @@ drop policy if exists tenor_resolution_algorithms_tbl_tenant_isolation_policy on
 drop policy if exists tenors_tbl_tenant_isolation_policy on ores_refdata_tenors_tbl;
 drop policy if exists tenor_conventions_tbl_tenant_isolation_policy on ores_refdata_tenor_conventions_tbl;
 drop policy if exists tenor_convention_resolutions_tbl_tenant_isolation_policy on ores_refdata_tenor_convention_resolutions_tbl;
+
+-- CRM topology
+drop policy if exists crm_topology_configs_tbl_tenant_isolation_policy on ores_refdata_crm_topology_configs_tbl;
+drop policy if exists crm_driver_pairs_tbl_tenant_isolation_policy on ores_refdata_crm_driver_pairs_tbl;
+drop policy if exists crm_enabled_derived_pairs_tbl_tenant_isolation_policy on ores_refdata_crm_enabled_derived_pairs_tbl;

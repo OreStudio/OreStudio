@@ -31,7 +31,6 @@
 
 \echo '--- FX Driver Rates Seed Data ---'
 \ir ./marketdata_fx_driver_rates_populate.sql
-\ir ./marketdata_crm_topology_bundles_populate.sql
 
 \echo ''
 \echo '=== Market Data Component Population Complete ==='
